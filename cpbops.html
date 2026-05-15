@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M043WCF3JM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M043WCF3JM');
+</script>
+<!-- End Google Analytics -->
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CPB Engagement Ops Guide — TD SYNNEX Copilot Practice Builder</title>
+<style>
+:root{--teal:#005F6B;--teal-light:#007B8A;--navy:#003057;--text:#1a2330;--muted:#f7f8fa;--muted-2:#eef1f4;--accent:#e4f0f3;--warn:#fff8ed;--border:#dde1e7;--shadow-sm:0 1px 4px rgba(0,0,0,.07);--shadow-md:0 4px 16px rgba(0,0,0,.09);--radius:8px;--radius-lg:10px;}
+*,*::before,*::after{box-sizing:border-box;}
+body{font-family:'Segoe UI','Inter',Georgia,sans-serif;font-size:16px;color:var(--text);max-width:1100px;margin:0 auto;padding:32px 28px;line-height:1.7;background:#fff;}
+h2{color:var(--navy);margin:2.8rem 0 .75rem;border-bottom:2px solid var(--navy);padding-bottom:10px;font-size:1.5rem;font-weight:700;letter-spacing:-.1px;}
+h3{color:var(--teal);margin:1.6rem 0 .4rem;font-size:1.05rem;font-weight:600;}
+h4{color:var(--navy);margin:1.2rem 0 .3rem;font-size:.95rem;font-weight:700;}
+p{margin:.5rem 0 .8rem;}ul,ol{margin:.4rem 0 .9rem 1.3rem;}li{margin:.28rem 0;line-height:1.65;}
+hr{border:none;border-top:1px solid var(--border);margin:2rem 0;}
+a{color:var(--teal);text-decoration:none;}a:hover{text-decoration:underline;}
+
+.hero{background:linear-gradient(135deg,#004d58,#005F6B);color:#fff;border-radius:var(--radius-lg);padding:28px 32px 22px;margin:0 0 20px;box-shadow:var(--shadow-md);}
+.hero h1{margin:0 0 6px;font-size:2.1rem;font-weight:700;letter-spacing:-.3px;}
+.hero .sub{opacity:.95;font-weight:600;margin:0 0 8px;font-size:1rem;}
+.hero .meta{opacity:.75;font-size:.85rem;}
+
+.callout{display:grid;grid-template-columns:3px 1fr;border-radius:0 var(--radius) var(--radius) 0;overflow:hidden;box-shadow:var(--shadow-sm);margin:0 0 20px;}
+.callout-bar{background:linear-gradient(to bottom,var(--teal),var(--navy));}
+.callout-body{padding:16px 20px;background:#fff;border:1px solid var(--border);border-left:none;}
+.section-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:6px;}
+
+.phase-card{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:16px;}
+.phase-header{padding:14px 20px;display:flex;align-items:center;gap:14px;}
+.phase-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#fff;flex-shrink:0;}
+.phase-title{font-weight:700;font-size:.95rem;color:#fff;}
+.phase-subtitle{font-size:.78rem;opacity:.8;color:#fff;}
+.phase-body{padding:16px 20px;background:#fff;}
+
+.gate-strip{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:16px 0;box-shadow:var(--shadow-sm);}
+.gate-cell{flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--border);}
+.gate-cell:last-child{border-right:none;}
+.g-label{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+.g-week{font-size:.72rem;font-weight:700;margin-bottom:2px;}
+.g-desc{font-size:.68rem;line-height:1.35;color:#6b7280;}
+
+.checklist-block{background:var(--muted);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin:10px 0;}
+.checklist-block h4{margin:0 0 8px;color:var(--navy);font-size:.88rem;}
+.cl-item{display:grid;grid-template-columns:18px 1fr;gap:8px;margin:5px 0;align-items:start;}
+.cl-box{width:14px;height:14px;border:2px solid var(--teal);border-radius:2px;margin-top:3px;flex-shrink:0;}
+.cl-text{font-size:.85rem;color:var(--text);line-height:1.55;}
+.cl-text strong{color:var(--navy);}
+.cl-why{font-size:.78rem;color:#6b7280;margin-top:1px;}
+
+/* Scenario card */
+.scenario{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin:14px 0;}
+.sc-layout{display:grid;grid-template-columns:190px 1fr;}
+.sc-left{padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;}
+.sc-badge{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;}
+.sc-title{font-size:.92rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;}
+.sc-chip{background:rgba(255,255,255,.13);border-radius:3px;padding:3px 8px;font-size:.68rem;color:rgba(255,255,255,.78);margin-bottom:3px;display:inline-block;}
+.sc-kpi-val{font-size:1.5rem;font-weight:700;color:#a8ecf5;line-height:1;margin-top:12px;}
+.sc-kpi-lbl{font-size:.71rem;color:rgba(255,255,255,.6);}
+.sc-right{padding:16px 20px;background:#fff;}
+.sc-right p{margin:0 0 8px;font-size:.85rem;line-height:1.65;color:#374151;}
+.quote-box{background:#eef6f8;border-left:3px solid var(--teal);border-radius:0 5px 5px 0;padding:8px 12px;font-size:.82rem;color:#374151;font-style:italic;margin-top:8px;}
+.quote-attr{font-style:normal;font-size:.74rem;color:#6b7280;margin-top:3px;font-weight:600;}
+
+/* Mapping box — consistent across all three scenarios */
+.map-box{border:1px solid var(--border);border-radius:var(--radius);margin-top:14px;overflow:hidden;}
+.map-box-head{background:var(--navy);padding:9px 14px;}
+.map-box-head .mh-eyebrow{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:2px;}
+.map-box-head .mh-title{font-size:.84rem;font-weight:700;color:#fff;}
+.map-row{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);align-items:start;}
+.map-row:last-child{border-bottom:none;}
+.map-tag{display:inline-block;padding:3px 9px;border-radius:12px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.mt-t8{background:#d1fae5;color:#065f46;}
+.mt-t9{background:#dbeafe;color:#1e40af;}
+.mt-rev{background:#ede9fe;color:#4c1d95;}
+.map-text{font-size:.83rem;color:var(--text);line-height:1.55;}
+.map-text strong{color:var(--navy);}
+
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:20px;}
+.stat-cell{padding:18px 16px;text-align:center;}
+.stat-cell:not(:last-child){border-right:1px solid rgba(255,255,255,.12);}
+.stat-val{font-size:2.2rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;margin-bottom:4px;}
+.stat-lbl{font-size:.82rem;font-weight:600;color:#fff;margin-bottom:2px;}
+.stat-src{font-size:.7rem;color:rgba(255,255,255,.45);}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+
+.insight{background:var(--accent);border-radius:var(--radius);padding:12px 16px;margin:10px 0;border-left:3px solid var(--teal);}
+.insight strong{color:var(--navy);}
+.insight .src{font-size:.76rem;color:#6b7280;margin-top:4px;}
+
+.warn-box{background:var(--warn);border-radius:var(--radius);padding:12px 16px;margin:10px 0;border-left:3px solid #b45309;}
+.warn-box strong{color:#92400e;}
+
+/* Inline source badge */
+.sb{display:inline-block;background:var(--muted-2);border:1px solid var(--border);border-radius:10px;padding:1px 8px;font-size:.69rem;color:#6b7280;vertical-align:middle;margin-left:4px;}
+
+/* Research source grid */
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+.res-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.res-head{padding:8px 12px;font-size:.72rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.07em;}
+.res-body{padding:10px 12px;background:#fff;}
+.res-body ul{margin:0;padding-left:1rem;}
+.res-body li{font-size:.78rem;color:#374151;margin-bottom:3px;line-height:1.45;}
+
+table.rev{width:100%;border-collapse:collapse;font-size:.85rem;margin:10px 0;}
+table.rev th{background:var(--navy);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.8rem;}
+table.rev td{padding:7px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+table.rev tr:nth-child(even) td{background:var(--muted);}
+table.rev td strong{color:var(--navy);}
+table.rev td.num{text-align:right;font-variant-numeric:tabular-nums;}
+
+table.raci{width:100%;border-collapse:collapse;font-size:.82rem;margin:10px 0;}
+table.raci th{background:var(--teal);color:#fff;padding:8px 10px;font-weight:600;font-size:.77rem;}
+table.raci td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+table.raci tr:nth-child(even) td{background:var(--muted);}
+table.raci td:first-child{font-weight:700;color:var(--navy);}
+
+ul.ref-list{list-style:none;margin:0;padding:0;}
+ul.ref-list li{padding:7px 0;border-bottom:1px solid var(--border);font-size:.82rem;line-height:1.55;}
+ul.ref-list li:last-child{border-bottom:none;}
+.ref-badge{display:inline-block;background:var(--navy);color:#fff;border-radius:3px;padding:1px 7px;font-size:.67rem;font-weight:700;margin-right:8px;vertical-align:middle;}
+
+.doc-footer{margin-top:40px;padding:20px 0 0;border-top:2px solid var(--border);}
+.doc-footer p{font-size:.78rem;color:#9ca3af;line-height:1.6;margin:.3rem 0;}
+
+.ph1{background:#005F6B;}.ph2{background:#004d5a;}.ph3{background:#003d4a;}.ph4{background:#003057;}.ph5{background:#1e3a5f;}
+
+@media(max-width:720px){.two-col,.sc-layout,.res-grid{grid-template-columns:1fr;}.gate-strip{flex-direction:column;}}
+
+/* ── TOC ── */
+.toc-block{background:var(--muted);border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:0 0 var(--radius) var(--radius);padding:20px 24px 22px;margin:0 0 28px;}
+.toc-head{font-weight:700;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin:0 0 14px;}
+.toc-block ol{columns:2;column-gap:32px;margin:0;padding:0;list-style:none;counter-reset:toc-ctr;}
+.toc-block li{break-inside:avoid;margin:0;padding:7px 0;border-bottom:1px solid var(--border);counter-increment:toc-ctr;display:flex;align-items:baseline;gap:10px;line-height:1.4;}
+.toc-block li::before{content:counter(toc-ctr,decimal-leading-zero);font-size:.7rem;font-weight:700;color:var(--teal);flex:0 0 auto;opacity:.7;}
+.toc-block a{color:var(--text);text-decoration:none;font-size:.88rem;font-weight:500;}
+.toc-block a:hover{color:var(--teal);text-decoration:underline;}
+.toc-block li.toc-ref::before{content:'↗';font-size:.7rem;}
+.back-toc{text-align:right;margin:10px 0 4px;font-size:.8rem;}
+.back-toc a{color:var(--teal);text-decoration:none;font-weight:600;}
+.back-toc a:hover{text-decoration:underline;}
+
+/* ── WORKFLOW STRIP ── */
+.wf-strip{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto 1fr auto;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin:0 0 10px;}
+.wf-cell{display:grid;grid-template-rows:subgrid;grid-row:span 4;row-gap:8px;padding:16px 14px 14px;text-align:center;border-right:1px solid var(--border);position:relative;}
+.wf-cell:last-child{border-right:none;}
+.wf-arrow{position:absolute;right:-10px;top:50%;transform:translateY(-50%);z-index:2;font-size:1rem;color:var(--border);font-weight:700;pointer-events:none;}
+.wf-eyebrow{grid-row:1;align-self:end;font-size:.57rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.65;}
+.wf-name{grid-row:2;align-self:start;font-size:.82rem;font-weight:700;line-height:1.2;}
+.wf-desc{grid-row:3;align-self:start;font-size:.7rem;line-height:1.4;opacity:.75;}
+.wf-you{grid-row:4;justify-self:center;align-self:end;font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;background:rgba(255,255,255,.25);border-radius:10px;padding:3px 10px;}
+
+/* ── TAB REFERENCE STRIP ── */
+.tab-ref-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:12px 0 0;}
+.tab-ref-cell{padding:11px 13px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:5px;}
+.tab-ref-cell:last-child{border-right:none;}
+.tab-ref-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.tab-ref-title{font-size:.8rem;font-weight:700;line-height:1.25;}
+.tab-ref-section{font-size:.71rem;color:#6b7280;line-height:1.4;}
+.tab-ref-use{font-size:.71rem;font-weight:600;line-height:1.35;margin-top:2px;}
+
+@media(max-width:720px){.toc-block ol{columns:1;}.wf-strip{grid-template-columns:1fr;grid-template-rows:none;}.wf-cell{grid-template-rows:auto auto auto auto;grid-row:auto;}.tab-ref-strip{grid-template-columns:1fr 1fr;}}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
+  <div style="font-size:2.6rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">CPB Engagement Ops Guide</span></div>
+  <div style="font-size:1.4rem;font-weight:600;color:#1a2330;margin-top:14px;">The partner’s field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery.</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">TD SYNNEX &middot; Copilot Practice Builder &middot; Partner Enablement Series &middot; April 2026</div>
+</div>
+
+<div class="callout">
+  <div class="callout-bar"></div>
+  <div class="callout-body">
+    <div class="section-label">How to Use This Document</div>
+    <p style="margin:0;font-size:.95rem;line-height:1.65;">This brief is the research foundation and narrative explanation behind the two worklist tabs in the CPB Workbook &#8212; Tab 8 (Copilot Activation Worklist) and Tab 9 (Agent Build Engagement Worklist). It explains the logic behind every phase and gate, grounds each framework in published Microsoft guidance and MSP field research, and shows real customer examples mapped to where they enter the checklists. <strong>Read this once before your first engagement. Run the workbook tabs during delivery.</strong></p>
+  </div>
+</div>
+
+<!-- ═══ SECTION 0: THREE THINGS FIRST (moved to top) ═══ -->
+
+<!-- ── WHERE THIS GUIDE FITS ── -->
+<div id="toc-anchor" style="margin:0 0 20px;">
+
+  <!-- Workflow strip -->
+  <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin:0 0 8px;">Where This Guide Fits in the CPB Toolkit</div>
+  <div class="wf-strip">
+    <!-- Playbook -->
+    <div class="wf-cell" style="background:#f7f8fa;">
+      <span class="wf-eyebrow" style="color:var(--navy);">Step 1</span>
+      <span class="wf-name" style="color:var(--navy);">The Playbook</span>
+      <span class="wf-desc" style="color:#6b7280;">Strategy, tiers, monetization models, and the financial case. Read to orient your practice.</span>
+      <span class="wf-arrow" style="color:var(--border);">&#8250;</span>
+    </div>
+    <!-- Workbook: Planning -->
+    <div class="wf-cell" style="background:#f0f9ff;">
+      <span class="wf-eyebrow" style="color:#107c41;">Step 2</span>
+      <span class="wf-name" style="color:#107c41;">Workbook Tabs 1&ndash;5</span>
+      <span class="wf-desc" style="color:#6b7280;">Model your numbers. Design the practice. Stress-test with Bear/Base/Bull. Make the internal case.</span>
+      <span class="wf-arrow" style="color:var(--border);">&#8250;</span>
+    </div>
+    <!-- Workbook: Scoping -->
+    <div class="wf-cell" style="background:#f0f9f4;">
+      <span class="wf-eyebrow" style="color:var(--teal);">Step 3</span>
+      <span class="wf-name" style="color:var(--teal);">Workbook Tabs 6&ndash;7</span>
+      <span class="wf-desc" style="color:#6b7280;">Kicker math and RACI before scoping. Sprint templates when pricing an engagement.</span>
+      <span class="wf-arrow" style="color:var(--border);">&#8250;</span>
+    </div>
+    <!-- Workbook: Delivery -->
+    <div class="wf-cell" style="background:#f0f4ff;">
+      <span class="wf-eyebrow" style="color:#1e40af;">Step 4</span>
+      <span class="wf-name" style="color:#1e40af;">Workbook Tabs 8&ndash;9</span>
+      <span class="wf-desc" style="color:#6b7280;">Live project trackers during delivery. One tab open per active engagement. Every gate gets a status.</span>
+      <span class="wf-arrow" style="color:var(--border);">&#8250;</span>
+    </div>
+    <!-- Ops Guide: YOU ARE HERE -->
+    <div class="wf-cell" style="background:linear-gradient(135deg,#003057,#005F6B);">
+      <span class="wf-eyebrow" style="color:rgba(168,236,245,.8);">You Are Here</span>
+      <span class="wf-name" style="color:#fff;">Engagement Ops Guide</span>
+      <span class="wf-desc" style="color:rgba(255,255,255,.75);">The research and reasoning behind Tabs 6&ndash;9. Read once before your first engagement.</span>
+      <span class="wf-you">&#10003; This Document</span>
+    </div>
+  </div>
+
+  <!-- Tab reference strip -->
+  <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin:14px 0 6px;">Workbook Tabs Referenced in This Guide &mdash; Have These Open While You Read</div>
+  <div class="tab-ref-strip">
+    <div class="tab-ref-cell" style="background:#f8fcfd;">
+      <span class="tab-ref-badge" style="background:var(--teal);color:#fff;">Tab 6 &mdash; Engagement Mechanics</span>
+      <div class="tab-ref-title" style="color:var(--teal);">Kicker Math + RACI</div>
+      <div class="tab-ref-section">Covered in <strong>Section 3</strong> (Pre-Engagement) and throughout Tab 8 gate notes</div>
+      <div class="tab-ref-use" style="color:var(--teal);">Open before scoping any outcome-based engagement</div>
+    </div>
+    <div class="tab-ref-cell" style="background:#fff;">
+      <span class="tab-ref-badge" style="background:#1e3a5f;color:#a8ecf5;">Tab 7 &mdash; Sprint Templates</span>
+      <div class="tab-ref-title" style="color:#1e3a5f;">Service Menu + Sprint Shapes</div>
+      <div class="tab-ref-section">Referenced in <strong>Section 3</strong> (Gates 2&ndash;3 adoption intervention) and <strong>Section 5</strong> real examples</div>
+      <div class="tab-ref-use" style="color:#1e3a5f;">Open when pricing a Tier 1 service or scoping a sprint</div>
+    </div>
+    <div class="tab-ref-cell" style="background:#f8fcfd;">
+      <span class="tab-ref-badge" style="background:#065f46;color:#d1fae5;">Tab 8 &mdash; Activation Worklist</span>
+      <div class="tab-ref-title" style="color:#065f46;">Pre-Gate through Gate 5</div>
+      <div class="tab-ref-section">The subject of <strong>Section 3</strong> in full &mdash; every gate explained, with the four common failure modes</div>
+      <div class="tab-ref-use" style="color:#065f46;">Open as live tracker during every Activation Sprint</div>
+    </div>
+    <div class="tab-ref-cell" style="background:#fff;">
+      <span class="tab-ref-badge" style="background:#1e40af;color:#dbeafe;">Tab 9 &mdash; Agent Build Worklist</span>
+      <div class="tab-ref-title" style="color:#1e40af;">Phases 1&ndash;5 (Discover through AgentOps)</div>
+      <div class="tab-ref-section">The subject of <strong>Section 4</strong> in full &mdash; every phase explained, including the 90% gate and AgentOps runbook</div>
+      <div class="tab-ref-use" style="color:#1e40af;">Open as live tracker during every agent build engagement</div>
+    </div>
+  </div>
+
+</div><!-- end orientation block -->
+
+<!-- ── TABLE OF CONTENTS ── -->
+<div class="toc-block" id="toc">
+  <div class="toc-head">Contents</div>
+  <ol>
+    <li><a href="#s0">Before You Open Either Tab: Three Things to Get Right First</a></li>
+    <li><a href="#s1">Where This Framework Comes From</a></li>
+    <li><a href="#s2">Why Engagement Structure Determines Revenue Outcome</a></li>
+    <li><a href="#s3">Tab 8: The Copilot Activation Worklist &mdash; Phase by Phase</a></li>
+    <li><a href="#s4">Tab 9: The Agent Build Engagement Worklist &mdash; Phase by Phase</a></li>
+    <li><a href="#s5">Real Examples: What These Engagements Look Like in Practice</a></li>
+    <li><a href="#s6">RACI &mdash; Accountability Reference for New Partners</a></li>
+    <li><a href="#s7">What Executing Tabs 8 and 9 Builds Toward Financially</a></li>
+    <li class="toc-ref"><a href="#refs">Reference List &mdash; 13 Clickable Sources</a></li>
+  </ol>
+</div>
+
+<h2 id="s0">Before You Open Either Tab: Three Things to Get Right First</h2>
+
+<p>The research behind Tabs 8 and 9 consistently surfaces three priorities that are disproportionately important relative to everything else in the checklists. If you only internalize three things from this document, make it these.</p>
+
+<div class="two-col">
+<div class="phase-card">
+  <div class="phase-header" style="background:linear-gradient(135deg,#003057,#005F6B);">
+    <div class="phase-num" style="background:rgba(255,255,255,.2);">1</div>
+    <div><div class="phase-title">Use Copilot Internally First</div><div class="phase-subtitle">The credibility foundation everything else rests on</div></div>
+  </div>
+  <div class="phase-body">
+    <p style="font-size:.87rem;margin:0 0 8px;">Partners who use Copilot in their own operations close Copilot deals at 3&times; the rate of partners who don&#8217;t. <span class="sb">Microsoft FY26 Partner Data</span> The mechanism is direct: your most compelling demo is always the workflow you built for yourself. When you show a customer your actual Copilot-assisted operations, they stop evaluating and start imagining. That imagination is the close.</p>
+    <div class="insight"><strong>Minimum bar:</strong> Your own internal Copilot deployment running for at least 60 days before your first customer engagement. Build one agent for your own workflow &#8212; a proposal generator, a ticket summarizer, an internal knowledge base agent. You will encounter the same governance issues your customer will face. Your demo will be more credible than any slide deck.</div>
+  </div>
+</div>
+<div class="phase-card">
+  <div class="phase-header" style="background:linear-gradient(135deg,#005F6B,#007B8A);">
+    <div class="phase-num" style="background:rgba(255,255,255,.2);">2</div>
+    <div><div class="phase-title">Run the SharePoint Oversharing Report First</div><div class="phase-subtitle">The risk prevention step that protects every engagement</div></div>
+  </div>
+  <div class="phase-body">
+    <p style="font-size:.87rem;margin:0 0 8px;">The SharePoint Data Access Governance (DAG) oversharing report is a 15-minute task. It prevents the most common Copilot deployment crisis in the SMB market: a user prompting Copilot and surfacing a confidential document they were technically allowed to access but were never intended to find. <span class="sb">Microsoft DAG Blueprint &middot; Syskit &middot; Orchestry</span></p>
+    <div class="insight"><strong>The non-negotiable:</strong> Run the Site Permissions report (SharePoint Admin Center &#8594; Reports &#8594; Data Access Governance) before any Copilot license is assigned. Remediate &#8220;Everyone except external users&#8221; and &#8220;Anyone with the link&#8221; on sensitive sites (HR, Finance, Legal) before Gate 1 closes. SharePoint Advanced Management (SAM) &#8212; which covers this &#8212; is included with an active M365 Copilot license at no additional cost (verify current entitlement terms).</div>
+  </div>
+</div>
+</div>
+
+<div class="phase-card">
+  <div class="phase-header" style="background:linear-gradient(135deg,#003d4a,#003057);">
+    <div class="phase-num" style="background:rgba(255,255,255,.2);">3</div>
+    <div><div class="phase-title">Name the Business Champion Before You Provision the First License</div><div class="phase-subtitle">The adoption foundation that makes every gate achievable</div></div>
+  </div>
+  <div class="phase-body">
+    <p style="font-size:.87rem;margin:0 0 10px;">The single most reliable predictor of hitting the 30% active-user threshold at Gate 3 is whether a named Champion was identified before Day 1. Champions are not IT staff &#8212; they are business users in roles where Copilot genuinely compresses daily friction: the office manager who lives in Outlook, the sales rep who writes proposals from scratch, the operations lead running five recurring meetings a week. <span class="sb">Microsoft M365 Copilot Adoption Planning Checklist</span></p>
+    <p style="font-size:.87rem;margin:0;">These are the people whose early wins become the internal proof of concept that sells the rest of the organization. Identify them before Day 1. Brief them separately from the broader rollout. Give them the prompt library first. Make sure their results are shared in the community channel by Week 4.</p>
+    <div class="insight"><strong>How to find them:</strong> A 30-minute conversation with the business owner &#8212; not IT &#8212; asking: &#8220;Who in your team is most frustrated by repetitive document or meeting work?&#8221; That person is your Day 1 Champion. This conversation happens before the SOW is signed. It is the first act of a structured engagement.</div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 1: RESEARCH GROUNDING ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s1">1 &middot; Where This Framework Comes From</h2>
+
+<p>The frameworks in Tabs 8 and 9 are a synthesis of Microsoft&#8217;s own published deployment guidance, documented MSP partner field experience, and the CPB Playbook&#8217;s engagement model. They are not invented. Where a claim in this document is drawn from a specific source, a citation badge appears inline. Clickable links to every source are in the Reference List at the end.</p>
+
+<div class="res-grid">
+  <div class="res-card">
+    <div class="res-head" style="background:var(--navy);">Microsoft Official Guidance</div>
+    <div class="res-body"><ul>
+      <li>M365 Copilot Adoption Planning Checklist &#8212; four-phase deployment model and Champion program structure</li>
+      <li>M365 Copilot for SMB &#8212; SMB Success Kit, 30% threshold framework, flight crew model</li>
+      <li>M365 Agents Deployment Checklist &#8212; admin roles, Application Lifecycle Management (ALM) environment strategy, agent governance</li>
+      <li>Copilot Studio Agent Development Lifecycle &#8212; the five-phase model Tab 9 is built on</li>
+      <li>Copilot Studio Agent Evaluation Checklist &#8212; golden prompt methodology and &gt;90% pass rate standard</li>
+      <li>SharePoint Advanced Management guidance &#8212; DAG reports, Site Access Reviews, RAC policy</li>
+      <li>Secure &amp; Governed Data Foundation Blueprint &#8212; phased oversharing remediation framework</li>
+    </ul></div>
+  </div>
+  <div class="res-card">
+    <div class="res-head" style="background:var(--teal);">Partner &amp; MSP Field Research</div>
+    <div class="res-body"><ul>
+      <li>Syskit Copilot Readiness Assessment Framework &#8212; five-pillar permissions audit model</li>
+      <li>Orchestry M365 Copilot Readiness Checklist &#8212; ROT content risk; storage estate as skipped readiness dimension</li>
+      <li>AvePoint MSP Copilot Technical Readiness Checklist &#8212; four-step MSP AI preparation model</li>
+      <li>inforcer MSP Copilot Readiness Assessment Guide &#8212; M365 utilization audit approach</li>
+      <li>E2E Agentic Bridge Copilot Readiness Assessment &#8212; five-pillar permission hygiene framework</li>
+      <li>Adoptify.ai Enterprise Copilot Deployment Checklist &#8212; AdaptOps phased rollout model</li>
+    </ul></div>
+  </div>
+  <div class="res-card">
+    <div class="res-head" style="background:#1e3a5f;">CPB Playbook &amp; Case Studies</div>
+    <div class="res-body"><ul>
+      <li>CPB Playbook v9 (cpb.html) &#8212; five-gate sprint structure, RACI, four non-negotiables, tier sprint map</li>
+      <li>Microsoft Inside Track &#8212; Deploying M365 Copilot in Five Chapters &#8212; hero scenario framework and maturity model</li>
+      <li>Microsoft FY26 Partner Data &#8212; 3&times; close rate for internally-deployed Copilot partners</li>
+      <li>Newman&#8217;s Own, Mike Morse Law Firm, Morula Health &#8212; Microsoft publicly documented customer stories used in Section 5</li>
+    </ul></div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 2: WHY STRUCTURE MATTERS ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s2">2 &middot; Why Engagement Structure Determines Revenue Outcome</h2>
+
+<p>The single biggest predictor of whether a Copilot engagement converts into recurring managed services revenue is not the technology &#8212; it is whether the partner ran a structured engagement or an unstructured one.</p>
+
+<div class="two-col">
+<div class="phase-card">
+  <div class="phase-header" style="background:linear-gradient(135deg,#6b7280,#4b5563);">
+    <div><div class="phase-title">The Unstructured Path</div><div class="phase-subtitle">What most new partners default to</div></div>
+  </div>
+  <div class="phase-body"><ul style="margin:0;padding-left:1.2rem;">
+    <li style="font-size:.85rem;margin-bottom:6px;">Provision licenses on Day 1, hope users figure it out</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">No baseline KPI documented &#8212; nothing to measure ROI against</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">No Champion identified &#8212; IT is the only counterpart</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">No MBR cadence &#8212; customer goes quiet after 30 days</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">Renewal conversation at month 11 with no supporting evidence</li>
+    <li style="font-size:.85rem;">Result: license churn, no retainer, no agent build conversation</li>
+  </ul></div>
+</div>
+<div class="phase-card">
+  <div class="phase-header" style="background:linear-gradient(135deg,#005F6B,#007B8A);">
+    <div><div class="phase-title">The Structured Path (Tabs 8&#8211;9)</div><div class="phase-subtitle">What the playbook prescribes</div></div>
+  </div>
+  <div class="phase-body"><ul style="margin:0;padding-left:1.2rem;">
+    <li style="font-size:.85rem;margin-bottom:6px;">Champion identified and briefed before first license goes live</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">Day 0 baseline KPI captured before any Copilot access is granted</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">Five gate checkpoints create shared accountability with the customer</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">Usage analytics dashboard running by Week 6</li>
+    <li style="font-size:.85rem;margin-bottom:6px;">MRR conversion conversation at Day 85 &#8212; before urgency fades</li>
+    <li style="font-size:.85rem;">Result: retainer signed at sprint close, agent build scoped at Gate 3</li>
+  </ul></div>
+</div>
+</div>
+
+<div class="insight"><strong>The mechanism:</strong> Structure creates evidence. Evidence creates trust. Trust creates the retainer. Without the five-gate checkpoint structure, the partner has no recurring reason to be in front of the customer, and the customer has no reason to believe the renewal is worth paying for. With it, both sides can see exactly what is being delivered at every stage &#8212; and what comes next.<div class="src">&#8212; CPB Playbook, Section 10 (Outcome-Based Primer)</div></div>
+
+<div class="stat-strip">
+  <div class="stat-cell" style="background:var(--navy);"><div class="stat-val">3&times;</div><div class="stat-lbl">faster Copilot deal close rate</div><div class="stat-src">Partners who deploy Copilot internally &middot; Microsoft FY26 Partner Data</div></div>
+  <div class="stat-cell" style="background:#001f3d;"><div class="stat-val">40&#8211;60%</div><div class="stat-lbl">more Phase 3 rework</div><div class="stat-src">When the Design phase is skipped before Build &middot; CPB Playbook field data</div></div>
+  <div class="stat-cell" style="background:var(--navy);"><div class="stat-val">&gt;90%</div><div class="stat-lbl">golden prompt pass rate required</div><div class="stat-src">Before Production deploy &middot; Microsoft Copilot Studio Agent Evaluation Checklist</div></div>
+</div>
+
+<!-- ═══ SECTION 3: TAB 8 ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s3">3 &middot; Tab 8: The Copilot Activation Worklist &#8212; Phase by Phase</h2>
+
+<div class="callout"><div class="callout-bar"></div><div class="callout-body">
+  <div class="section-label">What Tab 8 Is</div>
+  <p style="margin:0;font-size:.9rem;line-height:1.65;">Tab 8 is the operational checklist for a Tier 1 Activation Sprint &#8212; the 90-day structured engagement that converts a Copilot licensing conversation into a monthly managed retainer. It is a live project tracker, not a reference document. One person owns it. Every gate item gets a status. Nothing advances until the gate is green.</p>
+</div></div>
+
+<div class="gate-strip">
+  <div class="gate-cell" style="background:#e4f0f3;"><div class="g-label" style="color:#005F6B;">Pre-Gate</div><div class="g-week" style="color:#003057;">Week 0</div><div class="g-desc">Four non-negotiables confirmed. SOW signed. Day 0 KPI baseline captured.</div></div>
+  <div class="gate-cell" style="background:#d1fae5;"><div class="g-label" style="color:#065f46;">Gate 1</div><div class="g-week" style="color:#003057;">Week 2</div><div class="g-desc">Readiness Lock. Oversharing remediated. Champions licensed. Tenant validated.</div></div>
+  <div class="gate-cell" style="background:#dbeafe;"><div class="g-label" style="color:#1e40af;">Gate 2</div><div class="g-week" style="color:#003057;">Week 6</div><div class="g-desc">Activation confirmed. Full rollout complete. Analytics dashboard live.</div></div>
+  <div class="gate-cell" style="background:#fef3c7;"><div class="g-label" style="color:#92400e;">Gate 3</div><div class="g-week" style="color:#003057;">Day 45</div><div class="g-desc">Adoption evaluation. Active-user % vs. 30% threshold. Agent signal assessed.</div></div>
+  <div class="gate-cell" style="background:#fce7f3;"><div class="g-label" style="color:#9d174d;">Gate 4</div><div class="g-week" style="color:#003057;">Day 75</div><div class="g-desc">Impact evidence. KPI measured vs. Day 0 baseline. ROI Report drafted.</div></div>
+  <div class="gate-cell" style="background:#ede9fe;"><div class="g-label" style="color:#4c1d95;">Gate 5</div><div class="g-week" style="color:#003057;">Day 90</div><div class="g-desc">Kicker validated. Tier 1 MRR retainer signed. 12-month roadmap set.</div></div>
+</div>
+
+<h3>Pre-Engagement: The Four Steps Partners Consistently Skip</h3>
+<p>These are structural preconditions that make every downstream gate achievable. <span class="sb">CPB Playbook Tab 6 &middot; Microsoft Adoption Checklist</span></p>
+
+<div class="two-col">
+<div class="checklist-block">
+  <h4 style="color:#b45309;">&#9888; Skip #1 &#8212; No baseline KPI before SOW signature</h4>
+  <p style="font-size:.85rem;margin:0 0 6px;">Without a timestamped baseline KPI before SOW signature, you have nothing to measure against at Gate 5. The kicker cannot be earned or validated, and you will spend Gate 5 arguing over what the number used to be.</p>
+  <div class="insight"><strong>The fix:</strong> Document the KPI (date, method, responsible validator) in the shared audit folder before any license is provisioned. A 30-minute task that protects a $1,500&#8211;$5,000 kicker payment.</div>
+</div>
+<div class="checklist-block">
+  <h4 style="color:#b45309;">&#9888; Skip #2 &#8212; No oversharing remediation before go-live</h4>
+  <p style="font-size:.85rem;margin:0 0 6px;">Copilot does not create new permissions &#8212; it makes existing permissions instantly discoverable. A document shared to &#8220;Everyone except external users&#8221; years ago becomes surfaceable by any licensed user the moment Copilot is turned on. <span class="sb">Microsoft DAG Blueprint &middot; Syskit</span></p>
+  <div class="insight"><strong>The fix:</strong> Run the Site Permissions report in SharePoint Admin Center before Gate 1. Remediate high-risk sites. SharePoint Advanced Management (SAM) &#8212; included with an active M365 Copilot license &#8212; is the tool for this.</div>
+</div>
+</div>
+
+<div class="two-col">
+<div class="checklist-block">
+  <h4 style="color:#b45309;">&#9888; Skip #3 &#8212; Piloting exclusively with IT</h4>
+  <p style="font-size:.85rem;margin:0 0 6px;">IT staff don&#8217;t represent the use cases that drive adoption. Piloting with IT produces weak use cases, no internal advocates, and no social proof. The pilot ends. The rest of the company never hears about it. <span class="sb">Microsoft Adoption Planning Checklist</span></p>
+  <div class="insight"><strong>The fix:</strong> Identify 2&#8211;3 Champion profiles before Day 1 &#8212; the office manager, the sales rep, the operations lead. Their wins become the internal proof of concept.</div>
+</div>
+<div class="checklist-block">
+  <h4 style="color:#b45309;">&#9888; Skip #4 &#8212; No counter-metric named</h4>
+  <p style="font-size:.85rem;margin:0 0 6px;">Without a counter-metric for every KPI, outcome-based engagements are gameable. A team that knows cycle time is being measured can cut corners and still &#8220;hit&#8221; the KPI. The customer&#8217;s Finance team will raise this at Gate 5. <span class="sb">CPB Playbook Tab 6 Non-Negotiables</span></p>
+  <div class="insight"><strong>The fix:</strong> Name one counter-metric per KPI in the SOW appendix. If cycle time is the KPI, error rate is the counter-metric. Both confirmed in writing at Gate 5.</div>
+</div>
+</div>
+
+<h3>Gate 1 &#8212; Readiness Lock: The Oversharing Remediation Toolkit</h3>
+<p>SharePoint Advanced Management (SAM) &#8212; included at no extra cost with an active Microsoft 365 Copilot license per Microsoft&#8217;s November 2024 announcement &#8212; provides four specific tools for pre-deployment remediation.<sup style="font-size:.7rem;color:#6b7280;">&dagger;</sup> <span class="sb">Microsoft SAM Guidance</span></p>
+<div style="font-size:.78rem;color:#6b7280;font-style:italic;margin:-4px 0 10px;padding-left:10px;border-left:2px solid #e5e7eb;"><sup>&dagger;</sup> Entitlement requires an active M365 Copilot license on the tenant. Verify current licensing terms with your TD SYNNEX rep before scoping customer engagements, as Microsoft bundling terms are subject to change.</div>
+<ul>
+  <li><strong>Site permissions across your organization report</strong> &#8212; tenant-wide view of all sites with broad-access permissions. Run this first at every new customer.</li>
+  <li><strong>Permissioned User Report</strong> &#8212; for your Copilot pilot cohort, shows exactly which sites each user can access. Run on every Champion before their license goes live.</li>
+  <li><strong>Site Access Reviews</strong> &#8212; delegates remediation to the customer&#8217;s site owners at scale, without the partner touching every document.</li>
+  <li><strong>Restricted Access Control (RAC) policy</strong> &#8212; for high-risk sites (HR, Finance, Legal): blocks Copilot from surfacing content even to users who technically have permission, while governance cleanup is in progress.</li>
+</ul>
+
+<div class="warn-box"><strong>Timing note on sensitivity labels:</strong> Labels are a governance layer, not a technical prerequisite for Copilot. For regulated SMB verticals (healthcare, financial services, legal), plan Gate 1 to include label configuration. For unregulated SMBs, at minimum apply default labels to HR, Finance, and Legal libraries before go-live.</div>
+
+<h3>Gates 2&#8211;3 &#8212; Adoption: The 30% Threshold and What to Do When You Miss It</h3>
+<p>Microsoft&#8217;s Copilot adoption framework establishes a concrete intervention trigger. <span class="sb">Microsoft M365 Copilot SMB Success Kit</span> Tab 8 Gate 3 formalizes it as a named product response, not a vague instruction.</p>
+
+<div class="callout"><div class="callout-bar"></div><div class="callout-body">
+  <div class="section-label">The 30% Threshold</div>
+  <p style="margin:0 0 6px;font-size:.9rem;">Below 30% active users within the first 30 days is a documented adoption risk pattern. The named response is a Low-Adoption Intervention Sprint ($2,000&#8211;$3,500 from the Tier 1 Service Menu in Tab 7) &#8212; a 30-day targeted re-engagement program for departments below threshold. This is billable scope, not goodwill. The customer gets a named response to a named problem.</p>
+</div></div>
+
+<table class="rev">
+<thead><tr><th>Signal</th><th>Benchmark</th><th>Response If Below Benchmark</th><th>Tab 8 Reference</th></tr></thead>
+<tbody>
+  <tr><td><strong>Active user %</strong></td><td>&gt;30% by Day 30</td><td>Low-Adoption Intervention Sprint (Tab 7 Service Menu, $2,000&#8211;$3,500)</td><td>Gate 3</td></tr>
+  <tr><td><strong>Prompt volume</strong></td><td>Rising week-over-week</td><td>Prompt library refresh &#8212; add 10&#8211;15 new use-case prompts for lagging roles</td><td>Ongoing</td></tr>
+  <tr><td><strong>Champion engagement</strong></td><td>&#8805;1 share/week in community channel</td><td>1:1 re-briefing; add champion recognition incentive</td><td>Gate 2</td></tr>
+  <tr><td><strong>Dept. spread</strong></td><td>&lt;20pp variation across departments</td><td>Role-specific re-training session for any department &gt;20pp below average</td><td>Gate 3</td></tr>
+  <tr><td><strong>Sentiment pulse</strong></td><td>&#8805;3.5 / 5.0 from Gate 2 survey</td><td>1:1 office hours with low-sentiment users; escalate blockers to Champion</td><td>Gate 2</td></tr>
+</tbody>
+</table>
+
+<h3>Gate 4 &#8212; Building the ROI Report That Makes Renewal Automatic</h3>
+<p>The Gate 4 Copilot ROI Report ($1,500&#8211;$2,500, Tier 1 Service Menu) transforms the renewal conversation from a pricing discussion into an ROI discussion. It is also the evidence base required for MCI reimbursement applications submitted at Gate 5.</p>
+
+<div class="two-col">
+<div class="checklist-block">
+  <h4>What goes in the ROI Report</h4>
+  <ul style="margin:0;padding-left:1.2rem;">
+    <li style="font-size:.84rem;margin-bottom:5px;"><strong>Active user rate</strong> &#8212; current vs. Day 0 baseline</li>
+    <li style="font-size:.84rem;margin-bottom:5px;"><strong>Time savings per user per week</strong> &#8212; Microsoft benchmark: 3&#8211;4 hrs/user/wk for professional services <span class="sb">Forrester TEI</span></li>
+    <li style="font-size:.84rem;margin-bottom:5px;"><strong>Dollar value of time saved</strong> &#8212; loaded labor rate &times; hrs saved &times; active users &times; 52</li>
+    <li style="font-size:.84rem;margin-bottom:5px;"><strong>Top 3 use cases with results</strong> &#8212; named Champions, before/after examples</li>
+    <li style="font-size:.84rem;margin-bottom:5px;"><strong>Satisfaction score</strong> &#8212; from Gate 3 pulse survey</li>
+    <li style="font-size:.84rem;"><strong>KPI delta</strong> &#8212; primary KPI vs. Day 0 baseline (outcome-based only)</li>
+  </ul>
+</div>
+<div class="checklist-block">
+  <h4>What the ROI Report does commercially</h4>
+  <ul style="margin:0;padding-left:1.2rem;">
+    <li style="font-size:.84rem;margin-bottom:5px;">Reframes renewal from &#8220;do we keep paying?&#8221; to &#8220;look at what we built together&#8221;</li>
+    <li style="font-size:.84rem;margin-bottom:5px;">Gives the Executive Sponsor a board-ready artifact justifying their original decision</li>
+    <li style="font-size:.84rem;margin-bottom:5px;">Creates the natural bridge to the Tier 2 agent build: &#8220;Here is what Copilot did. Here is what a dedicated agent could do.&#8221;</li>
+    <li style="font-size:.84rem;margin-bottom:5px;">Positions you as a strategic advisor, not a license reseller</li>
+    <li style="font-size:.84rem;">Required evidence for MCI reimbursement application at Gate 5</li>
+  </ul>
+</div>
+</div>
+
+<h3>Gate 5 &#8212; MRR Conversion: What to Say and When to Say It</h3>
+<div class="scenario">
+<div class="sc-layout">
+  <div class="sc-left" style="background:linear-gradient(135deg,#003057,#005F6B);">
+    <div><div class="sc-badge">Gate 5 Talk Track</div><div class="sc-title">MRR Conversion Language</div><div class="sc-chip">Tier 1 Retainer</div><div class="sc-chip">Day 85&#8211;90</div></div>
+  </div>
+  <div class="sc-right">
+    <p>&#8220;Here is what the last 90 days delivered. [ROI Report summary.] Here is what continues every month for $12/user/month: your usage analytics dashboard, a monthly 45-minute review where we look at what&#8217;s working and what to improve, your prompt library kept current as you find new use cases, and a monthly audit log review so nothing goes sideways with your data governance. You&#8217;ve already seen what that looks like &#8212; it&#8217;s what we&#8217;ve been doing for three months. The question is whether you want to keep it going.&#8221;</p>
+    <div class="insight"><strong>Critical timing:</strong> Have this conversation at Day 85, not Day 90. At Day 90 the customer expects to be asked. At Day 85 you are still in evidence-delivery mode &#8212; a far stronger position when the retainer topic comes up naturally.</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SECTION 4: TAB 9 ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s4">4 &middot; Tab 9: The Agent Build Engagement Worklist &#8212; Phase by Phase</h2>
+
+<div class="callout"><div class="callout-bar"></div><div class="callout-body">
+  <div class="section-label">What Tab 9 Is</div>
+  <p style="margin:0 0 10px;font-size:.9rem;line-height:1.65;">Tab 9 is the operational checklist for a Copilot Studio agent build engagement &#8212; from the Agent Discovery Workshop through Design, Build &amp; Test, Deploy &amp; Train, and into ongoing AgentOps. The five-phase structure mirrors Microsoft&#8217;s official Copilot Studio agent development lifecycle. <span class="sb">Microsoft Copilot Studio Agent Development Lifecycle</span> It applies to both simple declarative agents ($3,500&#8211;$8,000) and complex agents with actions and connectors ($12,000&#8211;$28,000).</p>
+  <div style="background:#f3fbfc;border:1px solid #c5dde3;border-left:3px solid #005F6B;border-radius:0 4px 4px 0;padding:10px 14px;font-size:.82rem;line-height:1.6;color:#374151;">
+    <strong style="color:#00474f;">Phase-name mapping &middot;</strong> CPB uses operational names that align to Microsoft&#8217;s lifecycle phases as follows: <strong>Phase 1 Discover</strong> &rarr; Microsoft <em>Discover</em>; <strong>Phase 2 Design</strong> &rarr; Microsoft <em>Experimentation</em> (prompt design, test-set authoring, solution architecture); <strong>Phase 3 Build &amp; Test</strong> &rarr; Microsoft <em>Build</em>; <strong>Phase 4 Deploy &amp; Train</strong> &rarr; Microsoft <em>Deploy</em>; <strong>Phase 5 AgentOps</strong> &rarr; Microsoft <em>Steady State</em>. When cross-referencing Microsoft documentation, use the official names.
+  </div>
+</div></div>
+
+<div class="phase-card">
+<div class="phase-header ph1"><div class="phase-num" style="background:rgba(255,255,255,.2);">1</div><div><div class="phase-title">Phase 1 &#8212; Discover</div><div class="phase-subtitle">Agent Discovery Workshop ($3,500&#8211;$6,000) &middot; Weeks 1&#8211;2 &middot; Output: prioritized candidate list + signed SOW</div></div></div>
+<div class="phase-body">
+  <p style="font-size:.88rem;margin:0 0 10px;">The most important thing about Phase 1: it is a billable engagement, not a pre-sales activity. Partners who treat discovery as free work train customers to expect free work. <span class="sb">CPB Playbook Section 10</span></p>
+  <div class="two-col">
+  <div class="checklist-block">
+    <h4>What the Discovery Workshop Produces</h4>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Prioritized agent candidate list</strong> (3&#8211;5 candidates, ranked by ROI, data availability, build complexity)<div class="cl-why">Build the wrong agent first and you lose customer confidence and the AgentOps retainer.</div></div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Workflow map for the top candidate</strong> (10&#8211;15 steps tagged for data sensitivity, decision points, applicability)<div class="cl-why">This becomes the Phase 2 design spec. Skip it here and Phase 2 takes twice as long.</div></div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>RBAC and data source inventory</strong> (every SharePoint site, OneDrive folder, Teams channel, or external system the agent needs)<div class="cl-why">A missing data source discovered in Phase 3 is a scope change that costs everyone.</div></div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Complexity classification</strong> (Agent Builder / simple vs. Copilot Studio / complex) and initial fee range<div class="cl-why">Misclassifying complexity means under-pricing the SOW and absorbing the overrun.</div></div></div>
+  </div>
+  <div class="checklist-block">
+    <h4>Check Templates Before Building <span class="sb">Microsoft Agent Store</span></h4>
+    <p style="font-size:.84rem;margin:0 0 8px;">Common SMB use cases are already templated in the Microsoft Agent Store and Copilot Studio. Check before scoping any custom build:</p>
+    <ul style="margin:0;padding-left:1.2rem;">
+      <li style="font-size:.84rem;margin-bottom:3px;">HR onboarding agent</li>
+      <li style="font-size:.84rem;margin-bottom:3px;">IT help desk / employee self-service agent</li>
+      <li style="font-size:.84rem;margin-bottom:3px;">Customer service assistant</li>
+      <li style="font-size:.84rem;margin-bottom:3px;">SharePoint site knowledge agent</li>
+      <li style="font-size:.84rem;margin-bottom:3px;">Meeting summary and follow-up agent</li>
+    </ul>
+    <div class="insight" style="margin-top:8px;"><strong>Template advantage:</strong> Starting from a template reduces Phase 3 build time by 30&#8211;50%. The savings go to your EBITDA, not the customer&#8217;s invoice.</div>
+  </div>
+  </div>
+  <div class="warn-box"><strong>Outcome-based agents &#8212; Phase 1 non-negotiable:</strong> If this engagement includes a Workflow Outcome Sprint (kicker on cycle time or deflection %), the process baseline must be documented before any agent code is written. Tab 6 applies: (1) capture baseline, (2) define counterfactual, (3) name counter-metric, (4) cap kicker at 10%/25% of base fee. None of these can be added retroactively.</div>
+</div>
+</div>
+
+<div class="phase-card">
+<div class="phase-header ph2"><div class="phase-num" style="background:rgba(255,255,255,.2);">2</div><div><div class="phase-title">Phase 2 &#8212; Design</div><div class="phase-subtitle">Included in build fee &middot; Weeks 2&#8211;4 &middot; 8&#8211;12 partner hours &middot; Output: customer-signed design specification</div></div></div>
+<div class="phase-body">
+  <p style="font-size:.88rem;margin:0 0 10px;"><strong style="color:var(--navy);">Partners who skip Design and go straight to Build report 40&#8211;60% more rework in the test phase.</strong> <span class="sb">CPB Playbook field data</span> Customer sign-off on the design specification is the scope fence that protects you when scope creep surfaces in Phase 3.</p>
+  <div class="two-col">
+  <div class="checklist-block">
+    <h4>Agent Builder vs. Copilot Studio <span class="sb">Microsoft Agent Builder Docs</span></h4>
+    <table class="rev" style="font-size:.78rem;">
+      <thead><tr><th>Use Agent Builder if&#8230;</th><th>Use Copilot Studio if&#8230;</th></tr></thead>
+      <tbody>
+        <tr><td>Knowledge-only, no external actions</td><td>Agent must take actions (create records, update CRM, send email)</td></tr>
+        <tr><td>SharePoint/OneDrive as sole data source</td><td>External connectors required (Salesforce, ServiceNow, etc.)</td></tr>
+        <tr><td>Users already hold M365 Copilot license</td><td>Autonomous capabilities needed beyond conversation</td></tr>
+        <tr><td>2&#8211;4 week build &middot; $3,500&#8211;$8,000</td><td>6&#8211;10 week build &middot; $12,000&#8211;$28,000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="checklist-block">
+    <h4>The Golden Prompt Test Set (Write in Phase 2) <span class="sb">Microsoft Agent Evaluation Checklist</span></h4>
+    <p style="font-size:.84rem;margin:0 0 6px;">Write 15&#8211;20 representative user questions with expected answers <em>before building anything</em>. These become:</p>
+    <ul style="margin:0;padding-left:1.2rem;">
+      <li style="font-size:.83rem;margin-bottom:3px;">The Phase 3 pass/fail acceptance criteria (target: &gt;90% pass rate)</li>
+      <li style="font-size:.83rem;margin-bottom:3px;">The monthly Phase 5 regression test suite in AgentOps</li>
+      <li style="font-size:.83rem;margin-bottom:3px;">The suggested starter prompts on the agent&#8217;s welcome screen</li>
+    </ul>
+    <div class="insight" style="margin-top:8px;"><strong>The discipline:</strong> If you cannot write 15 representative questions the agent should answer correctly, you don&#8217;t yet understand the use case well enough to build it.</div>
+  </div>
+  </div>
+  <div class="checklist-block">
+    <h4>ALM Environment Strategy <span class="sb">Microsoft Power Platform ALM</span></h4>
+    <p style="font-size:.84rem;margin:0 0 8px;">Minimum two environments: Development and Production. For regulated verticals, add a Test environment. This is the mechanism that lets you roll back a bad deployment without disrupting the customer&#8217;s operations.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div style="background:#d1fae5;border-radius:6px;padding:10px;text-align:center;"><div style="font-size:.78rem;font-weight:700;color:#065f46;">Development</div><div style="font-size:.75rem;color:#374151;margin-top:4px;">Build and test here. Makers work in unmanaged solution.</div></div>
+      <div style="background:#fef3c7;border-radius:6px;padding:10px;text-align:center;"><div style="font-size:.78rem;font-weight:700;color:#92400e;">Test (optional)</div><div style="font-size:.75rem;color:#374151;margin-top:4px;">Structured UAT with customer. Managed solution import from Dev.</div></div>
+      <div style="background:#ede9fe;border-radius:6px;padding:10px;text-align:center;"><div style="font-size:.78rem;font-weight:700;color:#4c1d95;">Production</div><div style="font-size:.75rem;color:#374151;margin-top:4px;">Live environment. Managed solution. All gates must be green first.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="phase-card">
+<div class="phase-header ph3"><div class="phase-num" style="background:rgba(255,255,255,.2);">3</div><div><div class="phase-title">Phase 3 &#8212; Build &amp; Test</div><div class="phase-subtitle">Weeks 4&#8211;8 (simple) / 4&#8211;14 (complex) &middot; Gated by &gt;90% pass rate before Production deploy</div></div></div>
+<div class="phase-body">
+  <p style="font-size:.88rem;margin:0 0 10px;">The agent does not leave Development until the golden prompt test set achieves a &gt;90% pass rate. Below 90% means returning to Phase 2 instructions &#8212; not building more features. <span class="sb">Microsoft Copilot Studio Agent Evaluation Checklist</span></p>
+  <div class="two-col">
+  <div class="checklist-block">
+    <h4>Test Types to Run</h4>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Golden prompt test set</strong> &#8212; pass rate = (passed &#247; total) &times; 100. Document false positives and true negatives separately.</div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Edge case testing</strong> &#8212; graceful decline on out-of-scope requests is a pass. Hallucination is a fail requiring instruction tuning.</div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>RBAC validation</strong> &#8212; confirm the agent cannot surface content the calling user doesn&#8217;t have permission to access. Test explicitly, never assume.</div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>DLP policy validation</strong> &#8212; confirm Power Platform DLP policies block disallowed connectors before Production.</div></div>
+    <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Regression evaluation</strong> &#8212; re-run the full golden prompt set after every significant change to instructions or knowledge sources.</div></div>
+  </div>
+  <div class="checklist-block">
+    <h4>How to Interpret Pass Rate Results</h4>
+    <div style="background:#d1fae5;border-radius:4px;padding:8px;font-size:.82rem;margin-bottom:6px;"><strong style="color:#065f46;">&gt;90% &#8212; Proceed to Phase 4.</strong> Document version and date as the Phase 5 regression baseline.</div>
+    <div style="background:#fef3c7;border-radius:4px;padding:8px;font-size:.82rem;margin-bottom:6px;"><strong style="color:#92400e;">75&#8211;90% &#8212; Review false positives first.</strong> Usually an instruction tuning issue, not a knowledge problem. Adjust instructions before adding content.</div>
+    <div style="background:#fce7f3;border-radius:4px;padding:8px;font-size:.82rem;margin-bottom:6px;"><strong style="color:#9d174d;">&lt;75% &#8212; Return to Phase 2.</strong> The design specification has gaps. Building more features does not fix a design problem.</div>
+    <div class="insight"><strong>Hold the gate:</strong> Customers will pressure you to deploy early. &#8220;It&#8217;s good enough&#8221; at 70% becomes a support crisis and a damaged retainer within 60 days. The gate is binary.</div>
+  </div>
+  </div>
+</div>
+</div>
+
+<div class="phase-card">
+<div class="phase-header ph4"><div class="phase-num" style="background:rgba(255,255,255,.2);">4</div><div><div class="phase-title">Phase 4 &#8212; Deploy &amp; Train</div><div class="phase-subtitle">Included in build fee &middot; Weeks 8&#8211;10 (simple) &middot; Output: agent live in Production + AgentOps retainer signed</div></div></div>
+<div class="phase-body">
+  <p style="font-size:.88rem;margin:0 0 10px;">Phase 4 has one commercial objective: get the AgentOps retainer signed before the build fee is paid. This is the moment the customer is most engaged and most willing to commit. Waiting until the agent has been live for 30 days is too late &#8212; the urgency fades.</p>
+  <div class="checklist-block">
+    <h4>The AgentOps Runbook &#8212; The Deliverable That Justifies the Monthly Retainer</h4>
+    <p style="font-size:.84rem;margin:0 0 8px;">The runbook is what separates a partner who builds agents from a partner who manages agents. It makes AgentCare ($350/agent/month at Tier 2) tangible to a customer who might otherwise think of agent management as &#8220;checking that it still works.&#8221;</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Agent version history</strong> &#8212; every significant change logged with date, description, reason</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Known limitations</strong> &#8212; documented scope boundaries; what the agent will decline and why</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Escalation path</strong> &#8212; L1/L2/L3 triage protocol; who gets notified when the agent fails</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Monthly evaluation cadence</strong> &#8212; who runs the golden prompt set; threshold that triggers a tuning sprint</div></div>
+    </div>
+    <div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Knowledge source refresh schedule</strong> &#8212; which SharePoint libraries are reviewed monthly; how stale content is removed</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Connector health monitoring</strong> &#8212; how Power Automate flow failures surface; who owns the alert</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Rollback procedure</strong> &#8212; step-by-step reversal to prior managed solution version</div></div>
+      <div class="cl-item"><div class="cl-box"></div><div class="cl-text"><strong>Model update response protocol</strong> &#8212; when Microsoft updates Copilot Studio&#8217;s underlying model, who runs regression evaluation within what SLA</div></div>
+    </div>
+    </div>
+  </div>
+  <h4 style="margin-top:14px;">Choose the AgentOps Pricing Model at Phase 4 Handoff</h4>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="background:var(--navy);padding:10px 12px;"><div style="font-size:.78rem;font-weight:700;color:#a8ecf5;">Stacked Model</div><div style="font-size:.7rem;color:rgba(255,255,255,.6);">Default recommendation</div></div>
+      <div style="padding:10px 12px;font-size:.8rem;line-height:1.55;">Per-user base + AgentCare ($350/agent/mo) + Credit Wrap (30% Azure markup). ~$1,725/mo per 50-user Tier 2 customer. Transparent &#8212; best for customers who want to understand the invoice.</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="background:var(--teal);padding:10px 12px;"><div style="font-size:.78rem;font-weight:700;color:#fff;">Flat Model</div><div style="font-size:.7rem;color:rgba(255,255,255,.7);">Simpler sales motion</div></div>
+      <div style="padding:10px 12px;font-size:.8rem;line-height:1.55;">$20&#8211;$25/user/month all-in at Tier 2. One invoice line. Best for partners who prefer traditional MSP pricing and customers who want one number.</div>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="background:#4c1d95;padding:10px 12px;"><div style="font-size:.78rem;font-weight:700;color:#ddd6fe;">QBIC Overlay</div><div style="font-size:.7rem;color:rgba(255,255,255,.6);">Outcome-based</div></div>
+      <div style="padding:10px 12px;font-size:.8rem;line-height:1.55;">Quarterly Business Impact Contract. One board-level KPI with a kicker floor/ceiling. Best for Tier 3 customers where the AI program has executive visibility.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="phase-card">
+<div class="phase-header ph5"><div class="phase-num" style="background:rgba(255,255,255,.2);">5&#8635;</div><div><div class="phase-title">Phase 5 &#8212; AgentOps (Steady State)</div><div class="phase-subtitle">$350&#8211;$400/agent/month AgentCare &middot; ~55% gross margin &middot; Where the practice compounds</div></div></div>
+<div class="phase-body">
+  <p style="font-size:.88rem;margin:0 0 10px;">Every Phase 1&#8211;4 investment is the cost of acquiring an AgentCare retainer customer. At $350/agent/month with 55% gross margin, a partner with 10 customers each running 3 agents generates $126,000/year in AgentCare ARR at approximately $69,300 gross profit &#8212; before per-user base, Credit Wrap, or any project work.</p>
+  <div class="insight"><strong>The compounding logic:</strong> Each agent in steady state generates its own expansion revenue. The monthly evaluation run surfaces intent clusters the agent cannot currently handle &#8212; each one is an enhancement sprint opportunity. Agents drift as business processes and Microsoft&#8217;s underlying models evolve. That drift is the structural justification for the retainer. <span class="sb">Microsoft Copilot Studio Agent Evaluation Checklist</span></div>
+  <table class="rev" style="margin-top:12px;">
+  <thead><tr><th>Cadence</th><th>Activity</th><th>Output</th><th>What It Signals to the Customer</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Monthly</strong></td><td>Golden prompt evaluation run</td><td>Pass rate vs. baseline; tuning tickets if &lt;5pp drop</td><td>&#8220;We catch drift before it affects your users&#8221;</td></tr>
+    <tr><td><strong>Monthly</strong></td><td>Knowledge source refresh</td><td>Stale content removed; new content indexed; connector configs verified</td><td>&#8220;The agent&#8217;s answers stay current as your business changes&#8221;</td></tr>
+    <tr><td><strong>Monthly</strong></td><td>Analytics MBR (Copilot Studio dashboard)</td><td>Session count, resolution rate, top intents, escalation rate, satisfaction</td><td>&#8220;You can see exactly what the agent is doing&#8221;</td></tr>
+    <tr><td><strong>Monthly</strong></td><td>AgentOps MBR with Business Champion</td><td>45-min review; enhancement backlog maintained</td><td>&#8220;You always know what comes next&#8221;</td></tr>
+    <tr><td><strong>Quarterly</strong></td><td>QBIC kicker validation (if applicable)</td><td>KPI delta vs. prior quarter; Executive Sponsor sign-off; kicker payment</td><td>&#8220;Your AI investment has a measured return&#8221;</td></tr>
+    <tr><td><strong>Quarterly</strong></td><td>Capability expansion review</td><td>New feature assessment; enhancement proposals scoped and priced</td><td>&#8220;You are always at the leading edge&#8221;</td></tr>
+    <tr><td><strong>Annually</strong></td><td>Architecture review</td><td>Platform fit reassessment; ALM audit; DLP/RBAC check; next-agent identification</td><td>&#8220;Your AI infrastructure stays current and secure&#8221;</td></tr>
+  </tbody>
+  </table>
+</div>
+</div>
+
+<!-- ═══ SECTION 5: REAL EXAMPLES ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s5">5 &middot; Real Examples: What These Engagements Look Like in Practice</h2>
+
+<p>The following three case studies are publicly documented by Microsoft. Each is mapped to where it enters the Tab 8 and Tab 9 checklists, showing the specific engagement structure a partner would apply and where the revenue flows.</p>
+
+<!-- SCENARIO 1 -->
+<div class="scenario">
+<div class="sc-layout">
+  <div class="sc-left" style="background:linear-gradient(135deg,#003057,#005F6B);">
+    <div><div class="sc-badge">Legal Services &middot; ~50 Attorneys</div><div class="sc-title">Mike Morse Law Firm</div><div class="sc-chip">Tier 1 &#8594; Tier 2 progression</div><div class="sc-chip">LMS built in-house</div></div>
+    <div><div class="sc-kpi-val">Zero</div><div class="sc-kpi-lbl">outside vendors for LMS build</div></div>
+  </div>
+  <div class="sc-right">
+    <p>Michigan&#8217;s largest personal injury practice uses Copilot across its full operation &#8212; meeting summaries, document drafting, case law research, email correspondence, Excel analysis. Their most notable engagement: building an entire Learning Management System from scratch using Copilot, generating slides, graphics, training scripts, and process documentation with zero outside vendors.</p>
+    <p>This is the Tier 1 &#8594; Tier 2 progression in its most recognizable form. Broad Copilot adoption across the firm (Tab 8) surfaces one specific workflow that is repetitive, document-heavy, and benefits from a structured knowledge base: LMS content creation. That workflow becomes a Tab 9 agent build.</p>
+    <div class="quote-box">&#8220;Digital transformation is getting the mundane out of the way of human work.&#8221;<div class="quote-attr">John Georgatos, CIO &#8212; Mike Morse Law Firm &middot; Microsoft Customer Story</div></div>
+    <div class="map-box">
+      <div class="map-box-head"><div class="mh-eyebrow">Checklist Mapping</div><div class="mh-title">Where this customer enters Tabs 8 and 9, and what the partner does at each stage</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 3</span><div class="map-text"><strong>The LMS workflow surfaces as an agent build candidate at Day 45.</strong> The Delivery Lead asks: &#8220;Is there a repetitive task you wish Copilot would just handle automatically?&#8221; The CLO and training lead point to LMS content creation. Document the signal in the Gate 3 audit folder and carry it into the Gate 4 agent build proposal.</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 4</span><div class="map-text"><strong>The agent build proposal is presented alongside the Gate 4 ROI Report at Day 75.</strong> &#8220;Here is what Copilot did for your team. Here is what a dedicated LMS content agent could do &#8212; and here is what the scoping engagement looks like ($3,500&#8211;$6,000 Agent Discovery Workshop).&#8221; The ROI Report makes the upsell conversation feel natural, not transactional.</div></div>
+      <div class="map-row"><span class="map-tag mt-t9">Tab 9 &middot; Phase 1</span><div class="map-text"><strong>Agent Discovery Workshop scopes the LMS agent.</strong> The workflow map covers: how training content is currently created, which SharePoint libraries store materials, which roles generate content, and how often it needs updating. Output: SOW for a declarative agent build using Agent Builder, with SharePoint as the sole knowledge source.</div></div>
+      <div class="map-row"><span class="map-tag mt-rev">Revenue</span><div class="map-text"><strong>Agent Builder tier: $3,500&#8211;$8,000 build fee &#8594; $350/agent/month AgentCare.</strong> The AgentCare retainer is straightforward to justify: every time the firm updates its training curriculum, the agent&#8217;s knowledge source needs refreshing. The monthly evaluation run confirms the agent is producing accurate outputs for new hires. Both activities are documented in the AgentOps runbook.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCENARIO 2 -->
+<div class="scenario">
+<div class="sc-layout">
+  <div class="sc-left" style="background:linear-gradient(135deg,#004a58,#005F6B);">
+    <div><div class="sc-badge">Food &amp; Consumer Goods &middot; 50 Employees</div><div class="sc-title">Newman&#8217;s Own</div><div class="sc-chip">Tier 1 Activation Sprint</div><div class="sc-chip">Three-department Champion model</div></div>
+    <div><div class="sc-kpi-val">3&times;</div><div class="sc-kpi-lbl">marketing campaigns per month</div></div>
+  </div>
+  <div class="sc-right">
+    <p>50 employees competing against multinational brands. Newman&#8217;s Own adopted Copilot to run leaner across three departments simultaneously. The marketing team triples monthly campaign output &#8212; briefs that took three hours now complete in 30&#8211;60 minutes. The logistics team cut daily publication review from a full morning to 30 minutes. The Chief Legal Officer uses Copilot for research, citations, and contract cleanup.</p>
+    <p>This is a textbook Tab 8 Activation Sprint with one nuance new partners often miss: three distinct Champion profiles across three departments, each with a different use case and a different ROI story. The Gate 4 ROI Report here is unusually compelling &#8212; it quantifies productivity gains across three functions, making the Tier 1 retainer renewal nearly self-evident.</p>
+    <div class="map-box">
+      <div class="map-box-head"><div class="mh-eyebrow">Checklist Mapping</div><div class="mh-title">Where this customer enters Tabs 8 and 9, and what the partner does at each stage</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Pre-Gate</span><div class="map-text"><strong>Three Champions identified before Day 1 &#8212; one per department.</strong> The Pre-Gate Champion conversation with the CEO identifies three distinct profiles: Social Media Manager (Marketing), Operations Lead (Logistics), and CLO (Legal). Each gets a role-specific prompt library at Gate 1 kick-off. This multi-department setup is what makes the Gate 4 ROI Report quantifiable across three distinct win stories, not just one.</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 4</span><div class="map-text"><strong>Three-function ROI Report makes renewal self-evident.</strong> The Gate 4 report quantifies: (1) campaign brief time: 3 hrs &#8594; 30&#8211;60 min &times; campaign volume; (2) publication review: full morning &#8594; 30 min daily; (3) legal research: multi-hour &#8594; fraction. When the Executive Sponsor sees three independent productivity wins across three departments, the Tier 1 retainer renewal at Gate 5 is a formality.</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 3</span><div class="map-text"><strong>The CLO&#8217;s research workflow surfaces as an agent build candidate.</strong> &#8220;Research, citations, contract cleanup&#8221; is the pattern that becomes a Tab 9 engagement. A declarative agent with the firm&#8217;s contract templates, legal references, and regulatory documents as knowledge sources &#8212; scoped at Gate 3, proposed at Gate 4, and workshopped at Gate 5 as the follow-on engagement.</div></div>
+      <div class="map-row"><span class="map-tag mt-rev">Revenue</span><div class="map-text"><strong>Tier 1 retainer ($12/user/month) &#8594; Legal Research agent build &#8594; AgentCare.</strong> The follow-on Tab 9 engagement is a Legal Research agent: Agent Builder tier, $3,500&#8211;$8,000 build, $350/agent/month AgentCare for the monthly knowledge refresh as case law, contract templates, and regulatory references evolve.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCENARIO 3 -->
+<div class="scenario">
+<div class="sc-layout">
+  <div class="sc-left" style="background:linear-gradient(135deg,#005F6B,#1a8fa0);">
+    <div><div class="sc-badge">Life Sciences &middot; Regulated Vertical</div><div class="sc-title">Morula Health</div><div class="sc-chip">Workflow Outcome Sprint candidate</div><div class="sc-chip">Regulated content &middot; Cycle time KPI</div></div>
+    <div><div class="sc-kpi-val">Weeks &#8594; Days</div><div class="sc-kpi-lbl">content creation cycle time</div></div>
+  </div>
+  <div class="sc-right">
+    <p>A small UK life sciences agency producing scientific and regulatory content under strict accuracy requirements. Using Copilot in Word to summarize complex scientific data tables, content creation time dropped from weeks to days while accuracy standards were maintained. Employees shifted from formatting and summarization to analysis and quality review.</p>
+    <p>This is why regulated verticals are often the most compelling Workflow Outcome Sprint candidates: the counter-metric (accuracy and regulatory compliance) is inherently measurable, the regulatory environment controls for external variables making the counterfactual clean, and the KPI compression (weeks &#8594; days) is dramatic enough to justify a kicker conversation at Gate 5.</p>
+    <div class="map-box">
+      <div class="map-box-head"><div class="mh-eyebrow">Checklist Mapping</div><div class="mh-title">Where this customer enters Tabs 8 and 9, and what the partner does at each stage</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Pre-Gate</span><div class="map-text"><strong>Regulated vertical: Gate 1 must include compliance sign-off and sensitivity label configuration.</strong> Before provisioning any licenses, the Pre-Gate checklist requires: (1) cycle-time KPI captured with timestamp and measurement method; (2) counter-metric named &#8212; in this case, accuracy rate or regulatory rejection rate; (3) compliance reviewed and sign-off obtained; (4) sensitivity labels configured for scientific data libraries. All four items in the audit folder before Gate 1 begins.</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 3&#8211;4</span><div class="map-text"><strong>KPI delta measured at Gate 4 against the Day 0 baseline.</strong> If weeks-to-days compression is confirmed and the accuracy counter-metric has not degraded, the Workflow Outcome Sprint kicker is earnable at Gate 5. The Tab 6 kicker calculator applies: base fee &times; 25% ceiling = maximum kicker payment. Both the KPI delta and the counter-metric must be validated in writing by the Executive Sponsor. Never on self-reported data.</div></div>
+      <div class="map-row"><span class="map-tag mt-t8">Tab 8 &middot; Gate 5</span><div class="map-text"><strong>Gate 5 scopes the next 60-day Workflow Outcome Sprint.</strong> The sprint (from Tab 7) targets further cycle-time reduction with a fresh kicker: $7,500 base fee + floor ($750) / ceiling ($1,875). The sprint is signed at Gate 5 close-out and converts into Tier 1 MRR on Day 91. This is the Tab 7 Workflow Sprint model applied exactly as designed to a regulated content workflow.</div></div>
+      <div class="map-row"><span class="map-tag mt-rev">Revenue</span><div class="map-text"><strong>Activation Sprint &#8594; Workflow Outcome Sprint &#8594; Tier 1 MRR.</strong> Three-stage progression: Tab 8 Activation Sprint ($20,000 base, kicker at Gate 5) &#8594; Tab 7 Workflow Outcome Sprint ($7,500 base + kicker) &#8594; Tier 1 MRR retainer ($12/user/month). Each stage closes into the next with the MRR retainer already agreed before the current sprint ends. No cold start at any transition.</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SECTION 6: RACI ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s6">6 &middot; RACI &#8212; Accountability Reference for New Partners</h2>
+
+<div class="callout"><div class="callout-bar"></div><div class="callout-body">
+  <div class="section-label">What RACI Means</div>
+  <p style="margin:0;font-size:.9rem;line-height:1.65;"><strong>RACI</strong> stands for <strong>Responsible, Accountable, Consulted, and Informed</strong> &#8212; a standard project management framework for defining who does what in a multi-role engagement. In the CPB context, it functions as a deal-prep accountability map: for each role, it defines what they do, when they are needed, and what the absence of that role means for the engagement. <strong>Before any engagement starts, every named role in this table should have a specific person&#8217;s name next to it.</strong> If a role is unfilled and the no-go signal applies, do not start the engagement until it is resolved.</p>
+</div></div>
+
+<table class="raci">
+<thead><tr><th style="width:155px;">Role</th><th>Tab 8 &#8212; Activation Sprint</th><th>Tab 9 &#8212; Agent Build</th><th>No-Go Signal If Unfilled</th></tr></thead>
+<tbody>
+  <tr>
+    <td>Executive Sponsor<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Customer side)</span></td>
+    <td style="font-size:.82rem;">Signs outcome-based SOW. Validates KPI at Gate 5. Final authority on kicker payment.</td>
+    <td style="font-size:.82rem;">Signs agent build SOW. Validates Phase 4 AgentOps model. QBIC kicker authority.</td>
+    <td style="font-size:.8rem;color:#92400e;">Missing = do not price outcome-based. Project-only pricing is still viable without a sponsor.</td>
+  </tr>
+  <tr>
+    <td>Business Champion<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Customer side)</span></td>
+    <td style="font-size:.82rem;">Day-to-day counterpart. Clears internal friction. Present at every gate review. Seeds the community channel with wins.</td>
+    <td style="font-size:.82rem;">Primary UAT participant in Phase 3. Monthly AgentOps MBR contact. Identifies next-agent opportunities.</td>
+    <td style="font-size:.8rem;color:#92400e;">No Champion = no valid gate reviews = no reliable adoption data. Block the engagement until named.</td>
+  </tr>
+  <tr>
+    <td>IT / Security<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Customer side)</span></td>
+    <td style="font-size:.82rem;">Tenant access. Purview policies. RBAC. Conditional Access. Gate 1 sign-off required.</td>
+    <td style="font-size:.82rem;">Phase 2 RBAC and DLP design. Phase 3 guardrail validation. Phase 4 Production deploy approval.</td>
+    <td style="font-size:.8rem;color:#92400e;">Unresolved policy blocks = delay SOW. Regulated verticals: security must approve before Gate 1 closes.</td>
+  </tr>
+  <tr>
+    <td>Delivery Lead<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Partner side)</span></td>
+    <td style="font-size:.82rem;">Runs all five gates. Owns the shared audit folder. Kicker math. MRR conversion conversation at Gate 5.</td>
+    <td style="font-size:.82rem;">Runs all five phases. SOW scope fence. Phase 2 design sign-off. AgentOps runbook owner.</td>
+    <td style="font-size:.8rem;color:#92400e;">No named Delivery Lead = do not start. A single accountable person is non-negotiable.</td>
+  </tr>
+  <tr>
+    <td>AI Coach<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Partner side)</span></td>
+    <td style="font-size:.82rem;">Adoption clinics. Prompt library builds and updates. Community channel seeding. Low-adoption intervention. MBR delivery.</td>
+    <td style="font-size:.82rem;">Suggested starter prompt design. Golden prompt test authoring. End-user training in Phase 4. Monthly MBR.</td>
+    <td style="font-size:.8rem;color:#92400e;">Required for Tier 2/3. For Tier 1 only, the Delivery Lead can cover this role.</td>
+  </tr>
+  <tr>
+    <td>AI Specialist / L3<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Partner side)</span></td>
+    <td style="font-size:.82rem;">Technical readiness. SharePoint DAG reports. Sensitivity label configuration. Gate 1 tenant validation.</td>
+    <td style="font-size:.82rem;">Phase 2 architecture. Phase 3 build and test. ALM management. Phase 5 evaluation cadence.</td>
+    <td style="font-size:.8rem;color:#92400e;">Required for Tier 2/3 engagements. For Tier 1 only, ServiceSolv can co-deliver this role.</td>
+  </tr>
+  <tr>
+    <td>Data / Security Eng<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Partner side)</span></td>
+    <td style="font-size:.82rem;">Gate 1 oversharing remediation. Purview DLP policies. Sensitivity label configuration at scale.</td>
+    <td style="font-size:.82rem;">Phase 2 RBAC and DLP design. Phase 3 guardrail validation. Phase 5 connector health monitoring.</td>
+    <td style="font-size:.8rem;color:#92400e;">Required when agents touch sensitive data: HIPAA-regulated, financial records, legal documents.</td>
+  </tr>
+  <tr>
+    <td>vCIO / AE<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Partner side)</span></td>
+    <td style="font-size:.82rem;">Executive Sponsor relationship. Gate 5 kicker math and MRR conversion conversation. MCI application.</td>
+    <td style="font-size:.82rem;">Phase 1 SOW scoping. Phase 4 AgentOps model presentation. QBIC kicker conversations.</td>
+    <td style="font-size:.8rem;color:#92400e;">Must be present for any kicker conversation. The vCIO is the sponsor&#8217;s peer &#8212; not the technician&#8217;s.</td>
+  </tr>
+  <tr>
+    <td>TD SYNNEX ServiceSolv<span style="display:block;font-weight:400;color:#6b7280;font-size:.75rem;">(Distribution bench)</span></td>
+    <td style="font-size:.82rem;">Co-delivery of L1/L2 support during Tier 1 retainer until partner builds or hires an AI Specialist.</td>
+    <td style="font-size:.82rem;">Co-delivery of L1/L2 AgentOps support for any role the partner cannot staff internally.</td>
+    <td style="font-size:.8rem;color:#374151;">Not a no-go &#8212; ServiceSolv is the bridge until you build in-house AI delivery capacity.</td>
+  </tr>
+</tbody>
+</table>
+
+<!-- ═══ SECTION 7: FINANCIAL PICTURE ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="s7">7 &middot; What Executing Tabs 8 and 9 Builds Toward Financially</h2>
+<p>The following is the base-case Tab 2 model from the CPB Workbook &#8212; not a projection, but the designed output of running structured engagements consistently across a 12-month period.</p>
+
+<table class="rev">
+<thead><tr><th>Revenue Stream</th><th>Tab 2 Inputs (Base Case)</th><th>Annual ARR</th><th>Gross Margin</th><th>Gross Profit</th></tr></thead>
+<tbody>
+  <tr><td><strong>Tier 1 Retainer</strong></td><td>15 customers &middot; 50 users &middot; $12/user/mo</td><td class="num">$108,000</td><td class="num">48%</td><td class="num">$51,840</td></tr>
+  <tr><td><strong>Tier 2 Retainer</strong></td><td>5 customers &middot; 50 users &middot; $12/user/mo base</td><td class="num">$36,000</td><td class="num">45%</td><td class="num">$16,200</td></tr>
+  <tr><td><strong>AgentCare &#8212; Tier 2</strong></td><td>5 customers &middot; 3 agents &middot; $350/agent/mo</td><td class="num">$63,000</td><td class="num">55%</td><td class="num">$34,650</td></tr>
+  <tr><td><strong>Tier 3 Retainer</strong></td><td>1 customer &middot; 75 users &middot; $15/user/mo</td><td class="num">$13,500</td><td class="num">41%</td><td class="num">$5,535</td></tr>
+  <tr><td><strong>AgentCare &#8212; Tier 3</strong></td><td>1 customer &middot; 6 agents &middot; $400/agent/mo</td><td class="num">$28,800</td><td class="num">55%</td><td class="num">$15,840</td></tr>
+  <tr><td><strong>Agent 365 Overlay</strong></td><td>1 customer &middot; 75 users &middot; $10/user/mo</td><td class="num">$9,000</td><td class="num">50%</td><td class="num">$4,500</td></tr>
+  <tr><td><strong>Credit Wrap (T2+T3)</strong></td><td>6 customers &middot; $250&#8211;500 Azure/mo &middot; 30% markup</td><td class="num">$6,300</td><td class="num">85%</td><td class="num">$5,355</td></tr>
+  <tr style="background:#eef1f4;"><td colspan="2"><strong>Total Recurring Retainer ARR</strong></td><td class="num"><strong>$264,600</strong></td><td class="num">~50%</td><td class="num"><strong>$134,120</strong></td></tr>
+  <tr><td><strong>Copilot Readiness Assessments</strong></td><td>12/year &middot; $3,500 avg</td><td class="num">$42,000</td><td class="num">60%</td><td class="num">$25,200</td></tr>
+  <tr><td><strong>Agent Discovery Workshops</strong></td><td>8/year &middot; $4,500 avg</td><td class="num">$36,000</td><td class="num">60%</td><td class="num">$21,600</td></tr>
+  <tr><td><strong>Agent Builds (simple)</strong></td><td>12/year &middot; $6,500 avg</td><td class="num">$78,000</td><td class="num">35%</td><td class="num">$27,300</td></tr>
+  <tr><td><strong>Agent Builds (complex)</strong></td><td>3/year &middot; $18,000 avg</td><td class="num">$54,000</td><td class="num">28%</td><td class="num">$15,120</td></tr>
+  <tr><td><strong>MCI Reimbursements</strong><sup style="font-size:.7rem;color:#6b7280;">&Dagger;</sup></td><td>Conservative estimate &middot; submit at Gate 5</td><td class="num">$30,000</td><td class="num">100%</td><td class="num">$30,000</td></tr>
+  <tr style="background:#eef1f4;"><td colspan="2"><strong>Total Project Revenue</strong></td><td class="num"><strong>$240,000</strong></td><td class="num">~49%</td><td class="num"><strong>$119,220</strong></td></tr>
+  <tr style="background:var(--accent);"><td colspan="2"><strong style="color:var(--navy);">Total Copilot Practice Revenue</strong></td><td class="num"><strong style="color:var(--navy);">$504,600</strong></td><td class="num"><strong style="color:var(--navy);">~50%</strong></td><td class="num"><strong style="color:var(--navy);">$253,340</strong></td></tr>
+</tbody>
+</table>
+
+<div class="insight"><strong>The structural point:</strong> Every dollar in the retainer ARR column flows directly from executing Tabs 8 and 9 with discipline. Tab 8 Activation Sprint &#8594; Tier 1 MRR. Tab 9 Agent Build &#8594; AgentCare. Tab 8 Gate 3 agent signal &#8594; Agent Discovery Workshop. The project revenue (bottom half) funds retainer growth. Neither half works without the other &#8212; and neither works without the engagement structure.</div>
+
+<div style="font-size:.78rem;color:#6b7280;font-style:italic;margin:10px 0 0;padding:8px 12px;background:#fafbfc;border-left:2px solid #e5e7eb;border-radius:0 4px 4px 0;line-height:1.6;"><sup>&Dagger;</sup> MCI reimbursement figures reflect the Microsoft Commerce Incentives program as structured at time of writing. Program rates, eligibility criteria, and reimbursable activities change annually. Verify current terms with your TD SYNNEX rep or the <a href="https://partner.microsoft.com/en-us/membership/microsoft-commerce-incentives" target="_blank" style="color:#005F6B;">Microsoft Commerce Incentives guide</a> before modeling against live customer engagements.</div>
+
+<!-- ═══ REFERENCE LIST ═══ -->
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<h2 id="refs">Reference List</h2>
+<p style="font-size:.88rem;color:#6b7280;margin-bottom:14px;">All sources cited in this document. Click any link to access the primary source directly.</p>
+
+<ul class="ref-list">
+  <li><span class="ref-badge">Microsoft</span><strong>M365 Copilot Adoption Planning Checklist</strong> &#8212; Four-phase deployment model, Champion program, 30% threshold framework<br><a href="https://adoption.microsoft.com/en-us/copilot/essential-guide/plan/" target="_blank">adoption.microsoft.com/en-us/copilot/essential-guide/plan/</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>M365 Copilot for SMB</strong> &#8212; SMB Success Kit, flight crew framework, adoption resources<br><a href="https://adoption.microsoft.com/en-us/copilot/smb/" target="_blank">adoption.microsoft.com/en-us/copilot/smb/</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>M365 Agents Deployment Checklist</strong> &#8212; Admin roles, agent policies, ALM environment strategy, governance framework<br><a href="https://learn.microsoft.com/en-us/copilot/microsoft-365/agent-essentials/m365-agents-checklist" target="_blank">learn.microsoft.com/en-us/copilot/microsoft-365/agent-essentials/m365-agents-checklist</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>Copilot Studio Agent Development Lifecycle</strong> &#8212; The five-phase model (Discover &#8594; Experimentation &#8594; Build &#8594; Deploy &#8594; Steady State) that Tab 9 is built on<br><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/architecture/deployment-lifecycle" target="_blank">learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/architecture/deployment-lifecycle</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>Copilot Studio Agent Evaluation Checklist</strong> &#8212; Golden prompt methodology, &gt;90% pass rate standard, continuous evaluation framework<br><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/evaluation-checklist" target="_blank">learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/evaluation-checklist</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>SharePoint Advanced Management &#8212; Copilot Readiness</strong> &#8212; DAG reports, Site Access Reviews, RAC policy, oversharing remediation tools<br><a href="https://learn.microsoft.com/en-us/sharepoint/get-ready-copilot-sharepoint-advanced-management" target="_blank">learn.microsoft.com/en-us/sharepoint/get-ready-copilot-sharepoint-advanced-management</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>Secure &amp; Governed Data Foundation Deployment Blueprint</strong> &#8212; Phased oversharing remediation framework and Purview governance pre-flight<br><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/secure-govern-copilot-foundational-deployment-guidance" target="_blank">learn.microsoft.com/en-us/microsoft-365/copilot/secure-govern-copilot-foundational-deployment-guidance</a></li>
+  <li><span class="ref-badge">Microsoft</span><strong>Deploying M365 Copilot in Five Chapters (Inside Track)</strong> &#8212; Hero scenario framework, maturity model, champion engagement approach<br><a href="https://www.microsoft.com/insidetrack/blog/deploying-microsoft-365-copilot-in-five-chapters/" target="_blank">microsoft.com/insidetrack/blog/deploying-microsoft-365-copilot-in-five-chapters/</a></li>
+  <li><span class="ref-badge">Syskit</span><strong>Copilot Readiness Assessment Framework</strong> &#8212; Five-pillar permissions audit; oversharing as the highest pre-deployment risk<br><a href="https://www.syskit.com/blog/copilot-readiness-assessment/" target="_blank">syskit.com/blog/copilot-readiness-assessment/</a></li>
+  <li><span class="ref-badge">Orchestry</span><strong>M365 Copilot Readiness Checklist</strong> &#8212; ROT content risk framework; storage estate as the most-skipped readiness dimension<br><a href="https://www.orchestry.com/insight/microsoft-365-copilot-readiness-checklist" target="_blank">orchestry.com/insight/microsoft-365-copilot-readiness-checklist</a></li>
+  <li><span class="ref-badge">AvePoint</span><strong>MSP Copilot Technical Readiness Checklist</strong> &#8212; Four-step MSP AI preparation model for SMB clients<br><a href="https://www.avepoint.com/ebooks/msp-copilot-readiness-checklist" target="_blank">avepoint.com/ebooks/msp-copilot-readiness-checklist</a></li>
+  <li><span class="ref-badge">inforcer</span><strong>How to Assess Microsoft Copilot Readiness as an MSP</strong> &#8212; M365 utilization audit approach; security posture assessment framework<br><a href="https://www.inforcer.com/insights/how-to-assess-copilot-readiness" target="_blank">inforcer.com/insights/how-to-assess-copilot-readiness</a></li>
+  <li><span class="ref-badge">E2E Agentic Bridge</span><strong>Copilot Readiness Assessment &#8212; The Complete Checklist</strong> &#8212; Five-pillar permission hygiene framework before deployment<br><a href="https://e2eagenticbridge.com/blog/copilot-readiness-assessment-checklist" target="_blank">e2eagenticbridge.com/blog/copilot-readiness-assessment-checklist</a></li>
+</ul>
+
+
+<div class="back-toc"><a href="#toc">&#8593; Back to Contents</a></div>
+
+<div class="doc-footer">
+  <p><strong style="color:var(--navy);">Case Study Sources</strong></p>
+  <p>Mike Morse Law Firm, Newman&#8217;s Own, and Morula Health are publicly documented Microsoft customer stories. Links to Microsoft&#8217;s published case studies are available at <a href="https://customers.microsoft.com" target="_blank">customers.microsoft.com</a>.</p>
+  <p style="margin-top:10px;">TD SYNNEX &middot; Copilot Practice Builder &middot; Companion to cpb.html Playbook v9 &middot; For internal workshop and partner enablement use. All financial projections are illustrative. Substitute your actual rates and assumptions into Tabs 1 and 2 of the CPB Workbook.</p>
+</div>
+
+</body>
+</html>

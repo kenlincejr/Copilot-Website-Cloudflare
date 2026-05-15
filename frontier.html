@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M043WCF3JM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M043WCF3JM');
+</script>
+<!-- End Google Analytics -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Path to Frontier Partner</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADINGS
+   ═══════════════════════════════════════════════════════ */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+/* ═══════════════════════════════════════════════════════
+   TABLE OF CONTENTS
+   ═══════════════════════════════════════════════════════ */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  columns: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════
+   BACK TO TOC
+   ═══════════════════════════════════════════════════════ */
+.back-to-toc { text-align: right; margin: 12px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════
+   CALLOUTS
+   ═══════════════════════════════════════════════════════ */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: #f5ddb0;
+  border-left-color: #d97706;
+}
+.callout.dark {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+  color: var(--text);
+}
+.callout.dark .callout-title { color: var(--teal); }
+.callout.dark .callout-body { color: var(--text); }
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .85rem;
+  letter-spacing: .3px;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+
+/* ═══════════════════════════════════════════════════════
+   METRICS
+   ═══════════════════════════════════════════════════════ */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .8rem; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════════════════
+   BLOCKQUOTE
+   ═══════════════════════════════════════════════════════ */
+blockquote {
+  border-left: 4px solid var(--teal);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f5fbfc;
+  font-style: italic;
+  color: #374151;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .9rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td { border: 1px solid var(--border); padding: 11px 14px; vertical-align: top; }
+th {
+  background: var(--muted-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: .85rem;
+  border-left: 3px solid var(--teal);
+}
+tr:nth-child(even) td { background: #fafbfc; }
+
+/* ═══════════════════════════════════════════════════════
+   STAT BAR
+   ═══════════════════════════════════════════════════════ */
+.statbar {
+  background: var(--teal);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin: 18px 0;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.statbar .big { font-weight: 700; font-size: 1.4rem; white-space: nowrap; letter-spacing: -.3px; }
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════════
+   STAT RIBBON — 5-up single row
+   ═══════════════════════════════════════════════════════ */
+.stat-ribbon {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.stat-ribbon-item {
+  padding: 20px 18px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(odd) { background: #fff; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #004B87;
+  line-height: 1;
+  letter-spacing: -.5px;
+}
+.sr-l {
+  font-size: .82rem;
+  color: #374151;
+  line-height: 1.4;
+  margin-top: 4px;
+  flex: 1;
+}
+.sr-s {
+  font-size: .72rem;
+  color: #9ca3af;
+  margin-top: 2px;
+  letter-spacing: .01em;
+}
+@media (max-width: 800px) {
+  .stat-ribbon { grid-template-columns: repeat(3, 1fr); }
+  .stat-ribbon-item:nth-child(3) { border-right: none; }
+  .stat-ribbon-item:nth-child(4) { border-top-color: var(--border); border-top-width: 1px; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INVESTMENT CASE — Section 5 unified layout
+   ═══════════════════════════════════════════════════════ */
+.invest-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 22px 0;
+  box-shadow: var(--shadow-md);
+}
+.invest-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.invest-header-icon { font-size: 1rem; opacity: .75; }
+.invest-header-text {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+/* Cost vs Return two-column */
+.invest-cost-return {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+@media (max-width: 700px) { .invest-cost-return { grid-template-columns: 1fr; } }
+.invest-col {
+  padding: 22px 24px;
+  background: #fff;
+}
+.invest-col + .invest-col {
+  border-left: 1px solid var(--border);
+  background: #f3fbfc;
+}
+.invest-col-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  margin-bottom: 14px;
+}
+.invest-col:first-child .invest-col-label { color: #92400e; }
+.invest-col:last-child  .invest-col-label { color: var(--teal); }
+.invest-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .88rem;
+  gap: 12px;
+}
+.invest-line:last-child { border-bottom: none; }
+.invest-line-label { color: #374151; flex: 1; }
+.invest-line-val { font-weight: 700; color: var(--navy); white-space: nowrap; }
+.invest-col:last-child .invest-line-val { color: var(--teal); }
+
+/* Stats row inside invest panel */
+.invest-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 700px) { .invest-stats { grid-template-columns: 1fr; } }
+.invest-stat {
+  padding: 16px 20px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  background: var(--muted);
+}
+.invest-stat:last-child { border-right: none; }
+.invest-stat-k { font-size: 1.5rem; font-weight: 700; color: var(--navy); line-height: 1; }
+.invest-stat-l { font-size: .78rem; color: #374151; margin-top: 5px; line-height: 1.4; }
+
+/* Quote block inside invest panel */
+.invest-quote {
+  padding: 18px 24px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.invest-quote-bar {
+  width: 3px;
+  background: var(--teal);
+  border-radius: 2px;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+.invest-quote-text {
+  font-size: .9rem;
+  font-style: italic;
+  color: #374151;
+  line-height: 1.7;
+  flex: 1;
+}
+.invest-quote-attr {
+  font-size: .78rem;
+  color: #9ca3af;
+  font-style: normal;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* MCI incentive row */
+.invest-incentive {
+  padding: 18px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: center;
+}
+@media (max-width: 700px) { .invest-incentive { grid-template-columns: 1fr; } }
+.invest-incentive-big {
+  text-align: center;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+}
+@media (max-width: 700px) { .invest-incentive-big { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 14px; } }
+.invest-incentive-amount { font-size: 2rem; font-weight: 700; color: var(--teal); line-height: 1; }
+.invest-incentive-sub { font-size: .72rem; color: #6b7280; margin-top: 3px; }
+.invest-incentive-body { font-size: .88rem; color: #374151; line-height: 1.65; }
+.invest-incentive-body strong { color: var(--navy); }
+
+/* ═══════════════════════════════════════════════════════
+   HERO STATEMENT
+   ═══════════════════════════════════════════════════════ */
+.hero-statement {
+  background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* ═══════════════════════════════════════════════════════
+   CONTINUUM (You Are Here) — cleaned up
+   ═══════════════════════════════════════════════════════ */
+.continuum-wrap {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow-md);
+}
+.continuum-title {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.6);
+  margin-bottom: 20px;
+  text-align: center;
+}
+.continuum-track { display: flex; align-items: stretch; gap: 0; margin-bottom: 20px; overflow-x: auto; }
+.ct-stage { flex: 1; min-width: 130px; display: flex; flex-direction: column; align-items: center; position: relative; padding: 0 6px; }
+.ct-stage:not(:last-child)::after { content: '→'; position: absolute; right: -10px; top: 22px; font-size: 1.1rem; color: rgba(255,255,255,.4); font-weight: 700; z-index: 2; }
+.ct-badge { width: 44px; height: 44px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; margin-bottom: 8px; border: 1px solid rgba(255,255,255,.15); }
+.ct-label { font-size: .72rem; font-weight: 700; text-align: center; color: rgba(255,255,255,.85); line-height: 1.3; margin-bottom: 4px; }
+.ct-desc { font-size: .67rem; color: rgba(255,255,255,.55); text-align: center; line-height: 1.35; }
+.ct-stage.s-action .ct-badge  { background: #64748b; }
+.ct-stage.s-launch .ct-badge  { background: #0ea5e9; }
+.ct-stage.s-modern .ct-badge  { background: var(--teal-light); }
+.ct-stage.s-security .ct-badge{ background: #0f766e; }
+.ct-stage.s-copilot .ct-badge { background: #6d28d9; }
+.ct-stage.s-frontier .ct-badge{ background: #d97706; border-color: rgba(245,158,11,.5); }
+.ct-stage.s-frontier .ct-label{ color: #fde68a; }
+.continuum-legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; }
+.cl-item { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: rgba(255,255,255,.55); }
+.cl-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+.continuum-cta {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-top: 16px;
+  text-align: center;
+}
+.continuum-cta p { margin: 0; font-size: .88rem; color: rgba(255,255,255,.75); font-weight: 500; }
+.continuum-cta em { color: #fde68a; font-style: normal; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   TIER LADDER CARDS
+   ═══════════════════════════════════════════════════════ */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; }
+.tier-card .tc-body { padding: 20px 22px; background: #fff; border-top: none; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; }
+.tier-card .tc-name { font-weight: 700; font-size: .95rem; color: var(--navy); flex: 1; }
+.tier-card .tc-cost { font-size: .76rem; font-weight: 600; padding: 3px 10px; border-radius: 4px; white-space: nowrap; }
+.tier-card .tc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media(max-width: 640px) { .tier-card .tc-grid { grid-template-columns: 1fr; } }
+.tier-card .tc-col { border-radius: 6px; padding: 12px 14px; }
+.tier-card .tc-col-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.tier-card .tc-col-text { font-size: .86rem; line-height: 1.55; color: var(--text); }
+/* TD SYNNEX resource strip */
+.tc-resources {
+  background: var(--muted);
+  border-top: 2px solid var(--teal);
+  padding: 10px 16px;
+  margin-top: 8px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: .82rem;
+  color: #374151;
+  line-height: 1.6;
+}
+.tc-resources strong { color: var(--teal); font-weight: 700; }
+/* Stage colors */
+.t-action .tc-bar, .t-action .tc-num  { background: #64748b; }
+.t-action .tc-cost { background: #f1f5f9; color: #475569; }
+.t-action .tc-col.what { background: #f8fafc; } .t-action .tc-col.what .tc-col-label { color: #64748b; }
+.t-action .tc-col.get  { background: #f1f5f9; } .t-action .tc-col.get  .tc-col-label { color: #64748b; }
+.t-action .tc-col.next { background: #f8fafc; } .t-action .tc-col.next .tc-col-label { color: #64748b; }
+
+.t-launch .tc-bar, .t-launch .tc-num  { background: #0ea5e9; }
+.t-launch .tc-cost { background: #e0f2fe; color: #0369a1; }
+.t-launch .tc-col.what { background: #f0f9ff; } .t-launch .tc-col.what .tc-col-label { color: #0369a1; }
+.t-launch .tc-col.get  { background: #e0f2fe; } .t-launch .tc-col.get  .tc-col-label { color: #0369a1; }
+.t-launch .tc-col.next { background: #f0f9ff; } .t-launch .tc-col.next .tc-col-label { color: #0369a1; }
+
+.t-modern .tc-bar, .t-modern .tc-num  { background: var(--teal-light); }
+.t-modern .tc-cost { background: #e4f0f3; color: var(--teal); }
+.t-modern .tc-col.what { background: #f3fbfc; } .t-modern .tc-col.what .tc-col-label { color: var(--teal); }
+.t-modern .tc-col.get  { background: #e4f0f3; } .t-modern .tc-col.get  .tc-col-label { color: var(--teal); }
+.t-modern .tc-col.next { background: #f3fbfc; } .t-modern .tc-col.next .tc-col-label { color: var(--teal); }
+
+.t-security .tc-bar, .t-security .tc-num { background: #0f766e; }
+.t-security .tc-cost { background: #ccfbf1; color: #065f46; }
+.t-security .tc-col.what { background: #f0fdf4; } .t-security .tc-col.what .tc-col-label { color: #065f46; }
+.t-security .tc-col.get  { background: #ccfbf1; } .t-security .tc-col.get  .tc-col-label { color: #065f46; }
+.t-security .tc-col.next { background: #f0fdf4; } .t-security .tc-col.next .tc-col-label { color: #065f46; }
+
+.t-copilot .tc-bar, .t-copilot .tc-num { background: #6d28d9; }
+.t-copilot .tc-cost { background: #ede9fe; color: #5b21b6; }
+.t-copilot .tc-col.what { background: #f5f3ff; } .t-copilot .tc-col.what .tc-col-label { color: #5b21b6; }
+.t-copilot .tc-col.get  { background: #ede9fe; } .t-copilot .tc-col.get  .tc-col-label { color: #5b21b6; }
+.t-copilot .tc-col.next { background: #f5f3ff; } .t-copilot .tc-col.next .tc-col-label { color: #5b21b6; }
+
+.t-frontier .tc-bar, .t-frontier .tc-num { background: #d97706; }
+.t-frontier .tc-cost { background: #fef3c7; color: #92400e; }
+.t-frontier .tc-col.what { background: #fffbeb; } .t-frontier .tc-col.what .tc-col-label { color: #92400e; }
+.t-frontier .tc-col.get  { background: #fef3c7; } .t-frontier .tc-col.get  .tc-col-label { color: #92400e; }
+.t-frontier .tc-col.next { background: #fffbeb; } .t-frontier .tc-col.next .tc-col-label { color: #92400e; }
+
+/* ═══════════════════════════════════════════════════════
+   PCS SCORING BOXES
+   ═══════════════════════════════════════════════════════ */
+.pcs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 18px 0; }
+.pcs-box { border-radius: var(--radius); padding: 16px 18px; border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-sm); }
+.pb-cat { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+.pb-pts { font-size: 1.3rem; font-weight: 700; line-height: 1.1; margin-bottom: 8px; }
+.pb-desc { font-size: .84rem; line-height: 1.6; color: #374151; }
+.pcs-box.perf  { border-top: 3px solid #004B87; } .pcs-box.perf .pb-cat, .pcs-box.perf .pb-pts { color: #004B87; }
+.pcs-box.skill { border-top: 3px solid var(--teal); } .pcs-box.skill .pb-cat, .pcs-box.skill .pb-pts { color: var(--teal); }
+.pcs-box.usage { border-top: 3px solid #0f766e; } .pcs-box.usage .pb-cat, .pcs-box.usage .pb-pts { color: #0f766e; }
+.pcs-box.deploy{ border-top: 3px solid #d97706; } .pcs-box.deploy .pb-cat, .pcs-box.deploy .pb-pts { color: #d97706; }
+.pcs-total {
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pcs-total .pt-label { font-weight: 600; font-size: .9rem; }
+.pcs-total .pt-score { font-weight: 700; font-size: 1.5rem; }
+.pcs-total .pt-note  { font-size: .82rem; opacity: .8; }
+
+/* ═══════════════════════════════════════════════════════
+   CERT CARDS
+   ═══════════════════════════════════════════════════════ */
+.cert-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0; }
+.cert-card { border-radius: var(--radius); padding: 16px 18px; border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-sm); }
+.cert-card .cc-exam { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+.cert-card .cc-name { font-weight: 700; font-size: .92rem; color: var(--navy); margin-bottom: 6px; }
+.cert-card .cc-why  { font-size: .84rem; color: #374151; line-height: 1.55; }
+.cert-card.modern   { border-top: 3px solid var(--teal-light); } .cert-card.modern   .cc-exam { background: #e4f0f3; color: var(--teal); }
+.cert-card.security { border-top: 3px solid #0f766e; }           .cert-card.security .cc-exam { background: #f0fdf4; color: #065f46; }
+.cert-card.copilot  { border-top: 3px solid #6d28d9; }           .cert-card.copilot  .cc-exam { background: #ede9fe; color: #5b21b6; }
+
+/* ═══════════════════════════════════════════════════════
+   90-DAY PLAN
+   ═══════════════════════════════════════════════════════ */
+.plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 14px 0; }
+.plan-month { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.plan-month .pm-header { padding: 16px 18px; color: #fff; }
+.plan-month .pm-header .pm-num { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .75; margin-bottom: 4px; }
+.plan-month .pm-header .pm-title { font-weight: 700; font-size: .95rem; margin: 0; }
+.plan-month .pm-body { padding: 16px 18px; background: #fff; border-top: none; }
+.plan-month .pm-body ol { margin: 0; padding-left: 18px; }
+.plan-month .pm-body li { font-size: .88rem; line-height: 1.6; margin-bottom: 6px; color: var(--text); }
+.plan-month .pm-outcome { margin-top: 12px; padding: 9px 12px; border-radius: 6px; font-size: .84rem; font-weight: 600; line-height: 1.45; }
+.pm1 .pm-header { background: var(--teal-light); }    .pm1 .pm-outcome { background: #e4f0f3; color: var(--teal); }
+.pm2 .pm-header { background: #0f766e; }               .pm2 .pm-outcome { background: #f0fdf4; color: #065f46; }
+.pm3 .pm-header { background: #6d28d9; }               .pm3 .pm-outcome { background: #ede9fe; color: #5b21b6; }
+
+/* ═══════════════════════════════════════════════════════
+   PARTNER STORY (replaces dark navy treatment)
+   ═══════════════════════════════════════════════════════ */
+.partner-story {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 18px 22px;
+  margin: 18px 0;
+  background: #f8fcfd;
+  box-shadow: var(--shadow-sm);
+}
+.partner-story .ps-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.partner-story .ps-quote {
+  font-size: .95rem;
+  font-style: italic;
+  color: #374151;
+  line-height: 1.7;
+  margin: 0 0 10px;
+}
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+/* ═══════════════════════════════════════════════════════
+   SMB REALITY BANNER (replaces dark brown)
+   ═══════════════════════════════════════════════════════ */
+.smb-reality {
+  border: 1px solid var(--border);
+  border-left: 4px solid #d97706;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+  background: var(--warn);
+  box-shadow: var(--shadow-sm);
+}
+.smb-reality .sr-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+.smb-reality .sr-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.smb-reality .sr-body { font-size: .93rem; color: #374151; line-height: 1.65; }
+.smb-reality strong { color: var(--navy); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   FRONTIER BADGE REVEAL (replaces dark gold treatment)
+   ═══════════════════════════════════════════════════════ */
+.frontier-reveal {
+  border: 2px solid #d97706;
+  border-radius: var(--radius-lg);
+  padding: 30px 32px;
+  margin: 24px 0;
+  text-align: center;
+  background: #fffbf0;
+  box-shadow: var(--shadow-md);
+}
+.frontier-reveal .fr-icon { font-size: 2.6rem; margin-bottom: 10px; }
+.frontier-reveal .fr-badge {
+  display: inline-block;
+  background: #d97706;
+  color: #fff;
+  font-weight: 700;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  padding: 4px 14px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+.frontier-reveal .fr-title { font-size: 1.35rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; line-height: 1.35; }
+.frontier-reveal .fr-body { font-size: .93rem; color: #374151; line-height: 1.65; max-width: 680px; margin: 0 auto 16px; }
+.frontier-reveal .fr-reqs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 14px; }
+.frontier-reveal .fr-req {
+  background: #fff;
+  border: 1px solid #d97706;
+  color: #92400e;
+  font-size: .8rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SMB CHALLENGE CARDS
+   ═══════════════════════════════════════════════════════ */
+.challenge-grid { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.challenge-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.challenge-card .ch-top {
+  background: #fff8f8;
+  border-bottom: 1px solid #fecaca;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ch-badge {
+  background: var(--navy);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.ch-challenge { font-weight: 700; color: var(--navy); font-size: .95rem; line-height: 1.45; }
+.challenge-card .ch-bottom { display: grid; grid-template-columns: 1fr 1fr; border-top: none; }
+@media(max-width: 600px) { .challenge-card .ch-bottom { grid-template-columns: 1fr; } }
+.ch-reality { background: var(--accent); padding: 14px 16px; border-right: 1px solid var(--border); }
+.ch-path    { background: #f8fafc; padding: 14px 16px; }
+.ch-col-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 7px; }
+.ch-reality .ch-col-label { color: var(--teal); }
+.ch-path    .ch-col-label { color: #374151; }
+.ch-col-text { font-size: .86rem; line-height: 1.6; color: var(--text); }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
+  <div style="font-size:2.6rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">The Frontier Partner Playbook</span></div>
+  <div style="font-size:1.4rem;font-weight:600;color:#1a2330;margin-top:14px;">Your Path From Registered to Frontier Partner</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">Prepared by: <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong></div>
+</div>
+
+<!-- TOC -->
+<nav id="toc">
+<div class="toc">
+  <p class="toc-head">Table of Contents</p>
+  <ul>
+    <li><a href="#section-1">1. The Moment We Are In</a></li>
+    <li><a href="#section-2">2. What Is a Frontier Firm?</a></li>
+    <li><a href="#section-3">3. The "You Are Here" Continuum</a></li>
+    <li><a href="#section-4">4. The Full Tier Ladder: What You Get at Each Step</a></li>
+    <li><a href="#section-5">5. The Honest Investment Case</a></li>
+    <li><a href="#section-6">6. The PCS Scoring System Decoded</a></li>
+    <li><a href="#section-7">7. The Certification Roadmap</a></li>
+    <li><a href="#section-8">8. The Frontier Badge: What It Actually Takes</a></li>
+    <li><a href="#section-9">9. The SMB Reality: Where to Realistically Aim</a></li>
+    <li><a href="#section-10">10. The Revenue Model That Makes the Climb Worth It</a></li>
+    <li><a href="#section-11">11. The 90-Day Starter Plan</a></li>
+      <li><a href="#section-12">12. References &amp; Suggested Links</a></li>
+  </ul>
+</div>
+</nav>
+
+<!-- SECTION 1 -->
+<hr>
+<h2 id="section-1">1. The Moment We Are In</h2>
+
+<div class="hero-statement">
+  <p>The definition of a Microsoft partner is undergoing its most radical shift since the move from on-premises to the cloud. <em>The partners who adapt will own the AI era.</em> The ones who don't will be commoditized out of existence.</p>
+  <p class="hero-sub">This is not a prediction. It is already happening.</p>
+</div>
+
+<p>In 2026, the Microsoft AI Cloud Partner Program (MAICPP) is no longer about who can sell the most licenses or migrate the most email tenants. It is about who can <strong>deploy, secure, govern, and continuously optimize AI agents</strong> on behalf of their customers. Microsoft has drawn a hard line in the sand with the introduction of the Frontier Partner badge — a rigorous, multi-disciplinary designation that separates the transactional resellers from the true "Managed AgentOps Providers."</p>
+
+<div class="stat-ribbon">
+  <div class="stat-ribbon-item">
+    <div class="sr-k">$4.6T</div>
+    <div class="sr-l">Projected value of AI-driven productivity gains by 2030</div>
+    <div class="sr-s">IDC, 2025</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">68%</div>
+    <div class="sr-l">Of SMB customers say they want their IT partner to lead their AI strategy</div>
+    <div class="sr-s">Microsoft SMB Partner Survey, 2025</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">3×</div>
+    <div class="sr-l">Revenue premium earned by partners with AI specializations vs. transactional resellers</div>
+    <div class="sr-s">Forrester, 2025</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">$4,875</div>
+    <div class="sr-l">Annual cost of a Solutions Partner designation — the foundation of the entire journey</div>
+    <div class="sr-s">Microsoft Partner Center, 2026</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">95%</div>
+    <div class="sr-l">Of legacy Microsoft competency partners had NOT yet achieved a Solutions Partner designation as of FY25</div>
+    <div class="sr-s">TD SYNNEX Internal MAICPP Program Data, FY25</div>
+  </div>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">⚠️ The Window Is Open — But Not Forever</p>
+  <p class="callout-body">The Frontier Partner badge was introduced at Microsoft Ignite in November 2025. As of April 2026, only a small number of partners globally hold it. The early movers in your market who earn it first will have an insurmountable head start in co-sell priority, customer trust, and Microsoft-led deal flow. This is the window. It will not stay open indefinitely.</p>
+</div>
+
+<div class="callout" style="background:#e8f7f8;border-left:4px solid #005F6B;margin-top:1.2rem;">
+  <p class="callout-title">🏅 TD SYNNEX: Your Frontier Distributor</p>
+  <p class="callout-body">TD SYNNEX has officially achieved the <strong>Microsoft Frontier Distributor Designation</strong> — a recognition reserved for the most capable Microsoft distributors worldwide, validated across all ten TD SYNNEX CSP regions globally. This designation confirms that TD SYNNEX has demonstrated exceptional depth across support, security, channel enablement, advanced platform capabilities, and operational excellence. <strong>You are not navigating this journey alone.</strong> Your distributor has already been through the same rigorous audit process and has the validated platforms, services, and expertise to accelerate your path. Contact your TD SYNNEX Sales or Business Development representative to learn how to leverage this designation in your own customer conversations.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 2 -->
+<h2 id="section-2">2. What Is a Frontier Firm?</h2>
+
+<p>Microsoft&#8217;s 2025 Work Trend Index defines a Frontier Firm as a new class of organization &#8212; <strong>defined not by size or industry, but by how deeply AI is embedded into its operations and culture.</strong> Frontier Firms have fundamentally rewired their operations around an AI-first, human-led approach, combining AI agents and human ingenuity to scale innovation and impact. For a Microsoft partner, becoming a Frontier Partner means proving you can lead customers through this exact transformation.</p>
+
+<p style="font-size:.92rem;color:#374151;font-style:italic;margin:.2rem 0 .9rem;">Early Work Trend Index data shows Frontier Firms already outperform peers materially: 71% employee thriving rates vs. 37% globally, greater capacity for meaningful work, and more optimism about the future of work. <strong>The Frontier Firm isn&#8217;t a size &#8212; it&#8217;s a mindset.</strong></p>
+
+<div class="callout">
+  <p class="callout-title">🏢 The "Agent Boss" Framing</p>
+  <p class="callout-body">The Frontier Partner is no longer just the IT provider who manages the tenant. They are the <strong>strategic manager of the customer's digital workforce</strong> — the person who helps the business hire, train, secure, and optimize their AI agents. This elevates the partner from a cost center to a revenue-generating business advisor. It is the single most important reframe in this entire playbook.</p>
+</div>
+
+<p>For the SMB channel specifically, the Frontier Firm concept carries a distinct advantage that large global systems integrators cannot replicate. A 10-person MSP can deploy a Copilot Cowork workflow for a 50-person law firm in two weeks. Accenture cannot. The SMB partner's agility, proximity to the customer, and deep knowledge of their specific business processes is the competitive moat — but only if the partner has the credentials to back it up.</p>
+
+<div class="partner-story">
+  <p class="ps-label">💬 SMB Partner Voice — Microsoft Solutions Partner, Modern Work (15-Person MSP)</p>
+  <p class="ps-quote">"We used to compete on price. Now we compete on outcomes. The moment we earned our Solutions Partner designation and started leading with Copilot deployments, our average deal size tripled. The certification process forced us to build a real practice — not just resell licenses."</p>
+  <p class="ps-attr">— SMB Microsoft Partner, Solutions Partner for Modern Work, 2025</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 3 — YOU ARE HERE CONTINUUM -->
+<h2 id="section-3">3. The "You Are Here" Continuum</h2>
+
+<p>Before you can plan the journey, you need to know where you are standing. Use the continuum below to identify your current position in the MAICPP hierarchy, then read the corresponding section to understand exactly what your next move is.</p>
+
+<div class="continuum-wrap">
+  <p class="continuum-title">📍 Find Your Position — The MAICPP Partner Continuum</p>
+  <div class="continuum-track">
+    <div class="ct-stage s-action">
+      <div class="ct-badge">0</div>
+      <div class="ct-label">Action Pack / Registered</div>
+      <div class="ct-desc">Basic IUR access. No PCS score yet. Just getting started.</div>
+    </div>
+    <div class="ct-stage s-launch">
+      <div class="ct-badge">1</div>
+      <div class="ct-label">Partner Launch Benefits</div>
+      <div class="ct-desc">$700 Azure credits. Up to 5 users on 13 products. Building the foundation.</div>
+    </div>
+    <div class="ct-stage s-modern">
+      <div class="ct-badge">2</div>
+      <div class="ct-label">Solutions Partner: Modern Work or Security</div>
+      <div class="ct-desc">70+ PCS points in either solution area. Independent paths — pick the one that fits your practice first.</div>
+    </div>
+    <div class="ct-stage s-security">
+      <div class="ct-badge">3</div>
+      <div class="ct-label">Add Second Designation</div>
+      <div class="ct-desc">Earn the other designation (Modern Work or Security). Either one alone qualifies for Copilot Specialization — both strengthens the Frontier path.</div>
+    </div>
+    <div class="ct-stage s-copilot">
+      <div class="ct-badge">4</div>
+      <div class="ct-label">Copilot Specialization</div>
+      <div class="ct-desc">Proven AI deployments. Published customer evidence. Top marketplace placement.</div>
+    </div>
+    <div class="ct-stage s-frontier">
+      <div class="ct-badge">★</div>
+      <div class="ct-label">Frontier Partner Badge</div>
+      <div class="ct-desc">Elite tier. Multiple designations + specializations. Maximum co-sell priority.</div>
+    </div>
+  </div>
+  <div class="continuum-cta">
+    <p>Find the stage that describes your organization today. <em>Everything below that stage is your roadmap.</em> The sections that follow give you the exact requirements, certifications, and actions for each step forward.</p>
+  </div>
+</div>
+
+<div class="callout subtle">
+  <p class="callout-title">📊 How to Check Your Current PCS Score</p>
+  <p class="callout-body">Log in to <strong>Partner Center → Insights → Partner Capability Score</strong>. You will see your current score broken down by Performance, Skilling, and Customer Success for each solution area. This is your baseline. If you have never looked at this dashboard, that is your first action item — do it today.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 4 — TIER LADDER -->
+<h2 id="section-4">4. The Full Tier Ladder: What You Get at Each Step</h2>
+
+<p>Every step up the MAICPP ladder unlocks a materially better set of tools, benefits, and market access. The table below is not theoretical — these are the actual benefits available as of Q1 2026. The investment at each level is real, but so is the return.</p>
+
+<div class="tier-ladder">
+
+  <!-- Stage 0: Action Pack -->
+  <div class="tier-card t-action">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">0</div>
+        <div class="tc-name">Action Pack / Registered Partner</div>
+        <span class="tc-cost" style="background:#f1f5f9;color:#475569">~$475/yr</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text">Register in Partner Center. Purchase Action Pack. No PCS requirements.</div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text">5 users on M365 Business Premium, Defender P2, Power Apps. Basic Azure credits. Internal use only.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">Start tracking your PCS score. Assign certification paths. Associate your customers in Partner Center.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> <a href="https://www.tdsynnex.com/na/us/microsoftcloud/" target="_blank" style="color:#005F6B;">TD SYNNEX Microsoft Cloud Hub</a> &middot; New Partner Onboarding Guide (contact your Sales/BD rep) &middot; <a href="https://partner.microsoft.com" target="_blank" style="color:#005F6B;">Microsoft Partner Center enrollment</a> &middot; MAICPP Clinics — live webinars on PCS scoring &amp; program navigation (contact your Sales/BD rep) &middot; Partner Maturity Assessments: AI, Azure, Data &amp; Security baseline (contact your Sales/BD rep)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 1: Partner Launch -->
+  <div class="tier-card t-launch">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">1</div>
+        <div class="tc-name">Partner Launch Benefits</div>
+        <span class="tc-cost">$350/yr</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text">Active PartnerID enrolled in MAICPP. Purchase the Partner Launch Benefits package ($350/yr) in Partner Center. No PCS score or designation required — available to all registered partners from day one.</div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text">Up to 5 users on 13 Microsoft products including M365 Business Premium and Defender P2. <strong>$700 Azure credits</strong>. Entry-level technical advisory.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">Deploy the IUR products internally. Use Azure credits to build your first Copilot Studio demo environment. Start earning PCS points.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> <a href="https://www.tdsynnex.com/na/us/microsoftcloud/" target="_blank" style="color:#005F6B;">TD SYNNEX Microsoft Cloud Hub</a> &middot; TD SYNNEX AI Cloud Partner Program — Starter/Intermediate tier (contact your Sales/BD rep) &middot; Channel Academy: MAICPP Learning Plans &amp; Copilot Learner Journey (contact your Sales/BD rep) &middot; <a href="https://www.tdsynnex.com/na/us/advancedsolutions/learn/" target="_blank" style="color:#005F6B;">TD SYNNEX Learn: MS-102 exam prep</a> &middot; Cloud Labs: M365 &amp; Copilot hands-on lab environments (contact your Sales/BD rep) &middot; Partner Masters 90-Day Accelerator (contact your Sales/BD rep) &middot; <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;">TD SYNNEX Cloud Engineering &amp; Enablement Hub</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 2: Modern Work -->
+  <div class="tier-card t-modern">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">2</div>
+        <div class="tc-name">Solutions Partner: Modern Work</div>
+        <span class="tc-cost">$4,875/yr</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text"><strong>70+ PCS points in the Modern Work solution area</strong> — scored across three categories, each requiring a minimum threshold:<br><br><strong>Performance:</strong> Net new M365 customer adds and seat growth in the trailing 12 months.<br><strong>Skilling:</strong> Minimum 2 individuals certified at both intermediate and advanced levels. Primary cert: <em>MS-102: Microsoft 365 Certified: Enterprise Administrator Expert</em>. Supporting certs: MS-700 (Teams Administrator), MS-721, MS-900 also count.<br><strong>Customer Success:</strong> M365 monthly active usage and adoption metrics across your customer base.<br><br>No prerequisite designation required. Modern Work and Security are fully independent paths — you can pursue either one first.</div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text"><strong>50 users on M365 E5</strong>. 5 Microsoft 365 Copilot licenses. <strong>$4,500 Azure bulk credits</strong>. Teams Premium (30 users). Marketplace placement. Co-sell eligibility begins.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">Use the Copilot IUR licenses to build your internal AI practice. Begin the Security designation journey in parallel. Start collecting customer evidence for the Copilot Specialization.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> <a href="https://www.tdsynnex.com/na/us/microsoftcloud/modern-work/" target="_blank" style="color:#005F6B;">TD SYNNEX Modern Work Partner Hub</a> &middot; <a href="https://www.tdsynnex.com/na/us/advancedsolutions/learn/" target="_blank" style="color:#005F6B;">TD SYNNEX Learn: MS-102, MS-900, MS-700 exam prep</a> &middot; Channel Academy: Modern Work Learner Journey &amp; Certification Fast Track (contact your Sales/BD rep) &middot; Cloud Labs: M365 hands-on environments for Teams, SharePoint &amp; Exchange (contact your Sales/BD rep) &middot; Partner Maturity Assessment: Modern Work track — identify PCS gaps (contact your Sales/BD rep) &middot; <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;">TD SYNNEX Cloud Engineering &amp; Enablement Hub</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 3: Security -->
+  <div class="tier-card t-security">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">3</div>
+        <div class="tc-name">Solutions Partner: Security</div>
+        <span class="tc-cost">$4,875/yr (addl.)</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text"><strong>70+ PCS points in the Security solution area</strong> — scored across four categories (Security requires all four, not three):<br><br><strong>Performance:</strong> Net new security customer adds and Azure consumed revenue in trailing 12 months.<br><strong>Skilling:</strong> Minimum 2 individuals certified at intermediate and advanced levels. Key certs: <em>AZ-500</em> (Azure Security Engineer), <em>SC-200</em> (Security Operations Analyst), <em>SC-300</em> (Identity &amp; Access Administrator), <em>SC-401</em> (Information Protection).<br><strong>Customer Success:</strong> Defender and Purview deployment metrics across your customer base.<br><strong>Deployments:</strong> Proven, verifiable Defender + Purview deployments — this 4th category is unique to Security and is often the hardest to satisfy for partners without existing security practice depth.<br><br><em>No Modern Work prerequisite.</em> Security can be earned independently or in parallel.</div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text"><strong>$5,000 Security Copilot credits</strong> (via Azure). <strong>$9,000 Azure bulk credits</strong>. M365 E5 (50 users). Dual-designation status. Significantly elevated marketplace visibility.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">You now have the two foundational pillars. Apply for the Microsoft Copilot Specialization. Build and publish your first customer case study.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> <a href="https://www.tdsynnex.com/na/us/advancedsolutions/learn/" target="_blank" style="color:#005F6B;">TD SYNNEX Learn: AZ-500, SC-200, SC-300 exam prep</a> &middot; Cloud Labs: Azure, Defender &amp; Purview hands-on environments (contact your Sales/BD rep) &middot; Channel Academy: Security Learner Journey (contact your Sales/BD rep) &middot; Microsoft Coaches 1:1 Advisory — PCS gap analysis &amp; multi-designation planning (contact your Sales/BD rep) &middot; <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;">TD SYNNEX Cloud Engineering &amp; Enablement Hub</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 4: Copilot Specialization -->
+  <div class="tier-card t-copilot">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">4</div>
+        <div class="tc-name">Microsoft Copilot Specialization</div>
+        <span class="tc-cost">Audit fee applies</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text"><strong>Prerequisite designation:</strong> An active Solutions Partner designation in <em>Business Applications, Modern Work, or Security</em> — any one of the three qualifies. You do not need all three.<br><br><strong>Performance (both required):</strong><br>① 1,000 MAU growth of M365 Copilot in trailing 12 months (CPOR or CSP)<br>② 5 net new Copilot customers in trailing 12 months<br><br><strong>Skilling (all three required):</strong><br>① 5 people with <em>MS-102</em>: Microsoft 365 Enterprise Administrator Expert<br>② 5 people with <em>SC-401</em> (Information Protection) or <em>APL-4002</em> (Security &amp; Compliance for Copilot)<br>③ 5 people with <em>APL-7008</em>: Create Custom Agents with Microsoft Copilot Studio<br><br><strong>Customer references:</strong> 3 verifiable customer references — at least 1 must demonstrate transformation of business processes through agent implementation.<br><br><em>Note: The 1,000 MAU threshold is the most common blocker for SMB partners. Start accumulating CPOR associations now.</em></div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text">Top-tier marketplace prioritization for AI-related searches. Highest Microsoft seller alignment. Access to exclusive Copilot partner incentive programs. Specialization badge for marketing.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">Pursue the AI Apps on Azure and Data Security specializations. You are now one step from the Frontier badge — the final combination of designations and specializations.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> Copilot Campaign Framework — end-to-end GTM motion for Copilot adoption &amp; MAU accumulation (contact your Sales/BD rep) &middot; <a href="https://www.tdsynnex.com/na/ca/servicesolv/" target="_blank" style="color:#005F6B;">TD SYNNEX ServiceSolv™</a> — white-label Copilot deployment &amp; agent development &middot; Cloud Labs: Copilot Studio &amp; Azure AI Foundry environments (contact your Sales/BD rep) &middot; Channel Academy: Copilot Learner Journey &amp; Agentic AI Accelerator (contact your Sales/BD rep) &middot; Microsoft Coaches — specialization audit &amp; customer evidence strategy (contact your Sales/BD rep) &middot; TD SYNNEX AI Cloud Partner Program — Advanced tier (contact your Sales/BD rep) &middot; <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;">TD SYNNEX Cloud Engineering &amp; Enablement Hub</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stage 5: Frontier -->
+  <div class="tier-card t-frontier">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">★</div>
+        <div class="tc-name">Frontier Partner Badge</div>
+        <span class="tc-cost">Designation fees apply</span>
+      </div>
+      <div class="tc-grid">
+        <div class="tc-col what"><div class="tc-col-label">What You Need</div><div class="tc-col-text"><strong>Three Solutions Partner designations (all required):</strong><br>① Modern Work <em>or</em> Business Applications<br>② Security<br>③ Data &amp; AI (Infrastructure)<br><br><strong>Three specializations (all required):</strong><br>① Microsoft Copilot specialization<br>② AI Apps on Microsoft Azure specialization<br>③ Data Security specialization<br><br>Each specialization carries its own performance, skilling, and customer reference requirements on top of the underlying designation requirements. The Copilot specialization alone requires 1,000 MAU growth + 5 net new customers + 15 certified individuals across three cert tracks + 3 customer references with agent implementation.<br><br><em>This is not a checklist you complete in a quarter. The Frontier badge is the result of 12–24 months of deliberate practice-building across all three solution areas simultaneously.</em></div></div>
+        <div class="tc-col get"><div class="tc-col-label">What You Get</div><div class="tc-col-text">Absolute market differentiation. Exclusive Frontier Partner badge for all marketing. <strong>Highest priority in Microsoft co-sell motions.</strong> Early access to new AI programs. Elite recognition in the Microsoft ecosystem.</div></div>
+        <div class="tc-col next"><div class="tc-col-label">Your Next Move</div><div class="tc-col-text">You are a Frontier Partner. Now the focus shifts to maintaining the badge, deepening the practice, and building the recurring revenue engine that makes the investment permanent.</div></div>
+      </div>
+      <div style="background:var(--muted);border-top:2px solid #005F6B;padding:0.7rem 1.2rem;margin-top:0.5rem;border-radius:0 0 8px 8px;">
+        <span style="font-weight:700;color:#005F6B;font-size:0.85rem;">🔧 TD SYNNEX Resources for This Stage:</span>
+        <span style="font-size:0.85rem;color:#374150;"> TD SYNNEX AI Cloud Partner Program — Expert tier (contact your Sales/BD rep) &middot; Partner Masters 90-Day Accelerator — marketplace solutions, co-sell &amp; referral management (contact your Sales/BD rep) &middot; Microsoft Coaches — Frontier badge readiness audit &amp; specialization gap analysis (contact your Sales/BD rep) &middot; TD SYNNEX &amp; Microsoft Vendor Value Deck (contact your Sales/BD rep) &middot; <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;">TD SYNNEX Cloud Engineering &amp; Enablement Hub</a></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 5 — INVESTMENT CASE -->
+<h2 id="section-5">5. The Honest Investment Case</h2>
+
+<p>Let&rsquo;s be direct: the path to Frontier Partner requires a real investment of time, money, and organizational focus. It is not a side project. But the return on that investment — when executed correctly — is transformational for an SMB partner&rsquo;s business model.</p>
+
+<div class="invest-panel">
+
+  <!-- Header -->
+  <div class="invest-header">
+    <span class="invest-header-icon">💰</span>
+    <span class="invest-header-text">Solutions Partner for Modern Work — Cost vs. Return</span>
+  </div>
+
+  <!-- Cost vs Return -->
+  <div class="invest-cost-return">
+    <div class="invest-col">
+      <div class="invest-col-label">&#x1F4B8; What You Put In (Year 1)</div>
+      <div class="invest-line">
+        <span class="invest-line-label">Solutions Partner designation fee</span>
+        <span class="invest-line-val">$4,875/yr</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label">MS-102 &amp; SC-200 exams (2–3 engineers, ~$165/exam)</span>
+        <span class="invest-line-val">$990–$1,980</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label">Study time &amp; internal preparation</span>
+        <span class="invest-line-val">Varies</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label"><strong>Total estimated hard costs</strong></span>
+        <span class="invest-line-val">$6,000–$8,000</span>
+      </div>
+    </div>
+    <div class="invest-col">
+      <div class="invest-col-label">&#x1F4C8; What You Unlock (Annual Value)</div>
+      <div class="invest-line">
+        <span class="invest-line-label">Azure credits</span>
+        <span class="invest-line-val">$4,500</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label">50 M365 E5 IUR licenses (retail value)</span>
+        <span class="invest-line-val">~$27,000</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label">5 Copilot licenses (retail value)</span>
+        <span class="invest-line-val">~$1,500</span>
+      </div>
+      <div class="invest-line">
+        <span class="invest-line-label">Co-sell eligibility (single deal upside)</span>
+        <span class="invest-line-val">10× fee</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key outcome stats -->
+  <div class="invest-stats">
+    <div class="invest-stat">
+      <div class="invest-stat-k">71%</div>
+      <div class="invest-stat-l">Rise in Microsoft-related revenue for partners who earned designations after completing Azure &amp; Modern Work certifications</div>
+    </div>
+    <div class="invest-stat">
+      <div class="invest-stat-k">96%</div>
+      <div class="invest-stat-l">Year-over-year growth tracked by partners with Azure certifications specifically</div>
+    </div>
+    <div class="invest-stat">
+      <div class="invest-stat-k">51%</div>
+      <div class="invest-stat-l">Increase in Azure revenue for designation earners — measured outcomes, not projections</div>
+    </div>
+  </div>
+
+  <!-- Partner quote -->
+  <div class="invest-quote">
+    <div class="invest-quote-bar"></div>
+    <div>
+      <div class="invest-quote-text">&ldquo;We spent two years thinking the designation program was for the big guys. Then we actually looked at our PCS score and realized we were already at 52 points without even trying. Three certifications and two customer associations later, we crossed 70. The badge changed how Microsoft treats us in co-sell conversations — immediately.&rdquo;</div>
+      <div class="invest-quote-attr">— SMB Microsoft Partner, Solutions Partner for Modern Work &amp; Security (22-Person MSP), 2025</div>
+    </div>
+  </div>
+
+  <!-- MCI incentive math -->
+  <div class="invest-incentive">
+    <div class="invest-incentive-big">
+      <div class="invest-incentive-amount">$18,750</div>
+      <div class="invest-incentive-sub">estimated annual MCI earnings<br>on $500K M365 CSP revenue</div>
+    </div>
+    <div class="invest-incentive-body">
+      <strong>The MCI Incentive Math:</strong> Upon reaching Solutions Partner status, partners become eligible for the <strong>Microsoft Commerce Incentive (MCI)</strong> program. For M365 new commerce CSP indirect reseller billed revenue, the engagement incentive rate is <strong>3.75%</strong> with a <strong>60% rebate / 40% co-op</strong> earning split. A partner billing $500,000/year in M365 CSP revenue earns approximately $18,750 in combined rebate and co-op funds — funds that can be reinvested directly into marketing, demand generation, and further skilling. Designation achievement funds your next stage of growth.
+    </div>
+  </div>
+
+</div><!-- end .invest-panel -->
+
+<div class="callout subtle" style="margin-top:6px;">
+  <div class="callout-title">&#x1F4C8; The Compounding Effect</div>
+  <div class="callout-body">Each designation and specialization you earn does not just unlock benefits — it compounds your market position. A partner with Modern Work + Security + Copilot Specialization is not just &ldquo;three times better&rdquo; than a partner with one designation. They are in a fundamentally different category in the eyes of Microsoft sellers, enterprise procurement teams, and customers doing their research before a buying decision.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 6 — PCS SCORING -->
+<h2 id="section-6">6. The PCS Scoring System Decoded</h2>
+
+<p>The Partner Capability Score (PCS) is the 100-point system Microsoft uses to determine whether you qualify for a Solutions Partner designation. You need a <strong>minimum of 70 points</strong>, with at least one point in every individual metric. Here is exactly how the points break down for the Modern Work designation on the SMB track:</p>
+
+<div class="pcs-grid">
+  <div class="pcs-box perf">
+    <div class="pb-cat">Performance</div>
+    <div class="pb-pts">20 pts max</div>
+    <div class="pb-desc"><strong>Net Customer Adds.</strong> SMB track: 2 points per net-new customer tenant (11–300 paid licenses). Maximum 10 tenants = 20 points. Eligible via CSP Tier 1/2 or CPOR.</div>
+  </div>
+  <div class="pcs-box skill">
+    <div class="pb-cat">Skilling — Intermediate</div>
+    <div class="pb-pts">15 pts max</div>
+    <div class="pb-desc">Certified individuals with intermediate M365 certs (MS-102, MS-700, SC-300, etc.). Each person counts once regardless of how many certs they hold.</div>
+  </div>
+  <div class="pcs-box skill" style="background:#f3e8ff;border-color:#d8b4fe">
+    <div class="pb-cat" style="color:#7e22ce">Skilling — Advanced</div>
+    <div class="pb-pts" style="color:#7e22ce">10 pts max</div>
+    <div class="pb-desc">Certified individuals with the <strong>Enterprise Administrator Expert</strong> (MS-102 advanced track) or Teams Rooms Technical Assessment. At least one required.</div>
+  </div>
+  <div class="pcs-box usage">
+    <div class="pb-cat">Customer Success — Usage Growth</div>
+    <div class="pb-pts">30 pts max</div>
+    <div class="pb-desc">Growth in monthly active users across eligible workloads (Teams, Intune, Copilot, SharePoint, etc.) in your associated customer tenants over 12 months.</div>
+  </div>
+  <div class="pcs-box deploy">
+    <div class="pb-cat">Customer Success — Deployments</div>
+    <div class="pb-pts">25 pts max</div>
+    <div class="pb-desc">Net-new qualifying deployments in customer tenants. SMB track: 5 pts per CPOR deployment or 2.5 pts per CSP deployment. Maximum 5 CPOR or 10 CSP deployments.</div>
+  </div>
+</div>
+
+<div class="pcs-total">
+  <span class="pt-label">Total Available Points</span>
+  <span class="pt-score">100 pts</span>
+  <span class="pt-note">You need 70+ to qualify. You must have at least 1 point in every metric.</span>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">⚠️ The Most Common Failure Point</p>
+  <p class="callout-body">Most SMB partners who fail to reach 70 points are not failing on certifications — they are failing on <strong>customer associations</strong>. If your customers are not properly linked to your Partner ID in Partner Center (via CPOR or CSP association), you get zero credit for their usage growth and deployments. Auditing and fixing your customer associations is the single highest-leverage action you can take right now.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 7 — CERTIFICATIONS -->
+<h2 id="section-7">7. The Certification Roadmap</h2>
+
+<p>Certifications are the backbone of the Skilling category and a prerequisite for the Copilot Specialization. Here is the prioritized certification roadmap for an SMB partner building toward Frontier, organized by designation track.</p>
+
+<h3>Modern Work Track</h3>
+<div class="cert-grid">
+  <div class="cert-card modern">
+    <span class="cc-exam">MS-102</span>
+    <div class="cc-name">Microsoft 365 Administrator</div>
+    <div class="cc-why">The single most important cert for Modern Work. Counts as both Intermediate and Advanced (Expert track). Priority #1 for every engineer on your team.</div>
+  </div>
+  <div class="cert-card modern">
+    <span class="cc-exam">MS-700</span>
+    <div class="cc-name">Teams Administrator Associate</div>
+    <div class="cc-why">Intermediate cert. High value for partners with a Teams Phone or Teams Rooms practice. Counts toward Skilling points and demonstrates depth.</div>
+  </div>
+  <div class="cert-card modern">
+    <span class="cc-exam">MD-102</span>
+    <div class="cc-name">Endpoint Administrator Associate</div>
+    <div class="cc-why">Intermediate cert. Critical for partners managing Intune deployments. Intune is one of the highest-weighted workloads for Customer Success points.</div>
+  </div>
+</div>
+
+<h3>Security Track</h3>
+<div class="cert-grid">
+  <div class="cert-card security">
+    <span class="cc-exam">SC-200</span>
+    <div class="cc-name">Security Operations Analyst Associate</div>
+    <div class="cc-why">The foundational Security cert for partners deploying Microsoft Defender. Required for the Security designation and a prerequisite for the Data Security specialization.</div>
+  </div>
+  <div class="cert-card security">
+    <span class="cc-exam">SC-300</span>
+    <div class="cc-name">Identity and Access Administrator Associate</div>
+    <div class="cc-why">Entra ID P1/P2 deployments are a major source of Customer Success points in both Modern Work and Security. This cert validates the expertise to deliver them.</div>
+  </div>
+  <div class="cert-card security">
+    <span class="cc-exam">AZ-500</span>
+    <div class="cc-name">Azure Security Engineer Associate</div>
+    <div class="cc-why">Required for the Security designation Enterprise path. For SMB partners, SC-200 and SC-300 are higher priority, but AZ-500 is needed as the practice matures.</div>
+  </div>
+</div>
+
+<h3>Copilot &amp; AI Track</h3>
+<div class="cert-grid">
+  <div class="cert-card copilot">
+    <span class="cc-exam">MS-4005</span>
+    <div class="cc-name">Microsoft 365 Copilot for Administrators</div>
+    <div class="cc-why">The primary Copilot-specific certification. Required for the Microsoft Copilot Specialization. Every partner building a Copilot practice needs at least one person certified here.</div>
+  </div>
+  <div class="cert-card copilot">
+    <span class="cc-exam">PL-200</span>
+    <div class="cc-name">Power Platform Functional Consultant</div>
+    <div class="cc-why">Copilot Studio is built on Power Platform. This cert validates the ability to build and deploy custom agents — the highest-margin service in the Copilot practice.</div>
+  </div>
+  <div class="cert-card copilot">
+    <span class="cc-exam">AI-102</span>
+    <div class="cc-name">Azure AI Engineer Associate</div>
+    <div class="cc-why">Required for the AI Apps on Azure specialization — one of the three specializations needed for the Frontier badge. Builds credibility for enterprise AI engagements.</div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 8 — FRONTIER BADGE -->
+<h2 id="section-8">8. The Frontier Badge: What It Actually Takes</h2>
+
+<div class="frontier-reveal">
+  <div class="fr-icon">🏆</div>
+  <div class="fr-badge">Frontier Partner Badge</div>
+  <div class="fr-title">The Pinnacle of the Microsoft AI Cloud Partner Program</div>
+  <div class="fr-body">The Frontier Partner badge recognizes organizations that lead AI transformation through an AI-first, human-led approach. It is not a single certification — it is the culmination of a multi-year investment in people, practice, and proven customer outcomes.</div>
+  <div class="fr-reqs">
+    <span class="fr-req">✓ Solutions Partner: Modern Work or Business Apps</span>
+    <span class="fr-req">✓ Solutions Partner: Security</span>
+    <span class="fr-req">✓ Solutions Partner: Data &amp; AI (Azure)</span>
+    <span class="fr-req">✓ Microsoft Copilot Specialization</span>
+    <span class="fr-req">✓ AI Apps on Microsoft Azure Specialization</span>
+    <span class="fr-req">✓ Data Security Specialization</span>
+  </div>
+</div>
+
+<p>As of early 2026, the partners who hold the Frontier badge are almost exclusively large global systems integrators and enterprise-focused partners — a handful of firms with hundreds of certified engineers and multi-year AI transformation practices behind them. The badge was designed to recognize the most advanced AI implementers in the Microsoft ecosystem, and the bar is intentionally high.</p>
+
+<div class="callout warn">
+  <p class="callout-title">⚠️ The Honest Reality for SMB Partners</p>
+  <p class="callout-body">Reaching the full Frontier badge requires a minimum of <strong>3 Solutions Partner designations</strong> and <strong>3 advanced specializations</strong>. For a 5–15 person SMB partner, this is a 2–3 year journey at minimum, and it requires a deliberate, sustained investment in headcount and certifications. <strong>This does not mean you should not start.</strong> It means you need to start now, and you need to be strategic about which milestones you target first.</p>
+</div>
+
+<div class="partner-story">
+  <p class="ps-label">💬 Community Perspective — LinkedIn, November 2025</p>
+  <p class="ps-quote">"The Copilot Specialisation requires 1,000 MAUs of Copilot with CPOR associations. That is not easy for a small partner. But the partners who figure out how to get there will have a defensible competitive position that nobody can take away from them."</p>
+  <p class="ps-attr">— Rodney Joyce, Microsoft Partner Community, November 2025</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 9 — SMB REALITY -->
+<h2 id="section-9">9. The SMB Reality: Where to Realistically Aim</h2>
+
+<p>Not every SMB partner will reach the Frontier badge — and that is okay. The goal is not to win a badge. The goal is to build a more profitable, more defensible, more differentiated practice. Here is a realistic framework for where SMB partners of different sizes should aim.</p>
+
+<div class="challenge-grid">
+
+  <div class="challenge-card">
+    <div class="ch-top">
+      <span class="ch-badge">1–5 People</span>
+      <span class="ch-challenge">The Solo Practitioner / Micro-MSP</span>
+    </div>
+    <div class="ch-bottom">
+      <div class="ch-reality"><div class="ch-col-label">Realistic Target</div><div class="ch-col-text">Solutions Partner: Modern Work (SMB track). This is achievable with 2–3 certified engineers and a focused customer association strategy. It unlocks the IUR benefits and co-sell eligibility that will fund the next stage of growth.</div></div>
+      <div class="ch-path"><div class="ch-col-label">The Path Forward</div><div class="ch-col-text">Focus every certification dollar on MS-102 and SC-200. Associate every customer in Partner Center. Deploy Copilot internally and to your top 3 clients. Build the evidence base for the Copilot Specialization over 12–18 months.</div></div>
+    </div>
+  </div>
+
+  <div class="challenge-card">
+    <div class="ch-top">
+      <span class="ch-badge">5–20 People</span>
+      <span class="ch-challenge">The Growing MSP</span>
+    </div>
+    <div class="ch-bottom">
+      <div class="ch-reality"><div class="ch-col-label">Realistic Target</div><div class="ch-col-text">Solutions Partner: Modern Work + Security. Two designations is a meaningful differentiator in the SMB market and unlocks $9,000+ in Azure credits, $5,000 in Security Copilot credits, and dual-designation marketplace placement.</div></div>
+      <div class="ch-path"><div class="ch-col-label">The Path Forward</div><div class="ch-col-text">Run the Modern Work and Security PCS tracks in parallel. Assign one engineer to each track. Build a "Data Security Assessment" service offering that drives both Security deployments and Copilot readiness. Target the Copilot Specialization in year two.</div></div>
+    </div>
+  </div>
+
+  <div class="challenge-card">
+    <div class="ch-top">
+      <span class="ch-badge">20–50 People</span>
+      <span class="ch-challenge">The Established Partner</span>
+    </div>
+    <div class="ch-bottom">
+      <div class="ch-reality"><div class="ch-col-label">Realistic Target</div><div class="ch-col-text">Modern Work + Security + Copilot Specialization. This combination puts you in the top tier of SMB-focused Microsoft partners and positions you for the Frontier badge within 18–24 months of starting the journey.</div></div>
+      <div class="ch-path"><div class="ch-col-label">The Path Forward</div><div class="ch-col-text">Dedicate a team of 3–4 engineers to the certification roadmap. Build a formal Copilot deployment practice with published case studies. Pursue the AI Apps on Azure specialization to complete the Frontier badge requirements.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="callout">
+  <p class="callout-title">🎯 The Most Important Insight in This Document</p>
+  <p class="callout-body">You do not need the Frontier badge to win in the SMB market. You need to be <strong>one step ahead of every other partner in your market</strong>. If your competitors are at Stage 0 (Action Pack), getting to Stage 2 (Modern Work) makes you the most credentialed AI partner in the room. The badge is the destination. The journey is where the competitive advantage is built.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 10 — MANAGED AGENTOPS / REVENUE MODEL -->
+<section id="section-10">
+  <h2>10. The Revenue Model That Makes the Climb Worth It</h2>
+
+  <div style="background:#f4f9fb;border-left:4px solid #003057;border-radius:0 6px 6px 0;padding:1rem 1.4rem;margin-bottom:1.4rem;font-size:.92rem;line-height:1.6;color:#333;">
+    <strong style="color:#003057;">A note on what follows:</strong> The revenue model described in this section — and particularly the concept of Managed AgentOps — represents one way of thinking about the AI services opportunity. These ideas are grounded in channel data and research, but they are not an official Microsoft program or framework, and no single approach is right for every partner business. Think of this as a mental model for structuring recurring AI services revenue, not a mandate. For the full breakdown — including a stage-by-stage customer scenario, revenue benchmarks, and the research behind the numbers — the <a href="https://www.lincezone.com/cpb.html" target="_blank" style="color:#005F6B;font-weight:700;">Copilot Partner Playbook</a> goes considerably deeper.
+  </div>
+
+  <p>Every tier on the partner ladder unlocks a higher level of capability — but capability only matters if it translates into revenue. The partners winning in the Microsoft channel right now aren't just climbing toward Frontier for the badge. They are building a fundamentally new business model underneath it: <strong>Managed AgentOps.</strong></p>
+
+  <!-- PLAYBOOK DEEP-DIVE CALLOUT — TOP OF SECTION -->
+  <div style="background:#eef6fa;border:1px solid #c5dde3;border-left:4px solid #005F6B;border-radius:0 8px 8px 0;padding:1.4rem 1.8rem;margin:1.4rem 0;display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap;">
+    <div style="font-size:2.4rem;line-height:1;">📖</div>
+    <div style="flex:1;min-width:220px;">
+      <div style="font-size:1rem;font-weight:600;color:#4dd9e8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem;">Full Deep Dive Available</div>
+      <div style="color:#374151;font-size:.93rem;line-height:1.5;">This section is the executive summary. The <a href="https://www.lincezone.com/cpb.html" target="_blank" style="color:#005F6B;font-weight:700;">Copilot Partner Playbook</a> is the operating manual — with the complete First Community Bank customer scenario, stage-by-stage revenue tables, AgentOps argument for each stage, and the full benchmark validation against Forrester and IDC research.</div>
+    </div>
+    <a href="https://www.lincezone.com/cpb.html" target="_blank" style="background:#4dd9e8;color:#003057;font-weight:600;font-size:.9rem;padding:.6rem 1.2rem;border-radius:6px;text-decoration:none;white-space:nowrap;flex-shrink:0;">Read the Playbook →</a>
+  </div>
+
+  <!-- $8.45 STAT BLOCK -->
+  <div style="background:#eef6fa;border:1px solid #c5dde3;border-left:4px solid #003057;border-radius:0 8px 8px 0;padding:1.5rem 2rem;margin:1.5rem 0;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;">
+    <div style="text-align:center;min-width:120px;">
+      <div style="font-size:3rem;font-weight:700;color:#4dd9e8;line-height:1;">$8.45</div>
+      <div style="font-size:.78rem;color:#6b7280;margin-top:.3rem;">per $1 of Copilot licensing</div>
+    </div>
+    <div style="flex:1;min-width:200px;border-left:2px solid #c5dde3;padding-left:1.5rem;">
+      <div style="font-size:1rem;font-weight:700;color:#003057;margin-bottom:.4rem;">The multiplier that changes everything.</div>
+      <div style="font-size:.9rem;color:#374151;line-height:1.55;">For every $1 of Microsoft Copilot licensing sold, service-focused partners generate <strong style="color:#005F6B;">$8.45 in their own services revenue</strong> — across security, adoption, agent builds, and managed operations. This is the economic foundation the entire revenue model is built on. <span style="font-style:italic;color:#8ab8c2;">Source: IDC #US52483124, commissioned by Microsoft</span></div>
+    </div>
+  </div>
+
+  <!-- TWO REVENUE STREAMS -->
+  <div class="callout warn" style="margin-bottom:1.2rem;">
+    <div class="callout-title">Two Revenue Streams — One Copilot Conversation</div>
+    <div class="callout-body">
+      <p style="margin:0 0 10px;">The Copilot opportunity produces two distinct revenue streams that <strong>stack, not compete.</strong></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;flex-wrap:wrap;">
+        <div style="background:#f3fbfc;border:1px solid #c5dde3;border-radius:6px;padding:1rem;">
+          <div style="font-weight:600;font-size:.95rem;margin-bottom:.4rem;">🔧 Stream 1 — Professional Services</div>
+          <div style="font-size:.88rem;line-height:1.55;">Security readiness, data governance, adoption workshops, custom agent builds. <strong>One-time or project-based.</strong> This is what most partners already know how to sell — and it funds the relationship that earns the retainer.</div>
+        </div>
+        <div style="background:#f3fbfc;border:1px solid #c5dde3;border-radius:6px;padding:1rem;">
+          <div style="font-weight:600;font-size:.95rem;margin-bottom:.4rem;">🔁 Stream 2 — Managed AgentOps</div>
+          <div style="font-size:.88rem;line-height:1.55;">The ongoing management layer of the customer's AI estate. Prompt tuning, data grounding, token governance, security posture, AI ROI reviews. <strong>Recurring, sticky, and unlike anything the channel has seen before.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-STAGE PROGRESSION -->
+  <h3>The Four-Stage Revenue Journey</h3>
+  <p>Partners don't start at Stage 4. They start where their customer is and build from there. Each stage adds a new layer of professional services revenue and expands the managed service retainer — compounding the relationship and the economics simultaneously.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin:1rem 0 1.5rem;flex-wrap:wrap;">
+
+    <!-- Stage 1 -->
+    <div style="border:1px solid #c5dde3;border-radius:8px;overflow:hidden;">
+      <div style="background:#003057;color:#fff;padding:.8rem 1.2rem;">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.8);">Stage 1</div>
+        <div style="font-weight:600;font-size:.95rem;margin-top:.2rem;">Foundation &amp; Adoption</div>
+      </div>
+      <div style="padding:.9rem 1rem;font-size:.85rem;line-height:1.55;">
+        <div style="font-weight:700;color:#003057;margin-bottom:.4rem;">What the partner builds:</div>
+        <p style="margin:0 0 8px;">Security baseline, data readiness, Copilot deployment. Prompt coaching, 1:few workshops, personal agent building sessions — users creating their own agents and sharing them with teammates.</p>
+        <div style="background:#eef2f7;border-left:3px solid #003057;padding:.5rem .7rem;border-radius:0 4px 4px 0;font-size:.82rem;">
+          <strong>Pro Services:</strong> $8K–$23K one-time<br>
+          <strong>Retainer:</strong> Tier 1 — $10–$15/user/mo
+        </div>
+        <div style="margin-top:.6rem;font-size:.8rem;color:#555;font-style:italic;">Seed stage. Not all engagements are profitable — but this is where ideas start flowing and the upgrade path begins.</div>
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div style="border:1px solid #c5dde3;border-radius:8px;overflow:hidden;">
+      <div style="background:#005F6B;color:#fff;padding:.7rem 1rem;">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.7);">Stage 2</div>
+        <div style="font-weight:600;font-size:.95rem;margin-top:.2rem;">First Agent Deployed</div>
+      </div>
+      <div style="padding:.9rem 1rem;font-size:.85rem;line-height:1.55;">
+        <div style="font-weight:700;color:#005F6B;margin-bottom:.4rem;">What the partner builds:</div>
+        <p style="margin:0 0 8px;">First Copilot Studio agent — published, governed, company-wide. Personal agents from Stage 1 become managed Studio agents. The partner owns the deployment and the ongoing management.</p>
+        <div style="background:#f3fbfc;border-left:3px solid #005F6B;padding:.5rem .7rem;border-radius:0 4px 4px 0;font-size:.82rem;">
+          <strong>Pro Services:</strong> $5K–$12K agent build<br>
+          <strong>Retainer:</strong> Tier 2 — $20–$25/user/mo
+        </div>
+        <div style="margin-top:.6rem;font-size:.8rem;color:#555;font-style:italic;">The retainer becomes defensible the moment the first agent goes live.</div>
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div style="border:2px solid #005073;border-radius:8px;overflow:hidden;">
+      <div style="background:#005073;color:#fff;padding:.7rem 1rem;">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.8);">Stage 3</div>
+        <div style="font-weight:600;font-size:.95rem;margin-top:.2rem;">Multi-Agent Operations</div>
+      </div>
+      <div style="padding:.9rem 1rem;font-size:.85rem;line-height:1.55;">
+        <div style="font-weight:700;color:#005073;margin-bottom:.4rem;">What the partner builds:</div>
+        <p style="margin:0 0 8px;">Multiple agents across departments. Compliance and governance layer. Agent 365 monitoring. The partner is now managing a live AI estate — not just a deployment.</p>
+        <div style="background:#f0f5fa;border-left:3px solid #005073;padding:.5rem .7rem;border-radius:0 4px 4px 0;font-size:.82rem;">
+          <strong>Pro Services:</strong> $10K–$20K/year<br>
+          <strong>Retainer:</strong> Tier 2 (Expanded) — upper range
+        </div>
+        <div style="margin-top:.6rem;font-size:.8rem;color:#555;font-style:italic;">Regulatory and compliance stickiness kicks in. This customer doesn't leave.</div>
+      </div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div style="border:2px solid #f59e0b;border-radius:8px;overflow:hidden;">
+      <div style="background:#f59e0b;color:#003057;padding:.7rem 1rem;">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.8);">Stage 4</div>
+        <div style="font-weight:600;font-size:.95rem;margin-top:.2rem;">AI Transformation</div>
+      </div>
+      <div style="padding:.9rem 1rem;font-size:.85rem;line-height:1.55;">
+        <div style="font-weight:700;color:#b45309;margin-bottom:.4rem;">What the partner builds:</div>
+        <p style="margin:0 0 8px;">Custom Azure AI solutions, full AI estate management, Power Platform integration. The partner is the customer's outsourced AI operations center.</p>
+        <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:.5rem .7rem;border-radius:0 4px 4px 0;font-size:.82rem;">
+          <strong>Pro Services:</strong> $20K–$50K+/year<br>
+          <strong>Retainer:</strong> Tier 3 — $45–$55/user/mo
+        </div>
+        <div style="margin-top:.6rem;font-size:.8rem;color:#555;font-style:italic;">Business continuity, not just governance. Token management, priority incident response, strategic AI advisory.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STICKINESS CALLOUT -->
+  <div class="callout">
+    <div class="callout-title">Why This Is Stickier Than Any MSP Contract You've Ever Had</div>
+    <div class="callout-body">Traditional MSP contracts are sticky because switching is painful. Managed AgentOps contracts are sticky because switching is <strong>impossible without losing the entire AI estate</strong> — every agent, every workflow, every custom prompt, every grounded knowledge base. The institutional knowledge lives in your practice. That's not a contract. That's a dependency.</div>
+  </div>
+
+  <!-- THREE TIERS COMPACT TABLE -->
+  <h3>The Three-Tier Service Model</h3>
+  <p>Structure Managed AgentOps as three tiers. Tiered packaging gives customers a clear entry point, gives you a natural upgrade conversation, and makes the value at each level transparent and defensible. <strong>Agent builds are always scoped and priced separately</strong> — the monthly retainer covers ongoing management, not new construction.</p>
+
+  <table style="width:100%;border-collapse:collapse;font-size:.9rem;margin:1rem 0 1.5rem;">
+    <thead>
+      <tr style="background:#003057;color:#fff;">
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;">Tier</th>
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;">Pricing</th>
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;">Typical Customer</th>
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;">Key Services</th>
+        <th style="padding:10px 14px;text-align:right;background:inherit;color:inherit;">Example MRR (50 users)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;color:#003057;">T1 — AI Essentials</td>
+        <td style="padding:9px 14px;">$10–$15/user/mo</td>
+        <td style="padding:9px 14px;">New to Copilot; no agents yet</td>
+        <td style="padding:9px 14px;">License mgmt, security baseline, adoption coaching, monthly usage report, QBR</td>
+        <td style="padding:9px 14px;text-align:right;font-weight:700;">~$600/mo (50 users @ $12)</td>
+      </tr>
+      <tr>
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">T2 — AI Operations</td>
+        <td style="padding:9px 14px;">$20–$25/user/mo</td>
+        <td style="padding:9px 14px;">1+ agents deployed; growing AI estate</td>
+        <td style="padding:9px 14px;">Everything in T1 + prompt tuning, data grounding, token governance, agent security audits, AI ROI reviews</td>
+        <td style="padding:9px 14px;text-align:right;font-weight:700;">~$1,000/mo (50 users @ $20)</td>
+      </tr>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;color:#b45309;">T3 — AI Transformation</td>
+        <td style="padding:9px 14px;">$45–$55/user/mo</td>
+        <td style="padding:9px 14px;">Full AI estate; Azure AI; strategic advisory</td>
+        <td style="padding:9px 14px;">Everything in T2 + full estate mgmt, dedicated AI Success Manager, Power Platform dev, Azure AI Foundry, priority incident response</td>
+        <td style="padding:9px 14px;text-align:right;font-weight:700;">~$3,750/mo (75 users @ $50)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PRACTICE READINESS -->
+  <h3>Practice Readiness: Before You Sell Each Tier</h3>
+  <p>Most partners hit a wall not because the concept is wrong, but because they try to sell something they can't yet deliver. Here's what you need in place before selling each tier credibly:</p>
+
+  <table style="width:100%;border-collapse:collapse;font-size:.92rem;margin:1rem 0 1.5rem;">
+    <thead>
+      <tr style="background:#003057;color:#fff;">
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;width:18%;">Tier</th>
+        <th style="padding:10px 14px;text-align:left;background:inherit;color:inherit;">Minimum Requirements Before You Sell</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">Tier 1</td>
+        <td style="padding:9px 14px;">
+          <ul style="margin:0;padding-left:1.2rem;">
+            <li>At least one person with the <strong>Copilot Adoption Specialist certification</strong> (free, ~8 hours)</li>
+            <li>Your own internal Copilot deployment running for at least <strong>60 days</strong> — you cannot sell adoption you haven't lived</li>
+            <li>A standardized tenant security baseline (Purview labels, RBAC, Conditional Access) you can deploy repeatably</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">Tier 2</td>
+        <td style="padding:9px 14px;">
+          <ul style="margin:0;padding-left:1.2rem;">
+            <li>At least one <strong>Copilot Studio agent built and running in a real customer environment</strong> (your own counts)</li>
+            <li>A documented prompt tuning process — even a simple one-page standard operating procedure</li>
+            <li>Access to the <strong>Copilot Dashboard</strong> and ability to produce a usage/adoption report from it</li>
+            <li>A <strong>scoped agent build proposal template</strong> with defined acceptance criteria — protects you from scope creep from day one</li>
+          </ul>
+        </td>
+      </tr>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">Tier 3</td>
+        <td style="padding:9px 14px;">
+          <ul style="margin:0;padding-left:1.2rem;">
+            <li>An <strong>AI Practice Lead role</strong> — either a dedicated person or a named senior technician whose primary focus is AI estate management</li>
+            <li>At least <strong>two Tier 2 customers</strong> you've managed for 6+ months</li>
+            <li>A documented QBR format with actual ROI metrics from real engagements</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- AI PRACTICE LEAD -->
+  <div class="callout subtle" style="margin-bottom:1.5rem;">
+    <div class="callout-title">The AI Practice Lead — Your Most Important Hire (or Promotion)</div>
+    <div class="callout-body">
+      <p style="margin:0 0 8px;">The Managed AgentOps model requires at least one person who thinks about AI differently than your traditional technicians. This isn't a help desk ticket-closer or a licensing specialist. It's someone who can sit across from a business owner, understand their workflow, identify where an agent creates leverage, and translate that into a governed, tunable deployment.</p>
+      <p style="margin:0 0 8px;">You might already have someone halfway there — a Power Platform developer with business acumen, or a senior account manager who's gone deep on Copilot. Find that person, invest in their AI specialization certifications (<strong>APL-7008, SC-401, and the Copilot Adoption Specialist credential</strong> are the right starting stack), and build the practice around them.</p>
+      <p style="margin:0;font-weight:700;">Without this person, Tier 1 is achievable. Tier 2 and Tier 3 are not.</p>
+    </div>
+  </div>
+
+  <!-- TIER LADDER CONNECTION -->
+  <h3>How the Partner Tier Ladder Connects to This Model</h3>
+  <p>Each rung of the Microsoft partner ladder directly unlocks a higher tier of Managed AgentOps revenue:</p>
+
+  <table style="width:100%;border-collapse:collapse;font-size:.9rem;margin:1rem 0 1.5rem;">
+    <thead>
+      <tr style="background:#003057;color:#fff;">
+        <th style="padding:9px 14px;text-align:left;background:inherit;color:inherit;">Partner Tier</th>
+        <th style="padding:9px 14px;text-align:left;background:inherit;color:inherit;">AgentOps Capability Unlocked</th>
+        <th style="padding:9px 14px;text-align:left;background:inherit;color:inherit;">Service Tier</th>
+        <th style="padding:9px 14px;text-align:left;background:inherit;color:inherit;">To Move Up</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;">Registered</td>
+        <td style="padding:9px 14px;">Basic Copilot deployment and license management</td>
+        <td style="padding:9px 14px;">Tier 1 (Essentials)</td>
+        <td style="padding:9px 14px;">Earn Solutions Partner designation; deploy 2 Tier 1 customers</td>
+      </tr>
+      <tr>
+        <td style="padding:9px 14px;font-weight:700;">Solutions Partner</td>
+        <td style="padding:9px 14px;">Agent builds, adoption programs, security baseline</td>
+        <td style="padding:9px 14px;">Tier 1–2</td>
+        <td style="padding:9px 14px;">Earn Copilot Specialization; build 3 production agents in customer environments</td>
+      </tr>
+      <tr style="background:#f9fafb;">
+        <td style="padding:9px 14px;font-weight:700;">Specialization</td>
+        <td style="padding:9px 14px;">Full AgentOps, Power Platform, governance programs</td>
+        <td style="padding:9px 14px;">Tier 2–3</td>
+        <td style="padding:9px 14px;">Hire or designate AI Practice Lead; complete 5 QBRs with documented ROI data</td>
+      </tr>
+      <tr style="background:#e6f3f5;">
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">Frontier Partner</td>
+        <td style="padding:9px 14px;">Full AI estate management, Azure AI custom solutions, strategic AI advisory</td>
+        <td style="padding:9px 14px;font-weight:700;color:#005F6B;">Tier 3 (Full)</td>
+        <td style="padding:9px 14px;">Publish customer case study; achieve all Frontier badge designation and specialization requirements</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- IMMEDIATE ACTION PLAN -->
+  <div class="callout" style="margin-bottom:1.2rem;">
+    <div class="callout-title">The Immediate Action Plan</div>
+    <div class="callout-body">
+      You don't need all three tiers built before you start. You need one thing: a named offer with a named price that your sales team can put in front of a customer this week.
+      <ul style="margin:8px 0 0;padding-left:1.2rem;">
+        <li><strong>Week 1:</strong> Audit your existing Copilot customers. Identify anyone already running at least one agent. These are your first Tier 2 targets.</li>
+        <li><strong>Week 2:</strong> Build a one-page "AI Health Check" offer — a paid assessment that inventories the customer's AI estate and produces a 90-day optimization roadmap. Price it at <strong>$1,500–$3,000</strong>. This converts discovery into revenue and positions the ongoing retainer as the natural next step.</li>
+        <li><strong>Week 3:</strong> Price and package Tier 1 ($10–$15/user/month). Put it in front of three customers. The goal is not perfection — it's your first Managed AgentOps contract.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CLOSING DEEP-DIVE LINK -->
+  <div class="callout subtle" style="margin-top:1.5rem;">
+    <div class="callout-title">📚 The Full Stage-by-Stage Breakdown Lives in the Playbook</div>
+    <div class="callout-body">The <a href="https://www.lincezone.com/cpb.html" target="_blank" style="font-weight:700;">Copilot Partner Playbook</a> walks through every stage of the revenue journey using a real community bank customer scenario — with specific revenue tables, AgentOps arguments for each stage, benchmark validation against Forrester and IDC research, and the compounding math that shows exactly how conservative these numbers are. If you're serious about building this practice, the playbook is where you go next.</div>
+  </div>
+
+  <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+  <hr>
+</section>
+
+
+<!-- SECTION 11 — 90-DAY PLAN -->
+<h2 id="section-11">11. The 90-Day Starter Plan</h2>
+
+<p>You cannot become a Frontier Partner overnight. But you can start the journey today. Here is the concrete, action-oriented 90-day plan for an SMB partner beginning from any stage. The goal of Month 1 is clarity. The goal of Month 2 is momentum. The goal of Month 3 is your first measurable milestone.</p>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:1.5rem 0;">
+
+  <!-- Month 1 -->
+  <div class="plan-month pm1" style="display:flex;flex-direction:column;">
+    <div class="pm-header">
+      <div class="pm-num">Month 1</div>
+      <div class="pm-title">Clarity &amp; Foundation</div>
+    </div>
+    <div class="pm-body" style="flex:1;">
+      <ol>
+        <li>Log into Partner Center. Pull your current PCS score. Screenshot it — this is your baseline.</li>
+        <li>Audit your customer associations. Ensure every active customer is linked in Partner Center.</li>
+        <li>Identify which certifications your team currently holds. Map the gaps to MS-102, AZ-500, SC-200, and MS-4005.</li>
+        <li>Assign one engineer to begin studying for MS-102 (Modern Work). Set a 45-day exam target.</li>
+        <li>Deploy Microsoft 365 Copilot internally for your entire team. You cannot sell what you do not use.</li>
+        <li>Identify your top 5 customers who are candidates for a Copilot readiness assessment.</li>
+      </ol>
+      <div class="pm-outcome">🎯 <strong>Target Outcome:</strong> Clear PCS baseline established. Customer associations fixed. Engineers actively studying. Internal Copilot usage underway.</div>
+    </div>
+  </div>
+
+  <!-- Month 2 -->
+  <div class="plan-month pm2" style="display:flex;flex-direction:column;">
+    <div class="pm-header">
+      <div class="pm-num">Month 2</div>
+      <div class="pm-title">Data Grounding &amp; Security Foundation</div>
+    </div>
+    <div class="pm-body" style="flex:1;">
+      <ol>
+        <li>Conduct "Data Security Assessments" for your top 5 client candidates. Identify SharePoint permission sprawl, missing sensitivity labels, and Copilot readiness gaps.</li>
+        <li>Propose and close at least 2 customers on M365 Business Premium upgrades. Use the July 1, 2026 pricing increase as urgency.</li>
+        <li>Deploy Purview DLP and basic sensitivity labels for at least 1 customer. Document it — this is your first customer success evidence.</li>
+        <li>Register for a TD SYNNEX MAICPP Clinic. Bring your PCS screenshot. Get a personalized gap analysis.</li>
+        <li>Have your first engineer sit the MS-102 exam. Pass or fail — the attempt counts toward your PCS skilling score.</li>
+        <li>Schedule a TD SYNNEX Microsoft Coach 1:1 advisory session to map your 6-month designation roadmap.</li>
+      </ol>
+      <div class="pm-outcome">🎯 <strong>Target Outcome:</strong> 2+ Business Premium upgrades closed. First security deployment documented. MS-102 attempt completed. Designation roadmap in hand.</div>
+    </div>
+  </div>
+
+  <!-- Month 3 -->
+  <div class="plan-month pm3" style="display:flex;flex-direction:column;background:linear-gradient(135deg,#f0f9fa 0%,#e8f4f8 100%);border-top:4px solid #005F6B;border-radius:8px;overflow:hidden;">
+    <div class="pm-header" style="background:linear-gradient(90deg,#005F6B,#005f6b);">
+      <div class="pm-num">Month 3</div>
+      <div class="pm-title">First Milestone &amp; Revenue Proof</div>
+    </div>
+    <div class="pm-body" style="flex:1;">
+      <ol>
+        <li>Conduct your first formal "Copilot Show and Tell" workshop for a customer. Use the TD SYNNEX Copilot Campaign Framework. No slides — live demo only.</li>
+        <li>Close your first paid Copilot deployment engagement. Even a 5-seat pilot with a $2,500 setup fee counts. Document the MAU data.</li>
+        <li>Submit your first customer success story to Microsoft Partner Center. You need 3 for the Copilot Specialization — start the clock now.</li>
+        <li>Have a second engineer begin studying for SC-200 or AZ-500. Assign a 60-day exam target.</li>
+        <li>Check your PCS score again. You should see movement in Performance (net customer adds) and Skilling (certifications). If not, escalate to your TD SYNNEX rep.</li>
+        <li>Set your 6-month goal: Solutions Partner for Modern Work designation. 70 PCS points. You are likely 20–30 points away. Map the remaining gap.</li>
+      </ol>
+      <div class="pm-outcome" style="background:#005F6B;color:white;border-radius:4px;padding:0.6rem 0.8rem;margin-top:0.8rem;font-size:0.85rem;">🎯 <strong>Target Outcome:</strong> First paid Copilot engagement closed. First customer reference submitted. PCS score moving. Clear line-of-sight to Modern Work designation.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Strong Close -->
+<div style="background:linear-gradient(135deg,#0a1e32 0%,#0d2a45 100%);border-left:6px solid #4dd9e8;border-radius:8px;padding:2rem 2.5rem;margin:2rem 0;text-align:center;">
+  <p style="font-size:1.6rem;font-weight:600;color:white;margin:0 0 0.5rem;line-height:1.3;">The partners who will own the SMB AI market in 2027<br><span style="color:#005F6B;">are making their first move right now.</span></p>
+  <p style="font-size:1rem;color:#a0c4cc;margin:0.8rem 0 1.2rem;max-width:700px;margin-left:auto;margin-right:auto;">Every designation you earn, every certification your team completes, every customer you move to Business Premium — it compounds. The PCS score is just the scoreboard. The real asset is the practice you are building.</p>
+  <div style="display:inline-flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;margin-top:0.5rem;">
+    <div style="background:#eef2f7;border:1px solid #c5dde3;border-radius:6px;padding:0.5rem 1.2rem;color:#003057;font-weight:600;font-size:.88rem;">📋 Pull your PCS score today</div>
+    <div style="background:#eef2f7;border:1px solid #c5dde3;border-radius:6px;padding:0.5rem 1.2rem;color:#003057;font-weight:600;font-size:.88rem;">📞 Call your TD SYNNEX rep this week</div>
+    <div style="background:#eef2f7;border:1px solid #c5dde3;border-radius:6px;padding:0.5rem 1.2rem;color:#003057;font-weight:600;font-size:.88rem;">🚀 Deploy Copilot internally before Month 1 ends</div>
+  </div>
+</div>
+
+<div class="callout warn" style="margin-top:1.5rem;">
+  <p class="callout-title">⚠️ Time-Sensitive: M365 Pricing Increases July 1, 2026</p>
+  <p class="callout-body">Microsoft announced on December 4, 2025 that commercial pricing for Microsoft 365 suite subscriptions will increase effective <strong>July 1, 2026</strong>, impacting M365 Business Basic, Standard, Apps for Business, E3/E5, F1/F3, and related products. For partners executing this 90-Day Plan, this creates a natural urgency window: <strong>conversations about upgrading customers to M365 Business Premium should happen now</strong> — before the price increase takes effect. Use the TD SYNNEX Partner Launch Kit (partner FAQ, sales guidance deck, Customer OFT) to drive these upsell and renewal conversations. Contact your TD SYNNEX Sales or BD representative for the current kit. Every Business Premium upgrade simultaneously boosts your Performance PCS points (net customer adds) and builds the Copilot MAU evidence you need for specialization.</p>
+</div>
+
+<div class="callout" style="background:#e8f7f8;border-left:4px solid #005F6B;margin-top:1rem;">
+  <p class="callout-title">📋 TD SYNNEX AI Cloud Partner Program — Your Full Enablement Stack</p>
+  <p class="callout-body">TD SYNNEX's AI Cloud Partner Program provides a tiered maturity framework that mirrors the MAICPP continuum exactly: <strong>Starter → Intermediate → Advanced → Expert</strong>. At every stage, the program provides the resources you need to advance — from Practice Builder and MAICPP Clinics at the Starter level, through Cloud Labs, Microsoft Coaches, and the Copilot Campaign Framework at the Advanced level, to the Partner Masters 90-Day Accelerator and Business Case Builder at the Expert level. <strong>Contact your TD SYNNEX Sales or Business Development representative</strong> to enroll and get a personalized roadmap aligned to your current PCS score and business goals.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+
+<section>
+<h2 id="section-12" style="color:#0a1e32;border-bottom:3px solid #005F6B;padding-bottom:0.4rem;">12. References &amp; Suggested Links</h2>
+
+<h3 style="color:#005F6B;font-size:1.1rem;margin:1.2rem 0 0.6rem;">Microsoft Official Resources</h3>
+<ul style="line-height:2;padding-left:1.2rem;color:#374150;">
+  <li><a href="https://partner.microsoft.com/en-US/partnership/compare-programs" target="_blank" style="color:#005F6B;">Microsoft AI Cloud Partner Program — Compare Programs</a> — Full tier comparison from Registered Partner to Frontier badge.</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/membership/partner-capability-score" target="_blank" style="color:#005F6B;">Partner Capability Score (PCS) — Microsoft Learn</a> — Official scoring methodology, metric definitions, and calculation details.</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-modern-work" target="_blank" style="color:#005F6B;">Solutions Partner for Modern Work — Requirements</a> — Exact PCS breakdown for the Modern Work designation.</li>
+  <li><a href="https://partner.microsoft.com/en-sg/partnership/specialization/microsoft-copilot" target="_blank" style="color:#005F6B;">Microsoft Copilot Specialization — Requirements</a> — Performance, skilling, and customer reference requirements for the Copilot Specialization.</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/benefits/benefits-at-a-glance" target="_blank" style="color:#005F6B;">Partner Benefits at a Glance — Microsoft Learn</a> — Complete benefit comparison across all MAICPP tiers.</li>
+  <li><a href="https://techcommunity.microsoft.com/blog/partnernews/stand-out-with-designations-specializations-and-badges-introduced-in-recent-mont/4504790" target="_blank" style="color:#005F6B;">Frontier Partner Badge Announcement — Microsoft Tech Community</a> — Official announcement of the Frontier Partner badge and qualification criteria.</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/skilling-hub" target="_blank" style="color:#005F6B;">Microsoft Partner Skilling Hub</a> — Centralized skilling platform for all Microsoft partner certification tracks.</li>
+</ul>
+
+<h3 style="color:#005F6B;font-size:1.1rem;margin:1.2rem 0 0.6rem;">TD SYNNEX — Public Partner Resources</h3>
+<div class="callout" style="background:#e8f7f8;border-left:4px solid #005F6B;margin-bottom:1rem;">
+  <p class="callout-title">🔧 TD SYNNEX Cloud Engineering &amp; Enablement Hub</p>
+  <p class="callout-body">All Cloud Engineering resources — Technical Walkthroughs (1-to-many webinars), Technical Workshops (1-to-1 personalized sessions with lab environments), Self-Paced Video Series, and the Weekly Cloud Technical Series — are available at: <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" target="_blank" style="color:#005F6B;font-weight:600;">sway.cloud.microsoft/kzANPMbInAuiIBGQ</a></p>
+</div>
+<ul style="line-height:2;padding-left:1.2rem;color:#374150;">
+  <li><a href="https://www.tdsynnex.com/na/us/microsoftcloud/" target="_blank" style="color:#005F6B;">TD SYNNEX Microsoft Cloud Practice Builder</a> — Award-winning self-serve portal with digital learning paths across all six MAICPP solution areas.</li>
+  <li><a href="https://www.tdsynnex.com/na/us/microsoftcloud/modern-work/" target="_blank" style="color:#005F6B;">TD SYNNEX Modern Work Practice Builder</a> — Dedicated Modern Work path including Copilot and Secure Productivity tracks.</li>
+  <li><a href="https://www.tdsynnex.com/na/us/microsoftcloud/azure/" target="_blank" style="color:#005F6B;">TD SYNNEX Azure Practice Builder</a> — Azure Infrastructure, Data &amp; AI, and Digital &amp; App Innovation paths.</li>
+  <li><a href="https://ecosystem.tdsynnex.com/practice-builder/channel/microsoft-onboarding-and-solutions/" target="_blank" style="color:#005F6B;">TD SYNNEX Practice Builder: Microsoft Onboarding Path</a> — Step-by-step onboarding for new Microsoft partners joining the TD SYNNEX ecosystem.</li>
+  <li><a href="https://www.tdsynnex.com/na/ca/servicesolv/" target="_blank" style="color:#005F6B;">TD SYNNEX ServiceSolv™</a> — White-label AI consulting resource for Copilot readiness assessments, deployment services, Copilot Studio agent development, and broader AI transformation engagements. Available to all TD SYNNEX Microsoft partners.</li>
+  <li><a href="https://www.tdsynnex.com/na/us/advancedsolutions/learn/" target="_blank" style="color:#005F6B;">TD SYNNEX Learn — Microsoft Certification Training</a> — TD SYNNEX certification training for MS-102, SC-200, AZ-500, MS-4005, and all priority Microsoft exams.</li>
+  <li><a href="https://news.tdsynnex.com/news/td-synnex-launches-practice-builder-solution-to-accelerate-microsoft-cloud-partner-program-advancement/" target="_blank" style="color:#005F6B;">TD SYNNEX Practice Builder Launch Announcement</a> — Background on the Practice Builder program and its alignment to MAICPP.</li>
+</ul>
+
+<h3 style="color:#005F6B;font-size:1.1rem;margin:1.2rem 0 0.6rem;">TD SYNNEX Internal Programs (Contact Your Sales/BD Rep)</h3>
+<p style="color:#374150;font-size:0.95rem;line-height:1.8;">The following TD SYNNEX programs are available to partners through your dedicated Sales or Business Development representative:</p>
+<ul style="line-height:2;padding-left:1.2rem;color:#374150;font-size:0.95rem;">
+  <li><strong>MAICPP Clinics</strong> — Live recurring webinar sessions covering PCS dashboard navigation, certification timelines, incentive programs, and live Q&amp;A with TD SYNNEX MAICPP subject-matter experts.</li>
+  <li><strong>Microsoft Coaches (1:1 Advisory)</strong> — Personalized one-on-one sessions with TD SYNNEX coaches covering MAICPP strategy, marketing, security enablement, and multi-quarter roadmap planning.</li>
+  <li><strong>TD SYNNEX Cloud Labs</strong> — Hands-on technical lab environments for building, testing, and demoing Azure, M365, Copilot Studio, and Security solutions.</li>
+  <li><strong>Partner Maturity Assessments</strong> — Structured assessments across AI, Azure, Data, and Security to identify capability gaps and the fastest path to 70 PCS points.</li>
+  <li><strong>Partner Masters 90-Day Accelerator</strong> — Consultative advisory program focused on achieving MAICPP designations, marketplace solutions, co-sell readiness, and incentive optimization.</li>
+  <li><strong>Copilot Campaign Framework</strong> — End-to-end sales and marketing campaign framework including on-site Copilot Inspiration Workshops and the Partner Launch Kit for M365 upsell conversations.</li>
+  <li><strong>TD SYNNEX Channel Academy</strong> — On-demand training platform with Copilot Learner Journey, MAICPP Learning Plans, Security Learner Journey, and Certification Fast Tracks for every Microsoft priority.</li>
+  <li><strong>AI Cloud Partner Program (SPF)</strong> — Tiered maturity program (Starter → Intermediate → Advanced → Expert) mirroring the MAICPP continuum, with targeted support at each stage.</li>
+</ul>
+
+<div class="callout" style="background:#0a1e32;color:white;border-left:4px solid #005F6B;margin-top:2rem;">
+  <p class="callout-title" style="color:#005F6B;">📞 Ready to Start? Your Next Step Is One Conversation Away.</p>
+  <p class="callout-body" style="color:rgba(255,255,255,.85);">Every resource in this playbook is available to you as a TD SYNNEX Microsoft partner. The fastest way to get started is to contact your <strong style="color:#fff;">TD SYNNEX Sales or Business Development representative</strong> and ask for a MAICPP readiness review. They will pull your current PCS score, identify your fastest path to the next tier, and connect you with the right programs for your stage. The window is open. The tools are ready. The only variable is you.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+</section>
+
+</main>
+</body>
+</html>

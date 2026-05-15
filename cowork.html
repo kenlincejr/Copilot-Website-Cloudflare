@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M043WCF3JM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M043WCF3JM');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Copilot Cowork Power User Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* HEADINGS */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+h4 {
+  color: var(--navy);
+  margin: 1.2rem 0 .3rem;
+  font-size: .95rem;
+  font-weight: 700;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+pre { background: #0b2238; color: #e4f0f3; padding: 16px 20px; border-radius: var(--radius); overflow-x: auto; font-size: .84rem; line-height: 1.55; margin: 14px 0; }
+pre code { background: transparent; color: inherit; padding: 0; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* TABLE OF CONTENTS */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  columns: 2;
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+/* BACK TO TOC */
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: #f5ddb0;
+  border-left-color: #d97706;
+}
+.callout.dark {
+  background: var(--navy);
+  border-color: var(--navy);
+  border-left-color: var(--teal-light);
+  color: #fff;
+}
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .85rem;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+/* METRICS */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .8rem; margin-top: 2px; }
+
+/* BLOCKQUOTE */
+blockquote {
+  border-left: 4px solid var(--teal);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f5fbfc;
+  font-style: italic;
+  color: #374151;
+}
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .9rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td { border: 1px solid var(--border); padding: 11px 14px; vertical-align: top; }
+th {
+  background: var(--muted-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: .85rem;
+  border-left: 3px solid var(--teal);
+}
+tr:nth-child(even) td { background: #fafbfc; }
+
+/* STAT BAR */
+.statbar {
+  background: var(--teal);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin: 18px 0;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.statbar .big { font-weight: 700; font-size: 1.4rem; white-space: nowrap; letter-spacing: -.3px; }
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+/* STAT RIBBON */
+.stat-ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.stat-ribbon-item {
+  padding: 20px 18px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) {
+  .stat-ribbon { grid-template-columns: repeat(2, 1fr); }
+  .stat-ribbon-item:nth-child(2) { border-right: none; }
+}
+
+/* HERO STATEMENT */
+.hero-statement {
+  background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* PARTNER STORY / NAMED QUOTE */
+.partner-story {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 18px 22px;
+  margin: 18px 0;
+  background: #f8fcfd;
+  box-shadow: var(--shadow-sm);
+}
+.partner-story .ps-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.partner-story .ps-quote { font-size: .95rem; font-style: italic; color: #374151; line-height: 1.7; margin: 0 0 10px; }
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+/* WARNING BANNER */
+.smb-reality {
+  border: 1px solid var(--border);
+  border-left: 4px solid #d97706;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+  background: var(--warn);
+  box-shadow: var(--shadow-sm);
+}
+.smb-reality .sr-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #92400e;
+  margin-bottom: 10px;
+}
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* TIER LADDER (habit loop / tactic groups) */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+
+/* Two-column compare */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 18px 0;
+}
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+.compare-col.wrong .cc-label { color: #92400e; }
+
+/* Inline tag */
+.tag {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--teal);
+  text-transform: uppercase;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
+  <div style="font-size:2.6rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">The Copilot Cowork Power User Guide</span></div>
+  <div style="font-size:1.4rem;font-weight:600;color:#1a2330;margin-top:14px;">From Chat to Delegation: Your A-to-Z Field Manual for Microsoft 365 Copilot Cowork</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">Prepared by: <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong> &nbsp;&middot;&nbsp; Last updated: April 22, 2026</div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">What Is Copilot Cowork?</a></li>
+      <li><a href="#section-2">The Big Idea: Cowork Delegates, Chat Answers</a></li>
+      <li><a href="#section-3">How It Works — The Mechanic That Changes Everything</a></li>
+      <li><a href="#section-4">The Models Under the Hood</a></li>
+      <li><a href="#section-5">The Power User Habit Loop</a></li>
+      <li><a href="#section-6">Your First Week: A Starter Plan</a></li>
+      <li><a href="#section-7">Cowork vs the Claude Family — What You Actually Get</a></li>
+      <li><a href="#section-8">Same Prompt, Different Answer — Why</a></li>
+      <li><a href="#section-9">Cowork and Code — An Honest Look</a></li>
+      <li><a href="#section-10">For the Existing Claude Power User</a></li>
+      <li><a href="#section-11">Six Signs You Should Restart</a></li>
+      <li><a href="#section-12">SKILL.md — Your Durable Memory</a></li>
+      <li><a href="#section-13">Scheduled Prompts — Recurring Work on Autopilot</a></li>
+      <li><a href="#section-14">Deep Research — Your Built-In Sub-Agent</a></li>
+      <li><a href="#section-15">Approvals and Trust</a></li>
+      <li><a href="#section-16">What Cowork Can&rsquo;t Do (Yet)</a></li>
+      <li><a href="#section-17">The 22-Tactic Reference Card</a></li>
+      <li><a href="#section-18">Troubleshooting &mdash; &ldquo;It Got Weird&rdquo; Field Guide</a></li>
+      <li><a href="#section-19">Further Reading &amp; Sources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero-statement">
+  <p>Copilot Cowork doesn&rsquo;t <em>chat</em> with you &mdash; it <em>goes off and does the work</em> while you&rsquo;re in a meeting, in a car, or asleep.</p>
+  <div class="hero-sub">But only if you use it like a colleague, not like a search box. This guide tells you how.</div>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-1">1. What Is Copilot Cowork?</h2>
+
+<p>Copilot Cowork is a new Microsoft 365 Copilot surface, announced on <strong>March 9, 2026</strong> by Charles Lamanna, that lets you delegate multi-step work to an AI agent instead of chatting with it turn-by-turn. It runs server-side inside your Microsoft 365 tenant, reads and writes across Outlook, Teams, Word, Excel, PowerPoint, SharePoint, and OneDrive through Microsoft Graph, and is explicitly powered by Anthropic&rsquo;s Claude models as a subprocessor.</p>
+
+<p>It is <em>not</em> a rename of Copilot Chat. Chat answers one question at a time. Cowork takes a task like &ldquo;review last week, clean up my calendar, draft regrets for conflicts, and block 3 hours of focus time Tuesday&rdquo; and actually does it &mdash; with an approval preview before anything hits your inbox or calendar.</p>
+
+<div class="stat-ribbon">
+  <div class="stat-ribbon-item">
+    <div class="sr-k">13</div>
+    <div class="sr-l">Built-in skills (Email, Calendar, Teams, Word, Excel, PowerPoint, SharePoint, OneDrive, Deep Research, and more)</div>
+    <div class="sr-s">Source: Microsoft Learn</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">20</div>
+    <div class="sr-l">Max custom <code>SKILL.md</code> files per user in <code>/Documents/Cowork/Skills/</code></div>
+    <div class="sr-s">Source: Microsoft Learn</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">250k</div>
+    <div class="sr-l">Characters per message input limit &mdash; attach whole folders of PDFs and contracts in a single turn</div>
+    <div class="sr-s">Source: Microsoft Learn</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">$99</div>
+    <div class="sr-l">Per user/month list price for M365 E7, the broad-availability SKU (Frontier preview today; GA May&nbsp;1,&nbsp;2026)</div>
+    <div class="sr-s">Source: GeekWire, Mar 9 2026</div>
+  </div>
+</div>
+
+<h3>What makes it distinct from Copilot Chat</h3>
+<ul>
+  <li><strong>Execution horizon.</strong> Chat runs in seconds. Cowork tasks can run for minutes or hours, survive a closed laptop, and auto-reconnect to pick up where they left off.</li>
+  <li><strong>Persistent task state.</strong> A Tasks view (List / Board / Scheduled) shows what Cowork has done, what&rsquo;s in progress, and what&rsquo;s waiting on you with a status of <em>Needs User Input</em>.</li>
+  <li><strong>Write actions with approval gates.</strong> Every send-email, post-to-Teams, create-meeting, or edit-file action presents a preview before executing. &ldquo;Don&rsquo;t ask again&rdquo; collapses repeat approvals inside a single conversation.</li>
+  <li><strong>Custom skills.</strong> Drop <code>SKILL.md</code> files into OneDrive to codify your team&rsquo;s playbooks. Cowork auto-discovers them at the start of each conversation.</li>
+  <li><strong>Scheduled recurrence.</strong> Natural-language scheduled prompts replace Power Automate for simple recurring work: &ldquo;Every morning at 9 AM send me a briefing of overnight email priorities and my first three meetings.&rdquo;</li>
+</ul>
+
+<div class="callout">
+  <div class="callout-title">Where to find it</div>
+  <div class="callout-body">
+    <p>Cowork lives at <strong>m365.cloud.microsoft</strong> and in the Microsoft 365 desktop apps for Windows and Mac. It is <strong>not</strong> available on mobile today. Your admin must be enrolled in the Microsoft Frontier program for Cowork to appear.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 2 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-2">2. The Big Idea: Cowork Delegates, Chat Answers</h2>
+
+<p>The single most important mindset shift for a new Cowork user is to stop thinking of it as a chatbot.</p>
+
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">Chat (the old model)</div>
+    <p><strong>You ask &rarr; it answers &rarr; you iterate.</strong></p>
+    <p>You stay in the loop on every turn. The conversation is the work. When you close the window, the work stops.</p>
+    <p>Best for quick questions, drafting a paragraph, summarizing a single file, or explaining a concept.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Cowork (the new model)</div>
+    <p><strong>You delegate &rarr; it works &rarr; you review.</strong></p>
+    <p>You describe the outcome. Cowork plans, executes, asks for clarification only when it genuinely can&rsquo;t proceed, and lands finished artifacts in OneDrive or your inbox.</p>
+    <p>Best for multi-step tasks: meeting prep, weekly reports, customer briefings, calendar cleanup, recurring briefings, research-then-draft jobs.</p>
+  </div>
+</div>
+
+<div class="partner-story">
+  <div class="ps-label">Practitioner perspective</div>
+  <p class="ps-quote">Cowork runs server-side &mdash; &ldquo;it keeps working even when I close my laptop&rdquo; &mdash; is the single biggest practical change vs chat-bound Copilot.</p>
+  <p class="ps-attr">&mdash; Pascal Brunner-Nikolla, Microsoft MVP, <em>Copilot Cowork first look</em></p>
+</div>
+
+<p>Practically, this means the unit of work is a <strong>Task</strong>, not a chat turn. You&rsquo;ll get the best results by writing prompts the way you&rsquo;d brief a colleague: state the goal, the constraints, the data sources, the deliverable, and where you want it saved.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-3">3. How It Works &mdash; The Mechanic That Changes Everything</h2>
+
+<p>If you learn only one thing from this guide, make it this. It explains 90% of the &ldquo;my AI got dumb&rdquo; experiences users report.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The one-sentence truth</div>
+  <div class="callout-body">
+    <p>Every time you press Enter, Cowork (and every Claude-backed product) <strong>re-reads your entire conversation from turn one</strong> before answering your new message. The model has no memory between turns. What you perceive as &ldquo;remembering&rdquo; is actually the client app re-sending the whole transcript every single time.</p>
+  </div>
+</div>
+
+<blockquote>
+  &ldquo;The Messages API is stateless, which means that you always send the full conversational history to the API.&rdquo;
+  <span class="attr">&mdash; Anthropic, Using the Messages API (platform.claude.com)</span>
+</blockquote>
+
+<h3>Four consequences that follow from that one fact</h3>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="k">~5&times;</div>
+    <div class="l">Cost per turn at 150k tokens vs 30k tokens, same prompt, on Sonnet 4.6</div>
+    <div class="s">SitePoint &middot; Mickiewicz, Mar 2026</div>
+  </div>
+  <div class="metric">
+    <div class="k">39%</div>
+    <div class="l">Average drop in task performance from single-turn to multi-turn across top LLMs</div>
+    <div class="s">Laban et al., Microsoft Research + Salesforce, 2025</div>
+  </div>
+  <div class="metric">
+    <div class="k">O(n&sup2;)</div>
+    <div class="l">How attention cost scales with conversation length &mdash; doubling a chat ~4&times; the attention work</div>
+    <div class="s">Vaswani et al., NeurIPS 2017</div>
+  </div>
+  <div class="metric">
+    <div class="k">~75%</div>
+    <div class="l">Context fill point at which Claude Code auto-compacts (the inferred default Cowork uses too)</div>
+    <div class="s">Anthropic, Apr 15 2026; Morph LLM</div>
+  </div>
+</div>
+
+<ol>
+  <li><strong>Cost grows super-linearly with length.</strong> Every new message re-prices every previous message.</li>
+  <li><strong>Latency tracks cost.</strong> The model re-processes the whole prefix each call. Prompt caching cuts the re-processing bill by 90% on cached prefixes, but the tokens still ride along.</li>
+  <li><strong>Quality degrades &mdash; &ldquo;context rot.&rdquo;</strong> Anthropic&rsquo;s own term: <em>&ldquo;model performance degrades as context grows because attention gets spread across more tokens, and older, irrelevant content starts to distract from the current task.&rdquo;</em></li>
+  <li><strong>Longer threads are worse on every axis.</strong> Cost, speed, <em>and</em> output quality &mdash; despite the intuition that &ldquo;keeping everything in one chat helps the agent remember.&rdquo;</li>
+</ol>
+
+<h3>The cost curve, made concrete</h3>
+
+<p>A realistic 20-turn Sonnet 4.6 conversation (500-token system prompt, ~600 tokens of user input per turn, ~1,200 tokens of assistant output per turn, no caching):</p>
+
+<table>
+  <thead>
+    <tr><th>Turn</th><th>Cumulative input tokens</th><th>Input cost (no cache)</th><th>With 90% cache read after turn 1</th><th>Savings</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>1,100</td><td>$0.0033</td><td>$0.0033</td><td>&mdash;</td></tr>
+    <tr><td>5</td><td>10,100</td><td>$0.0303</td><td>$0.0044</td><td>85%</td></tr>
+    <tr><td>10</td><td>22,600</td><td>$0.0678</td><td>$0.0083</td><td>88%</td></tr>
+    <tr><td>15</td><td>35,100</td><td>$0.1053</td><td>$0.0122</td><td>88%</td></tr>
+    <tr><td>20</td><td>47,600</td><td>$0.1428</td><td>$0.0162</td><td>89%</td></tr>
+  </tbody>
+</table>
+
+<p>Scaled to a marathon session: a single turn at 150k tokens costs roughly <strong>$0.45</strong> in input alone versus <strong>$0.09</strong> at 30k tokens &mdash; a 5&times; difference for the same one-line prompt (SitePoint, Mar 2026).</p>
+
+<div class="callout warn">
+  <div class="callout-title">What this means for you as a Cowork user</div>
+  <div class="callout-body">
+    <p>Every minute you spend piling more context into a single Task raises the cost, slows the response, and <em>lowers</em> the quality of what comes back. The fix is counter-intuitive but universal: <strong>new objective &rarr; new Task.</strong> Stable rules go in <code>SKILL.md</code>. Heavy data goes in an attached OneDrive file. Intermediate exploration goes to Deep Research. You don&rsquo;t lose memory by starting fresh &mdash; there was no memory to lose.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-4">4. The Models Under the Hood</h2>
+
+<p>Microsoft and Anthropic have both confirmed on the record that Anthropic Claude models power Cowork and the broader Microsoft 365 Copilot experience. You don&rsquo;t have to pick a model &mdash; Microsoft routes to the right one for the task &mdash; but it helps to know what&rsquo;s running.</p>
+
+<table>
+  <thead>
+    <tr><th>Model family</th><th>Best for</th><th>Context window</th><th>Tradeoff</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Claude Opus 4.5 / 4.6 / 4.7</strong></td><td>Hardest reasoning &mdash; deep research, multi-document synthesis, strategic drafts</td><td>200,000 tokens</td><td>Slowest and most expensive; overkill for quick tasks</td></tr>
+    <tr><td><strong>Claude Sonnet 4.5 / 4.6</strong></td><td>The workhorse &mdash; drafting, rewrites, code review, most Cowork tasks</td><td>200,000 tokens</td><td>The right default for most delegation</td></tr>
+    <tr><td><strong>Claude Haiku 4.5</strong></td><td>Fast, cheap, routine classification / summarization / lookups</td><td>200,000 tokens</td><td>Less depth &mdash; don&rsquo;t hand it strategy work</td></tr>
+    <tr><td><strong>OpenAI GPT-series &amp; Microsoft MAI</strong></td><td>Available in M365 Copilot; Microsoft chooses per task</td><td>Varies</td><td>Model routing is opaque &mdash; you don&rsquo;t always see which model answered</td></tr>
+  </tbody>
+</table>
+
+<div class="callout subtle">
+  <div class="callout-title">Regional note</div>
+  <div class="callout-body">
+    <p>In <strong>EU / EFTA / UK</strong> tenants, the Anthropic subprocessor is <strong>off by default</strong> and must be opted in by your admin. Cowork is <strong>not available</strong> in GCC, GCC High, DoD, or sovereign clouds. Source: IDM Magazine, Mar 26 2026; Microsoft Learn FAQ.</p>
+  </div>
+</div>
+
+<div class="partner-story">
+  <div class="ps-label">The honest critique</div>
+  <p class="ps-quote">&ldquo;Will it continue to use lower-end models or older models without telling you the way Copilot does?&rdquo;</p>
+  <p class="ps-attr">&mdash; Ethan Mollick (Wharton), reacting to the Cowork launch. Reported by GeekWire, Mar 9 2026.</p>
+</div>
+
+<p>Mollick&rsquo;s question is unresolved. Microsoft has not published a model-routing telemetry view. Treat Cowork as &ldquo;Claude-family powered, with Microsoft&rsquo;s discretion to downshift.&rdquo; If absolute model transparency matters for a use case (regulated drafting, legal review), document the output and the date and revalidate periodically.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 5 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-5">5. The Power User Habit Loop</h2>
+
+<p>Every power-user pattern across Claude Code, Claude.ai, and Copilot Cowork reduces to six moves. Internalize these and Cowork starts feeling like a colleague instead of a quirky chatbot.</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">1</div>
+        <div class="tc-name">New objective &rarr; new Task</div>
+      </div>
+      <p class="tc-desc">If the goal changes, the Task changes. Don&rsquo;t reuse yesterday&rsquo;s Task for today&rsquo;s question. Anthropic&rsquo;s own rule for Claude Code applies exactly: <em>&ldquo;when you start a new task, you should also start a new session.&rdquo;</em></p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">2</div>
+        <div class="tc-name">Stable rules &rarr; <code>SKILL.md</code>, not chat</div>
+      </div>
+      <p class="tc-desc">Tone, structure, never-do rules, section templates, output destinations &mdash; all belong in a <code>SKILL.md</code> file that Cowork auto-discovers. Instructions repeated in chat get lost during compaction; instructions in <code>SKILL.md</code> are re-loaded every session.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">3</div>
+        <div class="tc-name">Heavy data &rarr; OneDrive file, attached once</div>
+      </div>
+      <p class="tc-desc">The 250k-character message limit is plenty for a <em>pointer</em> to state. Attach the spec/report/dashboard at the start of the Task &mdash; it sits in the stable prefix and caches well. Drip-feeding file content across messages scatters it across the growing messages tail and is the worst of both worlds.</p>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">4</div>
+        <div class="tc-name">Intermediate exploration &rarr; Deep Research (the sub-agent)</div>
+      </div>
+      <p class="tc-desc">If you just need a <em>conclusion</em>, not a transcript, delegate it. Deep Research runs in its own fresh context and returns a summary &mdash; the intermediate tool noise never inflates the parent Task&rsquo;s context.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">5</div>
+        <div class="tc-name">Confidence drops &rarr; start fresh</div>
+      </div>
+      <p class="tc-desc">When Cowork repeats itself, forgets a constraint you set, hallucinates a file path, or slows down noticeably &mdash; stop and restart. Paste a short hand-written summary of what you&rsquo;d decided into the new Task. This is the single highest-leverage habit in the guide.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header">
+        <div class="tc-num">6</div>
+        <div class="tc-name">Approvals &rarr; batch with &ldquo;Don&rsquo;t ask again&rdquo;</div>
+      </div>
+      <p class="tc-desc">Every re-confirmation adds a turn to the conversation. If Cowork is going to send 11 similar emails, approve the first, choose &ldquo;don&rsquo;t ask again for this conversation,&rdquo; and let the rest flow. You retain oversight at the Task level.</p>
+    </div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 6 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-6">6. Your First Week: A Starter Plan</h2>
+
+<p>This plan is aimed at the Microsoft 365 professional who has &ldquo;used Copilot a few times.&rdquo; Do these in order; each builds the muscle for the next.</p>
+
+<h3>Day 1 &mdash; Your morning briefing</h3>
+<p>Open Cowork and say (in plain English):</p>
+<blockquote>
+  &ldquo;Every morning at 8:30 AM, send me a daily briefing covering (1) unread email from the last 16 hours that looks important or from anyone who reports to me, (2) my first three meetings with a one-line context per meeting pulled from prior emails, and (3) anything marked follow-up from yesterday. Save the output to my Cowork conversations and send a Teams message to myself with the highlights.&rdquo;
+</blockquote>
+<p>Check Tasks &rarr; Scheduled. You now have a durable recurring agent. This alone is worth the license.</p>
+
+<h3>Day 2 &mdash; Meeting prep</h3>
+<p>Pick tomorrow&rsquo;s most important meeting. Tell Cowork:</p>
+<blockquote>
+  &ldquo;For my [time] meeting with [attendees], put together a briefing packet: last six months of email with these people, any open opportunities from CRM if you have access, prior meeting notes, and three suggested talking points. Save as a Word doc in OneDrive at <code>/Meetings/[date]-[name].docx</code>.&rdquo;
+</blockquote>
+
+<h3>Day 3 &mdash; Calendar cleanup</h3>
+<p>Try this on a messy week:</p>
+<blockquote>
+  &ldquo;Review my next 10 business days. Find any meetings I can decline or delegate without impact, protect at least three 90-minute focus blocks, and draft regrets (polite, in my voice) for meetings I&rsquo;m declining. Show me the full plan as a preview before making any changes.&rdquo;
+</blockquote>
+
+<h3>Day 4 &mdash; Your first <code>SKILL.md</code></h3>
+<p>Pick one thing you write the same way every time (a weekly status, a customer brief, a deal review). Write it as a skill (see Section 12 for the template). From that day forward, <em>any</em> Task that needs that format just works.</p>
+
+<h3>Day 5 &mdash; Deep Research pass</h3>
+<p>Pick a company, topic, or competitor you&rsquo;d normally spend an afternoon researching. Delegate it:</p>
+<blockquote>
+  &ldquo;Use Deep Research to produce a 3-page brief on [topic]: key facts, recent developments, three strategic implications for us. Save to OneDrive at <code>/Research/[topic].docx</code>. Don&rsquo;t ask me follow-ups unless you hit a genuine ambiguity.&rdquo;
+</blockquote>
+
+<div class="callout">
+  <div class="callout-title">The expected outcome of your first week</div>
+  <div class="callout-body">
+    <p>By Friday: one durable daily agent, one briefing template you trust, one decluttered calendar, one <code>SKILL.md</code> doing invisible work, and one research artifact you didn&rsquo;t have to write. That&rsquo;s the baseline. Everything else in this guide compounds from there.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 7 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-7">7. Cowork vs the Claude Family &mdash; What You Actually Get</h2>
+
+<p>The comparison most people have in their head &mdash; &ldquo;Cowork vs Claude.ai&rdquo; &mdash; is already out of date. As of April 2026, Anthropic ships <strong>five distinct products</strong> bundled into one desktop install, and Microsoft 365 Copilot Cowork is a sixth, separately licensed surface. Before you can decide which one to use, you have to know they all exist.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The Anthropic product family, April 2026</div>
+  <div class="callout-body">
+    <p>A single Claude desktop download gives you <strong>Claude Chat</strong>, <strong>Claude Code</strong>, <strong>Claude Cowork (desktop)</strong>, <strong>Claude Design</strong>, and the Office add-ins (Excel, PowerPoint, Word, Chrome, Slack) &mdash; all on one subscription. Copilot Cowork lives outside this bundle, inside your Microsoft 365 tenant, under an E7 seat license.</p>
+  </div>
+</div>
+
+<h3>The six-way landscape</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>What it&rsquo;s for</th>
+      <th>Where it runs</th>
+      <th>Licensing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Claude Chat</strong><br><span style="font-size:.82em;color:#6b7280;">claude.ai &middot; web, desktop, iOS, Android</span></td>
+      <td>One-question-at-a-time assistant. Artifacts for interactive HTML/SVG/code. Projects, Memory, Research, Skills.</td>
+      <td>Anthropic cloud</td>
+      <td>Free &middot; Pro $17/mo &middot; Max $100&ndash;$200/mo &middot; Team &middot; Enterprise</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Code</strong><br><span style="font-size:.82em;color:#6b7280;">CLI &middot; VS Code &middot; JetBrains &middot; desktop &middot; web &middot; iOS</span></td>
+      <td>Agentic coding tool: reads/writes files, runs shells, edits git repos, spawns subagents, runs plan-mode loops, schedules Routines.</td>
+      <td>Your machine + Anthropic cloud (Routines are cloud-run)</td>
+      <td>Included on Pro, Max, Team, Enterprise (as of Apr 22 2026; a pricing test for new Pro users is in flight)</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Cowork desktop</strong><br><span style="font-size:.82em;color:#6b7280;">macOS &middot; Windows (GA Feb 10, 2026)</span></td>
+      <td>Non-developer agentic desktop app for knowledge work: file organization, document prep, research synthesis, data extraction. &ldquo;Claude Code power for knowledge work.&rdquo;</td>
+      <td>Local machine; plan-and-approve gates; 38+ connectors; Computer Use in preview</td>
+      <td>Included on all paid Claude plans</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Design</strong><br><span style="font-size:.82em;color:#6b7280;">NEW &middot; launched April 17, 2026</span></td>
+      <td>Research preview, Opus 4.7&ndash;powered. Prototypes, slides, one-pagers from a text prompt. Builds team design systems from your codebase + design files. Exports PDF, URL, PPTX, or push to Canva.</td>
+      <td>Anthropic cloud (desktop UI)</td>
+      <td>Pro, Max, Team, Enterprise (off by default for Enterprise; admin-enabled)</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Office add-ins</strong><br><span style="font-size:.82em;color:#6b7280;">Excel &middot; PowerPoint &middot; Word &middot; Chrome &middot; Slack</span></td>
+      <td>Embed Claude directly in the Office file you&rsquo;re editing. <strong>Claude for Excel</strong> writes formulas with cell-level citations and builds financial models.</td>
+      <td>Inside the Office app you already use</td>
+      <td>Included on Pro, Max, Team, Enterprise</td>
+    </tr>
+    <tr style="background:var(--accent);">
+      <td><strong>Microsoft 365 Copilot Cowork</strong><br><span style="font-size:.82em;color:#6b7280;">m365.cloud.microsoft &middot; M365 desktop apps</span></td>
+      <td>Agentic execution layer inside your M365 tenant. 13 built-in skills for Email, Calendar, Teams, Word, Excel, PowerPoint, PDF, SharePoint, Deep Research, and more. Scheduled prompts. SKILL.md customization.</td>
+      <td>Server-side in your Microsoft 365 tenant (Graph + Purview)</td>
+      <td>M365 Frontier preview today &middot; E7 at <strong>$99/user/mo</strong> &middot; GA May 1, 2026</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Sources: <a href="https://claude.com/download">Anthropic &mdash; Download Claude</a>; <a href="https://www.anthropic.com/product/claude-cowork">Anthropic &mdash; Claude Cowork product page</a>; <a href="https://techcrunch.com/2026/04/17/anthropic-launches-claude-design-a-new-product-for-creating-quick-visuals/">TechCrunch &mdash; Anthropic launches Claude Design, Apr 17 2026</a>; <a href="https://9to5mac.com/2026/04/14/anthropic-adds-repeatable-routines-feature-to-claude-code-heres-how-it-works/">9to5Mac &mdash; Claude Code Routines, Apr 14 2026</a>; <a href="https://claude.com/claude-for-excel">Anthropic &mdash; Claude for Excel</a>; <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-faq">Microsoft Learn &mdash; Cowork FAQ</a>.</p>
+
+<h3>What changed in the last 90 days (and why it matters)</h3>
+<ul>
+  <li><strong>Feb 10, 2026</strong> &mdash; Claude Cowork hit Windows GA. Anthropic now has a mature <em>non</em>-coding desktop agent that competes directly with Copilot Cowork on the local-file side.</li>
+  <li><strong>March 2026</strong> &mdash; 1M-token context went GA on Opus 4.6 and Sonnet 4.6 in Claude Code, no beta header, no long-context premium.</li>
+  <li><strong>April 14, 2026</strong> &mdash; Claude Code desktop was redesigned for parallel sessions, integrated terminal, HTML/PDF preview, and shipped <strong>Routines</strong> &mdash; scheduled cloud-run automations (Pro 5/day, Max 15/day, Team/Enterprise 25/day). This is the Anthropic equivalent of Cowork&rsquo;s Scheduled Prompts, aimed at developers.</li>
+  <li><strong>April 16, 2026</strong> &mdash; Claude Opus 4.7 landed in Copilot Cowork&rsquo;s model selector. Microsoft&rsquo;s framing: Opus 4.7 is tuned to <em>&ldquo;follow instructions more closely and route requests to the right capabilities and Work IQ data.&rdquo;</em></li>
+  <li><strong>April 17, 2026</strong> &mdash; Claude Design launched as a research preview. Opus 4.7&ndash;powered. Five days old at the time of writing.</li>
+</ul>
+<p>Source: <a href="https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-anthropic-claude-opus-4-7-in-microsoft-365-copilot/4511666">Microsoft Tech Community &mdash; Opus 4.7 in M365 Copilot, Apr 16 2026</a>.</p>
+
+<h3>The critical capability comparison</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dimension</th>
+      <th>Copilot Cowork</th>
+      <th>Claude Chat</th>
+      <th>Claude Code</th>
+      <th>Claude Cowork desktop</th>
+      <th>Claude Design</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Reads your <strong>tenant</strong> email/calendar/SharePoint</td><td><span class="tag ok">Yes</span> via Graph</td><td>No</td><td>Only via MCP connectors</td><td>Only via connectors</td><td>No</td></tr>
+    <tr><td>Respects Microsoft 365 ACLs</td><td><span class="tag ok">Yes</span> by design</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Reads your <strong>local</strong> files</td><td><span class="tag warn">No</span></td><td>File upload only</td><td><span class="tag ok">Yes</span> full FS</td><td><span class="tag ok">Yes</span> authorized folders</td><td>File upload only</td></tr>
+    <tr><td>Runs shell commands</td><td>No</td><td>No</td><td><span class="tag ok">Yes</span> Bash</td><td>Via Computer Use (preview)</td><td>No</td></tr>
+    <tr><td>Native Word/Excel/PPT/Teams actions</td><td><span class="tag ok">Yes</span> first-class</td><td>Via Artifacts (sandbox)</td><td>Via Skills (PPTX/DOCX/XLSX)</td><td>Writes real files</td><td>Exports PPTX/PDF</td></tr>
+    <tr><td>Scheduled recurring tasks</td><td><span class="tag ok">Yes</span> native</td><td>No</td><td><span class="tag ok">Yes</span> Routines (Apr 2026)</td><td>No (practitioner cron)</td><td>No</td></tr>
+    <tr><td>Custom skills / playbooks</td><td>20 × SKILL.md in OneDrive</td><td>Anthropic Skills</td><td>File-based skills + subagents</td><td>SKILL.md</td><td>Design systems</td></tr>
+    <tr><td>Who picks the model</td><td>Microsoft routes</td><td>You pick</td><td>You pick per session</td><td>Anthropic routes; Extended Thinking opt-in</td><td>Fixed: Opus 4.7</td></tr>
+    <tr><td>Enterprise audit / Purview</td><td><span class="tag ok">Yes</span></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Mobile</td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span></td><td>iOS companion</td><td>Desktop only</td><td>Desktop only</td></tr>
+    <tr><td>Delete files / folders</td><td>Blocked by policy</td><td>N/A</td><td><span class="tag ok">Yes</span> via Bash</td><td><span class="tag ok">Yes</span> with approval</td><td>N/A</td></tr>
+  </tbody>
+</table>
+
+<h3>Pick the right tool &mdash; A through E</h3>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">A</div><div class="tc-name">Pick <strong>Copilot Cowork</strong> when&hellip;</div></div>
+      <p class="tc-desc">The task reads or writes data inside your M365 tenant; enterprise audit is mandatory; the output has to respect existing SharePoint/OneDrive/Outlook ACLs; or you need a scheduled agent that your admin and Purview can see. This is the only product in the landscape that treats your tenant as a first-class operating environment.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">B</div><div class="tc-name">Pick <strong>Claude Code</strong> when&hellip;</div></div>
+      <p class="tc-desc">You&rsquo;re editing a git repository, running tests, debugging, refactoring, spawning subagents on a codebase, or need any form of shell access. Bash and a full local filesystem are what Claude Code has and nothing else in this table does.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">C</div><div class="tc-name">Pick <strong>Claude Cowork desktop</strong> when&hellip;</div></div>
+      <p class="tc-desc">The work is on your personal machine &mdash; local folders, Dropbox, personal Gmail, research PDFs, a side project &mdash; and you want agentic plan-and-approve execution without shipping any of it through your employer&rsquo;s tenant.</p>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">D</div><div class="tc-name">Pick <strong>Claude Chat / Claude Design</strong> when&hellip;</div></div>
+      <p class="tc-desc">You need a single-turn answer, a quick draft, an explanation, an interactive Artifact (HTML/SVG prototype), or a visual mock (Claude Design, if you have access). Works well on mobile. Not designed for multi-step agentic execution.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">E</div><div class="tc-name">Pick <strong>Copilot Chat</strong> when&hellip;</div></div>
+      <p class="tc-desc">You want a fast in-tenant answer, no write actions, no scheduling, no cross-app orchestration &mdash; the question fits in one turn and you don&rsquo;t need Cowork&rsquo;s approval-gate overhead. This is the Work IQ&ndash;grounded chat you already know.</p>
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The honest framing</div>
+  <div class="callout-body">
+    <p>There is no &ldquo;winner&rdquo; in this table. Each product wins the slot it was designed for. The mistake to avoid: trying to do tenant work in Claude Code (no Graph, no ACLs, no audit) or trying to do code work in Copilot Cowork (no shell, no local files, no git). That&rsquo;s the next two sections.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 8 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-8">8. Same Prompt, Different Answer &mdash; Why</h2>
+
+<p>If you paste the same message into Claude Chat, Claude Code, Claude Cowork desktop, and Microsoft 365 Copilot Cowork, you will get <strong>four different answers</strong>. Not slightly different. Structurally different. This confuses new users &mdash; &ldquo;aren&rsquo;t they all Claude?&rdquo; &mdash; and it shapes what each tool is actually good for.</p>
+
+<p>The divergence is not a bug, and it is not randomness. Each product assembles a different <em>prompt package</em> around your text before the model sees it. Seven mechanisms stack up.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The mental model that matters</div>
+  <div class="callout-body">
+    <p>You don&rsquo;t send a prompt to Claude. You send a prompt to a <em>product</em>, and the product assembles <code>(system prompt) + (tool definitions) + (injected context) + (your message)</code> before sending it to Claude. The four products assemble very different packages. That&rsquo;s the whole ballgame.</p>
+  </div>
+</div>
+
+<h3>The seven mechanisms of divergence</h3>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">A different <strong>system prompt</strong> is prepended</div></div>
+      <p class="tc-desc">Anthropic publishes claude.ai&rsquo;s system prompt verbatim &mdash; it sets identity, formatting rules, the current date, and safety behaviors. Claude Code&rsquo;s preset is documented in structure (&ldquo;tool usage, code style, working directory, git status&rdquo;) but not in full. Copilot Cowork&rsquo;s is Microsoft-authored, establishes a Copilot identity (not Claude), enumerates the 13 skills, and installs the approval-gate and no-delete policies. Source: <a href="https://docs.claude.com/en/release-notes/system-prompts">Anthropic &mdash; System Prompts release notes</a>; <a href="https://code.claude.com/docs/en/agent-sdk/modifying-system-prompts">Anthropic &mdash; Modifying system prompts</a>.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">A different <strong>tool set</strong> is available</div></div>
+      <p class="tc-desc">Claude.ai has Artifacts, web search, and file upload &mdash; no shell. Claude Code has Read, Write, Edit, Bash, Grep, Glob, WebSearch, subagents. Copilot Cowork has exactly 13 Microsoft-authored skills &mdash; <em>no</em> shell, <em>no</em> local filesystem, <em>no</em> arbitrary code execution. A prompt that requires a tool the product doesn&rsquo;t have will either be refused, worked around with a script, or redirected to a native skill. That rewiring changes the output entirely.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Different <strong>context</strong> is silently injected</div></div>
+      <p class="tc-desc">Claude.ai injects the current date and not much else &mdash; it doesn&rsquo;t know who you work for. Claude Code injects cwd, OS, git branch, platform, auto-memory paths. Copilot Cowork injects your name, email, title, department, manager, direct reports, company, timezone, current local time, and Work IQ signal over recent email/meetings/Teams &mdash; before the model sees a single character of your message. Same message, four very different effective context windows.</p>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">A different <strong>model routing</strong> decision is made</div></div>
+      <p class="tc-desc">In Claude.ai and Claude Code you pick the model (Opus, Sonnet, Haiku). In Copilot Cowork <em>Microsoft</em> routes &mdash; and has confirmed that routing can pull from Claude, OpenAI, or Microsoft&rsquo;s own MAI family depending on task, load, and cost. Opus 4.7 is in Cowork&rsquo;s selector as of April 16, 2026, but which model handled any given turn is not user-visible.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">5</div><div class="tc-name">Different <strong>safety and guardrail</strong> layers are stacked</div></div>
+      <p class="tc-desc">Claude.ai runs Anthropic&rsquo;s usage policy. Claude Code adds code-safety (don&rsquo;t commit secrets, confirm destructive shell commands). Copilot Cowork stacks a Microsoft guardrail layer on top: <em>no delete ever</em>, per-action approval gates with risk indicators, no encrypted-file reads, no local filesystem, ACL inheritance, Purview audit, and refusal categories (employee evaluation, profiling by protected characteristics) that claude.ai doesn&rsquo;t share. Ask all four &ldquo;help me decide whether to terminate Alex&rdquo; &mdash; you&rsquo;ll get four different answers, and Cowork is the most likely to decline.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">6</div><div class="tc-name">Different <strong>temperature and sampling</strong> defaults</div></div>
+      <p class="tc-desc">Anthropic&rsquo;s API docs: <em>&ldquo;even with temperature of 0.0, the results will not be fully deterministic.&rdquo;</em> Each product picks its own default, and none publish it. Empirically Claude Code runs lower temperature (more consistent code), Cowork variants prioritize tool-call precision, and Claude.ai runs with enough variation that two retries on the same prompt aren&rsquo;t identical.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">7</div><div class="tc-name">The <strong>effective prompt</strong> is therefore not the same prompt</div></div>
+      <p class="tc-desc">Stack mechanisms 1 through 6 together and &ldquo;the same prompt&rdquo; reaches four very different runtime assemblies. Saying &ldquo;Claude said X&rdquo; without naming the product is incomplete. The product is the whole ballgame.</p>
+    </div>
+  </div>
+</div>
+
+<h3>A worked example: &ldquo;Write me a Python script that reads my inbox and summarizes this morning&rsquo;s unread emails.&rdquo;</h3>
+
+<p>Same 17 words. Four radically different deliverables.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>What you actually get</th>
+      <th>What you have to do next</th>
+      <th>Time to value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Claude.ai</strong></td>
+      <td>A complete <code>.py</code> file in an Artifact. Uses Microsoft Graph SDK or imaplib. Placeholder auth &mdash; <code>tenant_id</code>, <code>client_id</code>, <code>client_secret</code> as env vars. <code>TODO</code> comments where you configure OAuth.</td>
+      <td>Register an OAuth app, install deps, run the script locally, iterate on auth errors.</td>
+      <td>Hours</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Code</strong></td>
+      <td>Claude Code writes <code>main.py</code> + <code>requirements.txt</code> + <code>.env.example</code> to disk, installs deps via Bash, prompts you once for an access token (via <code>az login</code> or device-code flow), then runs <code>python main.py</code> and prints the summary to your terminal. A working script on disk plus a live result.</td>
+      <td>Paste a token once. Review output.</td>
+      <td>Minutes</td>
+    </tr>
+    <tr>
+      <td><strong>Claude Cowork desktop</strong></td>
+      <td>Proposes a plan: <em>&ldquo;(1) connect via Gmail/Outlook connector, (2) filter today&rsquo;s unread, (3) produce <code>inbox-summary-2026-04-22.docx</code> in your folder.&rdquo;</em> Waits for approval. Executes. No Python involved &mdash; the connector path delivers the intent faster than a script would.</td>
+      <td>Approve the plan. Read the doc.</td>
+      <td>Seconds</td>
+    </tr>
+    <tr style="background:var(--accent);">
+      <td><strong>Copilot Cowork</strong></td>
+      <td>Doesn&rsquo;t write the script at all. Uses the <strong>Email skill</strong> directly &mdash; reads your inbox via Microsoft Graph (already authenticated as you), filters unread from this morning, produces the summary in chat or a Word doc in OneDrive. If you <em>insist</em> on a standalone script, it will likely redirect: &ldquo;I can do this directly &mdash; would you like me to, or do you specifically need a standalone program?&rdquo;</td>
+      <td>Read the summary.</td>
+      <td>Seconds</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">Three practical consequences</div>
+  <div class="callout-body">
+    <p><strong>1. Don&rsquo;t generalize benchmarks.</strong> A prompt that shines in Claude.ai may flop in Copilot Cowork because the Email skill short-circuits the reasoning path you intended.</p>
+    <p><strong>2. Match the tool to the task.</strong> Tenant data &rarr; Copilot Cowork. Local code and terminals &rarr; Claude Code. Creative/reasoning with no specific environment &rarr; Claude Chat. Local-but-not-tenant knowledge work &rarr; Claude Cowork desktop.</p>
+    <p><strong>3. Read the system prompt where you can.</strong> Anthropic publishes claude.ai&rsquo;s at <a href="https://docs.claude.com/en/release-notes/system-prompts">docs.claude.com/en/release-notes/system-prompts</a>. Microsoft does not publish Copilot Cowork&rsquo;s. That asymmetry is itself a signal.</p>
+  </div>
+</div>
+
+<p style="font-size:.88rem;color:#6b7280;margin-top:10px;">Sources: <a href="https://docs.claude.com/en/release-notes/system-prompts">Anthropic &mdash; System Prompts</a>; <a href="https://code.claude.com/docs/en/agent-sdk/modifying-system-prompts">Anthropic &mdash; Modifying system prompts</a>; <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic &mdash; Prompt caching</a>; <a href="https://docs.anthropic.com/en/api/messages">Anthropic Messages API (temperature)</a>; <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-faq">Microsoft Learn &mdash; Cowork FAQ</a>; <a href="https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-anthropic-claude-opus-4-7-in-microsoft-365-copilot/4511666">Microsoft Tech Community &mdash; Opus 4.7, Apr 16 2026</a>; <a href="https://www.geekwire.com/2026/microsofts-new-copilot-cowork-integrates-anthropics-claude-in-rollout-of-new-e7-licensing-tier/">GeekWire &mdash; Mollick on silent downshifts, Mar 9 2026</a>.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 9 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-9">9. Cowork and Code &mdash; An Honest Look</h2>
+
+<p>&ldquo;Copilot writes code today, so does that mean Cowork is a coding tool?&rdquo; is the single most common question from developers evaluating the product. The short answer is <strong>no, and Microsoft doesn&rsquo;t claim it is.</strong> The long answer has useful nuance.</p>
+
+<div class="hero-statement">
+  <p>Cowork is not a coding product. None of its 13 built-in skills is developer-facing. There is no terminal, no git integration, no local filesystem, and no MVP has published a Cowork coding demo.</p>
+  <div class="hero-sub">What Cowork <em>can</em> do around a developer&rsquo;s work is interesting &mdash; and that&rsquo;s where the fit is.</div>
+</div>
+
+<h3>What Cowork actually does with code</h3>
+
+<table>
+  <thead>
+    <tr><th>Capability</th><th>Status</th><th>Evidence</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Reads code files you attach with syntax highlighting</td>
+      <td><span class="tag ok">Yes</span></td>
+      <td>Supports <code>.py .js .ts .java .c .cpp .go .rb .rs</code>, <code>.ipynb</code>, and the full config-file family. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork">Microsoft Learn &mdash; Use Cowork</a>.</td>
+    </tr>
+    <tr>
+      <td>Emits code snippets as chat text</td>
+      <td><span class="tag warn">Informally</span></td>
+      <td>Cowork is Claude-backed and will produce code if asked. But Microsoft has not certified this, not listed supported languages, and given it no place in the product&rsquo;s marketed skills.</td>
+    </tr>
+    <tr>
+      <td>Writes a <code>.py</code> or <code>.ps1</code> file into OneDrive</td>
+      <td><span class="tag warn">Plausible, not documented</span></td>
+      <td>Cowork saves outputs to <code>OneDrive/Cowork</code>. No primary source confirms code-file generation as a first-class destination.</td>
+    </tr>
+    <tr>
+      <td>Authors a Python-in-Excel <code>=PY()</code> cell</td>
+      <td><span class="tag warn">No</span></td>
+      <td>Python in Excel cell authoring is a <em>Copilot in Excel</em> feature, not a Cowork feature. Source: <a href="https://techcommunity.microsoft.com/blog/excelblog/introducing-copilot-support-for-python-in-excel-advanced-data-analysis-using-nat/3928120">Microsoft Tech Community</a>.</td>
+    </tr>
+    <tr>
+      <td>Builds a Power Automate flow</td>
+      <td><span class="tag warn">No</span></td>
+      <td>Power Automate has its own natural-language Copilot. Cowork does not invoke it. Source: <a href="https://learn.microsoft.com/en-us/power-automate/copilot-overview">Copilot in Power Automate overview</a>.</td>
+    </tr>
+    <tr>
+      <td>Generates Office Scripts (TypeScript) for Excel Web</td>
+      <td><span class="tag warn">No</span></td>
+      <td>Office Scripts has its own editor and Copilot integration; no Cowork surface documented.</td>
+    </tr>
+    <tr>
+      <td>Authors VBA macros into <code>.xlsm</code></td>
+      <td><span class="tag warn">No</span></td>
+      <td>Not documented. Secondary press occasionally conflates &ldquo;Microsoft 365 Copilot&rdquo; with Cowork; the actual VBA-authoring path lives inside Copilot in Excel.</td>
+    </tr>
+    <tr>
+      <td>Edits a local git repository</td>
+      <td><span class="tag warn">No</span></td>
+      <td>No local file access, no shell. Use Claude Code or GitHub Copilot.</td>
+    </tr>
+    <tr>
+      <td>Runs scripts server-side</td>
+      <td><span class="tag warn">Undefined</span></td>
+      <td>One opaque Microsoft Learn sentence: <em>&ldquo;Some background operations, like script execution, run without displaying individual steps.&rdquo;</em> Microsoft has not elaborated. Treat as an internal implementation detail, not a user feature. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork">Use Cowork</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>The Microsoft dev-tool landscape &mdash; where Cowork sits</h3>
+
+<table>
+  <thead>
+    <tr><th>Tool</th><th>Primary audience</th><th>What it&rsquo;s for</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>GitHub Copilot</strong></td><td>Developers</td><td>IDE-embedded code completion, chat, agents, PR reviews. This is the dev tool.</td></tr>
+    <tr><td><strong>Copilot in Excel</strong></td><td>Analysts, business users</td><td>Authors formulas, Python cells, charts inside a workbook.</td></tr>
+    <tr><td><strong>Copilot in Power Automate</strong></td><td>Power users</td><td>Generates cloud flows from natural-language descriptions.</td></tr>
+    <tr><td><strong>Copilot Studio</strong></td><td>Makers, IT</td><td>Builds custom Copilot agents and has a Python code interpreter in a sandbox.</td></tr>
+    <tr style="background:var(--accent);"><td><strong>Copilot Cowork</strong></td><td>Knowledge workers</td><td>Agentic execution across Office + Graph. <em>Not</em> a code tool, by design.</td></tr>
+  </tbody>
+</table>
+
+<p>Same brand family, disjoint product surfaces. MVP Christian Buckley frames Cowork as <em>&ldquo;Claude Code for knowledge workers&rdquo;</em> &mdash; the analogy, not the substitute. The analogy lands because both are long-running, plan-and-execute agents; it misleads only if you read it as &ldquo;Cowork replaces Claude Code.&rdquo; It does not.</p>
+
+<h3>Can Cowork help a developer at all? Yes &mdash; just not by writing code.</h3>
+
+<p>The honest fit for Cowork in a developer&rsquo;s workflow is <strong>all the non-code work around a project.</strong> That&rsquo;s where it genuinely subsidizes what Claude Code and GitHub Copilot already do.</p>
+
+<h3>Conceptual demo: a developer&rsquo;s week, split across tools</h3>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">Claude Code handles (the code)</div>
+    <p>Repo work on your laptop. Writing, testing, refactoring, running CI, generating migrations, reviewing PRs, spawning subagents for large refactors, scheduling Routines to run nightly code quality checks.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Copilot Cowork handles (everything else)</div>
+    <p>Sprint-review deck from the week&rsquo;s commits. Weekly status to your skip. Stakeholder update email. Meeting prep for the architecture review. SharePoint write-ups of the design you already coded. Bug-triage digest from Teams and email. Scheduled Monday digest of last week&rsquo;s releases.</p>
+  </div>
+</div>
+
+<h3>The &ldquo;engineering manager&rsquo;s Monday morning&rdquo; demo script</h3>
+
+<p>This is a Cowork workflow a developer or engineering manager can run today, with no code written, that demonstrates the actual fit.</p>
+
+<pre>Every Monday at 8:00 AM, pull together my engineering team&rsquo;s week-ahead brief:
+
+1. READ last week&rsquo;s releases by scanning my team&rsquo;s Teams channel and the
+   closed GitHub issues referenced in email notifications.
+2. LIST open bugs assigned to my direct reports with priority labels
+   from the last 14 days of email.
+3. SUMMARIZE three blockers mentioned in my last 7 days of 1:1 meeting notes
+   (saved in OneDrive at /1-1s).
+4. DRAFT a short Teams post for my #eng-weekly channel with the top three
+   priorities for this week. Show me a preview before posting; don&rsquo;t send.
+5. SAVE the full brief as /Reports/Weekly/eng-brief-YYYY-MM-DD.docx.
+
+Constraints:
+- Never include anything from private 1:1 meetings by name.
+- Use past tense for last week, future tense for this week.
+- If you can&rsquo;t find data for a section, say so &mdash; don&rsquo;t invent.</pre>
+
+<p>What makes this a good Cowork demo: zero lines of code, four Graph data sources, one scheduled recurrence, one approval gate (the Teams post), one durable artifact (the Word doc). A developer gets back 30&ndash;60 minutes every Monday and stays in Claude Code for the actual engineering work.</p>
+
+<div class="callout">
+  <div class="callout-title">The one-line verdict for developers</div>
+  <div class="callout-body">
+    <p>Keep your paid Claude for the code. Use Cowork for the meetings, decks, status updates, and stakeholder communication that surround the code. The two don&rsquo;t compete &mdash; they stack.</p>
+  </div>
+</div>
+
+<p style="font-size:.88rem;color:#6b7280;margin-top:10px;">Sources: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-faq">Microsoft Learn &mdash; Cowork FAQ</a>; <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork">Microsoft Learn &mdash; Use Cowork</a>; <a href="https://buckleyplanet.com/2026/04/5-things-you-need-to-know-about-copilot-cowork/">buckleyPLANET &mdash; Christian Buckley (MVP), Apr 2026</a>; <a href="https://docs.github.com/en/copilot">GitHub &mdash; GitHub Copilot docs</a>; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/faq-code-interpreter">Microsoft Learn &mdash; Copilot Studio code interpreter FAQ</a>.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 10 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-10">10. For the Existing Claude Power User</h2>
+
+<p>If you already pay for Claude Pro or Max &mdash; you&rsquo;ve used Projects, you live in Artifacts, you run Claude Code daily, maybe you&rsquo;ve tried Claude Design this week &mdash; this section is the straight talk on what to expect moving some of your workflow into Copilot Cowork.</p>
+
+<h3>Portability is low. Don&rsquo;t expect your prompts to transfer.</h3>
+
+<p>Section 8 is the mechanics. The shorthand: the system prompt, tools, context injection, model routing, and safety stack are all different in Cowork. A Project you love in Claude.ai will produce different output in Cowork, and not necessarily better or worse &mdash; just different-shaped. Plan to re-tune, not copy-paste.</p>
+
+<h3>What you <em>gain</em> by moving specific workflows into Cowork</h3>
+
+<table>
+  <thead>
+    <tr><th>Gain</th><th>Why it matters</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Tenant grounding via Microsoft Graph</strong></td><td>Cowork already knows your calendar, email, direct reports, SharePoint files, and Teams activity. No connectors, no OAuth dance, no copy-paste. Claude Cowork desktop requires a connector per data source and still can&rsquo;t enforce your employer&rsquo;s ACLs.</td></tr>
+    <tr><td><strong>ACL inheritance</strong></td><td>Every read and write runs with your M365 permissions. This is not a feature Claude has an equivalent for &mdash; it&rsquo;s an architectural property of Cowork living inside the tenant.</td></tr>
+    <tr><td><strong>Purview audit trail</strong></td><td>Every Cowork action is logged for enterprise audit. Required for regulated work; unavailable in Claude&rsquo;s consumer products.</td></tr>
+    <tr><td><strong>Native Office actions under the approval gate</strong></td><td>Cowork sends real emails, posts real Teams messages, creates real calendar events &mdash; with a preview dialog. Claude Code can do this only through MCP connectors you wire yourself; Claude.ai can&rsquo;t.</td></tr>
+    <tr><td><strong>Scheduled Prompts as a native surface</strong></td><td>Claude Code just added Routines (Apr 14, 2026) &mdash; and it&rsquo;s great &mdash; but Routines run <em>inside</em> Claude Code. Cowork&rsquo;s Scheduled Prompts run across email, calendar, Teams, and SharePoint without leaving the tenant.</td></tr>
+    <tr><td><strong>Durable Task state</strong></td><td>The Tasks view (List, Board, Scheduled) survives disconnects, laptop closes, and days off. Claude.ai conversations don&rsquo;t, and Claude Code sessions rely on your machine being on unless you&rsquo;re in Routines.</td></tr>
+  </tbody>
+</table>
+
+<h3>What you <em>lose</em> &mdash; be honest about it</h3>
+
+<table>
+  <thead>
+    <tr><th>Loss</th><th>Why you&rsquo;ll notice</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Artifacts</strong></td><td>No interactive HTML/SVG sandbox pane. Cowork renders Adaptive Cards or produces real Office files &mdash; useful, but not the same as Claude.ai&rsquo;s side-panel prototypes.</td></tr>
+    <tr><td><strong>Picking your model</strong></td><td>Microsoft routes. You may get Claude Opus 4.7, Sonnet, an OpenAI model, or MAI &mdash; and you can&rsquo;t always tell which. This is Mollick&rsquo;s public concern.</td></tr>
+    <tr><td><strong>Anthropic&rsquo;s release cadence</strong></td><td>Anthropic shipped Claude Design five days ago. Microsoft&rsquo;s cadence on Cowork is TBD &mdash; M365 updates tend to arrive in larger but slower waves.</td></tr>
+    <tr><td><strong>Computer Use</strong></td><td>Claude Cowork desktop and Claude Code both have Computer Use in research preview. Copilot Cowork does not expose this to you.</td></tr>
+    <tr><td><strong>Extended Thinking toggles</strong></td><td>In Claude.ai and Claude Cowork desktop you can dial up thinking budget. Cowork decides for you.</td></tr>
+    <tr><td><strong>Shell and local filesystem</strong></td><td>Obvious but worth naming. If your current Claude Code workflow depends on Bash and a repo, that workflow stays in Claude Code.</td></tr>
+    <tr><td><strong>Mobile</strong></td><td>Cowork is browser + desktop only. Claude.ai has mobile apps; Claude Code has an iOS companion.</td></tr>
+  </tbody>
+</table>
+
+<h3>The &ldquo;both&rdquo; pattern &mdash; the right answer for most hardcore Claude users</h3>
+
+<p>You don&rsquo;t pick one. You split the workload along the tenant boundary.</p>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">Keep in paid Claude (personal subscription)</div>
+    <p>Code. Local files. Side projects. Anything outside your work tenant. Artifacts and prototypes. Deep, open-ended reasoning sessions where you want to pick the model. Claude Design for visuals. Routines for scheduled developer automation.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Move to Cowork (your E7 seat)</div>
+    <p>Anything that reads or writes your tenant&rsquo;s email, calendar, Teams, SharePoint, or OneDrive. Anything that needs the Purview audit trail. Scheduled recurring tasks that depend on Graph data. Meeting prep, customer briefings, stakeholder updates. SKILL.md encoding of your team&rsquo;s playbooks.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Price check &mdash; apples to oranges</div>
+  <div class="callout-body">
+    <p><strong>Claude Max 20x: $200/month</strong>, personal subscription, one seat, you pay. <strong>M365 E7: $99/user/month list</strong>, seat license your employer pays, covers all of Cowork plus the rest of E5 plus E7. These aren&rsquo;t substitutes. For a hardcore coder the math usually favors keeping Claude Max personally <em>and</em> using Cowork at work &mdash; because the employer pays the Cowork seat, and Claude Max buys you Claude Code + Cowork desktop + Chat + Design on your own machine.</p>
+  </div>
+</div>
+
+<h3>Migration checklist for a Claude power user&rsquo;s first Cowork week</h3>
+
+<ol>
+  <li><strong>Don&rsquo;t port your Projects.</strong> Re-express the three Projects you use most as <code>SKILL.md</code> files in OneDrive (Section 12). System prompts don&rsquo;t transfer; the intent does.</li>
+  <li><strong>Identify your top three &ldquo;only in the tenant&rdquo; use cases.</strong> Meeting prep, weekly status from Graph data, customer briefings pulling from CRM + email &mdash; these are Cowork&rsquo;s native advantage. Start there.</li>
+  <li><strong>Replicate one Claude Code Routine as a Cowork Scheduled Prompt.</strong> See which UX you prefer for recurring work. Routines are developer-oriented; Scheduled Prompts are business-oriented.</li>
+  <li><strong>Accept that the output will feel different.</strong> Different system prompt, different context, different refusal boundaries. You&rsquo;ll re-tune your prompts. Budget a couple of hours.</li>
+  <li><strong>Don&rsquo;t give up your Claude Code subscription.</strong> Cowork will not replace it. If anything, owning both makes you faster in both.</li>
+</ol>
+
+<div class="partner-story">
+  <div class="ps-label">Practitioner perspective</div>
+  <p class="ps-quote">&ldquo;[Anthropic&rsquo;s Cowork] was built in a couple of weeks using Claude Code and is being updated and evolving quickly. [Microsoft] has a tendency to launch a leading product and then let it sit for awhile. I&rsquo;m curious about whether their pacing will change.&rdquo;</p>
+  <p class="ps-attr">&mdash; Ethan Mollick (Wharton), reacting to the Cowork launch. Reported by GeekWire, Mar 9 2026.</p>
+</div>
+
+<p>Mollick&rsquo;s concern is real and unresolved. For a heavy Claude user, that&rsquo;s another argument for the &ldquo;both&rdquo; pattern: Anthropic ships fast, Microsoft ships enterprise &mdash; and until the pacing question resolves, holding both keeps you on the frontier of each.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 11 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-11">11. Six Signs You Should Restart</h2>
+
+<p>These are all documented symptoms of &ldquo;context rot&rdquo; &mdash; the measured quality decay of long-running conversations. When you see two or more, stop iterating. Summarize. Open a new Task.</p>
+
+<ol>
+  <li><strong>It repeats itself.</strong> Same suggestions, same phrasing, across different turns.</li>
+  <li><strong>It forgets a constraint you set earlier.</strong> Classic example: you said &ldquo;formal tone&rdquo; on turn 3; by turn 18 it&rsquo;s drafting like LinkedIn influencer copy.</li>
+  <li><strong>It re-reads files it already read.</strong> You&rsquo;ll see it say &ldquo;let me check [doc]&rdquo; again after you watched it read the same doc five minutes ago.</li>
+  <li><strong>It hallucinates a file path, a name, or a link.</strong> Confidently wrong citations are a late-session tell.</li>
+  <li><strong>It contradicts a decision from earlier in the session.</strong> The summary at turn 20 quietly disagrees with the decision you both made at turn 5.</li>
+  <li><strong>The responses feel sluggish.</strong> Per-turn latency scales with conversation length; a slow turn is a crowded turn.</li>
+</ol>
+
+<h3>The summary-and-restart template</h3>
+
+<p>Before you hit New Task, paste this into the current Task:</p>
+
+<pre>Write a handoff brief for the next Cowork Task:
+  GOAL: one sentence &mdash; what I&rsquo;m trying to accomplish
+  DECISIONS MADE SO FAR: bullet list of what we&rsquo;ve locked in
+  CURRENT DRAFT / STATE: the latest good version (link to OneDrive file if large)
+  CONSTRAINTS: audience, tone, length, format, deadline
+  OPEN QUESTIONS: what we still need to decide
+  NEXT STEP: one specific thing to do next
+Return it as plain markdown so I can paste it into a new Task.</pre>
+
+<p>Open a new Task. Paste the brief as the first message. You now have a fresh, clean context with all the signal and none of the noise.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">Why this works, mechanically</div>
+  <div class="callout-body">
+    <p>(a) It puts the stable decisions at the <em>start</em> of the new context, where primacy bias helps you. (b) It discards all the abandoned drafts the model was quietly using as sycophantic signal about &ldquo;what the user wants.&rdquo; (c) It resets the 39% multi-turn degradation curve back to turn one.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 12 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-12">12. <code>SKILL.md</code> &mdash; Your Durable Memory</h2>
+
+<p>A <code>SKILL.md</code> is a small markdown file with YAML frontmatter that lives in OneDrive at <code>/Documents/Cowork/Skills/&lt;skill-name&gt;/SKILL.md</code>. Cowork auto-discovers skills at the start of every conversation and applies them when relevant.</p>
+
+<p>Think of it as a durable, cheap context layer. Unlike instructions in chat, skills are re-loaded from disk after every compaction and never lost to context rot.</p>
+
+<h3>A starter skill: weekly status report</h3>
+
+<pre>---
+name: weekly-status
+description: Produces my weekly status update in the exact format my team expects.
+triggers:
+  - &quot;weekly status&quot;
+  - &quot;weekly update&quot;
+  - &quot;weekly report&quot;
+---
+
+# Weekly Status Report Skill
+
+## What this skill does
+When I say &ldquo;make my weekly status,&rdquo; produce a Word document at
+`/Reports/Weekly/YYYY-MM-DD-status.docx` following the rules below.
+
+## Data sources (in priority order)
+1. My calendar for the last 7 days (accepted meetings only)
+2. Email I sent or replied to in the last 7 days (skip noise/newsletters)
+3. Teams messages in channels I own
+4. My /Projects folder in OneDrive for anything updated this week
+
+## Required sections (in this order)
+1. **Wins** &mdash; 3 bullets max, concrete outcomes only
+2. **In Flight** &mdash; what I&rsquo;m actively working on, with status
+3. **Blockers** &mdash; what&rsquo;s stuck and who I need from
+4. **Next Week** &mdash; top 3 priorities
+5. **Metrics** &mdash; any numeric KPIs I touched this week
+
+## Tone and formatting rules
+- Crisp, professional, no marketing language
+- Numbers and dates, not vibes
+- Never use &ldquo;synergy,&rdquo; &ldquo;leverage,&rdquo; or &ldquo;circle back&rdquo;
+- Past tense for Wins, present tense for In Flight, future tense for Next Week
+
+## Never do
+- Don&rsquo;t invent metrics you can&rsquo;t source from a file or message
+- Don&rsquo;t include anything from private 1:1 meetings
+- Don&rsquo;t send it &mdash; just save the file and tell me where it is</pre>
+
+<div class="callout warn">
+  <div class="callout-title">A supply-chain warning</div>
+  <div class="callout-body">
+    <p>Microsoft does <strong>not</strong> validate <code>SKILL.md</code> files. If someone shares a skill with you, <em>read it</em> before dropping it in your OneDrive. A malicious or buggy skill can instruct Cowork to send emails or post to Teams in your name &mdash; approval gates help but are not a substitute for reviewing the skill itself.</p>
+  </div>
+</div>
+
+<p>Good candidates for your first three skills: <strong>weekly-status</strong>, <strong>customer-brief</strong>, <strong>deal-review</strong>. Once those exist, you stop re-explaining structure every time &mdash; and Cowork starts feeling like a team member who knows how you work.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 13 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-13">13. Scheduled Prompts &mdash; Recurring Work on Autopilot</h2>
+
+<p>Scheduled prompts are Cowork&rsquo;s answer to Power Automate for any recurring job that can be described in a paragraph. You say it in plain English; Cowork parses the schedule, registers the task, and runs it forever (or until you pause it).</p>
+
+<h3>What they&rsquo;re great for</h3>
+<ul>
+  <li>Daily morning briefings (see Day 1 of your starter plan)</li>
+  <li>Weekly reports that pull from predictable data sources</li>
+  <li>Monday &ldquo;what&rsquo;s the state of my pipeline&rdquo; digests</li>
+  <li>End-of-month customer health summaries</li>
+  <li>Reminders that need data (&ldquo;Fridays at 4 PM, remind me of any unsent follow-ups from the week, with drafts&rdquo;)</li>
+</ul>
+
+<h3>The cardinal rule: each run is stateless</h3>
+
+<div class="callout">
+  <div class="callout-title">Treat every scheduled run as independent</div>
+  <div class="callout-body">
+    <p>A scheduled prompt does <strong>not</strong> remember what happened last run. Each invocation gets a fresh context. Write the prompt as if Cowork has never seen it before: include the instruction, the data source, the output location, and any constraints. Don&rsquo;t say &ldquo;continue from yesterday&rdquo; &mdash; say &ldquo;compare to the last 7 days of email and meetings.&rdquo;</p>
+  </div>
+</div>
+
+<h3>How to make the output diff-able</h3>
+<p>Because every run produces an artifact, you&rsquo;ll want to compare runs week-over-week. Ask for:</p>
+<ul>
+  <li>A fixed section order</li>
+  <li>A fixed bullet count per section</li>
+  <li>Word limits</li>
+  <li>A single headline metric at the top</li>
+</ul>
+<p>Then week 12 is meaningfully comparable to week 1 at a glance. Narrative scheduled outputs are hard to scan; structured scheduled outputs are a dashboard.</p>
+
+<h3>Editing and pausing</h3>
+<p>Tasks &rarr; Scheduled shows everything. You can edit, pause, resume, or delete any scheduled prompt. Microsoft does <em>not</em> publish a maximum number of concurrent scheduled prompts per user, but a reasonable guideline: fewer, higher-quality prompts beat a cluttered list.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 14 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-14">14. Deep Research &mdash; Your Built-In Sub-Agent</h2>
+
+<p>Deep Research is one of Cowork&rsquo;s 13 built-in skills and it is structurally identical to a Claude Code subagent: it runs in its own fresh context, consumes its own tool noise privately, and returns a <em>final summary</em> to the parent Task.</p>
+
+<p>This matters more than it sounds. When you delegate something to Deep Research, the intermediate web fetches, document reads, note-taking, and verification passes <strong>never enter your main Task&rsquo;s context</strong>. The parent Task gets only the conclusion.</p>
+
+<div class="hero-statement">
+  <p>The single most useful question to ask before delegating: <em>&ldquo;Do I need this tool output again &mdash; or just the conclusion?&rdquo;</em></p>
+  <div class="hero-sub">If just the conclusion, send it to Deep Research. That's the rule.</div>
+</div>
+
+<h3>Good jobs for Deep Research</h3>
+<ul>
+  <li>Company / competitive briefs grounded in web + SharePoint</li>
+  <li>&ldquo;Fact-check and cite this claim&rdquo; passes</li>
+  <li>&ldquo;Summarize this folder of 12 PDFs into one 2-page memo&rdquo;</li>
+  <li>&ldquo;Find every email from [person] mentioning [topic] in the last 6 months and synthesize&rdquo;</li>
+  <li>Verification passes before a deliverable goes out the door</li>
+</ul>
+
+<h3>Include everything the sub-agent needs in the prompt</h3>
+
+<p>Because the sub-agent doesn&rsquo;t see the parent conversation, your Deep Research prompt has to be self-contained. File paths, constraints, prior decisions, tone rules, output destination &mdash; all go into the delegation prompt itself.</p>
+
+<pre>Use Deep Research to produce a 2-page executive brief on [topic].
+
+Sources:
+- My /Research folder in OneDrive
+- /Clients/Acme folder in SharePoint (the last 18 months only)
+- Public web, restricted to sources dated in the last 9 months
+
+Constraints:
+- Cite every factual claim with a URL
+- Separate CONFIRMED from UNCERTAIN with a label
+- Do not speculate beyond the sources
+
+Deliverable: save as /Research/acme-competitive-brief.docx
+Do not email or post it anywhere. Just save the file.</pre>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 15 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-15">15. Approvals and Trust</h2>
+
+<p>Cowork will never silently send an email, post to Teams, create a calendar event, or modify a file without showing you a preview first. That&rsquo;s the approval gate, and it&rsquo;s the reason Cowork is safe to deploy to large populations.</p>
+
+<h3>The approval dialog, in one picture</h3>
+<ol>
+  <li>Cowork shows you <em>exactly</em> what it&rsquo;s about to do: recipient, subject, body, channel, calendar change &mdash; whatever the action is.</li>
+  <li>You approve, edit, or reject.</li>
+  <li>A dropdown lets you say &ldquo;don&rsquo;t ask again for this conversation&rdquo; &mdash; useful when Cowork is about to do 11 similar actions and you&rsquo;ve already blessed the first.</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">The single most underused control</div>
+  <div class="callout-body">
+    <p>&ldquo;Don&rsquo;t ask again&rdquo; is not a safety downgrade &mdash; it&rsquo;s a <em>context saver</em>. Every re-approval adds turns to the conversation, which inflates tokens, which increases the chance of context rot. Batch similar approvals and move on.</p>
+  </div>
+</div>
+
+<h3>Things you should always approve carefully</h3>
+<ul>
+  <li>Emails to customers or executives</li>
+  <li>Calendar changes that affect other people</li>
+  <li>Teams posts in channels with &gt;20 members</li>
+  <li>Any action that modifies a shared SharePoint file</li>
+  <li>Anything invoking a custom skill you didn&rsquo;t write yourself</li>
+</ul>
+
+<h3>Things where &ldquo;Don&rsquo;t ask again&rdquo; is usually fine</h3>
+<ul>
+  <li>Drafting emails to yourself</li>
+  <li>Saving files into <em>your own</em> OneDrive</li>
+  <li>Bulk-labeling or categorizing your inbox</li>
+  <li>Reading from SharePoint libraries (already gated by your ACLs)</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 16 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-16">16. What Cowork Can&rsquo;t Do (Yet)</h2>
+
+<p>An honest list of today&rsquo;s limits, all confirmed by Microsoft Learn or independent reporting. Know these going in and you&rsquo;ll avoid the &ldquo;why won&rsquo;t it&hellip;&rdquo; frustration.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">Product constraints (by design)</div>
+  <p><strong>No local file access.</strong> Cowork cannot read or write files on your laptop. Everything must go through OneDrive or SharePoint.</p>
+  <p><strong>No delete.</strong> Cowork cannot delete files or folders in OneDrive or SharePoint. If you want something gone, you delete it yourself. This is intentional, for safety.</p>
+  <p><strong>No encrypted file reads</strong>, even if you have the rights.</p>
+  <p><strong>Attached files must be under 200 MB each.</strong></p>
+  <p><strong>No mobile.</strong> Browser and Windows/Mac desktop only, today.</p>
+  <p><strong>Custom skills are not validated by Microsoft.</strong> The <code>SKILL.md</code> files you create or accept are executed as you wrote them. Review any skill you didn&rsquo;t author personally.</p>
+</div>
+
+<h3>Access and geography</h3>
+<ul>
+  <li><strong>Frontier preview today.</strong> Broad availability is gated on M365 E7 ($99/user/month), GA May 1, 2026.</li>
+  <li><strong>Anthropic opt-in in EU / EFTA / UK.</strong> Your admin must enable the Anthropic subprocessor; it&rsquo;s off by default.</li>
+  <li><strong>Unavailable in GCC, GCC High, DoD, and sovereign clouds.</strong></li>
+</ul>
+
+<h3>Things Microsoft hasn&rsquo;t documented</h3>
+<ul>
+  <li>No vendor-published or third-party benchmark exists for hallucination rate, task completion rate, or permission-escalation error rate in Cowork specifically.</li>
+  <li>No documented ceiling on concurrent scheduled prompts per user (custom skills are capped at 20).</li>
+  <li>How long-chat degradation manifests inside Cowork specifically (a problem well-documented in LLMs generally) hasn&rsquo;t been written up by any practitioner. Treat it as a likely-but-unquantified risk &mdash; and apply the habit loop from Section 5.</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 17 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-17">17. The 22-Tactic Reference Card</h2>
+
+<p>Condensed from Claude Code best practices, named practitioners, and the Cowork docs. Use these as a checklist when you want to improve a workflow.</p>
+
+<h3>Context hygiene</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T1</td><td>New objective &rarr; new Task</td><td>Starts a fresh context; no stale prefix to reprocess</td></tr>
+    <tr><td>T2</td><td>Watch for the six signs (Section 11)</td><td>Objective signals of context rot &mdash; stop iterating</td></tr>
+    <tr><td>T3</td><td>Hand off with a written summary template</td><td>Primacy bias works for you on turn 1 of a fresh Task</td></tr>
+    <tr><td>T4</td><td>Correct via a new Task, not another turn</td><td>Every correction adds two more turns to the history</td></tr>
+    <tr><td>T5</td><td>Act at ~75% context, not at 95%</td><td>The summarizer is at its least smart when under pressure</td></tr>
+    <tr><td>T6</td><td>Prefer a hand-written brief over relying on auto-compact</td><td>Two-minute investment; you choose what survives</td></tr>
+  </tbody>
+</table>
+
+<h3>Stable-context architecture</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T7</td><td>Put stable rules in <code>SKILL.md</code>, not chat</td><td>Re-loaded every session; never lost to compaction</td></tr>
+    <tr><td>T8</td><td>Tier your skills (always / on-demand / never-loaded)</td><td>Skill sprawl inflates the context budget</td></tr>
+    <tr><td>T9</td><td>Don&rsquo;t enable connectors you won&rsquo;t use this session</td><td>Deferred tool definitions routinely eat 40%+ of the budget</td></tr>
+  </tbody>
+</table>
+
+<h3>Caching-aware prompting</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T10</td><td>Structure every prompt as stable-prefix + dynamic-tail</td><td>Automatic caching hits the 90%-discount path</td></tr>
+    <tr><td>T11</td><td>Mind the cache-prefix minimums (4k tokens on Opus)</td><td>Prefixes under the minimum are never cached</td></tr>
+    <tr><td>T12</td><td>Don&rsquo;t toggle thinking/reasoning modes mid-conversation</td><td>Invalidates the message cache and re-prices everything</td></tr>
+  </tbody>
+</table>
+
+<h3>Sub-agent delegation</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T13</td><td>Use Deep Research when you need a conclusion, not a transcript</td><td>Intermediate tool noise stays out of your parent Task</td></tr>
+    <tr><td>T14</td><td>Include everything the sub-agent needs in the prompt string</td><td>The sub-agent can&rsquo;t see the parent conversation</td></tr>
+  </tbody>
+</table>
+
+<h3>Approvals &amp; tool discipline</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T15</td><td>Batch approvals with &ldquo;Don&rsquo;t ask again&rdquo;</td><td>Fewer approval turns = fewer tokens = more quality</td></tr>
+    <tr><td>T16</td><td>Ask Cowork to plan first, act after you confirm</td><td>Prevents wasted context on wrong approaches</td></tr>
+  </tbody>
+</table>
+
+<h3>Externalize state</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T17</td><td>Put heavy state in OneDrive files, attach by reference</td><td>The file is a stable prefix; chat messages are a growing tail</td></tr>
+    <tr><td>T18</td><td>Attach files at the start of the Task, not drip-fed</td><td>Keeps attachments in the cacheable prefix region</td></tr>
+    <tr><td>T19</td><td>Break one long job into multiple Cowork Tasks</td><td>Research &rarr; draft &rarr; review, each with fresh context</td></tr>
+    <tr><td>T20</td><td>Kill and restart without guilt</td><td>The cost of starting fresh is small; the cost of a 150k-token session is large</td></tr>
+  </tbody>
+</table>
+
+<h3>Scheduled-prompt discipline</h3>
+<table>
+  <thead><tr><th>#</th><th>Tactic</th><th>Why it works</th></tr></thead>
+  <tbody>
+    <tr><td>T21</td><td>Treat scheduled prompts as stateless fresh-context runs</td><td>They are &mdash; don&rsquo;t write &ldquo;continue from yesterday&rdquo;</td></tr>
+    <tr><td>T22</td><td>Structure scheduled output for diff-ability, not narrative</td><td>Fixed sections + fixed length = a dashboard over time</td></tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 18 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-18">18. Troubleshooting &mdash; &ldquo;It Got Weird&rdquo; Field Guide</h2>
+
+<p>Symptom &rarr; likely cause &rarr; fix. Print this page and tape it to your monitor.</p>
+
+<table>
+  <thead>
+    <tr><th>Symptom you observe</th><th>What&rsquo;s actually happening</th><th>Fix</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Responses are getting slower</td>
+      <td>Context length has grown; per-turn attention work is quadratic</td>
+      <td>Summary-and-restart in a new Task (Section 11 template)</td>
+    </tr>
+    <tr>
+      <td>Forgot the tone/format you set earlier</td>
+      <td>Rule was given in chat; auto-compact dropped it</td>
+      <td>Move the rule into a <code>SKILL.md</code> (Section 12) and restart</td>
+    </tr>
+    <tr>
+      <td>Keeps re-reading the same file</td>
+      <td>Earlier read fell out of the compacted summary</td>
+      <td>Attach the file fresh at the start of a new Task</td>
+    </tr>
+    <tr>
+      <td>Hallucinated a file path, name, or link</td>
+      <td>Late-session context rot; primacy/recency bias breaking mid-context recall</td>
+      <td>Restart; ask it to verify every path/name/link against Graph before citing</td>
+    </tr>
+    <tr>
+      <td>Agreed with your pushback when it was actually right</td>
+      <td>Sycophancy &mdash; documented behavior in RLHF-trained models</td>
+      <td>In the restart, ask for reasoning before a verdict; resist saying &ldquo;try again&rdquo;</td>
+    </tr>
+    <tr>
+      <td>Task keeps asking clarifying questions</td>
+      <td>The brief was underspecified or the sub-agent didn&rsquo;t get the full context</td>
+      <td>Rewrite the prompt with the goal, data sources, constraints, and output destination &mdash; see Section 14 template</td>
+    </tr>
+    <tr>
+      <td>Approval dialog fired 11 times in a row</td>
+      <td>You didn&rsquo;t use &ldquo;Don&rsquo;t ask again&rdquo;</td>
+      <td>On approval #1, select &ldquo;don&rsquo;t ask again for this conversation&rdquo;</td>
+    </tr>
+    <tr>
+      <td>Scheduled prompt stopped producing useful output</td>
+      <td>Data sources drifted, or the prompt assumed state from prior runs</td>
+      <td>Edit the scheduled prompt; make it self-contained; add fixed section structure (Section 13)</td>
+    </tr>
+    <tr>
+      <td>Cowork said it couldn&rsquo;t access a file you clearly own</td>
+      <td>File is encrypted, or sits in a SharePoint library with ACLs that don&rsquo;t cascade to Cowork</td>
+      <td>Move to an un-encrypted location; verify the ACL; re-try</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>The universal reset, in order</h3>
+<ol>
+  <li>Ask for a handoff brief (Section 11 template)</li>
+  <li>Open a new Task</li>
+  <li>Paste the brief as the first message</li>
+  <li>Attach any files the brief references</li>
+  <li>Proceed</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">The workshop one-liner</div>
+  <div class="callout-body">
+    <p>Cowork has no memory between turns. Every message you press Enter on re-sends the whole conversation. <strong>Longer thread = more cost AND worse output.</strong> Start fresh often.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 19 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-19">19. Further Reading &amp; Sources</h2>
+
+<p>Every claim in this guide traces to one of the sources below. Grouped by evidence tier.</p>
+
+<h3>Microsoft &amp; Anthropic primary</h3>
+<ol>
+  <li><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/03/09/copilot-cowork-a-new-way-of-getting-work-done/">Microsoft 365 Blog &mdash; <em>Copilot Cowork: a new way of getting work done</em></a> (Lamanna, Mar 9 2026)</li>
+  <li><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/03/30/copilot-cowork-now-available-in-frontier/">Microsoft 365 Blog &mdash; <em>Copilot Cowork now available in Frontier</em></a> (Spataro, Mar 30 2026)</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-faq">Microsoft Learn &mdash; Cowork common questions (Frontier) FAQ</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/scheduled-prompts">Microsoft Learn &mdash; Manage Scheduled Prompts</a></li>
+  <li><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2025/09/24/expanding-model-choice-in-microsoft-365-copilot/">Microsoft 365 Blog &mdash; <em>Expanding model choice in Microsoft 365 Copilot</em></a> (Lamanna, Sep 24 2025)</li>
+  <li><a href="https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-anthropic-claude-opus-4-7-in-microsoft-365-copilot/4511666">Microsoft Tech Community &mdash; Claude Opus 4.7 in M365 Copilot</a> (Apr 16 2026)</li>
+  <li><a href="https://claude.com/blog/claude-now-available-in-microsoft-365-copilot">Anthropic &mdash; Claude now available in Microsoft 365 Copilot</a> (Sep 24 2025)</li>
+  <li><a href="https://claude.com/blog/using-claude-code-session-management-and-1m-context">Anthropic &mdash; Using Claude Code: session management and 1M context</a> (Apr 15 2026)</li>
+  <li><a href="https://platform.claude.com/docs/en/build-with-claude/working-with-messages">Anthropic &mdash; Using the Messages API (statelessness)</a></li>
+  <li><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching">Anthropic &mdash; Prompt caching</a></li>
+  <li><a href="https://code.claude.com/docs/en/agent-sdk/subagents">Anthropic &mdash; Claude Code subagents</a></li>
+  <li><a href="https://docs.claude.com/en/release-notes/system-prompts">Anthropic &mdash; System Prompts release notes</a></li>
+  <li><a href="https://code.claude.com/docs/en/agent-sdk/modifying-system-prompts">Anthropic &mdash; Modifying system prompts (Claude Code Agent SDK)</a></li>
+  <li><a href="https://docs.anthropic.com/en/api/messages">Anthropic &mdash; Messages API (temperature defaults)</a></li>
+  <li><a href="https://claude.com/download">Anthropic &mdash; Download Claude (desktop bundle)</a></li>
+  <li><a href="https://www.anthropic.com/product/claude-cowork">Anthropic &mdash; Claude Cowork product page</a></li>
+  <li><a href="https://claude.com/product/cowork">Anthropic &mdash; Cowork: Claude Code power for knowledge work</a></li>
+  <li><a href="https://claude.com/claude-for-excel">Anthropic &mdash; Claude for Excel</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork">Microsoft Learn &mdash; Use Cowork</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-architecture">Microsoft Learn &mdash; Microsoft 365 Copilot architecture</a></li>
+</ol>
+
+<h3>Claude product family &amp; April 2026 launches</h3>
+<ol start="22">
+  <li><a href="https://techcrunch.com/2026/04/17/anthropic-launches-claude-design-a-new-product-for-creating-quick-visuals/">TechCrunch &mdash; Anthropic launches Claude Design</a> (Apr 17 2026)</li>
+  <li><a href="https://9to5mac.com/2026/04/14/anthropic-adds-repeatable-routines-feature-to-claude-code-heres-how-it-works/">9to5Mac &mdash; Claude Code Routines</a> (Apr 14 2026)</li>
+  <li><a href="https://venturebeat.com/technology/anthropics-claude-cowork-finally-lands-on-windows-and-it-wants-to-automate">VentureBeat &mdash; Claude Cowork lands on Windows</a> (Feb 11 2026)</li>
+  <li><a href="https://venturebeat.com/orchestration/we-tested-anthropics-redesigned-claude-code-desktop-app-and-routines-heres-what-enterprises-should-know">VentureBeat &mdash; Redesigned Claude Code desktop &amp; Routines</a> (Apr 15 2026)</li>
+  <li><a href="https://docs.github.com/en/copilot">GitHub &mdash; GitHub Copilot docs</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/faq-code-interpreter">Microsoft Learn &mdash; Copilot Studio code interpreter FAQ</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/power-automate/copilot-overview">Microsoft Learn &mdash; Copilot in Power Automate overview</a></li>
+  <li><a href="https://techcommunity.microsoft.com/blog/excelblog/introducing-copilot-support-for-python-in-excel-advanced-data-analysis-using-nat/3928120">Microsoft Tech Community &mdash; Copilot support for Python in Excel</a></li>
+</ol>
+
+<h3>Peer-reviewed research (context rot, multi-turn degradation)</h3>
+<ol start="30">
+  <li><a href="https://arxiv.org/abs/1706.03762">Vaswani et al., &ldquo;Attention Is All You Need,&rdquo; NeurIPS 2017</a></li>
+  <li><a href="https://arxiv.org/abs/2205.14135">Dao et al., &ldquo;FlashAttention,&rdquo; NeurIPS 2022</a></li>
+  <li><a href="https://arxiv.org/abs/2307.03172">Liu et al., &ldquo;Lost in the Middle,&rdquo; TACL 2024</a></li>
+  <li><a href="https://arxiv.org/abs/2502.05167">Modarressi et al., &ldquo;NoLiMa: Long-Context Evaluation Beyond Literal Matching,&rdquo; ICML 2025</a></li>
+  <li><a href="https://arxiv.org/abs/2505.06120">Laban et al., &ldquo;LLMs Get Lost In Multi-Turn Conversation,&rdquo; 2025 (Microsoft Research + Salesforce)</a></li>
+  <li><a href="https://arxiv.org/abs/2310.13548">Sharma et al., &ldquo;Towards Understanding Sycophancy in Language Models,&rdquo; ICLR 2024 (Anthropic)</a></li>
+  <li><a href="https://research.trychroma.com/context-rot">Hong et al., &ldquo;Context Rot,&rdquo; Chroma Research 2025</a></li>
+</ol>
+
+<h3>Named practitioners</h3>
+<ol start="37">
+  <li><a href="https://www.geekwire.com/2026/microsofts-new-copilot-cowork-integrates-anthropics-claude-in-rollout-of-new-e7-licensing-tier/">GeekWire &mdash; Microsoft&rsquo;s new Copilot Cowork integrates Anthropic&rsquo;s Claude</a> (Bishop, Mar 9 2026)</li>
+  <li><a href="https://idm.net.au/article/0015519-claude-now-inside-your-m365-tenant-mind-data-residency-gap">IDM Magazine &mdash; Claude now inside your M365 tenant: mind the data-residency gap</a> (Mar 26 2026)</li>
+  <li><a href="https://www.linkedin.com/pulse/copilot-cowork-everything-you-need-know-your-day-107-brunner-nikolla-tyr2e/">Pascal Brunner-Nikolla (MVP) &mdash; Copilot Cowork: Your Day 107</a></li>
+  <li><a href="https://www.hubsite365.com/en-ww/crm-pages/copilot-cowork-2-use-cases-for-daily-scheduled-tasks.htm">Ami Diamond (MVP) &mdash; Cowork: 2 use cases for daily scheduled tasks</a></li>
+  <li><a href="https://buckleyplanet.com/2026/04/5-things-you-need-to-know-about-copilot-cowork/">Christian Buckley (MVP) &mdash; 5 things you need to know about Copilot Cowork</a></li>
+  <li><a href="https://www.forbes.com/sites/janakirammsv/2026/02/05/microsoft-dreamed-of-the-digital-coworker-anthropic-built-it/">Forbes &mdash; Janakiram MSV on the digital coworker</a></li>
+  <li><a href="https://www.sitepoint.com/claude-code-context-management/">SitePoint &mdash; Context Management for Long-Running Claude Code Sessions</a> (Mickiewicz, Mar 20 2026)</li>
+  <li><a href="https://www.morphllm.com/claude-code-compact">Morph LLM &mdash; Claude Code Compact</a> (Mar 13 2026)</li>
+  <li><a href="https://medium.com/@nustianrwp/managing-your-context-window-clear-vs-compact-in-claude-code-8b00ae2ed91b">Medium: Mubashar &mdash; Clear vs Compact</a> (Feb 23 2026)</li>
+  <li><a href="https://cc.bruniaux.com/cheatsheets/m04-compact-vs-clear/">bruniaux.com &mdash; M04 Compact vs Clear cheat sheet</a></li>
+  <li><a href="https://thesciencetalk.com/ai-academy/claude-code-context-window-explained/">The Science Talk &mdash; Claude Code Context Window Explained</a> (Apr 15 2026)</li>
+  <li><a href="https://medium.com/@jpranav97/stop-wasting-tokens-how-to-optimize-claude-code-context-by-60-bfad6fd477e5">Jpranav (Medium) &mdash; Stop Wasting Tokens</a> (Nov 2025)</li>
+  <li><a href="https://costlens.dev/blog/prompt-caching-anthropic-game-changer">CostLens.dev &mdash; Anthropic&rsquo;s Prompt Caching</a> (Nov 3 2025)</li>
+  <li><a href="https://simonwillison.net/2024/May/29/training-not-chatting/">Simon Willison &mdash; LLMs are stateless functions</a></li>
+  <li><a href="https://jameshoward.us/2024/11/26/context-degradation-syndrome-when-large-language-models-lose-the-plot">James Howard &mdash; Context Degradation Syndrome</a></li>
+  <li><a href="https://www.linkedin.com/pulse/scheduling-copilot-prompts-good-bad-ugly-cameron-fuller-brz6c/">Cameron Fuller (Quisitive) &mdash; Scheduling Copilot Prompts: The Good, the Bad, the Ugly</a></li>
+</ol>
+
+<h3>Glossary</h3>
+<ul>
+  <li><strong>Stateless API</strong> &mdash; The backend has no memory; every turn re-sends the full conversation.</li>
+  <li><strong>Context rot</strong> &mdash; Quality decay as the conversation grows. Anthropic&rsquo;s own term.</li>
+  <li><strong>Prompt caching</strong> &mdash; Server-side reuse of a request prefix; ~90% read discount; 5-minute default TTL.</li>
+  <li><strong>Auto-compact</strong> &mdash; Summarizes the conversation in place when context fills; lossy; fires around 75-80%.</li>
+  <li><strong>Sub-agent (in Cowork: Deep Research)</strong> &mdash; A fresh-context child agent that returns only its final report.</li>
+  <li><strong>SKILL.md</strong> &mdash; A markdown file in OneDrive with YAML frontmatter that Cowork auto-discovers per session; the durable, cheap context layer.</li>
+  <li><strong>Task</strong> &mdash; Cowork&rsquo;s unit of work: persistent, pausable, re-connectable, auditable, and ideally short-lived per objective.</li>
+</ul>
+
+<div class="callout dark">
+  <div class="callout-title">The final habit loop &mdash; memorize this</div>
+  <div class="callout-body">
+    <p><strong>New objective &rarr; new Task.</strong><br>
+    <strong>Stable rules &rarr; <code>SKILL.md</code>.</strong><br>
+    <strong>Heavy data &rarr; OneDrive file, attached once.</strong><br>
+    <strong>Intermediate reasoning &rarr; Deep Research.</strong><br>
+    <strong>Confidence drops &rarr; summary-and-restart.</strong><br>
+    <strong>Approvals &rarr; batch with &ldquo;Don&rsquo;t ask again.&rdquo;</strong></p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<div style="text-align:center;padding:22px 0;color:#6b7280;font-size:.85rem;">
+  <p style="margin:0;">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, TD SYNNEX &nbsp;&middot;&nbsp; <a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
+  <p style="margin:6px 0 0;">Companion to the <em>Give Me an Hour Today: Copilot Cowork</em> workshop. Re-verify model IDs, pricing, and product gates before re-delivering &mdash; this space moves quickly.</p>
+</div>
+
+</body>
+</html>

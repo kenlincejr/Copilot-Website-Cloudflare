@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M043WCF3JM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M043WCF3JM');
+</script>
+<!-- End Google Analytics -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microsoft Copilot Field Guide | Teams vs. Microsoft 365 App</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — matches frontier.html
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+  --green:      #065f46;
+  --green-bg:   #f0fdf4;
+  --green-bd:   #bbf7d0;
+  --orange:     #92400e;
+  --orange-bg:  #fff8ed;
+  --orange-bd:  #f5ddb0;
+  --red:        #7f1d1d;
+  --red-bg:     #fef2f2;
+  --red-bd:     #fecaca;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 28px 64px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADINGS
+   ═══════════════════════════════════════════════════════ */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2.2rem 0; }
+strong { color: inherit; font-weight: 600; }
+code {
+  font-family: 'Cascadia Code', 'Courier New', monospace;
+  font-size: .875em;
+  background: #f3f4f6;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--navy);
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════════ */
+.page-header {
+  text-align: center;
+  padding: 36px 0 28px;
+  border-bottom: 3px solid var(--teal);
+  margin-bottom: 22px;
+}
+.page-header .doc-type {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 12px;
+}
+.page-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -.5px;
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.page-header h1 span { color: var(--teal); }
+.page-header .subtitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+.page-header .meta {
+  font-size: .9rem;
+  color: #6b7280;
+}
+.page-header .meta strong { color: var(--navy); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   TABLE OF CONTENTS
+   ═══════════════════════════════════════════════════════ */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc-part {
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin: 14px 0 8px;
+}
+.toc-part:first-of-type { margin-top: 0; }
+.toc ul {
+  columns: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+  gap: 0 32px;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 700px) { .toc ul { columns: 1; } }
+
+/* ═══════════════════════════════════════════════════════
+   BACK TO TOC
+   ═══════════════════════════════════════════════════════ */
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════
+   PART DIVIDER
+   ═══════════════════════════════════════════════════════ */
+.part-divider {
+  background: var(--navy);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 22px 28px;
+  margin: 32px 0 20px;
+  border-left: 6px solid var(--ltblue);
+}
+.part-divider .part-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #a8ecf5;
+  margin-bottom: 6px;
+}
+.part-divider .part-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -.2px;
+}
+.part-divider .part-sub {
+  font-size: .95rem;
+  color: rgba(255,255,255,.78);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CALLOUTS
+   ═══════════════════════════════════════════════════════ */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: var(--orange-bd);
+  border-left-color: #d97706;
+}
+.callout.green {
+  background: var(--green-bg);
+  border-color: var(--green-bd);
+  border-left-color: #16a34a;
+}
+.callout.red {
+  background: var(--red-bg);
+  border-color: var(--red-bd);
+  border-left-color: #dc2626;
+}
+.callout.navy {
+  background: var(--navy);
+  border-color: var(--teal);
+  border-left-color: var(--teal);
+  color: rgba(255,255,255,.85);
+}
+.callout.navy .callout-title { color: #a8ecf5; }
+.callout.navy .callout-body { color: rgba(255,255,255,.82); }
+.callout.navy strong { color: #fff; }
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .875rem;
+  letter-spacing: .2px;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout.green .callout-title { color: #065f46; }
+.callout.red .callout-title { color: #991b1b; }
+.callout-body { margin: 0; font-size: .94rem; line-height: 1.65; }
+
+/* ═══════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .9rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td { border: 1px solid var(--border); padding: 11px 14px; vertical-align: top; }
+th {
+  background: var(--navy);
+  text-align: left;
+  font-weight: 600;
+  color: #fff;
+  font-size: .85rem;
+}
+tr:nth-child(even) td { background: var(--muted); }
+td.td-navy { font-weight: 700; color: var(--navy); }
+td.td-teal { font-weight: 600; color: var(--teal); }
+td.td-red { color: #cc2200; font-weight: 600; }
+td.td-green { color: #065f46; font-weight: 600; }
+td.td-warn { background: #fff8f0 !important; }
+td.center { text-align: center; font-weight: 700; color: var(--teal); font-size: 1.05rem; }
+
+/* ═══════════════════════════════════════════════════════
+   SECTION LABEL CHIP
+   ═══════════════════════════════════════════════════════ */
+.sec-chip {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TWO-COL GRID
+   ═══════════════════════════════════════════════════════ */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 14px 0; }
+@media (max-width: 700px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════════════
+   MODE CARDS (side-by-side comparison)
+   ═══════════════════════════════════════════════════════ */
+.mode-card {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+}
+.mode-card.teams { border-top-color: var(--teal); }
+.mode-card.m365  { border-top-color: var(--ltblue); }
+.mode-card .mode-label {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.mode-card.m365 .mode-label { color: var(--ltblue); }
+.mode-card .mode-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+.mode-card .mode-hook {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 8px;
+}
+.mode-card .mode-body {
+  font-size: .9rem;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+.mode-card .mode-best {
+  font-size: .85rem;
+  color: #374151;
+  line-height: 1.55;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin: 10px 0 0;
+}
+.mode-card .mode-best strong { color: var(--teal); }
+.mode-card.m365 .mode-best strong { color: var(--ltblue); }
+
+/* ═══════════════════════════════════════════════════════
+   SCENARIO ROWS
+   ═══════════════════════════════════════════════════════ */
+.scenarios { margin: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.scenario {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.scenario-text { padding: 14px 18px; }
+.scenario-q { font-size: .95rem; font-weight: 700; color: var(--navy); margin: 0 0 4px; line-height: 1.35; }
+.scenario-desc { font-size: .88rem; color: #374151; margin: 0; line-height: 1.55; }
+.scenario-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px 14px;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1.3;
+}
+.scenario-pick.teams { background: var(--accent); color: var(--teal); border-left: 3px solid var(--teal); }
+.scenario-pick.m365  { background: #eaf4fa; color: #1d4ed8; border-left: 3px solid var(--ltblue); }
+@media (max-width: 700px) {
+  .scenario { grid-template-columns: 1fr; }
+  .scenario-pick { border-left: none; border-top: 2px solid var(--border); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   APP DISAMBIGUATION CARDS
+   ═══════════════════════════════════════════════════════ */
+.app-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+@media (max-width: 700px) { .app-compare { grid-template-columns: 1fr; } }
+.app-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.app-card.not-this { background: var(--muted); opacity: .92; }
+.app-card.this-one { border: 2px solid var(--teal); background: var(--accent); }
+.app-card .app-flag {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.app-card.not-this .app-flag { background: #e5e7eb; color: #6b7280; }
+.app-card.this-one .app-flag { background: var(--teal); color: #fff; }
+.app-card .app-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 8px;
+}
+.app-card .app-body { font-size: .9rem; color: #374151; margin: 0; line-height: 1.6; }
+
+/* ═══════════════════════════════════════════════════════
+   TAGLINE BANNER
+   ═══════════════════════════════════════════════════════ */
+.tagline {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin: 22px 0;
+  line-height: 1.55;
+}
+.tagline em { color: var(--teal); font-style: normal; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════════
+   DOWNLOAD PANEL
+   ═══════════════════════════════════════════════════════ */
+.download-panel {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin: 18px 0;
+}
+.download-left {
+  background: var(--navy);
+  color: #fff;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.download-left .dl-kicker {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #a8ecf5;
+  margin-bottom: 6px;
+}
+.download-left .dl-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+.download-left .dl-sub {
+  font-size: .9rem;
+  color: rgba(255,255,255,.8);
+  margin: 0;
+  line-height: 1.55;
+}
+.download-right {
+  padding: 18px 22px;
+  background: #fff;
+}
+.download-right table {
+  margin: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+.download-right table th,
+.download-right table td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 10px;
+  font-size: .88rem;
+}
+.download-right table tr:last-child td { border-bottom: none; }
+.download-right table tr:nth-child(even) td { background: transparent; }
+.download-right table td:first-child {
+  font-weight: 700;
+  color: var(--navy);
+  width: 90px;
+}
+.download-right .direct-link {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--border);
+  font-size: .9rem;
+  color: var(--text);
+}
+.download-right .direct-link strong { color: var(--teal); }
+@media (max-width: 700px) { .download-panel { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════════════
+   DECISION CARD TABLE (checkmarks)
+   ═══════════════════════════════════════════════════════ */
+.decision-card th { text-align: left; }
+.decision-card td.pick {
+  text-align: center;
+  font-weight: 700;
+  color: var(--teal);
+  font-size: 1.1rem;
+}
+.decision-card td.pick.m365 { color: var(--ltblue); }
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════ */
+.page-footer {
+  text-align: center;
+  font-size: .8rem;
+  color: #9ca3af;
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  letter-spacing: .05em;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="doc-type">Microsoft 365 Copilot · Internal Briefing Guide</div>
+  <h1>Microsoft Copilot Field Guide &nbsp;<span>Teams vs. Microsoft 365 App</span></h1>
+  <div class="subtitle">Choosing the right Copilot — a practical guide for everyday users and a technical deep dive for IT pros and power users</div>
+  <div class="meta">Classification: <strong>Internal Briefing Guide</strong> &nbsp;·&nbsp; Audience: Microsoft 365 end users, IT pros, and Copilot practitioners</div>
+</div>
+
+<!-- TOC -->
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <p class="toc-part">Part One — User Guide</p>
+    <ul>
+      <li><a href="#section-1">The 30-Second Answer</a></li>
+      <li><a href="#section-2">Getting the Microsoft 365 Copilot App</a></li>
+      <li><a href="#section-3">Wait — Which App Is Which?</a></li>
+      <li><a href="#section-4">Understanding the Two Work Modes</a></li>
+      <li><a href="#section-5">Which Copilot Is Right for Your Situation?</a></li>
+      <li><a href="#section-6">Real-World Scenarios</a></li>
+      <li><a href="#section-7">Quick-Reference Decision Card</a></li>
+    </ul>
+    <p class="toc-part">Part Two — Technical Deep Dive</p>
+    <ul style="counter-reset: toc-counter 7;">
+      <li><a href="#section-8">Same Brain, Different Assumptions</a></li>
+      <li><a href="#section-9">How Context Is Loaded</a></li>
+      <li><a href="#section-10">Retrieval Architecture: Narrow vs. Expansive</a></li>
+      <li><a href="#section-11">Search Mode vs. Chat Mode</a></li>
+      <li><a href="#section-12">Reasoning Posture</a></li>
+      <li><a href="#section-13">Microsoft Graph and Data Access</a></li>
+      <li><a href="#section-14">Summary: The Design Philosophy</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ PART ONE -->
+<div class="part-divider">
+  <div class="part-label">Part One · User Guide</div>
+  <div class="part-title">Choosing the Right Copilot</div>
+  <p class="part-sub">A clear, practical guide for anyone getting started with Microsoft Copilot.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 1 -->
+<span class="sec-chip">Section 1</span>
+<h2 id="section-1">The 30-Second Answer</h2>
+
+<p>Microsoft gives you two Copilot entry points. Choosing the right one from the start makes every interaction faster and more useful. The short version:</p>
+
+<table>
+  <thead><tr><th>If you are…</th><th>Open this Copilot</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>In a Teams chat, meeting, or channel — work is actively happening</td>
+      <td class="td-teal">Copilot in Microsoft Teams</td>
+    </tr>
+    <tr>
+      <td>Not inside a specific task — exploring, planning, or searching for something</td>
+      <td class="td-teal">Microsoft 365 Copilot App</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
+<span class="sec-chip">Section 2</span>
+<h2 id="section-2">Getting the Microsoft 365 Copilot App</h2>
+
+<p>Copilot in Teams is already built in — no installation needed. The <strong>Microsoft 365 Copilot App</strong> is a free standalone download available on Windows, Mac, iOS, and Android.</p>
+
+<div class="download-panel">
+  <div class="download-left">
+    <div class="dl-kicker">Available on all major platforms</div>
+    <div class="dl-title">Free to download</div>
+    <p class="dl-sub">Sign in with your work Microsoft 365 account — the same one you use for Teams and Outlook.</p>
+  </div>
+  <div class="download-right">
+    <table>
+      <tbody>
+        <tr><td>Windows</td><td>microsoft365.com/copilot or Microsoft Store</td></tr>
+        <tr><td>macOS</td><td>microsoft365.com/copilot or Mac App Store</td></tr>
+        <tr><td>iOS</td><td>Apple App Store — search "Microsoft 365 Copilot"</td></tr>
+        <tr><td>Android</td><td>Google Play — search "Microsoft 365 Copilot"</td></tr>
+      </tbody>
+    </table>
+    <div class="direct-link">Direct link: <strong>microsoft365.com/copilot</strong></div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
+<span class="sec-chip">Section 3</span>
+<h2 id="section-3">Wait — Which App Is Which?</h2>
+
+<p>When you search the app stores, you'll see two different Copilot apps from Microsoft. They are not the same thing. Here's what you need to know:</p>
+
+<div class="app-compare">
+  <div class="app-card not-this">
+    <div class="app-flag">Not this one</div>
+    <div class="app-name">Microsoft Copilot</div>
+    <p class="app-body">The general-purpose consumer AI assistant — similar to ChatGPT. It is <strong>not</strong> connected to your Microsoft 365 work data and does not see your emails, files, or meetings. Good for personal tasks and general questions, but not what this guide is about.</p>
+  </div>
+  <div class="app-card this-one">
+    <div class="app-flag">✓ This one</div>
+    <div class="app-name">Microsoft 365 Copilot</div>
+    <p class="app-body">The work-focused AI assistant. Connected to your organization's Microsoft 365 data — email, files, Teams, calendar, SharePoint. This is the app described throughout this guide, and the one you want for everything covered here.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
+<span class="sec-chip">Section 4</span>
+<h2 id="section-4">Understanding the Two Work Modes</h2>
+
+<p>The reason there are two Copilots isn't about features — both can answer questions, write, summarize, and brainstorm. The difference is <strong>what you're trying to do when you open them</strong>. Microsoft designed each one around a different mental state.</p>
+
+<div class="g2">
+  <div class="mode-card teams">
+    <div class="mode-label">Copilot in Microsoft Teams</div>
+    <h3 class="mode-title" style="color: var(--navy); margin: 0 0 10px;">You're already in the middle of work.</h3>
+    <p class="mode-body">Think of this as a <strong>smart teammate sitting next to you</strong> while a meeting is happening or a conversation is live. It already knows the chat thread, transcript, and attached files — and skips straight to helping you act.</p>
+    <p class="mode-best"><strong>Best for:</strong> Summarizing meetings · Drafting replies · Generating action items · Catching up on threads</p>
+  </div>
+  <div class="mode-card m365">
+    <div class="mode-label">Microsoft 365 Copilot App</div>
+    <h3 class="mode-title" style="color: var(--navy); margin: 0 0 10px;">You're figuring out what to work on next.</h3>
+    <p class="mode-body">Think of this as a <strong>quiet research room</strong> where nothing is assumed. You can search broadly across your email, files, meetings, and chats without already knowing exactly what you're looking for.</p>
+    <p class="mode-best"><strong>Best for:</strong> Finding documents · Researching across projects · Planning · Exploring before you dive in</p>
+  </div>
+</div>
+
+<div class="tagline">
+  <em>Copilot in Teams</em> helps you <em>execute</em>.<br>
+  The <em>Microsoft 365 Copilot App</em> helps you <em>orient</em>.
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
+<span class="sec-chip">Section 5</span>
+<h2 id="section-5">Which Copilot Is Right for Your Situation?</h2>
+
+<p>A useful mental test: do you already know what task you're in? If yes, open Teams. If you're still figuring out what needs to happen, open the M365 Copilot App.</p>
+
+<div class="callout">
+  <div class="callout-title">■ The Execution vs. Orientation Test</div>
+  <div class="callout-body">"Am I doing something right now — or figuring out what to do?"<br><br>
+    <strong>Doing something</strong> (in a meeting, replying to a thread, reviewing a document) → Use <strong>Copilot in Teams</strong>.<br>
+    <strong>Figuring out what to do</strong> (finding a file, preparing for a project, planning next steps) → Use the <strong>Microsoft 365 Copilot App</strong>.
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 6 -->
+<span class="sec-chip">Section 6</span>
+<h2 id="section-6">Real-World Scenarios</h2>
+
+<p>Not sure which to open? Match your situation to one of these common cases.</p>
+
+<div class="scenarios">
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You joined a 45-minute Teams meeting 20 minutes late</p>
+      <p class="scenario-desc">Ask "Catch me up" — Copilot has the live transcript and summarizes what you missed in seconds.</p>
+    </div>
+    <div class="scenario-pick teams">Copilot in Teams</div>
+  </div>
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You need to find a proposal from last quarter</p>
+      <p class="scenario-desc">Search or chat across all your files and emails without knowing exactly where it was saved.</p>
+    </div>
+    <div class="scenario-pick m365">M365 Copilot App</div>
+  </div>
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You want to draft a reply to a long channel thread</p>
+      <p class="scenario-desc">Copilot reads the thread and drafts a reply in context — no copy-pasting required.</p>
+    </div>
+    <div class="scenario-pick teams">Copilot in Teams</div>
+  </div>
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You're preparing for a client you haven't spoken to in months</p>
+      <p class="scenario-desc">Ask Copilot to surface recent emails, shared files, and meeting notes involving that client across all of M365.</p>
+    </div>
+    <div class="scenario-pick m365">M365 Copilot App</div>
+  </div>
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You want action items from yesterday's standup</p>
+      <p class="scenario-desc">Copilot pulls the recorded transcript and generates a structured action item list automatically.</p>
+    </div>
+    <div class="scenario-pick teams">Copilot in Teams</div>
+  </div>
+  <div class="scenario">
+    <div class="scenario-text">
+      <p class="scenario-q">You don't know what you need — you just know there's something to figure out</p>
+      <p class="scenario-desc">Start here. The app's broader, exploratory design is built for open-ended starting points.</p>
+    </div>
+    <div class="scenario-pick m365">M365 Copilot App</div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 7 -->
+<span class="sec-chip">Section 7</span>
+<h2 id="section-7">Quick-Reference Decision Card</h2>
+
+<p>Keep this handy for your first few weeks. The choice becomes instinctive quickly.</p>
+
+<table class="decision-card">
+  <thead>
+    <tr>
+      <th>Signal</th>
+      <th style="width:140px; text-align:center;">Teams Copilot</th>
+      <th style="width:140px; text-align:center;">M365 App</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>You're inside a Teams chat or channel</td><td class="pick">✓</td><td></td></tr>
+    <tr><td>You're in or just finished a meeting</td><td class="pick">✓</td><td></td></tr>
+    <tr><td>You need to search across all your files</td><td></td><td class="pick m365">✓</td></tr>
+    <tr><td>You want to catch up on a project</td><td></td><td class="pick m365">✓</td></tr>
+    <tr><td>You're drafting a response to a message</td><td class="pick">✓</td><td></td></tr>
+    <tr><td>You don't know what to search for yet</td><td></td><td class="pick m365">✓</td></tr>
+    <tr><td>You need action items from a call</td><td class="pick">✓</td><td></td></tr>
+    <tr><td>You need to research across many sources</td><td></td><td class="pick m365">✓</td></tr>
+    <tr><td>Speed is the priority</td><td class="pick">✓</td><td></td></tr>
+    <tr><td>Exploration is the priority</td><td></td><td class="pick m365">✓</td></tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+
+<!-- ═══════════════════════════════════════════════════════ PART TWO -->
+<div class="part-divider">
+  <div class="part-label">Part Two · Technical Deep Dive</div>
+  <div class="part-title">Under the Hood</div>
+  <p class="part-sub">For IT pros, power users, and anyone who wants to understand what's actually happening.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 8 -->
+<span class="sec-chip">Section 8</span>
+<h2 id="section-8">Same Brain, Different Assumptions</h2>
+
+<p>A common misconception is that Teams Copilot and the M365 Copilot App are different AI systems. <strong>They are not.</strong> Both run on the same foundation model, the same Copilot orchestration layer, and query the same Microsoft Graph with the same permissions. Your data access is identical in both surfaces.</p>
+
+<p>What differs is the <strong>pre-prompt context</strong> — the information Copilot receives before it ever reads your message. This pre-loaded context shapes everything: how broadly Copilot searches, how quickly it synthesizes, and what it assumes you're trying to accomplish.</p>
+
+<div class="callout navy">
+  <div class="callout-title">■ Shared Infrastructure (Both Apps)</div>
+  <div class="callout-body">
+    <strong>Foundation model:</strong> Same large language model powering both experiences<br>
+    <strong>Orchestration:</strong> Same Microsoft Copilot service layer<br>
+    <strong>Permissions:</strong> Same Microsoft Graph data access — org security policy applies equally<br>
+    <strong>Agents:</strong> Same Researcher and Analyst agents available in both<br>
+    <strong>What changes:</strong> Context density, retrieval scope, and default reasoning posture
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 9 -->
+<span class="sec-chip">Section 9</span>
+<h2 id="section-9">How Context Is Loaded</h2>
+
+<p>Every Copilot interaction begins with a <strong>system prompt</strong> — a behind-the-scenes instruction set that tells the model who you are, what you have access to, and what it should prioritize. In Teams, that system prompt is automatically populated with rich contextual data from your current session. In the M365 app, it is not.</p>
+
+<h3>Teams Copilot — Context-Dense Mode</h3>
+<p>When you open Copilot inside a Teams chat, channel, or meeting, the orchestration layer pre-loads the following <em>before</em> processing your prompt:</p>
+<ul>
+  <li>The current conversation thread (messages, reactions, shared files)</li>
+  <li>The meeting transcript if a call is in progress or recently ended</li>
+  <li>Participant list and recent activity within the thread</li>
+  <li>A computed time window — Copilot determines what counts as 'recent'</li>
+  <li>Files attached or referenced within the active thread context</li>
+</ul>
+<p>This dense pre-loading lets Copilot skip the discovery phase entirely. It already knows what's relevant. Retrieval is <strong>narrow and fast</strong> — optimized for synthesis speed over breadth.</p>
+
+<h3>M365 Copilot App — Context-Expansive Mode</h3>
+<p>When you open the M365 Copilot App, no session-specific context is pre-loaded. The system prompt gives Copilot access to your full M365 tenant data but does not narrow the scope. Copilot must infer relevance from your prompt alone.</p>
+<ul>
+  <li>No assumed conversation, meeting, or thread</li>
+  <li>Full Microsoft Graph scope: email, files, calendar, chats, SharePoint, Teams data</li>
+  <li>Discovery is part of the interaction — Copilot surfaces breadth before depth</li>
+  <li>Search mode is a first-class interface, not a secondary option</li>
+  <li>Results are diverse across content types before being synthesized</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 10 -->
+<span class="sec-chip">Section 10</span>
+<h2 id="section-10">Retrieval Architecture: Narrow vs. Expansive</h2>
+
+<p>Microsoft 365 Copilot uses <strong>semantic search over the Microsoft Graph</strong> — an index of your organization's emails, chats, files, calendar events, and SharePoint content. The critical architectural difference between the two surfaces is <em>how aggressively retrieval is scoped</em> before your prompt is processed.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Retrieval Dimension</th>
+      <th>Copilot in Teams</th>
+      <th>M365 Copilot App</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="td-navy">Search scope</td><td>Narrow — current thread / meeting</td><td>Broad — full Microsoft Graph</td></tr>
+    <tr><td class="td-navy">Source diversity</td><td>Low — current context prioritized</td><td>High — mail, files, chats, calendar</td></tr>
+    <tr><td class="td-navy">Pre-filtering</td><td>Aggressive — time window + thread</td><td>Minimal — relies on your prompt</td></tr>
+    <tr><td class="td-navy">Synthesis timing</td><td>Immediate</td><td>After exploration (on request)</td></tr>
+    <tr><td class="td-navy">Result surface</td><td>Composed summary or draft</td><td>Search results + optional summary</td></tr>
+    <tr><td class="td-navy">Latency profile</td><td>Lower (smaller retrieval surface)</td><td>Higher (broader search)</td></tr>
+    <tr><td class="td-navy">Best when you know…</td><td>Exactly what task you're in</td><td>Nothing yet — still discovering</td></tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 11 -->
+<span class="sec-chip">Section 11</span>
+<h2 id="section-11">Search Mode vs. Chat Mode</h2>
+
+<p>Both apps offer <strong>Chat</strong>. Only the M365 Copilot App prominently offers <strong>Search</strong> as a standalone, first-class mode. This is not cosmetic — the two modes operate with fundamentally different output objectives.</p>
+
+<div class="g2">
+  <div class="callout green" style="margin:0">
+    <div class="callout-title">◉ Search Mode — M365 Copilot App only</div>
+    <div class="callout-body"><strong>Optimized for finding and scanning — not immediate synthesis.</strong><br><br>
+      You see raw materials: documents, emails, meeting clips. You control what to open and what matters. Copilot acts as a <em>retrieval engine first, assistant second</em>. Filters, people-based discovery, and result diversity are all first-class UI elements.</div>
+  </div>
+  <div class="callout" style="margin:0">
+    <div class="callout-title">◉ Chat Mode — available in both apps</div>
+    <div class="callout-body"><strong>Optimized for producing outputs — synthesis is immediate.</strong><br><br>
+      Copilot reads your prompt, retrieves evidence in the background, and returns a composed answer or draft. Evidence is hidden unless you ask to see it. <em>Teams Copilot skips the search phase almost entirely — chat is its only mode.</em></div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 12 -->
+<span class="sec-chip">Section 12</span>
+<h2 id="section-12">Reasoning Posture</h2>
+
+<p>One of the most important — and least visible — differences between the two Copilots is the <strong>reasoning posture</strong> embedded in their system prompts. This posture determines how Copilot internally frames your request before reasoning begins.</p>
+
+<div class="callout">
+  <div class="callout-title">■ Teams Copilot — Execution Posture</div>
+  <div class="callout-body">"Given this specific context, what is the best next action or output?"<br><br>
+    Copilot assumes you are in <strong>execution mode</strong>. It prioritizes output completeness over retrieval breadth, synthesizes faster, produces fewer caveats, and optimizes for actionable responses. <strong>Tradeoff:</strong> it may miss information outside the current thread.</div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ M365 Copilot App — Sense-Making Posture</div>
+  <div class="callout-body">"Given everything this user has access to, what might be relevant to their question?"<br><br>
+    Copilot assumes you may be in <strong>discovery mode</strong>. It preserves result diversity, surfaces more source types, and defers synthesis until you ask for it. <strong>Tradeoff:</strong> responses may feel slower or more exploratory when you already know exactly what you need.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 13 -->
+<span class="sec-chip">Section 13</span>
+<h2 id="section-13">Microsoft Graph and Data Access</h2>
+
+<p><strong>Microsoft Graph</strong> is the unified API powering Copilot's access to your organizational data — indexing Exchange, SharePoint, OneDrive, Teams, and other M365 services. Both Copilot surfaces query the same Graph with <strong>identical permissions</strong>. Security and compliance policies apply equally.</p>
+
+<p>The difference is <em>how the query is scoped</em>: Teams Copilot appends thread-specific filters automatically; the M365 Copilot App sends broader semantic queries and lets results determine scope.</p>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ Important — Data Access and Privacy</div>
+  <div class="callout-body">Neither Copilot surface grants access beyond your existing Microsoft 365 permissions. Copilot cannot surface files you don't have access to, emails not addressed to you, or content your admin has restricted. <strong>Sensitivity labels, DLP policies, and Microsoft Purview compliance controls apply in both apps equally.</strong></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 14 -->
+<span class="sec-chip">Section 14</span>
+<h2 id="section-14">Summary: The Design Philosophy</h2>
+
+<p>Each Copilot surface is purpose-built for a different cognitive mode: <strong>doing</strong> (executing a known task) or <strong>thinking</strong> (figuring out what to do next).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Design Dimension</th>
+      <th>Copilot in Teams</th>
+      <th>M365 Copilot App</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="td-navy">Assumed cognitive state</td><td>Execution</td><td>Orientation / Discovery</td></tr>
+    <tr><td class="td-navy">Assumed urgency</td><td>High</td><td>Low to moderate</td></tr>
+    <tr><td class="td-navy">Retrieval strategy</td><td>Narrow and fast</td><td>Broad and thorough</td></tr>
+    <tr><td class="td-navy">Synthesis timing</td><td>Immediate</td><td>On demand</td></tr>
+    <tr><td class="td-navy">UI metaphor</td><td>Teammate in the room</td><td>Quiet research library</td></tr>
+    <tr><td class="td-navy">Primary failure mode</td><td>Misses outside-context info</td><td>Can feel slow for urgent tasks</td></tr>
+    <tr><td class="td-navy">Primary UX signal</td><td>Speed and completeness</td><td>Breadth and control</td></tr>
+  </tbody>
+</table>
+
+<div class="tagline">
+  One Copilot helps you <em>decide</em>. The other helps you <em>deliver</em>.<br>
+  Both are powerful. The right choice depends on where you are in your work.
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+
+<div class="page-footer">Microsoft 365 Copilot · Internal Briefing Guide</div>
+
+</body>
+</html>
