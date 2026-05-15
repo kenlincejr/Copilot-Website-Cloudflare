@@ -1,0 +1,17 @@
+{
+  "peerAverage": 52,
+  "peerByStage": {
+    "0": 18,
+    "1": 38,
+    "2": 72,
+    "3": 78,
+    "4": 84,
+    "5": 91
+  },
+  "cohorts": [
+    { "label": "Early SMB partners", "score": 38, "description": "Registered, Action Pack, or Partner Launch firms building first repeatable motions." },
+    { "label": "Designation-ready SMB partners", "score": 63, "description": "Partners with a strong certification base and multiple documented customer adds." },
+    { "label": "Specialization candidates", "score": 78, "description": "Solutions Partners with customer proof, deployment depth, and incentive readiness." },
+    { "label": "Frontier-track leaders", "score": 88, "description": "Multi-designation firms with advanced specializations and repeatable AI delivery proof." }
+  ]
+}

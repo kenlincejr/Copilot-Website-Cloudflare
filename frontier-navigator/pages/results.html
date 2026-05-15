@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Results | Frontier Navigator</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell="../"></div>
+    <main class="page" data-require-assessment>
+      <div data-results-root>
+        <section class="section" style="margin-top:0;">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Results</p>
+              <h2>Your readiness position</h2>
+              <p class="lede">Directional estimate only. Use this for planning, then validate the official score in Partner Center.</p>
+            </div>
+            <div class="action-row">
+              <a class="button secondary" href="assessment.html">Edit assessment</a>
+              <a class="button primary" href="roadmap.html">View roadmap</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="score-hero">
+            <div class="score-ring" data-score-ring>
+              <div class="score-ring-content">
+                <span class="score-number" data-score-number>0</span>
+                <span class="score-caption">estimated PCS</span>
+              </div>
+            </div>
+            <div>
+              <p class="section-kicker">You are here</p>
+              <h2 data-stage-name>Stage</h2>
+              <p class="lede">Next milestone: <strong data-next-stage></strong></p>
+              <div class="action-row" style="margin-top:14px;">
+                <span data-priority class="status-pill">Priority</span>
+                <span class="status-pill" data-confidence></span>
+              </div>
+              <p style="margin-top:14px;" data-priority-detail></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">PCS breakdown</p>
+              <h2>Where the points are coming from</h2>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="bar-list" data-score-bars></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Continuum</p>
+              <h2>Stage map</h2>
+            </div>
+          </div>
+          <div class="stage-map" data-stage-map></div>
+        </section>
+
+        <section class="section grid two">
+          <article class="panel">
+            <p class="section-kicker">Blocking issues</p>
+            <h2>What to fix next</h2>
+            <ul data-gaps></ul>
+          </article>
+          <article class="panel">
+            <p class="section-kicker">Next best actions</p>
+            <h2>Start here</h2>
+            <ol data-actions></ol>
+          </article>
+        </section>
+
+        <section class="section">
+          <div class="action-row">
+            <a class="button primary" href="roadmap.html">Generate 90-day plan</a>
+            <a class="button secondary" href="compare.html">Compare to peers</a>
+            <a class="button secondary" href="export.html">Export scorecard</a>
+          </div>
+        </section>
+      </div>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+  <script src="../assets/js/scoring.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/results.js"></script>
+</body>
+</html>

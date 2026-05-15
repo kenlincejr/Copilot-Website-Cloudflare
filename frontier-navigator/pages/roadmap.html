@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roadmap | Frontier Navigator</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell="../"></div>
+    <main class="page" data-require-assessment>
+      <section class="section" style="margin-top:0;">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">90-day roadmap</p>
+            <h2>Move from readiness insight to execution.</h2>
+            <p class="lede">Built from your estimated PCS of <strong data-roadmap-score></strong>, current stage <strong data-roadmap-stage></strong>, and primary focus <strong data-roadmap-focus></strong>.</p>
+          </div>
+          <div class="action-row">
+            <a class="button secondary" href="results.html">Back to results</a>
+            <a class="button primary" href="export.html">Export plan</a>
+          </div>
+        </div>
+      </section>
+      <section class="timeline" data-roadmap></section>
+      <section class="section grid two">
+        <article class="card">
+          <div class="card-label">Operating cadence</div>
+          <h3>Review every two weeks</h3>
+          <p>Use the checklist as a sprint board. Certification, customer adds, and proof packets should each have a named owner.</p>
+        </article>
+        <article class="card">
+          <div class="card-label">Source of record</div>
+          <h3>Validate in Partner Center</h3>
+          <p>Use the Navigator to plan and prioritize, then reconcile against the official PCS dashboard before applying for designation.</p>
+        </article>
+      </section>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+  <script src="../assets/js/scoring.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/roadmap.js"></script>
+</body>
+</html>

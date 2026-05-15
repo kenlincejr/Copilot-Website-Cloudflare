@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frontier Navigator | TD SYNNEX Partner Readiness Platform</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/continuum.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell=""></div>
+    <main class="page">
+      <section class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="eyebrow">TD SYNNEX Frontier Practice Builder</div>
+            <h1>Where are you in the Microsoft Frontier journey?</h1>
+            <p>Take a focused five-minute assessment and get a partner-ready view of your MAICPP stage, estimated PCS score, blockers, and 90-day roadmap.</p>
+            <div class="hero-actions">
+              <a class="button primary" href="pages/assessment.html">Start assessment</a>
+              <a class="button secondary" href="pages/results.html">View saved results</a>
+            </div>
+          </div>
+          <div class="continuum-visual" data-mini-continuum></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="metric-strip">
+          <div class="metric-card">
+            <span class="metric-value">5 min</span>
+            <span class="metric-label">guided self-assessment</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">100</span>
+            <span class="metric-label">estimated PCS point model</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">90 days</span>
+            <span class="metric-label">prioritized action plan</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value">0 logins</span>
+            <span class="metric-label">static, local-first experience</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Core value</p>
+            <h2>Clarity for partners. Signal for TD SYNNEX.</h2>
+            <p class="lede">The app translates MAICPP complexity into practical next moves for SMB partners while creating a clean handoff artifact for business development teams.</p>
+          </div>
+        </div>
+        <div class="grid three">
+          <article class="card">
+            <div class="card-label">For partners</div>
+            <h3>Know the next milestone</h3>
+            <p>See your estimated stage, score, gaps, and specific actions without decoding multiple Partner Center screens.</p>
+          </article>
+          <article class="card">
+            <div class="card-label">For sellers</div>
+            <h3>Prioritize the right accounts</h3>
+            <p>Surface partners close to designation range and identify where a BDM, certification push, or proof packet can move the outcome.</p>
+          </article>
+          <article class="card">
+            <div class="card-label">Differentiation</div>
+            <h3>Make the path usable</h3>
+            <p>Combine estimation, decision support, benchmarks, and enablement resources in one sharp static experience.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">How it works</p>
+            <h2>From partner profile to action plan.</h2>
+          </div>
+          <a class="button ghost" href="pages/assessment.html">Begin now</a>
+        </div>
+        <div class="grid three">
+          <article class="card">
+            <div class="card-label">Step 1</div>
+            <h3>Assess</h3>
+            <p>Answer 15 focused questions covering tier, designations, certifications, customer adds, ACR growth, deployments, and BDM coverage.</p>
+          </article>
+          <article class="card">
+            <div class="card-label">Step 2</div>
+            <h3>Analyze</h3>
+            <p>The scoring engine estimates PCS by performance, skilling, usage growth, and deployments, then highlights what is blocking the next milestone.</p>
+          </article>
+          <article class="card">
+            <div class="card-label">Step 3</div>
+            <h3>Activate</h3>
+            <p>Export a partner scorecard, email-ready BDM summary, and 30/60/90-day checklist matched to stage and solution focus.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Continuum</p>
+            <h2>The MAICPP path, made visible.</h2>
+            <p class="lede">The Navigator tracks the practical SMB path from registration through Solutions Partner designations, specialization readiness, and Frontier status.</p>
+          </div>
+        </div>
+        <div class="stage-map" data-stage-map></div>
+      </section>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+
+  <script src="assets/js/scoring.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var summary = window.FrontierNavigator.getAssessmentSummary();
+      window.FrontierUI.renderMiniContinuum(document.querySelector("[data-mini-continuum]"), summary.stage || 0);
+      window.FrontierUI.renderStageMap(document.querySelector("[data-stage-map]"), summary.stage || 0);
+    });
+  </script>
+</body>
+</html>

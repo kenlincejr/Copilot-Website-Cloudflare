@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Microsoft partner continuum stages</title>
+  <desc id="desc">A six-stage pathway from registered partner through Frontier Partner status.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#001f3a"/>
+      <stop offset="0.52" stop-color="#003057"/>
+      <stop offset="1" stop-color="#005f6b"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" x2="1">
+      <stop offset="0" stop-color="#6ec1e4"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-30%" width="120%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#001f3a" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="360" rx="18" fill="url(#bg)"/>
+  <path d="M80 184H1120" stroke="url(#line)" stroke-width="8" stroke-linecap="round"/>
+  <g font-family="Segoe UI, Arial, sans-serif" text-anchor="middle">
+    <g transform="translate(90 184)">
+      <circle r="32" fill="#fff" filter="url(#shadow)"/>
+      <text y="7" font-size="22" font-weight="800" fill="#003057">0</text>
+      <text y="74" font-size="18" font-weight="800" fill="#fff">Registered</text>
+      <text y="99" font-size="13" fill="#cceff5">Partner Center basics</text>
+    </g>
+    <g transform="translate(294 184)">
+      <circle r="32" fill="#fff" filter="url(#shadow)"/>
+      <text y="7" font-size="22" font-weight="800" fill="#003057">1</text>
+      <text y="74" font-size="18" font-weight="800" fill="#fff">Partner Launch</text>
+      <text y="99" font-size="13" fill="#cceff5">Starter benefits</text>
+    </g>
+    <g transform="translate(498 184)">
+      <circle r="32" fill="#fff" filter="url(#shadow)"/>
+      <text y="7" font-size="22" font-weight="800" fill="#003057">2</text>
+      <text y="74" font-size="18" font-weight="800" fill="#fff">Solutions Partner</text>
+      <text y="99" font-size="13" fill="#cceff5">70+ PCS points</text>
+    </g>
+    <g transform="translate(702 184)">
+      <circle r="32" fill="#fff" filter="url(#shadow)"/>
+      <text y="7" font-size="22" font-weight="800" fill="#003057">3</text>
+      <text y="74" font-size="18" font-weight="800" fill="#fff">Second Designation</text>
+      <text y="99" font-size="13" fill="#cceff5">Broader GTM</text>
+    </g>
+    <g transform="translate(906 184)">
+      <circle r="32" fill="#fff" filter="url(#shadow)"/>
+      <text y="7" font-size="22" font-weight="800" fill="#003057">4</text>
+      <text y="74" font-size="18" font-weight="800" fill="#fff">Copilot Specialization</text>
+      <text y="99" font-size="13" fill="#cceff5">Customer proof</text>
+    </g>
+    <g transform="translate(1110 184)">
+      <circle r="36" fill="#d97706" filter="url(#shadow)"/>
+      <text y="8" font-size="24" font-weight="900" fill="#fff">5</text>
+      <text y="78" font-size="18" font-weight="800" fill="#fff">Frontier Partner</text>
+      <text y="103" font-size="13" fill="#ffe8c5">Elite readiness</text>
+    </g>
+  </g>
+</svg>

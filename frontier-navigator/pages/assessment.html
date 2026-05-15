@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assessment | Frontier Navigator</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell="../"></div>
+    <main class="page">
+      <section class="wizard-layout">
+        <aside class="panel wizard-sidebar">
+          <p class="section-kicker">Assessment</p>
+          <h2>Partner readiness profile</h2>
+          <p class="lede">Answers are saved locally in this browser. No backend, login, or Partner Center export is required.</p>
+          <div style="margin-top:18px;">
+            <div class="progress-track" aria-label="Assessment progress">
+              <span class="progress-fill" data-progress-fill></span>
+            </div>
+            <p style="margin-top:10px; color:var(--muted);">
+              <strong data-progress-text>Question 1 of 15</strong><br>
+              <span data-progress-percent>0% complete</span>
+            </p>
+          </div>
+          <div class="action-row" style="margin-top:18px;">
+            <button class="button danger" type="button" data-clear>Clear answers</button>
+          </div>
+        </aside>
+        <section class="panel question-card" data-question></section>
+      </section>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+  <script src="../assets/js/scoring.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/assessment.js"></script>
+</body>
+</html>

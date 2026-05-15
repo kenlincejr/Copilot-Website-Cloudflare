@@ -1,0 +1,66 @@
+[
+  {
+    "title": "MAICPP Readiness Clinic",
+    "type": "TD SYNNEX enablement",
+    "stage": ["0", "1", "2"],
+    "focus": ["modern_work", "security", "azure", "not_sure"],
+    "description": "A guided working session for decoding designation requirements, PCS gaps, and the 90-day plan.",
+    "url": "https://www.tdsynnex.com/na/us/microsoft/"
+  },
+  {
+    "title": "Partner Center Association Checklist",
+    "type": "TD SYNNEX template",
+    "stage": ["0", "1", "2", "3"],
+    "focus": ["modern_work", "security", "azure", "not_sure"],
+    "description": "A practical checklist for PAL association, customer proof, and deployment documentation.",
+    "url": "https://partner.microsoft.com/"
+  },
+  {
+    "title": "Microsoft Learn: Teams Administrator",
+    "type": "Certification path",
+    "stage": ["1", "2"],
+    "focus": ["modern_work"],
+    "description": "Recommended Modern Work certification path for partners targeting Teams and collaboration motions.",
+    "url": "https://learn.microsoft.com/credentials/certifications/m365-teams-administrator-associate/"
+  },
+  {
+    "title": "Microsoft Learn: Security Operations Analyst",
+    "type": "Certification path",
+    "stage": ["1", "2", "3"],
+    "focus": ["security"],
+    "description": "Recommended Security certification path for partners building Defender and Sentinel capacity.",
+    "url": "https://learn.microsoft.com/credentials/certifications/security-operations-analyst/"
+  },
+  {
+    "title": "Microsoft Learn: Azure Solutions Architect",
+    "type": "Certification path",
+    "stage": ["1", "2", "3"],
+    "focus": ["azure"],
+    "description": "Recommended Azure certification path for partners targeting Azure designations and project services.",
+    "url": "https://learn.microsoft.com/credentials/certifications/azure-solutions-architect/"
+  },
+  {
+    "title": "Copilot Customer Proof Packet",
+    "type": "TD SYNNEX template",
+    "stage": ["2", "3", "4"],
+    "focus": ["modern_work", "security", "not_sure"],
+    "description": "A field-ready packet for capturing customer outcomes, deployment evidence, and attestation details.",
+    "url": "https://www.tdsynnex.com/na/us/microsoft/"
+  },
+  {
+    "title": "Microsoft Commerce Incentives Overview",
+    "type": "Microsoft program guide",
+    "stage": ["1", "2", "3", "4"],
+    "focus": ["modern_work", "security", "azure", "not_sure"],
+    "description": "Use this to validate incentive enrollment requirements before applying for designation benefits.",
+    "url": "https://partner.microsoft.com/membership/incentives"
+  },
+  {
+    "title": "Microsoft AI Cloud Partner Program",
+    "type": "Microsoft program guide",
+    "stage": ["0", "1", "2", "3", "4"],
+    "focus": ["modern_work", "security", "azure", "not_sure"],
+    "description": "Official program entry point for designations, specializations, benefits, and Partner Center guidance.",
+    "url": "https://partner.microsoft.com/membership"
+  }
+]

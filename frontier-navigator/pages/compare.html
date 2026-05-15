@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compare | Frontier Navigator</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell="../"></div>
+    <main class="page" data-require-assessment>
+      <section class="section" style="margin-top:0;">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Benchmark</p>
+            <h2>Your score versus SMB readiness cohorts.</h2>
+            <p class="lede">Current stage: <strong data-compare-stage></strong>. Peer comparison: <strong data-compare-delta></strong>.</p>
+          </div>
+          <a class="button primary" href="roadmap.html">Turn into roadmap</a>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="compare-bars" data-compare></div>
+      </section>
+      <section class="section grid three">
+        <article class="card">
+          <div class="card-label">Interpretation</div>
+          <h3>Use cohorts as planning bands</h3>
+          <p>Benchmarks are static planning references, not Microsoft-published performance rankings.</p>
+        </article>
+        <article class="card">
+          <div class="card-label">Close to 70</div>
+          <h3>Prioritize fast points</h3>
+          <p>If you are within 10 points of 70, skilling and deployment proof are often the fastest levers.</p>
+        </article>
+        <article class="card">
+          <div class="card-label">Above 70</div>
+          <h3>Prepare evidence</h3>
+          <p>At designation range, the next constraint is often customer documentation, specialization proof, and incentive setup.</p>
+        </article>
+      </section>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+  <script src="../assets/js/scoring.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/compare.js"></script>
+</body>
+</html>

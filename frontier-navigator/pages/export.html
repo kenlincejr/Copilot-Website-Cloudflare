@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Export | Frontier Navigator</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div data-nav-shell="../"></div>
+    <main class="page" data-require-assessment>
+      <section class="section" style="margin-top:0;">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Export</p>
+            <h2>Partner scorecard and BDM handoff.</h2>
+            <p class="lede">Generate a clean planning artifact, export the raw local data, or pre-fill an email summary for TD SYNNEX follow-up.</p>
+          </div>
+          <a class="button secondary no-print" href="results.html">Back to results</a>
+        </div>
+      </section>
+
+      <section class="grid two no-print">
+        <label class="field-control">
+          <span class="card-label">Partner name</span>
+          <input type="text" data-partner-name placeholder="CloudEdge Solutions">
+        </label>
+        <label class="field-control">
+          <span class="card-label">BDM name</span>
+          <input type="text" data-bdm-name placeholder="Your TD SYNNEX BDM">
+        </label>
+      </section>
+
+      <section class="section panel" data-export-preview>
+        <div class="score-hero">
+          <div>
+            <p class="section-kicker">Scorecard</p>
+            <h2><span data-export-score></span>/100 estimated PCS</h2>
+            <p class="lede">Current stage: <strong data-export-stage></strong>. Engagement priority: <strong data-export-priority></strong>.</p>
+          </div>
+          <div class="bar-list" data-export-bars></div>
+        </div>
+      </section>
+
+      <section class="section grid two">
+        <article class="panel">
+          <p class="section-kicker">Recommended actions</p>
+          <h2>BDM-ready next steps</h2>
+          <ol data-export-actions></ol>
+        </article>
+        <article class="panel no-print">
+          <p class="section-kicker">Outputs</p>
+          <h2>Download or share</h2>
+          <div class="action-row" style="margin-top:14px;">
+            <button class="button primary" type="button" data-download-pdf>Download PDF</button>
+            <button class="button secondary" type="button" data-email-bdm>Email BDM</button>
+            <button class="button secondary" type="button" data-download-text>Text report</button>
+            <button class="button ghost" type="button" data-download-json>Raw JSON</button>
+          </div>
+          <p style="margin-top:14px;">If PDF libraries are blocked by the browser, the PDF button opens the print dialog as a fallback.</p>
+        </article>
+      </section>
+    </main>
+    <div data-footer-shell></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="../assets/js/scoring.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/export.js"></script>
+</body>
+</html>

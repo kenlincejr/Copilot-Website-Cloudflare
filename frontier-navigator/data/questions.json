@@ -1,0 +1,184 @@
+[
+  {
+    "id": "currentTier",
+    "label": "What is your current MAICPP tier?",
+    "type": "select",
+    "required": true,
+    "help": "This establishes your starting point on the Microsoft AI Cloud Partner Program continuum.",
+    "options": [
+      { "value": "registered", "label": "Registered Partner" },
+      { "value": "action_pack", "label": "Action Pack" },
+      { "value": "partner_launch", "label": "Partner Launch Benefits" },
+      { "value": "solutions_partner", "label": "Solutions Partner" },
+      { "value": "frontier", "label": "Frontier Partner" }
+    ]
+  },
+  {
+    "id": "designation",
+    "label": "Do you have an active Solutions Partner designation?",
+    "type": "select",
+    "required": true,
+    "help": "Solutions Partner designations are the main bridge into specializations and Frontier readiness.",
+    "options": [
+      { "value": "none", "label": "None" },
+      { "value": "modern_work", "label": "Modern Work" },
+      { "value": "security", "label": "Security" },
+      { "value": "azure", "label": "Azure" },
+      { "value": "business_apps", "label": "Business Applications" },
+      { "value": "multiple", "label": "Multiple designations" }
+    ]
+  },
+  {
+    "id": "intermediateCerts",
+    "label": "How many individuals hold Microsoft intermediate certifications?",
+    "type": "number",
+    "min": 0,
+    "max": 50,
+    "required": true,
+    "help": "Use unique individuals, not duplicated certificate counts."
+  },
+  {
+    "id": "advancedCerts",
+    "label": "How many individuals hold advanced role-based certifications?",
+    "type": "number",
+    "min": 0,
+    "max": 50,
+    "required": true,
+    "help": "Examples include SC-200, MS-700, AZ-305, AZ-500, and similar role-based credentials."
+  },
+  {
+    "id": "m365Customers",
+    "label": "How many active customers do you have with Microsoft 365 licenses?",
+    "type": "number",
+    "min": 0,
+    "max": 10000,
+    "required": true,
+    "help": "A directional indicator of Modern Work reach and expansion potential."
+  },
+  {
+    "id": "azureCustomers",
+    "label": "How many active customers do you have with Azure consumption?",
+    "type": "number",
+    "min": 0,
+    "max": 10000,
+    "required": true,
+    "help": "Azure customer count helps estimate performance and deployment readiness."
+  },
+  {
+    "id": "newCustomers12Mo",
+    "label": "In the last 12 months, how many new customers have you added with at least $500 per month Azure spend?",
+    "type": "number",
+    "min": 0,
+    "max": 1000,
+    "required": true,
+    "help": "This approximates the SMB path performance category for net customer adds."
+  },
+  {
+    "id": "monthlyAcr",
+    "label": "What is your approximate total Azure Consumed Revenue per month?",
+    "type": "select",
+    "required": true,
+    "help": "A range is enough. This helps calibrate SMB versus enterprise path recommendations.",
+    "options": [
+      { "value": "lt_10k", "label": "Less than $10K" },
+      { "value": "10_50k", "label": "$10K to $50K" },
+      { "value": "50_100k", "label": "$50K to $100K" },
+      { "value": "100_500k", "label": "$100K to $500K" },
+      { "value": "500k_plus", "label": "$500K+" },
+      { "value": "unknown", "label": "Not sure" }
+    ]
+  },
+  {
+    "id": "acrGrowthPercent",
+    "label": "Has your total Azure Consumed Revenue grown in the last 12 months?",
+    "type": "select",
+    "required": true,
+    "help": "Use the closest range if you do not have an exact number.",
+    "options": [
+      { "value": "none", "label": "No growth or decline" },
+      { "value": "1-10%", "label": "1% to 10%" },
+      { "value": "10-25%", "label": "10% to 25%" },
+      { "value": "25-50%", "label": "25% to 50%" },
+      { "value": "50%+", "label": "50%+" },
+      { "value": "unknown", "label": "Not sure" }
+    ]
+  },
+  {
+    "id": "deploymentsChecked",
+    "label": "Have you deployed any of these solutions in the last 12 months?",
+    "type": "checkbox",
+    "required": false,
+    "help": "Select documented or documentable deployments tied to customer work.",
+    "options": [
+      { "value": "copilot_m365", "label": "Copilot for Microsoft 365" },
+      { "value": "defender_endpoint", "label": "Defender for Endpoint" },
+      { "value": "avd", "label": "Azure Virtual Desktop" },
+      { "value": "intune", "label": "Intune" },
+      { "value": "azure_migrate", "label": "Azure Migrate" }
+    ]
+  },
+  {
+    "id": "caseStudies",
+    "label": "Do you have documented customer success stories or case studies?",
+    "type": "select",
+    "required": true,
+    "help": "Customer proof is critical for specialization and Frontier readiness.",
+    "options": [
+      { "value": "none", "label": "None" },
+      { "value": "one", "label": "1" },
+      { "value": "two_three", "label": "2 to 3" },
+      { "value": "four_plus", "label": "4+" }
+    ]
+  },
+  {
+    "id": "mciEnrolled",
+    "label": "Are you enrolled in Microsoft Commerce Incentives?",
+    "type": "select",
+    "required": true,
+    "help": "MCI enrollment helps confirm incentive readiness after designation.",
+    "options": [
+      { "value": "yes", "label": "Yes" },
+      { "value": "no", "label": "No" },
+      { "value": "unknown", "label": "Not sure" }
+    ]
+  },
+  {
+    "id": "primaryFocus",
+    "label": "Which solution area is your primary business focus?",
+    "type": "select",
+    "required": true,
+    "help": "The roadmap will prioritize certification and deployment actions around this area.",
+    "options": [
+      { "value": "modern_work", "label": "Modern Work" },
+      { "value": "security", "label": "Security" },
+      { "value": "azure", "label": "Azure" },
+      { "value": "not_sure", "label": "Not sure" }
+    ]
+  },
+  {
+    "id": "goal12Mo",
+    "label": "What is your number one goal for the next 12 months?",
+    "type": "select",
+    "required": true,
+    "help": "This lets the tool tune the recommendations to what you are trying to accomplish.",
+    "options": [
+      { "value": "first_solutions_partner", "label": "Earn first Solutions Partner designation" },
+      { "value": "add_specialization", "label": "Add a specialization" },
+      { "value": "reach_frontier", "label": "Reach Frontier Partner status" },
+      { "value": "grow_revenue", "label": "Grow Microsoft cloud revenue" },
+      { "value": "unsure", "label": "Unsure" }
+    ]
+  },
+  {
+    "id": "hasBdm",
+    "label": "Do you have a TD SYNNEX Business Development Manager assigned to you?",
+    "type": "select",
+    "required": true,
+    "help": "This determines whether the export recommends a direct handoff or a routing request.",
+    "options": [
+      { "value": "yes", "label": "Yes" },
+      { "value": "no", "label": "No" },
+      { "value": "unknown", "label": "Not sure" }
+    ]
+  }
+]

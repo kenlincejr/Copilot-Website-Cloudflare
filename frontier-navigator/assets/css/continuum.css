@@ -1,0 +1,63 @@
+.continuum-visual {
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.continuum-title {
+  color: #ffffff;
+  margin: 0 0 14px;
+  font-size: .86rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.continuum-line {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mini-stage {
+  min-height: 84px;
+  border-radius: 7px;
+  padding: 10px;
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .18);
+}
+
+.mini-stage strong {
+  display: block;
+  color: #ffffff;
+  font-size: .78rem;
+  line-height: 1.2;
+}
+
+.mini-stage span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, .72);
+  font-size: .72rem;
+  line-height: 1.25;
+}
+
+.mini-stage.highlight {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.mini-stage.highlight strong {
+  color: #003057;
+}
+
+.mini-stage.highlight span {
+  color: #475569;
+}
+
+@media (max-width: 720px) {
+  .continuum-line {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
