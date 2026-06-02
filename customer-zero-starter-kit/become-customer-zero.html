@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Run The Customer Zero Motion | Copilot Playbook</title>
+  <link rel="stylesheet" href="kit.css" />
+  <script defer src="kit.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">Customer Zero Starter Kit</p>
+      <h1 id="page-title">Become Customer Zero first. Then sell the motion.</h1>
+      <p class="sub">Use this operating guide to assign the AI owner, pick the right doers, secure the tenant, train users, govern AI demand, and know when your firm is ready to teach the motion.</p>
+      <p class="meta">Sourced as of June 2026. Microsoft tooling, asset names, and license boundaries move - re-verify before each engagement.</p>
+    </section>
+    <nav class="topnav" aria-label="Customer Zero Starter Kit navigation">
+      <span class="label">Customer Zero Kit</span>
+      <a href="index.html">Overview</a>
+      <a href="become-customer-zero.html" aria-current="page">Become Customer Zero</a>
+      <a href="build-sellable-services.html">Build Sellable Services</a>
+      <a href="../cpb.html">Back to Playbook</a>
+    </nav>
+  </header>
+
+  <main id="main" class="page-layout">
+    <aside class="side-rail" aria-label="Page sections">
+      <div class="rail-title">On This Page</div>
+      <a href="#why">Why This Exists</a>
+      <a href="#owner">AI Owner</a>
+      <a href="#doers">Fastest-ROI Doers</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#tools">Assessment Tools</a>
+      <a href="#phase-guide">Phase Guide</a>
+      <a href="#training">Training</a>
+      <a href="#agents">Agent Governance</a>
+      <a href="#done">Done</a>
+    </aside>
+
+    <div>
+      <section id="why" class="callout">
+        <div class="callout-title">Problem Statement</div>
+        <p class="callout-body">You read the playbook. Now the executive question is: <strong>what do we do Monday morning?</strong> The answer is not "buy licenses and hope." The answer is to become Customer Zero: run the governance, readiness, training, and management motion on your own tenant first, then use the proof to guide your customers.</p>
+      </section>
+
+      <section class="quote-band" aria-label="Customer Zero principle">
+        <p>"Data oversharing is the single largest data security risk that organizations face when deploying Microsoft 365 Copilot."</p>
+        <span>Zero Trust Workshop AI_047</span>
+      </section>
+
+      <p class="reader-note">The basic governance reality does not change: Microsoft 365 Copilot does not break your permission model; it exposes it. Overshared SharePoint sites, anonymous links, stale guests, unlabeled sensitive files, risky OAuth grants, and unmanaged AI use become business risks once users can ask better questions of the data they already have access to.</p>
+
+      <section aria-labelledby="operating-principles">
+        <h2 id="operating-principles">Executive Principles</h2>
+        <div class="exec-strip">
+          <div class="exec-tile"><strong>Go first</strong><span>Your own tenant is the lab, the proof point, and the first case study.</span></div>
+          <div class="exec-tile"><strong>Assign one AI owner</strong><span>Your AI owner runs the motion, routes decisions, and owns the evidence library.</span></div>
+          <div class="exec-tile"><strong>Pick doers, not titles</strong><span>Fastest ROI usually comes from people buried in meetings, email, documents, spreadsheets, and customer follow-up.</span></div>
+          <div class="exec-tile"><strong>Govern before scale</strong><span>Assess, restrict, remediate, simulate labels, train, then expand.</span></div>
+        </div>
+      </section>
+
+      <section id="owner" aria-labelledby="owner-heading">
+        <h2 id="owner-heading">The AI Owner Runs This</h2>
+        <p>Your C-suite sponsors the motion, but your day-to-day owner should be the person already fielding the internal AI questions. In the playbook language: formalize that person with title, budget line, decision rights, and authority to say "no" or "we are productizing that thing I just built." This role is your operating center for Customer Zero.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Customer Zero responsibility</th>
+                <th>Decision rights</th>
+                <th>What they capture</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>AI Owner / Practice Lead</strong></td>
+                <td>Owns the internal AI program, evidence library, intake, prioritization, champion rhythm, and service productization handoff.</td>
+                <td>Can say no, can approve pilots, can escalate risk, can decide what becomes a repeatable service.</td>
+                <td>Program decisions, use cases, blockers, champion wins, productization notes.</td>
+              </tr>
+              <tr>
+                <td><strong>Executive Sponsor</strong></td>
+                <td>Funds the motion, removes blockers, protects time for training, and uses Customer Zero proof in customer conversations.</td>
+                <td>Budget, staffing, risk appetite, commercial packaging priorities.</td>
+                <td>Executive narrative, investment decisions, customer-facing proof themes.</td>
+              </tr>
+              <tr>
+                <td><strong>Delivery Consultant / AI Specialist</strong></td>
+                <td>Runs assessment, remediation, label simulation, training buildout, and delivery runbook capture.</td>
+                <td>Technical recommendations, delivery sequencing, tool-fit recommendation.</td>
+                <td>Time-on-task, exact steps, gotchas, before/after deltas.</td>
+              </tr>
+              <tr>
+                <td><strong>Tenant / M365 Admin</strong></td>
+                <td>Executes privileged changes across Entra ID, SharePoint, Purview, Defender, licensing, and admin center settings.</td>
+                <td>Privileged access, change windows, rollback path.</td>
+                <td>Change log, access review notes, admin steps that need automation.</td>
+              </tr>
+              <tr>
+                <td><strong>Security / Compliance Owner</strong></td>
+                <td>Approves acceptable use, label taxonomy, DLP posture, shadow-AI decisions, and policy enforcement timing.</td>
+                <td>Risk acceptance, sanction/block decisions, label enforcement, policy exceptions.</td>
+                <td>Decision logs, AUP rationale, compliance overlays, exceptions.</td>
+              </tr>
+              <tr>
+                <td><strong>Helpdesk / AI Support</strong></td>
+                <td>Turns recurring questions into an AI support runbook and identifies where users are blocked.</td>
+                <td>Ticket routing, escalation, support scripts.</td>
+                <td>FAQ, ticket patterns, training gaps, adoption blockers.</td>
+              </tr>
+              <tr>
+                <td><strong>Champions / Doers</strong></td>
+                <td>Prove the actual ROI by using Copilot in real workflows and showing what changed.</td>
+                <td>Workflow feedback, prompt patterns, practical adoption truth.</td>
+                <td>Before/after workflow examples, saved time, prompt examples, training feedback.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="doers" aria-labelledby="doers-heading">
+        <h2 id="doers-heading">Pick The Fastest-ROI Doers</h2>
+        <p>The main playbook is direct on this point: a common failure mode is giving early licenses to leaders or IT-only pilots instead of the people whose daily work maps directly to Copilot's strengths. Before broad license assignment, run a 30-minute Champion Identification conversation with the business owner or an engaged department head and pick 5-10 Day 1 champions. These are not honorary roles. They are the users whose workflows become your first proof assets.</p>
+
+        <section class="callout warn">
+          <div class="callout-title">License The Doers First</div>
+          <p class="callout-body">The first Customer Zero cohort should include executive sponsorship, success ownership, champions, and early adopters, but the proof comes from the doers: people creating content, analyzing data, managing communications, running meetings, and serving customers.</p>
+        </section>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Champion profile</th>
+                <th>Why they matter</th>
+                <th>First workflow to prove</th>
+                <th>Evidence to capture</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Account Manager / Outside Sales Rep</strong></td><td>The highest-impact quick-win profile in the playbook: pre-call research, customer follow-up, proposal drafts, meeting notes, and CRM updates.</td><td>Open a Teams meeting transcript and generate the follow-up email plus action list.</td><td>Follow-up time saved, email quality, proposal draft cycle time, customer-facing proof.</td></tr>
+              <tr><td><strong>Project Manager / Operations Lead</strong></td><td>The communication hub for recaps, action items, status updates, and recurring meetings.</td><td>Turn a recorded standup into meeting summary, assigned actions, and draft status email.</td><td>Meeting-prep delta, action-item quality, status-report template, recurring-meeting pattern.</td></tr>
+              <tr><td><strong>Office Manager / Executive Assistant</strong></td><td>Cross-functional inbox, calendar, meeting-material, and communication work that makes Copilot visible fast.</td><td>Turn a messy brain dump into a polished, appropriately toned email or agenda.</td><td>Reusable prompts, communication examples, adoption objections, training questions.</td></tr>
+              <tr><td><strong>HR Manager / People Operations Lead</strong></td><td>Document-heavy work: job descriptions, onboarding, policy updates, and sensitive communication.</td><td>Draft a job description from a short brief, then convert it into an onboarding checklist.</td><td>Drafting time, review notes, sensitivity concerns, policy-label training needs.</td></tr>
+              <tr><td><strong>Finance Manager / Controller / Bookkeeper</strong></td><td>Data-heavy and report-heavy work where plain-English analysis and Excel support matter.</td><td>Use an anonymized spreadsheet to identify trends, outliers, and useful formulas.</td><td>Analysis time saved, formula learning, control questions, board-report examples.</td></tr>
+              <tr><td><strong>Marketing Coordinator / Content Owner</strong></td><td>The one-person content machine: social posts, email campaigns, website copy, and sales collateral.</td><td>Turn a product description into social copy, customer email, and sales-deck slide.</td><td>Editing-time delta, brand-review notes, prompt library, content reuse examples.</td></tr>
+              <tr><td><strong>Meeting-Heavy Middle Manager</strong></td><td>Back-to-back calendar pain where recap, missed-meeting recovery, and action extraction create immediate belief.</td><td>Ask Copilot what decisions were made, what actions they own, and what needs follow-up from a missed meeting.</td><td>Meeting-load baseline, recap time saved, action completion, missed-meeting recovery story.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="roadmap" aria-labelledby="roadmap-heading">
+        <h2 id="roadmap-heading">The 30/60/90 Operating Roadmap</h2>
+        <div class="timeline">
+          <div class="tl"><div class="w">Before Day 1</div><div class="d">Assign your AI owner, executive sponsor, admin owner, security owner, helpdesk owner, and 5-10 champions. Create the evidence library and capture templates.</div></div>
+          <div class="tl"><div class="w">Days 1-30</div><div class="d">Run readiness and exposure assessment, capture before-state, identify red zones, create the first scenario deck, and launch role-specific champion enablement.</div></div>
+          <div class="tl"><div class="w">Days 31-60</div><div class="d">Restrict the worst sites, remediate oversharing, run label simulation, discover shadow AI, draft AUP, and hold the 30-day usage check-in.</div></div>
+          <div class="tl"><div class="w">Days 61-90</div><div class="d">Enforce tuned labels, deliver training, run one management cadence, build or govern the first internal agents, and prepare the 60-day ROI conversation.</div></div>
+          <div class="tl"><div class="w">After 90</div><div class="d">Move from project to operating rhythm: monthly governance, executive reporting, continuous improvement, and service packaging.</div></div>
+        </div>
+        <section class="callout warn">
+          <div class="callout-title">Business Impact Boundary</div>
+          <p class="callout-body">Full Microsoft Copilot Dashboard Business Impact analysis requires at least 65 Copilot users and 65 non-Copilot users. If your firm is smaller, use role-based before/after examples, time-on-task, qualitative feedback, and executive review instead of pretending you have statistically meaningful dashboard depth.</p>
+        </section>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-heading">
+        <h2 id="tools-heading">Assessment Tools: What To Use And When</h2>
+        <p>Always start native; layer only when you hit the native ceiling. Purview DSPM for AI now supports native bulk remediation at scale (Azure Feeds, Apr 8 2026), so third-party tools earn their place only when sprawl exceeds the native ceiling, or when the motion requires multi-tenant MSP operation, white-label reporting, multi-AI governance, or deep runtime monitoring.</p>
+
+        <section class="callout warn">
+          <div class="callout-title">Partner-Asset Caveat</div>
+          <p class="callout-body">Re-verify all partner-asset links before any customer proposal: <code>aka.ms/SOW-Generator</code>, <code>aka.ms/MIP-Labeling-Assistant</code>, <code>aka.ms/MIP-Industry-OnePagers</code>, <code>aka.ms/Deploy-Scripts</code>, <code>aka.ms/Github-CopilotCli-Guide</code>, and the SMB Information Protection asset pack are partner-login-gated and temporary. The Customer Zero sequencing, capture discipline, maturity gate, and GTM ladder are practitioner-consensus synthesis distilled for this motion, not Microsoft doctrine.</p>
+        </section>
+
+        <h3>Microsoft-Native Baseline</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Native tool</th><th>What it answers</th><th>License / boundary</th><th>Use it for</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Copilot Readiness report</strong></td><td>Who is technically eligible and how base apps are used.</td><td>Admin Center; data can take about 72 hours to populate.</td><td>Eligibility and adoption-readiness baseline.</td></tr>
+              <tr><td><strong>Purview DSPM for AI</strong></td><td>Oversharing, unlabeled content, and prompt/data exposure patterns.</td><td>Purview spans E3/E5; richest DSPM-for-AI depth assumes E5 / E5 Compliance.</td><td>Exposure baseline and data-risk story.</td></tr>
+              <tr><td><strong>SharePoint Advanced Management</strong></td><td>Data Access Governance, Restricted Content Discovery, Restricted Access Control.</td><td>SAM is included with the Microsoft 365 Copilot license in the source guidance.</td><td>Worst-site restriction and oversharing triage.</td></tr>
+              <tr><td><strong>Defender for Cloud Apps</strong></td><td>Cloud Discovery, GenAI category filter, and risk scoring.</td><td>Full shadow-AI depth generally requires E5 / E5 Compliance; blocking requires Defender for Endpoint onboarding.</td><td>Shadow AI inventory and sanction/block decisions.</td></tr>
+              <tr><td><strong>Secure Score</strong></td><td>Identity and configuration posture baseline.</td><td>Included.</td><td>Executive baseline and before/after posture tracking.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Partner Tool Comparison</h3>
+        <p>Scores below are a 1-5 partner-usefulness read for this Customer Zero motion, not an independent benchmark. Where pricing is not publicly stated by the vendor, do not estimate it in a customer proposal. Native Purview DSPM for AI closes much of the bulk-remediation gap; use third-party tooling only when the delivery model exceeds the native ceiling.</p>
+        <div class="table-wrap tool-matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Primary job</th>
+                <th>Explicit Copilot readiness?</th>
+                <th>Remediation fit</th>
+                <th>Target size</th>
+                <th>MSP fit</th>
+                <th>Public pricing</th>
+                <th>Overall</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Syskit Point</strong></td><td>SharePoint/Teams governance + readiness</td><td>Yes - Copilot Readiness Dashboard</td><td>5</td><td>SMB-to-mid</td><td>4</td><td>Not publicly stated (quote)</td><td><strong>4.3</strong></td></tr>
+              <tr><td><strong>AvePoint</strong></td><td>Governance + automated remediation + lifecycle</td><td>Yes - Copilot Readiness and Sustainable Adoption</td><td>5</td><td>Mid-to-enterprise + MSP</td><td>5</td><td>Not publicly stated (quote)</td><td><strong>4.4</strong></td></tr>
+              <tr><td><strong>Cloudiway AI Readiness</strong></td><td>White-label MSP assessment</td><td>Yes - AI Readiness / Copilot readiness</td><td>3</td><td>SMB via MSP</td><td>5</td><td>MSP charges client ~$5K-$15K/audit; platform subscription not public</td><td><strong>3.8</strong></td></tr>
+              <tr><td><strong>Rencore Governance</strong></td><td>M365 + multi-AI governance</td><td>Yes - M365 Copilot Governance</td><td>4</td><td>SMB-to-enterprise + MSP</td><td>4</td><td>Public: ~$0.55-$1.10 / user / month</td><td><strong>4.1</strong></td></tr>
+              <tr><td><strong>ShareGate Protect</strong></td><td>Migration heritage + governance/security</td><td>Yes - Copilot readiness in Protect</td><td>4</td><td>SMB-to-mid</td><td>3</td><td>Migrate tiers public; Protect "Contact Us"</td><td><strong>3.9</strong></td></tr>
+              <tr><td><strong>Varonis</strong></td><td>Data security posture + runtime monitoring</td><td>Yes - Varonis for M365 Copilot</td><td>5</td><td>Enterprise / regulated</td><td>3</td><td>Not publicly stated (quote)</td><td><strong>4.3</strong></td></tr>
+              <tr><td><strong>LayerX</strong></td><td>Browser / AI-runtime security</td><td>Yes - AI/browser data-leak protection</td><td>2</td><td>Enterprise</td><td>3</td><td>Not publicly stated (quote)</td><td><strong>3.4</strong></td></tr>
+              <tr><td><strong>UnifyCloud CloudAtlas AI</strong></td><td>Agentic AI build + AI governance</td><td>Indirect - AI Guardian shadow-AI/data-leak prevention</td><td>2</td><td>SMB-to-enterprise via partner</td><td>4</td><td>Not publicly stated (Azure Marketplace)</td><td><strong>3.6</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="phase-guide" aria-labelledby="phase-heading">
+        <h2 id="phase-heading">Phase-By-Phase Customer Zero Guide</h2>
+        <p>Use this as the operating map: the phase tells the team what decision they are driving, the tools tell them where to work, and the capture column tells leadership what must come back as evidence.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th>Primary tools / accelerants</th>
+                <th>What they are used for</th>
+                <th>Evidence leadership expects</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Assessment</strong></td><td>Copilot Readiness report; Purview DSPM for AI; SAM Data Access Governance; Defender for Cloud Apps; Secure Score.</td><td>Baseline exposure, eligibility, identity posture, and shadow-AI signal.</td><td>Exposure heat map, license boundary, scan limitations, before-state screenshots.</td></tr>
+              <tr><td><strong>Foundation</strong></td><td>Entra ID; Conditional Access; PIM; SAM Restricted Access Control; Purview; PowerShell Deployment Script.</td><td>Harden identity, restrict worst sites, remediate oversharing, land policy floor.</td><td>Remediation runbook, <code>-WhatIf</code> output, before/after delta, time-on-task.</td></tr>
+              <tr><td><strong>Pilot / adoption</strong></td><td>Microsoft Scenario Library; Copilot Dashboard / Viva Insights; role-specific prompt guides; Business Case Builder / Value Envisioning where appropriate.</td><td>Pick doers, map scenarios, run adoption check-ins, prepare ROI conversation.</td><td>Champion roster, prompt guides, workflow proof, adoption blockers.</td></tr>
+              <tr><td><strong>Shadow AI</strong></td><td>Defender for Cloud Apps Cloud Discovery; GenAI category filter; app risk scoring; Defender for Endpoint if blocking is required.</td><td>Discover, sanction/block, protect, govern, and redirect AI demand.</td><td>Ranked GenAI app inventory, decision log, AUP starter, redirect comms.</td></tr>
+              <tr><td><strong>Information protection</strong></td><td>Purview labels; auto-labeling simulation; Guided Labeling Assistant; Industry One-Pagers; SMB Secure by Default label model; MIP SOW Generator.</td><td>Design labels, simulate before enforce, train users, package label work.</td><td>Taxonomy, simulation log, training deck, user questions, SOW inputs.</td></tr>
+              <tr><td><strong>Management / agent readiness</strong></td><td>Purview/SAM trend reports; Defender review; Secure Score trend; Copilot Dashboard; helpdesk/SOC patterns; Agent Registry / Agent 365 as maturity requires.</td><td>Operate recurring governance, report drift, route support, govern agent requests.</td><td>Management cadence, SLA, trend report, agent intake, recurring-service scope.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phase 0</div><h3>Assess Before You Touch Anything</h3></div>
+          <div class="step-body split">
+            <div>
+              <p>Microsoft Data Security Index (Jan 2026) reports that "40% of enterprise data-security incidents are linked to AI systems, up from 27% the prior year." Use that as the why-now opener for assessment, not as a substitute for your own tenant evidence. This is Microsoft-commissioned survey data, not an independent study.</p>
+              <h4>What You Do</h4>
+              <ul class="checklist">
+                <li><input id="cz-0a" data-save type="checkbox" /><label for="cz-0a">Run native readiness, Purview DSPM for AI, SAM Data Access Governance, Defender for Cloud Apps Cloud Discovery, and Secure Score.</label></li>
+                <li><input id="cz-0b" data-save type="checkbox" /><label for="cz-0b">Document tenant size, license mix, E3/Business Premium vs E5 depth boundary, and scan limitations.</label></li>
+                <li><input id="cz-0c" data-save type="checkbox" /><label for="cz-0c">Capture screenshots and exports before remediation.</label></li>
+                <li><input id="cz-0d" data-save type="checkbox" /><label for="cz-0d">Create a one-page risk heat map for leadership.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools In This Phase</h4>
+              <p>Copilot Readiness report; Purview DSPM for AI; SharePoint Advanced Management Data Access Governance; Defender for Cloud Apps Cloud Discovery; Secure Score. Use a third-party assessment tool only if native reporting cannot support the delivery motion you need.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> AI owner with the tenant/M365 admin. <strong>Accountable:</strong> executive sponsor or your partner principal. <strong>Consulted:</strong> security/compliance owner and delivery consultant. <strong>Informed:</strong> helpdesk and champion leads.</p>
+              <h4>Process</h4>
+              <p>Inventory first, interpret second, act later. The point of this phase is to establish the before-state and decide where the risk is concentrated before anyone starts changing permissions or labels.</p>
+              <h4>Quotable</h4>
+              <p>"Data oversharing is the single largest data security risk that organizations face when deploying Microsoft 365 Copilot" (Zero Trust Workshop AI_047).</p>
+              <h4>Done When</h4>
+              <p>You have a dated before-state: overshared sites, EEEU-configured sites, anonymous links, stale guests, unlabeled sensitive data, Secure Score, label coverage, and GenAI app inventory. Leadership has approved the first risk priorities and knows which findings are limited by license depth.</p>
+              <h4>Ready For Next Phase</h4>
+              <p>Move forward only when the team can name the first sites/users/apps to contain and has preserved the evidence needed to prove the before/after delta.</p>
+              <h4>Capture</h4>
+              <p>Exposure heat map, tool-selection memo, scan time-on-task, screenshots, first list of "we need to fix this before scale" items.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phase 1</div><h3>Secure The Foundation In The Right Order</h3></div>
+          <div class="step-body split">
+            <div>
+              <h4>Enforced Order</h4>
+              <div class="order-strip"><span class="order-step">Restrict</span><span class="order-step">Remediate</span><span class="order-step">Label</span></div>
+              <ul class="checklist">
+                <li><input id="cz-1a" data-save type="checkbox" /><label for="cz-1a">Harden identity: MFA, Conditional Access, PIM for privileged roles, and risky OAuth grant review.</label></li>
+                <li><input id="cz-1b" data-save type="checkbox" /><label for="cz-1b">Use SAM Restricted Access Control on the worst sites first.</label></li>
+                <li><input id="cz-1c" data-save type="checkbox" /><label for="cz-1c">Disable Everyone Except External Users tenant-wide with <code>Set-SPOTenant -ShowEveryoneExceptExternalUsersClaim $false</code> so new broad grants do not keep appearing while cleanup is underway.</label></li>
+                <li><input id="cz-1d" data-save type="checkbox" /><label for="cz-1d">Remediate the permission structure: existing EEEU grants, broad grants, anonymous links, stale guests, and sensitive libraries.</label></li>
+                <li><input id="cz-1e" data-save type="checkbox" /><label for="cz-1e">Treat broken inheritance as its own workstream; site owners must decide which unique permissions are legitimate before cleanup is finalized.</label></li>
+                <li><input id="cz-1f" data-save type="checkbox" /><label for="cz-1f">Only then prepare the label and DLP layer.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools In This Phase</h4>
+              <p>Entra ID; Conditional Access; PIM; SharePoint Advanced Management Restricted Access Control; Purview; PowerShell Deployment Script. Run <code>-WhatIf</code> before landing the Purview policy floor.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> tenant/M365 admin with security/compliance owner. <strong>Accountable:</strong> AI owner. <strong>Consulted:</strong> delivery consultant and affected site owners. <strong>Informed:</strong> helpdesk and champion leads.</p>
+              <h4>Process</h4>
+              <p>Restrict the worst exposure first, prevent new broad grants, remediate the permission model, then prepare labels and DLP. Do not use labels as a substitute for access cleanup. Broken inheritance is not a button-click cleanup; it is often a business-owner decision about whether an exception is valid.</p>
+              <h4>Important Caveat</h4>
+              <p>PowerShell Deployment Script (<code>aka.ms/Deploy-Scripts</code>; public repo GitHub - amirjafarian/SMBBestPracticeTool, <code>Deploy-PurviewBestPractice.ps1</code>, MIT, idempotent, <code>-WhatIf</code>) <em>(launched May 18 2026; reviewed with TD SYNNEX May 29 2026; aka.ms link partner-login-gated and temporary)</em>.</p>
+              <h4>Done When</h4>
+              <p>Worst exposure is contained, tenant-level EEEU prevention is in place, structural remediation is underway, broken-inheritance decisions have owners, before/after delta is visible, and temporary restrictions have a planned exit. Restricted is not remediated.</p>
+              <h4>Ready For Next Phase</h4>
+              <p>Move forward when the pilot group can use Copilot without the team knowingly exposing the worst overshared locations or privileged-risk gaps identified in assessment.</p>
+              <h4>Capture</h4>
+              <p>Restriction decisions, permission fixes, exception list, <code>-WhatIf</code> output, before/after screenshots, elapsed remediation time, and helpdesk issues created by the changes.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phase 2</div><h3>Pilot With Champions And Scenarios</h3></div>
+          <div class="step-body split">
+            <div>
+              <h4>What You Do</h4>
+              <ul class="checklist">
+                <li><input id="cz-2a" data-save type="checkbox" /><label for="cz-2a">Create a scenario deck with 2-3 role-specific use cases from Microsoft Scenario Library and your own champion workflows.</label></li>
+                <li><input id="cz-2b" data-save type="checkbox" /><label for="cz-2b">Build role-specific prompt guides for the selected champions.</label></li>
+                <li><input id="cz-2c" data-save type="checkbox" /><label for="cz-2c">Run kickoff, 30-day usage check-in, and 60-day ROI conversation.</label></li>
+                <li><input id="cz-2d" data-save type="checkbox" /><label for="cz-2d">Log blockers by type: tool, training, data access, policy, confidence, or workflow fit.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools In This Phase</h4>
+              <p>Microsoft Scenario Library; Copilot Dashboard / Viva Insights; role-specific prompt guides; Copilot Business Case Builder and Value Envisioning Tool from the Modern Work partner portal where appropriate.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> AI owner with champion leads. <strong>Accountable:</strong> executive sponsor or practice leader. <strong>Consulted:</strong> delivery consultant, helpdesk, and department managers. <strong>Informed:</strong> tenant/M365 admin and security/compliance owner.</p>
+              <h4>Process</h4>
+              <p>Start with the doers most likely to show visible ROI: account managers, project/operations leads, office managers/EAs, HR, finance, marketing, and meeting-heavy managers. Avoid IT-only and leader-only pilots.</p>
+              <h4>Done When</h4>
+              <p>Every champion has at least one real workflow, one prompt pattern, one before/after example, and one support path. Adoption is a formal deliverable, not an afterthought.</p>
+              <h4>Ready For Next Phase</h4>
+              <p>Move forward when the champions are producing real usage questions and the team can distinguish training issues from data-access, policy, or tool-fit issues.</p>
+              <h4>Capture</h4>
+              <p>Champion roster, scenario deck, prompt guides, training questions, workflow before/after examples, ROI conversation notes.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phase 3</div><h3>Discover, Govern, And Redirect Shadow AI</h3></div>
+          <div class="step-body split">
+            <div>
+              <h4>Enforced Order</h4>
+              <div class="order-strip"><span class="order-step">Discover</span><span class="order-step">Block / Sanction</span><span class="order-step">Protect</span><span class="order-step">Govern</span></div>
+              <ul class="checklist">
+                <li><input id="cz-3a" data-save type="checkbox" /><label for="cz-3a">Use Defender for Cloud Apps Cloud Discovery and filter Category &gt; Generative AI.</label></li>
+                <li><input id="cz-3b" data-save type="checkbox" /><label for="cz-3b">Triage per app using risk factors like SOC 2, ISO 27001, encryption at rest, audit trail, and admin control.</label></li>
+                <li><input id="cz-3c" data-save type="checkbox" /><label for="cz-3c">Start high-demand consumer AI tools in Monitored/Warn where appropriate, then move to Unsanctioned/Block after 30 days if the risk remains.</label></li>
+                <li><input id="cz-3d" data-save type="checkbox" /><label for="cz-3d">Pair every block with a sanctioned Copilot path so users are redirected, not stranded.</label></li>
+                <li><input id="cz-3e" data-save type="checkbox" /><label for="cz-3e">Customize the Edge block/warn message so it tells users where approved AI work should happen and who to contact for exceptions.</label></li>
+                <li><input id="cz-3f" data-save type="checkbox" /><label for="cz-3f">Turn decisions into an AI acceptable use policy and support runbook.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools In This Phase</h4>
+              <p>Defender for Cloud Apps Cloud Discovery; Generative AI category filter; app risk scoring; Defender for Endpoint where blocking is required; Purview DSPM for AI for complementary visibility across Microsoft 365 Copilot and non-Microsoft GenAI prompt/data activity; AI acceptable use policy and redirect communications.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> security/compliance owner with AI owner. <strong>Accountable:</strong> executive sponsor. <strong>Consulted:</strong> tenant/M365 admin, helpdesk, and delivery consultant. <strong>Informed:</strong> champions and department managers affected by sanction/block decisions.</p>
+              <h4>Process</h4>
+              <p>Discover first, then decide which tools are sanctioned, monitored/warned, blocked, or redirected. Every block needs a sanctioned path and a support message so users are redirected instead of forced back into unmanaged workarounds. The custom block message is not just a control; it is the training moment.</p>
+              <h4>Why It Matters</h4>
+              <p>LayerX measured that "77% of users paste data into GenAI tools, and 82% of this activity comes from unmanaged accounts." Microsoft 2024 Work Trend Index reports that 78% of AI users bring their own AI to work, rising to 80% at small and medium companies. Vendor-telemetry stats are real but self-selected; treat direction and magnitude as solid, not survey-representative.</p>
+              <h4>Done When</h4>
+              <p>You have a ranked GenAI inventory, sanction/monitor/block decisions, customized redirect messaging, an AI acceptable use policy starter, and a support path for users asking why a tool is blocked or where approved AI work should happen.</p>
+              <h4>Ready For Next Phase</h4>
+              <p>Move forward when the team can explain what AI tools are allowed, what is blocked, what data can be used, and where users should go for approved workflows.</p>
+              <h4>Capture</h4>
+              <p>Ranked app list, sanction/block decision log, AI acceptable use policy, redirect comms, helpdesk scripts.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phase 4</div><h3>Information Protection, Labels, And User Training</h3></div>
+          <div class="step-body split">
+            <div>
+              <h4>Enforced Order</h4>
+              <div class="order-strip"><span class="order-step">Design</span><span class="order-step">Simulate</span><span class="order-step">Tune</span><span class="order-step">Enforce</span><span class="order-step">Train</span></div>
+              <ul class="checklist">
+                <li><input id="cz-4a" data-save type="checkbox" /><label for="cz-4a">Start from a lean taxonomy: Public, General, Confidential, Highly Confidential.</label></li>
+                <li><input id="cz-4b" data-save type="checkbox" /><label for="cz-4b">Use the SMB "Secure by Default" 8-label model where sublabels are needed.</label></li>
+                <li><input id="cz-4c" data-save type="checkbox" /><label for="cz-4c">Deploy container labels alongside file labels so Teams, groups, and sites can inherit the right protection model.</label></li>
+                <li><input id="cz-4d" data-save type="checkbox" /><label for="cz-4d">Set a default sensitivity label for new content from Day 1.</label></li>
+                <li><input id="cz-4e" data-save type="checkbox" /><label for="cz-4e">Run auto-labeling in simulation mode for at least two weeks; tune confidence thresholds and instance counts before enforcement.</label></li>
+                <li><input id="cz-4f" data-save type="checkbox" /><label for="cz-4f">Test email label behavior so users understand how Copilot respects labeled or encrypted messages.</label></li>
+                <li><input id="cz-4g" data-save type="checkbox" /><label for="cz-4g">Train users on what each label means, when to use it, Copilot behavior, and what to do when unsure.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools And Boundaries</h4>
+              <p>Purview sensitivity labels; container labels; default sensitivity label settings; auto-labeling simulation; email label policy testing; Guided Labeling Assistant (<code>aka.ms/MIP-Labeling-Assistant</code>); 5 Industry One-Pagers (<code>aka.ms/MIP-Industry-OnePagers</code>); SMB Secure by Default 8-label model; MIP SOW Generator when packaging the customer offer. The SMB asset pack launched May 18 2026 and was reviewed with TD SYNNEX May 29 2026; links are partner-login-gated and temporary, verify before a customer proposal.</p>
+              <h4>SMB Asset Pack Spine</h4>
+              <p>Use the SMB asset pack as Enable -> Position -> Decide -> Sell -> Deploy: GitHub Copilot CLI Quick Guide (<code>aka.ms/Github-CopilotCli-Guide</code>), Industry One-Pagers (<code>aka.ms/MIP-Industry-OnePagers</code>), Guided Labeling Assistant (<code>aka.ms/MIP-Labeling-Assistant</code>), MIP SOW Generator (<code>aka.ms/SOW-Generator</code>), and PowerShell Deployment Script (<code>aka.ms/Deploy-Scripts</code>). The SMB asset pack launched May 18 2026 and was reviewed with TD SYNNEX May 29 2026; all aka.ms links are partner-login-gated and temporary, verify before a customer proposal.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> security/compliance owner with AI owner. <strong>Accountable:</strong> executive sponsor. <strong>Consulted:</strong> tenant/M365 admin, delivery consultant, department managers, and champions. <strong>Informed:</strong> helpdesk and all trained users.</p>
+              <h4>Process</h4>
+              <p>Design the taxonomy, deploy the container-label and default-label plan, simulate auto-labeling for at least two weeks, tune thresholds, then enforce. Training follows the label design so users understand what the labels mean, when to use them, and how Copilot behaves with labeled or encrypted content.</p>
+              <p>Copilot respects usage rights; it needs EXTRACT + VIEW rights to use labeled/encrypted content, and output inherits the highest-priority sensitivity label. DKE content is invisible to Copilot.</p>
+              <h4>Done When</h4>
+              <p>The label model is approved, container labels are deployed where needed, a default label is set for new content, auto-labeling has been simulated for at least two weeks and tuned, email label behavior has been tested, pilot users have been trained, and helpdesk has a simple answer path for label confusion, access issues, and Copilot behavior questions.</p>
+              <h4>Ready For Next Phase</h4>
+              <p>Move forward when labels are no longer just a configuration. They must be a trained business behavior with an owner, examples, and a support path.</p>
+              <h4>Capture</h4>
+              <p>Taxonomy rationale, container-label decisions, default-label decision, simulation results, threshold changes, email-label testing notes, training deck, user questions, label examples, and customer-safe explanation of Copilot label behavior.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-head"><div class="step-kicker">Phases 5-6</div><h3>Expand, Manage, And Prepare To Teach Customers</h3></div>
+          <div class="step-body split">
+            <div>
+              <h4>What You Do</h4>
+              <ul class="checklist">
+                <li><input id="cz-5a" data-save type="checkbox" /><label for="cz-5a">Run one full management cadence: exposure review, label review, shadow-AI review, access review, executive report.</label></li>
+                <li><input id="cz-5b" data-save type="checkbox" /><label for="cz-5b">Define SOC and helpdesk handoff for AI questions, incidents, exceptions, and governance requests.</label></li>
+                <li><input id="cz-5c" data-save type="checkbox" /><label for="cz-5c">Add quarterly label refresh and retraining to the management cadence so training does not become a one-time event.</label></li>
+                <li><input id="cz-5d" data-save type="checkbox" /><label for="cz-5d">Package internal artifacts into clean templates: assessment deck, remediation runbook, training deck, management report.</label></li>
+                <li><input id="cz-5e" data-save type="checkbox" /><label for="cz-5e">Use at least one anonymized internal proof asset in a real customer conversation and capture what resonated.</label></li>
+                <li><input id="cz-5f" data-save type="checkbox" /><label for="cz-5f">Move to <a href="build-sellable-services.html">Build Sellable Services</a> and map each captured artifact to an offer.</label></li>
+              </ul>
+            </div>
+            <div>
+              <h4>Tools In This Phase</h4>
+              <p>Purview and SAM trend reports; Defender for Cloud Apps review; Secure Score trend; Copilot Dashboard / Viva Insights; helpdesk/SOC ticket patterns; Agent Registry or Agent 365 when agent governance maturity requires it.</p>
+              <h4>People</h4>
+              <p><strong>Lead:</strong> AI owner. <strong>Accountable:</strong> your partner principal or executive sponsor. <strong>Consulted:</strong> security/compliance owner, tenant/M365 admin, helpdesk, SOC owner, delivery consultant, and practice lead. <strong>Informed:</strong> champions and customer-facing sales/service leaders.</p>
+              <h4>Process</h4>
+              <p>Move from project to operating cadence: review exposure, labels, shadow AI, adoption, support tickets, agent requests, and executive reporting on a recurring rhythm. The monthly executive report should be leadable in 30 seconds: one visible delta metric, one risk trend, and one recommended action. This is where the internal motion becomes the managed-service pattern.</p>
+              <h4>Done When</h4>
+              <p>You can show the before-state, explain the order of operations, prove the after-state, train a user cohort, operate a recurring cadence, refresh labels/training quarterly, use anonymized proof in a customer conversation, and describe which work becomes fixed-fee vs recurring.</p>
+              <h4>Ready For Services</h4>
+              <p>Move to the sellable-services guide when you have completed at least one full governance cadence and can show customer-safe proof for assessment, remediation, shadow AI, labels/training, adoption, and management.</p>
+              <h4>Capture</h4>
+              <p>Trend report, SLA, recurring tasks, quarterly retraining plan, packaging notes, delivery-readiness gaps, customer-conversation notes, anonymized proof.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="training" aria-labelledby="training-heading">
+        <h2 id="training-heading">Training And Enablement Are Part Of The Build</h2>
+        <p>Do not treat training as a closing webinar. The playbook frames adoption as a formal deliverable: a 30-60-90 day adoption plan with a kickoff session, role-specific prompt guides, a 30-day usage check-in, and a 60-day ROI conversation. Training is how you turn secure deployment into changed behavior, and changed behavior is what your customers can believe. Keep label training intentionally simple: why this exists, the four-tier label model, Copilot-specific label behavior, examples, and what to do when unsure.</p>
+
+        <div class="detail-grid">
+          <article class="detail-card"><h4>Champion kickoff</h4><p>Explain the mission, expected workflows, support path, and evidence capture. Champions are there to prove useful workflows and surface support needs early.</p></article>
+          <article class="detail-card"><h4>Role prompt guides</h4><p>Build role-specific guides for sales, operations, HR, finance, marketing, and meeting-heavy managers from real internal work.</p></article>
+          <article class="detail-card"><h4>Label training</h4><p>Give users one-line "when to use it" guidance. A label without usage guidance is a failure mode.</p></article>
+          <article class="detail-card"><h4>Quarterly refresh</h4><p>Refresh label examples, Copilot behavior guidance, and shadow-AI redirects every quarter so the operating model stays current.</p></article>
+          <article class="detail-card"><h4>AI support runbook</h4><p>Route AI questions, policy exceptions, risky prompts, agent requests, and "why was this blocked?" tickets consistently.</p></article>
+        </div>
+      </section>
+
+      <section id="agents" aria-labelledby="agents-heading">
+        <h2 id="agents-heading">Agent Creation And Management</h2>
+        <p>The main playbook pushes partners to use Copilot internally and build a small number of real internal agents, such as ticket summarization, proposal drafting, or QBR prep. This guide adds the governance companion: make sure those agents inherit the same identity, permission, lifecycle, monitoring, and evidence discipline as the rest of the Customer Zero motion.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Question</th><th>Governance answer</th><th>Capture</th></tr></thead>
+            <tbody>
+              <tr><td>Who can request an agent?</td><td>Your AI owner owns intake; security and admin owners review data access and risk.</td><td>Agent request form, decision log, rejected/approved rationale.</td></tr>
+              <tr><td>What data can it touch?</td><td>Use existing permissions, labels, DLP, and least-privilege review before publishing.</td><td>Data-source inventory, access review, label/DLP notes.</td></tr>
+              <tr><td>How is it monitored?</td><td>Fold agent usage and exceptions into the management cadence.</td><td>Usage notes, exception log, helpdesk issues.</td></tr>
+              <tr><td>When does Agent 365 matter?</td><td>Agent 365 is real, GA May 1 2026, and solves governance/control-plane problems. It is usually not the near-term priority for most SMBs. It is not included in E3/E5; current packaging cited here is standalone $15/user/month or bundled in E7, with a free Agent Registry for any Microsoft Cloud subscriber. Re-verify pricing and packaging before proposal.</td><td>Registry screenshot, maturity decision, cost/fit note.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <section class="callout warn">
+          <div class="callout-title">Boundary</div>
+          <p class="callout-body">This guide does not rename the governance motion as AgentOps. The playbook covers the broader adoption and agent operating model; this Customer Zero guide covers the governance readiness companion.</p>
+        </section>
+      </section>
+
+      <section id="done" aria-labelledby="done-heading">
+        <h2 id="done-heading">Definition Of Done</h2>
+        <p>You are not done when Copilot works. You are done when you can explain, prove, operate, and repeat the motion.</p>
+        <ul class="checklist">
+          <li><input id="done-1" data-save type="checkbox" /><label for="done-1">Your AI owner is formally assigned with decision rights, budget path, and evidence-library ownership.</label></li>
+          <li><input id="done-2" data-save type="checkbox" /><label for="done-2">5-10 Day 1 champions have real workflows, role-specific prompt guides, and captured before/after examples.</label></li>
+          <li><input id="done-3" data-save type="checkbox" /><label for="done-3">Assessment baseline and after-state evidence exist for exposure, identity posture, labels, and shadow AI.</label></li>
+          <li><input id="done-4" data-save type="checkbox" /><label for="done-4">Oversharing was addressed in the right order: restrict before remediate before label.</label></li>
+          <li><input id="done-5" data-save type="checkbox" /><label for="done-5">Tenant-level EEEU prevention is in place, and broken-inheritance exceptions have named business owners.</label></li>
+          <li><input id="done-6" data-save type="checkbox" /><label for="done-6">Container labels, default labels, and email label behavior have been addressed alongside file labels.</label></li>
+          <li><input id="done-10" data-save type="checkbox" /><label for="done-10">Auto-labeling was simulated for at least two weeks and tuned before enforcement, and users were trained on when to use labels.</label></li>
+          <li><input id="done-11" data-save type="checkbox" /><label for="done-11">Shadow AI decisions are documented, with sanctioned paths and customized redirect messaging.</label></li>
+          <li><input id="done-7" data-save type="checkbox" /><label for="done-7">At least one full management cadence has run and been reported to leadership.</label></li>
+          <li><input id="done-8" data-save type="checkbox" /><label for="done-8">Internal agent requests have a governance intake, access review, and monitoring path.</label></li>
+          <li><input id="done-9" data-save type="checkbox" /><label for="done-9">Time-on-task, before/after deltas, decision logs, and anonymized proof are ready for service packaging.</label></li>
+          <li><input id="done-12" data-save type="checkbox" /><label for="done-12">At least one anonymized internal proof asset has been used in a live customer conversation.</label></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer-note">
+    <p><em>Sourced as of June 2026.</em></p>
+  </footer>
+</body>
+</html>
