@@ -532,6 +532,149 @@ a:hover { text-decoration: underline; }
     padding: 15px;
   }
 }
+
+/* ── Dual-Circle Hero Widget ────────────────────────────── */
+.hero-circles {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  padding: 8px 4px;
+}
+
+/* Shared circle base */
+.hc-circle {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Glowing ring via box-shadow */
+.hc-circle::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2.5px solid #48cae4;
+  box-shadow:
+    0 0 10px 3px rgba(72,202,228,.75),
+    0 0 24px 6px rgba(72,202,228,.4),
+    inset 0 0 8px 2px rgba(72,202,228,.12);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* LEFT circle — white interior */
+.hc-left {
+  background: #fff;
+  z-index: 2;
+}
+
+/* LEFT circle inner text */
+.hc-left-inner {
+  text-align: center;
+  padding: 6px 10px;
+  line-height: 1.12;
+}
+.hc-give  { display:block; font-size:1.05rem; font-weight:900; color:#1a6b2a; text-transform:uppercase; letter-spacing:.01em; }
+.hc-hour  { display:flex; align-items:center; justify-content:center; gap:4px; }
+.hc-hour-word { font-size:1.25rem; font-weight:900; color:#1a6b2a; text-transform:uppercase; }
+.hc-today { font-size:1.25rem; font-weight:900; color:#002142; text-transform:uppercase; }
+.hc-clock { width:18px; height:18px; flex:0 0 auto; }
+.hc-and   { display:block; font-size:.75rem; font-weight:800; color:#002142; text-transform:uppercase; letter-spacing:.01em; margin-top:2px; }
+.hc-back  { display:block; font-size:1.05rem; font-weight:900; color:#1a6b2a; text-transform:uppercase; }
+.hc-every { display:block; font-size:1.05rem; font-weight:900; color:#002142; text-transform:uppercase; }
+
+/* Slash divider */
+.hc-slash {
+  position: relative;
+  z-index: 3;
+  margin: 0 -16px;
+  font-size: 4.5rem;
+  font-weight: 100;
+  color: #48cae4;
+  text-shadow:
+    0 0 8px rgba(72,202,228,.9),
+    0 0 20px rgba(72,202,228,.5);
+  line-height: 1;
+  user-select: none;
+}
+
+/* RIGHT circle — matches hero gradient */
+.hc-right {
+  background: radial-gradient(ellipse at 25% 35%, #005F6B 0%, #003057 45%, #002142 100%);
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* Particle dots SVG overlay */
+.hc-particles {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* RIGHT circle inner content */
+.hc-right-inner {
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  padding: 16px 18px;
+}
+.hc-synnex-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.hc-synnex-logo {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.hc-synnex-name {
+  font-size: .62rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.hc-dest-ai {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+.hc-dest-ai sup {
+  font-size: .4rem;
+  font-weight: 700;
+  vertical-align: super;
+  letter-spacing: 0;
+}
+.hc-playbook {
+  display: block;
+  margin-top: 6px;
+  font-size: .5rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.7);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 960px) {
+  .hero-circles { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -551,11 +694,91 @@ a:hover { text-decoration: underline; }
         <p class="hero-presenter-contact"><a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
       </div>
     </div>
-    <div class="hero-pills" aria-label="Toolkit highlights">
-      <div class="hero-pill"><strong>4</strong>Core Assets</div>
-      <div class="hero-pill"><strong>1</strong>Customer Zero Kit</div>
-      <div class="hero-pill"><strong>All</strong>Partner Ready</div>
-    </div>
+
+    <!-- Dual-circle widget -->
+    <div class="hero-circles" aria-hidden="true">
+
+      <!-- Left circle: Give Us An Hour -->
+      <div class="hc-circle hc-left">
+        <div class="hc-left-inner">
+          <span class="hc-give">Give Us An</span>
+          <div class="hc-hour">
+            <span class="hc-hour-word">Hour</span>
+            <svg class="hc-clock" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="8" cy="8" r="7" stroke="#1a6b2a" stroke-width="1.5"/>
+  <path d="M8 4.5V8L10.5 10" stroke="#1a6b2a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
+            <span class="hc-today">Today</span>
+          </div>
+          <span class="hc-and">And We'll Give You</span>
+          <span class="hc-back">An Hour Back</span>
+          <span class="hc-every">Every Day!</span>
+        </div>
+      </div>
+
+      <!-- Slash divider -->
+      <div class="hc-slash" aria-hidden="true">/</div>
+
+      <!-- Right circle: Destination AI -->
+      <div class="hc-circle hc-right">
+        <svg class="hc-particles" viewBox="0 0 190 190" xmlns="http://www.w3.org/2000/svg">
+  <!-- Yellow-green dots — upper arc -->
+  <circle cx="130" cy="18" r="3.5" fill="#c8e63c" opacity=".9"/>
+  <circle cx="148" cy="28" r="2.5" fill="#c8e63c" opacity=".85"/>
+  <circle cx="160" cy="42" r="2" fill="#c8e63c" opacity=".8"/>
+  <circle cx="118" cy="12" r="2.5" fill="#c8e63c" opacity=".75"/>
+  <circle cx="140" cy="22" r="1.5" fill="#c8e63c" opacity=".7"/>
+  <circle cx="155" cy="35" r="3" fill="#c8e63c" opacity=".75"/>
+  <circle cx="165" cy="52" r="1.5" fill="#c8e63c" opacity=".65"/>
+  <circle cx="108" cy="16" r="1.8" fill="#c8e63c" opacity=".6"/>
+  <circle cx="125" cy="10" r="1.2" fill="#c8e63c" opacity=".55"/>
+  <circle cx="145" cy="15" r="1.8" fill="#c8e63c" opacity=".7"/>
+  <circle cx="162" cy="30" r="1.2" fill="#c8e63c" opacity=".6"/>
+  <circle cx="170" cy="48" r="2" fill="#c8e63c" opacity=".55"/>
+  <circle cx="168" cy="62" r="1.5" fill="#c8e63c" opacity=".5"/>
+  <circle cx="135" cy="8" r="1" fill="#c8e63c" opacity=".45"/>
+  <circle cx="152" cy="20" r="1" fill="#c8e63c" opacity=".5"/>
+  <!-- Transition dots — yellow-green to cyan -->
+  <circle cx="172" cy="72" r="2.5" fill="#7dd4a8" opacity=".7"/>
+  <circle cx="174" cy="85" r="2" fill="#5ecfb8" opacity=".65"/>
+  <circle cx="170" cy="98" r="1.5" fill="#48cae4" opacity=".6"/>
+  <!-- Cyan dots — lower-right arc -->
+  <circle cx="168" cy="110" r="3" fill="#48cae4" opacity=".8"/>
+  <circle cx="162" cy="125" r="2.5" fill="#48cae4" opacity=".75"/>
+  <circle cx="152" cy="138" r="2" fill="#48cae4" opacity=".7"/>
+  <circle cx="140" cy="150" r="3" fill="#48cae4" opacity=".8"/>
+  <circle cx="125" cy="160" r="2" fill="#48cae4" opacity=".65"/>
+  <circle cx="108" cy="168" r="2.5" fill="#48cae4" opacity=".6"/>
+  <circle cx="90" cy="172" r="1.5" fill="#48cae4" opacity=".55"/>
+  <circle cx="175" cy="100" r="1.5" fill="#48cae4" opacity=".5"/>
+  <circle cx="158" cy="118" r="1.8" fill="#48cae4" opacity=".65"/>
+  <circle cx="148" cy="132" r="1.2" fill="#48cae4" opacity=".6"/>
+  <circle cx="135" cy="145" r="1.5" fill="#48cae4" opacity=".55"/>
+  <circle cx="118" cy="155" r="1" fill="#48cae4" opacity=".5"/>
+  <circle cx="100" cy="165" r="1.2" fill="#48cae4" opacity=".45"/>
+  <!-- Extra scatter dots -->
+  <circle cx="165" cy="78" r="1" fill="#7dd4a8" opacity=".5"/>
+  <circle cx="172" cy="92" r="1.2" fill="#5ecfb8" opacity=".45"/>
+  <circle cx="176" cy="108" r="1" fill="#48cae4" opacity=".4"/>
+  <circle cx="170" cy="120" r="1.5" fill="#48cae4" opacity=".5"/>
+  <circle cx="160" cy="135" r="1" fill="#48cae4" opacity=".45"/>
+  <circle cx="143" cy="155" r="1.2" fill="#48cae4" opacity=".4"/>
+</svg>
+        <div class="hc-right-inner">
+          <div class="hc-synnex-row">
+            <svg class="hc-synnex-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="10" stroke="#48cae4" stroke-width="1.5" fill="none"/>
+  <path d="M12 4 C16 4, 20 8, 20 12 C20 16, 16 20, 12 20 C8 20, 4 16, 4 12" stroke="#48cae4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M12 7 C15 7, 17 9.5, 17 12 C17 14.5, 15 17, 12 17" stroke="#48cae4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>
+            <span class="hc-synnex-name">TD SYNNEX</span>
+          </div>
+          <div class="hc-dest-ai">Destination AI<sup>&#8482;</sup></div>
+          <span class="hc-playbook">Practice Accelerator</span>
+        </div>
+      </div>
+
+    </div><!-- /hero-circles -->
   </div>
 </header>
 
