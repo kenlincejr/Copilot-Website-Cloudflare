@@ -228,6 +228,65 @@ a:hover { text-decoration: underline; }
   font-size: .9rem;
 }
 
+.field-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, .85fr);
+  gap: 18px;
+  align-items: stretch;
+  margin: 0 0 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #fff 0%, #f7fbfc 100%);
+  box-shadow: var(--shadow-sm);
+}
+.field-frame-kicker {
+  margin: 0 0 7px;
+  color: var(--teal);
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.field-frame h2 {
+  margin: 0 0 8px;
+  color: var(--navy);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+.field-frame p {
+  margin: 0;
+  color: #475569;
+  font-size: .88rem;
+  line-height: 1.55;
+}
+.field-frame p + p { margin-top: 7px; }
+.field-quote {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 15px 17px;
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius);
+  background: #eef9fb;
+}
+.field-quote p {
+  color: var(--navy-deep);
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.field-quote cite {
+  color: #64748b;
+  font-size: .72rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
 .section-label {
   display: flex;
   align-items: center;
@@ -451,6 +510,7 @@ a:hover { text-decoration: underline; }
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .journey-strip { display: none; }
+  .field-frame { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   body { padding: 10px 12px 34px; }
@@ -467,6 +527,10 @@ a:hover { text-decoration: underline; }
   .resource-title { min-height: auto; }
   .section-label { align-items: flex-start; }
   .section-label::after { margin-top: .65em; }
+  .field-frame {
+    margin-bottom: 20px;
+    padding: 15px;
+  }
 }
 </style>
 </head>
@@ -509,6 +573,19 @@ a:hover { text-decoration: underline; }
 </nav>
 
 <main>
+  <section class="field-frame" aria-labelledby="field-frame-heading">
+    <div>
+      <p class="field-frame-kicker">Field-Tested Partner Motion</p>
+      <h2 id="field-frame-heading">The Copilot practice conversation partners are using with real customers.</h2>
+      <p>You do not build a Copilot practice by reading a white paper. You build it by having one strong customer conversation, proving the motion, and repeating it.</p>
+      <p>The Give Me an Hour framework gives partners the talk track, demo flow, and commercial path to turn a 60-minute session into managed AI revenue.</p>
+    </div>
+    <blockquote class="field-quote">
+      <p>&ldquo;The most beneficial and tangible session we've ever been through. It gave us a clear plan to build and execute an AI practice.&rdquo;</p>
+      <cite>VP of Sales, Microsoft CSP Partner</cite>
+    </blockquote>
+  </section>
+
   <section aria-labelledby="core-heading">
     <div class="section-label" id="core-heading">Start Here - Build The Practice</div>
     <p class="section-note">These are the four foundation assets. Use them in order when you are turning Copilot from a resale conversation into a repeatable practice motion.</p>
