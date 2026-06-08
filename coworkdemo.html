@@ -21,7 +21,7 @@
 <!-- End Google Analytics -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>"Chief of Staff" Cowork — Setup Guide</title>
+<title>Chief of Staff Brief — One Prompt Setup Guide</title>
 <style>
 :root {
   --teal: #005F6B;
@@ -206,57 +206,11 @@ tbody tr:nth-child(even) { background: var(--muted); }
 }
 .numbered-steps.opt li::before { background: var(--opt-border); }
 
-/* EXAMPLE CARDS */
-.example-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
-.example-card {
-  background: var(--muted); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
-}
-.example-card .label {
-  font-size: .7rem; font-weight: 800; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--teal); margin-bottom: 8px;
-}
-.example-card .sweep-msg {
-  background: #fff; border: 1px solid var(--border);
-  border-radius: 6px; padding: 12px;
-  font-size: .85rem; line-height: 1.6;
-}
-.sweep-header {
-  font-weight: 700; color: var(--navy);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px; margin-bottom: 8px; font-size: .9rem;
-}
-.s-code { color: var(--opt-border); font-weight: 700; }
-.all-clear {
-  background: var(--success); border: 1px solid #a5d6a7;
-  border-radius: 6px; padding: 10px 14px;
-  font-size: .88rem; color: #1b5e20; font-weight: 500;
-}
-
-/* ACTION FLOW */
-.action-flow {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--muted); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 14px 18px;
-  margin: 10px 0; flex-wrap: wrap;
-}
-.action-flow .step-pill {
-  background: var(--navy); color: #fff;
-  border-radius: 4px; padding: 4px 12px;
-  font-size: .82rem; font-weight: 600; white-space: nowrap;
-}
-.action-flow .arrow { color: var(--teal); font-size: 1.2rem; font-weight: 700; }
-.action-flow .result-pill {
-  background: var(--success); color: #1b5e20;
-  border: 1px solid #a5d6a7; border-radius: 4px;
-  padding: 4px 12px; font-size: .82rem; font-weight: 600;
-}
-
-
 /* SCREENSHOTS */
 .screenshot-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(280px, 420px);
+  justify-content: center;
   gap: 18px;
   margin: 20px 0 28px;
 }
@@ -306,15 +260,15 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 <!-- HERO -->
 <div class="hero">
-  <div class="eyebrow">Personal Executive Operating System · Microsoft Copilot</div>
-  <h1>"Chief of Staff" Cowork</h1>
-  <p class="sub">Set up an AI Chief of Staff that delivers a proactive daily executive briefing every morning at 7 AM — to both Teams and your inbox — and optionally runs attention sweeps throughout the workday to catch what lands after the brief.</p>
+  <div class="eyebrow">One Prompt Setup · Microsoft Copilot Cowork</div>
+  <h1>Chief of Staff Brief</h1>
+  <p class="sub">Set up an AI Chief of Staff that reads your Microsoft 365 work signals, builds a decision-ready morning brief, and delivers it to Teams and Outlook every weekday. It starts with one prompt, then Cowork asks a few setup questions so the schedule and permissions are created correctly.</p>
   <div class="meta-row">
-    <span><strong>Setup time:</strong> 5 minutes</span>
-    <span><strong>Required:</strong> 1 prompt (Daily Brief)</span>
-    <span><strong>Optional:</strong> 1 prompt (Hourly Sweep)</span>
-    <span><strong>Recommended model:</strong> Claude Opus 4.7</span>
-    <span><strong>Delivery:</strong> Teams + Email (brief) · Teams only (sweep)</span>
+    <span><strong>Setup time:</strong> About 5 minutes</span>
+    <span><strong>Required:</strong> One prompt</span>
+    <span><strong>Model:</strong> Latest Claude Opus</span>
+    <span><strong>Default schedule:</strong> Weekdays at 6:30 AM</span>
+    <span><strong>Delivery:</strong> Teams self-chat + Outlook inbox</span>
   </div>
 </div>
 
@@ -322,786 +276,245 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 <div class="toc">
   <div class="toc-head">On This Page</div>
   <ol>
+    <li><a href="#what-this-does">What This Does</a></li>
     <li><a href="#how-it-works">How It Works</a></li>
-    <li><a href="#what-you-get">What You Get</a></li>
-    <li><a href="#prereqs">Prerequisites</a></li>
-    <li><a href="#setup">Setup — Step 1: Daily Brief (Required)</a></li>
-    <li><a href="#sweep">Setup — Step 2: Hourly Sweep (Optional)</a></li>
-    <li><a href="#using-codes">Using Your Brief — Action Codes Explained</a></li>
-    <li><a href="#customization">Customization</a></li>
-    <li><a href="#changelog">Changelog & Known Issue</a></li>
+    <li><a href="#before-you-start">Before You Start</a></li>
+    <li><a href="#setup">Step-by-Step Setup</a></li>
+    <li><a href="#success">What Success Looks Like</a></li>
+    <li><a href="#use-it">How To Use It Each Morning</a></li>
+    <li><a href="#change-it">How To Change It Later</a></li>
+    <li><a href="#prompt">Full Prompt</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ol>
+</div>
+
+<!-- WHAT THIS DOES -->
+<h2 id="what-this-does">What This Does</h2>
+
+<p>This Cowork agent creates a weekday morning briefing that behaves like a personal Chief of Staff. Each morning it reviews your calendar, email, Teams activity, recent files, open loops, direct-report signals, watchlist topics, and travel details, then turns that into one concise brief you can read and act on.</p>
+
+<p>The goal is simple: give you the decisions, risks, priorities, travel gaps, and people signals that matter before the day starts. Red items need attention, amber items need watching, green means on track, blue is FYI, and slate is informational.</p>
+
+<table>
+  <thead><tr><th>It gives you</th><th>What that means in plain English</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Hot Signals</strong></td><td>Anything urgent enough that it cannot wait.</td></tr>
+    <tr><td><strong>Decision Docket</strong></td><td>The approvals, yes/no calls, and sign-offs currently sitting with you.</td></tr>
+    <tr><td><strong>Top 3 Priorities</strong></td><td>The three highest-leverage things for your day, tagged as lead, delegate, or decide.</td></tr>
+    <tr><td><strong>Today's Schedule</strong></td><td>Your meeting flow, prep notes, and intelligence for high-stakes conversations.</td></tr>
+    <tr><td><strong>Critical Inbox</strong></td><td>Messages and asks that are aging, urgent, financial, or politically important.</td></tr>
+    <tr><td><strong>Travel Radar</strong></td><td>A trip control panel with confirmations, gaps, weather, conflicts, and calendar flight reminders when travel is within 7 days.</td></tr>
+    <tr><td><strong>Delegation Pulse</strong></td><td>A quick read on direct reports and important people who may have gone quiet.</td></tr>
+  </tbody>
+</table>
+
+<div class="alert alert-info">
+  <strong>Simple setup, not a static document.</strong> You paste one prompt to create the agent. After it is running, you can keep talking to it: change the time, add watchlist topics, adjust the tone, pause it during PTO, improve Travel Radar, or ask it to add new features.
 </div>
 
 <!-- HOW IT WORKS -->
 <h2 id="how-it-works">How It Works</h2>
 
-<p>The Chief of Staff system is built from one or two independent scheduled tasks in Copilot Cowork. Each task is created in its own dedicated Cowork session using a single prompt you copy from this page. Once created, both tasks run automatically on schedule with no further input from you.</p>
+<p>The prompt tells Cowork to create a recurring weekday task. When the task runs, Cowork gathers your work signals in stages: one collector focuses on calendar and travel, another focuses on inbox, Teams, docs, tasks, and people signals, and a final composer turns those findings into the finished HTML brief.</p>
 
-<div class="alert alert-critical">
-  <strong>⚠️ Critical rule: one task per Cowork session.</strong> Cowork only allows one scheduled task to be created per conversation. The Daily Brief and the Hourly Sweep must each be set up in a separate, fresh Cowork session. Do not paste both prompts into the same chat.
+<p>The brief is delivered only to you: posted to your Teams self-chat and emailed to your Outlook inbox. On travel weeks, the agent may also ask to place small flight reminder events on your calendar. Those reminders are the only calendar write the prompt authorizes, and they are meant to make travel details easy to find at a glance.</p>
+
+<div class="alert alert-success">
+  <strong>You stay in control.</strong> The agent does not email other people, reply to messages, change real meetings, share files, or post to channels. For anything that affects other people, Cowork should ask for approval or leave the decision to you.
 </div>
+
+<!-- BEFORE YOU START -->
+<h2 id="before-you-start">Before You Start</h2>
+
+<ul>
+  <li><strong>Copilot Cowork access</strong> — open Cowork in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</li>
+  <li><strong>Microsoft 365 Copilot license</strong> — Cowork needs access to your Microsoft 365 work signals.</li>
+  <li><strong>Latest Claude Opus model</strong> — before pasting the prompt, use the model dropdown in the top-right corner and select the latest available Claude Opus model.</li>
+  <li><strong>A few minutes to answer setup questions</strong> — Cowork may ask follow-up questions while it creates the schedule, confirms delivery, or requests permissions. Answer those questions so the setup can finish successfully.</li>
+</ul>
 
 <div class="alert alert-warn">
-  <strong>Latest update — May 2026:</strong> The Daily Brief task must use <code>execution_mode: inline</code>. Scheduled tasks using <code>separate</code> mode can stall on hidden approval prompts for Teams and Outlook delivery tools, which makes the brief stop appearing even though the task exists.
+  <strong>Important first step:</strong> Select the latest Claude Opus model before you paste the prompt for the first time. The prompt is long and does multi-source reasoning, so Opus is the best fit.
 </div>
 
-<p>At runtime, each task works independently. Both read from your Microsoft 365 data — email, calendar, Teams, SharePoint — through Copilot's Work IQ layer. They do not share a session or require each other to function. The Daily Brief runs at 7 AM and delivers a full executive digest. The Sweep runs up to 5 times a day and delivers only what's new since the last check.</p>
+<!-- SETUP -->
+<h2 id="setup">Step-by-Step Setup</h2>
 
-<p><strong>How does the Sweep know what was already in the morning brief?</strong> It reads your Teams self-chat, where the morning brief was delivered, and uses that as its baseline. It then scans for anything new since the brief landed. No shared session needed — they both read from the same underlying Microsoft 365 data.</p>
+<div class="step-intro req">
+  <h4>What you are about to do</h4>
+  <p>You will paste one prompt into a fresh Cowork chat. Cowork will create the scheduled Chief of Staff Brief, ask any setup questions it needs, and then show the scheduled task as active when setup is complete.</p>
+</div>
 
-<!-- WHAT YOU GET -->
-<h2 id="what-you-get">What You Get</h2>
-
-<table>
-  <thead><tr><th>Feature</th><th>Daily Brief</th><th>Hourly Sweep</th></tr></thead>
-  <tbody>
-    <tr><td><strong>When</strong></td><td>7:00 AM, Mon–Fri</td><td>9, 11 AM · 1, 3, 5 PM · Mon–Fri</td></tr>
-    <tr><td><strong>Delivered to</strong></td><td>Teams self-chat + Outlook inbox</td><td>Teams self-chat only</td></tr>
-    <tr><td><strong>Content</strong></td><td>Full executive digest, hot signals, meeting intel, travel intelligence</td><td>Delta scan — new items only</td></tr>
-    <tr><td><strong>Signal sources</strong></td><td>Calendar, email, Teams, SharePoint, tasks</td><td>Same, scoped to last 2 hours</td></tr>
-    <tr><td><strong>If nothing new</strong></td><td>Always delivers — "No items today" per section</td><td>Sends one line: "All clear"</td></tr>
-    <tr><td><strong>Action codes</strong></td><td>C1, C2, C3… (reset each morning)</td><td>S1, S2, S3… (reset each sweep)</td></tr>
-  </tbody>
-</table>
-
-<p>The Daily Brief always includes: Top 3 Priorities · Today's Schedule with Pre-Meeting Intelligence Cards · Critical Inbox & Attention Debt · Travel Radar when travel is detected · Week Ahead or Friday Week Preview · Open Loops · Delegation Pulse when direct reports exist. A Hot Signal section appears only when something needs immediate attention.</p>
-
-<!-- PREREQUISITES -->
-<h2 id="prereqs">Prerequisites</h2>
-<ul>
-  <li><strong>Microsoft 365 Copilot license</strong> — required for Cowork access</li>
-  <li><strong>Frontier program enrollment</strong> — Copilot Cowork is a Frontier preview feature. Ask your IT admin to enroll your tenant at <em>Microsoft 365 Admin Center → Copilot → Settings → Frontier</em>. If you can already access Cowork in Teams or at m365.cloud.microsoft, you're already enrolled.</li>
-  <li><strong>Anthropic models enabled</strong> — your admin must allow Anthropic as a subprocessor. If you can see "Claude Opus 4.7" in the Cowork model selector (top-right dropdown), you're good. If not, ask IT to enable it in the admin center.</li>
-  <li><strong>Cowork access in Teams</strong> — go to Teams → Apps → search "Cowork" → add it. Or access at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</li>
+<ul class="numbered-steps">
+  <li><div>Open <strong>Copilot Cowork</strong> in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</div></li>
+  <li><div>Start a <strong>fresh new chat</strong>. Use the new chat or compose button so the setup is not mixed into another conversation.</div></li>
+  <li><div>In the model dropdown, select the <strong>latest Claude Opus model</strong>.</div></li>
+  <li><div>Scroll to the <a href="#prompt">Full Prompt</a> section below and click <strong>Copy</strong>.</div></li>
+  <li><div>Paste the full prompt into Cowork and send it. Do not shorten the prompt.</div></li>
+  <li><div>Answer Cowork's setup questions. If it asks about schedule, delivery, permissions, or allowed actions, answer directly and continue.</div></li>
+  <li><div>Approve the setup cards Cowork presents. You may see approvals for scheduling, sending the brief to yourself, posting to your Teams self-chat, or creating travel reminder events.</div></li>
+  <li><div>Wait for Cowork to finish. The setup is done when the Workspace or Details panel shows the Chief of Staff Brief scheduled task with <strong>Active</strong> turned on.</div></li>
+  <li><div>Check your Teams self-chat and Outlook inbox. Cowork may run once immediately so you can confirm the brief delivers correctly.</div></li>
 </ul>
 
 <div class="alert alert-info">
-  <strong>ℹ️ Both prompts use runtime lookups.</strong> They resolve your name, email, manager, timezone, and direct reports automatically from Microsoft Graph when they run — nothing is hard-coded. You can share this page with a colleague and the prompts will personalize to them automatically when they run Step 1.
+  <strong>If Cowork asks questions, that is normal.</strong> The prompt is one paste, but Cowork still needs your answers during setup to make sure the schedule, output, and permissions are created correctly.
 </div>
 
-<!-- SETUP STEP 1 -->
-<h2 id="setup">Setup — Step 1: Daily Brief <span class="badge badge-req">Required</span></h2>
+<!-- SUCCESS -->
+<h2 id="success">What Success Looks Like</h2>
 
-<div class="step-intro req">
-  <h4>What this does</h4>
-  <p>Creates a recurring scheduled task that generates your executive brief every weekday morning at 7 AM and delivers it to your Teams self-chat and your Outlook inbox. Run this once and you're set for every morning going forward.</p>
+<p>When setup is complete, the Cowork Workspace panel should show a scheduled item named <strong>Chief of Staff Brief</strong> with the Active toggle turned on. You should also see the plan steps completed, allowed actions listed, and output or reference items attached.</p>
+
+<p>Based on the current setup, the schedule should read like this: every week on Monday, Tuesday, Wednesday, Thursday, and Friday at <strong>06:30</strong>. If you chose a different time during setup, confirm the panel shows the time you selected.</p>
+
+<div class="alert alert-success">
+  <strong>You're done when:</strong> the schedule is Active, the task name is correct, Cowork has completed setup, and at least one test brief has appeared in Teams or Outlook.
 </div>
 
-<h3>Before you paste — set your model to Claude Opus 4.7</h3>
-<p>In the top-right corner of the Cowork window, you'll see a model selector dropdown (it may say "Default" or show a model name). Click it and select <strong>Claude Opus 4.7</strong>. If you don't see Opus 4.7, Sonnet 4.6 will work — but Opus produces significantly sharper briefs for complex multi-source synthesis tasks like this one.</p>
+<div class="screenshot-row">
+  <div class="screenshot-wrap screenshot-narrow">
+    <div class="screenshot-label">What success looks like - Cowork schedule active after setup</div>
+    <img src="cowork-success-schedule.svg" alt="Cowork workspace showing Chief of Staff Brief scheduled and active" class="screenshot" />
+  </div>
+</div>
 
-<h3>Step-by-step</h3>
-<ul class="numbered-steps">
-  <li>Open <strong>Copilot Cowork</strong> in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a></li>
-  <li>Start a <strong>fresh new chat</strong> — click the new chat / compose icon. Do not use a previous conversation.</li>
-  <li>Set the model to <strong>Claude Opus 4.7</strong> using the dropdown in the top-right corner</li>
-  <li>Click the <strong>Copy</strong> button below and paste the entire prompt into the chat input</li>
-  <li>Press <strong>Enter</strong> to send. Cowork will resolve your profile, create the task, and fire the brief immediately so you can see it working</li>
-  <li>In the <strong>Details panel</strong> on the right, confirm you see a task named <em>"Chief of Staff — Daily Executive Brief"</em> with Active toggled on, scheduled Mon–Fri at 07:00, using inline execution mode</li>
-  <li>Check your <strong>Teams self-chat</strong> and your <strong>Outlook inbox</strong> — the brief should arrive within a minute of Cowork finishing</li>
-</ul>
+<hr>
+
+<!-- USE IT -->
+<h2 id="use-it">How To Use It Each Morning</h2>
+
+<ol>
+  <li><strong>Start at the top.</strong> The brief is ordered so urgent decisions and risks appear before routine information.</li>
+  <li><strong>Handle red first.</strong> Red means something is urgent, blocked, missing, or at risk.</li>
+  <li><strong>Use amber as your watchlist.</strong> Amber usually means approve soon, clarify, or keep an eye on it.</li>
+  <li><strong>Act in plain language.</strong> You do not need codes. Ask Cowork naturally: "draft a reply to Greg," "help me find 30 minutes with Shelley," or "update tomorrow's brief to watch the Fairmont thread more closely."</li>
+  <li><strong>Close travel gaps yourself.</strong> If Travel Radar marks something as NOT FOUND, treat it as a real gap to resolve, such as missing hotel, ground transport, venue, or return flight details.</li>
+</ol>
+
+<!-- CHANGE IT -->
+<h2 id="change-it">How To Change It Later</h2>
+
+<p>This agent is meant to evolve with you. After it is running, go back to the Cowork conversation or scheduled task and ask for changes in normal language.</p>
+
+<table>
+  <thead><tr><th>What you want</th><th>What to ask Cowork</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Change the delivery time</strong></td><td>"Move my Chief of Staff Brief to 7:00 AM on weekdays."</td></tr>
+    <tr><td><strong>Add watchlist topics</strong></td><td>"Add Chicago, Rebecca Garrity, and channel services to my watchlist topics."</td></tr>
+    <tr><td><strong>Change the tone</strong></td><td>"Make the brief more concise and operator-focused."</td></tr>
+    <tr><td><strong>Pause it</strong></td><td>"Pause my Chief of Staff Brief while I am on PTO next week."</td></tr>
+    <tr><td><strong>Improve travel handling</strong></td><td>"Make Travel Radar call out missing hotel and ground transport more aggressively."</td></tr>
+    <tr><td><strong>Add a feature</strong></td><td>"Add a section that tracks open customer escalations from the last 14 days."</td></tr>
+  </tbody>
+</table>
 
 <div class="alert alert-warn">
-  <strong>⚠️ It will run immediately.</strong> When Cowork creates a scheduled task, it fires it once right away so you can verify it's working. This is expected — your first brief will land today, not tomorrow morning. After that, it runs automatically every weekday at 7 AM.
+  <strong>After editing a scheduled task, confirm it is still Active.</strong> Some Cowork edits can pause a task. If that happens, turn the Active toggle back on after saving.
 </div>
 
-<div class="alert alert-critical">
-  <strong>Updating an existing task?</strong> Change the execution mode to <code>inline</code>, paste the full updated prompt below into the task description, save, then manually resume the task. Cowork auto-pauses scheduled tasks after edits.
-</div>
+<!-- PROMPT -->
+<h2 id="prompt">Full Prompt</h2>
+
+<p>Copy everything in the box below and paste it into a fresh Cowork chat after selecting the latest Claude Opus model.</p>
 
 <div class="copy-container">
   <div class="copy-header req">
-    <p class="copy-header-text">📋 Prompt 1 — Daily Executive Brief · Copy and paste into a fresh Cowork session</p>
+    <p class="copy-header-text">Chief of Staff Brief Prompt · Copy and paste into Cowork</p>
     <button class="copy-btn" onclick="copyText(this, 'p1')">Copy</button>
   </div>
-  <div class="copy-text" id="p1">Create a recurring scheduled task with exactly these settings:
+  <div class="copy-text" id="p1">Create a recurring scheduled Cowork task with exactly these settings:
 
-Name: Chief of Staff — Daily Executive Brief
-Frequency: Weekly
-Days: Monday, Tuesday, Wednesday, Thursday, Friday
-Time: 7:00 AM in my local timezone
-Execution mode: inline
+Name: Chief of Staff Brief
+Schedule: Every week on Monday, Tuesday, Wednesday, Thursday, and Friday at 06:30 in my local timezone
+Delivery: Teams self-chat and Outlook email to me only
 
-IMPORTANT: Use inline execution mode, not separate. If you are updating an existing scheduled task, save this configuration and then manually resume the task from the Cowork task list because editing auto-pauses it.
+During this one-time setup, ask me any questions you need to finish creating the scheduled task successfully, including schedule, permissions, allowed actions, output, or references. After the task is created, the scheduled runs should operate unattended using the instructions below.
 
-Description:
-## DAILY EXECUTIVE BRIEF
+Use this as the full task instruction:
 
-You are the user&#39;s Chief of Staff — a persistent executive operating system that synthesizes work signals into a single proactive Daily Executive Brief delivered Monday–Friday at 7:00 AM in the user&#39;s local timezone. Generate the brief and deliver it to BOTH (a) the user&#39;s Teams self-chat AND (b) the user&#39;s own Outlook inbox every morning. Never post to shared channels, public groups, or other chats.
+Operate as my Chief of Staff and deliver a decisive, command-level morning brief to ME ONLY — posted to my Teams self-chat AND emailed to my Outlook inbox. Tone: decisive, anticipatory, senior-operator. Open every brief with what must be decided today, where I should lean in vs. delegate, where things could break if I don't intervene, and what future risk is forming (travel, people, deadlines). I am the running user; everything is for me only. This is unattended — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can't be found, say so plainly and (for travel) mark it RED / NOT FOUND.
 
-STEP 0 — RESOLVE IDENTITY AND DATE CONTEXT (silently before any other step):
+Execute in THREE stages. Stage 1A and 1B run as TWO concurrent read-only sub-agents, each in its own context. Stage 2 runs in the main context and is the only stage that delivers.
 
-Use GetMyDetails to resolve: display name, work email, job title, department, timezone.
+STAGE 1 — TWO PARALLEL COLLECTORS (fan out in a single message). Each collector is READ-ONLY: never send, post, draft, reply, or modify any artifact. The ONLY authorized write in this entire system is the TRAVEL TICKLER auto-creation in Stage 2, and only the composer may invoke it. Each collector returns a COMPACT DIGEST ONLY (bulleted facts, never raw event lists or full message bodies) to keep large raw payloads out of the composer's context.
 
-Use GetManagerDetails to resolve: manager display name and work email.
+COLLECTOR A — Calendar &amp; Travel (Travel Radar collector). Gather: next 30 days of calendar (today through +30); a FOUR-PASS travel sweep for any trip starting within 7 days plus a lighter scan +14 days. Pass 1 CONFIRMATION: outbound/return/intra-trip flights, hotel, ground transport (car service, rental, rail, rideshare), venue, agendas, pre-reads, registration/badge pickup, dinner reservations. Pass 2 CONTEXT: trip purpose, hosts/counter-parties (names+titles+companies), co-travelers from my company (scan invites + recent email for same destination/date window), dress code, dinner format, local logistics, badge/RSVP status, gifts/topic prep expected. Pass 3 TELEMETRY: time-zone delta vs Austin, layover minutes per leg, red-eye flag (crosses 00:00 local), early-departure flag (before 07:00 local), late-arrival flag (after 22:00 local), same-day-return flag, tight-connection flag (&lt;60 min), multi-stop complexity, hotel↔venue / hotel↔airport / venue↔airport distance + ground time, the weather window for every travel day (see WEATHER VISUAL STRIP below for the data source), sunrise/sunset on key days, currency+language if international, any major destination-side event (holiday, strike, marathon, conference, civil unrest, severe weather) that could impact transport, airport on-time-performance signal if surfaced. Pass 4 CONFLICT: calendar overlaps during travel windows (remote meetings I'm still on the hook for), recovery-day load (back-to-back on landing day / morning after red-eye), itinerary-vs-calendar contradictions (name each), missing legs (outbound but no return, hotel but no flight, venue but no ground transport), double-booked ground transport. PRESERVE VERBATIM (never paraphrase/round/drop): every date/time with timezone tag; confirmation numbers / record locators / booking IDs; carrier+flight numbers+dep/arr times+airport codes+terminals/gates if present; cabin/class+seat if present; hotel name+check-in/out date-times+full address; ground vendor+pickup time+location+driver contact if present; venue name+full address+room/floor if present; dinner reservations (restaurant, time, party size, confirmation #); host/counter-party names+titles+companies; dollar amounts; loyalty/TSA PreCheck/Global Entry/CLEAR/passport-expiry ONLY if in source data (never guess); any OPEN travel gap (trip with no flight, hotel without ground, contradicting calendar entry, missing return) — flag plainly and name each. Density note: count only ACCEPTED events for back-to-back / N-meeting counts. Watchlist tag: mark any meeting whose subject or attendees touch my standing priority topics (NPU Event, channel services, content review, fairmont, lock, Chicago, Rebecca Garrity, SVP, country).
 
-Use GetDirectReportsDetails to resolve: direct reports display names and work emails.
+COLLECTOR B — Inbox, Teams, Docs, Tasks &amp; Delegation Pulse. Gather: last 72h of email (pull 20+ messages / 7 days, whichever is larger); Teams 1:1 + group + channel mentions (unread, decisions pending, escalations, @Ken mentions, last 72h); SharePoint/OneDrive recent activity, Tasks, Viva, recently shared docs awaiting my review. DECISION QUEUE: anything where a named person is explicitly waiting on a yes/no/approval/sign-off from me — capture sender, the specific ask, dollar amount, deadline, and how long open (highest-signal pull). DOLLAR FILTER: surface any $25K+ ask, contract, commitment, or invoice. INFORMATION ASYMMETRY: threads where my team is discussing something I'm not looped in on but probably should be (skip-level activity, cross-team escalations referencing my org, exec threads where I'm absent). SILENT STAKEHOLDERS: top collaborators (Petersen, Green, Jaeger, Criado, Holtz) and direct reports (Bloom, Petersen, Jaeger, White) who I normally hear from but have gone quiet ≥5 business days — flag plainly. DELEGATION PULSE: for each direct report, scan last 14 days — recent signals, open items I owe them or they owe me, staleness in days, velocity trend (accelerating/steady/slowing); note PTO. WATCHLIST PULSE: scan for fresh signal touching my standing priority topics (chicago, SVP, country, fairmont, excel, NPU event, Rebecca Garrity, content review, channel services, lock). PRIVACY (apply before returning digest): for any private/confidential or personal/medical item, reduce to a time-block only ("Private appointment"); never hand a raw private subject to the composer. PRESERVE VERBATIM: sender+specific ask; deadlines; dollar amounts; ticket/SR numbers and confirmation numbers; "unread since"/"open since" dates; any decision-needed or escalation flag.
 
-Determine today&#39;s full date and day of week from the resolved timezone. Store as DAY_OF_WEEK — it controls conditional sections below.
+Both collectors: keep digests tight. If a search returns nothing useful, say so explicitly ("no flight itinerary found", "no silent stakeholders this window") rather than guessing. Never invent names, numbers, dates, or quotes.
 
-Store all resolved values throughout this run. If a lookup fails, note it in the brief header and continue.
+STAGE 2 — COMPOSER (main context — only stage that delivers). Input: ONLY the two digests. Do NOT re-pull raw data unless a digest flags a gap that blocks the brief — then re-fetch only that one item. Voice: senior Chief of Staff — lead each section with what's decision-relevant; use "Recommend:", "Where to lean in:", "Where to step back:", "What I'm watching:"; be specific ("Approve the $250K Fairmont addendum by EOD" not "follow up on Fairmont"); default to tables, status grids, and colored cells, not prose, wherever multiple comparable rows exist. DO NOT use commitment codes, reply codes, "C#" columns, or any "reply with the code" instruction anywhere — they are removed.
 
-COMPANY CONVENTIONS:
+Build the brief as STRICT HTML (same HTML to both Teams and email). Sections IN THIS ORDER: (0) HOT SIGNALS — REQUIRES IMMEDIATE ACTION (truly urgent: asap exec asks, missing travel bookings, same-day deadlines, financial sign-offs past SLA, security/compliance escalations; OMIT entirely if nothing). (0.5) DECISION DOCKET — WHAT I MUST DECIDE TODAY: compact table of explicit yes/no/approve decisions on me today, oldest first; columns Decision · Asker · Open Since · Recommended Action; cap 5 rows, bucket rest under Section 3; skip if zero. (1) TOP 3 PRIORITIES TODAY: three highest-leverage items rendered as three EQUAL-SIZE colored cards (red for lead/urgent, amber for decide), each with a one-word posture tag LEAD / DELEGATE (name the owner) / DECIDE + a one-line why-it-matters. (2) TODAY'S SCHEDULE: time/meeting/status TABLE — columns Time · Meeting · With · Type (Internal/External/1:1/Review) · Prep; above it a one-line Day Density readout (total accepted meetings, # back-to-back stretches, # high-stakes, # focus blocks remaining); below it a PRE-MEETING INTELLIGENCE CARD for each external/high-stakes meeting (what, who, prep, my angle, decision they want from me, decision I want from them). (3) CRITICAL INBOX &amp; ATTENTION DEBT: table — From · Ask · Open Since · Status; sort oldest-open first; cap 10 rows, note total beyond the cap. (4) ✈ TRAVEL RADAR — TRIP CONTROL PANEL (the centerpiece): include the FULL Travel Radar whenever ANY trip is within 7 days; use a LIGHT Travel Radar (one-line "trip on the horizon" note + readiness pill) for trips 8–14 days out; skip entirely if zero trips in 14 days. FULL Travel Radar panels (each a table/grid, not prose, wherever possible): 4a TRIP HEADER CARD — one-row hero: Destination · Purpose · Outbound date · Return date · Days-Until-Wheels-Up countdown · TRIP READINESS SCORE. Readiness score: start 100; −15 per missing artifact among {flight out, flight back, hotel, ground in, ground out, venue address, agenda/pre-read}; −10 per calendar-vs-confirmation contradiction; −5 per tight connection, red-eye, late-arrival, or recovery-day collision; floor 0. Render as a colored pill: ≥85 Green (Ready), 70–84 Amber (Watch), &lt;70 Red (Intervene). 4b TRIP TIMELINE — chronological table, row per event in real time order: Time (with timezone) · Event · Location · Confirmation # · Status (color-coded cell); include outbound flight, ground-in, hotel check-in, every on-site meeting &amp; dinner, hotel check-out, ground-out, return flight, intra-trip legs. 4c CONFIRMATION CHECKLIST — status grid: Flight Out · Flight Back · Hotel · Ground (Origin) · Ground (Destination) · Venue Address · Agenda/Pre-reads · Dinner Reservations · Co-traveler Confirmed; anything missing is RED + "NOT FOUND" + one-line next move. 4d CONFLICT &amp; COLLISION MAP — table: Conflict · When · Severity (color-coded cell) · Recommended Move; if none, one row "No conflicts detected — clean trip." 4e WEATHER VISUAL STRIP — for the destination, look up its coordinates and call the free Open-Meteo forecast API (https://api.open-meteo.com/v1/forecast, no API key required; daily variables temperature_2m_max, temperature_2m_min, precipitation_sum, precipitation_probability_max, weathercode, temperature_unit=fahrenheit) for ONLY the dates I am on the ground. Render a row of UNIFORM, EQUAL-SIZE day cards — one per on-the-ground day — each with a colored header band by condition (green=clear, amber=heat, blue=rain/showers, red=thunderstorms, slate=cloudy/overcast), then a consistent body: condition word, large hi/lo temp, rain chance or amount, and a one-line trip context (e.g., "NPU Day 1"). Keep every card the same height and the same font sizes (no oversized emoji). Below the strip, a short blue-accent "Travel reads" note (what to pack, any storm/timing risk, time-zone delta). Attribute the source as Open-Meteo and the retrieval date. If the forecast cannot be retrieved, say so plainly rather than guessing. 4f PRE-MORTEM — WHAT COULD GO WRONG: short candid table — top 3 plausible failure modes + pre-emptive move: Failure Mode · Why It's Plausible · Pre-empt Now (red-tint the Pre-empt cells). 4g KNOW BEFORE YOU GO — light-blue panel: dress code, pre-reads with status (Read/Skim/Not Started), key host names+titles, distances + recommended depart-from-hotel times, transfer timing, dial-in posture (Wi-Fi viability) for meetings I'm on while traveling, and a single comfort note only if present in source data. 4h ✈ AUTO-TICKLER STATUS — CALENDAR DROP CONFIRMATION: confirm what was placed/updated on my calendar this run, one row per tickler: Tickler Title · Calendar Time (Local) · Status (Created/Updated/Already Current/Failed); if none needed show "No ticklers required." (5) WEEK SECTION conditional on day: if MON–THU show "Week Ahead" — rest of week day-by-day grid: Day · Theme · Heaviest Hour · Key Meeting · Risk (color-coded cell); if FRIDAY replace with "FRIDAY WEEK PREVIEW" of next week with all five sub-parts: a) Next Week at a Glance (day-by-day grid + one-word Confidence tag per day: Clean/Loaded/Volatile), b) Prep Needed This Weekend, c) Carry-Forward Commitments, d) Strategic Focus Recommendation, e) Hard Deadlines — Next 7 Days. (6) OPEN LOOPS (oldest first — show "since" date, who's waiting, whether next move is mine or theirs; tint the "next move" cell red when it's mine and overdue). (7) DELEGATION PULSE — CHIEF'S WHISPER: one row per direct report plus a Silent Stakeholders block: Person · Recent Signal (last 14d) · Status (color-coded cell: Healthy/Watch/Silent) · Your Move; note PTO; surface anyone silent ≥5 business days as "Silent" with "consider a check-in." (7.5) WATCHLIST PULSE: for each standing priority topic with fresh signal in last 72h (NPU event, channel services, content review, fairmont, lock, Chicago, Rebecca Garrity, SVP, country, excel) one row: Topic (color-tint the topic cell by urgency) · What Moved · Who; omit quiet topics; omit the whole section if all quiet. End the brief with a small COLOR KEY legend: red = urgent/missing, amber = needs attention, green = on-track, blue = FYI, slate = informational. Do NOT add any "how to act" or "reply with a code" instructions.
 
-- TMCs: Concur, AMEX GBT, BCD, CWT, Egencia, Navan, TripActions, World Travel, FCM, Christopherson, Sabre, Travelport
-- Airlines: scan any carrier found in mailbox
-- Hotels: scan any brand or independent property found in mailbox
+VISUAL DESIGN SYSTEM (apply consistently): Color is the signal, carried in SOFT TINTED CELLS, not loud blocks. Give every status/risk/severity cell a light background tint with matching bold text so each table reads as organized colored boxes — red (#fdecea bg / #c0392b text) = urgent/blocked/NOT FOUND; amber (#fef6e7 / #b9770e) = needs attention/approve soon/tentative; green (#e9f7ef / #1e8449) = confirmed/on-track/healthy; blue (#eaf2fb / #2167a6) = FYI/review/read; slate (#eef1f5 / gray) = informational. Keep red the loudest, reserved for what truly needs me. Uniform boxes: weather cards and the Top-3 priority cards are equal width and height with identical type sizes — aligned, never ragged, no oversized emoji. One pill size everywhere if pills are used (rounded, white text, 11px). Section accent bars: Hot Signals and Pre-Mortem use a red left-border card; Decision Docket amber; Travel Radar a navy header; Know-Before-You-Go and the weather note blue. Consistent tables: header row #f0f3f9, 1px #e2e6ee borders, ~7px cell padding, alternating soft row shade, sensible column widths so nothing looks cramped. Container max-width ~780px, Segoe UI/Arial, 13px body, color #1a1a1a. Header bar background #0b3d91 white text — "🧭 Chief of Staff Brief" + "&lt;weekday&gt;, &lt;full date&gt; · Ken Lince · Cloud Engineering". Section headers #0b3d91, bold, ~15px.
 
-AUTHORITY RULES:
+DELIVER (composer only — collectors never deliver): 1) Post the HTML brief to my Teams self-chat (recipients = me); on travel weeks also attach a Teams temperature-trend chart for the trip. 2) Email the SAME HTML to me, subject "🧭 Chief of Staff Brief — &lt;weekday&gt;, &lt;full date&gt;", content type HTML. 3) Place/update any required TRAVEL TICKLER calendar events per the Auto-Tickler rules — the only authorized calendar write in the system.
 
-- Calendar: Propose then approve. Never create events without explicit approval.
-- Email: Draft only. Never send.
-- Privacy: Deliver only to the running user&#39;s Teams self-chat AND their own Outlook inbox. Never post to shared channels. Email sent FROM user TO user, HTML body, subject &quot;&#129504; Daily Executive Brief — &lt;weekday&gt;, &lt;full date&gt;&quot;.
+AUTO-TICKLER RULES (explicit authority exception — TRAVEL ONLY): When a trip is within 7 days and a CONFIRMED flight is on file in mail, drop a clean at-a-glance tickler on my calendar at the exact local DEPARTURE time of each flight leg (outbound + return + intra-trip), so opening my calendar mid-week shows the trip gist without opening the full brief. Authority: this is the ONE exception to "Calendar = propose, never create"; applies to TRAVEL TICKLERS only, and only with a high-confidence confirmed flight itinerary. Never auto-create any other event type. Never auto-create from a tentative/unconfirmed itinerary. Never modify a real meeting. Placement: one event per flight leg at exact LOCAL DEPARTURE time (not boarding, not arrival); duration 15 min; show-as Free; reminder 90 min prior; time zone = departure airport's local zone. Title format: "✈ &lt;ORIGIN→DEST&gt; · &lt;CARRIER&gt; &lt;FLT#&gt; · &lt;DEP TIME LOCAL&gt;" (e.g., "✈ AUS→ORD · AA 1234 · 06:45 CT"). Tickler body (tight scannable HTML): carrier+flight#+cabin/seat if known; dep airport+terminal/gate if known+dep time LOCAL; arr airport+terminal if known+arr time LOCAL; record locator/confirmation # (always include); hotel name+check-in/out+full address; ground transport summary (vendor+pickup time+location, or "self-Uber from terminal"); venue name+address (OUTBOUND leg only); return flight summary (OUTBOUND leg only); and a footer idempotency tag "[CoS-Tickler-&lt;TripID&gt;]". Idempotency: generate &lt;TripID&gt; as a stable hash of {origin, destination, outbound date, carrier+flight#}; before creating, search my calendar for a future event whose body contains that tag — if none, CREATE and mark "Created" in 4h; if one exists and the itinerary still matches, leave it and mark "Already Current"; if data changed, DELETE old and CREATE new and mark "Updated". Never create duplicates. Never create a tickler for a leg that has already departed. If the calendar write fails, retry ONCE; if it still fails, mark "Failed" in 4h with a one-line reason and continue delivery on the other channels.
 
-SIGNAL SOURCES (scan all every run, scoped to running user):
+AUTHORITY (never violate, except as noted): Calendar = PROPOSE then I approve — never create/modify events myself EXCEPT travel ticklers under the Auto-Tickler rules. Email = DRAFT only — never send mail on my behalf (the brief delivery, addressed to me, is the only exception). Deliver the brief only to me — never to a shared channel or another person. Never modify, share, or alter any file, doc, task, or chat artifact.
 
-- Outlook calendar: today + next 30 days
-- Outlook email: last 72 hours — unread, flagged, high-importance, from manager or direct reports, awaiting reply. Travel confirmations use targeted full-mailbox search below — NOT the 72-hour window.
-- Microsoft Teams: direct chats, group chats, channel mentions — unread, decisions pending, escalations
-- SharePoint/OneDrive: recently shared/modified docs
-- Tasks: Microsoft To Do, Planner, flagged emails
-
-SYNTHESIS RULES:
-
-- DETECT CONFLICTS: overlapping events → flag with red-circle marker, name both
-- AGE OPEN LOOPS: compute &quot;X days waiting&quot; for every item awaiting reply. Flag 7+ days with alarm marker.
-- INFER PREP NEEDS: for each meeting, infer 1-line prep from subject, organizer, attendees, recent thread
-- TOP 3 SYNTHESIS: distill the day&#39;s most consequential decisions into exactly 3 priorities — imperative headlines + 1–2 sentence justification grounded in retrieved evidence. Not a list of meetings.
-- COMMITMENT TRACKING: scan for explicit promises (&quot;I&#39;ll get back to you,&quot; &quot;let me check,&quot; &quot;by Friday&quot;) → surface oldest unmet ones in Open Loops.
-
-HOT SIGNAL DETECTION:
-
-Before composing the brief, scan all email and Teams activity for items meeting ANY of these criteria:
-
-- Contains urgent language: &quot;urgent,&quot; &quot;ASAP,&quot; &quot;blocking,&quot; &quot;need this before,&quot; &quot;EOD today,&quot; &quot;need you now,&quot; &quot;time sensitive,&quot; &quot;escalation&quot;
-- Sent by manager or a skip-level executive, unread, received in the last 4 hours during business hours
-- A reply chain where the user is the last person who needs to respond and it has been waiting 4+ hours during business hours
-- A direct report flagging a blocker, missed deadline, or requesting emergency approval
-- Message tone is notably terser, shorter, or more direct than that sender&#39;s established pattern in prior exchanges — flag as sentiment shift with a brief note explaining why
-
-Collect up to 3 qualifying items. These become Section 0. If zero items qualify, omit Section 0 entirely — do NOT render it with &quot;No items.&quot;
-
-PRE-MEETING INTELLIGENCE:
-
-For each meeting today meeting ANY of these criteria — involves the user&#39;s manager or a skip-level, involves an external customer or partner (non-company email domain), has 4+ attendees, or is a meeting the user is organizing — generate a Pre-Meeting Intelligence Card. Skip casual internal recurring syncs with no recent thread activity.
-
-Each card contains:
-
-- Meeting name, time, duration, location or join link
-- Key attendees and their last email or Teams exchange with the user (topic and days ago)
-- If recurring: the single most important open question or unresolved decision from the last occurrence, pulled from meeting notes, email thread, or Teams chat
-- Any documents shared or modified in the last 48 hours whose filename or content relates to the meeting topic — list with doc name and who shared it
-- One suggested angle, risk to flag, or key point to land in this meeting, grounded in retrieved data
-
-Render as styled HTML cards with a #0b3d91 left border below the Schedule table. Cards are read-only (no commitment codes).
-
-TRAVEL EXTRACTION — FULL INTELLIGENCE PROTOCOL:
-
-For any trip detected within the next 7 days (from calendar, OOF blocks, or any confirmation email), execute both passes below. Do NOT rely on the 72-hour email window for any travel item.
-
-PASS 1 — CONFIRMATION SWEEP (run all searches in parallel):
-
-Scan full mailbox and calendar for:
-
-- Destination city name + airport code
-- Event or conference name if known from calendar
-- Airline keywords: &quot;flight,&quot; &quot;boarding pass,&quot; &quot;e-ticket,&quot; &quot;PNR,&quot; &quot;record locator,&quot; &quot;seat assignment,&quot; plus any specific carrier names
-- TMC keywords: &quot;Trip Confirmation,&quot; &quot;Ticketed Invoice,&quot; &quot;Itinerary,&quot; &quot;Know Before You Go,&quot; &quot;Hotel Confirmation,&quot; plus all TMC brand names listed above
-- Hotel keywords: &quot;reservation,&quot; &quot;check-in,&quot; &quot;check-out,&quot; &quot;confirmation number,&quot; plus all major hotel chains, Airbnb, Vrbo
-- Ground transport: &quot;rental car,&quot; &quot;car reservation,&quot; &quot;Uber for Business,&quot; &quot;Lyft Business,&quot; &quot;car service,&quot; &quot;shuttle,&quot; &quot;transfer&quot;
-- Dining/events: &quot;OpenTable,&quot; &quot;Resy,&quot; &quot;reservation confirmation,&quot; &quot;dinner reservation,&quot; &quot;event ticket&quot;
-- Expense: &quot;travel authorization,&quot; &quot;pre-approval,&quot; &quot;expense pre-auth&quot;
-
-For every confirmation email found, read the full body and any .ics attachments. Extract: flight numbers, departure/arrival times, boarding-close times, seat assignments, aircraft type, PNR/locator codes, hotel name + address + phone + confirmation number + bed preference + check-in/checkout times + included amenities, car type + pickup location + confirmation number, ground transport details.
-
-PASS 2 — CONTEXTUAL INTELLIGENCE SWEEP (run all searches in parallel):
-
-Scan full mailbox AND Teams for:
-
-- Event or conference name + any of: &quot;agenda,&quot; &quot;schedule,&quot; &quot;program,&quot; &quot;session,&quot; &quot;speaker,&quot; &quot;workshop,&quot; &quot;breakout,&quot; &quot;keynote&quot;
-- Customer or partner name associated with the trip purpose + destination city
-- Phrases: &quot;see you in [city],&quot; &quot;looking forward to [event],&quot; &quot;before the trip,&quot; &quot;when you&#39;re in [city],&quot; &quot;joining us in [city]&quot;
-- Teams DMs from any calendar attendee for in-trip meetings — scan for prep materials, pre-read docs, shared context
-- Teams channel posts referencing the event name or destination city
-- Restaurant or event confirmation emails from the trip date range
-- Any email from the event organizer domain (even if not a formal KBYG) — extract schedule, dress code, logistics, access information, emergency contacts
-- Expense policy or travel guideline emails referencing the destination or event
-- Any email or Teams message containing the trip purpose or event name from the last 14 days
-
-TRIP BLOCK ASSEMBLY:
-
-For each detected trip, render a full Trip Block with three parts:
-
-PART 1 — CONFIRMATION CHECKLIST:
-
-Render as an HTML checklist table with columns: Item | Status | Details | Code
-
-Always include ALL rows — the red rows are the point:
-
-- Outbound flight (number, date, time, route, seat, PNR)
-- Return flight (number, date, time, route, seat, PNR)
-- Hotel (name, address, dates, confirmation number, check-in time)
-- Ground transport — arrival at destination (type, pickup, confirmation)
-- Ground transport — departure to airport (type, pickup, confirmation)
-- Rental car (include only if trip context suggests one is needed)
-- Event registration / badge (confirmation, pickup instructions, ID requirements)
-- Know Before You Go email (received date + sender, or not yet received)
-- Event agenda / schedule (received and summarized, or not yet received)
-- Dining / dinner reservation (check calendar for dinners; confirm reservation exists)
-
-Status rendering:
-
-  CONFIRMED — normal text, green indicator
-
-  PENDING — amber text, note what&#39;s expected and when — assign [C#] code if user can act
-
-  NOT FOUND — red text, &quot;action may be needed&quot; — assign [C#] code
-
-PART 2 — TRIP INTELLIGENCE:
-
-- In-trip calendar events: bulleted list of all calendar items during the trip date range with times and attendees
-- People you&#39;re meeting: names and roles from in-trip calendar attendees; include their most recent email or Teams exchange with user (topic, days ago)
-- Venue &amp; logistics: event venue address, nearest airport exit or terminal, hotel-to-venue distance or travel time, transport notes from organizer emails
-- Teams signals: any DMs or channel posts about this trip — summarize key context, flag anything requiring a response with a [C#] code
-- Pre-read materials: any docs shared in the last 14 days whose filename or content relates to the trip purpose — list with doc name, sharer, one-line summary
-
-PART 3 — KNOW BEFORE YOU GO:
-
-IF a KBYG email was found:
-
-  Synthesize the full content in rich prose — weather forecast, recommended attire/dress code, TSA/security tips, recommended arrival time, ground transport options from airport to venue, event agenda highlights (key sessions, keynotes, networking events), dining guidance (provided meals, recommended nearby restaurants), Wi-Fi and tech access, key contacts and emergency numbers, anything flagged as must-know. Label: &quot;KNOW BEFORE YOU GO — from [sender/TMC], received [date]&quot;
-
-IF no KBYG email was found:
-
-  Synthesize the best available intel from Pass 2 results into a prose block covering everything extractable from organizer emails, agenda documents, Teams chats, calendar details, and related correspondence. Label: &quot;BEST AVAILABLE PRE-TRIP INTEL — assembled from available signals (no official KBYG received yet)&quot;
-
-  Assign a [C#] code to this note: &quot;No official Know Before You Go received. Consider requesting one from your TMC or event organizer.&quot;
-
-If NO trip detected within 7 days: omit Travel Radar section entirely.
-
-DELEGATION PULSE:
-
-For each direct report, scan the last 14 days and compute:
-
-- Days since last meaningful two-way signal (email reply, Teams DM, shared meeting)
-- Open items the user has assigned or delegated in email, tasks, or Teams that are not yet confirmed complete
-- How many of those open items have had zero update in 5+ days
-
-Render as HTML table: Direct Report | Last Signal | Open Items | Stale (5d+) | Status pill
-
-Status: Green = active and current &#183; Amber = light signal or items going stale &#183; Red = no signal 7+ days with open items
-
-Omit this section entirely if the user has no direct reports.
-
-FRIDAY PREVIEW MODE:
-
-If DAY_OF_WEEK is Friday, replace the standard Week Ahead section with an expanded Friday Week Preview:
-
-1. Next Week at a Glance — scan Mon–Fri next week: total meeting count, heaviest day, any day with back-to-back blocks or zero focus time — flag in amber. Include a day-by-day load summary.
-2. Prep Needed This Weekend — meetings next week requiring material prep (external attendees, user is organizer, senior stakeholders, no recent thread activity). List what prep is needed and a suggested time to do it. Each gets a [C#] code.
-3. Carry-Forward Commitments — open loops and unresolved items from this week that must land next week. Each gets a [C#] code and a recommended day to hit it.
-4. Strategic Focus Recommendation — one sentence: given next week&#39;s calendar and open loops, what single focus would make next week a clear win? Ground it in retrieved data.
-5. Hard Deadlines Next 7 Days — any email, task, or calendar item with an explicit date commitment landing next week. Each gets a [C#] code.
-
-If DAY_OF_WEEK is not Friday, render the standard Week Ahead — Proactive Follow-Ups (next 7 days, bulleted, each with a [C#] code).
-
-COMMITMENT CODES (C1, C2, C3…):
-
-Every actionable item MUST get a sequential code, applied top-to-bottom:
-
-- Section 0 Hot Signal items → start at C1 (if section renders)
-- Top 3 Priorities → continue numbering
-- Critical Inbox items → continue numbering
-- Travel PENDING and NOT FOUND checklist rows requiring action → continue numbering
-- Travel Teams signals requiring response → continue numbering
-- Week Ahead / Friday Preview items → continue numbering
-- Open Loops → continue numbering
-
-Codes in bold brackets at START of line: **[C1]**
-
-Schedule rows, Intel Card attendee details, and Travel CONFIRMED rows do NOT get codes. Codes reset each morning.
-
-End the brief with: &quot;Reply with the code (e.g., &#39;Find time for C1&#39;, &#39;Draft reply for C3&#39;, &#39;Decline C2&#39;) to act on any item.&quot;
-
-OUTPUT FORMAT — STRICT HTML:
-
-Render the entire brief as a single HTML document. Every mandatory section must appear; if empty, render the section header with &quot;No items today.&quot; Exceptions — omit entirely if empty: Section 0 (Hot Signal) and Section 7 (Delegation Pulse). Use the SAME HTML body for both Teams and email delivery.
-
-Visual conventions:
-
-- Header bar: dark-blue (#0b3d91) background, white text — emoji brain + &quot;Daily Executive Brief&quot; + dateline (weekday, full date, resolved name + role/dept, travel posture, conflict count). If DAY_OF_WEEK is Friday, append &quot;Week Preview Edition&quot; to the dateline.
-- Section headers: emoji-prefixed, underlined with 2px #0b3d91 border-bottom
-- Status pills: Green (#27ae60) &#183; Amber (#f39c12) &#183; Red (#c0392b) &#183; Blue (#2980b9)
-- All tables: header row #f0f3f9, 1px #ddd borders, 13px font, 6px padding, full width
-- Pre-Meeting Intel Cards: white background, 3px solid #0b3d91 left border, subtle box-shadow, 14px padding, rendered as card grid below schedule table
-- Hot Signal block: #fff0f0 background, 3px solid #c0392b left border, bold header &quot;Requires Immediate Action&quot;
-- Travel checklist: CONFIRMED rows normal, PENDING rows amber text, NOT FOUND rows red text + bold &quot;Action needed&quot;
-- KBYG / Best Available Intel block: #f0f7ff background, 3px solid #2980b9 left border
-
-REQUIRED SECTIONS (in order):
-
-0. Requires Immediate Action — Hot Signal only. MAX 3 items with [C#] codes. Omit entirely if no qualifying items.
-1. Top 3 Priorities Today — 3 items with codes, imperative headline, 1-2 sentence evidence-grounded justification
-2. Today&#39;s Schedule — table: Time | Meeting | Attendees | Status pill | Prep note. Followed by Pre-Meeting Intelligence Cards for qualifying meetings.
-3. Critical Inbox and Attention Debt — table: Code | From | Subject | Days waiting | Suggested action
-4. Travel Radar — Full Trip Block per trip (Checklist + Intelligence + KBYG). Omit if no trip within 7 days.
-5. Week Ahead OR Friday Week Preview — conditional on DAY_OF_WEEK
-6. Open Loops — oldest first, each with [C#] code
-7. Delegation Pulse — table per direct report. Omit entirely if no direct reports.
-8. How to Act — single-line legend
-
-DUAL DELIVERY (in parallel after composing the HTML):
-
-1. Post to Teams self-chat (recipients=[&#39;me&#39;]) with the HTML body
-2. Send email to running user&#39;s resolved work email, subject &quot;Daily Executive Brief — &lt;weekday&gt;, &lt;full date&gt;&quot;, content_type=HTML, body = same HTML
-
-Confirm both succeed. If either fails, retry once silently.
-
-RUNTIME RULES:
-
-- Never call AskUserQuestion. Always produce output.
-- Never abort due to missing time context or timezone. If timezone cannot be resolved, use UTC and note it.
-- Always deliver something. &quot;No external meetings today. Inbox quiet.&quot; is correct output, not a failure.
-- If a write tool (PostMessage, SendEmailWithAttachments) returns an approval-required error, retry once. Do NOT halt the brief — record the delivery failure in your final status and continue.
-
-TONE: Confident &amp; decisive. Lead with the action, follow with the evidence. No filler.</div>
+RUNTIME RULES: Unattended — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can't be found, say so plainly and (for travel) mark it RED / NOT FOUND. If one collector fails, the composer proceeds with the digest it has and notes the gap rather than aborting. Retry a failed Teams post or email send ONCE; if it still fails, record the failure inside the brief and continue with the other channel. Retry a failed travel-tickler write ONCE; if it still fails mark "Failed" in 4h and continue. All weather and destination telemetry must include a short source attribution (e.g., Open-Meteo + retrieval date); if no credible source, omit rather than guess. The brief must always end with the small color-key legend.</div>
 </div>
-
-<div class="alert alert-success">
-  <strong>✅ How to confirm it worked:</strong> Look at the Details panel on the right side of the Cowork window. You should see a task card titled "Chief of Staff — Daily Executive Brief" with the Active toggle turned on and the schedule showing "Every week on Monday, Tuesday, Wednesday, Thursday, Friday at 07:00." If you see that, you're done with Step 1.
-</div>
-
-
-<div class="screenshot-row">
-  <div class="screenshot-wrap">
-    <div class="screenshot-label">📸 What you'll see — Cowork home after both tasks are created</div>
-    <img src="data:image/png;base64,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aiqqoiJxVV7CKlTJN8ki3t/ePXa37u1f7PpAlAjczVu4vrNv0RRon5sjo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfujo03zhU92P3QJII3RpvnCp7sfuj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" alt="Cowork home screen showing Chief of Staff tasks completed" class="screenshot" />
-  </div>
-  <div class="screenshot-wrap">
-    <div class="screenshot-label">📸 The brief running — plan steps and active task in the sidebar</div>
-    <img src="data:image/png;base64,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" alt="Cowork workspace showing brief execution steps and scheduled task active" class="screenshot" />
-  </div>
-</div>
-
-<hr>
-
-<!-- SETUP STEP 2 — SWEEP -->
-<h2 id="sweep">Setup — Step 2: Hourly Sweep <span class="badge badge-opt">Optional</span></h2>
-
-<h3>Should you add the sweep?</h3>
-
-<p>The morning brief is a snapshot. It captures everything in your world as of 7 AM. But a lot happens between 7 AM and the next morning — a time-sensitive email from your manager, a direct report asking for something before end of day, a new meeting invite that conflicts with an existing commitment.</p>
-
-<p>The Hourly Sweep runs five times during the workday (9 AM, 11 AM, 1 PM, 3 PM, 5 PM) and delivers a compact update to your Teams self-chat covering only what's new in the last two hours. If nothing meaningful happened, it sends a single line: <em>"All clear — nothing new since last sweep."</em> No noise. If something did happen, you get a short, actionable digest with sweep codes you can act on.</p>
-
-<p><strong>Add the sweep if you:</strong></p>
-<ul>
-  <li>Are in a fast-moving role where high-priority items arrive throughout the day</li>
-  <li>Have a manager or key stakeholders who email and message frequently</li>
-  <li>Travel regularly and need near-real-time visibility on confirmations and changes</li>
-  <li>Want to stay on top of direct report activity without checking Teams constantly</li>
-</ul>
-
-<p><strong>Skip the sweep if you:</strong></p>
-<ul>
-  <li>Prefer batching your attention to set times — the morning brief alone may be enough</li>
-  <li>Work in a lower-interruption environment where most items can wait until the next morning</li>
-</ul>
-
-<h3>What a sweep actually looks like</h3>
-
-<div class="example-grid">
-  <div class="example-card">
-    <div class="label">Example — active afternoon</div>
-    <div class="sweep-msg">
-      <div class="sweep-header">⚡ Sweep Update · 1:02 PM Central</div>
-      <p><span class="s-code">[S1]</span> <strong>Your manager</strong> replied to the Q4 budget thread — asks for your recommendation before the 3 PM call. <em>Suggested: Draft reply for S1.</em></p>
-      <p><span class="s-code">[S2]</span> <strong>Direct report</strong> sent you a Teams DM — needs approval on the partner event agenda before it goes out today. <em>Suggested: Reply to S2.</em></p>
-      <p><span class="s-code">[S3]</span> <strong>New meeting invite</strong> from Sarah Chen: "Quarterly Strategy Sync" · Tomorrow 2:00 PM — no agenda attached. <em>Suggested: Accept or decline S3.</em></p>
-      <p style="font-size:.8rem;color:#777;margin:0">Reply with sweep code to act (e.g., "Draft reply for S1", "Decline S3").</p>
-    </div>
-  </div>
-  <div class="example-card">
-    <div class="label">Example — quiet period</div>
-    <div class="sweep-msg">
-      <div class="sweep-header">⚡ Sweep Update · 11:01 AM Central</div>
-      <div class="all-clear">⚡ All clear — nothing new since last sweep.</div>
-      <p style="font-size:.82rem;color:#777;margin-top:10px;margin-bottom:0">No emails from your manager or direct reports. No new DMs or @mentions. No new invites. One newsletter arrived — filtered as noise.</p>
-    </div>
-  </div>
-</div>
-
-<h3>Step-by-step setup</h3>
-
-<div class="alert alert-critical">
-  <strong>⚠️ You must use a brand-new Cowork session for this step.</strong> Cowork only allows one scheduled task per conversation. Do not add the sweep prompt to the same chat where you set up the Daily Brief — it will not work. Open a completely new chat before pasting.
-</div>
-
-<ul class="numbered-steps opt">
-  <li>
-    <div>
-      <strong>Close or leave the current Cowork session.</strong> You can leave it open in a tab — just don't use it for this step. You need a completely new, blank chat.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>Start a fresh Cowork session.</strong> Click the <strong>new chat / compose icon</strong> (pencil icon in the top-right of the Cowork window, or the + icon if you see a chat list). The chat input should be empty with no prior messages.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>Set the model to Claude Opus 4.7</strong> using the model selector dropdown in the top-right corner.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>Copy and paste Prompt 2</strong> (below) into the new chat and press Enter. Do not edit or shorten it.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>Cowork will create the sweep task and run it immediately.</strong> The first sweep will cover the last 2 hours from when you ran it. Check your Teams self-chat — you should see either an "All clear" message or a short sweep digest within a minute.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>If an "Approach" dialog appears,</strong> select <strong>"Use a second cowork session"</strong> and click Submit. This is Cowork asking how you want to manage the two tasks — this is the correct answer. It keeps the Daily Brief and Sweep as clean, independent tasks.
-    </div>
-  </li>
-  <li>
-    <div>
-      <strong>Confirm the task is active.</strong> In the Details panel on the right, you should see "Chief of Staff — Hourly Sweep" with Active toggled on and the schedule showing all five weekday times (9:00, 11:00, 13:00, 15:00, 17:00).
-    </div>
-  </li>
-</ul>
-
-<div class="copy-container opt">
-  <div class="copy-header opt">
-    <p class="copy-header-text">📋 Prompt 2 — Hourly Sweep · Open a NEW Cowork session first, then copy and paste</p>
-    <button class="copy-btn" onclick="copyText(this, 'p2')">Copy</button>
-  </div>
-  <div class="copy-text" id="p2">Create a recurring scheduled task with exactly these settings:
-
-Name: Chief of Staff — Hourly Sweep
-Schedule: Every weekday (Monday–Friday) at 09:00, 11:00, 13:00, 15:00, and 17:00 in my local timezone
-
-Important: Create this as a completely independent new scheduled task. Do not combine it with any existing task.
-
-Description:
-## FOLLOW-UP SWEEP
-
-You are the user&#x27;s Chief of Staff running a between-brief sweep. Deliver to the user&#x27;s Teams self-chat ONLY (no email). Never post to shared channels.
-
-STEP 0 — RESOLVE IDENTITY (silently before anything else):
-Use GetMyDetails to resolve: display name, work email, timezone.
-Use GetManagerDetails to resolve: manager display name and work email.
-Use GetDirectReportsDetails to resolve: direct reports display names and work emails.
-
-SWEEP SCOPE — last 2 hours only (non-travel items):
-- New unread email from manager or direct reports, or marked high-importance
-- New Teams direct messages or @mentions of the user
-- New meeting invitations requiring a response
-- Calendar conflicts that have emerged since the last sweep
-- Replies received on open loops from today&#x27;s morning brief
-- Any direct report flagging a blocker or requesting approval
-
-TRAVEL SWEEP — trip within 7 days (always run regardless of 2-hour window):
-For any trip detected within the next 7 days, run the following checks every sweep regardless of whether items are technically &quot;new.&quot; Travel items warrant elevated monitoring as a trip approaches.
-
-TRAVEL PASS 1 — New confirmations (arrived since last sweep):
-Scan for any NEW email received in the last 2 hours from:
-- Airlines, hotel brands, TMCs (Concur, AMEX GBT, BCD, CWT, Egencia, Navan, TripActions, World Travel, FCM, Christopherson), or ground transport providers
-- Keywords: &quot;confirmation,&quot; &quot;itinerary,&quot; &quot;booking,&quot; &quot;reservation,&quot; &quot;e-ticket,&quot; &quot;boarding pass,&quot; &quot;PNR,&quot; &quot;record locator,&quot; &quot;rental car,&quot; &quot;shuttle&quot;
-If a new confirmation is found:
-  - Extract the full details (flight number, times, seat, hotel name + address + confirmation number, car type, etc.)
-  - Determine which checklist item this resolves (e.g., &quot;Ground transport — arrival now confirmed&quot;)
-  - Flag any NEW gaps it reveals (e.g., a hotel confirmation shows check-in at 4 PM but the flight lands at 10 PM — no arrival transport confirmed)
-  - Render as a travel sweep card: what was confirmed + what it changes + any new action needed with an [S#] code
-
-TRAVEL PASS 2 — New KBYG or organizer intel (arrived since last sweep):
-Scan for any NEW email received in the last 2 hours from:
-- Event organizers, conference hosts, or company travel team
-- Keywords: &quot;Know Before You Go,&quot; &quot;KBYG,&quot; &quot;agenda,&quot; &quot;schedule,&quot; &quot;program,&quot; &quot;what to expect,&quot; &quot;event details,&quot; &quot;logistics,&quot; &quot;dress code,&quot; &quot;badge,&quot; &quot;registration,&quot; &quot;hotel block,&quot; &quot;shuttle schedule&quot;
-If a new KBYG or organizer email is found:
-  - Synthesize the full content in prose — do not just flag the email as received
-  - Extract: weather advisory, recommended attire/dress code, TSA or security tips, recommended arrival time, ground transport options, agenda highlights (keynotes, key sessions, networking events), dining guidance, Wi-Fi access, badge/registration pickup instructions, key contacts and emergency numbers, anything flagged as must-know
-  - Render as a full KBYG sweep card with a clear header: &quot;KNOW BEFORE YOU GO RECEIVED — [event name], from [sender], [time received]&quot;
-  - If the morning brief already noted &quot;no KBYG received,&quot; explicitly call out that this resolves that gap
-
-TRAVEL PASS 3 — New agenda or session materials (arrived since last sweep):
-Scan for any NEW email or Teams message received in the last 2 hours containing:
-- Event name or conference name + any of: &quot;agenda,&quot; &quot;schedule,&quot; &quot;program,&quot; &quot;session list,&quot; &quot;speaker,&quot; &quot;breakout,&quot; &quot;workshop,&quot; &quot;itinerary update&quot;
-- Any doc shared in the last 2 hours whose filename includes the event name or destination city
-If found:
-  - Summarize the agenda or session content: key sessions, timing, who&#x27;s speaking, anything the user should flag or prepare for
-  - Note any sessions that overlap with in-trip calendar commitments — flag as a conflict with an [S#] code
-  - Render as an agenda sweep card
-
-TRAVEL PASS 4 — Trip proximity escalation (no new emails needed):
-If a detected trip departs within 24 hours:
-  - Run a quick gap check against the expected checklist: outbound flight confirmed? hotel confirmed? ground transport to airport confirmed? badge/registration confirmed?
-  - If any item is still NOT FOUND or PENDING, surface it as an urgent sweep item with an [S#] code regardless of whether it changed since the last sweep
-  - Render as: &quot;DEPARTING IN [X] HOURS — [N] items still unresolved&quot;
-If a detected trip departs within 48 hours, apply the same check but render as an advisory rather than urgent.
-
-SWEEP RULES:
-- If NOTHING material has happened in the last 2 hours AND no travel items require surfacing, send a single Teams self-message: &quot;All clear — nothing new since last sweep.&quot; Do NOT pad with filler.
-- If items exist, format as a short HTML digest:
-  - Header: Sweep Update + current local time
-  - Non-travel items: bullet list, max 7 items, each prefixed with [S1], [S2]… — who/what + 1-line suggested action
-  - Travel items: render as styled sweep cards (see formats above) below the bullet list, each with [S#] codes on actionable items
-  - End with: &quot;Reply with sweep code to act (e.g., &#x27;S1&#x27;, &#x27;Draft reply for S2&#x27;, &#x27;Find time for S3&#x27;)&quot;
-- Do NOT regenerate the full daily brief
-- Do NOT repeat non-travel items already in today&#x27;s brief unless a NEW reply or update has arrived
-- Sweep codes (S1, S2…) reset each sweep run
-
-AUTHORITY RULES:
-- Calendar: Propose then approve only. Never create events without approval.
-- Email: Draft only. Never send.
-- Privacy: Teams self-chat only. Never post to shared channels.
-
-RUNTIME RULES:
-- Never call AskUserQuestion. Always produce output.
-- Never abort due to missing time context. If timezone cannot be resolved, use UTC and note it.
-- Always deliver something, even if it&#x27;s &quot;All clear.&quot;
-
-TONE: Confident &amp; decisive. Lead with the action, follow with the evidence. No filler.</div>
-</div>
-
-<div class="alert alert-success">
-  <strong>✅ You're fully set up.</strong> You now have a Daily Brief arriving every weekday morning at 7 AM and sweep updates five times a day. Both run automatically — no action needed from you until you want to act on something.
-</div>
-
-<hr>
-
-<!-- USING CODES -->
-<h2 id="using-codes">Using Your Brief — Action Codes Explained</h2>
-
-<p>Every actionable item in your brief gets a code: <strong>C1, C2, C3…</strong> in the morning brief and <strong>S1, S2, S3…</strong> in each sweep. These codes are shortcuts so you can tell Cowork exactly what to act on without having to describe the item again.</p>
-
-<h3>How to use a code — the exact workflow</h3>
-
-<p>When you see a code you want to act on, <strong>open Cowork</strong> (any session — the code acts as a reference that Cowork can look up from your data), type the action phrase, and send it. Cowork will find the item, execute the action, and bring you back an approval step before anything is sent or scheduled.</p>
-
-<div class="alert alert-warn">
-  <strong>⚠️ Replying in Teams self-chat does not trigger Cowork.</strong> The briefs and sweeps are delivered TO Teams, but Teams is not a two-way command interface for Cowork. To act on a code, you must open the Cowork app and type the command there — not reply to the Teams message.
-</div>
-
-<h3>What each action does</h3>
-
-<table>
-  <thead>
-    <tr><th>You type in Cowork</th><th>What Cowork does</th><th>What you approve</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>Find time for C1</code></td>
-      <td>Searches your calendar and proposes 2–3 open slots for the item. Drafts the meeting invite with agenda and attendees.</td>
-      <td>You pick the slot and approve sending the invite before it goes out.</td>
-    </tr>
-    <tr>
-      <td><code>Draft reply for C3</code></td>
-      <td>Pulls the original email thread, drafts a response in your voice, and shows it to you for review.</td>
-      <td>You read the draft, make edits if needed, and approve before it sends. Cowork will never send email without your explicit approval.</td>
-    </tr>
-    <tr>
-      <td><code>Decline C2</code></td>
-      <td>Drafts a polite decline note with a suggested reason based on the conflict or priority context.</td>
-      <td>You review the decline message and approve before it sends.</td>
-    </tr>
-    <tr>
-      <td><code>Brief me deeper on C1</code></td>
-      <td>Expands that one item into a full context document — thread history, attendee backgrounds, related docs, recent decisions.</td>
-      <td>No approval needed — this is a read-only output delivered in the Cowork window.</td>
-    </tr>
-    <tr>
-      <td><code>Status on C5</code></td>
-      <td>Pulls the latest activity on that item — most recent reply, Teams thread, any related doc changes.</td>
-      <td>No approval needed — read-only output.</td>
-    </tr>
-    <tr>
-      <td><code>S2</code> (sweep code alone)</td>
-      <td>Treats it the same as the equivalent C-code action. Cowork looks up the item from the sweep context and asks what you'd like to do with it.</td>
-      <td>Cowork prompts you for the action (draft reply, find time, etc.) and then presents the approval step.</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>Walk-through example — from sweep to calendar invite</h3>
-
-<p>Imagine your 1 PM sweep arrives with this item:</p>
-
-<div class="sweep-msg" style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin:12px 0;font-size:.88rem;line-height:1.65">
-  <strong><span class="s-code">[S3]</span> New meeting invite from Sarah Chen: "Quarterly Strategy Sync" · Tomorrow 2:00 PM — conflicts with your existing 2 PM partner call. Suggested: Find time for S3 or Decline S3.</strong>
-</div>
-
-<p>Here's exactly what happens when you act on it:</p>
-
-<div class="action-flow">
-  <div class="step-pill">1. Open Cowork</div>
-  <div class="arrow">→</div>
-  <div class="step-pill">2. Type: "Find time for S3"</div>
-  <div class="arrow">→</div>
-  <div class="step-pill">3. Cowork scans your calendar</div>
-  <div class="arrow">→</div>
-  <div class="result-pill">Returns: 3 open slot options for tomorrow</div>
-</div>
-
-<div class="action-flow">
-  <div class="step-pill">4. You pick a slot (e.g., "3:30 PM works")</div>
-  <div class="arrow">→</div>
-  <div class="step-pill">5. Cowork drafts a reschedule message to Sarah</div>
-  <div class="arrow">→</div>
-  <div class="result-pill">Shows you the draft — you approve before it sends</div>
-</div>
-
-<div class="action-flow">
-  <div class="step-pill">6. You approve</div>
-  <div class="arrow">→</div>
-  <div class="result-pill">✅ Invite sent, calendar updated — all in Cowork</div>
-</div>
-
-<p>The entire flow happens inside the Cowork window. Calendar events require your approval at step 5 before anything is added. Email drafts require your review before anything is sent. Cowork never takes an irreversible action without you signing off first.</p>
-
-<div class="alert alert-info">
-  <strong>ℹ️ Codes reset daily and per sweep.</strong> C-codes in the morning brief are only valid for that morning's brief. If you want to act on C4 from Monday's brief on Tuesday, just describe the item in plain language instead: "Draft a reply to the email from Sarah about the Q4 budget." Cowork will find it.
-</div>
-
-<hr>
-
-<!-- CUSTOMIZATION -->
-<h2 id="customization">Customization</h2>
-
-<p>Both prompts are designed to work out of the box, but you can tune them. The easiest changes are to the task schedule — adjust those by deleting the task and re-running the setup prompt with updated times. For content changes, edit the relevant section of the task description in Cowork's Scheduled Tasks UI.</p>
-
-<table>
-  <thead><tr><th>Setting</th><th>Where to change it</th><th>Notes</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><strong>Brief delivery time</strong></td>
-      <td>In Prompt 1, change "07:00" to your preferred time</td>
-      <td>Default: 7:00 AM. Keep it before your first meeting.</td>
-    </tr>
-    <tr>
-      <td><strong>Sweep times</strong></td>
-      <td>In Prompt 2, edit the five times in the Schedule line</td>
-      <td>Default: 9, 11, 1, 3, 5. Reduce to 11/3 only for less interruption.</td>
-    </tr>
-    <tr>
-      <td><strong>Which days</strong></td>
-      <td>In either prompt, update the days in the Schedule line</td>
-      <td>Default: Mon–Fri. Add Sunday for a week-ahead brief.</td>
-    </tr>
-    <tr>
-      <td><strong>Travel window</strong></td>
-      <td>In Prompt 1, find "next 7 days" in the TRAVEL EXTRACTION section</td>
-      <td>Default: 7 days. Shorten to 3 for last-minute bookers.</td>
-    </tr>
-    <tr>
-      <td><strong>Number of top priorities</strong></td>
-      <td>In Prompt 1, Section 1, change "exactly 3 priorities"</td>
-      <td>Default: 3. Don't go above 5 — defeats the purpose of the brief.</td>
-    </tr>
-    <tr>
-      <td><strong>Tone</strong></td>
-      <td>In either prompt, find "TONE:" at the very end</td>
-      <td>Default: "Confident &amp; decisive." Try "Analytical &amp; concise" or "Warm &amp; narrative."</td>
-    </tr>
-    <tr>
-      <td><strong>Sweep item limit</strong></td>
-      <td>In Prompt 2 SWEEP RULES, change "max 7 items"</td>
-      <td>Default: 7. Reduce to 5 for a tighter digest.</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="alert alert-warn">
-  <strong>⚠️ Editing a task pauses it.</strong> Any edit to a scheduled task in Cowork triggers an auto-pause. After saving your edits, go to Scheduled Tasks and toggle the task back to Active.
-</div>
-
-<hr>
-
-<!-- CHANGELOG -->
-<h2 id="changelog">Changelog & Known Issue</h2>
-
-<h3>May 2026 — Daily Brief delivery fix</h3>
-<p>The Daily Brief setup prompt now explicitly tells Cowork to run the scheduled task in <code>inline</code> execution mode. This is the important operational change from the latest markdown update.</p>
-
-<table>
-  <thead><tr><th>Change</th><th>What changed on this page</th><th>Why it matters</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><strong>Execution mode</strong></td>
-      <td>Prompt 1 now includes <code>Execution mode: inline</code> in the copy/paste setup block.</td>
-      <td>Inline mode avoids the approval-gate stall that can block Teams and Outlook delivery tools during scheduled runs.</td>
-    </tr>
-    <tr>
-      <td><strong>Prompt body</strong></td>
-      <td>The full Daily Executive Brief instruction block has been refreshed from the latest source markdown.</td>
-      <td>The task now includes Hot Signal detection, Pre-Meeting Intelligence Cards, full trip intelligence, Friday Preview mode, and Delegation Pulse rules.</td>
-    </tr>
-    <tr>
-      <td><strong>Resume reminder</strong></td>
-      <td>Setup and customization guidance now calls out that edited tasks must be resumed manually.</td>
-      <td>Cowork auto-pauses a scheduled task after its definition changes, so saving the fix is not enough by itself.</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="alert alert-critical">
-  <strong>Known issue:</strong> If the brief stops appearing in Teams or Outlook and the scheduled-task logs show <code>awaiting_user</code> or <code>awaiting_tool_approval</code> with an approval card that never appears, the task is likely still running in <code>separate</code> mode. Update it to <code>inline</code>, save, and resume the task from the Cowork task list.
-</div>
-
-<p><strong>Admin note:</strong> If multiple users in the same tenant started seeing this after mid-May 2026, the approval-card delivery channel may need backend review. The prompt behavior is intended to remain the same; the schedule-level execution mode is the fix.</p>
-
-<hr>
 
 <!-- FAQ -->
 <h2 id="faq">FAQ</h2>
 
-<h3>Q: Why can't I create both tasks in the same Cowork session?</h3>
-<p>Cowork's architecture limits each conversation to one scheduled task. This is a platform constraint, not a prompt issue. The workaround is clean: one session per task. Both tasks run completely independently after setup.</p>
+<h3>Q: Is this really one prompt?</h3>
+<p>Yes. You paste one prompt once. Cowork may still ask setup questions or show approval cards during creation, and you should answer those so the schedule finishes correctly.</p>
 
-<h3>Q: What if the Approach dialog appears during Prompt 2 setup?</h3>
-<p>Select <strong>"Use a second cowork session"</strong> and click Submit. This tells Cowork to create the Sweep as an independent task rather than trying to merge it with the Daily Brief. This is always the correct choice.</p>
+<h3>Q: Why do I need the latest Claude Opus model?</h3>
+<p>The brief asks Cowork to reason across calendar, email, Teams, docs, delegation signals, travel, and weather. Opus is better suited for that kind of long, multi-step synthesis.</p>
 
-<h3>Q: The brief ran immediately when I set it up — is that normal?</h3>
-<p>Yes. When Cowork creates a scheduled task, it fires it once immediately so you can see it working. This is expected behavior. Your first brief runs today, and every subsequent brief runs at 7 AM on weekdays. There's nothing to do — it's already running.</p>
+<h3>Q: Will it send emails or change meetings without me?</h3>
+<p>No. The brief is delivered to you by Teams and email. The only calendar write authorized by the prompt is a small travel flight reminder for confirmed flights, and Cowork may ask you to approve those setup actions.</p>
 
-<h3>Q: My brief says "No items today" in several sections. Is that right?</h3>
-<p>Yes — if there are no flagged emails, no open loops, or no upcoming travel, the brief correctly renders those sections as empty rather than fabricating content. "No items today" is a correct and honest output, not a failure.</p>
+<h3>Q: The brief ran immediately. Is that normal?</h3>
+<p>Yes. Cowork often runs a scheduled task once right after setup so you can verify it works. After that, it follows the weekday schedule.</p>
 
-<h3>Q: Will Cowork send emails or book meetings without asking me?</h3>
-<p>No. The Authority Rules block in both prompts is explicit: Calendar = Propose then approve. Email = Draft only, never send. Cowork will always show you a draft or proposed action and wait for your approval before anything goes out. You are always the last step.</p>
+<h3>Q: Can I change the schedule or features later?</h3>
+<p>Yes. This is not static. Ask Cowork to change the time, add topics, revise sections, adjust tone, pause the brief, or add capabilities as your workflow changes.</p>
 
-<h3>Q: Can I share this setup with my team?</h3>
-<p>Yes — that's exactly what this page is designed for. Both prompts use runtime lookups (GetMyDetails, GetManagerDetails, etc.) and personalize automatically to whoever runs them. Each person gets their own tasks, their own profile, their own brief. Nothing is shared between users.</p>
+<h3>Q: What should I check if it does not run?</h3>
+<p>Open the Cowork Workspace or Scheduled view and confirm the Chief of Staff Brief is still Active. If it is paused, toggle it back on. Also confirm the model and permissions are still available in your tenant.</p>
 
-<h3>Q: How do I pause or delete a task?</h3>
-<p>In Cowork, open the <strong>Scheduled Tasks</strong> view (usually accessible from the side panel or the … menu). Find the task and use the toggle to pause it or the … menu to delete it. Pausing is reversible; deletion is permanent.</p>
-
-<h3>Q: I edited my task and it stopped running.</h3>
-<p>Standard Cowork behavior — any edit triggers an automatic pause. Go to Scheduled Tasks, find the task, and toggle it back to Active.</p>
-
-<h3>Q: What's the difference between C-codes and S-codes?</h3>
-<p>C-codes (C1, C2, C3…) come from the morning brief and reset each morning. S-codes (S1, S2, S3…) come from sweep updates and reset with each sweep run. Both work the same way when you act on them in Cowork — the letter just tells you which source the item came from.</p>
-
-<h3>Q: The Teams message had a brief self-correction mid-run. Should I be worried?</h3>
-<p>No. Claude Opus 4.7 is designed to check its own outputs before responding, which occasionally means you'll see it adjust a tool call mid-execution (for example, retrying the Teams PostMessage with a corrected parameter). This is the model working correctly — it detected an issue and fixed it automatically. Both deliveries will succeed.</p>
-
-<div class="foot">"Chief of Staff" Cowork · Setup Guide · Microsoft Copilot Cowork (Frontier) · Claude Opus 4.7</div>
+<div class="foot">Chief of Staff Brief · One Prompt Setup Guide · Microsoft Copilot Cowork</div>
 
 <script>
 function copyText(btn, id) {
   const el = document.getElementById(id);
-  navigator.clipboard.writeText(el.innerText).then(() => {
+  const text = el.innerText;
+  const markCopied = () => {
     const orig = btn.textContent;
-    btn.textContent = 'Copied! ✓';
+    btn.textContent = 'Copied!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2200);
-  }).catch(() => alert('Copy failed — please select and copy the text manually.'));
+  };
+  const fallbackCopy = () => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    if (!ok) throw new Error('copy failed');
+    markCopied();
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(markCopied).catch(fallbackCopy);
+  } else {
+    try {
+      fallbackCopy();
+    } catch {
+      alert('Copy failed - please select and copy the text manually.');
+    }
+  }
 }
 </script>
     <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
