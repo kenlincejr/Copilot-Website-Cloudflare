@@ -209,10 +209,13 @@ tbody tr:nth-child(even) { background: var(--muted); }
 /* SCREENSHOTS */
 .screenshot-row {
   display: grid;
-  grid-template-columns: minmax(280px, 420px);
+  grid-template-columns: minmax(280px, 520px);
   justify-content: center;
   gap: 18px;
   margin: 20px 0 28px;
+}
+.screenshot-grid-wide {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
 }
 .screenshot-wrap {
   background: var(--muted);
@@ -253,6 +256,14 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   .copy-header { flex-direction: column; gap: 10px; align-items: flex-start; }
   .copy-text { max-height: 360px; }
   .example-grid { grid-template-columns: 1fr; }
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+  th, td {
+    min-width: 160px;
+    vertical-align: top;
+  }
 }
 </style>
 </head>
@@ -278,11 +289,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   <ol>
     <li><a href="#what-this-does">What This Does</a></li>
     <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#cost-control">Built To Spend Carefully</a></li>
     <li><a href="#before-you-start">Before You Start</a></li>
     <li><a href="#setup">Step-by-Step Setup</a></li>
+    <li><a href="#setup-questions">Setup Questions and Permissions</a></li>
     <li><a href="#success">What Success Looks Like</a></li>
     <li><a href="#use-it">How To Use It Each Morning</a></li>
-    <li><a href="#change-it">How To Change It Later</a></li>
+    <li><a href="#change-it">Ongoing Management</a></li>
     <li><a href="#prompt">Full Prompt</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ol>
@@ -291,50 +304,75 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 <!-- WHAT THIS DOES -->
 <h2 id="what-this-does">What This Does</h2>
 
-<p>This Cowork agent creates a weekday morning briefing that behaves like a personal Chief of Staff. Each morning it reviews your calendar, email, Teams activity, recent files, open loops, direct-report signals, watchlist topics, and travel details, then turns that into one concise brief you can read and act on.</p>
+<p>The Chief of Staff Brief is an automated Cowork agent for Microsoft 365. Once it is set up, it runs every weekday morning, reads your own work signals, and sends you one private morning brief in Teams self-chat and Outlook email.</p>
 
-<p>The goal is simple: give you the decisions, risks, priorities, travel gaps, and people signals that matter before the day starts. Red items need attention, amber items need watching, green means on track, blue is FYI, and slate is informational.</p>
+<p>Think of it as a chief of staff who gets in before you, checks calendar, email, Teams, recent documents, commitments, people signals, and travel details, then leaves a decision-ready summary that says: what needs a decision today, what might break, what to delegate, and what risk is forming.</p>
 
 <table>
-  <thead><tr><th>It gives you</th><th>What that means in plain English</th></tr></thead>
+  <thead><tr><th>Brief section</th><th>What it gives you</th></tr></thead>
   <tbody>
-    <tr><td><strong>Hot Signals</strong></td><td>Anything urgent enough that it cannot wait.</td></tr>
-    <tr><td><strong>Decision Docket</strong></td><td>The approvals, yes/no calls, and sign-offs currently sitting with you.</td></tr>
-    <tr><td><strong>Top 3 Priorities</strong></td><td>The three highest-leverage things for your day, tagged as lead, delegate, or decide.</td></tr>
-    <tr><td><strong>Today's Schedule</strong></td><td>Your meeting flow, prep notes, and intelligence for high-stakes conversations.</td></tr>
-    <tr><td><strong>Critical Inbox</strong></td><td>Messages and asks that are aging, urgent, financial, or politically important.</td></tr>
-    <tr><td><strong>Travel Radar</strong></td><td>A trip control panel with confirmations, gaps, weather, conflicts, and calendar flight reminders when travel is within 7 days.</td></tr>
-    <tr><td><strong>Delegation Pulse</strong></td><td>A quick read on direct reports and important people who may have gone quiet.</td></tr>
+    <tr><td><strong>The Bottom Line</strong></td><td>A short executive summary: the most important decision, the biggest likely failure point, and the main risk forming.</td></tr>
+    <tr><td><strong>Hot Signals</strong></td><td>Urgent items only: same-day deadlines, leadership asks, missing travel bookings, escalations, and overdue approvals.</td></tr>
+    <tr><td><strong>Decision Docket</strong></td><td>A table of yes/no, approve/decline, or sign-off decisions waiting on you, oldest first.</td></tr>
+    <tr><td><strong>Ready to Send</strong></td><td>One to three complete reply drafts for the clearest asks waiting on you. Drafts can be saved to Outlook Drafts, but are never sent automatically.</td></tr>
+    <tr><td><strong>Top 3 Priorities</strong></td><td>Your highest-leverage items for the day, tagged as lead, delegate, decide, respond, or deep-work depending on your role.</td></tr>
+    <tr><td><strong>Today's Schedule</strong></td><td>Your meetings, prep notes, focus-time suggestions, and walk-in-ready intelligence for the highest-stakes meeting.</td></tr>
+    <tr><td><strong>Travel Radar</strong></td><td>Only appears when travel is coming. It checks flights, hotel, ground, venue, agenda, conflicts, weather, and uncovered lodging nights.</td></tr>
+    <tr><td><strong>Promise Tracker</strong></td><td>Things you said you would do in recent messages, including who is waiting and whether the commitment is overdue.</td></tr>
+    <tr><td><strong>Delegation and People Radar</strong></td><td>For managers, it highlights direct-report signals, quiet stakeholders, PTO/OOO visibility, birthdays, anniversaries, and stale 1:1s.</td></tr>
+    <tr><td><strong>Watchlist Pulse</strong></td><td>Movement on your priority topics, projects, customers, certifications, deadlines, or other themes you choose to track.</td></tr>
   </tbody>
 </table>
 
 <div class="alert alert-info">
-  <strong>Simple setup, not a static document.</strong> You paste one prompt to create the agent. After it is running, you can keep talking to it: change the time, add watchlist topics, adjust the tone, pause it during PTO, improve Travel Radar, or ask it to add new features.
+  <strong>It skips empty sections.</strong> Quiet day with no travel, no direct reports, and no watchlist movement? Those sections are left out so the brief stays useful and short.
 </div>
 
 <!-- HOW IT WORKS -->
 <h2 id="how-it-works">How It Works</h2>
 
-<p>The prompt tells Cowork to create a recurring weekday task. When the task runs, Cowork gathers your work signals in stages: one collector focuses on calendar and travel, another focuses on inbox, Teams, docs, tasks, and people signals, and a final composer turns those findings into the finished HTML brief.</p>
+<p>The setup prompt creates a recurring Cowork task named <strong>Chief of Staff Brief</strong>. Each scheduled run starts fresh, reads the Microsoft 365 data it is allowed to access, and then delivers the same HTML brief to your Teams self-chat and your Outlook inbox.</p>
 
-<p>The brief is delivered only to you: posted to your Teams self-chat and emailed to your Outlook inbox. On travel weeks, the agent may also ask to place small flight reminder events on your calendar. Those reminders are the only calendar write the prompt authorizes, and they are meant to make travel details easy to find at a glance.</p>
+<p>The agent runs in stages. On heavier days, one collector reads calendar, focus time, and travel while another reads inbox, Teams, docs, tasks, people signals, and commitments. A final composer receives compact digests from those collectors and writes the brief. On quiet days, it uses a lighter pass to keep the run smaller.</p>
 
 <div class="alert alert-success">
-  <strong>You stay in control.</strong> The agent does not email other people, reply to messages, change real meetings, share files, or post to channels. For anything that affects other people, Cowork should ask for approval or leave the decision to you.
+  <strong>You stay in control.</strong> The agent does not send replies to other people, accept meetings, share files, post to channels, or change normal calendar events. It delivers the brief to you only.
+</div>
+
+<h3>Two narrow write permissions</h3>
+<p>By default, the agent is read-first. It has only two narrow places where it may write, and both are designed to keep you in control:</p>
+
+<table>
+  <thead><tr><th>Write action</th><th>What happens</th><th>What never happens</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Outlook draft replies</strong></td><td>It can save ready-to-send replies in your Outlook Drafts folder and also show the text inside the brief.</td><td>It never sends the reply. You review, edit, and send it yourself.</td></tr>
+    <tr><td><strong>Travel ticklers</strong></td><td>For confirmed flights within 7 days, it can create small free/busy calendar reminders with flight details.</td><td>It never books focus time, accepts meetings, moves meetings, or creates non-travel events.</td></tr>
+  </tbody>
+</table>
+
+<!-- COST CONTROL -->
+<h2 id="cost-control">Built To Spend Carefully</h2>
+
+<p>Because Copilot Cowork bills on consumption, this agent is tuned to spend like a smart operator rather than run flat-out every day. The core move is effort tiering: on a normal, no-travel weekday it runs <strong>LIGHT</strong> - a single read-only pass scoped to today, the next three working days, and a 72-hour inbox window. It reserves the full two-collector, 30-day sweep with the four-pass travel build and weather lookups for days that warrant it: Mondays, Fridays, travel in the next 14 days, or any real signal that trips.</p>
+
+<p>The architecture compounds the savings. Collectors hand the composer compact digests instead of raw data, so the expensive reasoning context stays small, and the composer does not re-pull source data unless a gap blocks the brief. The prompt is also aggressively conditional: it omits empty sections, skips Delegation Pulse for users with no direct reports, drops Travel Radar when there is no trip, and stays quiet on watchlist topics with no movement.</p>
+
+<div class="alert alert-info">
+  <strong>What this means for users:</strong> quiet days should stay lightweight, while travel weeks, decision-heavy Mondays, and risk-heavy days still get the full treatment.
 </div>
 
 <!-- BEFORE YOU START -->
 <h2 id="before-you-start">Before You Start</h2>
 
 <ul>
-  <li><strong>Copilot Cowork access</strong> — open Cowork in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</li>
-  <li><strong>Microsoft 365 Copilot license</strong> — Cowork needs access to your Microsoft 365 work signals.</li>
-  <li><strong>Latest Claude Opus model</strong> — before pasting the prompt, use the model dropdown in the top-right corner and select the latest available Claude Opus model.</li>
-  <li><strong>A few minutes to answer setup questions</strong> — Cowork may ask follow-up questions while it creates the schedule, confirms delivery, or requests permissions. Answer those questions so the setup can finish successfully.</li>
+  <li><strong>Copilot Cowork access</strong> - open Cowork in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</li>
+  <li><strong>Microsoft 365 Copilot license</strong> - Cowork needs permissioned access to your Microsoft 365 work signals.</li>
+  <li><strong>Latest Claude Opus model</strong> - before pasting the prompt, use the model dropdown in the top-right corner and select the latest available Claude Opus model.</li>
+  <li><strong>Five quiet minutes</strong> - Cowork may ask a few setup questions and show permission cards. Answer them during setup so scheduled runs do not stall later.</li>
 </ul>
 
 <div class="alert alert-warn">
-  <strong>Important first step:</strong> Select the latest Claude Opus model before you paste the prompt for the first time. The prompt is long and does multi-source reasoning, so Opus is the best fit.
+  <strong>Important first step:</strong> Select the latest Claude Opus model before you paste the prompt. The prompt is long and asks Cowork to reason across several Microsoft 365 sources.
 </div>
 
 <!-- SETUP -->
@@ -342,34 +380,65 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 <div class="step-intro req">
   <h4>What you are about to do</h4>
-  <p>You will paste one prompt into a fresh Cowork chat. Cowork will create the scheduled Chief of Staff Brief, ask any setup questions it needs, and then show the scheduled task as active when setup is complete.</p>
+  <p>You will paste one full setup prompt into a fresh Cowork chat. Cowork will create the scheduled task, ask the few questions it cannot safely infer, request needed permissions, and then show the task as active.</p>
 </div>
 
 <ul class="numbered-steps">
   <li><div>Open <strong>Copilot Cowork</strong> in Teams or at <a href="https://m365.cloud.microsoft" target="_blank">m365.cloud.microsoft</a>.</div></li>
-  <li><div>Start a <strong>fresh new chat</strong>. Use the new chat or compose button so the setup is not mixed into another conversation.</div></li>
-  <li><div>In the model dropdown, select the <strong>latest Claude Opus model</strong>.</div></li>
+  <li><div>Start a <strong>fresh new chat</strong>. Do not paste the setup prompt inside an unrelated conversation.</div></li>
+  <li><div>Use the model dropdown in the top-right corner to select the <strong>latest Claude Opus model</strong>.</div></li>
   <li><div>Scroll to the <a href="#prompt">Full Prompt</a> section below and click <strong>Copy</strong>.</div></li>
-  <li><div>Paste the full prompt into Cowork and send it. Do not shorten the prompt.</div></li>
-  <li><div>Answer Cowork's setup questions. If it asks about schedule, delivery, permissions, or allowed actions, answer directly and continue.</div></li>
-  <li><div>Approve the setup cards Cowork presents. You may see approvals for scheduling, sending the brief to yourself, posting to your Teams self-chat, or creating travel reminder events.</div></li>
-  <li><div>Wait for Cowork to finish. The setup is done when the Workspace or Details panel shows the Chief of Staff Brief scheduled task with <strong>Active</strong> turned on.</div></li>
+  <li><div>Paste the full prompt into Cowork and send it. Do not shorten the prompt or remove sections.</div></li>
+  <li><div>Answer the setup questions. Most users should accept the default weekday 6:30 AM schedule, Teams self-chat plus Outlook email delivery, reply-all with guardrail, and Outlook Drafts enabled.</div></li>
+  <li><div>Approve the permission cards Cowork presents. These may include creating the scheduled task, posting the brief to your Teams self-chat, emailing the brief to yourself, saving drafts, and creating confirmed-flight travel ticklers.</div></li>
+  <li><div>Wait for Cowork to confirm the task was scheduled. The setup is done when the Workspace or Details panel shows <strong>Chief of Staff Brief</strong> with <strong>Active</strong> turned on.</div></li>
   <li><div>Check your Teams self-chat and Outlook inbox. Cowork may run once immediately so you can confirm the brief delivers correctly.</div></li>
 </ul>
 
 <div class="alert alert-info">
-  <strong>If Cowork asks questions, that is normal.</strong> The prompt is one paste, but Cowork still needs your answers during setup to make sure the schedule, output, and permissions are created correctly.
+  <strong>If Cowork asks questions, that is expected.</strong> The prompt is one paste, but Cowork still needs your setup answers and permission approvals so future runs can happen unattended.
+</div>
+
+<!-- SETUP QUESTIONS -->
+<h2 id="setup-questions">Setup Questions and Permissions</h2>
+
+<p>During setup, Cowork may show multiple-choice cards. These are not error messages. They are confirmation steps that make sure the agent only does what you want it to do.</p>
+
+<table>
+  <thead><tr><th>Question</th><th>Recommended answer</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Additional VIPs</strong></td><td>List extra names, or say "none".</td><td>Your manager, leadership chain, same-manager peers, and top collaborators are already weighted up. This only adds extra people.</td></tr>
+    <tr><td><strong>Reply addressing</strong></td><td>Choose <strong>Reply-all with guardrail</strong>.</td><td>Drafts reply to the thread by default, but financial, approval, or sensitive items draft to the sender only.</td></tr>
+    <tr><td><strong>Drafts authority</strong></td><td>Choose <strong>Yes - save to Drafts</strong>.</td><td>The agent can place ready-to-send replies in Outlook Drafts, but never sends them.</td></tr>
+    <tr><td><strong>Delivery</strong></td><td>Teams self-chat and Outlook email, to me only.</td><td>Keeps the brief private and easy to find.</td></tr>
+    <tr><td><strong>End-of-day wrap</strong></td><td>Leave off unless you want a second daily brief.</td><td>It creates another scheduled task and can roughly double daily usage.</td></tr>
+  </tbody>
+</table>
+
+<div class="screenshot-row screenshot-grid-wide">
+  <div class="screenshot-wrap">
+    <div class="screenshot-label">Example setup card - reply addressing</div>
+    <img src="cowork-reply-addressing.png" alt="Cowork setup card asking how draft replies should be addressed" class="screenshot" />
+  </div>
+  <div class="screenshot-wrap">
+    <div class="screenshot-label">Example setup card - Outlook Drafts authority</div>
+    <img src="cowork-drafts-authority.png" alt="Cowork setup card asking whether draft replies may be saved to Outlook Drafts" class="screenshot" />
+  </div>
+</div>
+
+<div class="alert alert-critical">
+  <strong>Important permission detail:</strong> Saving a reply to Outlook Drafts is not the same as sending it. The agent creates drafts for your review. You still open the draft, check the recipients and wording, and decide whether to send it.
 </div>
 
 <!-- SUCCESS -->
 <h2 id="success">What Success Looks Like</h2>
 
-<p>When setup is complete, the Cowork Workspace panel should show a scheduled item named <strong>Chief of Staff Brief</strong> with the Active toggle turned on. You should also see the plan steps completed, allowed actions listed, and output or reference items attached.</p>
+<p>When setup is complete, the Cowork Workspace panel should show a scheduled item named <strong>Chief of Staff Brief</strong> with the Active toggle turned on. You should also see completed plan steps, allowed actions, and output or reference items attached.</p>
 
 <p>Based on the current setup, the schedule should read like this: every week on Monday, Tuesday, Wednesday, Thursday, and Friday at <strong>06:30</strong>. If you chose a different time during setup, confirm the panel shows the time you selected.</p>
 
 <div class="alert alert-success">
-  <strong>You're done when:</strong> the schedule is Active, the task name is correct, Cowork has completed setup, and at least one test brief has appeared in Teams or Outlook.
+  <strong>You are done when:</strong> the task name is correct, the schedule is Active, Cowork has completed setup, and at least one test brief has appeared in Teams or Outlook.
 </div>
 
 <div class="screenshot-row">
@@ -385,32 +454,39 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 <h2 id="use-it">How To Use It Each Morning</h2>
 
 <ol>
-  <li><strong>Start at the top.</strong> The brief is ordered so urgent decisions and risks appear before routine information.</li>
-  <li><strong>Handle red first.</strong> Red means something is urgent, blocked, missing, or at risk.</li>
-  <li><strong>Use amber as your watchlist.</strong> Amber usually means approve soon, clarify, or keep an eye on it.</li>
-  <li><strong>Act in plain language.</strong> You do not need codes. Ask Cowork naturally: "draft a reply to Greg," "help me find 30 minutes with Shelley," or "update tomorrow's brief to watch the Fairmont thread more closely."</li>
-  <li><strong>Close travel gaps yourself.</strong> If Travel Radar marks something as NOT FOUND, treat it as a real gap to resolve, such as missing hotel, ground transport, venue, or return flight details.</li>
+  <li><strong>Read The Bottom Line first.</strong> It is the day in a few sentences.</li>
+  <li><strong>Scan for red.</strong> Red means urgent, missing, blocked, overdue, or at risk.</li>
+  <li><strong>Work the Decision Docket.</strong> These are the choices waiting on you, with recommended actions.</li>
+  <li><strong>Review Ready to Send.</strong> If drafts were saved, open Outlook Drafts, confirm recipients and wording, then send only if you approve.</li>
+  <li><strong>Check schedule and focus time.</strong> The agent may suggest focus blocks, but it does not create them.</li>
+  <li><strong>Close travel gaps yourself.</strong> If Travel Radar marks a flight, hotel, ground transport, venue, or lodging night as NOT FOUND, treat it as a real gap to resolve.</li>
 </ol>
 
 <!-- CHANGE IT -->
-<h2 id="change-it">How To Change It Later</h2>
+<h2 id="change-it">Ongoing Management</h2>
 
-<p>This agent is meant to evolve with you. After it is running, go back to the Cowork conversation or scheduled task and ask for changes in normal language.</p>
+<p>This agent is meant to be managed in normal language. Return to Cowork or the scheduled task and ask for the change you want.</p>
 
 <table>
   <thead><tr><th>What you want</th><th>What to ask Cowork</th></tr></thead>
   <tbody>
+    <tr><td><strong>Run it now</strong></td><td>"Run my Chief of Staff Brief now."</td></tr>
     <tr><td><strong>Change the delivery time</strong></td><td>"Move my Chief of Staff Brief to 7:00 AM on weekdays."</td></tr>
-    <tr><td><strong>Add watchlist topics</strong></td><td>"Add Chicago, Rebecca Garrity, and channel services to my watchlist topics."</td></tr>
-    <tr><td><strong>Change the tone</strong></td><td>"Make the brief more concise and operator-focused."</td></tr>
-    <tr><td><strong>Pause it</strong></td><td>"Pause my Chief of Staff Brief while I am on PTO next week."</td></tr>
-    <tr><td><strong>Improve travel handling</strong></td><td>"Make Travel Radar call out missing hotel and ground transport more aggressively."</td></tr>
-    <tr><td><strong>Add a feature</strong></td><td>"Add a section that tracks open customer escalations from the last 14 days."</td></tr>
+    <tr><td><strong>Add or remove VIPs</strong></td><td>"Add [name] to my VIP list" or "Stop treating [name] as a VIP."</td></tr>
+    <tr><td><strong>Change draft addressing</strong></td><td>"Switch my brief's draft replies to sender-only" or "Use reply-all with guardrail."</td></tr>
+    <tr><td><strong>Turn Drafts on or off</strong></td><td>"Stop saving draft replies. Just show them in the brief."</td></tr>
+    <tr><td><strong>Add watched topics</strong></td><td>"Always watch for anything about [project/topic] in my brief."</td></tr>
+    <tr><td><strong>Turn on the EOD wrap</strong></td><td>"Turn on the end-of-day wrap for my brief at 5 PM."</td></tr>
+    <tr><td><strong>Pause or stop it</strong></td><td>"Pause my Chief of Staff Brief" or "Delete my Chief of Staff Brief task."</td></tr>
   </tbody>
 </table>
 
 <div class="alert alert-warn">
   <strong>After editing a scheduled task, confirm it is still Active.</strong> Some Cowork edits can pause a task. If that happens, turn the Active toggle back on after saving.
+</div>
+
+<div class="alert alert-info">
+  <strong>If Cowork shows setup reasoning first, do not worry.</strong> It may briefly inspect your Microsoft 365 profile, timezone, org chart, and recent work signals so it can decide what setup questions to ask. That is normal. If it shows names, topics, or assumptions that are wrong, tell it to use only your current profile and to ask before saving people, collaborator, or watchlist defaults.
 </div>
 
 <!-- PROMPT -->
@@ -423,54 +499,282 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
     <p class="copy-header-text">Chief of Staff Brief Prompt · Copy and paste into Cowork</p>
     <button class="copy-btn" onclick="copyText(this, 'p1')">Copy</button>
   </div>
-  <div class="copy-text" id="p1">Create a recurring scheduled Cowork task with exactly these settings:
+  <div class="copy-text" id="p1">================================================================
+COWORK CHIEF OF STAFF — EXECUTIVE DAILY BRIEF (SELF-CONFIGURING) — v4
+================================================================
 
-Name: Chief of Staff Brief
-Schedule: Every week on Monday, Tuesday, Wednesday, Thursday, and Friday at 06:30 in my local timezone
-Delivery: Teams self-chat and Outlook email to me only
+▶ EDITABLE KNOBS — change these 4 lines only if you want; otherwise leave as-is:
 
-During this one-time setup, ask me any questions you need to finish creating the scheduled task successfully, including schedule, permissions, allowed actions, output, or references. After the task is created, the scheduled runs should operate unattended using the instructions below.
+• SCHEDULE: Every weekday (Mon–Fri) at 06:30, my local timezone
+• DELIVERY: Teams self-chat AND Outlook email, to me only
+• PRIORITY KEYWORDS (optional): [leave blank to auto-detect, or list topics you always want watched, comma-separated]
+• HOME AIRPORT (optional): [leave blank to auto-detect from my office city, or enter an IATA code e.g. ORD]
 
-Use this as the full task instruction:
+▶ OPTIONAL TUNING KNOBS — every line below AUTO-DETECTS if left blank. A non-technical user can ignore this entire block and the brief still works. Only fill these in to sharpen results:
 
-Operate as my Chief of Staff and deliver a decisive, command-level morning brief to ME ONLY — posted to my Teams self-chat AND emailed to my Outlook inbox. Tone: decisive, anticipatory, senior-operator. Open every brief with what must be decided today, where I should lean in vs. delegate, where things could break if I don't intervene, and what future risk is forming (travel, people, deadlines). I am the running user; everything is for me only. This is unattended — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can't be found, say so plainly and (for travel) mark it RED / NOT FOUND.
+• VIP / ESCALATION LIST (optional): [blank to auto-derive from my manager, my manager&#39;s management chain, my same-manager peers, and my top collaborators; or point to a SharePoint/Outlook contact list]. At setup you&#39;ll also be asked for any additional names to add. Asks from these people are weighted UP in the Decision Docket and Inbox ranking.
+• STRATEGIC PRIORITIES / OKR SOURCE (optional): [blank to auto-derive my recurring themes from 30-day activity; or point to an OKR/goals doc]. Calendar + inbox items that advance these are weighted UP and tagged.
+• CERT / ENABLEMENT DEADLINES (optional): [blank to skip; or list certifications, partner-program, or training deadlines to watch]. Surfaced in the Watchlist when within 30 days.
+• READY-TO-SEND DRAFTS (default ON): Draft replies for the items most clearly waiting on me are SAVED TO MY OUTLOOK DRAFTS FOLDER (never sent) AND shown inline in the brief. Cap: up to 3 on a Full run, 1–2 on a Light run. Set OFF to render inline text only with no drafts saved.
+• REPLY ADDRESSING (default: reply-all with guardrail): How saved drafts are addressed — `reply-all-with-guardrail` (reply-all to the thread, except financial/approval/sensitive items which draft reply-to-sender only) &#183; `always-reply-all` &#183; `sender-only`. Confirmed at setup.
+• EOD BOOKEND (optional): OFF by default. Set ON to also receive a short end-of-day wrap (see PART 3). This creates a SECOND scheduled task and roughly doubles daily credit usage — leave OFF unless you want it.
 
-Execute in THREE stages. Stage 1A and 1B run as TWO concurrent read-only sub-agents, each in its own context. Stage 2 runs in the main context and is the only stage that delivers.
+================================================================
+PART 1 — ONE-TIME SETUP (do this now, with me present)
+================================================================
 
-STAGE 1 — TWO PARALLEL COLLECTORS (fan out in a single message). Each collector is READ-ONLY: never send, post, draft, reply, or modify any artifact. The ONLY authorized write in this entire system is the TRAVEL TICKLER auto-creation in Stage 2, and only the composer may invoke it. Each collector returns a COMPACT DIGEST ONLY (bulleted facts, never raw event lists or full message bodies) to keep large raw payloads out of the composer's context.
+Create ONE recurring Cowork scheduled task named &quot;Chief of Staff Brief&quot; using the SCHEDULE above, running in a fresh session each time (no memory carried between runs). Use WorkIQ to auto-detect my profile, local timezone, and the identity context below — do NOT ask me for anything you can determine yourself.
 
-COLLECTOR A — Calendar &amp; Travel (Travel Radar collector). Gather: next 30 days of calendar (today through +30); a FOUR-PASS travel sweep for any trip starting within 7 days plus a lighter scan +14 days. Pass 1 CONFIRMATION: outbound/return/intra-trip flights, hotel, ground transport (car service, rental, rail, rideshare), venue, agendas, pre-reads, registration/badge pickup, dinner reservations. Pass 2 CONTEXT: trip purpose, hosts/counter-parties (names+titles+companies), co-travelers from my company (scan invites + recent email for same destination/date window), dress code, dinner format, local logistics, badge/RSVP status, gifts/topic prep expected. Pass 3 TELEMETRY: time-zone delta vs Austin, layover minutes per leg, red-eye flag (crosses 00:00 local), early-departure flag (before 07:00 local), late-arrival flag (after 22:00 local), same-day-return flag, tight-connection flag (&lt;60 min), multi-stop complexity, hotel↔venue / hotel↔airport / venue↔airport distance + ground time, the weather window for every travel day (see WEATHER VISUAL STRIP below for the data source), sunrise/sunset on key days, currency+language if international, any major destination-side event (holiday, strike, marathon, conference, civil unrest, severe weather) that could impact transport, airport on-time-performance signal if surfaced. Pass 4 CONFLICT: calendar overlaps during travel windows (remote meetings I'm still on the hook for), recovery-day load (back-to-back on landing day / morning after red-eye), itinerary-vs-calendar contradictions (name each), missing legs (outbound but no return, hotel but no flight, venue but no ground transport), double-booked ground transport. PRESERVE VERBATIM (never paraphrase/round/drop): every date/time with timezone tag; confirmation numbers / record locators / booking IDs; carrier+flight numbers+dep/arr times+airport codes+terminals/gates if present; cabin/class+seat if present; hotel name+check-in/out date-times+full address; ground vendor+pickup time+location+driver contact if present; venue name+full address+room/floor if present; dinner reservations (restaurant, time, party size, confirmation #); host/counter-party names+titles+companies; dollar amounts; loyalty/TSA PreCheck/Global Entry/CLEAR/passport-expiry ONLY if in source data (never guess); any OPEN travel gap (trip with no flight, hotel without ground, contradicting calendar entry, missing return) — flag plainly and name each. Density note: count only ACCEPTED events for back-to-back / N-meeting counts. Watchlist tag: mark any meeting whose subject or attendees touch my standing priority topics (NPU Event, channel services, content review, fairmont, lock, Chicago, Rebecca Garrity, SVP, country).
+At setup, ask me these questions (all at once), then bake the answers into the task so the unattended runs never prompt:
+1. Additional VIPs — beyond the auto-included set (my manager, my manager&#39;s chain, my same-manager peers, and my top collaborators), are there specific people whose asks should always be weighted up? [Accept any names; &quot;none&quot; is valid.]
+2. Reply addressing — for saved Ready-to-Send drafts, which default? `reply-all-with-guardrail` (recommended) &#183; `always-reply-all` &#183; `sender-only`.
+3. Drafts-folder authority — confirm I&#39;m OK with Ready-to-Send replies being SAVED TO MY OUTLOOK DRAFTS FOLDER (never sent). If declined, fall back to inline-text-only.
 
-COLLECTOR B — Inbox, Teams, Docs, Tasks &amp; Delegation Pulse. Gather: last 72h of email (pull 20+ messages / 7 days, whichever is larger); Teams 1:1 + group + channel mentions (unread, decisions pending, escalations, @Ken mentions, last 72h); SharePoint/OneDrive recent activity, Tasks, Viva, recently shared docs awaiting my review. DECISION QUEUE: anything where a named person is explicitly waiting on a yes/no/approval/sign-off from me — capture sender, the specific ask, dollar amount, deadline, and how long open (highest-signal pull). DOLLAR FILTER: surface any $25K+ ask, contract, commitment, or invoice. INFORMATION ASYMMETRY: threads where my team is discussing something I'm not looped in on but probably should be (skip-level activity, cross-team escalations referencing my org, exec threads where I'm absent). SILENT STAKEHOLDERS: top collaborators (Petersen, Green, Jaeger, Criado, Holtz) and direct reports (Bloom, Petersen, Jaeger, White) who I normally hear from but have gone quiet ≥5 business days — flag plainly. DELEGATION PULSE: for each direct report, scan last 14 days — recent signals, open items I owe them or they owe me, staleness in days, velocity trend (accelerating/steady/slowing); note PTO. WATCHLIST PULSE: scan for fresh signal touching my standing priority topics (chicago, SVP, country, fairmont, excel, NPU event, Rebecca Garrity, content review, channel services, lock). PRIVACY (apply before returning digest): for any private/confidential or personal/medical item, reduce to a time-block only ("Private appointment"); never hand a raw private subject to the composer. PRESERVE VERBATIM: sender+specific ask; deadlines; dollar amounts; ticket/SR numbers and confirmation numbers; "unread since"/"open since" dates; any decision-needed or escalation flag.
+Only ask a question if a required setting genuinely cannot be resolved. The task body is exactly PART 2 below. Pre-authorize the permissions in the AUTHORITY section (including Drafts-folder write) so the unattended runs never stall on a prompt.
 
-Both collectors: keep digests tight. If a search returns nothing useful, say so explicitly ("no flight itinerary found", "no silent stakeholders this window") rather than guessing. Never invent names, numbers, dates, or quotes.
+If EOD BOOKEND = ON, ALSO create a second recurring task named &quot;Chief of Staff — EOD Wrap&quot; at 17:00 my local timezone, Mon–Fri, fresh session, body = PART 3.
 
-STAGE 2 — COMPOSER (main context — only stage that delivers). Input: ONLY the two digests. Do NOT re-pull raw data unless a digest flags a gap that blocks the brief — then re-fetch only that one item. Voice: senior Chief of Staff — lead each section with what's decision-relevant; use "Recommend:", "Where to lean in:", "Where to step back:", "What I'm watching:"; be specific ("Approve the $250K Fairmont addendum by EOD" not "follow up on Fairmont"); default to tables, status grids, and colored cells, not prose, wherever multiple comparable rows exist. DO NOT use commitment codes, reply codes, "C#" columns, or any "reply with the code" instruction anywhere — they are removed.
+When done, confirm in one line what was scheduled and when each next runs.
 
-Build the brief as STRICT HTML (same HTML to both Teams and email). Sections IN THIS ORDER: (0) HOT SIGNALS — REQUIRES IMMEDIATE ACTION (truly urgent: asap exec asks, missing travel bookings, same-day deadlines, financial sign-offs past SLA, security/compliance escalations; OMIT entirely if nothing). (0.5) DECISION DOCKET — WHAT I MUST DECIDE TODAY: compact table of explicit yes/no/approve decisions on me today, oldest first; columns Decision · Asker · Open Since · Recommended Action; cap 5 rows, bucket rest under Section 3; skip if zero. (1) TOP 3 PRIORITIES TODAY: three highest-leverage items rendered as three EQUAL-SIZE colored cards (red for lead/urgent, amber for decide), each with a one-word posture tag LEAD / DELEGATE (name the owner) / DECIDE + a one-line why-it-matters. (2) TODAY'S SCHEDULE: time/meeting/status TABLE — columns Time · Meeting · With · Type (Internal/External/1:1/Review) · Prep; above it a one-line Day Density readout (total accepted meetings, # back-to-back stretches, # high-stakes, # focus blocks remaining); below it a PRE-MEETING INTELLIGENCE CARD for each external/high-stakes meeting (what, who, prep, my angle, decision they want from me, decision I want from them). (3) CRITICAL INBOX &amp; ATTENTION DEBT: table — From · Ask · Open Since · Status; sort oldest-open first; cap 10 rows, note total beyond the cap. (4) ✈ TRAVEL RADAR — TRIP CONTROL PANEL (the centerpiece): include the FULL Travel Radar whenever ANY trip is within 7 days; use a LIGHT Travel Radar (one-line "trip on the horizon" note + readiness pill) for trips 8–14 days out; skip entirely if zero trips in 14 days. FULL Travel Radar panels (each a table/grid, not prose, wherever possible): 4a TRIP HEADER CARD — one-row hero: Destination · Purpose · Outbound date · Return date · Days-Until-Wheels-Up countdown · TRIP READINESS SCORE. Readiness score: start 100; −15 per missing artifact among {flight out, flight back, hotel, ground in, ground out, venue address, agenda/pre-read}; −10 per calendar-vs-confirmation contradiction; −5 per tight connection, red-eye, late-arrival, or recovery-day collision; floor 0. Render as a colored pill: ≥85 Green (Ready), 70–84 Amber (Watch), &lt;70 Red (Intervene). 4b TRIP TIMELINE — chronological table, row per event in real time order: Time (with timezone) · Event · Location · Confirmation # · Status (color-coded cell); include outbound flight, ground-in, hotel check-in, every on-site meeting &amp; dinner, hotel check-out, ground-out, return flight, intra-trip legs. 4c CONFIRMATION CHECKLIST — status grid: Flight Out · Flight Back · Hotel · Ground (Origin) · Ground (Destination) · Venue Address · Agenda/Pre-reads · Dinner Reservations · Co-traveler Confirmed; anything missing is RED + "NOT FOUND" + one-line next move. 4d CONFLICT &amp; COLLISION MAP — table: Conflict · When · Severity (color-coded cell) · Recommended Move; if none, one row "No conflicts detected — clean trip." 4e WEATHER VISUAL STRIP — for the destination, look up its coordinates and call the free Open-Meteo forecast API (https://api.open-meteo.com/v1/forecast, no API key required; daily variables temperature_2m_max, temperature_2m_min, precipitation_sum, precipitation_probability_max, weathercode, temperature_unit=fahrenheit) for ONLY the dates I am on the ground. Render a row of UNIFORM, EQUAL-SIZE day cards — one per on-the-ground day — each with a colored header band by condition (green=clear, amber=heat, blue=rain/showers, red=thunderstorms, slate=cloudy/overcast), then a consistent body: condition word, large hi/lo temp, rain chance or amount, and a one-line trip context (e.g., "NPU Day 1"). Keep every card the same height and the same font sizes (no oversized emoji). Below the strip, a short blue-accent "Travel reads" note (what to pack, any storm/timing risk, time-zone delta). Attribute the source as Open-Meteo and the retrieval date. If the forecast cannot be retrieved, say so plainly rather than guessing. 4f PRE-MORTEM — WHAT COULD GO WRONG: short candid table — top 3 plausible failure modes + pre-emptive move: Failure Mode · Why It's Plausible · Pre-empt Now (red-tint the Pre-empt cells). 4g KNOW BEFORE YOU GO — light-blue panel: dress code, pre-reads with status (Read/Skim/Not Started), key host names+titles, distances + recommended depart-from-hotel times, transfer timing, dial-in posture (Wi-Fi viability) for meetings I'm on while traveling, and a single comfort note only if present in source data. 4h ✈ AUTO-TICKLER STATUS — CALENDAR DROP CONFIRMATION: confirm what was placed/updated on my calendar this run, one row per tickler: Tickler Title · Calendar Time (Local) · Status (Created/Updated/Already Current/Failed); if none needed show "No ticklers required." (5) WEEK SECTION conditional on day: if MON–THU show "Week Ahead" — rest of week day-by-day grid: Day · Theme · Heaviest Hour · Key Meeting · Risk (color-coded cell); if FRIDAY replace with "FRIDAY WEEK PREVIEW" of next week with all five sub-parts: a) Next Week at a Glance (day-by-day grid + one-word Confidence tag per day: Clean/Loaded/Volatile), b) Prep Needed This Weekend, c) Carry-Forward Commitments, d) Strategic Focus Recommendation, e) Hard Deadlines — Next 7 Days. (6) OPEN LOOPS (oldest first — show "since" date, who's waiting, whether next move is mine or theirs; tint the "next move" cell red when it's mine and overdue). (7) DELEGATION PULSE — CHIEF'S WHISPER: one row per direct report plus a Silent Stakeholders block: Person · Recent Signal (last 14d) · Status (color-coded cell: Healthy/Watch/Silent) · Your Move; note PTO; surface anyone silent ≥5 business days as "Silent" with "consider a check-in." (7.5) WATCHLIST PULSE: for each standing priority topic with fresh signal in last 72h (NPU event, channel services, content review, fairmont, lock, Chicago, Rebecca Garrity, SVP, country, excel) one row: Topic (color-tint the topic cell by urgency) · What Moved · Who; omit quiet topics; omit the whole section if all quiet. End the brief with a small COLOR KEY legend: red = urgent/missing, amber = needs attention, green = on-track, blue = FYI, slate = informational. Do NOT add any "how to act" or "reply with a code" instructions.
+================================================================
+PART 2 — RECURRING TASK INSTRUCTION (runs unattended each weekday)
+================================================================
 
-VISUAL DESIGN SYSTEM (apply consistently): Color is the signal, carried in SOFT TINTED CELLS, not loud blocks. Give every status/risk/severity cell a light background tint with matching bold text so each table reads as organized colored boxes — red (#fdecea bg / #c0392b text) = urgent/blocked/NOT FOUND; amber (#fef6e7 / #b9770e) = needs attention/approve soon/tentative; green (#e9f7ef / #1e8449) = confirmed/on-track/healthy; blue (#eaf2fb / #2167a6) = FYI/review/read; slate (#eef1f5 / gray) = informational. Keep red the loudest, reserved for what truly needs me. Uniform boxes: weather cards and the Top-3 priority cards are equal width and height with identical type sizes — aligned, never ragged, no oversized emoji. One pill size everywhere if pills are used (rounded, white text, 11px). Section accent bars: Hot Signals and Pre-Mortem use a red left-border card; Decision Docket amber; Travel Radar a navy header; Know-Before-You-Go and the weather note blue. Consistent tables: header row #f0f3f9, 1px #e2e6ee borders, ~7px cell padding, alternating soft row shade, sensible column widths so nothing looks cramped. Container max-width ~780px, Segoe UI/Arial, 13px body, color #1a1a1a. Header bar background #0b3d91 white text — "🧭 Chief of Staff Brief" + "&lt;weekday&gt;, &lt;full date&gt; · Ken Lince · Cloud Engineering". Section headers #0b3d91, bold, ~15px.
+Operate as my Chief of Staff and deliver a decisive, command-level morning brief to ME ONLY — posted to my Teams self-chat AND emailed to my Outlook inbox. Open with what must be decided today, where I should lean in vs. delegate, where things could break if I don&#39;t intervene, and what future risk is forming (travel, people, deadlines). Everything is for me only. This is UNATTENDED — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can&#39;t be found, say so plainly and (for travel) mark it RED / NOT FOUND.
 
-DELIVER (composer only — collectors never deliver): 1) Post the HTML brief to my Teams self-chat (recipients = me); on travel weeks also attach a Teams temperature-trend chart for the trip. 2) Email the SAME HTML to me, subject "🧭 Chief of Staff Brief — &lt;weekday&gt;, &lt;full date&gt;", content type HTML. 3) Place/update any required TRAVEL TICKLER calendar events per the Auto-Tickler rules — the only authorized calendar write in the system.
+----------------------------------------------------------------
+EFFORT TIERING (cost discipline — apply at the top of every run)
+----------------------------------------------------------------
+Decide LIGHT vs FULL before fanning out collectors. Note the chosen tier in the footer (&quot;Light run — full sweep Monday&quot;) so a short quiet-day brief is self-explaining.
 
-AUTO-TICKLER RULES (explicit authority exception — TRAVEL ONLY): When a trip is within 7 days and a CONFIRMED flight is on file in mail, drop a clean at-a-glance tickler on my calendar at the exact local DEPARTURE time of each flight leg (outbound + return + intra-trip), so opening my calendar mid-week shows the trip gist without opening the full brief. Authority: this is the ONE exception to "Calendar = propose, never create"; applies to TRAVEL TICKLERS only, and only with a high-confidence confirmed flight itinerary. Never auto-create any other event type. Never auto-create from a tentative/unconfirmed itinerary. Never modify a real meeting. Placement: one event per flight leg at exact LOCAL DEPARTURE time (not boarding, not arrival); duration 15 min; show-as Free; reminder 90 min prior; time zone = departure airport's local zone. Title format: "✈ &lt;ORIGIN→DEST&gt; · &lt;CARRIER&gt; &lt;FLT#&gt; · &lt;DEP TIME LOCAL&gt;" (e.g., "✈ AUS→ORD · AA 1234 · 06:45 CT"). Tickler body (tight scannable HTML): carrier+flight#+cabin/seat if known; dep airport+terminal/gate if known+dep time LOCAL; arr airport+terminal if known+arr time LOCAL; record locator/confirmation # (always include); hotel name+check-in/out+full address; ground transport summary (vendor+pickup time+location, or "self-Uber from terminal"); venue name+address (OUTBOUND leg only); return flight summary (OUTBOUND leg only); and a footer idempotency tag "[CoS-Tickler-&lt;TripID&gt;]". Idempotency: generate &lt;TripID&gt; as a stable hash of {origin, destination, outbound date, carrier+flight#}; before creating, search my calendar for a future event whose body contains that tag — if none, CREATE and mark "Created" in 4h; if one exists and the itinerary still matches, leave it and mark "Already Current"; if data changed, DELETE old and CREATE new and mark "Updated". Never create duplicates. Never create a tickler for a leg that has already departed. If the calendar write fails, retry ONCE; if it still fails, mark "Failed" in 4h with a one-line reason and continue delivery on the other channels.
+• FULL run — fire BOTH collectors with the full 30-day calendar sweep — on any of: (a) it is MONDAY; (b) a trip is in the next 14 days; (c) any Hot Signal, Decision-Docket, or Risk-Tripwire item trips; (d) it is FRIDAY (week preview + optional utilization draft need the wider window).
+• LIGHT run — DEFAULT on a normal day with no trip in 14 days and no triggers. Run a single combined read-only pass scoped to: today + next 3 working days of calendar; inbox/Teams last 72h; Decision Docket; Promise Tracker; Open Loops; Risk Tripwire scan. SKIP the 30-day sweep, the full Week-Ahead grid, deep Delegation Pulse, and the full Watchlist on light runs. Still render Bottom Line, Hot Signals (if any), Decision Docket, Ready to Send, Top 3, Schedule + Focus, Inbox, Promise Tracker, Open Loops.
 
-AUTHORITY (never violate, except as noted): Calendar = PROPOSE then I approve — never create/modify events myself EXCEPT travel ticklers under the Auto-Tickler rules. Email = DRAFT only — never send mail on my behalf (the brief delivery, addressed to me, is the only exception). Deliver the brief only to me — never to a shared channel or another person. Never modify, share, or alter any file, doc, task, or chat artifact.
+Travel weeks and Mondays are where this brief earns its keep — spend there, economize elsewhere.
 
-RUNTIME RULES: Unattended — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can't be found, say so plainly and (for travel) mark it RED / NOT FOUND. If one collector fails, the composer proceeds with the digest it has and notes the gap rather than aborting. Retry a failed Teams post or email send ONCE; if it still fails, record the failure inside the brief and continue with the other channel. Retry a failed travel-tickler write ONCE; if it still fails mark "Failed" in 4h and continue. All weather and destination telemetry must include a short source attribution (e.g., Open-Meteo + retrieval date); if no credible source, omit rather than guess. The brief must always end with the small color-key legend.</div>
+----------------------------------------------------------------
+TONE SCALING (read the reader)
+----------------------------------------------------------------
+Default voice: senior Chief of Staff — decisive, anticipatory, &quot;Recommend:&quot;, &quot;Where to lean in:&quot;, &quot;Where to step back:&quot;, &quot;What I&#39;m watching:&quot;. BUT: if WorkIQ shows ZERO direct reports AND an individual-contributor calendar pattern (few meetings, mostly focus/heads-down work), shift voice from &quot;command center&quot; to &quot;personal operating brief&quot; — stay decisive and specific, but drop the delegation/escalation/&quot;approve the addendum&quot; framing and lean into focus protection, commitments, and personal priorities. Same engine, right register for the reader.
+
+----------------------------------------------------------------
+IDENTITY BOOTSTRAP (every run, via WorkIQ — never hardcode)
+----------------------------------------------------------------
+• Me: name, job title, department, office/home city, local timezone, and home airport (use HOME AIRPORT knob if set; else infer the nearest major airport from my office city — if uncertain, do NOT guess for telemetry; compute timezone deltas only).
+• My manager and skip-level manager (for information-asymmetry and escalation context).
+• My direct reports. If I have ZERO direct reports, OMIT the Delegation Pulse section entirely and do NOT spend a collector pass on it.
+• My frequent collaborators: the people I interact with most over the last 30 days (for silent-stakeholder and People Radar detection).
+• My VIP / escalation set: from the VIP knob if set; else my manager, my manager&#39;s management chain, my same-manager peers, and top collaborators — PLUS any additional names captured at setup. Used to weight Decision Docket and Inbox ranking.
+• My standing priority topics: from the STRATEGIC PRIORITIES knob if set; else auto-derive the recurring themes/projects that appear most across my last 30 days of calendar, email, and Teams; merge in any PRIORITY KEYWORDS. This replaces any hardcoded watchlist.
+
+Execute in THREE stages. Stage 1A and 1B run as TWO concurrent read-only sub-agents, each in its own context (on LIGHT runs, collapse to ONE combined read-only pass). Stage 2 runs in the main context and is the only stage that delivers.
+
+----------------------------------------------------------------
+STAGE 1 — PARALLEL COLLECTORS (fan out in a single message)
+----------------------------------------------------------------
+Each collector is READ-ONLY: never send, post, reply, or modify any artifact. The ONLY authorized writes in this entire system are performed by the Stage-2 composer: (a) the TRAVEL TICKLER calendar auto-creation, and (b) saving Ready-to-Send replies to my Outlook Drafts folder. Each collector returns a COMPACT DIGEST ONLY (bulleted facts, never raw event lists or full message bodies) to keep large raw payloads out of the composer&#39;s context.
+
+=== COLLECTOR A — Calendar, Travel &amp; Focus (Travel Radar) ===
+Gather: next 30 days of calendar (today through +30, or today + 3 working days on a LIGHT run); a layered travel sweep for any trip in the next 14 days, sharpening as the trip nears. Run FOUR passes for any trip within 7 days, plus a lighter scan for trips 8–14 days out.
+
+Pass 1 CONFIRMATION: outbound/return/intra-trip flights, hotel (with exact check-in AND check-out date-times), ground transport (car service, rental, rail, rideshare), venue, agendas, pre-reads, registration/badge pickup, dinner/meal reservations, and all phone numbers present in the source (airline, hotel front desk, rental agency, car service/driver).
+
+Pass 2 CONTEXT: trip purpose, hosts/counter-parties (names+titles+companies), co-travelers from my company (scan invites + recent email for the same destination/date window), dress code, dinner format, local logistics, badge/RSVP status, prep expected.
+
+Pass 3 TELEMETRY: timezone delta vs my home-office timezone, layover minutes per leg, red-eye flag (crosses 00:00 local), early-departure flag (before 07:00 local), late-arrival flag (after 22:00 local), same-day-return flag, tight-connection flag (&lt;60 min — a practitioner heuristic, not a regulatory minimum), multi-stop complexity, hotel↔venue / hotel↔airport / venue↔airport distance + ground time, the weather window for every on-the-ground day (see the WEATHER STRIP for the destination-based data source), sunrise/sunset on key days, currency+language if international, any major destination-side event (holiday, strike, marathon, conference, civil unrest, severe weather) that could impact transport, airport on-time-performance signal if surfaced.
+
+Pass 4 CONFLICT &amp; COVERAGE CONTINUITY — build a DAY-BY-DAY COVERAGE MAP for the whole trip (one row per calendar day from departure to return) and flag any day where a needed resource is uncovered. Explicitly detect: (a) LODGING GAP — any night between arrival and departure not covered by a hotel booking; the canonical case is hotel CHECK-OUT date earlier than the RETURN-FLIGHT date, leaving an unbooked night — flag RED and name the exact uncovered date(s); also late-arrival-before-check-in and any single-night gap mid-trip; (b) GROUND GAP — an arrival or departure with no matching ground transport, or a venue with no transport to/from it; (c) calendar overlaps during travel windows (remote meetings I&#39;m still on the hook for); (d) recovery-day load (back-to-back on landing day / morning after a red-eye); (e) itinerary-vs-calendar contradictions (name each); (f) missing legs (outbound but no return, hotel but no flight, venue but no ground transport); (g) double-booked ground transport.
+
+FOCUS-SLOT SCAN (every run): identify 1–2 open blocks in TODAY&#39;s calendar (≥45 min, inside working hours, not overlapping accepted meetings, ideally with a 15-min buffer) suitable for deep work on the day&#39;s top priority. Return the candidate slot times ONLY — the composer proposes them; never create the events.
+
+CELEBRATION SCAN (for People Radar): birthdays, work anniversaries, and team milestones visible on the calendar in the next 7 days. Calendar/HR facts only — never infer or guess a personal date.
+
+PRESERVE VERBATIM (never paraphrase/round/drop): every date/time with timezone tag; confirmation numbers / record locators / booking IDs; carrier+flight numbers+dep/arr times+airport codes+terminals/gates if present; cabin/class+seat if present; hotel name+check-in/out date-times+full address+phone; ground vendor+pickup time+location+driver contact/phone if present; rental car company+confirmation+pickup/return location+times+phone if present; venue name+full address+room/floor if present; dinner/meal reservations (restaurant, time, party size, confirmation #); host/counter-party names+titles+companies; dollar amounts; loyalty/TSA PreCheck/Global Entry/CLEAR/passport-expiry ONLY if in source data (never guess); any OPEN travel gap — flag plainly and name each. Density: count only ACCEPTED events for back-to-back / N-meeting counts. Watchlist tag: mark any meeting whose subject or attendees touch my standing priority topics.
+
+=== COLLECTOR B — Inbox, Teams, Docs, Tasks, People &amp; Commitments ===
+Gather: last 72h of email (pull 20+ messages / 7 days, whichever is larger); Teams 1:1 + group + channel mentions (unread, decisions pending, escalations, @-mentions of me, last 72h); SharePoint/OneDrive recent activity, Tasks, Viva, recently shared docs awaiting my review.
+
+DECISION QUEUE: anything where a named person is explicitly waiting on a yes/no/approval/sign-off from me — capture sender, the specific ask, dollar amount, deadline, and how long open. Flag the top 1–3 highest-priority / oldest items (VIP-weighted) as READY-TO-SEND CANDIDATES and capture enough thread context (the ask, the relevant facts, my likely position) for the composer to draft a reply; note for each whether it is a FINANCIAL / APPROVAL / SENSITIVE item (this changes how the draft is addressed — see 0.6).
+
+DOLLAR FILTER: surface any large-dollar ask, contract, commitment, or invoice (default threshold $25K+; scale to my seniority if signals suggest otherwise).
+
+INFORMATION ASYMMETRY: threads where my team or peers are discussing something I&#39;m not looped in on but probably should be (skip-level activity, cross-team escalations referencing my org, exec threads where I&#39;m absent).
+
+PROMISE TRACKER (scan MY OWN outbound — sent mail + my Teams messages, last 14 days): commitments *I* made to others — phrases like &quot;I&#39;ll send…&quot;, &quot;I&#39;ll get you…&quot;, &quot;let me get back to you&quot;, &quot;I&#39;ll loop in…&quot;, &quot;by [day]&quot;. For each: what I promised, to whom, any date I named, and whether it appears fulfilled in later activity. This is the inverse of Open Loops (which tracks what others owe me).
+
+RISK TRIPWIRE (tone-escalation scan): threads where sentiment is heating — &quot;as I mentioned again&quot;, &quot;still waiting&quot;, &quot;this is now urgent&quot;, &quot;disappointed&quot;, repeated follow-ups, a counter-party going terse. Capture the thread, the people, and how many nudges deep it is. Anything truly urgent escalates to Hot Signals; the rest goes to the Risk Radar section.
+
+SILENT STAKEHOLDERS: frequent collaborators, direct reports, and my manager who I normally hear from but who have gone quiet ≥5 business days — flag plainly.
+
+PEOPLE RADAR (relationship maintenance): team/direct-report birthdays and work anniversaries in the next 7 days (from Collector A&#39;s celebration scan); who is OOO / on PTO today and who returns today; direct-report or key-collaborator 1:1 staleness (days since last real touch). Warm, human layer — not surveillance.
+
+DELEGATION PULSE (only if I have direct reports): for each direct report, scan last 14 days — recent signals, open items I owe them or they owe me, staleness in days, velocity trend (accelerating/steady/slowing); note PTO.
+
+WATCHLIST PULSE: scan for fresh signal touching my standing priority topics; include CERT / ENABLEMENT deadlines within 30 days if the knob is set.
+
+UTILIZATION DATA (FRIDAYS ONLY): the week&#39;s activity trail — meetings attended, transcripts/recaps, Teams chats, emails, files opened/edited/shared — enough for the composer to draft a reviewable weekly time-entry. Do NOT compose it here; just return the raw signal digest.
+
+PRIVACY (apply before returning digest): for any private/confidential or personal/medical item, reduce to a time-block only (&quot;Private appointment&quot;); never hand a raw private subject to the composer. Never expose a personal health detail in People Radar — celebrations and PTO status only.
+
+PRESERVE VERBATIM: sender+specific ask; deadlines; dollar amounts; ticket/SR numbers and confirmation numbers; &quot;unread since&quot;/&quot;open since&quot; dates; any decision-needed or escalation flag; the exact wording of any promise I made.
+
+Both collectors: keep digests tight. If a search returns nothing useful, say so explicitly (&quot;no flight itinerary found&quot;, &quot;no silent stakeholders this window&quot;, &quot;no open promises detected&quot;) rather than guessing. Never invent names, numbers, dates, or quotes.
+
+----------------------------------------------------------------
+STAGE 2 — COMPOSER (main context — only stage that delivers)
+----------------------------------------------------------------
+Input: ONLY the digest(s). Do NOT re-pull raw data unless a digest flags a gap that blocks the brief — then re-fetch only that one item. Voice: per TONE SCALING above; lead each section with what&#39;s decision-relevant; be specific (&quot;Approve the $250K addendum by EOD,&quot; not &quot;follow up&quot;). Default to tables, status grids, and colored cells, not prose, wherever multiple comparable rows exist. DO NOT use commitment/reply codes, &quot;C#&quot; columns, or any &quot;reply with the code&quot; instruction anywhere.
+
+GRACEFUL DEGRADATION (reliability backbone): always deliver something. Render sections in the priority order below and never let a later section&#39;s failure block an earlier one. If a collector failed or a source is empty, render the section header with an honest amber status line (&quot;Inbox source unavailable this run — retried once&quot;) rather than omitting silently or fabricating. If only one collector returned, compose from what&#39;s available and note the gap at the top.
+
+Build the brief as STRICT, MOBILE-FRIENDLY HTML (same HTML to both Teams and email). Sections IN THIS ORDER:
+
+(0) THE BOTTOM LINE — a single command-level card (2–3 sentences): the one thing I must decide today, the one thing most likely to break, and the headline travel/people risk forming. Answer-first.
+
+(0.1) HOT SIGNALS — REQUIRES IMMEDIATE ACTION (truly urgent: ASAP exec asks, missing travel bookings, same-day deadlines, financial sign-offs past SLA, security/compliance escalations; any IMMINENT-trip gap escalated from the Travel Radar; AND any escalated Risk-Tripwire thread. OMIT this section entirely if nothing qualifies).
+
+(0.5) DECISION DOCKET — WHAT I MUST DECIDE TODAY: compact table of explicit yes/no/approve decisions on me today, oldest first; columns Decision &#183; Asker &#183; Open Since &#183; Recommended Action; VIP asks float to the top; cap 5 rows, bucket the rest under Section 3; skip if zero.
+
+(0.6) ✅ READY TO SEND — for the top 1–3 READY-TO-SEND CANDIDATES from Collector B (up to 3 on a Full run, 1–2 on a Light run), draft the actual reply / approval email AND save each as a draft in my Outlook Drafts folder, on the correct original thread — NEVER send. ADDRESSING: reply-all to the full original thread by default, preserving all recipients, EXCEPT financial / approval / sensitive items, which are drafted reply-to-sender only (when in doubt about sensitivity, default to reply-to-sender); honor the REPLY ADDRESSING knob if changed. Also render each INLINE as a copy-ready block — To (showing actual recipients + &quot;reply-all&quot; or &quot;sender only&quot;) &#183; Subject &#183; Body — prefaced &quot;Draft saved to your Outlook Drafts — review and send yourself.&quot; Leave any unknown specific as a clearly-marked [placeholder]; never fabricate. Creating drafts is authorized; SENDING is not. If a draft-save fails, retry once, then render inline only and note it. Omit the section if no good candidate.
+
+(1) TOP 3 PRIORITIES TODAY: three highest-leverage items as three EQUAL-SIZE colored cards (red = lead/urgent, amber = decide), each with a one-word posture tag LEAD / DELEGATE (name the owner) / DECIDE + a one-line why-it-matters. (For an IC reader: posture tags become DEEP-WORK / DECIDE / RESPOND.)
+
+(2) TODAY&#39;S SCHEDULE: TABLE — Time &#183; Meeting &#183; With &#183; Type (Internal/External/1:1/Review) &#183; Prep; above it a one-line Day Density readout (total accepted meetings, # back-to-back stretches, # high-stakes, # focus blocks remaining); below it a PRE-MEETING INTELLIGENCE CARD for each external/high-stakes meeting (what, who, prep, my angle, decision they want from me, decision I want from them). For the single highest-stakes external meeting, expand the card into a WALK-IN-READY pack: last email-thread summary, last meeting&#39;s action items + status, the doc in play, 3 talking points, the ask.
+   → &#127919; FOCUS TIME (PROPOSED): below the schedule, propose the 1–2 open blocks from Collector A&#39;s focus-slot scan as suggested deep-work time named to today&#39;s top priority — &quot;Propose: 9:30–10:30 — Focus: &lt;priority&gt;.&quot; PROPOSE ONLY; never create the event. Omit if no clean slot exists.
+
+(3) CRITICAL INBOX &amp; ATTENTION DEBT: table — From &#183; Ask &#183; Open Since &#183; Status; oldest-open first; VIP senders flagged; cap 10 rows, note total beyond the cap.
+
+(4) ✈ TRAVEL RADAR — TRIP CONTROL PANEL (centerpiece). Select the panel by how soon the trip departs:
+• HORIZON (8–14 days out): a LIGHT panel — one-line &quot;trip on the horizon&quot; note + a Trip Readiness pill.
+• PREP (4–7 days out): the FULL control panel (4a–4h) — assemble everything and flag gaps EARLY while there&#39;s time to fix bookings.
+• IMMINENT (0–3 days out): the FULL control panel, sharpened to &quot;ready to walk out the door?&quot; — LEAD with 4c (Confirmation Checklist) + the Readiness Score, surface ALL confirmation codes / attendees / meals prominently, and ESCALATE any missing artifact or coverage gap up into Section 0.1 Hot Signals.
+• Skip the Travel Radar entirely if no trip in 14 days.
+
+FULL panels (tables/grids, not prose):
+
+4a TRIP HEADER CARD — one-row hero: Destination &#183; Purpose &#183; Outbound &#183; Return &#183; Days-Until-Wheels-Up countdown &#183; TRIP READINESS SCORE. Score: start 100; −15 per missing artifact among {flight out, flight back, hotel, ground in, ground out, venue address, agenda/pre-read}; −20 per uncovered lodging night; −10 per calendar-vs-confirmation contradiction; −5 per tight connection, red-eye, late-arrival, or recovery-day collision; floor 0. Pill: ≥85 Green (Ready), 70–84 Amber (Watch), &lt;70 Red (Intervene).
+
+4b TRIP TIMELINE — chronological table, one row per event in real time order: Time (with timezone) &#183; Event &#183; Location &#183; Confirmation # &#183; Status (color-coded cell); include outbound flight, ground-in, hotel check-in, every on-site meeting &amp; dinner/meal, hotel check-out, ground-out, return flight, intra-trip legs.
+
+4c CONFIRMATION CHECKLIST — status grid, a row per item: Flight Out &#183; Flight Back &#183; Hotel (all nights covered) &#183; Ground (Origin) &#183; Ground (Destination) &#183; Rental Car &#183; Venue Address &#183; Agenda/Pre-reads &#183; Dinner/Meal Reservations &#183; Co-traveler Confirmed. Each cell Green (confirmed, confirmation # inline) or RED + &quot;NOT FOUND&quot; + a one-line next move. The &quot;Hotel (all nights covered)&quot; row turns RED if any night between arrival and departure is unbooked, naming the date.
+
+4d CONFLICT &amp; COVERAGE MAP — table: Conflict &#183; When &#183; Severity (color-coded) &#183; Recommended Move. Include every coverage-continuity finding from Collector A Pass 4 (lodging gaps with the exact date; ground gaps; missing legs; calendar overlaps; recovery-day collisions). If none, one row &quot;No conflicts detected — clean trip.&quot;
+
+4e WEATHER VISUAL STRIP — look up the forecast for ONLY the dates I&#39;m on the ground, choosing the data source BY THE TRIP DESTINATION (where I am traveling TO), never my home country:
+   • US destinations → the U.S. National Weather Service (weather.gov / api.weather.gov) — the authoritative federal feed.
+   • Canadian destinations → Environment and Climate Change Canada (weather.gc.ca).
+   • Any other country → grounded web search that reconciles Weather.com / AccuWeather / the destination&#39;s national meteorological service.
+   • Backup for any destination → the free Open-Meteo forecast API (https://api.open-meteo.com/v1/forecast — no API key; params: latitude, longitude, daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weathercode, temperature_unit=fahrenheit, timezone=auto).
+   Example: a US-based traveler going to Toronto gets Environment Canada / Toronto data, NOT US NWS. Render a row of UNIFORM, EQUAL-SIZE day cards — one per on-the-ground day — sized to fit on a single row within the container without horizontal scroll (compact if many days). Each card: a colored header band by condition (green=clear, slate=cloudy/overcast, blue=rain/showers/fog, red=thunderstorms, amber=extreme heat), then a consistent body: condition word, large hi/lo, rain chance/amount, one-line trip context. Same height, same fonts, no oversized emoji. Below the strip, a short blue-accent &quot;Travel reads&quot; note (pack, storm/timing risk, timezone delta). Attribute the CHOSEN source + retrieval date. If the forecast can&#39;t be retrieved from any source, say so plainly.
+
+4f PRE-MORTEM — WHAT COULD GO WRONG: short candid table — top 3 plausible failure modes + pre-emptive move: Failure Mode &#183; Why It&#39;s Plausible &#183; Pre-empt Now (red-tint the Pre-empt cells).
+
+4g KNOW BEFORE YOU GO — light-blue panel: dress code, pre-reads with status (Read/Skim/Not Started), key host/attendee names+titles, meals/dinners booked, distances + recommended depart-from-hotel times, transfer timing, dial-in posture (Wi-Fi viability) for meetings I&#39;m on while traveling, and a single comfort note only if present in source data.
+
+4h ✈ AUTO-TICKLER STATUS: confirm what was placed/updated on my calendar this run, one row per tickler: Tickler Title &#183; Calendar Time (Local) &#183; Status (Created/Updated/Already Current/Failed); if none needed show &quot;No ticklers required.&quot;
+
+(5) WEEK SECTION conditional on day:
+• MON–THU — &quot;Week Ahead&quot;: rest-of-week day-by-day grid: Day &#183; Theme &#183; Heaviest Hour &#183; Key Meeting &#183; Risk (color-coded).
+• FRIDAY — &quot;FRIDAY WEEK PREVIEW&quot; of next week, five sub-parts: a) Next Week at a Glance (day-by-day grid + one-word Confidence tag per day: Clean/Loaded/Volatile), b) Prep Needed This Weekend, c) Carry-Forward Commitments, d) Strategic Focus Recommendation, e) Hard Deadlines — Next 7 Days.
+   → 5f WEEKLY TIME-ENTRY DRAFT (FRIDAY, from Collector B Utilization Data): a reviewable HTML table — # &#183; Project/Client/Category &#183; Description &#183; Duration (decimal hrs) &#183; Date — ordered largest to smallest, balanced toward a realistic week, with a bold weekly total. GUARDRAILS (hold the line): do NOT invent meetings, deliverables, or project names; keep weak evidence honest; prefer fewer, stronger entries; write like real time-entry comments, not AI summaries; map to a project where evidence supports it, else use Business Development / Internal Ops / Practice Development / Admin / Learning-Enablement. Render in the brief for my review only — never submit anywhere.
+
+(6) OPEN LOOPS (oldest first — &quot;since&quot; date, who&#39;s waiting, whether the next move is mine or theirs; tint the &quot;next move&quot; cell red when it&#39;s mine and overdue).
+
+(6.5) &#129309; PROMISE TRACKER — WHAT I SAID I&#39;D DO: table — Promise &#183; To Whom &#183; I Said By &#183; Status (Open/Overdue/Likely Done) &#183; Suggested Move; overdue tinted red, oldest first. The dropped-ball catcher. Omit if none detected.
+
+(7) DELEGATION PULSE — CHIEF&#39;S WHISPER (ONLY if I have direct reports; otherwise omit): one row per direct report plus a Silent Stakeholders block: Person &#183; Recent Signal (last 14d) &#183; Status (Healthy/Watch/Silent) &#183; Your Move; note PTO; surface anyone silent ≥5 business days as &quot;Silent&quot; with &quot;consider a check-in.&quot;
+
+(7.5) WATCHLIST PULSE: for each standing priority topic with fresh signal in the last 72h, one row: Topic (color-tinted by urgency) &#183; What Moved &#183; Who; include cert/enablement deadlines within 30 days if set; omit quiet topics; omit the whole section if all quiet.
+
+(7.6) &#128155; PEOPLE RADAR: a small warm-toned block — upcoming birthdays/work anniversaries (next 7 days, with the date), who&#39;s OOO today / returns today, and any direct-report or key 1:1 gone stale (days since last touch) with &quot;consider a check-in.&quot; Celebrations and PTO status only — never personal/medical detail. Omit if nothing this window.
+
+(7.7) ⚠ RELATIONSHIP / DEAL RISK RADAR: non-urgent tone-escalation threads from the Risk Tripwire — Thread &#183; People &#183; Heat Signal &#183; Suggested Move. (Truly urgent ones already escalated to Hot Signals.) Omit if quiet.
+
+End the brief with a small COLOR KEY legend: red = urgent/missing, amber = needs attention, green = on-track, blue = FYI, slate = informational. Append a one-line trust + tier footer:
+&quot;AI-generated from your M365 signals — verify before any financial, legal, or travel commitment.  &#183;  &lt;Light/Full&gt; run.&quot;
+
+----------------------------------------------------------------
+VISUAL DESIGN SYSTEM (apply consistently)
+----------------------------------------------------------------
+Color is the signal, carried in SOFT TINTED CELLS, not loud blocks. Every status/risk/severity cell gets a light background tint with matching bold text so each table reads as organized colored boxes — red (#fdecea bg / #c0392b text) = urgent/blocked/NOT FOUND; amber (#fef6e7 / #b9770e) = needs attention/approve soon/tentative; green (#e9f7ef / #1e8449) = confirmed/on-track/healthy; blue (#eaf2fb / #2167a6) = FYI/review/read; slate (#eef1f5 / gray) = informational. Keep red the loudest, reserved for what truly needs me. Uniform boxes: weather cards and Top-3 cards equal width/height with identical type sizes — aligned, never ragged, no oversized emoji. One pill size everywhere (rounded, white text, 11px). Section accent bars: Bottom Line, Hot Signals, Pre-Mortem, and Risk Radar use a red left-border card; Decision Docket amber; Ready-to-Send green; Travel Radar a navy header; Know-Before-You-Go, People Radar, and the weather note blue. Tables: header row #f0f3f9, 1px #e2e6ee borders, ~7px cell padding, alternating soft row shade, sensible column widths. Header bar background #0b3d91 white text — &quot;&#129517; Chief of Staff Brief&quot; + &quot;&lt;weekday&gt;, &lt;full date&gt; &#183; &lt;My Name&gt; &#183; &lt;My Department&gt;&quot;. Section headers #0b3d91, bold, ~15px. Body Segoe UI/Arial, 13px, color #1a1a1a.
+
+MOBILE-FRIENDLY RENDERING (Cowork is read on phones): container max-width ~780px but FLUID (width:100%; max-width:780px; margin:0 auto). Under ~480px viewport, stack the weather-day cards and the Top-3 cards into a single vertical column (no horizontal scroll), and let wide tables scroll within their own container rather than breaking the page. Avoid fixed pixel widths on cells; use percentages so the layout reflows. The morning reader is on a phone — it must look right there first.
+
+----------------------------------------------------------------
+DELIVER (composer only)
+----------------------------------------------------------------
+1) Post the HTML brief to my Teams self-chat (recipients = me); on travel weeks also attach a Teams temperature-trend chart for the trip.
+2) Email the SAME HTML to me, subject &quot;&#129517; Chief of Staff Brief — &lt;weekday&gt;, &lt;full date&gt;&quot;, content type HTML.
+3) Save each Ready-to-Send reply as an Outlook DRAFT per the addressing rules above (reply-all by default; reply-to-sender for financial/approval/sensitive; correct original thread; never send).
+4) Place/update any required TRAVEL TICKLER calendar events per the Auto-Tickler rules.
+
+----------------------------------------------------------------
+AUTO-TICKLER RULES (explicit authority exception — TRAVEL ONLY)
+----------------------------------------------------------------
+When a trip is within 7 days and a CONFIRMED flight is on file in mail, drop a clean at-a-glance tickler on my calendar at the exact local DEPARTURE time of each flight leg (outbound + return + intra-trip), so opening my calendar mid-week shows the trip gist without opening the full brief. This is ONE of the two authorized writes; TRAVEL TICKLERS only, high-confidence confirmed itinerary only. Never auto-create any other event type. Never auto-create from a tentative/unconfirmed itinerary. Never modify a real meeting.
+
+Placement: one event per flight leg at exact LOCAL DEPARTURE time (not boarding, not arrival); duration 30 min; show-as Free; reminder 90 min prior; timezone = departure airport&#39;s local zone.
+Title: &quot;✈ &lt;ORIGIN→DEST&gt; &#183; &lt;CARRIER&gt; &lt;FLT#&gt; &#183; &lt;DEP TIME LOCAL&gt;&quot; (e.g., &quot;✈ AUS→ORD &#183; AA 1234 &#183; 06:45 CT&quot;).
+Tickler body — tight scannable HTML containing EVERYTHING I&#39;d need at a glance: carrier + flight # + cabin/seat if known; dep airport + terminal/gate if known + dep time LOCAL; arr airport + terminal if known + arr time LOCAL; record locator / confirmation # (ALWAYS include); KEY PHONE NUMBERS (airline reservations/status, hotel front desk, rental agency, car service/driver — every phone present in source); hotel name + check-in/out date-times + full address + phone; rental car company + confirmation # + pickup location/time + return + phone (if booked); ground transport summary (vendor + pickup time + location + driver phone, or &quot;self-Uber from terminal&quot;); venue name + full address (OUTBOUND leg only); return flight summary (OUTBOUND leg only); footer idempotency tag &quot;[CoS-Tickler-&lt;TripID&gt;]&quot;.
+Idempotency: &lt;TripID&gt; = stable hash of {origin, destination, outbound date, carrier+flight#}; before creating, search my calendar for a future event whose body contains that tag — if none, CREATE and mark &quot;Created&quot;; if one exists and the itinerary still matches, leave it and mark &quot;Already Current&quot;; if data changed, DELETE old + CREATE new and mark &quot;Updated.&quot; Never duplicate. Never create a tickler for a leg already departed. If the calendar write fails, retry ONCE; if it still fails, mark &quot;Failed&quot; with a one-line reason and continue delivery on the other channels.
+
+----------------------------------------------------------------
+AUTHORITY (never violate, except as noted)
+----------------------------------------------------------------
+Calendar = PROPOSE then I approve — never create/modify events myself EXCEPT travel ticklers under the Auto-Tickler rules. Focus-time blocks are PROPOSED in the brief, never created. Email = the brief delivery to me is the only SEND; Ready-to-Send replies ARE saved to my Outlook Drafts folder (Drafts-folder authority granted) AND rendered inline, but are NEVER sent — I review and send each myself. Drafts are addressed reply-all by default, EXCEPT financial/approval/sensitive items (reply-to-sender only); honor the REPLY ADDRESSING knob if changed. The weekly time-entry draft stays inline text only and is never written anywhere. Deliver the brief only to me — never to a shared channel or another person. Never modify, share, or alter any other file, doc, task, or chat artifact.
+
+----------------------------------------------------------------
+RUNTIME RULES
+----------------------------------------------------------------
+Unattended — NEVER ask me anything; always produce and deliver output. Never fabricate facts; if something can&#39;t be found, say so plainly and (for travel) mark it RED / NOT FOUND. If one collector fails, the composer proceeds with the digest it has and notes the gap rather than aborting. Retry a failed Teams post or email send ONCE; if it still fails, record the failure inside the brief and continue with the other channel. Retry a failed draft-save ONCE, then render that reply inline only and note it. Retry a failed travel-tickler write ONCE; if it still fails mark &quot;Failed&quot; and continue. All weather and destination telemetry is keyed to the trip DESTINATION (not my home country) and must include a short source attribution — National Weather Service (weather.gov) for US destinations, Environment and Climate Change Canada (weather.gc.ca) for Canadian destinations, or grounded web search reconciling Weather.com / AccuWeather / the destination&#39;s national meteorological service for any other country, with Open-Meteo as a global backup — plus the retrieval date; if no credible source, omit rather than guess. The brief must always end with the color-key legend and the trust + tier footer.
+
+================================================================
+PART 3 — END-OF-DAY WRAP (only if EOD BOOKEND = ON; runs 17:00 weekdays)
+================================================================
+Operate as my Chief of Staff for a SHORT end-of-day bookend to ME ONLY (Teams self-chat + email), strict mobile-friendly HTML, same visual system. Single light read-only pass — no 30-day sweep, no travel radar. Sections, in order:
+(0) DID IT MOVE — 2–3 sentences: what closed today, what&#39;s still open from this morning&#39;s Decision Docket, the one thing that slipped.
+(1) STILL OPEN — table of this morning&#39;s decisions/asks not yet resolved: Item &#183; Asker &#183; Now Open Since &#183; Tomorrow&#39;s Move.
+(2) PROMISES DUE — any Promise-Tracker item due today still open, tinted red if overdue.
+(3) TEE UP TOMORROW — first 3 meetings tomorrow + anything needing prep tonight; propose (don&#39;t create) any prep focus block.
+(4) DRAFT EOD STATUS (optional, inline text only): if I have a daily status/standup habit detectable in my activity, draft a short EOD status note for my review — rendered inline, never sent.
+End with the color-key legend + trust footer. Same AUTHORITY and RUNTIME RULES as PART 2. Never ask me anything; always deliver.
+
+================================================================
+WHAT CHANGED IN v4 (vs. v2)
+================================================================
+1. WEATHER IS DESTINATION-DRIVEN. The weather strip now picks its source by where you&#39;re traveling TO, not where you live: NWS (weather.gov) for US destinations, Environment Canada (weather.gc.ca) for Canadian destinations, grounded web search (Weather.com / AccuWeather / local national service) for anywhere else, and Open-Meteo as a global backup. (Fixes the &quot;US-based, traveling to Toronto&quot; case where NWS alone returns nothing.)
+2. READY-TO-SEND now saves real Outlook drafts (Drafts-folder authority), capped 3 (Full) / 1–2 (Light) — still never sent.
+3. REPLY ADDRESSING is reply-all by default with a guardrail (financial/approval/sensitive → reply-to-sender), set via knob + confirmed at setup.
+4. SETUP now asks for additional VIPs, the reply-addressing default, and Drafts-folder consent — captured once, so unattended runs never prompt.
+5. VIP auto-derivation widened to include my manager&#39;s management chain and same-manager peers.
+
+================================================================
+DEPLOYMENT NOTE (for the person rolling this out — not an instruction to Cowork)
+================================================================
+This brief reflects your information hygiene back at you. If your calendar is full of meetings nobody needs and your email flags are inconsistent, the ranking will be noisier on day one and sharpen as your signals get cleaner. Set that expectation with first-time users, and point power users at the two optional grounding knobs (VIP list, Strategic Priorities) — they&#39;re the single biggest accuracy lift.
+================================================================</div>
 </div>
 
 <!-- FAQ -->
 <h2 id="faq">FAQ</h2>
 
 <h3>Q: Is this really one prompt?</h3>
-<p>Yes. You paste one prompt once. Cowork may still ask setup questions or show approval cards during creation, and you should answer those so the schedule finishes correctly.</p>
+<p>Yes. You paste the full prompt once. Cowork may still ask setup questions or show approval cards during creation, and you should answer those so the scheduled task finishes correctly.</p>
 
 <h3>Q: Why do I need the latest Claude Opus model?</h3>
 <p>The brief asks Cowork to reason across calendar, email, Teams, docs, delegation signals, travel, and weather. Opus is better suited for that kind of long, multi-step synthesis.</p>
 
 <h3>Q: Will it send emails or change meetings without me?</h3>
-<p>No. The brief is delivered to you by Teams and email. The only calendar write authorized by the prompt is a small travel flight reminder for confirmed flights, and Cowork may ask you to approve those setup actions.</p>
+<p>No. The only email it sends is the brief to you. Ready-to-Send replies are saved as Outlook drafts for your review, but never sent. The only calendar write authorized by the prompt is a small travel flight reminder for confirmed flights.</p>
+
+<h3>Q: What should I choose for reply addressing?</h3>
+<p>Choose Reply-all with guardrail. It replies to the original thread by default, but financial, approval, or sensitive items are drafted to the sender only.</p>
+
+<h3>Q: Why does it ask for Drafts authority?</h3>
+<p>So the agent can save ready-to-send replies in your Outlook Drafts folder. This does not give it permission to send those replies.</p>
+
+<h3>Q: How does it control consumption?</h3>
+<p>It uses LIGHT runs on normal quiet days and saves FULL runs for Mondays, Fridays, travel weeks, or real risk signals. It also skips empty sections so it does not spend effort on information you do not need that day.</p>
 
 <h3>Q: The brief ran immediately. Is that normal?</h3>
 <p>Yes. Cowork often runs a scheduled task once right after setup so you can verify it works. After that, it follows the weekday schedule.</p>
@@ -520,4 +824,6 @@ function copyText(btn, id) {
     <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
+
+
 
