@@ -30,15 +30,17 @@
 
 | | |
 |---|---:|
-| Changes | **15** |
-| LOW risk (value swap in existing markup) | 7 |
-| MED risk (prose rewrite in existing block) | 6 |
-| HIGH risk (needs your call before execution) | 2 |
-| **Diff budget** | **+16 / −16 lines** |
+| Changes | **14** (C-09 withdrawn) |
+| LOW risk (value swap in existing markup) | 6 |
+| MED risk (prose rewrite in existing block) | 7 |
+| HIGH risk | 1 (C-08) |
+| **Diff budget** | **+15 / −23 lines** |
 
-If the actual diff exceeds ±20 lines, **stop** — something was rewritten that this spec did not authorise.
+C-08 removes 8 lines net (the third funnel stage and its arrow). Every other change is an in-place replacement.
 
-**Read carefully:** C-09 and C-10 (HIGH). Everything else can be approved in a block.
+If insertions exceed 18 or deletions exceed 26, **stop** — something was rewritten that this spec did not authorise.
+
+**Read carefully:** C-08 (HIGH — the only markup change in the spec). Everything else can be approved in a block.
 
 ---
 
@@ -143,57 +145,76 @@ All of §A lives in one contiguous region, `cpb.html:1500–1640`. Component she
 
 ---
 
-### C-08 · Update the funnel's second stage
-**Type:** value-swap · **Fact IDs:** `F-005` · **Risk:** LOW
+### C-08 · Rebuild the funnel as two stages — **HIGH, revised**
+**Type:** block-remove + value-swap · **Fact IDs:** `F-005` · **Risk:** HIGH
+**Decision:** *You chose option B, 2026-08-26.* **C-09 is withdrawn** and folded into this change. The change ID is retired rather than renumbered so that review comments referencing C-09 still resolve.
+
+**Why the third stage goes.** It read `0.17` of 100 seats "reach power-user productivity." Against the old `3.3`, that implies a power-user rate of `0.17 ÷ 3.3 = 5.15%` of Copilot licensees. **That 5.15% is sourced nowhere in the document and is not in `facts.json`** — it is an assumption. Carrying it forward would have meant either doubling an unsourced number or leaving a stale one between two fresh ones. Both are worse than removing it.
+
+The funnel becomes `100 → 6.6`. It loses the collapse, but the collapse was the part resting on nothing.
+
+**Design:** Grid template changes `1fr auto 1fr auto 1fr` → `1fr auto 1fr`, which is a **genuine markup change** and the reason this is HIGH. Justification: the grid must lose two columns or the two remaining stages will not centre. No new token, color, size, or shadow is introduced — the removed block's `#fbbf24` disappears with it. Indentation of every surviving line is preserved exactly.
 
 ```html before:C-08
+      <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:14px;align-items:center;">
+
+        <div style="text-align:center;">
+          <div style="font-size:2.2rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-.03em;">100</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.4;">Microsoft 365<br>seats (sample)</div>
+        </div>
+
+        <div style="font-size:1.4rem;color:rgba(255,255,255,.3);font-weight:300;">&rarr;</div>
+
+        <div style="text-align:center;">
           <div style="font-size:2.2rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;">3.3</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.4;">carry a paid<br>Copilot license</div>
+        </div>
+
+        <div style="font-size:1.4rem;color:rgba(255,255,255,.3);font-weight:300;">&rarr;</div>
+
+        <div style="text-align:center;">
+          <div style="font-size:2.2rem;font-weight:700;color:#fbbf24;line-height:1;letter-spacing:-.03em;">0.17</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.4;">reach power-user<br>productivity</div>
+        </div>
+
+      </div>
 ```
 ```html after:C-08
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;">
+
+        <div style="text-align:center;">
+          <div style="font-size:2.2rem;font-weight:700;color:#fff;line-height:1;letter-spacing:-.03em;">100</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.4;">Microsoft 365<br>seats (sample)</div>
+        </div>
+
+        <div style="font-size:1.4rem;color:rgba(255,255,255,.3);font-weight:300;">&rarr;</div>
+
+        <div style="text-align:center;">
           <div style="font-size:2.2rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;">6.6</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:6px;line-height:1.4;">carry a paid<br>Copilot license</div>
+        </div>
+
+      </div>
 ```
 
 ---
 
-### C-09 · Funnel third stage — **HIGH, needs your call**
-**Type:** value-swap · **Fact IDs:** none — this figure has no fact ID · **Risk:** HIGH
+### C-09 · *(withdrawn)*
 
-**Do not apply this change without a decision.** Here is the problem.
-
-The third funnel stage reads `0.17` of 100 seats "reach power-user productivity." Against the old `3.3`, that implies a power-user rate of `0.17 ÷ 3.3 = 5.15%` of Copilot licensees. **That 5.15% is not sourced anywhere in the document and is not in `facts.json`.** It appears to be an assumption.
-
-Mechanically doubling `0.17 → 0.34` assumes the power-user rate held constant while penetration doubled. There is no evidence for that, and Microsoft's Q4 commentary points the other way — *"what used to be months is days from when a license is bought"*, and enterprises deploying to a majority of their workforce grew ~75% QoQ. If time-to-value genuinely compressed, the rate rose and `0.34` **understates** it.
-
-Three options:
-
-| Option | Result | Trade-off |
-|---|---|---|
-| **A — Hold the rate** | `0.17` → `0.34` | Internally consistent. Silently assumes an unsourced rate survived a doubling. |
-| **B — Drop the third stage** *(recommended)* | Funnel becomes `100 → 6.6`, two stages | Loses the rhetorical punch of the collapse, but removes an unsourced number from the most-scrutinised block on the site. Requires editing the grid template (5 columns → 3) — genuine markup change. |
-| **C — Keep `0.17`, relabel** | Reframe as "reached power-user productivity as of FY26 Q2" | Honest, but a stale figure sitting next to two fresh ones reads as an error. |
-
-**Blocked pending your answer.** If A: apply below. If B or C: this spec needs a revision.
-
-```html before:C-09
-          <div style="font-size:2.2rem;font-weight:700;color:#fbbf24;line-height:1;letter-spacing:-.03em;">0.17</div>
-```
-```html after:C-09
-          <div style="font-size:2.2rem;font-weight:700;color:#fbbf24;line-height:1;letter-spacing:-.03em;">0.34</div>
-```
+Folded into C-08 by your option-B decision. **Do not apply. Do not renumber.**
 
 ---
 
-### C-10 · Funnel caption — **HIGH, follows C-09**
-**Type:** text-rewrite · **Fact IDs:** `F-005` · **Risk:** HIGH
-**Rationale:** `about three` → `about seven` is forced by C-08 and is safe. The `one in six hundred` clause is derived from C-09 and inherits its uncertainty (`0.34/100` ≈ one in 294).
-
-**If C-09 = option A**, apply as written. **If B or C**, the second clause must be rewritten to match.
+### C-10 · Funnel caption — follows C-08
+**Type:** text-rewrite · **Fact IDs:** `F-005` · **Risk:** MED
+**Rationale:** `about three` → `about seven` is forced by C-08. The `one in six hundred` clause described the stage C-08 removes, so it goes with it. The replacement closing clause carries the reframed argument — where those seats actually went — using the Microsoft-stated sevenfold figure agreed for C-04.
+**Design:** Text only inside the existing italic `.86rem` caption. Downgraded from HIGH to MED now that it no longer inherits an unsourced derivation.
 
 ```html before:C-10
         Out of any 100 Microsoft 365 commercial seats, about three carry a paid Copilot license &mdash; and barely one in six hundred ever reaches the power-user productivity Microsoft puts on stage at Build.
 ```
 ```html after:C-10
-        Out of any 100 Microsoft 365 commercial seats, about seven carry a paid Copilot license &mdash; and barely one in three hundred ever reaches the power-user productivity Microsoft puts on stage at Build.
+        Out of any 100 Microsoft 365 commercial seats, about seven now carry a paid Copilot license &mdash; twice as many as two quarters ago, and overwhelmingly concentrated in the enterprises buying fifty thousand at a time.
 ```
 
 ---

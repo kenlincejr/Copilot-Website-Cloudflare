@@ -37,13 +37,17 @@ A page that advertises its own recency and is four months stale is worse than a 
 
 | | |
 |---|---:|
-| Changes | **6** |
+| Changes | **7** |
 | LOW risk | 1 |
-| MED risk | 5 |
+| MED risk | 6 |
 | HIGH risk | 0 |
-| **Diff budget** | **+7 / −6 lines** (W-05 adds one line) |
+| **Diff budget** | **+21 / −14 lines** |
 
-**Scope note.** This spec fixes the *provably wrong* framings and the *missing billing model*. It does **not** rewrite the "What changed in the last 90 days" section wholesale — see "Deferred" below. Six changes make the page honest. Making it current is a larger job that needs your input on scope.
+W-05 inserts a 5-line callout and W-07 replaces a 7-line list with a 9-line one. The other five changes are in-place.
+
+If insertions exceed 25 or deletions exceed 17, **stop**.
+
+**Scope note.** These seven changes fix every *provably wrong* framing on the page, add the *missing billing model*, and close the four-month currency gap. No HIGH-risk items — approvable in one pass.
 
 ---
 
@@ -141,27 +145,43 @@ None of this is on the page. It is the single most commercially relevant fact ab
 
 ---
 
-## Deferred — needs your scope decision
+### W-07 · Replace the "last 90 days" bullets
+**Type:** block-remove + block-insert · **Fact IDs:** none registered — **add these to `facts.json`** · **Risk:** MED
+**Decision:** *You chose option A, 2026-08-26.*
+**Rationale:** The section heading promises currency and the newest bullet is dated 17 April 2026. Five material things happened after it, and the section as written omits every one — including Cowork's own general availability. Replacing the content is the smallest change that makes the heading true.
 
-### The "What changed in the last 90 days" section (`cowork.html:831–839`)
+The heading is retitled to a **dated window** rather than a rolling one. A rolling "last 90 days" heading is a promise that decays the moment it ships; a dated window stays honest as it ages.
 
-Five bullets, all dated February–April 2026. The heading is a promise the content no longer keeps. Everything below happened **after** the newest bullet:
+**Design:** Plain `<ul>`/`<li>` with `<strong>` date leads, exactly matching the list idiom being replaced. No class, no inline style, no new token. `cowork.html` is class-first.
+**Preserved:** the `<h3>` element itself and the `<p>Source:...</p>` line that follows the list are **not** touched by this change — the Opus 4.7 citation below remains accurate for the April entry it supports.
 
-| Date | Event |
-|---|---|
-| 16 Jun 2026 | **Cowork GA + usage-based billing** |
-| Jun 2026 | GA worldwide: multi-model, new plugins, updated skill management and navigation, **Purview integration**, branded templates, image creation |
-| Jun 2026 | **Claude Fable 5 (preview)** as opt-in admin-controlled model in Cowork (Frontier) |
-| Jul 2026 | Claude added to **Copilot Chat** for active subscribers; Tasks tab; M365 Copilot app auto-install resumes on eligible commercial Windows devices |
-| Aug 2026 | Cost Management: Copilot Credits visibility, overage handling, policy enforcement |
+**Ordering note:** apply W-07 **after** W-06. Both touch model naming, and W-06's anchor is a table cell that this change does not overlap.
 
-I have **not** written this as a change because it is a rewrite, not an edit, and the right scope is your call:
+```html before:W-07
+<h3>What changed in the last 90 days (and why it matters)</h3>
+<ul>
+  <li><strong>Feb 10, 2026</strong> &mdash; Claude Cowork hit Windows GA. Anthropic now has a mature <em>non</em>-coding desktop agent that competes directly with Copilot Cowork on the local-file side.</li>
+  <li><strong>March 2026</strong> &mdash; 1M-token context went GA on Opus 4.6 and Sonnet 4.6 in Claude Code, no beta header, no long-context premium.</li>
+  <li><strong>April 14, 2026</strong> &mdash; Claude Code desktop was redesigned for parallel sessions, integrated terminal, HTML/PDF preview, and shipped <strong>Routines</strong> &mdash; scheduled cloud-run automations (Pro 5/day, Max 15/day, Team/Enterprise 25/day). This is the Anthropic equivalent of Cowork&rsquo;s Scheduled Prompts, aimed at developers.</li>
+  <li><strong>April 16, 2026</strong> &mdash; Claude Opus 4.7 landed in Copilot Cowork&rsquo;s model selector. Microsoft&rsquo;s framing: Opus 4.7 is tuned to <em>&ldquo;follow instructions more closely and route requests to the right capabilities and Work IQ data.&rdquo;</em></li>
+  <li><strong>April 17, 2026</strong> &mdash; Claude Design launched as a research preview. Opus 4.7&ndash;powered. Five days old at the time of writing.</li>
+</ul>
+```
+```html after:W-07
+<h3>What changed between April and August 2026 (and why it matters)</h3>
+<ul>
+  <li><strong>April 16, 2026</strong> &mdash; Claude Opus 4.7 landed in Copilot Cowork&rsquo;s model selector. Microsoft&rsquo;s framing: Opus 4.7 is tuned to <em>&ldquo;follow instructions more closely and route requests to the right capabilities and Work IQ data.&rdquo;</em></li>
+  <li><strong>June 16, 2026</strong> &mdash; <strong>Cowork reached general availability and moved to usage-based billing.</strong> This is the big one. Cowork now bills separately from the Copilot licence, metered in Copilot Credits. Tenants with a user active in the Frontier programme between March 30 and June 16 had a grace period that expired July 1, 2026.</li>
+  <li><strong>June 2026</strong> &mdash; GA worldwide brought multi-model support, new plugins, reworked skill management and navigation, <strong>Microsoft Purview integration</strong>, branded templates, and image creation. Purview integration is the one that matters commercially: Cowork output is now governable with the same tooling as the rest of the tenant.</li>
+  <li><strong>June 2026</strong> &mdash; <strong>Claude Fable 5 (preview)</strong> became available as an opt-in, admin-controlled model in Cowork on Frontier. Cowork is no longer fixed to a single model.</li>
+  <li><strong>July 2026</strong> &mdash; Claude became selectable in <strong>Copilot Chat</strong> for active subscribers, a Tasks tab shipped, and automatic installation of the Microsoft 365 Copilot app resumed on eligible commercial Windows devices.</li>
+  <li><strong>August 2026</strong> &mdash; Cost Management landed in the Microsoft 365 admin centre: Copilot Credits visibility, clearer policy enforcement, better overage handling, and more reliable alerts. If you are running a Cowork practice, this is your instrumentation.</li>
+</ul>
+```
 
-- **Option A — replace the five bullets** with the five above and retitle to a dated window. Contained, ~6 lines, MED risk.
-- **Option B — retitle only** to *"What changed between February and April 2026"* and leave the content. One-line change, honest, but leaves a four-month hole in a page whose whole value is currency.
-- **Option C — full section rewrite**, restructured around GA as the dividing line. HIGH risk, needs its own spec revision.
+---
 
-**Recommend A.** It is the smallest change that makes the heading true.
+## Deferred
 
 ### Also deferred
 

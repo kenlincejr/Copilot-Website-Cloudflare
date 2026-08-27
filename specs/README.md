@@ -10,27 +10,26 @@ You review these. You do not review diffs.
 
 | Spec | Target | Changes | LOW | MED | HIGH | Diff budget |
 |---|---|---:|---:|---:|---:|---|
-| [`cpb.spec.md`](cpb.spec.md) | `cpb.html` | 15 | 7 | 6 | **2** | +16 / −16 |
+| [`cpb.spec.md`](cpb.spec.md) | `cpb.html` | 14 | 6 | 7 | **1** | +15 / −23 |
 | [`ledger.spec.md`](ledger.spec.md) | `ledger.html` | 8 | 5 | 3 | 0 | +8 / −8 |
-| [`cowork.spec.md`](cowork.spec.md) | `cowork.html` | 6 | 1 | 5 | 0 | +7 / −6 |
+| [`cowork.spec.md`](cowork.spec.md) | `cowork.html` | 7 | 1 | 6 | 0 | +21 / −14 |
 | [`frontier.spec.md`](frontier.spec.md) | `frontier.html` | 5 | 0 | 3 | **2** | +9 / −5 |
 | [`starter-kit.spec.md`](starter-kit.spec.md) | `customer-zero-starter-kit/index.html` | 5 | 2 | 3 | 0 | +5 / −5 |
-| | **total** | **39** | **15** | **20** | **4** | |
+| | **total** | **39** | **14** | **22** | **3** | |
 
 ---
 
 ## How to review this in twenty minutes
 
-**Read four changes properly.** They are the only ones where a spec is asking you to decide something rather than execute something:
+**Read three changes properly:**
 
-1. **`cpb.spec.md` C-09** — the funnel's `0.17` third stage. It rests on an unsourced 5.15% power-user rate. Doubling it assumes that rate survived a doubling in penetration, and there is no evidence either way. Three options laid out; **my recommendation is B, drop the stage.** *Blocked until you answer.*
-2. **`cpb.spec.md` C-10** — the caption clause that follows from C-09. `about three` → `about seven` is safe; `one in six hundred` inherits C-09's uncertainty.
-3. **`frontier.spec.md` FR-01** — the Copilot Specialization requirements. The single highest-value change in the refresh. **Ship this one even if you ship nothing else.**
-4. **`frontier.spec.md` FR-04** — removing the `96%` and `51%` stats. If you have the internal Microsoft deck they came from, say so and I will respec this as an attribution change instead of a deletion.
+1. **`frontier.spec.md` FR-01** — the Copilot Specialization requirements. The single highest-value change in the refresh. **Ship this one even if you ship nothing else.**
+2. **`cpb.spec.md` C-08** — the funnel rebuilt as two stages. The only markup change in the set (grid drops from 5 columns to 3). C-09 is **withdrawn** and folded in here; the ID is retired rather than renumbered so review comments referencing it still resolve.
+3. **`frontier.spec.md` FR-04** — removing the `96%` and `51%` stats.
 
-**Skim the 20 MED changes.** They are prose rewrites inside existing markup — the wording is the thing to check, not the mechanics.
+**Skim the 22 MED changes.** They are prose rewrites inside existing markup — the wording is the thing to check, not the mechanics.
 
-**Approve the 15 LOW changes in a block.** Every one is a value swap inside markup whose style attributes are preserved byte-for-byte.
+**Approve the 14 LOW changes in a block.** Every one is a value swap inside markup whose style attributes are preserved byte-for-byte.
 
 ---
 
@@ -54,14 +53,16 @@ refresh/    refresh/  refresh/  refresh/       refresh/
 
 ---
 
-## The gate before Phase 5
+## Decisions closed 2026-08-26
 
-Two things are still open. Both are in `cpb.spec.md`:
+| Item | Decision |
+|---|---|
+| `cpb` C-09 — the unsourced `0.17` funnel stage | **Dropped.** Folded into C-08; funnel is now `100 → 6.6`. C-09 withdrawn, not renumbered. |
+| `frontier` FR-04 — the `96%` / `51%` stats | **Removed.** No internal source available. `71%` retained pending a Work Trend Index citation. |
+| `cowork` "last 90 days" section | **Bullets replaced** (W-07) and heading retitled to a dated window. |
+| Execution order | **`refresh/frontier` first**, then the penetration cluster together, then `refresh/cowork`. |
 
-- **C-09** is explicitly blocked pending your choice of option A, B, or C.
-- **C-10** follows C-09 and cannot be finalised before it.
-
-Everything else is executable as written.
+Every spec is now executable as written.
 
 ---
 
@@ -110,7 +111,6 @@ python tools/check-facts.py --cascade
 | | Why |
 |---|---|
 | `customer-zero-starter-kit/become-customer-zero.html` | 9 registered claims including the Agent 365 prerequisite. **Needs its own small spec.** Not folded into `starter-kit.spec.md` — one file per spec, per prohibition 9. |
-| `cowork.html`'s "last 90 days" section | A rewrite, not an edit. Three scope options are laid out at the foot of `cowork.spec.md`; **recommend option A.** |
 | `shadowai.html`, `cowork-session.html` | Net-new pages. Slipped per your 2–6 week deadline decision. |
 | `cpbops.html`, `cpbbackup.html` | `cpbops.html` carries 16 claims, none in the penetration cluster and none contradicted by the research. `cpbbackup.html` is a stale fork — see `DESIGN.md` §7. |
 | Forrester / IDC benchmark set | **Unverified.** `RESEARCH-DELTA.md` §8. No spec touches a figure that has not been checked. |
