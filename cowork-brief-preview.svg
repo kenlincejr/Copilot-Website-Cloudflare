@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="688" viewBox="0 0 880 688" role="img" aria-labelledby="title desc">
+  <title id="title">Obfuscated preview of a delivered Chief of Staff Brief email</title>
+  <desc id="desc">A redacted sample of the brief as it arrives in Outlook: a navy header band, The Bottom Line, Hot Signals with a TODAY flag, a Decision Docket table with Decision, Asker, Open since and Recommended action columns carrying Decide now, Approve, Respond and Financial tags, and a Ready to Send block. All personal content is replaced with grey bars.</desc>
+  <defs>
+    <g id="ring">
+      <circle cx="0" cy="0" r="9" fill="none" stroke="#a8ecf5" stroke-width="1.6"/>
+      <circle cx="0" cy="0" r="3.4" fill="#a8ecf5"/>
+    </g>
+  </defs>
+
+  <rect width="880" height="688" fill="#fff"/>
+  <rect x="0.5" y="0.5" width="879" height="687" fill="none" stroke="#dde1e7"/>
+
+  <!-- HEADER BAND -->
+  <rect x="0" y="0" width="880" height="76" fill="#003057"/>
+  <use href="#ring" x="42" y="32"/>
+  <text x="62" y="38" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#fff">Chief of Staff Brief</text>
+  <text x="62" y="60" font-family="Segoe UI, Arial, sans-serif" font-size="11.5" fill="#8fa8bf">Weekday, full date</text>
+  <rect x="184" y="52" width="88" height="9" rx="4.5" fill="#1b4d78"/>
+  <rect x="282" y="52" width="132" height="9" rx="4.5" fill="#1b4d78"/>
+  <rect x="424" y="52" width="76" height="9" rx="4.5" fill="#1b4d78"/>
+
+  <!-- THE BOTTOM LINE -->
+  <rect x="28" y="98" width="3" height="86" fill="#c0392b"/>
+  <text x="44" y="113" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="1.1" fill="#003057">THE BOTTOM LINE</text>
+  <g fill="#dfe3e9">
+    <rect x="44" y="126" width="240" height="9" rx="4.5" fill="#b9c0ca"/>
+    <rect x="292" y="126" width="512" height="9" rx="4.5"/>
+    <rect x="44" y="145" width="330" height="9" rx="4.5"/>
+    <rect x="382" y="145" width="188" height="9" rx="4.5" fill="#b9c0ca"/>
+    <rect x="578" y="145" width="226" height="9" rx="4.5"/>
+    <rect x="44" y="164" width="452" height="9" rx="4.5"/>
+  </g>
+
+  <!-- HOT SIGNALS -->
+  <rect x="28" y="200" width="824" height="94" fill="#fff0f0"/>
+  <rect x="28" y="200" width="3" height="94" fill="#c0392b"/>
+  <text x="46" y="222" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="700" letter-spacing="1.1" fill="#c0392b">HOT SIGNALS — IMMEDIATE ACTION</text>
+  <rect x="46" y="236" width="54" height="17" rx="3" fill="#dc2626"/>
+  <text x="73" y="248" font-family="Segoe UI, Arial, sans-serif" font-size="9.5" font-weight="700" letter-spacing=".8" fill="#fff" text-anchor="middle">TODAY</text>
+  <g fill="#e9cfcf">
+    <rect x="110" y="240" width="298" height="9" rx="4.5" fill="#d7b3b3"/>
+    <rect x="416" y="240" width="386" height="9" rx="4.5"/>
+    <rect x="46" y="260" width="756" height="9" rx="4.5"/>
+    <rect x="46" y="278" width="524" height="9" rx="4.5"/>
+  </g>
+
+  <!-- DECISION DOCKET -->
+  <text x="28" y="332" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing=".6" fill="#003057">0.5  DECISION DOCKET — what you must decide today</text>
+
+  <rect x="28" y="346" width="824" height="204" fill="#fff" stroke="#dde1e7"/>
+  <rect x="28" y="346" width="824" height="32" fill="#f0f3f9"/>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="9.5" font-weight="700" letter-spacing=".9" fill="#003057">
+    <text x="42" y="367">DECISION</text>
+    <text x="414" y="367">ASKER</text>
+    <text x="550" y="367">OPEN SINCE</text>
+    <text x="678" y="367">RECOMMENDED ACTION</text>
+  </g>
+  <g stroke="#dde1e7"><path d="M28 378h824M28 421h824M28 464h824M28 507h824"/></g>
+  <rect x="28" y="421" width="824" height="43" fill="#f7f8fa"/>
+  <rect x="28" y="507" width="824" height="43" fill="#f7f8fa"/>
+
+  <g fill="#dfe3e9">
+    <rect x="42" y="395" width="318" height="9" rx="4.5"/>
+    <rect x="414" y="395" width="104" height="9" rx="4.5"/>
+    <rect x="550" y="395" width="88" height="9" rx="4.5"/>
+    <rect x="758" y="395" width="80" height="9" rx="4.5"/>
+
+    <rect x="42" y="438" width="264" height="9" rx="4.5"/>
+    <rect x="414" y="438" width="122" height="9" rx="4.5"/>
+    <rect x="550" y="438" width="72" height="9" rx="4.5"/>
+    <rect x="742" y="438" width="96" height="9" rx="4.5"/>
+
+    <rect x="42" y="481" width="340" height="9" rx="4.5"/>
+    <rect x="414" y="481" width="92" height="9" rx="4.5"/>
+    <rect x="550" y="481" width="84" height="9" rx="4.5"/>
+    <rect x="742" y="481" width="96" height="9" rx="4.5"/>
+
+    <rect x="42" y="524" width="290" height="9" rx="4.5"/>
+    <rect x="414" y="524" width="110" height="9" rx="4.5"/>
+    <rect x="550" y="524" width="76" height="9" rx="4.5"/>
+    <rect x="762" y="524" width="76" height="9" rx="4.5"/>
+  </g>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="700" letter-spacing=".7">
+    <rect x="678" y="389" width="72" height="17" rx="3" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="714" y="401" fill="#dc2626" text-anchor="middle">DECIDE NOW</text>
+    <rect x="678" y="432" width="58" height="17" rx="3" fill="#ecfdf5" stroke="#27ae60"/>
+    <text x="707" y="444" fill="#1b5e20" text-anchor="middle">APPROVE</text>
+    <rect x="678" y="475" width="58" height="17" rx="3" fill="#e4f0f3" stroke="#005F6B"/>
+    <text x="707" y="487" fill="#005F6B" text-anchor="middle">RESPOND</text>
+    <rect x="678" y="518" width="76" height="17" rx="3" fill="#fff8ed" stroke="#f39c12"/>
+    <text x="716" y="530" fill="#854d0e" text-anchor="middle">FINANCIAL</text>
+  </g>
+
+  <!-- READY TO SEND -->
+  <text x="28" y="590" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing=".6" fill="#003057">0.6  READY TO SEND</text>
+  <rect x="28" y="602" width="824" height="46" rx="6" fill="#f7f8fa" stroke="#dde1e7"/>
+  <g fill="#dfe3e9">
+    <rect x="44" y="616" width="180" height="9" rx="4.5" fill="#b9c0ca"/>
+    <rect x="232" y="616" width="556" height="9" rx="4.5"/>
+    <rect x="44" y="633" width="640" height="9" rx="4.5"/>
+  </g>
+
+  <text x="28" y="672" font-family="Segoe UI, Arial, sans-serif" font-size="11" fill="#6b7280">Sections continue: Top 3 Priorities · Today's Schedule · Travel Radar · Promise Tracker · Delegation and People Radar · Watchlist Pulse</text>
+</svg>

@@ -236,8 +236,44 @@ tbody tr:nth-child(even) { background: var(--muted); }
   width: 100%;
   display: block;
 }
+.screenshot-wrap.screenshot-narrow img {
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
 @media (max-width: 700px) {
   .screenshot-row { grid-template-columns: 1fr; }
+}
+
+/* BRIEF SECTION SHOWCASE */
+.sec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+.sec-card {
+  display: flex; flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 14px 16px 14px;
+  box-shadow: var(--shadow-md);
+}
+.sec-card.cond { border-top-color: var(--opt-border); }
+.sec-kicker {
+  display: block; font-size: .64rem; font-weight: 800;
+  letter-spacing: .13em; text-transform: uppercase;
+  color: var(--teal); margin: 0 0 5px;
+}
+.sec-card.cond .sec-kicker { color: var(--opt-border); }
+.sec-card h4 { margin: 0 0 6px; font-size: 1rem; }
+.sec-card p { margin: 0 0 10px; font-size: .88rem; line-height: 1.55; }
+.sec-when {
+  margin-top: auto; padding-top: 9px;
+  border-top: 1px solid var(--border);
+  font-size: .74rem; font-weight: 600; color: #666;
 }
 
 /* SEPARATOR */
@@ -339,21 +375,34 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
     <span><strong>Delivery:</strong> Teams self-chat + Outlook inbox</span>
   </div>
 
+<!-- OUTPUT PREVIEW -->
+<div class="screenshot-row screenshot-grid-wide">
+  <div class="screenshot-wrap">
+    <div class="screenshot-label">What lands in your inbox &mdash; a real brief with the content redacted</div>
+    <img src="cowork-brief-preview.svg" alt="Redacted preview of a delivered Chief of Staff Brief email showing the header band, The Bottom Line, Hot Signals with a TODAY flag, the Decision Docket table with Decide now, Approve, Respond and Financial tags, and Ready to Send" class="screenshot" />
+  </div>
+</div>
+
+<div class="alert alert-info">
+  <strong>That shape is fixed; only the content changes.</strong> The headings, the tables, the color-coded action tags and the section order are all set by the prompt, so every run reads the same way and you learn where to look. The grey bars above are where your own calendar, inbox, Teams and travel detail land. See <a href="#sections">What The Brief Builds</a> for what each section contains.
+</div>
+
 <!-- TOC -->
 <div class="toc">
   <div class="toc-head">On This Page</div>
   <ol>
     <li><a href="#what-this-does">What This Does</a></li>
+    <li><a href="#sections">What The Brief Builds</a></li>
     <li><a href="#how-it-works">How It Works</a></li>
     <li><a href="#cost-control">Built To Spend Carefully</a></li>
     <li><a href="#before-you-start">Before You Start</a></li>
     <li><a href="#setup">Step-by-Step Setup</a></li>
-    <li><a href="#schedule-prompt">Schedule Confirmation Prompt</a></li>
     <li><a href="#setup-questions">Setup Questions and Permissions</a></li>
     <li><a href="#success">What Success Looks Like</a></li>
     <li><a href="#use-it">How To Use It Each Morning</a></li>
     <li><a href="#change-it">Ongoing Management</a></li>
     <li><a href="#prompt">Full Prompt</a></li>
+    <li><a href="#schedule-prompt">Schedule Confirmation Prompt</a></li>
     <li><a href="#faq">FAQ</a></li>
   </ol>
 </div>
@@ -365,24 +414,75 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 <p>Think of it as a chief of staff who gets in before you, checks calendar, email, Teams, recent documents, commitments, people signals, and travel details, then leaves a decision-ready summary that says: what needs a decision today, what might break, what to delegate, and what risk is forming.</p>
 
-<table>
-  <thead><tr><th>Brief section</th><th>What it gives you</th></tr></thead>
-  <tbody>
-    <tr><td><strong>The Bottom Line</strong></td><td>A short executive summary: the most important decision, the biggest likely failure point, and the main risk forming.</td></tr>
-    <tr><td><strong>Hot Signals</strong></td><td>Urgent items only: same-day deadlines, leadership asks, missing travel bookings, escalations, and overdue approvals.</td></tr>
-    <tr><td><strong>Decision Docket</strong></td><td>A table of yes/no, approve/decline, or sign-off decisions waiting on you, oldest first.</td></tr>
-    <tr><td><strong>Ready to Send</strong></td><td>One to three complete reply drafts for the clearest asks waiting on you. Drafts can be saved to Outlook Drafts, but are never sent automatically.</td></tr>
-    <tr><td><strong>Top 3 Priorities</strong></td><td>Your highest-leverage items for the day, tagged as lead, delegate, decide, respond, or deep-work depending on your role.</td></tr>
-    <tr><td><strong>Today's Schedule</strong></td><td>Your meetings, prep notes, focus-time suggestions, and walk-in-ready intelligence for the highest-stakes meeting.</td></tr>
-    <tr><td><strong>Travel Radar</strong></td><td>Only appears when travel is coming. It checks flights, hotel, ground, venue, agenda, conflicts, weather, and uncovered lodging nights.</td></tr>
-    <tr><td><strong>Promise Tracker</strong></td><td>Things you said you would do in recent messages, including who is waiting and whether the commitment is overdue.</td></tr>
-    <tr><td><strong>Delegation and People Radar</strong></td><td>For managers, it highlights direct-report signals, quiet stakeholders, PTO/OOO visibility, birthdays, anniversaries, and stale 1:1s.</td></tr>
-    <tr><td><strong>Watchlist Pulse</strong></td><td>Movement on your priority topics, projects, customers, certifications, deadlines, or other themes you choose to track.</td></tr>
-  </tbody>
-</table>
+<h2 id="sections">What The Brief Builds</h2>
+
+<p>The prompt builds the brief in a fixed order, from the one thing you must not miss down to the background signals worth a glance. Sections that have nothing to report are dropped entirely, so a quiet Tuesday is short and a travel-week Monday is long.</p>
+
+<div class="sec-grid">
+  <div class="sec-card">
+    <span class="sec-kicker">Section 1</span>
+    <h4>The Bottom Line</h4>
+    <p>Three sentences at the top: the most important decision facing you today, the thing most likely to break, and the risk quietly forming underneath. Written to be read standing up.</p>
+    <div class="sec-when">Every run</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 2</span>
+    <h4>Hot Signals</h4>
+    <p>Urgent only, flagged <strong>TODAY</strong>: same-day deadlines, leadership asks that have gone quiet, missing travel bookings, escalations, and approvals past due. If nothing is urgent, the section does not appear.</p>
+    <div class="sec-when">Only when something is genuinely urgent</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 3</span>
+    <h4>Decision Docket</h4>
+    <p>A table of every yes/no, approve/decline, or sign-off waiting on you &mdash; oldest first, with who asked, how long it has been open, and a tagged recommended action such as <strong>DECIDE NOW</strong>, <strong>APPROVE</strong>, <strong>RESPOND</strong>, or <strong>FINANCIAL</strong>.</p>
+    <div class="sec-when">Whenever decisions are open</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 4</span>
+    <h4>Ready to Send</h4>
+    <p>One to three complete reply drafts for the clearest asks waiting on you, shown in full inside the brief. If you enabled Drafts authority, the same replies are also saved to Outlook Drafts &mdash; never sent.</p>
+    <div class="sec-when">When there are clear asks to answer</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 5</span>
+    <h4>Top 3 Priorities</h4>
+    <p>Your highest-leverage items for the day, each tagged as lead, delegate, decide, respond, or deep-work so the brief tells you not just what matters but what to <em>do</em> with it.</p>
+    <div class="sec-when">Every run</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 6</span>
+    <h4>Today&rsquo;s Schedule</h4>
+    <p>Your meetings with prep notes, suggested focus blocks, and walk-in-ready intelligence for the highest-stakes meeting on the calendar &mdash; who is in the room, what they last asked for, and what is unresolved.</p>
+    <div class="sec-when">Every run</div>
+  </div>
+  <div class="sec-card cond">
+    <span class="sec-kicker">Conditional</span>
+    <h4>Travel Radar</h4>
+    <p>Checks flights, hotel, ground transport, venue, agenda, calendar conflicts, weather, and uncovered lodging nights. Anything it cannot confirm is marked <strong>RED / NOT FOUND</strong> rather than guessed at.</p>
+    <div class="sec-when">Only when travel is coming up</div>
+  </div>
+  <div class="sec-card">
+    <span class="sec-kicker">Section 7</span>
+    <h4>Promise Tracker</h4>
+    <p>Things you said you would do in recent email and Teams messages, with who is waiting on each one and whether the commitment has already slipped past the date you gave.</p>
+    <div class="sec-when">When commitments are outstanding</div>
+  </div>
+  <div class="sec-card cond">
+    <span class="sec-kicker">Conditional</span>
+    <h4>Delegation and People Radar</h4>
+    <p>Direct-report signals, stakeholders who have gone quiet, PTO and out-of-office visibility, birthdays and work anniversaries, and 1:1s that have gone stale.</p>
+    <div class="sec-when">Only for people with direct reports</div>
+  </div>
+  <div class="sec-card cond">
+    <span class="sec-kicker">Conditional</span>
+    <h4>Watchlist Pulse</h4>
+    <p>Movement on the topics you told it to track &mdash; projects, customers, certifications, deadlines, or any theme you name. Silent on topics with nothing new.</p>
+    <div class="sec-when">Only when a watched topic moves</div>
+  </div>
+</div>
 
 <div class="alert alert-info">
-  <strong>It skips empty sections.</strong> Quiet day with no travel, no direct reports, and no watchlist movement? Those sections are left out so the brief stays useful and short.
+  <strong>It skips empty sections.</strong> Quiet day with no travel, no direct reports, and no watchlist movement? Those sections are left out so the brief stays useful and short &mdash; and so the run costs less. See <a href="#cost-control">Built To Spend Carefully</a>.
 </div>
 
 <!-- HOW IT WORKS -->
@@ -448,10 +548,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   <li><div>Paste the full prompt into Cowork and send it. Do not shorten the prompt or remove sections.</div></li>
   <li><div>Answer the setup questions. Most users should accept the default weekday 6:30 AM schedule, Teams self-chat plus Outlook email delivery, reply-all with guardrail, and Outlook Drafts enabled.</div></li>
   <li><div>Approve the permission cards Cowork presents. These may include creating the scheduled task, posting the brief to your Teams self-chat, emailing the brief to yourself, saving drafts, and creating confirmed-flight travel ticklers.</div></li>
-  <li><div>Wait for Cowork to confirm the task was scheduled. The setup is done when the Workspace or Details panel shows <strong>Chief of Staff Brief</strong> with <strong>Active</strong> turned on.</div></li>
+  <li><div>Wait for Cowork to confirm the task was scheduled. Open the <strong>Workspace</strong> panel on the right: it should show <strong>Steps</strong> completed and a <strong>Scheduled task</strong> named <strong>Chief of Staff Brief</strong> with your weekday recurrence underneath it.</div></li>
   <li><div>Check your Teams self-chat and Outlook inbox. Cowork may run once immediately so you can confirm the brief delivers correctly.</div></li>
   <li><div>Send one follow-up message in the <strong>same chat</strong> that names your exact delivery time and days, using the <a href="#schedule-prompt">Schedule Confirmation Prompt</a> below. Do this even if you already answered a default-time setup question - it removes any ambiguity about when the recurring task should fire.</div></li>
-  <li><div>Open the <strong>Automations</strong> icon in the Cowork sidebar, select <strong>Manage</strong>, and confirm <strong>Chief of Staff Brief</strong> is listed with the correct days and time and the <strong>Active</strong> toggle turned on. This is the final proof the schedule is really wired up.</div></li>
+  <li><div>Switch the sidebar to the <strong>Cowork</strong> tab, open <strong>Automations</strong>, select <strong>Manage</strong>, and confirm <strong>Chief of Staff Brief</strong> is listed with the correct days and time. This is the final proof the schedule is really wired up.</div></li>
 </ul>
 
 <div class="alert alert-info">
@@ -492,18 +592,27 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 <!-- SUCCESS -->
 <h2 id="success">What Success Looks Like</h2>
 
-<p>When setup is complete, the Cowork Workspace panel should show a scheduled item named <strong>Chief of Staff Brief</strong> with the Active toggle turned on. You should also see completed plan steps, allowed actions, and output or reference items attached.</p>
+<p>When setup is complete, open the <strong>Workspace</strong> panel on the right side of the Cowork chat. It is the single place that shows you everything the agent was given, and every part of it should be populated:</p>
 
-<p>Based on the current setup, the schedule should read like this: every week on Monday, Tuesday, Wednesday, Thursday, and Friday at <strong>06:30</strong>. If you chose a different time during setup, confirm the panel shows the time you selected.</p>
+<table>
+  <thead><tr><th>Workspace section</th><th>What you should see</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Steps</strong></td><td>All steps checked off &mdash; syncing the live scheduled task, collecting the day&rsquo;s signals, and composing and delivering the brief.</td></tr>
+    <tr><td><strong>Scheduled task</strong></td><td><strong>Chief of Staff Brief</strong>, with the recurrence underneath: every week on Monday, Tuesday, Wednesday, Thursday, Friday at <strong>06:30</strong>. If you chose a different time during setup, confirm it shows the time you selected.</td></tr>
+    <tr><td><strong>Always allowed</strong></td><td>The standing approvals you granted. Expect the email delivery entries here, including one scoped to your own address only. Anything you did not intend to grant can be removed with the &times; beside it.</td></tr>
+    <tr><td><strong>Output</strong></td><td>The files each run produced &mdash; the saved HTML brief for each day, plus the master prompt the agent is working from.</td></tr>
+    <tr><td><strong>Skills &amp; Plugins</strong> and <strong>Tools</strong></td><td>The connectors the agent may read. Calendar, Outlook, People, Teams and Work IQ should all be listed; a missing connector is the usual cause of a thin brief.</td></tr>
+  </tbody>
+</table>
 
 <div class="alert alert-success">
-  <strong>You are done when:</strong> the task name is correct, the schedule is Active, Cowork has completed setup, and at least one test brief has appeared in Teams or Outlook.
+  <strong>You are done when:</strong> the task name is correct, the recurrence matches what you asked for, the Tools list is complete, and at least one test brief has appeared in Teams or Outlook. The <strong>Active</strong> state itself lives in Automations, not here &mdash; confirm it under <a href="#schedule-prompt">Schedule Confirmation Prompt</a>.
 </div>
 
 <div class="screenshot-row">
   <div class="screenshot-wrap screenshot-narrow">
-    <div class="screenshot-label">What success looks like - Cowork schedule active after setup</div>
-    <img src="cowork-success-schedule.svg" alt="Cowork workspace showing Chief of Staff Brief scheduled and active" class="screenshot" />
+    <div class="screenshot-label">What success looks like &mdash; the Cowork Workspace panel after setup</div>
+    <img src="cowork-success-schedule.svg" alt="Cowork Workspace panel showing three completed steps, the Chief of Staff Brief scheduled task with its weekday recurrence, two always-allowed Send email permissions, saved output files, the update-config skill, and the Calendar, Outlook, People, Teams and Work IQ tools" class="screenshot" />
   </div>
 </div>
 
@@ -541,7 +650,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 </table>
 
 <div class="alert alert-warn">
-  <strong>After editing a scheduled task, confirm it is still Active.</strong> Some Cowork edits can pause a task. If that happens, turn the Active toggle back on after saving.
+  <strong>After editing a scheduled task, go back and confirm the schedule survived.</strong> Some Cowork edits drop or pause the recurrence. Reopen <strong>Automations &gt; Manage</strong> and check that <strong>Chief of Staff Brief</strong> still shows the days and time you expect &mdash; and check <strong>Runs</strong> the next morning to confirm it fired.
 </div>
 
 <div class="alert alert-info">
@@ -603,21 +712,21 @@ RUNTIME: if one collector fails, the composer proceeds with the digest it has an
   <div class="copy-text" id="p2">Schedule the Chief of Staff Brief you just set up as a recurring Cowork automation named "Chief of Staff Brief" that runs unattended every Monday, Tuesday, Wednesday, Thursday, and Friday at 6:30 AM in my local timezone - no manual chat needed to trigger it. Do not change any of the settings, permissions, or behavior from the prompt above; only create or confirm the recurring schedule. Once it is created, reply back to me with the exact task name, the days, and the time so I can verify it in Automations.</div>
 </div>
 
-<p>After Cowork confirms, open <strong>Automations</strong> in the Cowork sidebar and click <strong>Manage</strong> to see the live list of scheduled tasks.</p>
+<p>After Cowork confirms, make sure the <strong>Cowork</strong> tab is selected in the sidebar &mdash; not <strong>Chat</strong> &mdash; then open <strong>Automations</strong> and click <strong>Manage</strong> to see the live list of scheduled tasks.</p>
 
 <div class="screenshot-row screenshot-grid-wide">
   <div class="screenshot-wrap screenshot-narrow">
-    <div class="screenshot-label">Step 1 - Open Automations in the Cowork sidebar</div>
-    <img src="cowork-automations-nav.svg" alt="Cowork sidebar with the Automations icon highlighted below New task and My tasks" class="screenshot" />
+    <div class="screenshot-label">Step 1 &mdash; Open Automations in the Cowork sidebar</div>
+    <img src="cowork-automations-nav.svg" alt="Copilot sidebar with the Cowork tab selected and Automations highlighted below New task and My tasks" class="screenshot" />
   </div>
-  <div class="screenshot-wrap">
-    <div class="screenshot-label">Step 2 - Confirm the schedule under Manage</div>
-    <img src="cowork-automations-manage.svg" alt="Cowork Automations Manage tab showing Chief of Staff Brief scheduled every weekday at 06:30 and marked Active" class="screenshot" />
+  <div class="screenshot-wrap screenshot-narrow">
+    <div class="screenshot-label">Step 2 &mdash; Confirm the schedule under Manage</div>
+    <img src="cowork-automations-manage.svg" alt="Cowork Automations Manage tab showing Chief of Staff Brief scheduled every week on Monday, Tuesday, Wednesday, Thursday, Friday at 06:30" class="screenshot" />
   </div>
 </div>
 
 <div class="alert alert-success">
-  <strong>You are only done once Automations confirms it.</strong> A reply in chat saying the schedule was created is a good sign, but the Automations &gt; Manage panel showing <strong>Chief of Staff Brief</strong> with the right days, the right time, and the <strong>Active</strong> toggle on is the real confirmation. If it is missing or paused, repeat the Schedule Confirmation Prompt above.
+  <strong>You are only done once Automations confirms it.</strong> A reply in chat saying the schedule was created is a good sign, but the Automations &gt; <strong>Manage</strong> panel showing <strong>Chief of Staff Brief</strong> with the right days and the right time is the real confirmation. If it is missing, repeat the Schedule Confirmation Prompt above. The <strong>Runs</strong> tab beside Manage is where you check that each morning&rsquo;s run actually fired.
 </div>
 
 <!-- FAQ -->
@@ -644,11 +753,14 @@ RUNTIME: if one collector fails, the composer proceeds with the digest it has an
 <h3>Q: The brief ran immediately. Is that normal?</h3>
 <p>Yes. Cowork often runs a scheduled task once right after setup so you can verify it works. After that, it follows the weekday schedule.</p>
 
+<h3>Q: What are the files under Output in the Workspace panel?</h3>
+<p>Each run saves the HTML brief it delivered, so the Output list becomes a dated archive you can reopen without digging through email. Alongside them sits the master prompt file &mdash; the instructions the agent is actually running. If you have asked Cowork for changes over time and want to see what it kept, open that file.</p>
+
 <h3>Q: Can I change the schedule or features later?</h3>
 <p>Yes. This is not static. Ask Cowork to change the time, add topics, revise sections, adjust tone, pause the brief, or add capabilities as your workflow changes.</p>
 
 <h3>Q: What should I check if it does not run?</h3>
-<p>Open the Cowork Workspace or Scheduled view and confirm the Chief of Staff Brief is still Active. If it is paused, toggle it back on. Also confirm the model and permissions are still available in your tenant.</p>
+<p>Open <strong>Automations &gt; Manage</strong> and confirm Chief of Staff Brief is still listed with the right days and time; if it is gone, re-send the <a href="#schedule-prompt">Schedule Confirmation Prompt</a>. Then check the <strong>Runs</strong> tab to see whether a run was attempted and failed rather than never firing. If runs are firing but the brief is thin, open the <strong>Workspace</strong> panel and check the <strong>Tools</strong> list &mdash; a dropped Outlook, Calendar, People, Teams or Work IQ connector starves the brief of its source data.</p>
 
 <div class="foot">Chief of Staff Brief · One Prompt Setup Guide · Microsoft Copilot Cowork</div>
 

@@ -1,29 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="258" viewBox="0 0 380 258" role="img" aria-labelledby="title desc">
   <title id="title">Cowork Automations panel confirming the Chief of Staff Brief schedule</title>
-  <desc id="desc">The Cowork Automations Manage tab showing the Chief of Staff Brief listed as a recurring weekday task at 6:30 AM.</desc>
-  <defs>
-    <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity=".12"/>
-    </filter>
-  </defs>
+  <desc id="desc">The Cowork Automations Manage tab showing the Chief of Staff Brief listed as a recurring weekday task at 06:30.</desc>
 
-  <rect width="420" height="220" fill="#fff"/>
-  <rect x="16" y="16" width="388" height="188" rx="14" fill="#fff" stroke="#dedee3" filter="url(#shadow2)"/>
+  <rect width="380" height="258" fill="#fff"/>
 
-  <text x="36" y="46" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#1a1a1a">Automations</text>
+  <text x="24" y="42" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700" fill="#1a1a1a">Automations</text>
 
-  <rect x="36" y="62" width="76" height="26" rx="13" fill="#efeef0"/>
-  <text x="74" y="79" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#1a1a1a" text-anchor="middle">Manage</text>
-  <text x="140" y="79" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#8a8a92">Runs</text>
+  <rect x="24" y="66" width="74" height="30" rx="8" fill="#1f1f23"/>
+  <text x="61" y="86" font-family="Segoe UI, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#fff" text-anchor="middle">Manage</text>
+  <text x="128" y="86" font-family="Segoe UI, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#5a5a63">Runs</text>
 
-  <rect x="36" y="102" width="348" height="80" rx="10" fill="#fff" stroke="#e1e1e5"/>
-  <text x="56" y="128" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="700" fill="#1a1a1a">Chief of Staff Brief</text>
+  <rect x="24" y="114" width="332" height="120" rx="12" fill="#fff" stroke="#dedee3"/>
 
-  <path d="M58 144a7 7 0 1 1 0 .01M58 137v7l4 3" fill="none" stroke="#6d6d75" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="72" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#5a5a63">Every week on Monday, Tuesday,</text>
-  <text x="72" y="166" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#5a5a63">Wednesday, Thursday, Friday at 06:30</text>
+  <text x="44" y="147" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#34343a">Chief of Staff Brief</text>
 
-  <rect x="326" y="118" width="42" height="22" rx="11" fill="#2e7d46"/>
-  <circle cx="358" cy="129" r="8" fill="#fff"/>
-  <text x="326" y="152" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#2e7d46">Active</text>
+  <rect x="44" y="165" width="292" height="50" rx="8" fill="#f2f2f4"/>
+  <g transform="translate(58 182)"><path d="M3.6 6.2A5 5 0 0 1 12.4 5.2M12.4 5.2l-2.6.4M12.4 5.2l-.5-2.6M12.4 9.8A5 5 0 0 1 3.6 10.8M3.6 10.8l2.6-.4M3.6 10.8l.5 2.6" fill="none" stroke="#6b6b72" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <text x="86" y="185" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#6b6b72">Every week on Monday, Tuesday, Wednesday,</text>
+  <text x="86" y="201" font-family="Segoe UI, Arial, sans-serif" font-size="12" fill="#6b6b72">Thursday, Friday at 06:30</text>
 </svg>
