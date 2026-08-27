@@ -343,7 +343,20 @@ The original §4 catalogued the greys and the callout colors but **missed the re
 
 **Also present** in `CopilotApp.html` / `CopilotIB.html` as the tokenised triads (`--red #7f1d1d`, `--red-bg #fef2f2`, `--red-bd #fecaca`) — see §1.2. `#fef2f2` is therefore *both* a token value there and a hard-coded value in `cpb.html`. Do not attempt to reconcile them; note it and move on.
 
-**Prohibition:** no color outside §1 + §4 (including §4.1) may be introduced by an execution chat. If new content genuinely needs one, it stops and asks.
+### 4.2 Badge palette — *added 2026-08-27*
+
+`CopilotIB.html` has always defined a `.badge` family that §4 never catalogued — the same omission §4.1 records. It is now also in `CopilotApp.html`, ported byte-for-byte so the two documents render the same component from the same values.
+
+| Value | Role |
+|---|---|
+| `#dcfce7` / `#065f46` | `.badge-y` — yes / documented / supported |
+| `#fee2e2` / `#991b1b` | `.badge-n` — no / unsupported / blocked |
+| `#fef9c3` / `#854d0e` | `.badge-m` — partial / observed / variable |
+| `#f3f4f6` / `#6b7280` | `.badge-na` — not applicable / inference |
+
+These are used for status coding inside tables and for the documented/observed/inference confidence markers in both Copilot references. `#065f46`, `#991b1b`, `#f3f4f6` and `#6b7280` were already in use elsewhere; `#dcfce7`, `#fee2e2`, `#fef9c3` and `#854d0e` are registered here for the first time. **No new value was invented** — the whole set was pre-existing house style that §4 had simply never written down.
+
+**Prohibition:** no color outside §1 + §4 (including §4.1 and §4.2) may be introduced by an execution chat. If new content genuinely needs one, it stops and asks.
 
 **Lint caveat.** The §9 lint is line-based, so it reports every color on a *changed line*, not only colors that are *new*. Before treating a hit as a finding, check it against `main`:
 

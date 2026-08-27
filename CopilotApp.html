@@ -21,7 +21,7 @@
 <!-- End Google Analytics -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Microsoft Copilot Field Guide | Teams vs. Microsoft 365 App</title>
+<title>Microsoft Copilot Field Guide | Which Copilot, and When</title>
 <style>
 /* ═══════════════════════════════════════════════════════
    DESIGN TOKENS — matches frontier.html
@@ -283,6 +283,21 @@ code {
 /* ═══════════════════════════════════════════════════════
    TABLES
    ═══════════════════════════════════════════════════════ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: .03em;
+}
+.badge-y { background: #dcfce7; color: #065f46; }
+.badge-n { background: #fee2e2; color: #991b1b; }
+.badge-m { background: #fef9c3; color: #854d0e; }
+.badge-na { background: #f3f4f6; color: #6b7280; }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -573,92 +588,102 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
 
 <!-- HEADER -->
 <div class="page-header">
-  <div class="doc-type">Microsoft 365 Copilot · Internal Briefing Guide</div>
-  <h1>Microsoft Copilot Field Guide &nbsp;<span>Teams vs. Microsoft 365 App</span></h1>
+  <div class="doc-type">Microsoft Copilot · Field Guide</div>
+  <h1>Microsoft Copilot Field Guide &nbsp;<span>Which Copilot, and When</span></h1>
   <div class="subtitle">Choosing the right Copilot — a practical guide for everyday users and a technical deep dive for IT pros and power users</div>
-  <div class="meta">Classification: <strong>Internal Briefing Guide</strong> &nbsp;·&nbsp; Audience: Microsoft 365 end users, IT pros, and Copilot practitioners</div>
+  <div class="meta">Audience: Microsoft 365 end users, IT pros, and Copilot practitioners &nbsp;·&nbsp; <strong>Last updated: August 27, 2026</strong> &nbsp;·&nbsp; Verified against Microsoft Learn on that date</div>
 </div>
 
 <!-- TOC -->
 <nav id="toc">
   <div class="toc">
     <p class="toc-head">Table of Contents</p>
-    <p class="toc-part">Part One — User Guide</p>
+    <p class="toc-part">Part One — Choosing Your Copilot</p>
     <ul>
       <li><a href="#section-1">The 30-Second Answer</a></li>
-      <li><a href="#section-2">Getting the Microsoft 365 Copilot App</a></li>
-      <li><a href="#section-3">Wait — Which App Is Which?</a></li>
-      <li><a href="#section-4">Understanding the Two Work Modes</a></li>
-      <li><a href="#section-5">Which Copilot Is Right for Your Situation?</a></li>
-      <li><a href="#section-6">Real-World Scenarios</a></li>
-      <li><a href="#section-7">Quick-Reference Decision Card</a></li>
+      <li><a href="#section-2">Which Copilot Do You Actually Have?</a></li>
+      <li><a href="#section-3">The Names Changed — Reading the Branding</a></li>
+      <li><a href="#section-4">Work IQ — The One Control That Changes Every Answer</a></li>
+      <li><a href="#section-5">Where Copilot Lives — The Surface Map</a></li>
+      <li><a href="#section-6">Execution vs. Orientation — Teams or the App</a></li>
+      <li><a href="#section-7">Teams Meetings — What Copilot Can Actually See</a></li>
+      <li><a href="#section-8">Real-World Scenarios</a></li>
+      <li><a href="#section-9">Quick-Reference Decision Card</a></li>
     </ul>
-    <p class="toc-part">Part Two — Technical Deep Dive</p>
-    <ul style="counter-reset: toc-counter 7;">
-      <li><a href="#section-8">Same Brain, Different Assumptions</a></li>
-      <li><a href="#section-9">How Context Is Loaded</a></li>
-      <li><a href="#section-10">Retrieval Architecture: Narrow vs. Expansive</a></li>
-      <li><a href="#section-11">Search Mode vs. Chat Mode</a></li>
-      <li><a href="#section-12">Reasoning Posture</a></li>
-      <li><a href="#section-13">Microsoft Graph and Data Access</a></li>
+    <p class="toc-part">Part Two — Under the Hood</p>
+    <ul style="counter-reset: toc-counter 9;">
+      <li><a href="#section-10">One Orchestrator, Several Models</a></li>
+      <li><a href="#section-11">How Context Is Loaded</a></li>
+      <li><a href="#section-12">Retrieval, the Graph, and What Copilot Can See</a></li>
+      <li><a href="#section-13">What Microsoft Doesn't Publish</a></li>
       <li><a href="#section-14">Summary: The Design Philosophy</a></li>
+      <li><a href="#section-15">Sources and Further Reading</a></li>
     </ul>
   </div>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════ PART ONE -->
 <div class="part-divider">
-  <div class="part-label">Part One · User Guide</div>
+  <div class="part-label">Part One · Choosing Your Copilot</div>
   <div class="part-title">Choosing the Right Copilot</div>
-  <p class="part-sub">A clear, practical guide for anyone getting started with Microsoft Copilot.</p>
+  <p class="part-sub">Everyone reads this. Which Copilot you have, where it lives, and which one to open.</p>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 1 -->
 <span class="sec-chip">Section 1</span>
 <h2 id="section-1">The 30-Second Answer</h2>
 
-<p>Microsoft gives you two Copilot entry points. Choosing the right one from the start makes every interaction faster and more useful. The short version:</p>
+<p>Microsoft ships several things called Copilot. Before choosing between them, it is worth knowing that the first question is not <em>which one should I open</em> — it is <em>which one am I entitled to</em>. That single fact determines whether the rest of this guide applies to you at all.</p>
 
 <table>
-  <thead><tr><th>If you are…</th><th>Open this Copilot</th></tr></thead>
+  <thead><tr><th>If this is you…</th><th>You have…</th><th>And it can see…</th></tr></thead>
   <tbody>
-    <tr>
-      <td>In a Teams chat, meeting, or channel — work is actively happening</td>
-      <td class="td-teal">Copilot in Microsoft Teams</td>
-    </tr>
-    <tr>
-      <td>Not inside a specific task — exploring, planning, or searching for something</td>
-      <td class="td-teal">Microsoft 365 Copilot App</td>
-    </tr>
+    <tr><td class="td-navy">You signed in with a personal account</td><td>Consumer Copilot</td><td>The public web. None of your work data.</td></tr>
+    <tr><td class="td-navy">You signed in for work, no Copilot add-on</td><td>Copilot Chat</td><td>The web, plus files you paste or upload into the chat yourself.</td></tr>
+    <tr><td class="td-navy">Your organization bought you the add-on</td><td>Microsoft Copilot (licensed)</td><td>Your email, files, meetings and chats — everything your account can already open.</td></tr>
   </tbody>
 </table>
+
+<div class="callout">
+  <div class="callout-title">■ And the one rule that follows</div>
+  <div class="callout-body">If you have the license, the control that matters most is <strong>Work IQ</strong>. Turn it on when the answer should come from your organization's data. Turn it off when you want the open web. Everything else in Part One is refinement on top of those two facts.</div>
+</div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
 <span class="sec-chip">Section 2</span>
-<h2 id="section-2">Getting the Microsoft 365 Copilot App</h2>
+<h2 id="section-2">Which Copilot Do You Actually Have?</h2>
 
-<p>Copilot in Teams is already built in — no installation needed. The <strong>Microsoft 365 Copilot App</strong> is a free standalone download available on Windows, Mac, iOS, and Android.</p>
+<p>This is the question the rest of the guide depends on, and the one most often answered wrongly. The three products share a name, share an icon family, and increasingly share a front door. They do not share what they can see.</p>
 
-<div class="download-panel">
-  <div class="download-left">
-    <div class="dl-kicker">Available on all major platforms</div>
-    <div class="dl-title">Free to download</div>
-    <p class="dl-sub">Sign in with your work Microsoft 365 account — the same one you use for Teams and Outlook.</p>
+<div class="g3">
+  <div class="callout" style="margin:0">
+    <div class="callout-title">Consumer Copilot</div>
+    <div class="callout-body"><strong>Free, personal account.</strong><br>Lives at <code>copilot.microsoft.com</code>.<br><br>Good for general questions and personal tasks. It cannot see anything belonging to your employer, and you should not paste work content into it.</div>
   </div>
-  <div class="download-right">
-    <table>
-      <tbody>
-        <tr><td>Windows</td><td>microsoft365.com/copilot or Microsoft Store</td></tr>
-        <tr><td>macOS</td><td>microsoft365.com/copilot or Mac App Store</td></tr>
-        <tr><td>iOS</td><td>Apple App Store — search "Microsoft 365 Copilot"</td></tr>
-        <tr><td>Android</td><td>Google Play — search "Microsoft 365 Copilot"</td></tr>
-      </tbody>
-    </table>
-    <div class="direct-link">Direct link: <strong>microsoft365.com/copilot</strong></div>
+  <div class="callout" style="margin:0">
+    <div class="callout-title">Copilot Chat</div>
+    <div class="callout-body"><strong>Included with Microsoft 365.</strong><br>Work account, no add-on required.<br><br>Web-grounded chat with enterprise data protection, Copilot Pages, image generation and file upload. It does <em>not</em> reach into your mailbox or SharePoint on its own.</div>
   </div>
+  <div class="callout green" style="margin:0">
+    <div class="callout-title">Microsoft Copilot (licensed)</div>
+    <div class="callout-body"><strong>The paid add-on.</strong><br>Lives at <code>m365.cloud.microsoft</code>.<br><br>Everything above, plus grounding in your Microsoft 365 data, in-app Copilot across Word, Excel, Outlook and Teams, Copilot Search, Notebooks, and the Researcher and Analyst agents.</div>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ How to tell in ten seconds</div>
+  <div class="callout-body">Open Copilot and ask it something only your organization would know — <em>"what did I miss in my meetings yesterday?"</em> or <em>"find the last document I edited."</em><br><br>
+  If it answers from your actual work, you have the license. If it explains that it cannot reach your files, you are on Copilot Chat. If it never asked you to sign in with a work account at all, you are on the consumer app.<br><br>
+  The other reliable tell is the presence of the <strong>Work IQ</strong> control. It only appears where work grounding is available.</div>
+</div>
+
+<div class="callout red">
+  <div class="callout-title">⚠ Why this matters more than it sounds</div>
+  <div class="callout-body">Most "Copilot doesn't work" complaints are entitlement problems wearing a technical costume. A user on Copilot Chat follows a guide written for the licensed product, asks it to summarize their inbox, gets a polite refusal, and concludes the product is broken.<br><br>
+  Nothing was broken. They were never entitled to that capability. <strong>Establish the tier before troubleshooting anything else.</strong></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
@@ -666,29 +691,100 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
 <span class="sec-chip">Section 3</span>
-<h2 id="section-3">Wait — Which App Is Which?</h2>
+<h2 id="section-3">The Names Changed — Reading the Branding</h2>
 
-<p>When you search the app stores, you'll see two different Copilot apps from Microsoft. They are not the same thing. Here's what you need to know:</p>
+
+<p>Until recently this guide told you to look for the "365" in the name. That test no longer works. Microsoft has been dropping "365" from the branding, and its own documentation now uses <strong>Microsoft Copilot</strong> for both the licensed work product and the free consumer app. The name alone will not tell you which one you are in.</p>
+
+<p>Two things still will: <strong>the account you signed in with</strong>, and <strong>the address it lives at</strong>.</p>
 
 <div class="app-compare">
   <div class="app-card not-this">
     <div class="app-flag">Not this one</div>
-    <div class="app-name">Microsoft Copilot</div>
-    <p class="app-body">The general-purpose consumer AI assistant — similar to ChatGPT. It is <strong>not</strong> connected to your Microsoft 365 work data and does not see your emails, files, or meetings. Good for personal tasks and general questions, but not what this guide is about.</p>
+    <div class="app-name">copilot.microsoft.com</div>
+    <p class="app-body">The consumer assistant. A personal account signs in here. It is <strong>not</strong> connected to your organization's data and never sees your email, files or meetings. Fine for personal tasks — but do not paste work content into it.</p>
   </div>
   <div class="app-card this-one">
     <div class="app-flag">✓ This one</div>
-    <div class="app-name">Microsoft 365 Copilot</div>
-    <p class="app-body">The work-focused AI assistant. Connected to your organization's Microsoft 365 data — email, files, Teams, calendar, SharePoint. This is the app described throughout this guide, and the one you want for everything covered here.</p>
+    <div class="app-name">m365.cloud.microsoft</div>
+    <p class="app-body">The work assistant. Your Microsoft Entra work or school account signs in here, and this is the surface described throughout this guide. Copilot Chat lives at <code>m365copilot.com</code> and redirects into the same experience — what differs is your license, not the address.</p>
   </div>
 </div>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ On a work device you may be asked to choose</div>
+  <div class="callout-body">Opening the consumer Copilot with a managed account can prompt you to pick <strong>work</strong> or <strong>personal</strong>. Choosing work redirects you into the licensed experience and shows what your account can reach. Choosing personal signs you into the consumer product with no access to organizational data.<br><br>
+  If you are ever unsure which you landed in, apply the ten-second test in Section 2.</div>
+</div>
+
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
 <span class="sec-chip">Section 4</span>
-<h2 id="section-4">Understanding the Two Work Modes</h2>
+<h2 id="section-4">Work IQ — The One Control That Changes Every Answer</h2>
+
+<p>In August 2026 Microsoft merged what had been two separate chat experiences — web chat and work chat — into a single surface, with one toggle governing where answers come from. If you learned Copilot before that change, this is the most important thing to re-learn.</p>
+
+<div class="g2">
+  <div class="callout green" style="margin:0">
+    <div class="callout-title">✓ Work IQ ON</div>
+    <div class="callout-body">Copilot answers from <strong>your organization's data</strong> — the email, files, chats, meetings and SharePoint content your own account can already open.<br><br>
+    <strong>Use it for:</strong> catching up, finding things, summarizing — anything where the answer already exists inside your tenant and you just need it surfaced.</div>
+  </div>
+  <div class="callout navy" style="margin:0">
+    <div class="callout-title">■ Work IQ OFF</div>
+    <div class="callout-body">Copilot draws on <strong>the open web</strong> as well as what your account can reach.<br><br>
+    <strong>Use it for:</strong> research, current events, general knowledge, drafting from scratch — anything where your tenant is not the authority.</div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ The mistake to design against</div>
+  <div class="callout-body">A disappointing answer is very often a grounding problem rather than a prompt problem. Asking "what are the current licensing options?" with Work IQ <strong>on</strong> returns whatever your tenant happens to hold — possibly a two-year-old deck someone saved to SharePoint. The same question with Work IQ <strong>off</strong> reaches current public documentation.<br><br>
+  Before rewriting a prompt that let you down, check which way the toggle was set. That fixes more bad answers than better prompting does.</div>
+</div>
+
+<p>This control only exists where work grounding is possible, which makes it the quickest way to confirm which Copilot you are in — see Section 2.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
+<span class="sec-chip">Section 5</span>
+<h2 id="section-5">Where Copilot Lives — The Surface Map</h2>
+
+<p>Copilot is not one place. Once entitlement and grounding are settled, the remaining question is where to invoke it — and the honest answer is that the surface matters less than it once did, because they share an orchestrator and a permission model. What still differs is how much context arrives for free.</p>
+
+<table>
+  <thead><tr><th>Surface</th><th>Reach for it when</th><th>Needs the license?</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">Copilot in Teams</td><td>Work is happening right now — a live meeting, an active thread. Context arrives free.</td><td><span class="badge badge-y">Yes</span></td></tr>
+    <tr><td class="td-navy">The Copilot app (web or desktop)</td><td>You are orienting rather than executing — exploring, planning, searching broadly.</td><td><span class="badge badge-n">No — Chat tier works</span></td></tr>
+    <tr><td class="td-navy">Copilot in Word, Excel, PowerPoint, Outlook</td><td>The artifact is the point. Drafting, editing and analyzing in place.</td><td><span class="badge badge-y">Yes, for full editing</span></td></tr>
+    <tr><td class="td-navy">Copilot Search</td><td>You want to find and scan source material yourself rather than read a synthesis.</td><td><span class="badge badge-y">Yes</span></td></tr>
+    <tr><td class="td-navy">Copilot Notebooks</td><td>A project you return to repeatedly. Pin the sources once; stop re-explaining context.</td><td><span class="badge badge-y">Yes</span></td></tr>
+    <tr><td class="td-navy">Copilot Pages</td><td>The output needs to be worked on with other people.</td><td><span class="badge badge-n">No</span></td></tr>
+    <tr><td class="td-navy">Agents and the Agent Store</td><td>The same shaped task recurs and you want it packaged.</td><td><span class="badge badge-m">Partly — see below</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">■ Notebooks are the most under-used of these</div>
+  <div class="callout-body">If you find yourself starting a fresh chat every morning and pasting the same background in, that is a Notebook. Attach the relevant files, meetings and emails once, and every subsequent question is answered against that pinned set rather than against your whole tenant.<br><br>
+  For recurring project work it is a better answer than the one this guide previously gave, which was simply "open the app and search."</div>
+</div>
+
+<p>Agents built only on instructions and public websites are free; agents that reach tenant data are metered and off by default for Copilot Chat users. The <a href="https://copilotplaybook.com/CopilotIB.html">Copilot Agent Knowledge Reference</a> covers how to build one and what each knowledge source can actually hold.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 6 -->
+<span class="sec-chip">Section 6</span>
+<h2 id="section-6">Execution vs. Orientation — Teams or the App</h2>
+
 
 <p>The reason there are two Copilots isn't about features — both can answer questions, write, summarize, and brainstorm. The difference is <strong>what you're trying to do when you open them</strong>. Microsoft designed each one around a different mental state.</p>
 
@@ -700,7 +796,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
     <p class="mode-best"><strong>Best for:</strong> Summarizing meetings · Drafting replies · Generating action items · Catching up on threads</p>
   </div>
   <div class="mode-card m365">
-    <div class="mode-label">Microsoft 365 Copilot App</div>
+    <div class="mode-label">The Copilot App</div>
     <h3 class="mode-title" style="color: var(--navy); margin: 0 0 10px;">You're figuring out what to work on next.</h3>
     <p class="mode-body">Think of this as a <strong>quiet research room</strong> where nothing is assumed. You can search broadly across your email, files, meetings, and chats without already knowing exactly what you're looking for.</p>
     <p class="mode-best"><strong>Best for:</strong> Finding documents · Researching across projects · Planning · Exploring before you dive in</p>
@@ -709,32 +805,62 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
 
 <div class="tagline">
   <em>Copilot in Teams</em> helps you <em>execute</em>.<br>
-  The <em>Microsoft 365 Copilot App</em> helps you <em>orient</em>.
+  The <em>Copilot app</em> helps you <em>orient</em>.
 </div>
 
-<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
-<hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
-<span class="sec-chip">Section 5</span>
-<h2 id="section-5">Which Copilot Is Right for Your Situation?</h2>
 
-<p>A useful mental test: do you already know what task you're in? If yes, open Teams. If you're still figuring out what needs to happen, open the M365 Copilot App.</p>
+
+<p>A useful mental test: do you already know what task you're in? If yes, open Teams. If you're still figuring out what needs to happen, open the Copilot app.</p>
 
 <div class="callout">
   <div class="callout-title">■ The Execution vs. Orientation Test</div>
   <div class="callout-body">"Am I doing something right now — or figuring out what to do?"<br><br>
     <strong>Doing something</strong> (in a meeting, replying to a thread, reviewing a document) → Use <strong>Copilot in Teams</strong>.<br>
-    <strong>Figuring out what to do</strong> (finding a file, preparing for a project, planning next steps) → Use the <strong>Microsoft 365 Copilot App</strong>.
+    <strong>Figuring out what to do</strong> (finding a file, preparing for a project, planning next steps) → Use the <strong>Copilot app</strong>.
   </div>
 </div>
+
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 6 -->
-<span class="sec-chip">Section 6</span>
-<h2 id="section-6">Real-World Scenarios</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 7 -->
+<span class="sec-chip">Section 7</span>
+<h2 id="section-7">Teams Meetings — What Copilot Can Actually See</h2>
+
+<p>Meeting Copilot is the most common source of "it worked last week and now it doesn't." The behavior is not random. It is governed by a setting the meeting organiser chose, often without realising what it decided.</p>
+
+<table>
+  <thead><tr><th>Organiser's Copilot setting</th><th>During the meeting</th><th>After it ends</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">On, with transcript saved</td><td><span class="badge badge-y">Works</span></td><td><span class="badge badge-y">Works — Recap and chat</span></td></tr>
+    <tr><td class="td-navy">Only during the meeting</td><td><span class="badge badge-y">Works</span></td><td><span class="badge badge-n">Gone entirely</span></td></tr>
+    <tr><td class="td-navy">Off</td><td><span class="badge badge-n">Unavailable</span></td><td><span class="badge badge-n">Unavailable</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ "Only during the meeting" is the one that surprises people</div>
+  <div class="callout-body">Under this setting Copilot works from live speech-to-text that is <strong>discarded when the meeting ends</strong>. Nothing is retained. Afterwards Copilot is not available in the meeting's Recap tab, and for calls it is not available in the chat thread or call history either.<br><br>
+  From the attendee's point of view Copilot simply worked during the call and vanished after it. This is not a fault and there is no recovery — the data no longer exists. Organizations choose this setting deliberately, because it delivers meeting Copilot without creating a retained transcript.</div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ What to do about it</div>
+  <div class="callout-body"><strong>If you need a recap afterwards, you need a saved transcript</strong> — and that is the organiser's decision, made when the meeting is set up, not something an attendee can change later.<br><br>
+  If you are the organiser and post-meeting summaries matter to your team, choose a setting that saves the transcript. If your organization has standardized on "only during the meeting" for retention reasons, ask Copilot your questions <em>before the meeting ends</em>. That is the entire window.</div>
+</div>
+
+<p>This is separate from whether Copilot can see the surrounding chat, files and thread, which it can regardless. The transcript setting governs spoken content only.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 8 -->
+<span class="sec-chip">Section 8</span>
+<h2 id="section-8">Real-World Scenarios</h2>
+
 
 <p>Not sure which to open? Match your situation to one of these common cases.</p>
 
@@ -742,7 +868,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
   <div class="scenario">
     <div class="scenario-text">
       <p class="scenario-q">You joined a 45-minute Teams meeting 20 minutes late</p>
-      <p class="scenario-desc">Ask "Catch me up" — Copilot has the live transcript and summarizes what you missed in seconds.</p>
+      <p class="scenario-desc">Ask "Catch me up" — if transcription is on, Copilot summarizes what you missed in seconds. If the organiser chose "only during the meeting," this works live and disappears afterwards. See Section 7.</p>
     </div>
     <div class="scenario-pick teams">Copilot in Teams</div>
   </div>
@@ -751,7 +877,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
       <p class="scenario-q">You need to find a proposal from last quarter</p>
       <p class="scenario-desc">Search or chat across all your files and emails without knowing exactly where it was saved.</p>
     </div>
-    <div class="scenario-pick m365">M365 Copilot App</div>
+    <div class="scenario-pick m365">Copilot App</div>
   </div>
   <div class="scenario">
     <div class="scenario-text">
@@ -765,12 +891,12 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
       <p class="scenario-q">You're preparing for a client you haven't spoken to in months</p>
       <p class="scenario-desc">Ask Copilot to surface recent emails, shared files, and meeting notes involving that client across all of M365.</p>
     </div>
-    <div class="scenario-pick m365">M365 Copilot App</div>
+    <div class="scenario-pick m365">Copilot App</div>
   </div>
   <div class="scenario">
     <div class="scenario-text">
       <p class="scenario-q">You want action items from yesterday's standup</p>
-      <p class="scenario-desc">Copilot pulls the recorded transcript and generates a structured action item list automatically.</p>
+      <p class="scenario-desc">Copilot pulls the saved transcript and generates a structured action item list. This only works if the meeting was transcribed or recorded — otherwise there is nothing left to read.</p>
     </div>
     <div class="scenario-pick teams">Copilot in Teams</div>
   </div>
@@ -779,16 +905,18 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
       <p class="scenario-q">You don't know what you need — you just know there's something to figure out</p>
       <p class="scenario-desc">Start here. The app's broader, exploratory design is built for open-ended starting points.</p>
     </div>
-    <div class="scenario-pick m365">M365 Copilot App</div>
+    <div class="scenario-pick m365">Copilot App</div>
   </div>
 </div>
+
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 7 -->
-<span class="sec-chip">Section 7</span>
-<h2 id="section-7">Quick-Reference Decision Card</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 9 -->
+<span class="sec-chip">Section 9</span>
+<h2 id="section-9">Quick-Reference Decision Card</h2>
+
 
 <p>Keep this handy for your first few weeks. The choice becomes instinctive quickly.</p>
 
@@ -814,40 +942,46 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
   </tbody>
 </table>
 
-<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
-
-<!-- ═══════════════════════════════════════════════════════ PART TWO -->
-<div class="part-divider">
-  <div class="part-label">Part Two · Technical Deep Dive</div>
-  <div class="part-title">Under the Hood</div>
-  <p class="part-sub">For IT pros, power users, and anyone who wants to understand what's actually happening.</p>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════ SECTION 8 -->
-<span class="sec-chip">Section 8</span>
-<h2 id="section-8">Same Brain, Different Assumptions</h2>
-
-<p>A common misconception is that Teams Copilot and the M365 Copilot App are different AI systems. <strong>They are not.</strong> Both run on the same foundation model, the same Copilot orchestration layer, and query the same Microsoft Graph with the same permissions. Your data access is identical in both surfaces.</p>
-
-<p>What differs is the <strong>pre-prompt context</strong> — the information Copilot receives before it ever reads your message. This pre-loaded context shapes everything: how broadly Copilot searches, how quickly it synthesizes, and what it assumes you're trying to accomplish.</p>
-
-<div class="callout navy">
-  <div class="callout-title">■ Shared Infrastructure (Both Apps)</div>
-  <div class="callout-body">
-    <strong>Foundation model:</strong> Same large language model powering both experiences<br>
-    <strong>Orchestration:</strong> Same Microsoft Copilot service layer<br>
-    <strong>Permissions:</strong> Same Microsoft Graph data access — org security policy applies equally<br>
-    <strong>Agents:</strong> Same Researcher and Analyst agents available in both<br>
-    <strong>What changes:</strong> Context density, retrieval scope, and default reasoning posture
-  </div>
-</div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 9 -->
-<span class="sec-chip">Section 9</span>
-<h2 id="section-9">How Context Is Loaded</h2>
+<div class="part-divider">
+  <div class="part-label">Part Two · Under the Hood</div>
+  <div class="part-title">Under the Hood</div>
+  <p class="part-sub">Optional. Read this when an answer in Part One surprised you and you want to know why.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 10 -->
+<span class="sec-chip">Section 10</span>
+<h2 id="section-10">One Orchestrator, Several Models</h2>
+
+
+<p>For a long time the honest answer here was "same brain, different assumptions" — one model, one orchestrator, one Graph, and only the pre-loaded context differing between surfaces. <strong>That is no longer accurate.</strong> The orchestration layer and the permission model are still shared. The model is not.</p>
+
+<p>Since 2026 the underlying model is partly a user-visible choice. Anthropic models can be selected alongside OpenAI ones for some tasks, and Word's default moved to Sonnet 5 with a higher default reasoning level in August 2026. Two surfaces can now answer the same prompt with different models at different reasoning effort — so "it gave me a better answer in Word" is sometimes literally true rather than a perception.</p>
+
+<p>What differs is the <strong>pre-prompt context</strong> — the information Copilot receives before it ever reads your message. This pre-loaded context shapes everything: how broadly Copilot searches, how quickly it synthesizes, and what it assumes you're trying to accomplish.</p>
+
+<div class="callout navy">
+  <div class="callout-title">■ What Is Shared, and What Is Not</div>
+  <div class="callout-body">
+    <strong>Orchestration:</strong> The same Copilot service layer routes and grounds every request<br>
+    <strong>Permissions:</strong> Identical Microsoft Graph access — org security policy applies equally<br>
+    <strong>Compliance:</strong> Sensitivity labels, DLP and Purview controls apply identically<br>
+    <strong>Not shared — the model:</strong> selectable in some surfaces, and Word defaults to Sonnet 5 at a higher reasoning level<br>
+    <strong>Not shared — the agents:</strong> Researcher and Analyst need a Copilot license; Copilot Chat alone does not include them
+  </div>
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 11 -->
+<span class="sec-chip">Section 11</span>
+<h2 id="section-11">How Context Is Loaded</h2>
+
 
 <p>Every Copilot interaction begins with a <strong>system prompt</strong> — a behind-the-scenes instruction set that tells the model who you are, what you have access to, and what it should prioritize. In Teams, that system prompt is automatically populated with rich contextual data from your current session. In the M365 app, it is not.</p>
 
@@ -862,8 +996,8 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
 </ul>
 <p>This dense pre-loading lets Copilot skip the discovery phase entirely. It already knows what's relevant. Retrieval is <strong>narrow and fast</strong> — optimized for synthesis speed over breadth.</p>
 
-<h3>M365 Copilot App — Context-Expansive Mode</h3>
-<p>When you open the M365 Copilot App, no session-specific context is pre-loaded. The system prompt gives Copilot access to your full M365 tenant data but does not narrow the scope. Copilot must infer relevance from your prompt alone.</p>
+<h3>Copilot App — Context-Expansive Mode</h3>
+<p>When you open the Copilot app, no session-specific context is pre-loaded. The system prompt gives Copilot access to your full M365 tenant data but does not narrow the scope. Copilot must infer relevance from your prompt alone.</p>
 <ul>
   <li>No assumed conversation, meeting, or thread</li>
   <li>Full Microsoft Graph scope: email, files, calendar, chats, SharePoint, Teams data</li>
@@ -872,12 +1006,14 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
   <li>Results are diverse across content types before being synthesized</li>
 </ul>
 
+
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 10 -->
-<span class="sec-chip">Section 10</span>
-<h2 id="section-10">Retrieval Architecture: Narrow vs. Expansive</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 12 -->
+<span class="sec-chip">Section 12</span>
+<h2 id="section-12">Retrieval, the Graph, and What Copilot Can See</h2>
+
 
 <p>Microsoft 365 Copilot uses <strong>semantic search over the Microsoft Graph</strong> — an index of your organization's emails, chats, files, calendar events, and SharePoint content. The critical architectural difference between the two surfaces is <em>how aggressively retrieval is scoped</em> before your prompt is processed.</p>
 
@@ -886,7 +1022,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
     <tr>
       <th>Retrieval Dimension</th>
       <th>Copilot in Teams</th>
-      <th>M365 Copilot App</th>
+      <th>Copilot App</th>
     </tr>
   </thead>
   <tbody>
@@ -900,63 +1036,42 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
   </tbody>
 </table>
 
-<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
-<hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 11 -->
-<span class="sec-chip">Section 11</span>
-<h2 id="section-11">Search Mode vs. Chat Mode</h2>
+<h3>Microsoft Graph, and What Copilot Can Actually See</h3>
+<p><strong>Microsoft Graph</strong> is the unified API powering Copilot's access to your organizational data — indexing Exchange, SharePoint, OneDrive, Teams, and other M365 services. Both Copilot surfaces query the same Graph with <strong>identical permissions</strong>. Security and compliance policies apply equally.</p>
 
-<p>Both apps offer <strong>Chat</strong>. Only the M365 Copilot App prominently offers <strong>Search</strong> as a standalone, first-class mode. This is not cosmetic — the two modes operate with fundamentally different output objectives.</p>
+<p>The difference is <em>how the query is scoped</em>: Teams Copilot appends thread-specific filters automatically; the Copilot app sends broader semantic queries and lets results determine scope.</p>
 
-<div class="g2">
-  <div class="callout green" style="margin:0">
-    <div class="callout-title">◉ Search Mode — M365 Copilot App only</div>
-    <div class="callout-body"><strong>Optimized for finding and scanning — not immediate synthesis.</strong><br><br>
-      You see raw materials: documents, emails, meeting clips. You control what to open and what matters. Copilot acts as a <em>retrieval engine first, assistant second</em>. Filters, people-based discovery, and result diversity are all first-class UI elements.</div>
-  </div>
-  <div class="callout" style="margin:0">
-    <div class="callout-title">◉ Chat Mode — available in both apps</div>
-    <div class="callout-body"><strong>Optimized for producing outputs — synthesis is immediate.</strong><br><br>
-      Copilot reads your prompt, retrieves evidence in the background, and returns a composed answer or draft. Evidence is hidden unless you ask to see it. <em>Teams Copilot skips the search phase almost entirely — chat is its only mode.</em></div>
-  </div>
+<div class="callout warn">
+  <div class="callout-title">⚠ Important — Data Access and Privacy</div>
+  <div class="callout-body">Neither Copilot surface grants access beyond your existing Microsoft 365 permissions. Copilot cannot surface files you don't have access to, emails not addressed to you, or content your admin has restricted. <strong>Sensitivity labels, DLP policies, and Microsoft Purview compliance controls apply in both apps equally.</strong></div>
 </div>
 
-<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
-<hr>
-
-<!-- ═══════════════════════════════════════════════════════ SECTION 12 -->
-<span class="sec-chip">Section 12</span>
-<h2 id="section-12">Reasoning Posture</h2>
-
-<p>One of the most important — and least visible — differences between the two Copilots is the <strong>reasoning posture</strong> embedded in their system prompts. This posture determines how Copilot internally frames your request before reasoning begins.</p>
-
-<div class="callout">
-  <div class="callout-title">■ Teams Copilot — Execution Posture</div>
-  <div class="callout-body">"Given this specific context, what is the best next action or output?"<br><br>
-    Copilot assumes you are in <strong>execution mode</strong>. It prioritizes output completeness over retrieval breadth, synthesizes faster, produces fewer caveats, and optimizes for actionable responses. <strong>Tradeoff:</strong> it may miss information outside the current thread.</div>
-</div>
-
-<div class="callout">
-  <div class="callout-title">■ M365 Copilot App — Sense-Making Posture</div>
-  <div class="callout-body">"Given everything this user has access to, what might be relevant to their question?"<br><br>
-    Copilot assumes you may be in <strong>discovery mode</strong>. It preserves result diversity, surfaces more source types, and defers synthesis until you ask for it. <strong>Tradeoff:</strong> responses may feel slower or more exploratory when you already know exactly what you need.</div>
-</div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 13 -->
 <span class="sec-chip">Section 13</span>
-<h2 id="section-13">Microsoft Graph and Data Access</h2>
+<h2 id="section-13">What Microsoft Doesn't Publish</h2>
 
-<p><strong>Microsoft Graph</strong> is the unified API powering Copilot's access to your organizational data — indexing Exchange, SharePoint, OneDrive, Teams, and other M365 services. Both Copilot surfaces query the same Graph with <strong>identical permissions</strong>. Security and compliance policies apply equally.</p>
+<p>This part of the guide describes internal behavior, and honesty about the boundary is what makes the rest of it trustworthy. Some of what follows is documented by Microsoft. Some is careful inference from observed behavior. They deserve to be told apart.</p>
 
-<p>The difference is <em>how the query is scoped</em>: Teams Copilot appends thread-specific filters automatically; the M365 Copilot App sends broader semantic queries and lets results determine scope.</p>
+<div class="callout navy">
+  <div class="callout-title">■ Documented, and safe to repeat <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">That both surfaces share an orchestrator and a permission model. That Copilot cannot exceed a user's existing Microsoft 365 permissions. That sensitivity labels, DLP and Purview controls apply equally. That Work IQ governs grounding. That Researcher and Analyst require a license. That model selection is now partly user-visible.</div>
+</div>
 
 <div class="callout warn">
-  <div class="callout-title">⚠ Important — Data Access and Privacy</div>
-  <div class="callout-body">Neither Copilot surface grants access beyond your existing Microsoft 365 permissions. Copilot cannot surface files you don't have access to, emails not addressed to you, or content your admin has restricted. <strong>Sensitivity labels, DLP policies, and Microsoft Purview compliance controls apply in both apps equally.</strong></div>
+  <div class="callout-title">⚠ Inference, and worth flagging as such <span class="badge badge-na">Inference</span></div>
+  <div class="callout-body"><strong>Microsoft does not publish Copilot's system prompts</strong>, its chunking parameters, its retrieval ranking, or the exact context assembled before your message. Any description of a distinct "reasoning posture" per surface — including earlier editions of this guide, which stated it as fact — is a model built from observed behavior, not a specification.<br><br>
+  The observation is real and useful: Teams Copilot does answer faster and more narrowly, and the standalone app does return broader, more exploratory results. The <em>explanation</em> is inference. Treat it as a working mental model that predicts behavior well, and do not quote it to a customer as though Microsoft had documented it.</div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ Why this section exists</div>
+  <div class="callout-body">A guide that states everything with equal confidence gives you no way to tell which parts will survive contact with a skeptical customer. Marking the boundary costs a paragraph, and means the rest of the document can be relied on without hedging.<br><br>
+  If a claim in this guide is not marked as inference, it is documented, and the source is listed in Section 15.</div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
@@ -966,6 +1081,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
 <span class="sec-chip">Section 14</span>
 <h2 id="section-14">Summary: The Design Philosophy</h2>
 
+
 <p>Each Copilot surface is purpose-built for a different cognitive mode: <strong>doing</strong> (executing a known task) or <strong>thinking</strong> (figuring out what to do next).</p>
 
 <table>
@@ -973,7 +1089,7 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
     <tr>
       <th>Design Dimension</th>
       <th>Copilot in Teams</th>
-      <th>M365 Copilot App</th>
+      <th>Copilot App</th>
     </tr>
   </thead>
   <tbody>
@@ -992,9 +1108,40 @@ td.center { text-align: center; font-weight: 700; color: var(--teal); font-size:
   Both are powerful. The right choice depends on where you are in your work.
 </div>
 
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 15 -->
+<span class="sec-chip">Section 15</span>
+<h2 id="section-15">Sources and Further Reading</h2>
+
+<p>Every product behavior, licensing gate and limit in this guide traces to one of the pages below, each retrieved and verified on <strong>27 August 2026</strong>. Microsoft changes this surface frequently — re-verify before repeating any of it to a customer.</p>
+
+<h3>Primary sources</h3>
+<ol>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/which-copilot-for-your-organization" target="_blank" rel="noopener">Microsoft Learn — Decide which Copilot is right for you</a> (updated Aug 18 2026). Source of the three-tier entitlement model, the current entry-point URLs, and the Work IQ behavior in Section 4.</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/release-notes" target="_blank" rel="noopener">Microsoft Learn — Microsoft 365 Copilot release notes</a>. Source of the unified web/work chat change and the Word model default, both dated Aug 25 2026.</li>
+  <li><a href="https://support.microsoft.com/en-us/teams/copilot/use-copilot-without-transcribing-or-recording-a-teams-meeting-or-call" target="_blank" rel="noopener">Microsoft Support — Use Copilot without transcribing or recording a meeting</a>. Source of the meeting-transcript matrix in Section 7.</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoftteams/copilot-teams-transcription" target="_blank" rel="noopener">Microsoft Learn — Manage Copilot in Teams meetings and events</a>. The administrator-side view of those settings.</li>
+  <li><a href="https://learn.microsoft.com/en-us/copilot/overview" target="_blank" rel="noopener">Microsoft Learn — Overview of Microsoft Copilot Chat</a>. Source of what the unlicensed tier includes.</li>
+</ol>
+
+<h3>Related reading on this site</h3>
+<ol>
+  <li><a href="https://copilotplaybook.com/CopilotIB.html">Copilot Agent Knowledge Reference</a> — how agent knowledge sources behave, what each can hold, and what you share when you share an agent.</li>
+  <li><a href="https://copilotplaybook.com/cowork.html" target="_blank" rel="noopener">Copilot Cowork Guide</a> — when to delegate recurring work rather than chat about it.</li>
+  <li><a href="https://copilotplaybook.com/cpb.html" target="_blank" rel="noopener">Copilot Practice Playbook</a> — the licensing ladder and commercial context behind the tiers in Section 2.</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">■ A note on confidence markers</div>
+  <div class="callout-body">Claims marked <span class="badge badge-y">Documented</span> are published by Microsoft and sourced above. Claims marked <span class="badge badge-na">Inference</span> are reasoning from observed behavior rather than Microsoft statements — see Section 13. Anything unmarked is documented.</div>
+</div>
+
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 
-<div class="page-footer">Microsoft 365 Copilot · Internal Briefing Guide</div>
+<div class="page-footer">Microsoft Copilot · Field Guide &nbsp;·&nbsp; Last updated August 27, 2026</div>
 
     <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
