@@ -42,6 +42,7 @@ PAIRS = [
     ("specs/cowork.spec.md",      "cowork.html"),
     ("specs/frontier.spec.md",    "frontier.html"),
     ("specs/starter-kit.spec.md", "customer-zero-starter-kit/index.html"),
+    ("specs/copilot-adoption-audit-buildout.spec.md", "copilot-adoption-audit.html"),
 ]
 
 BLOCK_RE = re.compile(r"```html (before|after):([A-Z]{1,3}-\d+)\n(.*?)```", re.S)
@@ -123,6 +124,9 @@ def main():
         for spec, target in PAIRS:
             if not os.path.exists(os.path.join(ROOT, spec)):
                 print(f"SKIP {spec} (not present)")
+                continue
+            if not os.path.exists(os.path.join(ROOT, target)):
+                print(f"SKIP {spec} (target {target} not present)")
                 continue
             o, b = check(spec, target, applied)
             t_ok += o
