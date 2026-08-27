@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Azure Billing Setup for CSP Partners: The Complete Field Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register (matches Cowork guide)
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+h4 {
+  color: var(--navy);
+  margin: 1.2rem 0 .3rem;
+  font-size: .95rem;
+  font-weight: 700;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+pre { background: #0b2238; color: #e4f0f3; padding: 16px 20px; border-radius: var(--radius); overflow-x: auto; font-size: .84rem; line-height: 1.55; margin: 14px 0; }
+pre code { background: transparent; color: inherit; padding: 0; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  columns: 2;
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; border-left-color: var(--teal); }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 20px 0; }
+.metric { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .8rem; margin-top: 2px; }
+
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .9rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 11px 14px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .85rem; border-left: 3px solid var(--teal); }
+tr:nth-child(even) td { background: #fafbfc; }
+
+.statbar { background: var(--teal); color: #fff; border-radius: var(--radius); padding: 18px 24px; margin: 18px 0; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+.statbar .big { font-weight: 700; font-size: 1.4rem; white-space: nowrap; letter-spacing: -.3px; }
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+.stat-ribbon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 20px 0; box-shadow: var(--shadow-md); }
+.stat-ribbon-item { padding: 20px 18px; background: #fff; border-right: 1px solid var(--border); border-top: 3px solid var(--teal); display: flex; flex-direction: column; gap: 4px; }
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) { .stat-ribbon { grid-template-columns: repeat(2, 1fr); } .stat-ribbon-item:nth-child(2) { border-right: none; } }
+
+.hero-statement { background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin: 24px 0; text-align: center; box-shadow: var(--shadow-md); }
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+.partner-story { border: 1px solid var(--border); border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px; margin: 18px 0; background: #f8fcfd; box-shadow: var(--shadow-sm); }
+.partner-story .ps-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 10px; }
+.partner-story .ps-quote { font-size: .95rem; font-style: italic; color: #374151; line-height: 1.7; margin: 0 0 10px; }
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+.smb-reality { border: 1px solid var(--border); border-left: 4px solid #d97706; border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 20px 0; background: var(--warn); box-shadow: var(--shadow-sm); }
+.smb-reality .sr-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #92400e; margin-bottom: 10px; }
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+
+.tag { display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* SCREENSHOT REFERENCE CARDS */
+.shot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+.shot-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.shot-card .shot-name { font-weight: 700; color: var(--navy); font-size: .92rem; margin-bottom: 6px; }
+.shot-card .shot-desc { font-size: .85rem; color: #374151; line-height: 1.55; margin-bottom: 8px; }
+.shot-card .shot-meta { font-size: .74rem; color: #9ca3af; }
+.shot-card a.shot-link { font-size: .82rem; font-weight: 600; }
+.shot-card img { width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 10px; display: block; }
+
+/* INLINE FIGURES */
+figure.screenshot { margin: 16px 0 20px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; box-shadow: var(--shadow-sm); }
+figure.screenshot img { width: 100%; height: auto; display: block; border-bottom: 1px solid var(--border); }
+figure.screenshot figcaption { padding: 10px 16px; font-size: .82rem; color: #374151; line-height: 1.5; }
+figure.screenshot figcaption .cap-source { display: block; font-size: .72rem; color: #9ca3af; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
+  <div style="font-size:2.4rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">Azure Billing Setup for CSP Partners</span></div>
+  <div style="font-size:1.3rem;font-weight:600;color:#1a2330;margin-top:14px;">The Complete Field Guide — Every Fringe Scenario an M365-Only Partner Will Actually Hit</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">Prepared by: <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong> &nbsp;&middot;&nbsp; Last updated: August 27, 2026</div>
+</div>
+
+<div class="callout" style="margin-top:0;">
+  <div class="callout-title">Companion guide</div>
+  <div class="callout-body">
+    <p>This guide is the practical companion to <a href="https://copilotplaybook.com/cowork.html"><strong>The Copilot Cowork Power User Guide</strong></a>. That guide covers how to run Cowork; this one covers the billing plumbing you need in place before you can resell the Azure-metered pieces of the AI stack &mdash; Copilot Studio message packs, Azure AI Foundry consumption, and any Azure workload a customer needs alongside their M365 seats.</p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">Why This Is a Sticking Point for M365-Only Partners</a></li>
+      <li><a href="#section-2">The Four Words You Have to Keep Straight</a></li>
+      <li><a href="#section-3">Direct Bill, Indirect Provider, Indirect Reseller — Who Can Do What</a></li>
+      <li><a href="#section-4">Step by Step: Adding an Azure Plan to an Existing Customer</a></li>
+      <li><a href="#section-5">The MCA Acceptance Flow, in Full</a></li>
+      <li><a href="#section-6">Brand New Customer, No Tenant at All</a></li>
+      <li><a href="#section-7">Fringe Scenario Playbook</a></li>
+      <li><a href="#section-8">Money: Markup Is Dead — Meet Partner Earned Credit</a></li>
+      <li><a href="#section-9">Budgets, Alerts, and Not Getting Surprised by an Invoice</a></li>
+      <li><a href="#section-10">Who Needs What Access — RBAC for Partner and Customer</a></li>
+      <li><a href="#section-11">Common Errors and How to Unblock Them</a></li>
+      <li><a href="#section-12">Tribal Knowledge — What the Partner Community Actually Says</a></li>
+      <li><a href="#section-13">Why This Matters for Cowork, Copilot Studio, and AI Foundry</a></li>
+      <li><a href="#section-14">Screenshot Reference Sheet</a></li>
+      <li><a href="#section-15">The One-Page Field Checklist</a></li>
+      <li><a href="#section-16">Further Reading &amp; Sources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero-statement">
+  <p>Most M365-only partners have <em>never once</em> created an Azure billing account &mdash; and the first time it matters is usually mid-deal, with a customer waiting.</p>
+  <div class="hero-sub">This guide gets you through it once, correctly, including the scenarios that break a first attempt.</div>
+</div>
+
+<hr>
+
+<!-- SECTION 1 -->
+<h2 id="section-1">1. Why This Is a Sticking Point for M365-Only Partners</h2>
+
+<p>If your practice has been built around M365 seats — Business Premium, E3/E5, and now Copilot — you may have gone years without touching the Azure side of Partner Center. That was fine until AI consumption showed up. Copilot Studio message packs and Azure AI Foundry model consumption don't bill against an M365 seat. They bill against an <strong>Azure subscription</strong>. No Azure plan, no way to resell or bill for either one.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">The reality on the ground</div>
+  <p><strong>You can't quote it if you can't bill it.</strong> A customer who wants Copilot Studio agents talking to a custom Azure AI Foundry model needs an Azure plan in place first — and if you're the partner of record for their M365 estate, that Azure plan should be yours to provision, not left to a customer's IT generalist who opens a free Azure account on a personal credit card.</p>
+  <p><strong>The failure mode is invisible until it isn't.</strong> A partner without an Azure practice discovers this gap the first time a customer asks "can you just turn on the AI agent thing" and the honest answer is "not until we set up your Azure billing" — a sentence no SMB-focused rep wants to say for the first time in front of the customer.</p>
+</div>
+
+<p>This guide exists so that sentence never has to happen live. Work through it once against a test customer, and Azure plan setup becomes a five-minute step in your onboarding checklist instead of a research project.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 2 -->
+<h2 id="section-2">2. The Four Words You Have to Keep Straight</h2>
+
+<p>Every point of confusion in this process traces back to conflating these four terms. Get them straight once and the rest of this guide reads like a checklist instead of a mystery.</p>
+
+<table>
+  <thead><tr><th>Term</th><th>What it actually is</th><th>Who owns it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MPA</strong><br><span style="font-size:.82em;color:#6b7280;">Microsoft Partner Agreement</span></td><td>The agreement that makes <em>you</em> eligible to transact as a CSP partner at all. It's what you sign, once, with Microsoft.</td><td>The partner</td></tr>
+    <tr><td><strong>MCA</strong><br><span style="font-size:.82em;color:#6b7280;">Microsoft Customer Agreement</span></td><td>The agreement your <em>customer</em> must accept before you can sell them an Azure plan. No MCA acceptance, no Azure purchase — full stop.</td><td>The customer</td></tr>
+    <tr><td><strong>Billing account</strong></td><td>The top-level container Microsoft creates for you under your MPA. Holds one billing profile per currency and can hold up to 10,000 subscriptions. This is <em>your</em> structure, not the customer's — don't confuse it with the customer-facing Azure plan below.</td><td>The partner</td></tr>
+    <tr style="background:var(--accent);"><td><strong>Azure plan</strong></td><td>The container created under the customer's MCA that unlocks the full pay-as-you-go Azure catalog for them. One or more Azure <em>subscriptions</em> live inside it. A customer can have more than one Azure plan.</td><td>The customer (provisioned by you)</td></tr>
+    <tr><td><strong>Azure subscription</strong></td><td>The actual billable container resources get deployed into — VMs, storage, AI Foundry projects, everything. Lives inside an Azure plan. Created and configured in the <strong>Azure portal</strong>, not Partner Center.</td><td>The customer</td></tr>
+  </tbody>
+</table>
+
+<div class="callout subtle">
+  <div class="callout-title">The one-sentence version</div>
+  <div class="callout-body"><p>You (MPA) sell the customer (MCA) an <strong>Azure plan</strong>, and inside that plan you or the customer create <strong>Azure subscriptions</strong> where resources actually run.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 3 -->
+<h2 id="section-3">3. Direct Bill, Indirect Provider, Indirect Reseller — Who Can Do What</h2>
+
+<p>Before you attempt any of the steps in this guide, know which of these three you are. It changes almost every workflow below.</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Direct bill partner</div></div>
+      <p class="tc-desc">You have a direct billing relationship with Microsoft. You can create Azure plans, attest MCA acceptance yourself, and transact end-to-end without going through another partner.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Indirect provider (distributor)</div></div>
+      <p class="tc-desc">You have a direct billing relationship with Microsoft <em>and</em> you sell through a network of indirect resellers. You can attest MCA and create Azure plans for your own end customers, and your resellers work through you for theirs.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Indirect reseller</div></div>
+      <p class="tc-desc"><strong>You cannot attest MCA or create an Azure plan directly.</strong> Every customer relationship and every MCA attestation has to be created or approved through your indirect provider. If you're in this category, Section 7's indirect reseller playbook is the one you'll use most.</p>
+    </div>
+  </div>
+</div>
+
+<p>If you're not sure which one you are, check Partner Center &rarr; <strong>Settings &rarr; Account settings</strong> — your program type is listed there, or ask your distributor (if you buy through TD SYNNEX or another distributor, you're almost certainly an indirect reseller for CSP purposes).</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 4 -->
+<h2 id="section-4">4. Step by Step: Adding an Azure Plan to an Existing Customer</h2>
+
+<p>This is the core motion. It assumes a direct bill or indirect provider partner with an existing customer relationship already in Partner Center. (Indirect resellers: read Section 7 first — you'll do the first half of this through your provider.)</p>
+
+<h3>The purchase flow</h3>
+<ol>
+  <li>Sign in to <a href="https://partner.microsoft.com/dashboard/home">Partner Center</a> and select <strong>Customers</strong>.</li>
+  <li>Select the customer, expand their row, and choose <strong>Add products</strong>.</li>
+  <li>Set <strong>Segment</strong> to <strong>Commercial</strong>, then search "Microsoft Azure."</li>
+  <li>Under <strong>Azure plan</strong>, select <strong>Add to cart</strong>.</li>
+  <li>Before checkout completes, Partner Center requires confirmation that the customer has accepted the <strong>Microsoft Customer Agreement</strong>. If they haven't yet, stop here and run Section 5 first.</li>
+  <li>Return to the <strong>Add a product</strong> page, select <strong>Review</strong>, then <strong>Buy</strong>.</li>
+</ol>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azurepurchase1.png" alt="Partner Center Add products screen showing the Azure plan Add to cart action" loading="lazy">
+  <figcaption>Step 3–4: the Azure plan on the Add products screen, right before Add to cart.<span class="cap-source">Source: Microsoft Learn — Purchase the Azure plan for customers</span></figcaption>
+</figure>
+
+<div class="callout warn">
+  <div class="callout-title">Two things that trip people up on the first purchase</div>
+  <div class="callout-body">
+    <p><strong>You can't name the subscription during purchase.</strong> There's no "friendly name" field at checkout — set it afterward by editing the subscription in Partner Center or via the API. Don't go looking for a naming field mid-purchase; it doesn't exist yet.</p>
+    <p><strong>It's a one-way door on the old offer.</strong> Once you purchase an Azure plan for a customer, you can no longer buy the legacy "Microsoft Azure" (MS-AZR-0145p) offer for them — all future subscriptions for that customer go through the Azure plan. If you try anyway, Partner Center shows an explicit "Add products" error.</p>
+  </div>
+</div>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/add-products-error.png" alt="Partner Center Add products error screen shown when trying to add the retired legacy Azure offer" loading="lazy">
+  <figcaption>The exact error you'll see if you try to add the retired MS-AZR-0145p offer after an Azure plan is already in place.<span class="cap-source">Source: Microsoft Learn — Purchase the Azure plan for customers</span></figcaption>
+</figure>
+
+<h3>Where the actual subscription gets created</h3>
+<p>Partner Center purchases the Azure <em>plan</em>. The Azure <em>subscription</em> inside it — the thing resources actually deploy into — is created in the <strong>Azure portal</strong>, not Partner Center:</p>
+<ol>
+  <li>Sign in to the <a href="https://portal.azure.com">Azure portal</a> as the partner (in your partner tenant, not the customer's).</li>
+  <li>Go to <strong>Cost Management + Billing</strong>, select the relevant billing scope, then <strong>Customers</strong>, then the customer.</li>
+  <li><strong>Products + services &rarr; All billing subscriptions &rarr; + Add.</strong></li>
+  <li>Choose the usage-based/Azure subscription option. On the Basics tab, set the plan to <strong>Microsoft Azure Plan</strong>, confirm the billing account and customer, and select the reseller if you're operating as one.</li>
+  <li><strong>Review + create.</strong></li>
+</ol>
+<p>To manage the customer's resources and subscriptions afterward, you need <strong>Admin On Behalf Of (AOBO)</strong> privileges — see Section 10 for exactly how that's granted.</p>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azure-plan-subscriptions-list.png" alt="Partner Center Subscriptions page showing the usage-based section expanded to list Azure subscriptions under the Azure plan" loading="lazy">
+  <figcaption>Where the resulting subscriptions show up afterward: Subscriptions page &rarr; usage-based section &rarr; expand Azure plan.<span class="cap-source">Source: Microsoft Learn — Purchase the Azure plan for customers</span></figcaption>
+</figure>
+
+<h3>Buying Azure reservations under an existing plan</h3>
+<p>Reservations must attach to an active Azure plan — buy the plan first if the customer doesn't have one yet.</p>
+<ol>
+  <li>Partner Center &rarr; <strong>Customers</strong> &rarr; select the customer &rarr; <strong>Add products</strong> &rarr; <strong>Azure</strong>.</li>
+  <li>Choose the market segment, set <strong>Product type</strong> to <strong>Reservations</strong>, and choose the reservation type.</li>
+  <li>Associate it with the customer's existing Azure plan.</li>
+</ol>
+<div class="callout subtle">
+  <div class="callout-body"><p>Reservation scope in the Partner Center UI is limited to <strong>Shared</strong>. If the customer needs a single-subscription scope (common for cost-allocation-sensitive customers), do that step in the Azure portal instead, not Partner Center.</p></div>
+</div>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/reservations-shared-scope.png" alt="Partner Center Add products screen for Azure reservations showing the Shared scope setting" loading="lazy">
+  <figcaption>The Shared-scope reservation setting in Partner Center — for single-subscription scope, finish this step in the Azure portal instead.<span class="cap-source">Source: Microsoft Learn — Purchase the Azure plan for customers</span></figcaption>
+</figure>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 5 -->
+<h2 id="section-5">5. The MCA Acceptance Flow, in Full</h2>
+
+<p>Nothing purchases until this is done. There are two paths — which one you use depends on your partner type and how hands-on you want the customer to be.</p>
+
+<div class="callout warn">
+  <div class="callout-title">If you learn one date from this guide, make it this one</div>
+  <div class="callout-body"><p>As of <strong>July 10, 2025</strong>, partner attestation moved exclusively to a new enhanced attestation API. The old UI-based attestation and the older API version are both retired for direct bill and indirect provider partners. If a tutorial, blog post, or old internal SOP shows attesting MCA through a simple Partner Center screen, it's describing a workflow that no longer exists.</p></div>
+</div>
+
+<h3>Path A — Partner attestation (direct bill / indirect provider only)</h3>
+<p>You confirm the customer's acceptance on their behalf through the Partner Center enhanced attestation API. Requires the <strong>Admin agent</strong> or <strong>Sales agent</strong> role. <strong>Indirect resellers cannot use this path at all</strong> — see Section 7.</p>
+<p>After you attest, the customer's primary contact receives an automated Microsoft confirmation email within 30 minutes. Be ready for the customer to ask you, not Microsoft, what that email means — they're directed back to their partner of record.</p>
+
+<h3>Path B — Customer direct acceptance</h3>
+<p>You send the customer to accept the agreement themselves in the Microsoft 365 Admin Center. This is the only path available to indirect resellers, and it's also the cleanest audit trail if a customer ever questions whether they agreed to anything.</p>
+
+<h4>For a brand-new customer</h4>
+<ol>
+  <li>Partner Center &rarr; <strong>Customers</strong> &rarr; <strong>Add Customer</strong> &rarr; enter company name and primary contact.</li>
+  <li>Under <strong>Customer Agreement</strong>, choose <strong>"Customer will be asked to accept the Microsoft Customer Agreement in Microsoft 365 Admin Center."</strong></li>
+  <li>Continue through <strong>Next: Review</strong> and finish creating the customer tenant.</li>
+  <li>On the <strong>Confirmation</strong> screen, save the generated sign-in credentials — you'll need them for the next step.</li>
+  <li>Outside Partner Center, send the customer an email containing: the URL <code>https://admin.microsoft.com/AdminPortal/Home?ref=/BillingAccounts/agreement</code>, and the credentials from step 4.</li>
+  <li>The customer signs in at that URL and checks the box to accept the MCA.</li>
+</ol>
+
+<h4>For an existing customer, or a new reseller relationship</h4>
+<ol>
+  <li>Partner Center &rarr; <strong>Customers</strong> &rarr; <strong>New relationship</strong>. This auto-generates an email template with a parameterized acceptance URL.</li>
+  <li>Customize the template, then <strong>Open in email</strong> or <strong>Copy to clipboard</strong> and send it.</li>
+  <li>The customer clicks the link, signs in, and checks the box to accept both the <strong>reseller relationship</strong> and the <strong>Microsoft Customer Agreement</strong> in one step.</li>
+  <li>They can review all their partner relationships anytime under <strong>Settings &rarr; Partner relationships</strong> in their own admin center.</li>
+</ol>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/create-relationship.png" alt="Partner Center Create a relationship screen with the generated customer invitation email template" loading="lazy">
+  <figcaption>Step 1: the auto-generated "Create a relationship" invite screen in Partner Center.<span class="cap-source">Source: Microsoft Learn — Confirm customer acceptance of the Microsoft Customer Agreement</span></figcaption>
+</figure>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/invite-existing-accept-agreement.png" alt="Microsoft 365 Admin Center screen where the customer reviews and accepts the reseller relationship and Microsoft Customer Agreement" loading="lazy">
+  <figcaption>What the customer actually sees and checks in the Microsoft 365 Admin Center — the review-and-accept screen from steps 3–4.<span class="cap-source">Source: Microsoft Learn — Confirm customer acceptance of the Microsoft Customer Agreement</span></figcaption>
+</figure>
+
+<h3>Verifying acceptance actually went through</h3>
+<ol>
+  <li>Partner Center &rarr; <strong>Customers</strong> &rarr; select the customer &rarr; <strong>Account</strong>.</li>
+  <li>Look at <strong>Microsoft Customer Agreement &rarr; Customer acceptance through Microsoft</strong> — it reads either <strong>Provided</strong> or <strong>Not Provided</strong>.</li>
+</ol>
+<p>If you try to place an order for a customer you haven't confirmed, Partner Center will interrupt the order and prompt you to enter the accepting individual's first name, last name, email, optional phone number, and the acceptance date (which can't be set in the future) — then <strong>Save</strong> to unblock the order.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 6 -->
+<h2 id="section-6">6. Brand New Customer, No Tenant at All</h2>
+
+<p>The scenario every M365-only partner eventually hits: a prospect with no Microsoft tenant of any kind, who needs both an M365 estate and, soon after, an Azure plan.</p>
+<ol>
+  <li>In Partner Center, use the <strong>Add Customer</strong> flow (Section 5, "For a brand-new customer") — this creates the Entra tenant as part of onboarding, at no charge, before anything is purchased.</li>
+  <li>Provide the domain, a contact email, and the intended global admin credentials during creation.</li>
+  <li>Complete MCA acceptance (Path A or B above) before attempting any Azure plan purchase — order of operations matters here; skipping straight to "Add products" for Azure will simply fail the checkout.</li>
+  <li>Once MCA is confirmed, run the standard Azure plan purchase flow from Section 4.</li>
+</ol>
+<div class="callout subtle"><div class="callout-body"><p>You can also create a tenant standalone, outside a customer purchase flow, via Partner Center &rarr; <strong>Settings &rarr; Account settings &rarr; Tenants &rarr; Create new tenant</strong> — useful for pre-provisioning a tenant ahead of a signed deal.</p></div></div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 7 -->
+<h2 id="section-7">7. Fringe Scenario Playbook</h2>
+
+<p>These are the situations that don't show up in the happy-path documentation but that a real SMB practice runs into regularly.</p>
+
+<h3>A. Indirect reseller: you don't hold the billing relationship</h3>
+<div class="smb-reality">
+  <div class="sr-label">If you buy through a distributor, this is almost certainly you</div>
+  <p>You <strong>cannot</strong> create an Azure plan or attest MCA acceptance directly — Partner Center will not let you. Your indirect provider (distributor) must create the customer relationship and complete attestation on your behalf via their own Partner Center or API access.</p>
+  <p><strong>What to actually do:</strong> confirm with your distributor which of the two MCA paths they use for you (attestation vs. customer direct acceptance), get the customer relationship established through them first, and only then attempt the Azure plan purchase against that customer in your own Partner Center view.</p>
+</div>
+
+<h3>B. Customer already has a pay-as-you-go (legacy MOSA) Azure subscription</h3>
+<div class="callout warn">
+  <div class="callout-title">Verify before you promise a timeline</div>
+  <div class="callout-body"><p>Microsoft's only step-by-step migration article for this scenario is archived, marked no-index, and dated 2019 — treat any specific steps from it as directionally correct at best, not current. The general shape hasn't changed (assess the existing subscription, move ASM-era resources to ARM if any remain, then move the resources into a new CSP Azure plan subscription), but the actual mechanics now run through Azure's subscription "move" / billing-change tooling. For anything beyond a dev/test subscription, open a case with Microsoft or your distributor before touching a production subscription's billing — a botched billing move can interrupt running resources.</p></div>
+</div>
+
+<h3>C. Customer already has an Enterprise Agreement (EA)</h3>
+<p>EA and CSP can coexist in the same Entra tenant — a customer might run Azure under EA while you sell them M365 (or additional Azure) under CSP. In practice, watch for two things: <strong>two different partners of record</strong> creating confusion about who owns what, and <strong>overlapping admin roles</strong> where both the EA partner and the CSP partner have standing access. This isn't a blocked configuration, but it isn't a documented one either — validate the specific setup with Microsoft or your distributor before quoting it as a clean migration path, rather than assuming it behaves identically to a single-agreement tenant.</p>
+
+<h3>D. Multiple Azure plans for one customer</h3>
+<p>Fully supported, no special gate — a customer can have more than one Azure plan (for example, a production plan and a dev/test plan, or one per department/cost center). Just repeat the Section 4 purchase flow; each plan is independent for budgeting and subscription purposes.</p>
+
+<h3>E. Transferring an Azure plan between CSP partners</h3>
+<p>This covers both "customer switches partners" and "we got acquired and need to move our book." As of the May 18, 2026 update to this flow, it's more automated than it used to be:</p>
+<ul>
+  <li>The <strong>target</strong> (new) partner initiates the transfer — the customer never triggers it directly.</li>
+  <li>Prerequisites: the customer has already established a relationship with the target partner (accepted a new MCA with them), the target partner has signed the MPA, and the target partner has the source partner's <strong>Microsoft ID (tenant ID)</strong> in hand before creating the request.</li>
+  <li>The <strong>source</strong> (current) partner has <strong>30 days</strong> to approve or the request expires automatically. Microsoft does not mediate disputes or force a source partner to approve — this has to be agreed offline between the partners first.</li>
+  <li>Only <strong>Admin agents</strong> on either side can create or approve a transfer.</li>
+  <li>Supported combinations: direct bill&rarr;direct bill, direct bill&rarr;indirect provider, indirect provider&rarr;indirect provider, indirect provider&rarr;direct bill. <strong>Not supported:</strong> a Direct Bill (web-direct) customer moving straight to any CSP partner — that's a different motion entirely.</li>
+  <li>Indirect resellers don't initiate transfers themselves — their indirect provider does, on their behalf, as the actual billing owner.</li>
+  <li><strong>New as of this update:</strong> when creating the transfer, explicitly select the <strong>Azure product type</strong> rather than leaving it at "All product types" — doing so triggers up-front validation that the target partner actually has a properly configured Azure plan to receive the subscriptions. Skipping this and leaving the default risks a partial failure discovered only after the transfer runs.</li>
+  <li>Most transfers complete in under an hour; allow up to 72 hours if any line items need retrying. Status moves through Pending &rarr; In Progress &rarr; Complete (or Failed / Partially Complete / Expired / Canceled).</li>
+</ul>
+
+<h3>F. Setting up Azure for the partner's own tenant (not a customer's)</h3>
+<p>If you need Azure for your own internal use — not to resell — Partner Center's customer-facing Azure plan flow doesn't apply to you. Go directly to the <a href="https://portal.azure.com">Azure portal</a> instead, and make sure the account you're signed in as holds the <strong>Billing account owner</strong> role; that role is required to acquire Azure subscriptions through the direct motion in the portal.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 8 -->
+<h2 id="section-8">8. Money: Markup Is Dead — Meet Partner Earned Credit</h2>
+
+<div class="smb-reality">
+  <div class="sr-label">Reset your mental model here</div>
+  <p>If your M365 practice is used to setting a sell price on top of a wholesale cost, the Azure plan doesn't work that way. There's no manual markup slider on Azure plan consumption. Instead, partners earn margin through <strong>Partner Earned Credit (PEC)</strong> — a credit tied to the partner <em>retaining active admin permissions</em> on the customer's tenant, rather than to a price you set.</p>
+</div>
+
+<p>Practically, this means the commercial lever you have on an Azure plan isn't "what do I charge above cost" — it's "am I actually providing ongoing management and keeping delegated access in place." Losing your admin relationship on a customer's tenant doesn't just cost you support visibility; it can cost you the credit itself.</p>
+
+<div class="callout warn">
+  <div class="callout-title">Verify the current PEC mechanics before you quote a margin number</div>
+  <div class="callout-body"><p>The exact credit percentage and qualifying-access requirements are set by Microsoft and have moved over time. Don't repeat a specific number to a customer or in a proposal without checking the current <a href="https://learn.microsoft.com/en-us/partner-center/marketplace-offers/partner-earned-credit-explained">Partner Earned Credit</a> documentation first — this section is here so you know the <em>shape</em> of the model, not to be your source of truth on the rate.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 9 -->
+<h2 id="section-9">9. Budgets, Alerts, and Not Getting Surprised by an Invoice</h2>
+
+<p>Azure plan consumption is usage-based — there's no seat count to sanity-check against. Set this up for every customer on day one, not after the first surprising invoice.</p>
+
+<h3>Setting a budget</h3>
+<ol>
+  <li>Partner Center &rarr; <strong>Billing</strong> workspace &rarr; <strong>Azure spending (NCE)</strong>.</li>
+  <li>Under <strong>Customers</strong>, select <strong>New budget</strong>.</li>
+  <li>Search for the customer by name in the side panel and set the amount.</li>
+  <li><strong>Save.</strong></li>
+</ol>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azure-spending-nce.png" alt="Partner Center Azure spending NCE page listing customers with configured Azure spending budgets" loading="lazy">
+  <figcaption>The Azure spending (NCE) page after budgets are set — this is your day-to-day monitoring view.<span class="cap-source">Source: Microsoft Learn — Set an Azure spending budget for customers</span></figcaption>
+</figure>
+
+<p>Only customers with an active Azure plan who are currently working with you appear here — a customer who's transferred to another partner drops off the list.</p>
+
+<h3>Updating or removing a budget</h3>
+<p>Same screen: check the customer's box, select <strong>Update budget</strong>, adjust (or clear) the amount in the side panel, and <strong>Save</strong>.</p>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azure-spending-update-budget-nce.png" alt="Partner Center Update budget configuration panel for a selected customer" loading="lazy">
+  <figcaption>The Update budget side panel — same flow whether you're changing an amount or clearing it.<span class="cap-source">Source: Microsoft Learn — Set an Azure spending budget for customers</span></figcaption>
+</figure>
+
+<h3>Alerts — know exactly what you will and won't get</h3>
+<div class="callout warn">
+  <div class="callout-title">The gap that catches people</div>
+  <div class="callout-body">
+    <p>You get an email <strong>every 7 days</strong> once a customer's usage sits between <strong>80% and 100%</strong> of budget. <strong>You get nothing once they cross 100%</strong> — and critically, <strong>services keep running regardless of budget</strong>. A budget in Partner Center is a monitoring tool, not a spending cap. If a customer needs a hard stop, that has to be engineered separately (Azure-side cost alerts and automation, or a support conversation about resource-level limits) — Partner Center will not shut anything off for you.</p>
+  </div>
+</div>
+<p>To configure alert delivery: Partner Center &rarr; <strong>Notifications (bell icon) &rarr; My preferences</strong> &rarr; set your email address and language, then check the relevant boxes under the <strong>Billing</strong> workspace notification preferences.</p>
+
+<h3>Reading itemized costs</h3>
+<ol>
+  <li>Partner Center &rarr; <strong>Customers</strong> &rarr; the customer's company name.</li>
+  <li>Open their <strong>Subscriptions</strong> page and select the subscription under <strong>Usage-based subscriptions</strong>.</li>
+  <li>Review <strong>Itemized costs</strong> by service and <strong>Estimated usage</strong> for the current billing period.</li>
+</ol>
+<p>Spending estimates refresh roughly every 24 hours and run about a day behind actual usage — treat them as directional, not as the final invoice. They also exclude taxes, credits, and other fees.</p>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azure-spending-budget.png" alt="Partner Center Azure spending page showing budget, current spending, and percentage used per customer" loading="lazy">
+  <figcaption>Monitoring view: budget, current estimate, and percentage used, per customer, at a glance.<span class="cap-source">Source: Microsoft Learn — Set an Azure spending budget for customers</span></figcaption>
+</figure>
+
+<div class="callout subtle">
+  <div class="callout-body"><p><strong>Still have pre-NCE (legacy) Azure subscriptions on the books?</strong> They're managed on a separate <strong>Azure spending</strong> tab, not <strong>Azure spending (NCE)</strong> — same Billing workspace, simpler flow (find the customer, enter a budget amount, select Apply). Don't spend time hunting for legacy customers on the NCE tab; they won't be there.</p></div>
+</div>
+
+<figure class="screenshot">
+  <img src="assets/azure-billing/azure-spending-legacy.png" alt="Partner Center legacy Azure spending page listing customers and budgets outside the new commerce experience" loading="lazy">
+  <figcaption>The legacy (non-NCE) Azure spending page — a different, simpler screen for older subscriptions.<span class="cap-source">Source: Microsoft Learn — Set an Azure spending budget for customers</span></figcaption>
+</figure>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 10 -->
+<h2 id="section-10">10. Who Needs What Access — RBAC for Partner and Customer</h2>
+
+<table>
+  <thead><tr><th>Action</th><th>Required role</th><th>Who holds it</th></tr></thead>
+  <tbody>
+    <tr><td>Purchase an Azure plan</td><td>User management admin <em>or</em> Sales agent</td><td>Partner</td></tr>
+    <tr><td>Confirm/attest MCA acceptance</td><td>Admin agent <em>or</em> Sales agent</td><td>Partner</td></tr>
+    <tr><td>Set or manage Azure spending budgets</td><td>Admin agent</td><td>Partner</td></tr>
+    <tr><td>Create or approve a partner-to-partner transfer</td><td>Admin agent</td><td>Partner</td></tr>
+    <tr><td>Accept MCA / reseller relationship (direct acceptance)</td><td>Global admin (or delegated authority)</td><td>Customer</td></tr>
+    <tr><td>Manage the customer's actual Azure resources day-to-day</td><td>Admin On Behalf Of (AOBO), granted via GDAP</td><td>Partner, scoped by the customer</td></tr>
+  </tbody>
+</table>
+
+<div class="callout subtle">
+  <div class="callout-body"><p>Modern practice is to grant partner engineers access through <strong>Granular Delegated Admin Privileges (GDAP)</strong> — a scoped security group with least-privilege RBAC roles (typically <strong>Owner</strong> on the specific Azure subscription) rather than a blanket admin-agent relationship across the whole tenant. If your practice is still using broad Delegated Admin Privileges (DAP) out of habit, this is worth tightening — GDAP is both the current Microsoft guidance and the easier story to tell a security-conscious customer.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 11 -->
+<h2 id="section-11">11. Common Errors and How to Unblock Them</h2>
+
+<table>
+  <thead><tr><th>What you see</th><th>What's actually happening</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>Order blocked, prompted for agreement acceptance details mid-checkout</td><td>Customer's MCA acceptance was never confirmed in Partner Center</td><td>Run the verification/confirm flow in Section 5, or complete either attestation path</td></tr>
+    <tr><td>"Add products" error when adding the old Azure (0145p) offer</td><td>Customer already has an Azure plan — the legacy offer is now permanently unavailable to them</td><td>Not a bug; use the Azure plan for the new subscription instead</td></tr>
+    <tr><td>New purchases, quantity changes, or upgrades silently blocked for an established customer</td><td>Stale attestation — you attested via the old method before April 1, 2023 and never re-attested (hard block since October 7, 2025)</td><td>Re-attest via the new enhanced API, or get customer direct acceptance</td></tr>
+    <tr><td>No field to name the subscription during purchase</td><td>Expected — friendly names aren't settable at purchase time</td><td>Set it afterward by editing the subscription in Partner Center or via API</td></tr>
+    <tr><td>Reservation scope stuck on "Shared," can't isolate to one subscription</td><td>Partner Center UI only exposes Shared scope</td><td>Set single-subscription scope in the Azure portal instead</td></tr>
+    <tr><td>Confusion about where to actually deploy resources</td><td>Partner Center sells the plan; the Azure portal is where subscriptions and resources are created</td><td>Cost Management + Billing in the Azure portal, signed in with AOBO/GDAP access — not Partner Center</td></tr>
+    <tr><td>Indirect reseller can't find an "attest" option anywhere</td><td>Working as designed — indirect resellers never get partner attestation UI</td><td>Route the customer relationship and MCA through your indirect provider (Section 7A)</td></tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 12 -->
+<h2 id="section-12">12. Tribal Knowledge &mdash; What the Partner Community Actually Says</h2>
+
+<p>Everything above this section comes from official Microsoft documentation. This section is different on purpose: it's what's been found in Microsoft's own Partner Community Hub forum and CSP-focused practitioner blogs &mdash; the gap between "here's the documented process" and "here's what actually happens when you run it." Sourced and dated where the underlying thread or post could be found; flagged as lower-confidence where it's a single author's take rather than a corroborated pattern.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">An honest note on where this came from</div>
+  <div class="callout-body"><p>A real search for Reddit (r/MSP, r/sysadmin, r/AZURE) and LinkedIn discussion of these exact topics came up empty &mdash; not because partners aren't talking, but because that content is largely unindexed to search or requires being logged in to find. What follows is drawn from Microsoft's own Community Hub forum threads and a handful of CSP/MSP-focused blogs. Treat the forum-sourced items as reasonably solid (they're actual partners hitting actual walls); treat the blog-sourced commentary as one practitioner's framing worth knowing, not verified community consensus.</p></div>
+</div>
+
+<h3>The MCA re-attestation trap really did catch partners off guard</h3>
+<div class="callout warn">
+  <div class="callout-title">Confirmed on Microsoft's own forum</div>
+  <div class="callout-body">
+    <p>A partner posted that their customer had directly accepted the MCA through the Admin Center &mdash; acceptance showed as Provided &mdash; yet license and software downloads stayed blocked until the partner separately updated the "partner attestation" date on their side. The partner said this interaction "hadn't been communicated during CSP technical calls," and Microsoft's own community manager could only point them to a support ticket, admitting support "were unable to provide much clarity" either. <a href="https://techcommunity.microsoft.com/discussions/partnershelpingpartnerstechtopics/mca-acceptance-partner-attestation-blocking/4442635">Source: Microsoft Community Hub thread</a>.</p>
+    <p><strong>The practical takeaway:</strong> customer direct acceptance and partner attestation are tracked as two separate records. A customer saying yes doesn't automatically clear a stale attestation on your side &mdash; check both, not just one, if a customer reports being blocked despite having "already accepted."</p>
+    <p><strong>A second deadline is coming.</strong> Per CSP program-update trackers, after <strong>January 5, 2026</strong>, the older attestation methods retire entirely &mdash; only the new attestation API or customer direct acceptance will work at all. If your practice has any customers attested under the pre-2023 method that were never touched, don't wait for a blocked order to discover it.</p>
+  </div>
+</div>
+
+<h3>GDAP access can vanish more easily than people expect</h3>
+<p>Two real mechanisms worth building a calendar reminder around, not just reading once:</p>
+<ul>
+  <li><strong>Auto-revocation for inactivity.</strong> As part of Partner-of-Record validation enforcement, Microsoft auto-revokes GDAP for reseller tenants flagged as inactive starting December 1, 2025 &mdash; a policy change that can silently cut off customer management access if a relationship goes quiet.</li>
+  <li><strong>GDAP just expires.</strong> Relationships expire automatically after a maximum of 2 years (or after only 90 days if never activated in the first place) &mdash; and a customer can also unilaterally terminate the relationship from their own admin center at any time. None of this requires a mistake on the partner's part; it requires only not tracking renewal dates.</li>
+</ul>
+
+<h3>Partner Earned Credit can stop accruing without any alert</h3>
+<div class="smb-reality">
+  <div class="sr-label">The quiet failure mode</div>
+  <p>Per Microsoft's own PEC troubleshooting documentation: if the RBAC role assignment backing your admin access has an <strong>expiring "end time,"</strong> PEC silently stops calculating once that assignment lapses &mdash; you keep billing the customer, you just stop earning the credit, with no notification that it happened. The fix is procedural: audit role-assignment expirations on a schedule, don't assume "we set this up once" means it stays set up.</p>
+  <p><strong>Transfers make this worse.</strong> PEC is <em>not</em> automatically carried over in a partner-to-partner transfer &mdash; the receiving partner has to actively reconfigure the qualifying access afterward. Build that into your transfer-acceptance checklist, not as an afterthought once billing looks off.</p>
+</div>
+
+<h3>Getting customers to actually click "accept"</h3>
+<p>Several independent licensing-advisory writers felt it necessary to explicitly reassure readers that an MCA re-acceptance request "is legitimate, not phishing" &mdash; a strong hint that customer suspicion of these emails is common enough to plan around, even without a single viral thread to point to. The practical version of this tip, echoed across sources: tell the customer to expect the email <em>before</em> you send it, and have them navigate to <code>admin.microsoft.com</code> directly rather than trusting an embedded link cold.</p>
+
+<h3>Where margin actually leaks (one practitioner's framing)</h3>
+<p>From a CSP/MSP-focused blog on Azure billing traps, worth knowing even though it's a single source: <em>"Azure margin does not disappear in one dramatic mistake. It leaks through dev/test spikes, weak overage language, bad reservation assumptions, and invoices nobody reconciles."</em> The same piece argues budgets alone don't prevent bill shock &mdash; a budget is a monitoring tool, not a spending cap (which matches the official behavior in Section 9) &mdash; and that the real fix is negotiating alert thresholds and escalation contacts into the deal <em>before</em> the quote is signed, not after the first surprise invoice. <a href="https://scopable.io/blog/azure-csp-billing-msps">Source: scopable.io, "Azure CSP Billing for MSPs."</a></p>
+
+<h3>Partner-to-partner transfers: the one documented snag</h3>
+<p>A partner receiving a transferred customer reported that the previous partner's active Marketplace subscription (a SendGrid subscription, specifically) complicated the transfer &mdash; and Microsoft's own community manager took over a week to respond, ultimately directing them to a support ticket rather than resolving it self-service. <a href="https://techcommunity.microsoft.com/discussions/azurepartners/azure-plan-transfer-between-partners-with-marketplace-subscription/4219368">Source: Microsoft Community Hub thread</a>. This is a single documented case, not a repeated pattern &mdash; but it's a real enough gotcha that checking for active Marketplace subscriptions before initiating a transfer is worth adding to your own pre-transfer checklist.</p>
+<p>One more transfer detail confirmed in Microsoft's own docs, not a forum thread, but easy to miss: billing ownership transferring does <strong>not</strong> automatically transfer Azure RBAC access to the customer's resources &mdash; the old partner keeps their RBAC unless it's separately removed. Don't assume a completed transfer means the prior partner is fully out.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<h2 id="section-13">13. Why This Matters for Cowork, Copilot Studio, and AI Foundry</h2>
+
+<p>The practical reason this guide exists alongside the Cowork guide: the AI-agent layer of Microsoft's stack increasingly bills against Azure, not M365 seats.</p>
+
+<ul>
+  <li><strong>Azure AI Foundry</strong> — model consumption (custom agents, fine-tuned deployments, non-Copilot-Studio agent hosting) bills per-token directly against the customer's Azure subscription.</li>
+  <li><strong>Copilot Studio</strong> — agent usage beyond what's bundled meters per-message, purchasable as message packs or Copilot Credits through CSP; this consumption also rides on the Azure billing relationship rather than an M365 license count.</li>
+</ul>
+
+<div class="hero-statement">
+  <p>An M365-only partner without a working Azure plan for a customer <em>cannot fully resell the AI agent stack for that customer</em> — no matter how good the Cowork or Copilot Studio pitch is.</p>
+  <div class="hero-sub">Provisioning the Azure plan is now a prerequisite step in the AI sale, not an optional upsell for later.</div>
+</div>
+
+<p>Practical sequencing for a Copilot-led deal: qualify the customer's M365/Copilot need as usual, but if the conversation touches Copilot Studio agents or Foundry-hosted models at any point, confirm the customer's Azure plan status (Section 4's verification step) <em>before</em> you commit to a timeline for turning the agent on.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 13 -->
+<h2 id="section-14">14. Screenshot Reference Sheet</h2>
+
+<p>The ten screenshots below are already embedded inline at the matching step in Sections 4, 5, and 9 — saved locally from Microsoft Learn (<code>/assets/azure-billing/</code>) rather than hotlinked, so they won't break if Microsoft reshuffles their media paths. Two additional topics (GDAP, Partner Earned Credit) don't have a single canonical screenshot worth embedding — those stay as links to the live, actively-maintained page instead.</p>
+
+<div class="shot-grid">
+  <div class="shot-card">
+    <img src="assets/azure-billing/azurepurchase1.png" alt="Azure plan Add to cart screen thumbnail" loading="lazy">
+    <div class="shot-name">Azure plan purchase flow</div>
+    <div class="shot-desc">The "Add to cart" screen, plus the error screen for the retired legacy offer. Embedded in Section 4.</div>
+    <div class="shot-meta">Source updated Feb 6, 2026</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/customers/purchase-azure-plan">learn.microsoft.com &rarr; Purchase the Azure plan for customers</a>
+  </div>
+  <div class="shot-card">
+    <img src="assets/azure-billing/azure-plan-subscriptions-list.png" alt="Azure plan subscriptions list thumbnail" loading="lazy">
+    <div class="shot-name">Subscriptions under the Azure plan</div>
+    <div class="shot-desc">Where provisioned subscriptions show up in Partner Center after purchase. Embedded in Section 4.</div>
+    <div class="shot-meta">Source updated Feb 6, 2026</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/customers/purchase-azure-plan">learn.microsoft.com &rarr; Purchase the Azure plan for customers</a>
+  </div>
+  <div class="shot-card">
+    <img src="assets/azure-billing/create-relationship.png" alt="Create a relationship invite screen thumbnail" loading="lazy">
+    <div class="shot-name">The customer-side MCA acceptance screen</div>
+    <div class="shot-desc">Both the invite screen and what the customer actually clicks in the M365 Admin Center. Embedded in Section 5.</div>
+    <div class="shot-meta">Source updated Jan 22, 2026</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/customers/confirm-customer-agreement">learn.microsoft.com &rarr; Confirm customer acceptance of the MCA</a>
+  </div>
+  <div class="shot-card">
+    <img src="assets/azure-billing/azure-spending-nce.png" alt="Azure spending NCE budget list thumbnail" loading="lazy">
+    <div class="shot-name">Azure spending budgets (NCE)</div>
+    <div class="shot-desc">The budget list, new/update budget panels, and the monitoring view. Embedded in Section 9.</div>
+    <div class="shot-meta">Source updated Feb 27, 2025</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/billing/set-an-azure-spending-budget-for-your-customers">learn.microsoft.com &rarr; Set an Azure spending budget for customers</a>
+  </div>
+  <div class="shot-card">
+    <div class="shot-name">Creating the subscription in the Azure portal</div>
+    <div class="shot-desc">Customers list, "Add subscription" panel, and the Basics tab with Plan set to Microsoft Azure Plan — the step after Partner Center. Not embedded (page is under active revision); use the live link for the current UI.</div>
+    <div class="shot-meta">Updated Jun 7, 2026 — most current UI</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/create-customer-subscription">learn.microsoft.com &rarr; Create a subscription for a partner's customer</a>
+  </div>
+  <div class="shot-card">
+    <div class="shot-name">GDAP role assignment</div>
+    <div class="shot-desc">The security group and role-assignment screens for granting scoped, least-privilege access to a customer's Azure subscription.</div>
+    <div class="shot-meta">Check date on open — actively maintained page</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/customers/gdap-introduction">learn.microsoft.com &rarr; GDAP introduction</a>
+  </div>
+  <div class="shot-card">
+    <div class="shot-name">Partner Earned Credit mechanics</div>
+    <div class="shot-desc">The official explainer for how PEC is calculated and what qualifying admin access looks like — check this before quoting a margin figure (Section 8).</div>
+    <div class="shot-meta">Check date on open</div>
+    <a class="shot-link" href="https://learn.microsoft.com/en-us/partner-center/marketplace-offers/partner-earned-credit-explained">learn.microsoft.com &rarr; Partner Earned Credit explained</a>
+  </div>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-body"><p>If Partner Center's UI visibly diverges from one of these embedded screenshots on your next visit, that's a signal the guide needs a refresh — Microsoft ships Partner Center changes frequently, and a saved screenshot is a snapshot in time, not a guarantee.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 14 -->
+<h2 id="section-15">15. The One-Page Field Checklist</h2>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Confirm your partner type</div></div>
+      <p class="tc-desc">Direct bill, indirect provider, or indirect reseller — Section 3. If indirect reseller, loop in your distributor before doing anything else.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Get the MCA accepted</div></div>
+      <p class="tc-desc">Attestation (direct/indirect provider) or customer direct acceptance (everyone else) — Section 5. Verify it actually landed before attempting a purchase.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Purchase the Azure plan</div></div>
+      <p class="tc-desc">Partner Center &rarr; Customers &rarr; Add products &rarr; Azure plan — Section 4. Remember: no legacy offer purchases after this.</p>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Create the subscription in the Azure portal</div></div>
+      <p class="tc-desc">Not Partner Center. Cost Management + Billing &rarr; Add subscription, with AOBO/GDAP access already in place.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">5</div><div class="tc-name">Set a budget and alerts on day one</div></div>
+      <p class="tc-desc">Section 9. Remember it's a monitor, not a cutoff — services keep running past 100%.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">6</div><div class="tc-name">Set GDAP access, not blanket admin</div></div>
+      <p class="tc-desc">Section 10. Scoped Owner role on the subscription, tracked per customer.</p>
+    </div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 15 -->
+<h2 id="section-16">16. Further Reading &amp; Sources</h2>
+
+<p>Every specific process step in this guide traces to one of the pages below, each fetched and verified current as of this guide's last-updated date.</p>
+
+<ol>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/customers/purchase-azure-plan">Microsoft Learn &mdash; Purchase the Azure plan for customers</a> (Feb 6 2026)</li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/create-customer-subscription">Microsoft Learn &mdash; Create a subscription for a partner's customer</a> (Jun 7 2026)</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/customers/confirm-customer-agreement">Microsoft Learn &mdash; Confirm customer acceptance of the Microsoft Customer Agreement</a> (Jan 22 2026)</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/customers/transfer-subscriptions">Microsoft Learn &mdash; Transfer billing ownership from one partner to another</a> (May 18 2026)</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/billing/set-an-azure-spending-budget-for-your-customers">Microsoft Learn &mdash; Set an Azure spending budget for your customers</a> (Feb 27 2025)</li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/customers/gdap-introduction">Microsoft Learn &mdash; GDAP introduction</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/account-settings/permissions-overview">Microsoft Learn &mdash; Partner Center roles and permissions overview</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/developer/create-a-customer-for-an-indirect-reseller">Microsoft Learn &mdash; Create a customer for an indirect reseller</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/cost-management-billing/understand/mpa-overview">Microsoft Learn &mdash; Microsoft Partner Agreement billing account overview</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/marketplace-offers/partner-earned-credit-explained">Microsoft Learn &mdash; Partner Earned Credit explained</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/previous-versions/azure/cloud-solution-provider/migration/migration-from-payg-to-csp">Microsoft Learn (archived) &mdash; Migration from PAYG to CSP</a> &mdash; flagged stale, 2019, no-index; use only for directional context (Section 7B)</li>
+</ol>
+
+<h3>Partner community (Section 12)</h3>
+<ol start="12">
+  <li><a href="https://techcommunity.microsoft.com/discussions/partnershelpingpartnerstechtopics/mca-acceptance-partner-attestation-blocking/4442635">Microsoft Community Hub &mdash; MCA acceptance / partner attestation blocking thread</a></li>
+  <li><a href="https://techcommunity.microsoft.com/discussions/azurepartners/azure-plan-transfer-between-partners-with-marketplace-subscription/4219368">Microsoft Community Hub &mdash; Azure plan transfer between partners with Marketplace subscription</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/billing/partner-earned-credit-troubleshoot">Microsoft Learn &mdash; Partner Earned Credit troubleshooting guide</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/partner-center/customers/gdap-faq">Microsoft Learn &mdash; GDAP frequently asked questions</a></li>
+  <li><a href="https://scopable.io/blog/azure-csp-billing-msps">scopable.io &mdash; Azure CSP Billing for MSPs: The Billing Traps That Kill Your Margins</a> (single-source practitioner commentary)</li>
+  <li><a href="https://www.thewinningcsp.com/microsoft-csp-partner-program-updates-august-september-2025/">thewinningcsp.com &mdash; Microsoft CSP Partner Program Updates, Aug/Sep 2025</a></li>
+</ol>
+
+<h3>Glossary</h3>
+<ul>
+  <li><strong>MPA</strong> &mdash; Microsoft Partner Agreement; makes a partner CSP-eligible.</li>
+  <li><strong>MCA</strong> &mdash; Microsoft Customer Agreement; the customer's prerequisite acceptance for any Azure plan purchase.</li>
+  <li><strong>AOBO</strong> &mdash; Admin On Behalf Of; the delegated access a partner needs to manage a customer's Azure resources.</li>
+  <li><strong>GDAP</strong> &mdash; Granular Delegated Admin Privileges; scoped, least-privilege replacement for broad Delegated Admin Privileges (DAP).</li>
+  <li><strong>PEC</strong> &mdash; Partner Earned Credit; how a partner earns margin on Azure plan consumption by retaining qualifying admin access, rather than setting a manual markup.</li>
+  <li><strong>NCE</strong> &mdash; New Commerce Experience; the current Azure plan / license-based subscription model referenced throughout Partner Center's billing screens.</li>
+</ul>
+
+<div class="callout dark">
+  <div class="callout-title">The one habit that prevents most of this guide's problems</div>
+  <div class="callout-body">
+    <p><strong>Confirm MCA before you promise a date.</strong><br>
+    <strong>Know your partner type before you try any workflow.</strong><br>
+    <strong>Set a budget the same day you provision the plan.</strong><br>
+    <strong>Use GDAP, not blanket admin.</strong><br>
+    <strong>Re-verify PEC numbers before quoting margin.</strong></p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<div style="text-align:center;padding:22px 0;color:#6b7280;font-size:.85rem;">
+  <p style="margin:0;">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, TD SYNNEX &nbsp;&middot;&nbsp; <a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
+  <p style="margin:6px 0 0;">Companion to <a href="https://copilotplaybook.com/cowork.html">The Copilot Cowork Power User Guide</a>. Partner Center UI and process details move quickly &mdash; re-verify role names, attestation mechanics, and PEC figures before quoting them in a customer conversation.</p>
+</div>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>

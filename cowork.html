@@ -399,7 +399,14 @@ tr:nth-child(even) td { background: #fafbfc; }
 <div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
   <div style="font-size:2.6rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">The Copilot Cowork Power User Guide</span></div>
   <div style="font-size:1.4rem;font-weight:600;color:#1a2330;margin-top:14px;">From Chat to Delegation: Your A-to-Z Field Manual for Microsoft 365 Copilot Cowork</div>
-  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">Prepared by: <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong> &nbsp;&middot;&nbsp; Last updated: August 26, 2026</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">Prepared by: <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong> &nbsp;&middot;&nbsp; Last updated: August 27, 2026</div>
+</div>
+
+<div class="callout" style="margin-top:0;">
+  <div class="callout-title">Companion guide</div>
+  <div class="callout-body">
+    <p>Reselling Copilot Studio or Azure AI Foundry consumption alongside Cowork means your customer needs a working <strong>Azure billing account</strong> first &mdash; and most M365-only partners have never set one up. See <a href="https://copilotplaybook.com/azure-billing-setup.html"><strong>Azure Billing Setup for CSP Partners: The Complete Field Guide</strong></a> for the exhaustive, screenshot-sourced walkthrough, including every fringe scenario (existing PAYG subscriptions, EA coexistence, partner-to-partner transfers, indirect reseller flows, and the common errors that block a purchase).</p>
+  </div>
 </div>
 
 <nav id="toc">
@@ -452,9 +459,9 @@ tr:nth-child(even) td { background: #fafbfc; }
     <div class="sr-s">Source: Microsoft Learn</div>
   </div>
   <div class="stat-ribbon-item">
-    <div class="sr-k">20</div>
-    <div class="sr-l">Max custom <code>SKILL.md</code> files per user in <code>/Documents/Cowork/Skills/</code></div>
-    <div class="sr-s">Source: Microsoft Learn</div>
+    <div class="sr-k">50</div>
+    <div class="sr-l">Max custom <code>SKILL.md</code> files per user in <code>/Documents/Cowork/skills/</code> &mdash; raised from 20 at GA</div>
+    <div class="sr-s">Source: Microsoft Learn Cowork FAQ</div>
   </div>
   <div class="stat-ribbon-item">
     <div class="sr-k">250k</div>
@@ -463,8 +470,8 @@ tr:nth-child(even) td { background: #fafbfc; }
   </div>
   <div class="stat-ribbon-item">
     <div class="sr-k">$99</div>
-    <div class="sr-l">Per user/month list price for M365 E7, GA since May&nbsp;1,&nbsp;2026 via EA, EAS, MCA-E, and CSP &mdash; FY27 promotions run through Dec&nbsp;31,&nbsp;2026</div>
-    <div class="sr-s">Source: GeekWire, Mar 9 2026</div>
+    <div class="sr-l">Per user/month list price for M365 E7, GA since May&nbsp;1,&nbsp;2026 &mdash; but Cowork task execution itself bills separately in metered Copilot Credits since its own GA on Jun&nbsp;16,&nbsp;2026</div>
+    <div class="sr-s">Source: GeekWire, Mar 9 2026; Microsoft 365 Blog, Jun 16 2026</div>
   </div>
 </div>
 
@@ -480,7 +487,7 @@ tr:nth-child(even) td { background: #fafbfc; }
 <div class="callout">
   <div class="callout-title">Where to find it</div>
   <div class="callout-body">
-    <p>Cowork lives at <strong>m365.cloud.microsoft</strong> and in the Microsoft 365 desktop apps for Windows and Mac. It is <strong>not</strong> available on mobile today. Your admin must be enrolled in the Microsoft Frontier program for Cowork to appear.</p>
+    <p>Cowork lives at <strong>m365.cloud.microsoft</strong>, in the Microsoft 365 desktop apps for Windows and Mac, and &mdash; since <strong>May 5, 2026</strong> &mdash; inside the Microsoft 365 Copilot mobile app on iOS and Android. As of worldwide GA on <strong>June 16, 2026</strong>, Cowork no longer requires Frontier enrollment; Frontier is now only the early-access channel for preview-stage extras like Claude Fable 5.</p>
   </div>
 </div>
 
@@ -615,9 +622,10 @@ tr:nth-child(even) td { background: #fafbfc; }
     <tr><th>Model family</th><th>Best for</th><th>Context window</th><th>Tradeoff</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>Claude Opus 4.5 / 4.6 / 4.7</strong></td><td>Hardest reasoning &mdash; deep research, multi-document synthesis, strategic drafts</td><td>200,000 tokens</td><td>Slowest and most expensive; overkill for quick tasks</td></tr>
+    <tr><td><strong>Claude Opus 4.5 / 4.6 / 4.7 / 4.8</strong></td><td>Hardest reasoning &mdash; deep research, multi-document synthesis, strategic drafts</td><td>200,000 tokens</td><td>Slowest and most expensive; overkill for quick tasks. Opus 4.8 (landed after 4.7) is the current top tier in the selector.</td></tr>
     <tr><td><strong>Claude Sonnet 4.5 / 4.6</strong></td><td>The workhorse &mdash; drafting, rewrites, code review, most Cowork tasks</td><td>200,000 tokens</td><td>The right default for most delegation</td></tr>
     <tr><td><strong>Claude Haiku 4.5</strong></td><td>Fast, cheap, routine classification / summarization / lookups</td><td>200,000 tokens</td><td>Less depth &mdash; don&rsquo;t hand it strategy work</td></tr>
+    <tr><td><strong>Claude Fable 5 (Preview)</strong></td><td>Long-running, complex multi-step Tasks in Cowork specifically</td><td>200,000 tokens</td><td>Off by default; admin must opt in and accept the data-retention terms the UI flags</td></tr>
     <tr><td><strong>OpenAI GPT-series &amp; Microsoft MAI</strong></td><td>Available in M365 Copilot; Microsoft chooses per task</td><td>Varies</td><td>Model routing is opaque &mdash; you don&rsquo;t always see which model answered</td></tr>
   </tbody>
 </table>
@@ -834,8 +842,10 @@ tr:nth-child(even) td { background: #fafbfc; }
   <li><strong>June 16, 2026</strong> &mdash; <strong>Cowork reached general availability and moved to usage-based billing.</strong> This is the big one. Cowork now bills separately from the Copilot licence, metered in Copilot Credits. Tenants with a user active in the Frontier programme between March 30 and June 16 had a grace period that expired July 1, 2026.</li>
   <li><strong>June 2026</strong> &mdash; GA worldwide brought multi-model support, new plugins, reworked skill management and navigation, <strong>Microsoft Purview integration</strong>, branded templates, and image creation. Purview integration is the one that matters commercially: Cowork output is now governable with the same tooling as the rest of the tenant.</li>
   <li><strong>June 2026</strong> &mdash; <strong>Claude Fable 5 (preview)</strong> became available as an opt-in, admin-controlled model in Cowork on Frontier. Cowork is no longer fixed to a single model.</li>
+  <li><strong>May 5, 2026</strong> &mdash; Cowork shipped inside the <strong>Microsoft 365 Copilot mobile app on iOS and Android</strong> &mdash; no separate Cowork app. Same launch added a plugin ecosystem (skills and connectors distributed and admin-managed through the Microsoft 365 App Store) and Cowork control of an <strong>Edge browser</strong> tab using your existing logged-in session.</li>
+  <li><strong>June 2026 (GA)</strong> &mdash; The custom skill ceiling was raised from 20 to <strong>50 <code>SKILL.md</code> files per user</strong>, each up to 1&nbsp;MB with up to 20 companion reference files (10&nbsp;MB total) per skill; the storage path is now lowercase <code>/Documents/Cowork/skills/</code>. GA also added <strong>event-driven tasks</strong> &mdash; triggered by an incoming email or a Teams @mention, not only by a schedule &mdash; and an <strong>effort-level selector</strong> next to the model picker to trade off quality, speed, and Copilot Credit cost.</li>
   <li><strong>July 2026</strong> &mdash; Claude became selectable in <strong>Copilot Chat</strong> for active subscribers, a Tasks tab shipped, and automatic installation of the Microsoft 365 Copilot app resumed on eligible commercial Windows devices.</li>
-  <li><strong>August 2026</strong> &mdash; Cost Management landed in the Microsoft 365 admin centre: Copilot Credits visibility, clearer policy enforcement, better overage handling, and more reliable alerts. If you are running a Cowork practice, this is your instrumentation.</li>
+  <li><strong>August 2026</strong> &mdash; Cost Management landed in the Microsoft 365 admin centre: Copilot Credits visibility, clearer policy enforcement, better overage handling, and more reliable alerts. If you are running a Cowork practice, this is your instrumentation. Claude <strong>Opus 4.8</strong> also superseded 4.7 as the top reasoning tier in the model selector.</li>
 </ul>
 <p>Source: <a href="https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-anthropic-claude-opus-4-7-in-microsoft-365-copilot/4511666">Microsoft Tech Community &mdash; Opus 4.7 in M365 Copilot, Apr 16 2026</a>.</p>
 
@@ -859,10 +869,10 @@ tr:nth-child(even) td { background: #fafbfc; }
     <tr><td>Runs shell commands</td><td>No</td><td>No</td><td><span class="tag ok">Yes</span> Bash</td><td>Via Computer Use (preview)</td><td>No</td></tr>
     <tr><td>Native Word/Excel/PPT/Teams actions</td><td><span class="tag ok">Yes</span> first-class</td><td>Via Artifacts (sandbox)</td><td>Via Skills (PPTX/DOCX/XLSX)</td><td>Writes real files</td><td>Exports PPTX/PDF</td></tr>
     <tr><td>Scheduled recurring tasks</td><td><span class="tag ok">Yes</span> native</td><td>No</td><td><span class="tag ok">Yes</span> Routines (Apr 2026)</td><td>No (practitioner cron)</td><td>No</td></tr>
-    <tr><td>Custom skills / playbooks</td><td>20 × SKILL.md in OneDrive</td><td>Anthropic Skills</td><td>File-based skills + subagents</td><td>SKILL.md</td><td>Design systems</td></tr>
+    <tr><td>Custom skills / playbooks</td><td>50 × SKILL.md in OneDrive</td><td>Anthropic Skills</td><td>File-based skills + subagents</td><td>SKILL.md</td><td>Design systems</td></tr>
     <tr><td>Who picks the model</td><td>Microsoft routes</td><td>You pick</td><td>You pick per session</td><td>Anthropic routes; Extended Thinking opt-in</td><td>Multi-model since GA; Fable 5 opt-in in Frontier</td></tr>
     <tr><td>Enterprise audit / Purview</td><td><span class="tag ok">Yes</span></td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
-    <tr><td>Mobile</td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span></td><td>iOS companion</td><td>Desktop only</td><td>Desktop only</td></tr>
+    <tr><td>Mobile</td><td><span class="tag ok">Yes</span> iOS/Android since May 5, 2026</td><td><span class="tag ok">Yes</span></td><td>iOS companion</td><td>Desktop only</td><td>Desktop only</td></tr>
     <tr><td>Delete files / folders</td><td>Blocked by policy</td><td>N/A</td><td><span class="tag ok">Yes</span> via Bash</td><td><span class="tag ok">Yes</span> with approval</td><td>N/A</td></tr>
   </tbody>
 </table>
@@ -1221,7 +1231,7 @@ Constraints:
     <tr><td><strong>Computer Use</strong></td><td>Claude Cowork desktop and Claude Code both have Computer Use in research preview. Copilot Cowork does not expose this to you.</td></tr>
     <tr><td><strong>Extended Thinking toggles</strong></td><td>In Claude.ai and Claude Cowork desktop you can dial up thinking budget. Cowork decides for you.</td></tr>
     <tr><td><strong>Shell and local filesystem</strong></td><td>Obvious but worth naming. If your current Claude Code workflow depends on Bash and a repo, that workflow stays in Claude Code.</td></tr>
-    <tr><td><strong>Mobile</strong></td><td>Cowork is browser + desktop only. Claude.ai has mobile apps; Claude Code has an iOS companion.</td></tr>
+    <tr><td><strong>A dedicated mobile client</strong></td><td>Cowork rides inside the Microsoft 365 Copilot mobile app (iOS/Android, since May 2026) rather than having its own app. Claude.ai has native mobile apps; Claude Code has an iOS companion.</td></tr>
   </tbody>
 </table>
 
@@ -1316,7 +1326,7 @@ Return it as plain markdown so I can paste it into a new Task.</pre>
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-12">12. <code>SKILL.md</code> &mdash; Your Durable Memory</h2>
 
-<p>A <code>SKILL.md</code> is a small markdown file with YAML frontmatter that lives in OneDrive at <code>/Documents/Cowork/Skills/&lt;skill-name&gt;/SKILL.md</code>. Cowork auto-discovers skills at the start of every conversation and applies them when relevant.</p>
+<p>A <code>SKILL.md</code> is a small markdown file with YAML frontmatter that lives in OneDrive at <code>/Documents/Cowork/skills/&lt;skill-name&gt;/SKILL.md</code>. Cowork auto-discovers skills at the start of every conversation and applies them when relevant. Since GA, each skill can carry up to 20 companion reference files (10&nbsp;MB total) alongside the SKILL.md itself.</p>
 
 <p>Think of it as a durable, cheap context layer. Unlike instructions in chat, skills are re-loaded from disk after every compaction and never lost to context rot.</p>
 
@@ -1517,7 +1527,7 @@ Do not email or post it anywhere. Just save the file.</pre>
   <p><strong>No delete.</strong> Cowork cannot delete files or folders in OneDrive or SharePoint. If you want something gone, you delete it yourself. This is intentional, for safety.</p>
   <p><strong>No encrypted file reads</strong>, even if you have the rights.</p>
   <p><strong>Attached files must be under 200 MB each.</strong></p>
-  <p><strong>No mobile.</strong> Browser and Windows/Mac desktop only, today.</p>
+  <p><strong>No dedicated Cowork app.</strong> It runs inside the browser, Windows/Mac desktop apps, and (since May 2026) the Microsoft 365 Copilot mobile app on iOS/Android &mdash; there's no standalone Cowork mobile client.</p>
   <p><strong>Custom skills are not validated by Microsoft.</strong> The <code>SKILL.md</code> files you create or accept are executed as you wrote them. Review any skill you didn&rsquo;t author personally.</p>
 </div>
 
@@ -1536,7 +1546,7 @@ Do not email or post it anywhere. Just save the file.</pre>
 <h3>Things Microsoft hasn&rsquo;t documented</h3>
 <ul>
   <li>No vendor-published or third-party benchmark exists for hallucination rate, task completion rate, or permission-escalation error rate in Cowork specifically.</li>
-  <li>No documented ceiling on concurrent scheduled prompts per user (custom skills are capped at 20).</li>
+  <li>No documented ceiling on concurrent scheduled or event-driven tasks per user (custom skills are capped at 50).</li>
   <li>How long-chat degradation manifests inside Cowork specifically (a problem well-documented in LLMs generally) hasn&rsquo;t been written up by any practitioner. Treat it as a likely-but-unquantified risk &mdash; and apply the habit loop from Section 5.</li>
 </ul>
 
@@ -1735,6 +1745,12 @@ Do not email or post it anywhere. Just save the file.</pre>
   <li><a href="https://claude.com/claude-for-excel">Anthropic &mdash; Claude for Excel</a></li>
   <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/use-cowork">Microsoft Learn &mdash; Use Cowork</a></li>
   <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-architecture">Microsoft Learn &mdash; Microsoft 365 Copilot architecture</a></li>
+  <li><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/16/copilot-cowork-is-now-generally-available/">Microsoft 365 Blog &mdash; <em>Copilot Cowork is now generally available</em></a> (Jun 16 2026)</li>
+  <li><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/">Microsoft 365 Blog &mdash; <em>Copilot Cowork: from conversation to action across skills, integrations, and devices</em></a> (May 5 2026)</li>
+  <li><a href="https://redmondmag.com/articles/2026/06/16/microsoft-makes-copilot-cowork-generally-available-worldwide.aspx">Redmond Magazine &mdash; Microsoft makes Copilot Cowork generally available worldwide</a> (Jun 16 2026)</li>
+  <li><a href="https://techcommunity.microsoft.com/blog/microsoft365copilotblog/available-today-anthropic-claude-opus-4-8-in-microsoft-365-copilot/4523405">Microsoft Tech Community &mdash; Claude Opus 4.8 in M365 Copilot</a></li>
+  <li><a href="https://www.directionsonmicrosoft.com/m365-e7-to-launch-may-1-for-99-per-user-per-month/">Directions on Microsoft &mdash; M365 E7 to launch May 1 for $99/user/month</a></li>
+  <li><a href="https://microsoftnegotiations.com/microsoft-copilot-cowork-cost/copilot-credits-explained">Microsoft Negotiations &mdash; Copilot Credits explained</a></li>
 </ol>
 
 <h3>Claude product family &amp; April 2026 launches</h3>
