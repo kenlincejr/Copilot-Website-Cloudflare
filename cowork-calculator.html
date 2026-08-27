@@ -2520,7 +2520,7 @@ footer.pagefoot a { color:#6b7280; }
     step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway',
     step7:'the governance posture is unknown — every gate becomes a discovery question rather than a confirmed control'
   };
-  var cur = 'intro';
+  var cur = 'intro', booted = false;
   /* 'intro' is a cover, not a step: it carries no answer, so it stays out of
      the stepper and out of the question count. */
   function flow() { return ['intro'].concat(uiMode === 'fast' ? FAST : STEPS.map(function (x) { return x.id; })); }
@@ -2552,8 +2552,13 @@ footer.pagefoot a { color:#6b7280; }
     $('stage').classList.toggle('wide', id === 'results');
     prevSnap = null;
     var r = refresh();
-    var top = $('stage').getBoundingClientRect().top + window.pageYOffset - 14;
-    if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
+    /* Anchor the questions to the top of the viewport when the partner moves
+       between screens — but never on first paint, which would scroll the
+       masthead off before they have seen it. */
+    if (booted) {
+      var top = $('stage').getBoundingClientRect().top + window.pageYOffset - 14;
+      if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
+    }
     return r;
   }
 
@@ -2844,6 +2849,7 @@ footer.pagefoot a { color:#6b7280; }
   $('introLoadSession').addEventListener('click', function () { $('loadFile').click(); });
   $('introLoadRate').addEventListener('click', function () { $('rateFile').click(); });
   goTo('intro');
+  booted = true;
 })();
 
 </script>
