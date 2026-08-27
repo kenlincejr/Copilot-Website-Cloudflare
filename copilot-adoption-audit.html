@@ -1321,7 +1321,9 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <h2 id="section-10">10 &middot; Build it &mdash; large tenants and small</h2>
 
-<p>No BI tool, no Power&nbsp;BI licence, no data engineer. Excel, the CSV you just exported, and about ten minutes. The formulas below assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2. <strong>Column letters vary depending on which columns you switched on</strong>, so the first job is to find yours and substitute them &mdash; every formula here is written with the letters spelled out in a legend so the substitution is mechanical.</p>
+<p>No BI tool, no Power&nbsp;BI licence, no data engineer. <strong><a href="copilot-adoption-audit-workbook.xlsx">Download the workbook</a></strong>, paste your export into the first tab, and read the answer off the third. It detects its own columns by header text &mdash; so it does not matter which columns the admin switched on or what order they came out in &mdash; picks large-tenant or small-tenant thresholds from the row count, applies the five-person suppression rule for you, and draws the chart.</p>
+
+<p>The rest of this section is what the workbook is doing, written out. Read it if you would rather build your own, if you need to explain a number to a customer&rsquo;s admin, or if you simply do not want to trust a spreadsheet you did not write. The formulas assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2, and are written with column letters spelled out in a legend so substitution is mechanical.</p>
 
 <pre class="code"><b>Legend &mdash; replace with your actual column letters</b>
   E  =  Prompts submitted (any app)          &#8592; your depth axis
