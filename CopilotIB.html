@@ -572,10 +572,10 @@ td.td-warn { background: #fff8f0 !important; }
 
 <!-- HEADER -->
 <div class="page-header">
-  <div class="doc-type">TD SYNNEX · Internal Technical Reference</div>
+  <div class="doc-type">Microsoft Copilot · Technical Reference</div>
   <h1>Microsoft Copilot Personal Agents &nbsp;<span>Knowledge Section</span></h1>
-  <div class="subtitle">Technical Reference — How the agent actually uses knowledge, and why URLs behave the way they do</div>
-  <div class="meta">Classification: <strong>TD SYNNEX Internal — Confidential</strong> &nbsp;·&nbsp; Audience: Copilot practitioners who build and configure personal agents</div>
+  <div class="subtitle">Technical Reference — How the agent actually uses knowledge, and why sources fail without telling you</div>
+  <div class="meta">Audience: Copilot practitioners who build and configure agents &nbsp;·&nbsp; <strong>Last updated: August 27, 2026</strong> &nbsp;·&nbsp; Verified against Microsoft Learn on that date</div>
 </div>
 
 <!-- TOC -->
@@ -583,22 +583,58 @@ td.td-warn { background: #fff8f0 !important; }
   <div class="toc">
     <p class="toc-head">Table of Contents</p>
     <ul>
-      <li><a href="#section-1">How the Knowledge Section Actually Works at Query Time</a></li>
-      <li><a href="#section-2">The URL Problem: Why It's There and Why It Doesn't Work</a></li>
-      <li><a href="#section-3">The Three-Tier Knowledge Priority Stack</a></li>
-      <li><a href="#section-4">Controlling Web Search Through the Instruction Block</a></li>
-      <li><a href="#section-5">Curated vs. Open Web Search: The Critical Distinction</a></li>
-      <li><a href="#section-6">Complete Instruction Block Patterns with Examples</a></li>
-      <li><a href="#section-7">Source Comparison and Decision Reference</a></li>
-      <li><a href="#section-8">Forcing Non-Negotiable Behaviors in Every Response</a></li>
+      <li><a href="#section-1">Agent Builder or Copilot Studio? Know Which You Are In</a></li>
+      <li><a href="#section-2">How the Knowledge Section Actually Works at Query Time</a></li>
+      <li><a href="#section-3">Website URLs: A Real Source, With Narrow Rules</a></li>
+      <li><a href="#section-4">Every Source Type, and What Each Can Hold</a></li>
+      <li><a href="#section-5">The Limits That Bite</a></li>
+      <li><a href="#section-6">What You Share When You Share the Agent</a></li>
+      <li><a href="#section-7">Controlling Web Search Through the Instruction Block</a></li>
+      <li><a href="#section-8">Curated vs. Open Web Search: The Critical Distinction</a></li>
+      <li><a href="#section-9">Complete Instruction Block Patterns with Examples</a></li>
+      <li><a href="#section-10">What It Costs, and Who Turns It On</a></li>
+      <li><a href="#section-11">Test It Before You Share It</a></li>
+      <li><a href="#section-12">Forcing Non-Negotiable Behaviors in Every Response</a></li>
+      <li><a href="#section-13">Sources and Further Reading</a></li>
     </ul>
   </div>
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════ SECTION 1 -->
-<hr>
 <span class="sec-chip">Section 1</span>
-<h2 id="section-1">How the Knowledge Section Actually Works at Query Time</h2>
+<h2 id="section-1">Agent Builder or Copilot Studio? Know Which You Are In</h2>
+
+<p>Almost every confused answer about how agent knowledge behaves traces back to one thing: two different Microsoft products are both called "the agent builder," and they do not behave the same way. Before anything else in this document is useful, establish which one you are working in.</p>
+
+<div class="g2">
+  <div class="callout green" style="margin:0">
+    <div class="callout-title">✓ Agent Builder — what this document covers</div>
+    <div class="callout-body">The lightweight builder inside the Microsoft Copilot app. You describe an agent in natural language or fill in the Configure tab. It produces a <strong>declarative agent</strong>: instructions plus knowledge, no custom logic.<br><br>
+    Built for individuals and small teams. Managed through the Microsoft 365 admin center. <strong>Every limit and behavior in this reference describes this product</strong> unless a passage says otherwise.</div>
+  </div>
+  <div class="callout navy" style="margin:0">
+    <div class="callout-title">■ Copilot Studio — where the rules differ</div>
+    <div class="callout-body">A standalone authoring portal for multi-step workflows, custom connectors, autonomous behavior, and external publishing. Managed through the Power Platform admin center, with environments, versioning and role-based access.<br><br>
+    Where its knowledge behavior genuinely differs, this document marks the passage. Otherwise assume Agent Builder.</div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ The practical dividing line <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">Microsoft's own test is audience and governance, not features. Build in <strong>Agent Builder</strong> for yourself or a small team answering questions from existing content. Move to <strong>Copilot Studio</strong> when the agent needs a department-wide or external audience, multi-step logic, systems beyond Microsoft 365, or lifecycle management.<br><br>
+  An agent started in Agent Builder can be <strong>copied into Copilot Studio</strong> later — instructions and configuration carry over — so starting simple is not a decision you have to unwind.<br><br>
+  One consequence worth knowing early: <strong>Agent Builder cannot fully block the model's general knowledge.</strong> If your requirement is "answer only from these documents or say nothing," that is a Copilot Studio requirement. Pattern 4 in Section 9 is the closest Agent Builder can get.</div>
+</div>
+
+<p>For the delivery-side view of this same decision — what each build costs to scope and deliver as an engagement — see the <a href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">CPB Engagement Ops Guide</a>, which carries the commercial comparison this section deliberately leaves out.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
+<span class="sec-chip">Section 2</span>
+<h2 id="section-2">How the Knowledge Section Actually Works at Query Time</h2>
+
 
 <p>There is a persistent gap between how the Knowledge section appears in the agent builder UI and how it actually functions when a user sends a message. Understanding this gap is the foundation for everything else in this document.</p>
 <p>When a user submits a query to the agent, the system does <strong>not</strong> read every connected knowledge source from beginning to end. Instead, it performs a <strong>semantic vector search</strong> across all indexed content — finding the passages most similar in meaning to the user's query — and retrieves the top-scoring chunks to include in the context window alongside the query.</p>
@@ -606,7 +642,7 @@ td.td-warn { background: #fff8f0 !important; }
 <div class="callout">
   <div class="callout-title">ℹ Technical Note — What "Indexed" Actually Means</div>
   <div class="callout-body">When you upload a file or connect a SharePoint library, the agent builder extracts the text content and converts it into high-dimensional vector embeddings stored and searched at query time. Only text successfully extracted and embedded is searchable. Content that cannot be extracted — images, scanned PDFs, charts, SmartArt, text in shapes — is invisible to this search.<br><br>
-  <strong>Critical:</strong> A URL string added to the Knowledge section is <em>never fetched, never parsed, and never embedded</em>. The URL text itself may be stored as metadata, but the content at that address does not enter the index.</div>
+  <strong>Critical:</strong> A URL added to the Knowledge section is <em>never embedded into this index</em>. It is a live retrieval instruction, not stored content — at query time the agent searches that site through Bing. Everything in this section about chunking and embedding applies to uploaded files and SharePoint content; it does not apply to website sources.</div>
 </div>
 
 <h3>What Happens During a Query</h3>
@@ -623,6 +659,15 @@ td.td-warn { background: #fff8f0 !important; }
   <div class="callout-body">The agent does not "read" its knowledge — it <strong>searches</strong> it. This distinction has major practical implications: document structure matters enormously (clear headings improve retrieval), very long documents may return lower-quality results because relevant passages compete with noise, and content that isn't text is simply not there as far as the agent is concerned.</div>
 </div>
 
+<div class="callout navy">
+  <div class="callout-title">■ The numbers Microsoft actually publishes <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">Most guidance circulating about Copilot chunk sizes is invented. These four figures are documented, and they are the ones worth designing around:<br><br>
+  <strong>Uploaded files</strong> — the first <strong>750–1,000 pages (1.8 million characters)</strong> of each file are indexed. Beyond that, nothing.<br>
+  <strong>SharePoint referenced by site or folder</strong> — keep individual files under <strong>36,000 characters</strong> (~15–20 pages) or Copilot may not find the right passage.<br>
+  <strong>File count matters more than you would expect</strong> — specify <strong>20 files or fewer</strong> and Copilot searches all of them in full. Specify more and it fully searches only the 20 most relevant.<br>
+  <strong>Total scope</strong> — keep the combined page count of specified files under <strong>300 pages</strong>.</div>
+</div>
+
 <h3>What Improves vs. Degrades Retrieval</h3>
 <div class="g2">
   <div class="callout green" style="margin:0">
@@ -631,7 +676,7 @@ td.td-warn { background: #fff8f0 !important; }
       <ul style="margin:0;padding-left:1.1rem">
         <li>Clear, descriptive headings throughout documents</li>
         <li>Concise, self-contained paragraphs</li>
-        <li>Documents under ~50 pages for clean chunk retrieval</li>
+        <li>Splitting long SharePoint documents — keep each under ~36,000 characters (roughly 15–20 pages)</li>
         <li>Text-based files: .docx, .pdf (text-layer), .txt</li>
         <li>SharePoint for content that changes regularly</li>
       </ul>
@@ -643,9 +688,9 @@ td.td-warn { background: #fff8f0 !important; }
       <ul style="margin:0;padding-left:1.1rem">
         <li>Scanned PDFs without an OCR text layer</li>
         <li>Text embedded in images or SmartArt</li>
-        <li>Very large documents (&gt;200 pages) without clear structure</li>
-        <li>Pasted URLs in the Knowledge field (no content indexed)</li>
-        <li>Charts and tables saved as images</li>
+        <li>Uploaded files beyond ~750–1,000 pages — only the first 1.8 million characters are indexed</li>
+        <li>Excel data spread across several sheets rather than one</li>
+        <li>Tables in SharePoint content — Copilot does not parse them at all, image or not</li>
       </ul>
     </div>
   </div>
@@ -654,44 +699,48 @@ td.td-warn { background: #fff8f0 !important; }
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 2 -->
-<span class="sec-chip">Section 2</span>
-<h2 id="section-2">The URL Problem: Why It's There and Why It Doesn't Work</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
+<span class="sec-chip">Section 3</span>
+<h2 id="section-3">Website URLs: A Real Source, With Narrow Rules</h2>
 
-<p>The URL input field in the Knowledge section is one of the most misunderstood elements of the personal agent builder. It looks like it should allow the agent to draw on web content. It does not — at least not in the way practitioners expect.</p>
+
+<p>The URL input field in the Knowledge section is one of the most misunderstood elements of the agent builder — and the most commonly written-off. Public website URLs <em>are</em> a supported knowledge source. What trips practitioners up is that they behave nothing like an uploaded file: the content is never pre-indexed, it is fetched live at query time through Bing, and almost every way it fails, it fails silently.</p>
 
 <h3>What the URL Field Actually Does</h3>
-<p>When you paste a URL into the "Enter a URL or name or drop files here" field and submit it, one of two things happens depending on which toggle is active:</p>
+<p>Scoping an agent to named sites and letting it search the open web are two different behaviors, and the distinction matters more than the field's plain appearance suggests:</p>
 
 <table>
-  <thead><tr><th>Toggle State</th><th>What Happens to the URL</th></tr></thead>
+  <thead><tr><th>Configuration</th><th>What the Agent Actually Does</th></tr></thead>
   <tbody>
-    <tr><td class="td-navy">Search all websites: OFF</td><td>The URL is stored as a text string reference only. The agent does not fetch the URL, does not parse the page content, and does not index anything from it. The URL may surface as a citation hint, but the content at that address is <strong>completely inaccessible</strong> to the agent at query time.</td></tr>
-    <tr><td class="td-navy">Search all websites: ON</td><td>The URL <em>may</em> be used to scope or bias web search results — functioning closer to a domain filter than a content source. The content at that specific URL is still not pre-indexed. The agent retrieves it live during a search, not from a stored index.</td></tr>
+    <tr><td class="td-navy">Added as a public website source</td><td>A supported knowledge source. At query time the agent issues a Bing search scoped to that site and grounds its answer in what comes back. The content is <strong>never pre-indexed</strong> — there is no stored copy, so an answer is only as good as what Bing currently holds for that page.</td></tr>
+    <tr><td class="td-navy">"Search all websites" ON</td><td>Widens retrieval to the open web rather than your named sites. Use it with instruction block rules that name the sources you trust, or the agent may ground in whatever ranks well that day.</td></tr>
   </tbody>
 </table>
 
-<h3>Why the Field Exists Despite These Limitations</h3>
+<h3>The Rules a URL Must Satisfy</h3>
+<p>A URL that breaks any of the following is not rejected at configuration time. It is accepted, displayed in the knowledge panel, and silently returns nothing.</p>
 <ul>
-  <li><strong>Domain scoping for web search:</strong> When "Search all websites" is enabled, a URL entered here tells the search to prefer results from that domain. It functions as a hint, not a guarantee.</li>
-  <li><strong>Explicit source limiting:</strong> The "Only use specified sources" toggle, combined with URLs and the web search toggle, attempts to restrict web search to those specific sites — but requires both toggles active and is less reliable than instruction block control.</li>
-  <li><strong>Future capability surface:</strong> The field exists in anticipation of deeper URL crawling features. The UI component is there; the full indexing pipeline for arbitrary URLs is not yet generally available in the personal agent builder.</li>
-  <li><strong>Reference metadata:</strong> For audit and transparency purposes, connected URLs appear in the knowledge panel so builders can see what sources are referenced — even if the content isn't indexed.</li>
+  <li><strong>Four URLs maximum</strong> per agent.</li>
+  <li><strong>Two path levels, maximum.</strong> <code>example.org/a/b</code> is valid; <code>example.org/a/b/c</code> is not. A trailing slash is allowed.</li>
+  <li><strong>No query parameters.</strong> <code>example.org?id=1</code> is invalid.</li>
+  <li><strong>Must be public and indexed by Bing.</strong> Anything behind authentication is out — which rules out SharePoint sites and internal wikis. Use the SharePoint source for those instead.</li>
+  <li><strong>Redirects to another top-level site break it.</strong> If <code>fabrikam.com</code> redirects to <code>contoso.fabrikam.com</code>, the agent grounds in neither.</li>
+  <li><strong>Subdomain scope is not what most people expect.</strong> <code>fabrikam.com</code> covers <code>www.</code> and <code>news.</code>; <code>www.fabrikam.com</code> covers neither. Entering the bare domain is almost always what you want.</li>
 </ul>
 
 <div class="callout warn">
   <div class="callout-title">⚠ Common Mistake — The Practitioner's Trap</div>
-  <div class="callout-body">A builder adds a URL for their product documentation site, tests the agent, and gets accurate answers. They assume the agent is reading the site. It isn't. It's drawing on its <strong>training knowledge</strong> about the product. When the documentation changes, the agent continues returning the old answer — confidently and with no indication that its source is stale.<br><br>
-  This is the most dangerous failure mode: an agent that <em>appears</em> correct but is grounded in training data rather than current documentation. The fix is not more URLs — it is uploaded documents, a connected SharePoint library, or explicit web search triggered by the instruction block.</div>
+  <div class="callout-body">A builder adds a documentation URL three levels deep, tests the agent, and gets a confident, accurate-sounding answer. They conclude the source is working. It is not — the URL exceeded the two-level limit and was never queried. The answer came from the model's <strong>training knowledge</strong>, and it will keep coming from there after the documentation changes.<br><br>
+  This is the failure mode to design against: <em>a correctly-rejected source and a working source produce identical-looking output.</em> Nothing in the builder flags the difference. The only reliable check is to ask the agent something that is answerable <strong>only</strong> from that page and nowhere in general knowledge — see Section 12 on forcing citations, which makes this visible in every response.</div>
 </div>
 
-<h3>What Actually Works Instead</h3>
+<h3>When a URL Is the Wrong Tool</h3>
 <div class="g2">
   <div class="callout red" style="margin:0">
     <div class="callout-title">✗ Does Not Work</div>
-    <div class="callout-body">Adding a URL expecting the agent to "know" its content.<br><br>
-    <em>Example: Pasting <code>https://learn.microsoft.com/azure/pricing</code> into Knowledge expecting current Azure pricing.</em><br><br>
-    <strong>What happens:</strong> The agent uses training knowledge, which may be months old. The URL is ignored entirely.</div>
+    <div class="callout-body">Adding a deep link and expecting it to be read.<br><br>
+    <em>Example: Pasting <code>https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/overview</code> — four levels deep — into Knowledge.</em><br><br>
+    <strong>What happens:</strong> The URL is accepted and displayed, but exceeds the two-level limit, so it is never queried. The agent answers from training knowledge with no indication the source was skipped.</div>
   </div>
   <div class="callout green" style="margin:0">
     <div class="callout-title">✓ Correct Approach — Choose One</div>
@@ -708,80 +757,146 @@ td.td-warn { background: #fff8f0 !important; }
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 3 -->
-<span class="sec-chip">Section 3</span>
-<h2 id="section-3">The Three-Tier Knowledge Priority Stack</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
+<span class="sec-chip">Section 4</span>
+<h2 id="section-4">Every Source Type, and What Each Can Hold</h2>
 
-<p>When the agent generates a response, it draws on three potential knowledge sources resolved in a fixed default priority order. Understanding this stack is essential for predicting agent behavior — and for writing instruction block rules that override it when needed.</p>
+<p>This is the table to come back to. It replaces the guesswork about which source to reach for, and it answers the two questions that actually determine whether an agent works in production: <strong>does this source stay current on its own</strong>, and <strong>who else sees the content once I share the agent</strong>.</p>
 
-<div class="priority-stack">
-  <div class="priority-row">
-    <div class="priority-badge-col"><div class="pb-label">Priority</div><div class="pb-num">1</div></div>
-    <div class="priority-body p1">
-      <div class="priority-title">Uploaded Files + SharePoint + Teams</div>
-      <div class="priority-sub">Checked <strong style="color:#fff">first — always</strong>. Overrides everything else. Highest trust weight. If your attached documents contradict training knowledge, the documents win.</div>
-      <div class="priority-tag">✓ Checked First · Highest Trust</div>
-    </div>
-  </div>
-  <div class="priority-row">
-    <div class="priority-badge-col"><div class="pb-label">Priority</div><div class="pb-num">2</div></div>
-    <div class="priority-body p2">
-      <div class="priority-title">Web Search (Conditional)</div>
-      <div class="priority-sub">Requires toggle ON <em>and</em> an explicit instruction block trigger rule — or a direct user request. Does not activate automatically as a fallback.</div>
-      <div class="priority-tag">⚡ Conditional · Instruction Block Required</div>
-    </div>
-  </div>
-  <div class="priority-row">
-    <div class="priority-badge-col"><div class="pb-label">Priority</div><div class="pb-num">3</div></div>
-    <div class="priority-body p3">
-      <div class="priority-title">General Training Knowledge</div>
-      <div class="priority-sub">Used last — fallback only. Built into the model during pretraining. Most likely to be stale or misaligned with org-specific facts.</div>
-      <div class="priority-tag">⚠ Fallback Only · May Be Stale</div>
-    </div>
-  </div>
-</div>
-
-<h3>Priority 1: Attached Knowledge — Files, SharePoint, Teams</h3>
-<p>Attached knowledge sources are always checked first and have the highest trust weight. If your attached documents contradict the model's training knowledge, <strong>the documents win.</strong> SharePoint and Teams sources have one practical advantage: they <strong>update automatically</strong>. A file edited in SharePoint is reflected in the agent's knowledge without a manual re-upload — making SharePoint the preferred pattern for content that changes regularly.</p>
+<table>
+  <thead><tr><th>Source</th><th>Ceiling</th><th>Stays current?</th><th>Shared with agent users?</th><th>Can you scope it?</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">Uploaded ("embedded") files</td><td>20 files</td><td><span class="badge badge-n">No — static</span></td><td><span class="badge badge-n">Yes — everyone</span></td><td>n/a</td></tr>
+    <tr><td class="td-navy">SharePoint files, folders, sites</td><td>100 files</td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>File, folder or site</td></tr>
+    <tr><td class="td-navy">SharePoint list</td><td>1 list</td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>The specific list only</td></tr>
+    <tr><td class="td-navy">OneDrive files</td><td>50 files</td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>File or folder</td></tr>
+    <tr><td class="td-navy">Teams chats and meetings</td><td>5 chats</td><td><span class="badge badge-y">Yes — live</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>Named chats or meetings</td></tr>
+    <tr><td class="td-navy">Public website URL</td><td>4 URLs</td><td><span class="badge badge-y">Yes — live</span></td><td><span class="badge badge-y">Public anyway</span></td><td>Two path levels</td></tr>
+    <tr><td class="td-navy">Outlook email</td><td>Whole mailbox</td><td><span class="badge badge-y">Yes — live</span></td><td><span class="badge badge-y">No — yours only</span></td><td><span class="badge badge-n">No</span></td></tr>
+    <tr><td class="td-navy">OneNote</td><td>Individual pages</td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>Page only, not notebook</td></tr>
+    <tr><td class="td-navy">Copilot connectors</td><td>Admin-configured</td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>Per connector — see below</td></tr>
+    <tr><td class="td-navy">People data</td><td>Directory-wide</td><td><span class="badge badge-y">Yes — live</span></td><td><span class="badge badge-y">Per-user permissions</span></td><td>On/off toggle</td></tr>
+  </tbody>
+</table>
 
 <div class="callout warn">
-  <div class="callout-title">⚠ Example: Outdated Document Override</div>
-  <div class="callout-body"><strong>Scenario:</strong> An agent has a pricing document uploaded from Q3 2024. The actual prices changed in Q1 2025.<br>
-  <strong>User asks:</strong> "What is the per-seat price for M365 Business Premium?"<br>
-  <strong>Agent behavior:</strong> Returns the Q3 2024 price from the document — not the current price. The model's training may contain the correct current price, but it is overridden by the attached document.<br>
-  <strong>Mitigation:</strong> Add to the instruction block: <em>"If a knowledge document contains a date older than 90 days, flag this to the user and recommend they verify pricing through the official current source."</em> And/or connect a live SharePoint library that is actively maintained.</div>
+  <div class="callout-title">⚠ The row that catches people <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">Uploaded files are the only source in this table that does <strong>not</strong> respect the reader's own permissions. Everything grounded in SharePoint, OneDrive, Teams or a connector is filtered per user — someone who cannot open the file does not get answers from it. An uploaded file is <strong>embedded into the agent</strong>, so anyone who can use the agent can read its contents through the agent. Section 6 covers what that means in practice.</div>
 </div>
 
-<h3>Priority 2: Web Search — Conditional and Explicit</h3>
-<p>Web search is <strong>not</strong> a fallback that activates automatically when knowledge documents don't have the answer. It requires both conditions simultaneously:</p>
-<ul>
-  <li><strong>Condition A:</strong> The "Search all websites" toggle in the Knowledge section must be turned ON.</li>
-  <li><strong>Condition B:</strong> Either the user explicitly requests a web search, or the instruction block contains a rule that triggers web search for a specific class of query.</li>
-</ul>
-<p>Meeting only Condition A (toggle ON with no instruction block rules) creates unpredictable behavior — the agent may or may not search the web depending on its own inference. This is not reliable enough for production agents.</p>
+<h3>Scoping Connector Data</h3>
+<p>Connectors are the least-known source type and the most useful in a delivery context, because they bring non-Microsoft systems into the same permission-respecting retrieval path. Most can be narrowed to a slice rather than the whole system:</p>
 
-<div class="callout">
-  <div class="callout-title">■ Key Finding</div>
-  <div class="callout-body">The toggle <strong>enables</strong> the capability. The instruction block <strong>controls</strong> when and how it fires. For any agent where web search behavior matters, both must be properly configured.</div>
-</div>
+<table>
+  <thead><tr><th>Connector</th><th>Scope it by</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">Azure DevOps Work Items</td><td>Area path</td></tr>
+    <tr><td class="td-navy">Azure DevOps Wiki</td><td>Project</td></tr>
+    <tr><td class="td-navy">Confluence</td><td>Space</td></tr>
+    <tr><td class="td-navy">Jira</td><td>Project</td></tr>
+    <tr><td class="td-navy">Google Drive</td><td>Folder</td></tr>
+    <tr><td class="td-navy">GitHub — PRs, issues, knowledge</td><td>Repository</td></tr>
+    <tr><td class="td-navy">ServiceNow Knowledge</td><td>Knowledge base</td></tr>
+    <tr><td class="td-navy">ServiceNow Tickets</td><td>Class, category or subcategory</td></tr>
+  </tbody>
+</table>
 
-<h3>Priority 3: General Training Knowledge — The Invisible Default</h3>
-<p>When no attached knowledge matches the query and no web search is triggered, the agent falls back to its general training knowledge. For topics where accuracy is critical — pricing, licensing, compliance, policies — explicitly block this fallback in the instruction block:</p>
+<p>Connectors must be enabled by an administrator before they appear. If an attribute you expect is missing from the scoping list, the usual causes are that the admin has not configured that scope, or that you personally lack access to it.</p>
 
-<div class="code-block">
-<span class="cm">// Prevent training knowledge fallback for sensitive topics</span>
-<span class="wn">NEVER</span> answer questions about pricing, licensing, or discount structures
-using general knowledge. If the attached knowledge documents do not
-contain the answer, respond: <span class="vl">'I don't have that in my current knowledge
-documents — please verify with the latest official source.'</span>
+<h3>Choosing a Source — the Short Version</h3>
+<div class="checklist">
+  <h4>Work down this list and stop at the first match</h4>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>Content that rarely changes and everyone may see</strong></span> — upload it. Simplest path, no permissions to reason about, but remember it is embedded and shared.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>Content a team already maintains</strong></span> — connect the SharePoint library. It updates itself and keeps per-user permissions intact. This is the default answer for most production agents.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>Content that lives on a public site</strong></span> — add the URL, within the rules in Section 3. Do not upload a stale PDF export of a page that is maintained live.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>Content in a non-Microsoft system</strong></span> — ask whether a Copilot connector exists before exporting anything by hand.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>Anything confidential</strong></span> — stop and read Section 6 before you attach it.</div></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 4 -->
-<span class="sec-chip">Section 4</span>
-<h2 id="section-4">Controlling Web Search Through the Instruction Block</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
+<span class="sec-chip">Section 5</span>
+<h2 id="section-5">The Limits That Bite</h2>
+
+<p>These are the constraints that produce the worst class of support call — the one where the agent is configured correctly, the builder can see the source listed in the panel, and it still does not work. None of them announce themselves.</p>
+
+<table>
+  <thead><tr><th>Limit</th><th>What happens when you cross it</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">512 MB per file — but <strong>30 MB for Excel</strong></td><td>The Excel ceiling is roughly seventeen times lower than everything else and is the one people hit unaware.</td></tr>
+    <tr><td class="td-navy">SharePoint list: 20,000 items / 50 MB raw text</td><td>The list is <strong>truncated</strong>. The agent notes the truncation in its response — the one silent failure in this table that is not silent.</td></tr>
+    <tr><td class="td-red">List attachments are never indexed</td><td>Agents do not answer from attachment contents. If your knowledge lives in files attached to list items, it is invisible.</td></tr>
+    <tr><td class="td-red">Selecting a site does not include its lists</td><td>Add the list by its own URL. A site URL sweeps documents and subpaths, never lists.</td></tr>
+    <tr><td class="td-red">Restricted SharePoint Search breaks SharePoint entirely</td><td>If your tenant has it enabled, <strong>SharePoint cannot be used as an agent knowledge source at all.</strong> Check this before designing around SharePoint.</td></tr>
+    <tr><td class="td-navy">Files take minutes to become usable</td><td>Newly uploaded SharePoint or OneDrive files show <strong>"Preparing"</strong> and are excluded from answers until ready. Demo failures are often just impatience — there is a refresh control on the Knowledge panel.</td></tr>
+    <tr><td class="td-navy">Excel across multiple sheets</td><td>Agents reason best when the data sits in one sheet. Multi-sheet workbooks degrade quietly.</td></tr>
+    <tr><td class="td-red">Embedded files are unsupported in GCC</td><td>Government Community Cloud tenants cannot use uploaded-file knowledge.</td></tr>
+    <tr><td class="td-navy">Embedded files ignore preferred data location</td><td>They are stored in the tenant's <strong>default geography</strong>, not the user's PDL. A data-residency commitment made on PDL does not cover them.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ Check Restricted SharePoint Search first <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">Of everything above, this is the one to verify before you design anything. Restricted SharePoint Search is a tenant-wide control that organizations turn on precisely because they are worried about Copilot oversharing — which means the tenants most likely to have it enabled are exactly the ones where an agent project is most likely to be proposed. Discovering it after building is a rebuild, not an adjustment.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 6 -->
+<span class="sec-chip">Section 6</span>
+<h2 id="section-6">What You Share When You Share the Agent</h2>
+
+<p>This section exists because the most serious mistakes in agent building are not retrieval mistakes. An agent that returns nothing is an annoyance. An agent that returns the wrong person's data is an incident.</p>
+
+<div class="callout red">
+  <div class="callout-title">⚠ Uploaded files travel with the agent <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body">When you upload a file as knowledge, <strong>every user who can access the agent can access that file's contents through it.</strong> There is no per-user filtering on embedded content — that is what "embedded" means.<br><br>
+  This is the opposite of how SharePoint and OneDrive sources behave, where each user only ever sees what their own permissions allow. Two agents that look identical in the builder can have completely different disclosure profiles depending on which source type you chose.<br><br>
+  <strong>Microsoft Purview Information Barriers are not enforced on embedded files.</strong> If your organization uses Information Barriers to keep groups apart, uploading a file into a shared agent goes around them.</div>
+</div>
+
+<h3>Sensitivity Labels, and Who Can Use the Agent</h3>
+<p>Labels do carry across, and they do more than annotate — they determine who can install the agent at all:</p>
+<ul>
+  <li>The agent's embedded content inherits the <strong>highest-priority label</strong> of any file you uploaded, or your tenant's default labeling policy, whichever ranks higher.</li>
+  <li>Only users with <strong>extract rights</strong> for that label can install and use the agent. Others see it listed with its description, and are blocked from adding it.</li>
+  <li>Agent <em>responses</em> are labeled too, taking the higher of the embedded content's label and any other knowledge source's label.</li>
+  <li>The label applies to embedded content only — <strong>not</strong> to SharePoint files or connector content the agent references.</li>
+  <li>You cannot currently set a label on the agent directly, and the label does not appear on its Agent Store listing.</li>
+</ul>
+
+<h3>Files That Fail Silently</h3>
+<p>Several file types are accepted by the uploader and then simply never used. In most of these cases <strong>no error is shown</strong> — the builder sees the file in the panel and assumes it works:</p>
+
+<table>
+  <thead><tr><th>File characteristic</th><th>What actually happens</th></tr></thead>
+  <tbody>
+    <tr><td class="td-red">Double Key Encryption (DKE)</td><td>Embedded but never used as knowledge. <strong>No error message.</strong></td></tr>
+    <tr><td class="td-red">Label with user-defined permissions</td><td>Agent creation <strong>fails</strong> — with no error message explaining why.</td></tr>
+    <tr><td class="td-red">Label with extract rights disabled</td><td>Agent creation <strong>fails</strong> — again with no explanation.</td></tr>
+    <tr><td class="td-red">Labeled and encrypted in another tenant</td><td>Embedded but never used as knowledge.</td></tr>
+    <tr><td class="td-warn">Password-protected</td><td>The one honest case — an error appears beside the file.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">■ The delivery rule that follows from all of this</div>
+  <div class="callout-body"><strong>Prefer SharePoint over uploads for anything that is not already public.</strong> It costs a few extra minutes to set up and it keeps per-user permissions, Information Barriers and label enforcement intact. Uploading is the faster path and the one that quietly transfers your permission model to "whoever has the agent."<br><br>
+  Before sharing any agent widely, ask one question: <em>if the least-privileged person in the share list read every uploaded file end to end, would that be acceptable?</em> If not, the content belongs in SharePoint, not in the agent.</div>
+</div>
+
+<p>For the tenant-level side of this problem — finding and remediating the oversharing that makes Copilot risky in the first place — see the <a href="https://copilotplaybook.com/shadowai.html" target="_blank" rel="noopener">Shadow AI Assessment Guide</a> and the oversharing remediation toolkit in the <a href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">Engagement Ops Guide</a>.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 7 -->
+<span class="sec-chip">Section 7</span>
+<h2 id="section-7">Controlling Web Search Through the Instruction Block</h2>
+
 
 <p>The instruction block is the <strong>control plane</strong> for web search. When the "Search all websites" toggle is ON, the agent has the <em>ability</em> to search — but the instruction block determines <em>when</em>, <em>what</em>, and <em>where</em> it searches. Properly tuning these instructions is the difference between a focused, reliable agent and one that retrieves information unpredictably from anywhere on the internet.</p>
 
@@ -818,9 +933,10 @@ documents — please verify with the latest official source.'</span>
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 5 -->
-<span class="sec-chip">Section 5</span>
-<h2 id="section-5">Curated vs. Open Web Search: The Critical Distinction</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 8 -->
+<span class="sec-chip">Section 8</span>
+<h2 id="section-8">Curated vs. Open Web Search: The Critical Distinction</h2>
+
 
 <p>When builders first enable web search, they often leave it completely open — meaning the agent can search anywhere on the internet. This creates a set of problems that can be hard to detect and even harder to explain to end users.</p>
 <p>If the "Search all websites" toggle is on without any instruction block constraints, the agent will use Bing to search the public internet. Potential sources include: forum posts, competitor websites (potentially biased), news articles (potentially incomplete), unofficial documentation mirrors, and websites optimized for search rankings rather than accuracy.</p>
@@ -837,26 +953,19 @@ documents — please verify with the latest official source.'</span>
   </tbody>
 </table>
 
-<h3>Sanctioned Source List — Common Categories</h3>
-
-<table>
-  <thead><tr><th>Query Category</th><th>Sanctioned Source</th><th>Reliability</th></tr></thead>
-  <tbody>
-    <tr><td class="td-navy">Pricing queries</td><td><code>microsoft.com/en-us/microsoft-365/business/compare-all-plans</code></td><td><span class="badge badge-y">★ High</span></td></tr>
-    <tr><td class="td-navy">Azure pricing</td><td><code>azure.microsoft.com/en-us/pricing/</code></td><td><span class="badge badge-y">★ High</span></td></tr>
-    <tr><td class="td-navy">Licensing documentation</td><td><code>learn.microsoft.com/en-us/microsoft-365/</code></td><td><span class="badge badge-y">★ High</span></td></tr>
-    <tr><td class="td-navy">CSP / Partner program</td><td><code>partner.microsoft.com/en-us/resources</code></td><td><span class="badge badge-y">★ High</span></td></tr>
-    <tr><td class="td-navy">Product roadmap</td><td><code>microsoft.com/en-us/microsoft-365/roadmap</code></td><td><span class="badge badge-m">◑ Medium</span></td></tr>
-    <tr class="td-warn"><td class="td-red">NOT sanctioned</td><td>Reddit, Quora, third-party blogs, news sites, competitor sites, community forums</td><td><span class="badge badge-n">✗ Blocked</span></td></tr>
-  </tbody>
-</table>
+<div class="callout warn">
+  <div class="callout-title">⚠ On "approved source" lists <span class="badge badge-na">Judgment</span></div>
+  <div class="callout-body">Earlier versions of this reference carried a table of sanctioned domains with reliability ratings. It has been removed. Ratings like that are editorial opinion wearing the costume of a technical fact, and the URLs behind them rot faster than the document gets revised.<br><br>
+  Build your own list instead, keep it short, and tie each entry to a query category you can name. A source list is only trustworthy if someone owns it — and an owner is easier to find for five domains than for fifty.</div>
+</div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 6 -->
-<span class="sec-chip">Section 6</span>
-<h2 id="section-6">Complete Instruction Block Patterns with Examples</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 9 -->
+<span class="sec-chip">Section 9</span>
+<h2 id="section-9">Complete Instruction Block Patterns with Examples</h2>
+
 
 <p>The following are production-quality instruction block patterns for common web search scenarios. Each pattern includes a trigger condition, a source specification, and a handling instruction. These can be used as-is or adapted for real Copilot agents.</p>
 
@@ -893,41 +1002,11 @@ or per-user costs for any M365 Business or Enterprise plan:
 </div>
 
 <div class="pattern-block">
-  <div class="pattern-label">Pattern 3 — Competitor Intelligence with Source Constraints</div>
-  <div class="pattern-desc">Use for competitive intelligence queries. Restricts retrieval to reliable sources and prevents the agent from citing competitor marketing materials as facts.</div>
-  <div class="code-block">
-<span class="hd">## WEB SEARCH RULES</span>
-<span class="cm">// Pattern 3: Competitor intelligence — curated sources</span>
-<span class="ck">When</span> the user asks about competitor products, pricing, or positioning:
-  <span class="ck">ALWAYS</span> use web search.
-  Retrieve <span class="ck">ONLY</span> from: <span class="st">g2.com</span> or <span class="st">gartner.com</span> for analyst comparison data.
-  <span class="wn">DO NOT</span> retrieve from: Reddit, Quora, third-party blogs, reseller sites.
-  <span class="ck">ALWAYS</span> include a retrieval date and note that information may change.
-  Frame findings as: <span class="vl">'Based on publicly available information as of [date]...'</span>
-  <span class="wn">NEVER</span> present competitor claims as verified facts.
-  </div>
-</div>
-
-<div class="pattern-block">
-  <div class="pattern-label">Pattern 4 — Time-Gated Web Search</div>
-  <div class="pattern-desc">Use when the agent should prefer attached documents, but fall back to web search for questions about current events or recent changes.</div>
-  <div class="code-block">
-<span class="hd">## WEB SEARCH RULES</span>
-<span class="cm">// Pattern 4: Time-gated — recent changes trigger web search</span>
-<span class="ck">When</span> the user asks about changes, updates, new features, or recent announcements:
-  Use web search from <span class="st">learn.microsoft.com</span>
-  and <span class="st">microsoft.com/en-us/microsoft-365/roadmap</span>.
-  Do not rely solely on attached documents for these queries.
-For all other queries, use attached documents first.
-  </div>
-</div>
-
-<div class="pattern-block">
-  <div class="pattern-label">Pattern 5 — Blocking Unwanted Web Search</div>
+  <div class="pattern-label">Pattern 3 — Blocking Unwanted Web Search</div>
   <div class="pattern-desc">Use to prevent the agent from searching the web for topics where only internal knowledge sources are allowed — confidential policies, internal pricing, or proprietary information.</div>
   <div class="code-block">
 <span class="hd">## WEB SEARCH RULES</span>
-<span class="cm">// Pattern 5: Explicit web search prohibition for sensitive topics</span>
+<span class="cm">// Pattern 3: Explicit web search prohibition for sensitive topics</span>
 <span class="wn">NEVER</span> use web search for questions about:
   <span class="st">- Internal discount structures or deal registration</span>
   <span class="st">- Customer-specific pricing or contract terms</span>
@@ -941,50 +1020,98 @@ If the documents don't have the answer, say:
   </div>
 </div>
 
-<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
-<hr>
-
-<!-- ═══════════════════════════════════════════════════════ SECTION 7 -->
-<span class="sec-chip">Section 7</span>
-<h2 id="section-7">Source Comparison and Decision Reference</h2>
-
-<p>Use this reference when deciding how to configure the Knowledge section and instruction block for a specific Copilot agent use case.</p>
-
-<h3>Master Source Reference</h3>
-<table>
-  <thead><tr><th>Source Type</th><th>Indexed?</th><th>Live?</th><th>Reliability</th><th>Best For</th><th>IB Needed?</th></tr></thead>
-  <tbody>
-    <tr><td class="td-navy">Uploaded File (.docx, .pdf, .txt)</td><td><span class="badge badge-y">Yes</span></td><td><span class="badge badge-n">No — static</span></td><td><span class="badge badge-y">High</span></td><td>Stable reference: policies, FAQs, playbooks</td><td>Optional</td></tr>
-    <tr><td class="td-navy">SharePoint Library</td><td><span class="badge badge-y">Yes</span></td><td><span class="badge badge-y">Yes — auto</span></td><td><span class="badge badge-y">High</span></td><td>Team-maintained, regularly updated docs</td><td>Optional</td></tr>
-    <tr><td class="td-navy">Teams Channel</td><td><span class="badge badge-y">Yes</span></td><td><span class="badge badge-y">Yes — live</span></td><td><span class="badge badge-m">Medium</span></td><td>Team feeds, shared links, channel files</td><td>Optional</td></tr>
-    <tr><td class="td-navy">URL (web search OFF)</td><td><span class="badge badge-n">No</span></td><td><span class="badge badge-n">No</span></td><td><span class="badge badge-n">None</span></td><td>Reference metadata only — no content retrieved</td><td>N/A</td></tr>
-    <tr><td class="td-navy">URL (web search ON)</td><td><span class="badge badge-n">No</span></td><td><span class="badge badge-m">Partial</span></td><td><span class="badge badge-m">Medium</span></td><td>Domain-scoped live search; not pre-indexed</td><td><span class="td-teal">YES — required</span></td></tr>
-    <tr><td class="td-navy">Open Web Search (Bing)</td><td><span class="badge badge-n">No</span></td><td><span class="badge badge-y">Yes — Bing</span></td><td><span class="badge badge-m">Variable</span></td><td>General current info — not for critical data</td><td><span class="td-teal">YES — trigger + constraints</span></td></tr>
-    <tr><td class="td-navy">Curated Web Search</td><td><span class="badge badge-n">No</span></td><td><span class="badge badge-y">Yes — scoped</span></td><td><span class="badge badge-y">High*</span></td><td>Live data from approved, trusted sources</td><td><span class="td-teal">YES — required</span></td></tr>
-    <tr><td class="td-navy" style="background:#fff8f0">Training Knowledge</td><td><span class="badge badge-na">N/A</span></td><td><span class="badge badge-na">N/A</span></td><td><span class="badge badge-m">May be stale</span></td><td>General knowledge; not for org-specific data</td><td><span style="color:#b45309;font-weight:600">YES — block for sensitive</span></td></tr>
-  </tbody>
-</table>
-<p style="font-size:.82rem;color:#6b7280">* High reliability applies only when the specified sources are authoritative and actively maintained.</p>
-
-<h3>Decision Tree: How to Configure Knowledge for Your Agent</h3>
-
-<div class="callout" style="margin:8px 0"><div class="callout-body"><strong>Is the content stable and changes infrequently?</strong><br>→ Upload it directly to the Knowledge section. No instruction block rules needed.</div></div>
-<div class="callout" style="margin:8px 0"><div class="callout-body"><strong>Does a team maintain this content in SharePoint?</strong><br>→ Connect the SharePoint library. The index updates automatically as content changes.</div></div>
-<div class="callout" style="margin:8px 0"><div class="callout-body"><strong>Do you need current, live data from the web?</strong><br>→ Enable "Search all websites" AND write explicit trigger rules with curated source URLs.</div></div>
-<div class="callout warn" style="margin:8px 0"><div class="callout-body"><strong>Are there topics where only internal documents are acceptable?</strong><br>→ Write explicit NEVER rules in the instruction block for those topics (Pattern 5).</div></div>
-<div class="callout warn" style="margin:8px 0"><div class="callout-body"><strong>Did you paste a URL into the Knowledge section?</strong><br>→ That URL does nothing unless the web search toggle is ON and you have instruction block trigger rules. Consider uploading the content as a document instead.</div></div>
-
-<div class="callout navy" style="margin-top:20px">
-  <div class="callout-title">■ Key Finding — Reliable Knowledge Configuration</div>
-  <div class="callout-body">The most reliable configuration for a production Copilot agent combines: <strong>uploaded files or SharePoint</strong> for stable, authoritative information; <strong>curated web search</strong> with explicit instruction block trigger rules naming exactly which sources to use; and <strong>explicit NEVER rules</strong> for topics where general training knowledge or open web retrieval is not acceptable. Agents built this way are predictable, auditable, and trustworthy.</div>
+<div class="pattern-block">
+  <div class="pattern-label">Pattern 4 — Blocking the Training-Knowledge Fallback</div>
+  <div class="pattern-desc">Use where a confidently wrong answer costs more than no answer — pricing, licensing, entitlement, compliance. Agent Builder cannot switch general knowledge off, so the next best thing is to make falling back to it an explicit, named refusal.</div>
+  <div class="code-block">
+<span class="cm">// Prevent training knowledge fallback for sensitive topics</span>
+<span class="wn">NEVER</span> answer questions about pricing, licensing, or discount structures
+using general knowledge. If the attached knowledge documents do not
+contain the answer, respond: <span class="vl">'I don't have that in my current knowledge
+documents — please verify with the latest official source.'</span>
+  </div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
 <hr>
 
-<!-- ═══════════════════════════════════════════════════════ SECTION 8 -->
-<span class="sec-chip new">Section 8 — New</span>
-<h2 id="section-8">Forcing Non-Negotiable Behaviors in Every Response</h2>
+<!-- ═══════════════════════════════════════════════════════ SECTION 10 -->
+<span class="sec-chip">Section 10</span>
+<h2 id="section-10">What It Costs, and Who Turns It On</h2>
+
+<p>Agent knowledge has a billing model, and it changes depending on which sources you attach. This is usually discovered late — after a pilot works and someone asks why it cannot simply be switched on for everyone.</p>
+
+<div class="g2">
+  <div class="callout green" style="margin:0">
+    <div class="callout-title">✓ Free — no license, no meter</div>
+    <div class="callout-body">Declarative agents grounded <strong>only</strong> in instructions and public websites cost nothing extra. They are available by default in Copilot Chat and appear in the store under your existing app settings.<br><br>
+    This is genuinely useful: a well-written instruction block plus four curated public URLs is a real agent, and it is free for every user with a Microsoft 365 subscription.</div>
+  </div>
+  <div class="callout navy" style="margin:0">
+    <div class="callout-title">■ Metered — the moment you touch tenant data</div>
+    <div class="callout-body">Agents that reach <strong>SharePoint, OneDrive, Teams, email or connector content</strong> are billed on metered consumption, and are <strong>off by default</strong> for Copilot Chat users.<br><br>
+    Turning them on requires an admin to set up pay-as-you-go billing or allocate prepaid capacity. Users with a Microsoft Copilot license need none of this — agent use is included.</div>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ The pilot trap <span class="badge badge-m">Observed</span></div>
+  <div class="callout-body">A licensed practitioner builds a SharePoint-grounded agent, tests it, and shares it with the team. For colleagues who also hold a Copilot license it works. For colleagues on Copilot Chat alone it is disabled, and nothing in the sharing flow explains why.<br><br>
+  Establish which of the two populations you are building for <em>before</em> you choose knowledge sources — it determines whether an admin conversation and an Azure subscription are on your critical path.</div>
+</div>
+
+<h3>Who Administers What</h3>
+<table>
+  <thead><tr><th>Control</th><th>Where it lives</th></tr></thead>
+  <tbody>
+    <tr><td class="td-navy">Agent inventory and metadata</td><td>Microsoft 365 admin center → Copilot → Agents</td></tr>
+    <tr><td class="td-navy">Enable, disable, assign, block or remove an agent</td><td>Microsoft 365 admin center → Copilot → Agents</td></tr>
+    <tr><td class="td-navy">Pay-as-you-go billing and consumption reporting</td><td>Microsoft 365 admin center, or Power Platform admin center</td></tr>
+    <tr><td class="td-navy">Who may share agents, and with whom</td><td>Microsoft 365 admin center → Copilot → Settings → Data access → Agents</td></tr>
+    <tr><td class="td-navy">Publishing to the organization's catalog</td><td>Requires <strong>admin approval</strong> — this is the governance gate</td></tr>
+    <tr><td class="td-navy">Sensitivity labels, audit logs, retention</td><td>Microsoft Purview — applies to agents like any other workload</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">■ Two governance principles worth quoting to a nervous customer <span class="badge badge-y">Documented</span></div>
+  <div class="callout-body"><strong>No new privileges.</strong> Agents respect existing Microsoft 365 permissions. If a user cannot open a SharePoint site, Teams channel or mailbox, the agent surfaces nothing from it. Building an agent does not create an access path that did not already exist — with the single exception of uploaded files, covered in Section 6.<br><br>
+  <strong>Standard visibility applies.</strong> Agents live inside Microsoft 365, so ordinary audit logs, activity reports, DLP and retention policies cover them. There is no separate, unmonitored surface.</div>
+</div>
+
+<p>If pay-as-you-go is on your path and the customer has never set up an Azure billing account, that is its own project — see <a href="https://copilotplaybook.com/azure-billing-setup.html" target="_blank" rel="noopener">Azure Billing Setup for CSP Partners</a>.</p>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 11 -->
+<span class="sec-chip">Section 11</span>
+<h2 id="section-11">Test It Before You Share It</h2>
+
+<p>Everything in this document describes configuration. None of it tells you whether the agent you just built actually works — and because the common failure modes are silent, an agent that is quietly broken looks exactly like one that is fine. Ten minutes of deliberate testing separates them.</p>
+
+<div class="checklist">
+  <h4>Run all six before sharing an agent with anyone</h4>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>1 · Ask something answerable only from your source.</strong></span> Pick a fact that exists in your document and essentially nowhere else — an internal process name, a specific figure, a local policy. If the agent answers a general question correctly, that proves nothing; the model may simply know it.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>2 · Ask something answerable nowhere.</strong></span> Invent a plausible question your sources cannot cover. A well-built agent says it does not know. One that confabulates is falling through to general knowledge — and in Agent Builder you cannot fully close that path, only make it visible.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>3 · Test from a second account.</strong></span> The single most valuable test. Sources behave differently per user — SharePoint filters by permission, uploaded files do not. Test with someone who has <em>less</em> access than you, and confirm both that they get the answers they should and that they cannot get the ones they should not.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>4 · Try to break the output contract.</strong></span> If you have written mandatory citation or disclaimer rules, ask for output in shapes you never tested — "reply as a one-line Teams message," "draft this as an email," "just give me the number." Rules usually break at reclassification, not at refusal. Section 12 explains why.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>5 · Ask a very long question.</strong></span> Relevant to Copilot Studio public-website sources, where the Bing request — your question plus conversation context — is capped at 2,048 characters. Long questions, long conversations and multibyte scripts such as Japanese, Chinese and Korean push past it, and the search is skipped with no error.</div></div>
+  <div class="cl-item"><div class="cl-box"></div><div><span class="cl-label"><strong>6 · Verify each source individually.</strong></span> With several sources attached, one dead source hides behind the others. Ask a question that can only be answered by each source in turn. This is how you catch the URL that exceeded two path levels and was never queried.</div></div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">■ Retest after every knowledge change</div>
+  <div class="callout-body">Adding a twenty-first specified file changes retrieval behavior for the whole agent — beyond twenty, only the most relevant twenty are fully searched. Adding a large document can crowd out a smaller one. Knowledge changes are not additive, and an agent that worked last month with fewer sources is not evidence that it works now.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 12 -->
+<span class="sec-chip">Section 12</span>
+<h2 id="section-12">Forcing Non-Negotiable Behaviors in Every Response</h2>
+
 
 <p>Some agent behaviors must fire on every response — citing sources, stamping retrieval dates, forcing retrieval before answering, labeling confidence, distinguishing official from unofficial sources, attaching disclaimers. These are not suggestions the agent can optimize away when the output format changes. They are <strong>contractual obligations on the response itself.</strong></p>
 <p>The failure mode is almost always the same: the builder writes a "MANDATORY" rule in the middle of the instruction block, the agent classifies a user request into a new output shape (an email draft, a one-liner, a summarization task), and the rule silently stops firing because the agent no longer recognizes it as applicable. The rule didn't fail — <strong>the agent's interpretation of when the rule applies did.</strong></p>
@@ -1104,6 +1231,38 @@ cannot name the authoritative URL, it
 <div class="callout navy" style="margin-top:20px">
   <div class="callout-title">■ Key Finding — Section 8</div>
   <div class="callout-body">The most common cause of "my agent doesn't do X consistently" is not a missing rule. It is a rule written as <strong>compliance instead of as an output contract</strong>, placed after the classification logic, and left with escape hatches the model can read itself into. Fixing consistency <strong>rarely requires more rules</strong> — it requires rewriting the existing rule as a non-negotiable element of the response itself. The difference between an invitation to comply and a contractual obligation is whether the behavior shows up in every response the agent produces, or only in the output formats the builder explicitly tested.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ SECTION 13 -->
+<span class="sec-chip">Section 13</span>
+<h2 id="section-13">Sources and Further Reading</h2>
+
+<p>Every behavior, limit and figure in this reference traces to one of the pages below. Each was retrieved and verified on <strong>27 August 2026</strong>. This space moves quickly — re-verify before quoting any of it to a customer.</p>
+
+<h3>Primary sources</h3>
+<ol>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/agent-builder-add-knowledge" target="_blank" rel="noopener">Microsoft Learn — Add knowledge sources to your declarative agent</a> (updated Jul 29 2026). Source of every source-type ceiling, the sensitivity-label behavior, and the silent-failure table in Section 6.</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/optimize-content-retrieval" target="_blank" rel="noopener">Microsoft Learn — Optimize content retrieval in your agent</a> (updated Jul 29 2026). Source of the 750–1,000 page indexing depth, the 36,000-character SharePoint guidance, the 20-file threshold and the 300-page total.</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-add-public-website" target="_blank" rel="noopener">Microsoft Learn — Add a public website as a knowledge source</a> (updated Aug 3 2026). Source of the URL rules in Section 3, including path depth, redirect behavior, subdomain scope and the 2,048-character Bing request cap.</li>
+  <li><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/copilot-studio-experience" target="_blank" rel="noopener">Microsoft Learn — Choose between Agent Builder and Copilot Studio</a> (updated Jul 29 2026). Source of Section 1's dividing line and the governance principles in Section 10.</li>
+  <li><a href="https://learn.microsoft.com/en-us/copilot/agents" target="_blank" rel="noopener">Microsoft Learn — Agents for Microsoft Copilot Chat</a> (updated Aug 18 2026). Source of the free-versus-metered split in Section 10.</li>
+</ol>
+
+<h3>Related reading on this site</h3>
+<ol>
+  <li><a href="https://copilotplaybook.com/CopilotApp.html">Copilot Field Guide</a> — which Copilot surface you are in, and whether your license includes agents at all.</li>
+  <li><a href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">CPB Engagement Ops Guide</a> — the agent build engagement worklist, and the oversharing remediation toolkit.</li>
+  <li><a href="https://copilotplaybook.com/shadowai.html" target="_blank" rel="noopener">Shadow AI Assessment Guide</a> — the Purview governance model behind Section 6.</li>
+  <li><a href="https://copilotplaybook.com/azure-billing-setup.html" target="_blank" rel="noopener">Azure Billing Setup for CSP Partners</a> — prerequisite when metered agent consumption enters a deal.</li>
+</ol>
+
+<div class="callout warn">
+  <div class="callout-title">⚠ How to read the confidence markers</div>
+  <div class="callout-body">Claims in this document carry one of three states. <span class="badge badge-y">Documented</span> means Microsoft publishes it and the source is listed above. <span class="badge badge-m">Observed</span> means it is reliable behavior seen in the product but not written down, so it may change without notice. <span class="badge badge-na">Judgment</span> means it is our recommendation rather than a Microsoft statement.<br><br>
+  Anything unmarked is documented. Microsoft does not publish agent system prompts, chunking parameters or ranking internals — where this document describes those, it is describing observed behavior, and it says so.</div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">↑ Back to Table of Contents</a></div>
