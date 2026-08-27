@@ -160,6 +160,28 @@ p  { margin: .5rem 0; }
 .chipbtn.on { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal); }
 .chipbtn.on::before { content:"\2713\00a0"; font-weight:800; }
 .chipnote { font-size:.76rem; color:#9ca3af; align-self:center; }
+.modecards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:4px 0 22px; }
+.modecard { text-align:left; border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:16px 18px; cursor:pointer; font-family:inherit; }
+.modecard:hover { border-color:var(--ltblue); }
+.modecard.on { border-color:var(--teal); background:var(--accent); box-shadow:inset 0 0 0 1px var(--teal); }
+.modecard .mc-t { font-size:.95rem; font-weight:700; color:var(--navy); margin-bottom:5px; }
+.modecard.on .mc-t::before { content:"\2713\00a0"; color:var(--teal); }
+.modecard .mc-d { font-size:.83rem; color:#6b7280; line-height:1.55; }
+.basisbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; border:1px solid var(--border); border-left:4px solid #9ca3af; border-radius:0 var(--radius) var(--radius) 0; background:var(--muted); padding:13px 18px; }
+.basisbar.sell { border-left-color:var(--teal); background:#f3fbfc; }
+.basisbar .bb-t { font-size:.85rem; color:#374151; line-height:1.6; }
+.basisbar .bb-t b { color:var(--navy); }
+.ratehead { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin:26px 0 10px; }
+.ratehead .rh-t { font-size:.85rem; font-weight:700; color:var(--navy); }
+.quickfill { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--muted); border:1px solid var(--border); border-radius:6px; padding:12px 15px; margin-bottom:14px; font-size:.84rem; color:#374151; }
+.quickfill input[type=number] { width:92px; padding:7px 9px; border:1px solid var(--border); border-radius:6px; font-size:.86rem; font-family:inherit; text-align:right; }
+.dtable td.money input { width:96px; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font-size:.86rem; text-align:right; font-family:inherit; }
+.dtable td.money input.sell { border-color:var(--teal); font-weight:700; color:var(--navy); }
+.marg { font-weight:700; }
+.marg.pos { color:#0f766e; }
+.marg.neg { color:#b91c1c; }
+.marg.zero { color:#9ca3af; font-weight:400; }
+
 .shapenote { margin-top:12px; background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:13px 17px; max-width:80ch; }
 .shapenote.custom { border-left-color:#9ca3af; }
 .shapenote .sn-eg { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px; }
@@ -329,6 +351,8 @@ footer.pagefoot a { color:#6b7280; }
   body.print-customer #cardNext,
   body.print-customer #cardBilling,
   body.print-customer #cardRecap,
+  body.print-customer .partner-only,
+  body.print-customer #basisBar,
   body.print-customer .whybox,
   body.print-customer #assumeCard { display:none !important; }
   body.print-internal .deriv { display:block; }
@@ -373,6 +397,17 @@ footer.pagefoot a { color:#6b7280; }
 
     <!-- ══════════ THE INTERVIEW ══════════ -->
     <div class="col-build no-print" id="buildCol">
+
+      <!-- STEP 0 · THE RATE CARD -->
+      <div class="wcard screen" id="step0">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">&#36;</div><div class="wc-title">
+            <h2>Your pricing &mdash; set this once, before the call</h2>
+            <div class="wc-sub">Every licence figure in this tool runs on the basis you pick here. Pick wrong and you will show a customer a number they are never going to pay.</div></div></div>
+          <div id="pricingBlock"></div>
+        </div>
+      </div>
 
       <!-- STEP 1 -->
       <div class="wcard screen" id="step1">
@@ -524,6 +559,8 @@ footer.pagefoot a { color:#6b7280; }
         <p id="sayLine"></p>
       </div>
 
+      <div class="basisbar span2 no-print" id="basisBar"></div>
+
       <div class="ribbon span2" id="ribbon">
         <div class="ribbon-head"><span>The narrowing &mdash; click any step to see its math</span><span id="ribbonBand"></span></div>
         <div class="ribbon-chain" id="ribbonChain"></div>
@@ -575,10 +612,6 @@ footer.pagefoot a { color:#6b7280; }
         <div class="rc-body" id="assumeBody"></div>
       </div>
 
-      <details class="wcard span2 no-print" id="advCard" style="padding:0;">
-        <summary style="cursor:pointer;padding:20px 32px;font-size:.9rem;font-weight:700;color:var(--teal);list-style:none;">&#9881; Prices &amp; your service rates &mdash; edit once, reused everywhere</summary>
-        <div style="padding:0 32px 30px;"><div id="priceBlock"></div></div>
-      </details>
 
       <div class="span2 no-print" style="border-top:1px solid var(--border);padding-top:22px;">
         <div class="actionsrow">
@@ -763,16 +796,65 @@ footer.pagefoot a { color:#6b7280; }
       governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
                     namedCostOwner:'unsure', insuranceRenewal:'unsure' },
       partnerServices: { retainerLo:4, retainerHi:8, assessLo:1500, assessHi:7500 },
-      priceOverrides: {}
+      // priceOverrides corrects a stale Microsoft LIST price. It is not a sell price.
+      priceOverrides: {},
+      // The partner's rate card. mode drives every licence figure in the model.
+      //   list -> Microsoft list price (what Microsoft charges)
+      //   sell -> what this partner bills the customer, licence plus their margin
+      pricing: { mode:'list', creditSellUsd:0.01, sell:{}, cost:{},
+                 uplift:{ type:'amount', value:0 } }
     };
   }
 
   /* ── Helpers ──────────────────────────────────────────────────────────── */
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function n(v, d) { var x = Number(v); return isFinite(x) ? x : (d || 0); }
+  function num_(v) { return (v != null && v !== '' && isFinite(Number(v))) ? Number(v) : null; }
+
+  /* Microsoft's list price, or the partner's correction of a stale one. */
+  function skuListPrice(state, id) {
+    var o = num_(state.priceOverrides && state.priceOverrides[id]);
+    return o != null ? o : (SKU_BY_ID[id] ? SKU_BY_ID[id].usd : 0);
+  }
+  /* What this partner bills the customer. Unset falls back to list, and
+     compute() raises a flag rather than letting that pass silently. */
+  function skuSellPrice(state, id) {
+    var v = num_(state.pricing && state.pricing.sell && state.pricing.sell[id]);
+    return v != null ? v : skuListPrice(state, id);
+  }
+  /* What the partner pays after distributor discount. Optional — null means
+     "not told", and margin is simply not computed rather than guessed. */
+  function skuCostPrice(state, id) {
+    return num_(state.pricing && state.pricing.cost && state.pricing.cost[id]);
+  }
+  /* The single price every calculation in this engine runs on. */
   function skuPrice(state, id) {
-    var o = state.priceOverrides && state.priceOverrides[id];
-    return o != null ? Number(o) : (SKU_BY_ID[id] ? SKU_BY_ID[id].usd : 0);
+    return (state.pricing && state.pricing.mode === 'sell')
+      ? skuSellPrice(state, id) : skuListPrice(state, id);
+  }
+  /* The governance add-ons are resold exactly like the base SKUs. */
+  function addonListPrice(state, id) {
+    var o = num_(state.priceOverrides && state.priceOverrides[id]);
+    return o != null ? o : (ADDONS[id] ? ADDONS[id].usd : 0);
+  }
+  function addonPrice(state, id) {
+    if (state.pricing && state.pricing.mode === 'sell') {
+      var v = num_(state.pricing.sell && state.pricing.sell[id]);
+      if (v != null) return v;
+    }
+    return addonListPrice(state, id);
+  }
+
+  /* Microsoft meters credits at $0.01. A partner reselling the meter may bill
+     a different rate — but only the customer-facing meter moves. Microsoft's
+     own economics (the P3 purchase, the published per-task envelope) stay at
+     $0.01 because those are decisions made against Microsoft, not the customer. */
+  function creditUsd(state) {
+    if (state.pricing && state.pricing.mode === 'sell') {
+      var v = num_(state.pricing.creditSellUsd);
+      if (v != null) return v;
+    }
+    return CONST.CREDIT_USD;
   }
   // Bundled SKUs discount Copilot below standalone. The invoice ratio needs the slice.
   function copilotComponent(state, id) {
@@ -819,16 +901,26 @@ footer.pagefoot a { color:#6b7280; }
     }
     function W(id, sev, msg, fixes) { warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [] }); }
 
+    var CU = creditUsd(state);                 // customer-facing credit rate
+    var sellMode = state.pricing && state.pricing.mode === 'sell';
+
     /* F1–F5 · the funnel */
     var employees = Math.max(0, n(state.org.totalEmployees, 0));
     T('F1','funnel','Total employees','asked','', employees,'people','partner');
 
     var inv = (state.licenseInventory || []).filter(function (l) { return SKU_BY_ID[l.skuId]; });
     var copilotLicensed = 0, nonCopilotSeats = 0, licenseMonthly = 0, copilotSpend = 0;
+    var licenseList = 0, licenseSell = 0, licenseCost = 0, anyCost = false, anySellSet = false;
     var invDetail = [];
     inv.forEach(function (l) {
       var s = SKU_BY_ID[l.skuId], seats = Math.max(0, n(l.seats, 0)), price = skuPrice(state, l.skuId);
       licenseMonthly += seats * price;
+      licenseList += seats * skuListPrice(state, l.skuId);
+      licenseSell += seats * skuSellPrice(state, l.skuId);
+      var c = skuCostPrice(state, l.skuId);
+      if (c != null && seats > 0) { anyCost = true; licenseCost += seats * c; }
+      else { licenseCost += seats * skuListPrice(state, l.skuId); }
+      if (num_(state.pricing && state.pricing.sell && state.pricing.sell[l.skuId]) != null) anySellSet = true;
       if (s.copilot) { copilotLicensed += seats; copilotSpend += seats * copilotComponent(state, l.skuId); }
       else if (!s.addOn) { nonCopilotSeats += seats; }
       if (seats > 0) invDetail.push(seats + '×' + s.name + ' @$' + price.toFixed(2));
@@ -946,10 +1038,11 @@ footer.pagefoot a { color:#6b7280; }
       state.calibrated ? null : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
         ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
 
-    var monthlyCowork = monthlyCredits * CONST.CREDIT_USD;
-    T('F11','cost','Monthly Cowork cost', 'credits × $0.01',
-      monthlyCredits.toLocaleString() + ' × $0.01', monthlyCowork,'usd',
-      state.calibrated ? 'measured' : 'ms-modeled');
+    var monthlyCowork = monthlyCredits * CU;
+    var rateLbl = '$' + (CU < 0.01 ? CU.toFixed(4) : CU.toFixed(CU === Math.round(CU * 100) / 100 ? 2 : 4));
+    T('F11','cost','Monthly Cowork cost', 'credits × ' + rateLbl,
+      monthlyCredits.toLocaleString() + ' × ' + rateLbl, monthlyCowork,'usd',
+      sellMode && CU !== CONST.CREDIT_USD ? 'partner' : (state.calibrated ? 'measured' : 'ms-modeled'));
 
     var band = state.calibrated ? CONST.BAND.measured : CONST.BAND.modeled;
     var coworkLo = monthlyCowork * (1 - band), coworkHi = monthlyCowork * (1 + band);
@@ -962,6 +1055,8 @@ footer.pagefoot a { color:#6b7280; }
         '. Defensible, but say it as a modelled figure.', []);
 
     // Per-task sanity against the published envelope
+    // Deliberately CONST.CREDIT_USD, not CU: this validates the model against
+    // Microsoft's published $0.70–$15 per-task range, which is quoted at $0.01.
     ['light','medium','heavy'].forEach(function (t) {
       var usd = n(TC[t]) * CONST.CREDIT_USD * effortMult;
       if (usd < CONST.TASK_ENVELOPE.lo || usd > CONST.TASK_ENVELOPE.hi)
@@ -970,7 +1065,25 @@ footer.pagefoot a { color:#6b7280; }
     });
 
     /* Licence cost */
-    T('F8','cost','Monthly licence cost','Σ (seats × SKU price)', invDetail.join(' + '), licenseMonthly,'usd','ms-verified');
+    T('F8','cost','Monthly licence cost',
+      sellMode ? 'Σ (seats × your sell price)' : 'Σ (seats × Microsoft list price)',
+      invDetail.join(' + '), licenseMonthly,'usd', sellMode ? 'partner' : 'ms-verified');
+
+    if (sellMode) {
+      assume.push({ id:'pricing-basis', label:'Licence pricing basis',
+        note:'Every licence figure on this page is your own sell price, not Microsoft list. ' +
+             'Microsoft list for the same inventory is $' + Math.round(licenseList).toLocaleString() +
+             '/month; you are showing $' + Math.round(licenseSell).toLocaleString() + '/month.',
+        prov:'partner' });
+      if (!anySellSet)
+        W('V-17','warn','You are in sell-price mode but no sell price has been entered, so every ' +
+          'licence is still priced at Microsoft list. Set your rate card before you show this to a customer.', []);
+      if (CU !== CONST.CREDIT_USD)
+        assume.push({ id:'pricing-credit', label:'Credit resale rate',
+          note:'The Cowork meter is priced at your rate of ' + rateLbl + ' a credit. Microsoft meters it at $0.01. ' +
+               'The PayGo-versus-P3 comparison below deliberately stays on Microsoft\u2019s $0.01, because that is a ' +
+               'purchase you make from Microsoft, not a price the customer pays.', prov:'partner' });
+    }
     var anchorSpend = copilotLicensed * CONST.BENCHMARK.anchorUsd;
 
     /* Ratios — two, because there are two questions */
@@ -1039,6 +1152,12 @@ footer.pagefoot a { color:#6b7280; }
       greenfield:greenfield, monthlyCredits:monthlyCredits, monthlyCowork:monthlyCowork,
       coworkLo:coworkLo, coworkHi:coworkHi, band:band, perActive:perActive,
       licenseMonthly:licenseMonthly, copilotSpend:copilotSpend, anchorSpend:anchorSpend,
+      sellMode:sellMode, creditUsd:CU, creditRateLabel:rateLbl,
+      licenseList:licenseList, licenseSell:licenseSell,
+      licenseCost:anyCost ? licenseCost : null,
+      licenseMarginMonthly:anyCost ? (licenseMonthly - licenseCost) : null,
+      licenseUpliftMonthly:licenseSell - licenseList,
+      coworkAtMsRate: monthlyCredits * CONST.CREDIT_USD,
       ratioActual:ratioActual, ratioBench:ratioBench, reconciliation:reconciliation,
       annualCredits:annualCredits, paygoAnnual:paygoAnnual, cccuRequired:cccuRequired,
       commitCccu:commitCccu, discount:disc, p3Annual:p3Annual, p3Saving:p3Saving, breakeven:breakeven,
@@ -1063,8 +1182,9 @@ footer.pagefoot a { color:#6b7280; }
   /* ── Scaling scenarios (competitor table stakes) ──────────────────────── */
   function scenarios(state, ctx) {
     var TC = state.tierCredits, A = ctx.effectiveSeats, base = ctx.monthlyCowork;
+    var CU = creditUsd(state);
     function row(label, extraCredits) {
-      var extra = extraCredits * CONST.CREDIT_USD;
+      var extra = extraCredits * CU;
       return { label:label, credits:extraCredits, usd:extra, allIn:base + extra + ctx.licenseMonthly };
     }
     return [
@@ -1137,7 +1257,7 @@ footer.pagefoot a { color:#6b7280; }
       { id:'bstd_cop',   label:'Business Standard with Copilot', per:skuPrice(state,'bstd_cop'), cap:300 },
       { id:'bprem_cop',  label:'Business Premium with Copilot', per:skuPrice(state,'bprem_cop'), cap:300 },
       { id:'bprem_cop_suites', label:'Business Premium with Copilot + Defender/Purview Suites',
-        per:skuPrice(state,'bprem_cop') + ADDONS.both_suites.usd, cap:300 },
+        per:skuPrice(state,'bprem_cop') + addonPrice(state,'both_suites'), cap:300 },
       { id:'cop_ent',    label:'M365 Copilot enterprise add-on', per:skuPrice(state,'cop_ent'), cap:null },
       { id:'e7',         label:'Microsoft 365 E7', per:skuPrice(state,'e7'), cap:null }
     ];
@@ -1190,7 +1310,10 @@ footer.pagefoot a { color:#6b7280; }
     }
 
     // E7 arithmetic — every component Microsoft-verified
-    var e7 = { alacarte: 60 + 30 + 12 + 15, list: skuPrice(state,'e7') };
+    // Deliberately list, not sell: this compares Microsoft's bundle against
+    // Microsoft's own a-la-carte components. Reselling both sides at a margin
+    // would not change the argument, and mixing bases would corrupt it.
+    var e7 = { alacarte: 60 + 30 + 12 + 15, list: skuListPrice(state,'e7') };
     e7.delta = e7.alacarte - e7.list;
     e7.pct = e7.alacarte > 0 ? (e7.delta / e7.alacarte) * 100 : 0;
 
@@ -1228,7 +1351,10 @@ footer.pagefoot a { color:#6b7280; }
     P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
     defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
-    skuPrice:skuPrice, copilotComponent:copilotComponent, weakest:weakest
+    skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
+    addonPrice:addonPrice, addonListPrice:addonListPrice,
+    skuCostPrice:skuCostPrice, creditUsd:creditUsd,
+    copilotComponent:copilotComponent, weakest:weakest
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 
@@ -1654,37 +1780,214 @@ footer.pagefoot a { color:#6b7280; }
     });
   }
 
-  /* ═══ Advanced prices ═══ */
-  function renderPrices() {
-    var skus = E.SKUS.filter(function (s) { return s.copilot; });
-    $('priceBlock').innerHTML =
-      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:10px;">Microsoft list prices ' + provPill('ms-verified') + '</div>' +
-      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
-      skus.map(function (s) {
-        return '<div class="field"><label>' + esc(s.name) + (s.promoEnds ? ' <span class="pill estimate">promo ends ' + s.promoEnds + '</span>' : '') + '</label>' +
-          '<input type="number" step="0.5" min="0" data-price="' + s.id + '" value="' + E.skuPrice(state, s.id) + '"></div>';
-      }).join('') + '</div>' +
-      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin:20px 0 10px;">Effort model ' + provPill('ms-modeled') + '</div>' +
-      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
-        '<div class="field"><label>Effort step multiplier</label><input type="number" step="0.01" min="1" max="3" id="pStep" value="' + state.effort.step.toFixed(4) + '"></div>' +
+  /* ═══ STEP 0 · the rate card ═══ */
+  function money(v) { return v == null ? '' : String(v); }
+
+  function renderPricing() {
+    var pr = state.pricing, sell = pr.mode === 'sell';
+    var skus = E.SKUS.slice().sort(function (a, b) { return (b.copilot ? 1 : 0) - (a.copilot ? 1 : 0); });
+    Object.keys(E.ADDONS).forEach(function (id) {
+      skus.push({ id:id, name:E.ADDONS[id].name, copilot:false, addonRow:true });
+    });
+
+    var rows = skus.map(function (k) {
+      var list = k.addonRow ? E.addonListPrice(state, k.id) : E.skuListPrice(state, k.id);
+      var sp   = k.addonRow ? E.addonPrice(state, k.id)
+                            : E.skuSellPrice(state, k.id);
+      if (k.addonRow && state.pricing.mode !== 'sell') sp = list;
+      var cost = E.skuCostPrice(state, k.id);
+      var basis = cost != null ? cost : list;
+      var m = sp - basis;
+      var mcls = Math.abs(m) < 0.005 ? 'zero' : (m > 0 ? 'pos' : 'neg');
+      return '<tr>' +
+        '<td><b>' + esc(k.name) + '</b>' + (k.copilot ? ' <span class="check" title="Includes Copilot \u2014 can use Cowork">&#10003;</span>' : '') +
+          (k.addonRow ? '<div style="font-size:.7rem;color:#9ca3af;margin-top:3px;">Governance add-on \u2014 drives the licensing recommendation</div>' : '') +
+          (k.promoEnds ? '<div style="font-size:.7rem;color:#9ca3af;margin-top:3px;">Promo price \u2014 ends ' + k.promoEnds + '</div>' : '') + '</td>' +
+        '<td class="money"><input type="number" step="0.5" min="0" data-plist="' + k.id + '" value="' + list + '"></td>' +
+        '<td class="money partner-only"><input type="number" step="0.5" min="0" placeholder="\u2014" data-pcost="' + k.id + '" value="' + money(cost) + '"></td>' +
+        '<td class="money"><input type="number" step="0.5" min="0" class="sell" data-psell="' + k.id + '" value="' + sp.toFixed(2) + '"></td>' +
+        '<td class="num partner-only"><span class="marg ' + mcls + '">' + (m >= 0 ? '+' : '\u2212') + usd(Math.abs(m), 2) + '</span></td>' +
+      '</tr>';
+    }).join('');
+
+    $('pricingBlock').innerHTML =
+      '<div class="callout"><div class="callout-title">Why this screen exists</div><div class="callout-body">' +
+        '<p>Microsoft lists Business Basic + Copilot Business at <b>$21</b>. You probably do not buy it at $21, and your customer almost certainly does not pay $21 \u2014 by the time your managed service is wrapped around it they might be billed <b>$50 a seat</b>. A cost conversation built on list price is a cost conversation the customer will not recognise when the invoice arrives.</p>' +
+        '<p>So this tool asks first: <b>whose price are we showing?</b> Everything downstream \u2014 the monthly figure, the seat-versus-meter split, the licensing recommendation, the leave-behind you print \u2014 runs on your answer.</p>' +
+      '</div></div>' +
+
+      '<div class="modecards">' +
+        '<button class="modecard' + (sell ? '' : ' on') + '" data-pmode="list">' +
+          '<div class="mc-t">Microsoft list price</div>' +
+          '<div class="mc-d">Show what Microsoft charges. Right for an early conversation about what the platform costs, for comparing SKUs on level terms, and for anything you might have to defend against Microsoft\u2019s own published pricing.</div></button>' +
+        '<button class="modecard' + (sell ? ' on' : '') + '" data-pmode="sell">' +
+          '<div class="mc-d" style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:4px;">Recommended in front of a customer</div>' +
+          '<div class="mc-t">My sell price</div>' +
+          '<div class="mc-d">Show what this customer will actually be billed \u2014 licence plus your margin and managed service. The number matches the invoice, so nobody is surprised later.</div></button>' +
       '</div>' +
-      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across the four steps from Light to Max. One stated assumption &mdash; that effort consumes the whole residual &mdash; deliberately conservative-high.</p>' +
-      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin:20px 0 10px;">Your service rates ' + provPill('editorial') + '</div>' +
+
+      (sell
+        ? '<div class="quickfill">' +
+            '<b>Fill every sell price from Microsoft list:</b>' +
+            '<span>list</span>' +
+            '<div class="seg" style="width:150px;" id="upliftType">' +
+              '<button data-ut="amount"' + (pr.uplift.type === 'amount' ? ' class="on"' : '') + '>+ $</button>' +
+              '<button data-ut="multiple"' + (pr.uplift.type === 'multiple' ? ' class="on"' : '') + '>&times;</button>' +
+            '</div>' +
+            '<input type="number" step="0.5" min="0" id="upliftVal" value="' + pr.uplift.value + '">' +
+            '<span>' + (pr.uplift.type === 'amount' ? 'per seat per month' : 'the list price') + '</span>' +
+            '<button class="btn" id="upliftApply" style="padding:8px 14px;">Apply to all</button>' +
+            '<span style="color:#9ca3af;">Then adjust any single line by hand.</span>' +
+          '</div>'
+        : '') +
+
+      '<div class="tablewrap"><table class="dtable"><thead><tr>' +
+        '<th>Licence</th>' +
+        '<th style="width:120px;text-align:right;">Microsoft list</th>' +
+        '<th style="width:130px;text-align:right;" class="partner-only">Your cost <span style="font-weight:400;text-transform:none;">(optional)</span></th>' +
+        '<th style="width:130px;text-align:right;">Your sell price</th>' +
+        '<th style="width:120px;text-align:right;" class="partner-only">Margin / seat</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<p class="srcline">Microsoft list is pre-filled from the July 2026 Partner Center price list and is editable in case a price has moved. <b>Your cost</b> is what you pay after distributor discount \u2014 optional, used only to show your margin, and never printed on a customer leave-behind. <b>Your sell price</b> is what the customer is billed; leave one blank and it falls back to list.</p>' +
+
+      (sell
+        ? '<div class="ratehead"><div class="rh-t">The Cowork meter</div></div>' +
+          '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
+            '<div class="field"><label>What you bill per Copilot Credit</label><input type="number" step="0.001" min="0" id="pCredit" value="' + state.pricing.creditSellUsd + '"></div>' +
+          '</div>' +
+          '<p class="srcline">Microsoft meters credits at <b>$0.01</b>. If you pass the meter through at cost, leave this at 0.01. The PayGo-versus-P3 comparison in the output deliberately stays on Microsoft\u2019s $0.01 whatever you put here \u2014 that is a purchase you make from Microsoft, not a price the customer pays.</p>'
+        : '') +
+
+      '<div class="ratehead"><div class="rh-t">Your service rates ' + provPill('editorial') + '</div></div>' +
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
         '<div class="field"><label>Governance retainer $/seat/mo (low)</label><input type="number" step="0.5" id="pRetLo" value="' + state.partnerServices.retainerLo + '"></div>' +
         '<div class="field"><label>&hellip;and high</label><input type="number" step="0.5" id="pRetHi" value="' + state.partnerServices.retainerHi + '"></div>' +
         '<div class="field"><label>Shadow AI assessment (low)</label><input type="number" step="250" id="pAssLo" value="' + state.partnerServices.assessLo + '"></div>' +
         '<div class="field"><label>&hellip;and high</label><input type="number" step="250" id="pAssHi" value="' + state.partnerServices.assessHi + '"></div>' +
       '</div>' +
-      '<p class="srcline">Your service prices are never blended into Microsoft totals and are stored only in this browser session.</p>';
+      '<p class="srcline">These drive the recommended next step in the output. They are never blended into a Microsoft total \u2014 the output keeps a visual break between what Microsoft charges and what you charge.</p>' +
 
-    Array.prototype.forEach.call($('priceBlock').querySelectorAll('[data-price]'), function (inp) {
-      inp.addEventListener('input', function () { state.priceOverrides[inp.getAttribute('data-price')] = +inp.value || 0; refresh(); });
+      '<div class="ratehead"><div class="rh-t">Effort model ' + provPill('ms-modeled') + '</div></div>' +
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
+        '<div class="field"><label>Effort step multiplier</label><input type="number" step="0.01" min="1" max="3" id="pStep" value="' + state.effort.step.toFixed(4) + '"></div>' +
+      '</div>' +
+      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across the four steps from Light to Max \u2014 deliberately conservative-high.</p>' +
+
+      '<div class="nosave" style="margin:26px 0 0;"><span style="font-size:1.05rem;">&#128190;</span><div class="ns-t">' +
+        '<b>Save this rate card and reuse it.</b> Nothing here is stored in this browser, so download it once and load it at the start of every future session \u2014 it carries your prices and service rates, and no customer data at all.' +
+        '<div style="margin-top:10px;display:flex;gap:18px;flex-wrap:wrap;">' +
+          '<input type="file" id="rateFile" accept="application/json" style="display:none;">' +
+          '<button class="linkbtn" id="btnRateDown">&#11015; Download my rate card (.json)</button>' +
+          '<button class="linkbtn" id="btnRateLoad">&#11014; Load a rate card</button>' +
+        '</div></div></div>';
+
+    /* wiring */
+    Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-pmode]'), function (b) {
+      b.addEventListener('click', function () {
+        state.pricing.mode = b.getAttribute('data-pmode');
+        renderPricing(); refresh();
+      });
+    });
+    function bindPrice(attr, apply) {
+      Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[' + attr + ']'), function (inp) {
+        inp.addEventListener('input', function () {
+          apply(inp.getAttribute(attr), inp.value);
+          patchRateTable(); refresh();
+        });
+      });
+    }
+    bindPrice('data-plist', function (id, v) { state.priceOverrides[id] = Math.max(0, +v || 0); });
+    bindPrice('data-pcost', function (id, v) { if (v === '') delete state.pricing.cost[id]; else state.pricing.cost[id] = Math.max(0, +v || 0); });
+    bindPrice('data-psell', function (id, v) { if (v === '') delete state.pricing.sell[id]; else state.pricing.sell[id] = Math.max(0, +v || 0); });
+
+    if ($('upliftType')) {
+      Array.prototype.forEach.call($('upliftType').querySelectorAll('[data-ut]'), function (b) {
+        b.addEventListener('click', function () { state.pricing.uplift.type = b.getAttribute('data-ut'); renderPricing(); });
+      });
+      $('upliftVal').addEventListener('input', function (e) { state.pricing.uplift.value = Math.max(0, +e.target.value || 0); });
+      $('upliftApply').addEventListener('click', function () {
+        var u = state.pricing.uplift;
+        E.SKUS.forEach(function (k) {
+          var list = E.skuListPrice(state, k.id);
+          state.pricing.sell[k.id] = u.type === 'amount' ? list + u.value : list * (u.value || 1);
+        });
+        Object.keys(E.ADDONS).forEach(function (id) {
+          var list = E.addonListPrice(state, id);
+          state.pricing.sell[id] = u.type === 'amount' ? list + u.value : list * (u.value || 1);
+        });
+        renderPricing(); refresh();
+      });
+    }
+    if ($('pCredit')) $('pCredit').addEventListener('input', function (e) {
+      state.pricing.creditSellUsd = Math.max(0, +e.target.value || 0); refresh();
     });
     $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
     [['pRetLo','retainerLo'],['pRetHi','retainerHi'],['pAssLo','assessLo'],['pAssHi','assessHi']].forEach(function (x) {
       $(x[0]).addEventListener('input', function (e) { state.partnerServices[x[1]] = +e.target.value || 0; refresh(); });
     });
+    $('btnRateDown').addEventListener('click', downloadRateCard);
+    $('btnRateLoad').addEventListener('click', function () { $('rateFile').click(); });
+    $('rateFile').addEventListener('change', loadRateCard);
+  }
+
+  /* margins recompute under the caret without redrawing the inputs */
+  function patchRateTable() {
+    var el = $('pricingBlock'); if (!el) return;
+    Array.prototype.forEach.call(el.querySelectorAll('[data-psell]'), function (inp) {
+      var id = inp.getAttribute('data-psell');
+      var cost = E.skuCostPrice(state, id);
+      var isAddon = !!E.ADDONS[id];
+      var basis = cost != null ? cost : (isAddon ? E.addonListPrice(state, id) : E.skuListPrice(state, id));
+      var m = (isAddon ? E.addonPrice(state, id) : E.skuSellPrice(state, id)) - basis;
+      var cell = inp.closest('tr').querySelector('.marg');
+      if (!cell) return;
+      cell.className = 'marg ' + (Math.abs(m) < 0.005 ? 'zero' : (m > 0 ? 'pos' : 'neg'));
+      cell.textContent = (m >= 0 ? '+' : '\u2212') + usd(Math.abs(m), 2);
+    });
+  }
+
+  function downloadRateCard() {
+    var card = { __type:'cowork-rate-card', version:1,
+                 pricing:state.pricing, priceOverrides:state.priceOverrides,
+                 partnerServices:state.partnerServices, effortStep:state.effort.step };
+    var blob = new Blob([JSON.stringify(card, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'my-cowork-rate-card.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function loadRateCard(e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) {
+      try {
+        var c = JSON.parse(ev.target.result);
+        if (!c || c.__type !== 'cowork-rate-card') throw new Error('shape');
+        if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, c.pricing);
+        if (c.priceOverrides) state.priceOverrides = c.priceOverrides;
+        if (c.partnerServices) state.partnerServices = c.partnerServices;
+        if (c.effortStep) state.effort.step = c.effortStep;
+        renderPricing(); refresh();
+      } catch (err) { alert('That file does not look like a rate card exported from this tool.'); }
+    };
+    rd.readAsText(f); e.target.value = '';
+  }
+
+  function renderBasisBar(r) {
+    var el = $('basisBar'); if (!el) return;
+    var c = r.ctx;
+    el.className = 'basisbar span2 no-print' + (c.sellMode ? ' sell' : '');
+    el.innerHTML = '<div class="bb-t">' + (c.sellMode
+      ? 'Licences are priced at <b>your sell rates</b> \u2014 ' + usd(c.licenseSell) + '/month against ' +
+        usd(c.licenseList) + '/month at Microsoft list, a difference of <b>' + usd(Math.abs(c.licenseUpliftMonthly)) + '/month</b>. ' +
+        'This is what the customer would actually be billed.' +
+        (c.creditUsd !== 0.01 ? ' The meter is at your rate of ' + esc(c.creditRateLabel) + ' a credit.' : '')
+      : 'Licences are priced at <b>Microsoft list</b>. If you resell these with a margin or a managed service wrapped around them, ' +
+        'this is not what your customer will be billed.') +
+      '</div><button class="btn" data-goto="step0" style="padding:9px 16px;">' +
+      (c.sellMode ? 'Edit my rate card' : 'Use my own prices') + '</button>';
+    wireGoto(el);
   }
 
   /* ═══ RESULTS ═══ */
@@ -1728,8 +2031,10 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="numgrid">' +
         cell('numCowork', usd(c.monthlyCowork), 'Cowork credits / month', usd(c.coworkLo) + '–' + usd(c.coworkHi) + ' at ' + (state.calibrated ? '±15%' : '±30%'),
              num(c.monthlyCredits) + ' credits × $0.01 = ' + usd(c.monthlyCowork)) +
-        cell('numLic', usd(c.licenseMonthly), 'Licences / month', c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats + ' base seats',
-             licDeriv(), 'alt') +
+        cell('numLic', usd(c.licenseMonthly), 'Licences / month',
+             c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats + ' base seats &middot; ' +
+             (c.sellMode ? 'your sell prices' : 'Microsoft list'),
+             licDeriv(c), 'alt') +
       '</div>' +
       '<div style="margin-top:18px;">' +
         '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:6px;">Seat vs meter &mdash; ' + usd(c.allInMonthly) + '/month all in</div>' +
@@ -1740,6 +2045,13 @@ footer.pagefoot a { color:#6b7280; }
         cell('numAnnual', usd(c.allInAnnual), 'All-in / year', 'licences + Cowork × 12', usd(c.allInMonthly) + ' × 12') +
         cell('numThree', usd(c.allInThreeYear), 'All-in / 3 years', 'at today\'s volumes and prices', usd(c.allInMonthly) + ' × 36') +
       '</div>' +
+      (c.sellMode ? '<div class="whybox partner-only" style="border-left-color:#0f766e;"><div class="wb-h">Your position on this deal &mdash; internal only</div>' +
+        '<p>Licences bill at <b>' + usd(c.licenseSell) + '/month</b> against a Microsoft list of ' + usd(c.licenseList) +
+        ', an uplift of <b>' + usd(c.licenseUpliftMonthly) + '/month</b>' +
+        (c.licenseMarginMonthly != null ? ' and a margin over your cost of <b>' + usd(c.licenseMarginMonthly) + '/month</b>' : '') + '.</p>' +
+        (c.creditUsd !== 0.01 ? '<p>The meter bills at ' + esc(c.creditRateLabel) + ' a credit against Microsoft\'s $0.01 &mdash; ' +
+          usd(c.monthlyCowork) + '/month billed against ' + usd(c.coworkAtMsRate) + '/month of Microsoft cost.</p>' : '') +
+        '<p style="font-size:.8rem;color:#6b7280;">This block is stripped from the customer leave-behind. It prints only on the internal working copy.</p></div>' : '') +
       ratioBlock(c);
 
     /* scenarios */
@@ -1807,10 +2119,17 @@ footer.pagefoot a { color:#6b7280; }
     return '<div class="numcell ' + (cls || '') + '" id="' + id + '"><div class="nk">' + k + '</div><div class="nl">' + l + '</div>' +
            '<div class="ns">' + s + '</div><div class="deriv">' + deriv + '</div></div>';
   }
-  function licDeriv() {
-    return state.licenseInventory.filter(function (l) { return l.seats > 0; }).map(function (l) {
+  function licDeriv(c) {
+    var lines = state.licenseInventory.filter(function (l) { return l.seats > 0; }).map(function (l) {
       var s = E.SKU_BY_ID[l.skuId]; return l.seats + ' × ' + s.name + ' @ ' + usd(E.skuPrice(state, l.skuId), 2);
     }).join('\n') || 'no licences entered';
+    if (c && c.sellMode) {
+      lines += '\n\nMicrosoft list for the same inventory: ' + usd(c.licenseList) +
+               '\nYour uplift: ' + usd(c.licenseUpliftMonthly);
+      if (c.licenseMarginMonthly != null)
+        lines += '\nYour margin over cost: ' + usd(c.licenseMarginMonthly);
+    }
+    return lines;
   }
   function ratioBlock(c) {
     if (c.greenfield || c.monthlyCowork === 0) return '';
@@ -1866,7 +2185,7 @@ footer.pagefoot a { color:#6b7280; }
         '<div class="lg-main">' +
           '<div class="lg-h">Every path, priced across ' + L.needed + ' Copilot users</div>' +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-          '<p class="srcline">E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%). Suites priced at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting.</p>' +
+          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%). That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting.</p>' +
         '</div>' +
         '<div class="lg-side">' +
           '<div class="whybox" style="margin-top:0;"><div class="wb-h">Why this one</div>' +
@@ -1967,6 +2286,7 @@ footer.pagefoot a { color:#6b7280; }
 
   /* ═══ THE WIZARD — one question per screen ═══ */
   var STEPS = [
+    { id:'step0', t:'Your pricing',      v:function () { return state.pricing.mode === 'sell' ? 'your sell prices' : 'Microsoft list'; } },
     { id:'step1', t:'The account',       v:function (c) { return c.employees + ' employees'; } },
     { id:'step2', t:'Copilot licences',  v:function (c) { return c.copilotLicensed + ' licensed'; } },
     { id:'step3', t:'Active in Cowork',  v:function (c) { return c.active + ' active'; } },
@@ -1980,7 +2300,7 @@ footer.pagefoot a { color:#6b7280; }
      persona mix and task effort. It folds only the two that do not: the
      billing model (the meter is identical either way) and the governance
      gates (unknown is already the conservative default). */
-  var FAST = ['step1','step2','step3','step4','step5','results'];
+  var FAST = ['step0','step1','step2','step3','step4','step5','results'];
   var ASSUMED = {
     step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway',
     step7:'the governance posture is unknown — every gate becomes a discovery question rather than a confirmed control'
@@ -2031,13 +2351,17 @@ footer.pagefoot a { color:#6b7280; }
       var d = stepDef(id);
       return '<button class="st' + (id === cur ? ' on' : (i < idx ? ' done' : '')) + '" data-goto="' + id + '">' +
         '<span class="st-bar"></span>' +
-        '<span class="st-l">' + (id === 'results' ? 'The full picture' : (i + 1) + '. ' + esc(d.t)) + '</span>' +
+        '<span class="st-l">' + (id === 'results' ? 'The full picture'
+            : id === 'step0' ? 'Set up \u00b7 ' + esc(d.t)
+            : i + '. ' + esc(d.t)) + '</span>' +
         '<span class="st-v">' + esc(d.v(c)) + '</span></button>';
     }).join('');
     wireGoto($('stepper'));
     $('stepCount').innerHTML = cur === 'results'
       ? '<b>The full picture</b> &mdash; everything you need for the rest of the meeting'
-      : 'Question <b>' + (idx + 1) + '</b> of <b>' + (f.length - 1) + '</b>';
+      : cur === 'step0'
+        ? '<b>Set up</b> &mdash; do this once, before the call'
+        : 'Question <b>' + idx + '</b> of <b>' + (f.length - 2) + '</b>';
   }
 
   function buildNavs() {
@@ -2067,14 +2391,26 @@ footer.pagefoot a { color:#6b7280; }
       var k = f.indexOf(d.id);
       nav.querySelector('[data-nav="back"]').style.visibility = k > 0 ? 'visible' : 'hidden';
       nav.querySelector('[data-nav="next"]').innerHTML =
-        (k === f.length - 2) ? 'See the full picture &rarr;' : 'Continue &rarr;';
+        (k === f.length - 2) ? 'See the full picture &rarr;'
+          : d.id === 'step0'
+            ? (state.pricing.mode === 'sell' ? 'Rate card set &mdash; start the interview &rarr;' : 'Use Microsoft list prices &rarr;')
+            : 'Continue &rarr;';
       nav.querySelector('[data-hint]').innerHTML =
-        ASSUMED[d.id] ? 'Nothing to change here? Continue and we assume ' + ASSUMED[d.id] + '.' : '';
+        d.id === 'step0'
+          ? 'Skip this and every licence figure uses Microsoft list price. You can come back to it from the output at any time.'
+          : (ASSUMED[d.id] ? 'Nothing to change here? Continue and we assume ' + ASSUMED[d.id] + '.' : '');
     });
   }
 
   /* Each screen closes with the one sentence it just established. */
   var ECHO = {
+    step0: function (c) {
+      return c.sellMode
+        ? 'Priced at <b>your sell rates</b>. The inventory on the next screens will read <b>' + usd(c.licenseSell) +
+          ' a month</b> where Microsoft list would read ' + usd(c.licenseList) + ' \u2014 a difference of <b>' +
+          usd(Math.abs(c.licenseUpliftMonthly)) + '</b>. That is the number the customer will recognise on an invoice.'
+        : 'Priced at <b>Microsoft list</b>. Fine for a platform-cost conversation \u2014 but if you resell these seats with a margin or a managed service on top, the customer will never be billed this figure. Switch above and it follows you through the whole tool.';
+    },
     step1: function (c) {
       return '<b>' + num(c.employees) + ' employees</b>' + (state.meta.accountName ? ' at <b>' + esc(state.meta.accountName) + '</b>' : '') +
         '. That is the denominator — and it is the last time we use it. The next two questions narrow it twice.';
@@ -2082,7 +2418,8 @@ footer.pagefoot a { color:#6b7280; }
     step2: function (c) {
       return c.greenfield
         ? 'Nobody holds a Copilot licence, so Cowork cannot run at all today and the meter reads <b>$0</b>. Keep going anyway — the output prices the licensing path, which is the actual conversation.'
-        : '<b>' + num(c.copilotLicensed) + '</b> of ' + num(c.employees) + ' people can use Cowork at all. Those licences already cost <b>' + usd(c.licenseMonthly) + ' a month</b> before a single credit is burned.';
+        : '<b>' + num(c.copilotLicensed) + '</b> of ' + num(c.employees) + ' people can use Cowork at all. Those licences already cost <b>' +
+          usd(c.licenseMonthly) + ' a month</b> at ' + (c.sellMode ? 'your sell rates' : 'Microsoft list') + ', before a single credit is burned.';
     },
     step3: function (c) {
       var idle = Math.max(0, c.copilotLicensed - c.active);
@@ -2134,6 +2471,7 @@ footer.pagefoot a { color:#6b7280; }
     }).join('');
     $('recapBody').innerHTML =
       '<p style="font-size:.86rem;color:#374151;margin:0 0 14px;line-height:1.65;">' +
+      (c.sellMode ? '' : '') +
       (uiMode === 'fast'
         ? 'You ran the fast path. Every question that moves the dollar figure was asked — licences, activation, persona mix and effort. ' +
           'The two marked ' + pill('default','assumed') + ' do not change the meter: the billing model prices the same credits either way, ' +
@@ -2177,6 +2515,7 @@ footer.pagefoot a { color:#6b7280; }
     if (!focusIn('billBlock'))    renderBill(r);
     if (focusIn('personaBlock')) patchPersonas(r); else renderPersonas(r);
     renderCapNote(r);
+    renderBasisBar(r);
     renderBridge(r);
     renderEchoes(r.ctx);
     renderRecap(r);
@@ -2205,7 +2544,7 @@ footer.pagefoot a { color:#6b7280; }
     var b = e.target.closest('button'); if (!b) return;
     setMode(b.getAttribute('data-mode'));
   });
-  $('btnBackToQ').addEventListener('click', function () { goTo(flow()[0]); });
+  $('btnBackToQ').addEventListener('click', function () { goTo('step1'); });
   $('mathToggle').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     mathOn = b.getAttribute('data-math') === 'on';
@@ -2253,7 +2592,7 @@ footer.pagefoot a { color:#6b7280; }
         var loaded = JSON.parse(ev.target.result);
         if (!loaded || typeof loaded !== 'object') throw new Error('shape');
         state = Object.assign(E.defaults(), loaded);
-        hydrateInputs(); renderLic(); renderGov(); renderPrices();
+        hydrateInputs(); renderLic(); renderGov(); renderPricing();
         goTo(cur);
       } catch (err) { alert('That file doesn’t look like a session exported from this tool.'); }
     };
@@ -2275,9 +2614,9 @@ footer.pagefoot a { color:#6b7280; }
   hydrateInputs();
   renderLic();
   renderGov();
-  renderPrices();
+  renderPricing();
   buildNavs();
-  goTo('step1');
+  goTo('step0');
 })();
 
 </script>
