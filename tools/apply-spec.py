@@ -48,15 +48,22 @@ def parse(spec_text):
 
 
 def guard_base64(raw, before_text, cid):
-    """Refuse to edit if the anchor sits on a pathologically long line."""
+    """Refuse to edit if the anchor touches a pathologically long line.
+
+    Measures the longest LINE inside the anchor's span, not the span itself.
+    A multi-line BEFORE (a whole-section replace) is legitimately thousands of
+    characters long while every line in it is short; only a genuine blob line
+    -- cpb.html:1913, 546,847 chars -- should trip this.
+    """
     idx = raw.find(before_text)
     if idx < 0:
         return True
     start = raw.rfind("\n", 0, idx) + 1
     end = raw.find("\n", idx + len(before_text))
     end = len(raw) if end < 0 else end
-    if end - start > LONG_LINE:
-        print(f"ABORT {cid}: anchor sits on a {end - start}-char line. "
+    longest = max((len(l) for l in raw[start:end].split("\n")), default=0)
+    if longest > LONG_LINE:
+        print(f"ABORT {cid}: anchor touches a {longest}-char line. "
               f"This is the base64 guard. Nothing was written.")
         return False
     return True
