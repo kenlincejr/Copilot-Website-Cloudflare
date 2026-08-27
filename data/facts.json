@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
- "fact_count": 143,
- "occurrence_count": 274,
+ "fact_count": 153,
+ "occurrence_count": 284,
  "facts": [
   {
    "id": "F-001",
@@ -3822,6 +3822,226 @@
      "context": "Champion card, 'What they reveal: they don't know' - renewal risk framing"
     }
    ]
+  },
+  {
+   "id": "F-144",
+   "kind": "money",
+   "value": "$23.50",
+   "label": "M365 Business Standard with Copilot list price",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "GA permanent SMB SKU as of 2026-07-01. 300-license maximum, annual subscription with annual billing.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 589,
+     "anchor_unique": true,
+     "anchor": "M365 Business Standard with Copilot",
+     "context": "M365 Business Standard with Copilot"
+    }
+   ],
+   "new_value": "$23.50/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-145",
+   "kind": "money",
+   "value": "$32",
+   "label": "M365 Business Premium with Copilot list price",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "GA permanent SMB SKU as of 2026-07-01. 300-license maximum, annual subscription with annual billing.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 592,
+     "anchor_unique": true,
+     "anchor": "M365 Business Premium with Copilot",
+     "context": "M365 Business Premium with Copilot"
+    }
+   ],
+   "new_value": "$32/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-146",
+   "kind": "money",
+   "value": "$21",
+   "label": "M365 Business Basic + Copilot Business promotional price",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "PROMOTIONAL. $21/user/mo after a 25% promo running July 2026 - Dec 31 2026. 1-300 licenses. Expires 2026-12-31 - re-verify after that date.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 583,
+     "anchor_unique": true,
+     "anchor": "M365 Business Basic + Copilot Business",
+     "context": "M365 Business Basic + Copilot Business"
+    }
+   ],
+   "new_value": "$21/user/mo (promo)",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-147",
+   "kind": "money",
+   "value": "$18",
+   "label": "M365 Copilot Business standalone promotional price",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "PROMOTIONAL. $18/user/mo after a 15% promo extended through Dec 31 2026. 1-300 licenses. Supersedes the $21 figure in F-003. Expires 2026-12-31 - re-verify after that date.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 586,
+     "anchor_unique": true,
+     "anchor": "M365 Copilot Business (standalone add-on)",
+     "context": "M365 Copilot Business (standalone add-on)"
+    }
+   ],
+   "new_value": "$18/user/mo (promo)",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-148",
+   "kind": "money",
+   "value": "$15",
+   "label": "Defender + Purview Suites combined add-on for Business Premium",
+   "type": "microsoft-reported",
+   "source_url": "https://www.microsoft.com/en-us/security/small-medium-business/microsoft-purview-suite-business-premium",
+   "as_of": "2026-08-27",
+   "verified": true,
+   "notes": "Individually $10/user/mo each (Defender Suite, Purview Suite); $15/user/mo combined. 300-seat cap. Available via CSP since Sept 2025. This sources the previously unattributed \"~$15\" figure in coworksession40.html section 6.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1639,
+     "anchor_unique": true,
+     "anchor": "Suites priced at $10 each, $15 combined",
+     "context": "Suites priced at $10 each, $15 combined"
+    }
+   ],
+   "new_value": "$15/user/mo combined",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-149",
+   "kind": "money",
+   "value": "$0.01",
+   "label": "Copilot Credit pay-as-you-go unit price",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits",
+   "as_of": "2026-08-21",
+   "verified": true,
+   "notes": "The metered unit for Cowork task execution under pay-as-you-go billing.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 865,
+     "anchor_unique": true,
+     "anchor": "ork cost', 'credits × $0.01',\n      mon",
+     "context": "ork cost', 'credits × $0.01', mon"
+    }
+   ],
+   "new_value": "$0.01/credit",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-150",
+   "kind": "count",
+   "value": "$82-228",
+   "label": "Microsoft Customer Cowork Estimator per-user monthly range",
+   "type": "microsoft-reported",
+   "source_url": "https://aka.ms/CustomerCoworkEstimator",
+   "as_of": "2026-05-27",
+   "verified": true,
+   "notes": "Microsoft publishes an official Customer Cowork Estimator using four personas (corporate knowledge worker, customer-facing, technical, manager/senior leader). Its defaults reflect Microsoft Frontier customer usage as of 5/27/2026 and are editable. Published per-user range $82-228/month. This RESOLVES the previously unsourced \"Microsoft Frontier-observed defaults\" attribution for the persona task-mix table used in coworksession40.html and cowork-calculator.html; the site table computes $82.25/$142.50/$146.25/$228.00, which sits exactly inside the published range.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 551,
+     "anchor_unique": true,
+     "anchor": "=\"noopener\">Customer Cowork Estimator</a> (Fronti",
+     "context": "=\"noopener\">Customer Cowork Estimator</a> (Fronti"
+    }
+   ],
+   "new_value": "$82-228/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-151",
+   "kind": "multiplier",
+   "value": "2.6x",
+   "label": "Cowork credit spend vs Copilot licence cost, engaged user",
+   "type": "td-synnex-internal",
+   "source_url": "",
+   "as_of": "2026-08-27",
+   "verified": false,
+   "notes": "NOT EXTERNALLY SOURCED. Registered because it drives a headline visual and several talk-track branches. Reconciliation established 2026-08-27: 2.6 x $30 = $78 per LICENSED user, while Microsoft persona defaults are $82-228 per ACTIVE user. At an even persona mix ($149.75/active), 52% activation reproduces $78 exactly - so the two figures describe different populations, not a contradiction. The ratio is also strongly licence-dependent (8.3x against the $18 promo, 1.5x against E7), so it must never be quoted without naming the licence it is measured against. Needs a sample size and methodology from the original TD SYNNEX validation.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 551,
+     "anchor_unique": true,
+     "anchor": "pliers, the 2.6&times; benchmark, and partne",
+     "context": "pliers, the 2.6&times; benchmark, and partne"
+    }
+   ],
+   "new_value": "",
+   "status": "NEEDS-SOURCE"
+  },
+  {
+   "id": "F-152",
+   "kind": "percent",
+   "value": "5%-20%",
+   "label": "Copilot Credit Pre-Purchase Plan (P3) discount range",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/copilot-credit-p3",
+   "as_of": "2026-07-17",
+   "verified": true,
+   "notes": "One-year term, paid up front. 1 CCCU = $1 of retail usage = 100 Copilot Credits. Discounts run from 5% at approximately 3,000 CCCU to 20% at approximately 3,000,000 CCCU; Microsoft documents a Tier 2 example at 15,000 CCCU giving roughly 6%. Exact tier breakpoints are NOT publicly published - present a bracket, never a point price. Purchases are final (no cancellation or exchange), plans auto-renew by default, and the discount does not stack with other discounts. Consumption order is capacity packs, then P3, then pay-as-you-go.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1359,
+     "anchor_unique": true,
+     "anchor": "' : '') + '>P3 pre-purchase</button>' +",
+     "context": "' : '') + '>P3 pre-purchase</button>' +"
+    }
+   ],
+   "new_value": "5%-20% tiered",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-153",
+   "kind": "count",
+   "value": "Copilot licence required",
+   "label": "Cowork eligibility prerequisite",
+   "type": "microsoft-reported",
+   "source_url": "https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/get-started",
+   "as_of": "2026-08-24",
+   "verified": true,
+   "notes": "Microsoft Learn, Get started with Copilot Cowork, Prerequisites: \"Microsoft Copilot access: An active Microsoft 365 Copilot license assigned to your account\" and \"Usage-based billing: Usage-based and Cowork billing has been enabled.\" Only Copilot-licensed users can use Cowork. NOTE: cowork.html currently frames Cowork as requiring an M365 E7 seat at $99/user/mo, which is too narrow - E7 qualifies because it bundles Copilot, but for SMB the path is a Copilot-bearing Business SKU. cowork.html needs a separate correction pass.",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 382,
+     "anchor_unique": true,
+     "anchor": "An active Microsoft 365 Copilot license assigned to your account",
+     "context": "An active Microsoft 365 Copilot license assigned to your account"
+    }
+   ],
+   "new_value": "",
+   "status": "CONFIRMED"
   }
  ],
  "researched": "2026-08-26"

@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cowork Cost &amp; Conversation Simulator</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — copilotplaybook.com system of record
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1680px; margin: 0 auto;
+  padding: 0 0 80px; line-height: 1.6; background: #fff;
+}
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h2 { color: var(--navy); font-size: 1.15rem; font-weight: 700; margin: 0 0 5px; }
+h3 { color: var(--teal); font-size: 1rem; font-weight: 700; margin: 0 0 12px; }
+p  { margin: .5rem 0; }
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.mono  { font-family: 'Consolas','Monaco',monospace; }
+
+/* ═══ MASTHEAD ═══ */
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); }
+.masthead-inner { max-width: 1680px; margin: 0 auto; padding: 22px 48px 26px; }
+.mh-nav { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+.mh-nav .crumbs { font-size:.78rem; color:rgba(255,255,255,.55); }
+.mh-nav .crumbs a { color:rgba(255,255,255,.75); }
+.mh-nav .crumbs a:hover { color:#fff; }
+.mh-eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.mh-eyebrow .bar { width:24px; height:2px; background:var(--ltblue); border-radius:1px; }
+.mh-eyebrow .lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.5); }
+.masthead h1 { font-size: 1.85rem; color:#fff; margin: 0 0 8px; letter-spacing:-.3px; font-weight:800; line-height:1.15; }
+.masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); max-width: 940px; line-height:1.6; margin:0; }
+.mh-badges { display:flex; gap:12px; flex-wrap:wrap; }
+.mh-badge { font-size:.72rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 16px; }
+
+/* ═══ LAYOUT — one screen at a time ═══ */
+.wrap { padding: 20px 48px 0; }
+.stage { max-width: 1000px; margin: 0 auto; }
+.stage.wide { max-width: 1320px; }
+.col-build   { display:flex; flex-direction:column; gap:20px; min-width:0; }
+.col-results { display:grid; grid-template-columns:1fr; gap:20px; min-width:0; }
+@media (min-width:1080px){ .col-results { grid-template-columns:1fr 1fr; align-items:start; } }
+.col-results .span2 { grid-column:1/-1; }
+.screen { display:none; }
+.screen.on { display:block; }
+.col-results.screen.on { display:grid; }
+
+/* ═══ STEPPER ═══ */
+.stepper { display:flex; align-items:stretch; gap:5px; margin-bottom:10px; flex-wrap:wrap; }
+.st { flex:1 1 0; min-width:82px; border:none; background:none; cursor:pointer; padding:0; text-align:left; }
+.st .st-bar { height:4px; border-radius:2px; background:var(--muted-2); margin-bottom:7px; transition:background .18s; }
+.st.done .st-bar { background:var(--ltblue); }
+.st.on   .st-bar { background:var(--teal); }
+.st .st-l { font-size:.7rem; font-weight:700; color:#9ca3af; display:block; line-height:1.3; }
+.st.on   .st-l { color:var(--navy); }
+.st.done .st-l { color:#6b7280; }
+.st .st-v { font-size:.67rem; color:#c0c6ce; display:block; margin-top:2px; line-height:1.3; }
+.st.on .st-v, .st.done .st-v { color:#9ca3af; }
+.st:hover .st-l { color:var(--teal); }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+            border-top:1px solid var(--border); margin-top:12px; padding-top:11px; margin-bottom:22px; }
+.tb-l  { min-width:0; }
+.tb-q  { font-size:.78rem; color:#6b7280; line-height:1.4; }
+.tb-q b { color:var(--navy); font-weight:700; }
+.tb-note { font-size:.71rem; color:#b6bcc5; margin-top:2px; line-height:1.4; }
+.tb-r  { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.tb-sep { width:1px; height:18px; background:var(--border); margin:0 10px; }
+.tb-link { font-size:.78rem; font-weight:600; color:#6b7280; background:none; border:none; cursor:pointer;
+           padding:6px 10px; border-radius:5px; font-family:inherit; }
+.tb-link:hover { background:var(--muted); color:var(--teal); }
+.tb-link.quiet-danger:hover { background:#fdf2f2; color:#b91c1c; }
+
+/* ═══ STEP NAV ═══ */
+.stepnav { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 32px; background:var(--muted); border-top:1px solid var(--border); flex-wrap:wrap; }
+.stepnav .sn-l, .stepnav .sn-r { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.stepnav .sn-hint { font-size:.78rem; color:#9ca3af; max-width:420px; line-height:1.5; }
+
+/* ═══ PER-STEP ECHO ═══ */
+.echo { display:flex; gap:12px; align-items:flex-start; margin-top:24px; padding:14px 18px; background:#f3fbfc; border:1px solid #cfe8ec; border-radius:8px; }
+.echo .e-ic { flex:0 0 auto; color:#0f766e; font-weight:700; }
+.echo .e-t { font-size:.87rem; color:#00474f; line-height:1.6; }
+.echo .e-t b { color:var(--navy); }
+
+/* ═══ RECAP ═══ */
+.recap { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }
+.recap-i { background:var(--muted); border:1px solid var(--border); border-radius:6px; padding:11px 13px; }
+.recap-i .r-l { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#9ca3af; }
+.recap-i .r-v { font-size:.9rem; font-weight:700; color:var(--navy); margin:3px 0 6px; line-height:1.35; }
+.recap-i .linkbtn { font-size:.74rem; }
+
+/* ═══ PROVENANCE PILLS ═══ */
+.pill { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:2px 7px; border-radius:20px; vertical-align:1px; white-space:nowrap; }
+.pill.asked    { background:var(--accent);  color:var(--teal); }
+.pill.default  { background:var(--muted-2); color:#6b7280; }
+.pill.derived  { background:var(--muted-2); color:var(--navy); }
+.pill.measured { background:#f3fbfc; color:#0f766e; }
+.pill.verified { background:#f3fbfc; color:#0f766e; }
+.pill.modeled  { background:var(--accent); color:var(--teal); }
+.pill.estimate { background:var(--warn); color:#92400e; }
+
+/* ═══ FUNNEL RIBBON ═══ */
+.ribbon { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); padding:16px 18px; }
+.ribbon-head { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.ribbon-chain { display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; }
+.rc { flex:1 1 90px; min-width:88px; background:var(--muted); border:1px solid var(--border); border-radius:6px; padding:9px 10px; cursor:pointer; text-align:left; }
+.rc:hover { background:var(--accent); }
+.rc .v { font-size:1.05rem; font-weight:700; color:var(--navy); letter-spacing:-.01em; display:block; line-height:1.15; }
+.rc .l { font-size:.62rem; color:#6b7280; display:block; margin:3px 0 5px; line-height:1.3; }
+.rc-arrow { align-self:center; color:#9ca3af; font-size:.9rem; flex:0 0 auto; }
+@media (max-width:640px){ .rc-arrow { display:none; } }
+.ribbon-deriv { margin-top:12px; padding:10px 12px; background:var(--muted-2); border-radius:6px; font-family:'Consolas','Monaco',monospace; font-size:.74rem; color:#374151; line-height:1.7; white-space:pre-wrap; }
+
+/* ═══ CARDS ═══ */
+.wcard { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); overflow:hidden; scroll-margin-top:20px; }
+.wcard .wc-bar { height:4px; background:linear-gradient(to right,var(--teal),var(--ltblue),#a8ecf5); }
+.wcard .wc-body { padding:28px 32px 30px; }
+.wc-head { display:flex; align-items:flex-start; gap:14px; margin-bottom:20px; }
+.wc-num { width:32px; height:32px; border-radius:8px; background:var(--teal); color:#fff; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.wc-title { flex:1; min-width:0; }
+.wc-title .wc-sub { font-size:.84rem; color:#6b7280; margin-top:3px; }
+
+
+/* ═══ FORM ═══ */
+.fgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:20px; }
+.field label { display:block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:7px; }
+.field input[type=text], .field input[type=number], .field select {
+  width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:6px; font-size:.95rem; color:var(--text); background:#fff; font-family:inherit;
+}
+.field input:focus, .field select:focus { outline:2px solid var(--ltblue); outline-offset:1px; border-color:var(--teal); }
+.seg { display:inline-flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; width:100%; }
+.seg button { flex:1; border:none; background:#fff; font-size:.84rem; font-weight:600; padding:11px 8px; cursor:pointer; color:#374151; border-right:1px solid var(--border); }
+.seg button:last-child { border-right:none; }
+.seg button.on { background:var(--accent); color:var(--teal); font-weight:700; }
+.seg button.on.warnon { background:var(--warn); color:#92400e; }
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chipbtn { border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 14px; font-size:.8rem; font-weight:600; color:#374151; cursor:pointer; line-height:1.3; }
+.chipbtn:hover { background:var(--muted); }
+.chipbtn.on { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal); }
+.chipbtn.on::before { content:"\2713\00a0"; font-weight:800; }
+.chipnote { font-size:.76rem; color:#9ca3af; align-self:center; }
+.shapenote { margin-top:12px; background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:13px 17px; max-width:80ch; }
+.shapenote.custom { border-left-color:#9ca3af; }
+.shapenote .sn-eg { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px; }
+.shapenote.custom .sn-eg { color:#6b7280; }
+.shapenote p { font-size:.85rem; color:#374151; line-height:1.6; margin:0 0 8px; }
+.shapenote p:last-child { margin-bottom:0; }
+.shapenote .sn-prov { font-size:.76rem; color:#9ca3af; font-style:italic; }
+.linkbtn { font-size:.82rem; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; }
+.linkbtn:hover { text-decoration:underline; }
+
+/* coaching + explainers */
+.coach { display:flex; gap:12px; align-items:flex-start; background:var(--accent); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:14px 18px; margin:0 0 20px; }
+.coach .co-ic { flex:0 0 auto; font-size:1.05rem; }
+.coach .co-txt { font-size:.88rem; color:#00474f; line-height:1.6; }
+.coach .co-txt b { color:var(--navy); }
+.callout { background:var(--accent); border:1px solid #c5dde3; border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; margin:0 0 20px; }
+.callout.warn { background:var(--warn); border-color:#f5ddb0; border-left-color:#d97706; }
+.callout-title { font-weight:700; color:#00474f; margin:0 0 6px; font-size:.85rem; letter-spacing:.3px; text-transform:uppercase; }
+.callout.warn .callout-title { color:#92400e; }
+.callout-body { margin:0; font-size:.9rem; line-height:1.65; }
+.callout-body p { margin:.4rem 0; }
+.callout-body p:first-child { margin-top:0; }
+.callout-body p:last-child { margin-bottom:0; }
+
+.explain { background:var(--muted); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin-bottom:18px; }
+.explain-head { font-size:.88rem; font-weight:700; color:var(--navy); margin-bottom:8px; }
+.explain p { font-size:.84rem; color:#374151; margin:0 0 12px; line-height:1.6; }
+.def-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:11px; }
+.def { font-size:.82rem; color:#374151; line-height:1.55; background:#fff; border:1px solid var(--border); border-radius:6px; padding:11px 13px; }
+.def b { display:block; color:var(--navy); font-size:.82rem; margin-bottom:3px; }
+.tier { border-radius:6px; padding:11px 13px; background:#fff; border:1px solid var(--border); border-top:3px solid var(--teal); }
+.tier.medium { border-top-color:#d97706; }
+.tier.heavy  { border-top-color:#b91c1c; }
+.tier .tg { font-size:.65rem; font-weight:800; letter-spacing:.08em; color:var(--teal); margin-bottom:4px; }
+.tier.medium .tg { color:#92400e; }
+.tier.heavy .tg  { color:#b91c1c; }
+.tier .tb { font-size:.82rem; color:#374151; line-height:1.55; }
+
+/* tables */
+.tablewrap { overflow-x:auto; }
+.dtable { width:100%; border-collapse:collapse; font-size:.88rem; }
+.dtable th { background:var(--muted-2); color:var(--navy); font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; padding:11px 12px; text-align:left; border-bottom:2px solid var(--teal); white-space:nowrap; }
+.dtable td { padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.dtable input[type=number] { width:72px; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font-size:.86rem; text-align:right; font-family:inherit; }
+.dtable .num { text-align:right; white-space:nowrap; color:#6b7280; font-size:.84rem; }
+.dtable tfoot td { background:var(--muted); font-weight:700; color:var(--navy); border-top:2px solid var(--teal); }
+.sharebar { display:inline-block; height:7px; background:var(--teal); border-radius:4px; vertical-align:middle; margin-right:6px; }
+
+/* ═══ RESULTS ═══ */
+.rescard { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); overflow:hidden; }
+.rescard .rc-head { padding:14px 22px; background:var(--navy); color:#fff; font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.rescard .rc-body { padding:22px 24px; }
+
+.saystrip { background:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%); border-radius:var(--radius-lg); padding:22px 26px; color:#fff; box-shadow:var(--shadow-sm); }
+.saystrip .ss-lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#a8ecf5; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.saystrip p { font-size:1.05rem; line-height:1.7; color:#fff; margin:0; }
+.copybtn { font-size:.7rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); border-radius:6px; padding:6px 13px; cursor:pointer; }
+.copybtn:hover { background:rgba(255,255,255,.18); }
+.copybtn.done { background:#0f766e; color:#fff; }
+
+.numgrid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:520px){ .numgrid { grid-template-columns:1fr; } }
+.numcell { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); padding:18px 20px; }
+.numcell.alt { border-top-color:var(--navy); }
+.numcell .nk { font-size:1.75rem; font-weight:800; color:#004B87; letter-spacing:-.5px; line-height:1.1; }
+.numcell .nl { font-size:.82rem; color:#374151; margin-top:6px; }
+.numcell .ns { font-size:.72rem; color:#9ca3af; margin-top:3px; }
+.deriv { display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); font-family:'Consolas','Monaco',monospace; font-size:.72rem; color:#6b7280; line-height:1.6; }
+body.showmath .deriv { display:block; }
+
+.splitbar { display:flex; height:26px; border-radius:6px; overflow:hidden; border:1px solid var(--border); margin:6px 0 8px; }
+.splitbar .sb-seat { background:var(--navy); }
+.splitbar .sb-meter { background:var(--teal); }
+.splitbar span { display:flex; align-items:center; justify-content:center; color:#fff; font-size:.7rem; font-weight:700; }
+.splitlegend { display:flex; gap:16px; font-size:.72rem; color:#6b7280; flex-wrap:wrap; }
+.splitlegend i { display:inline-block; width:9px; height:9px; border-radius:4px; margin-right:5px; }
+
+.flag { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.flag:last-child { border-bottom:none; }
+.flag .fi { flex:0 0 auto; font-size:1rem; width:20px; text-align:center; }
+#assumeBody .flag .fi { width:auto; min-width:20px; padding-top:2px; }
+.flag .ft { font-size:.88rem; color:var(--text); line-height:1.6; }
+.flag .ft b { color:var(--navy); }
+.flag .fixrow { margin-top:7px; display:flex; gap:14px; flex-wrap:wrap; }
+
+.whybox { background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:14px 18px; margin-top:14px; }
+.whybox .wb-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:8px; }
+.whybox p { font-size:.86rem; color:#374151; line-height:1.65; margin:0 0 8px; }
+.whybox p:last-child { margin-bottom:0; }
+
+.bridge-t { border-collapse:collapse; font-size:.86rem; margin:14px 0 10px; }
+.bridge-t td { padding:5px 16px 5px 0; color:#374151; white-space:nowrap; }
+.bridge-t td.n { font-family:'Consolas','Monaco',monospace; text-align:right; }
+.bridge-t tr.tot td { border-top:1px solid #c5dde3; font-weight:700; color:var(--navy); padding-top:9px; }
+.bridge-t tr.eff td { color:#92400e; }
+
+.licgrid { display:grid; grid-template-columns:1fr; gap:24px; align-items:start; }
+@media (min-width:920px){ .licgrid { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:32px; } }
+.licgrid .lg-side > * + * { margin-top:20px; }
+.lg-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:9px; }
+.dtable tr.winner td { background:var(--accent); }
+.dtable tr.winner td:first-child { box-shadow:inset 3px 0 0 var(--teal); }
+#talkBody { max-width:80ch; }
+
+.nextstep { border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:18px 22px; background:var(--accent); }
+.nextstep .ns-e { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); margin-bottom:5px; }
+.nextstep .ns-n { font-size:1.05rem; font-weight:800; color:var(--navy); }
+.nextstep .ns-p { font-family:'Consolas','Monaco',monospace; font-size:.88rem; color:var(--teal); font-weight:700; margin:5px 0 10px; }
+.nextstep .ns-o { font-size:.88rem; color:#374151; font-style:italic; line-height:1.6; }
+
+.btn { font-size:.88rem; font-weight:700; padding:12px 20px; border-radius:6px; border:1px solid var(--teal); cursor:pointer; background:#fff; color:var(--teal); font-family:inherit; }
+.btn.primary { background:var(--teal); color:#fff; }
+.btn:hover { background:var(--accent); }
+.btn.primary:hover { background:var(--teal-light); }
+.actionsrow { display:flex; gap:12px; flex-wrap:wrap; }
+
+.srcline { font-size:.72rem; color:#9ca3af; font-style:italic; margin-top:10px; line-height:1.6; }
+.toggle-pill { display:inline-flex; border:1px solid var(--border); border-radius:20px; overflow:hidden; background:#fff; }
+.toggle-pill button { border:none; background:transparent; font-size:.73rem; font-weight:700; padding:6px 13px; cursor:pointer; color:#6b7280; font-family:inherit; }
+.toggle-pill button.on { background:var(--teal); color:#fff; }
+
+
+.nosave { display:flex; gap:12px; align-items:flex-start; background:var(--muted); border:1px solid var(--border); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:14px 18px; margin-bottom:16px; }
+.nosave .ns-t { font-size:.84rem; color:#374151; line-height:1.6; }
+.nosave .ns-t b { color:var(--navy); }
+
+/* delta flash */
+@keyframes pulseOutline { 0%{ outline-color:var(--ltblue); } 100%{ outline-color:transparent; } }
+.flash { outline:2px solid var(--ltblue); outline-offset:2px; border-radius:4px; animation:pulseOutline .9s ease-out forwards; }
+.deltachip { display:inline-block; margin-left:8px; font-size:.65rem; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--accent); color:var(--teal); }
+.deltachip.down { background:#f3fbfc; color:#0f766e; }
+
+footer.pagefoot { max-width:1680px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#9ca3af; line-height:1.7; }
+footer.pagefoot a { color:#6b7280; }
+
+/* ═══ PRINT — two artefacts, data only ═══ */
+.printonly { display:none; }
+@media print {
+  @page { margin: 14mm 12mm; }
+  .masthead, .modebar, .rail, .stepper, .toolbar, .stepnav, .col-build, footer.pagefoot, .no-print, .copybtn, .btn { display:none !important; }
+  .stage { max-width:100% !important; }
+  #results { display:block !important; }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html, body { background:#fff; }
+  body { padding:0; margin:0; max-width:100%; font-size:12px; color:var(--text); }
+  .wrap { padding:0; }
+  .col-results { display:block; position:static; }
+  .col-results > * + * { margin-top:12px; }
+  .printonly.print-header { display:block; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid var(--navy); }
+  .print-title { font-size:1.25rem; font-weight:800; color:var(--navy); }
+  .print-meta { font-size:.82rem; color:#374151; margin-top:4px; font-weight:600; }
+  .print-disc { font-size:.7rem; color:#6b7280; margin-top:6px; font-style:italic; }
+  .rescard { box-shadow:none; border:1px solid var(--border); break-inside:avoid; page-break-inside:avoid; }
+  .rescard .rc-head { background:#fff; color:var(--navy); border-bottom:2px solid var(--navy); padding:8px 18px; }
+  .rescard .rc-body { padding:14px 18px; }
+  .saystrip { background:var(--accent) !important; color:var(--text); border:1px solid #c5dde3; }
+  .saystrip p { color:var(--text); }
+  .saystrip .ss-lbl { color:var(--teal); }
+  .ribbon { break-inside:avoid; }
+  a[href]::after { content:""; }
+  a { color:var(--text); text-decoration:none; }
+  /* Customer leave-behind hides the internal thinking */
+  body.print-customer .deriv,
+  body.print-customer .ribbon-deriv,
+  body.print-customer .pill,
+  body.print-customer #cardTalk,
+  body.print-customer #cardNext,
+  body.print-customer #cardBilling,
+  body.print-customer #cardRecap,
+  body.print-customer .whybox,
+  body.print-customer #assumeCard { display:none !important; }
+  body.print-internal .deriv { display:block; }
+}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-nav">
+      <div class="crumbs"><a href="index.html">Copilot Playbook</a> &nbsp;/&nbsp; <a href="coworksession40.html">The 40-Minute Cowork Session</a> &nbsp;/&nbsp; Cost &amp; Conversation Simulator</div>
+      <div class="crumbs no-print">Last updated: August 27, 2026</div>
+    </div>
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Live Partner Tool &middot; Browser-Based &middot; Offline &middot; No Login &middot; Nothing Saved</div></div>
+    <h1>Cowork Cost &amp; Conversation Simulator</h1>
+    <p class="sub">One question at a time, with the words to say next to every field. Pre-fill what you already know, ask the rest live &mdash; the number, the licensing call, the billing comparison and the talk track all arrive together at the end, on one page you can print and leave behind.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="stage" id="stage">
+
+    <div class="stepper no-print" id="stepper"></div>
+    <div class="toolbar no-print">
+      <div class="tb-l">
+        <div class="tb-q" id="stepCount"></div>
+        <div class="tb-note">Nothing is saved &middot; every figure recalculates as you type</div>
+      </div>
+      <div class="tb-r">
+        <div class="toggle-pill" id="modeToggle">
+          <button data-mode="fast" class="on">Fast &middot; 5 questions</button>
+          <button data-mode="full">Full model &middot; 7</button>
+        </div>
+        <span class="tb-sep"></span>
+        <input type="file" id="loadFile" accept="application/json" style="display:none;">
+        <button class="tb-link" id="btnLoad">Load session</button>
+        <button class="tb-link quiet-danger" id="btnClear">Start over</button>
+      </div>
+    </div>
+
+    <!-- ══════════ THE INTERVIEW ══════════ -->
+    <div class="col-build no-print" id="buildCol">
+
+      <!-- STEP 1 -->
+      <div class="wcard screen" id="step1">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">1</div><div class="wc-title">
+            <h2>The account</h2><div class="wc-sub">The denominator for everything else. We narrow it twice on the next two screens.</div></div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;How many people work there in total &mdash; everyone, not just the ones who'd use AI?&rdquo; A round number is fine.</div></div>
+          <div class="fgrid">
+            <div class="field"><label for="fName">Account nickname</label><input type="text" id="fName" placeholder="e.g. Riverside Dental"></div>
+            <div class="field"><label for="fEmp">Total employees</label><input type="number" id="fEmp" min="1" value="120"></div>
+            <div class="field"><label for="fVert">Vertical</label><select id="fVert">
+              <option value="none">Not regulated</option><option value="healthcare">Healthcare</option>
+              <option value="finance">Finance</option><option value="legal">Legal</option>
+              <option value="public">Public sector</option><option value="eu">EU / EFTA / UK</option>
+            </select></div>
+            <div class="field"><label for="fRes">Data residency</label><select id="fRes">
+              <option value="none">Standard commercial cloud</option>
+              <option value="eu_eea_uk">EU / EEA / UK</option>
+              <option value="gov_cloud">GCC / GCC High / DoD</option>
+            </select></div>
+          </div>
+          <div id="capNote" style="margin-top:16px;"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="wcard screen" id="step2">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">2</div><div class="wc-title">
+            <h2>Who actually holds a Copilot licence</h2><div class="wc-sub">The step every other Cowork calculator skips.</div></div></div>
+          <div class="callout">
+            <div class="callout-title">This is the whole ballgame</div>
+            <div class="callout-body">
+              <p><b>Only someone with an assigned Microsoft 365 Copilot licence can use Cowork at all.</b> Everyone else in the company is out of scope for this number &mdash; they cost nothing here and they generate nothing. So the question is never &ldquo;how many employees.&rdquo; It is &ldquo;how many licences.&rdquo;</p>
+              <p class="srcline" style="margin-top:8px;">Microsoft Learn &mdash; <em>Get started with Copilot Cowork</em>, Prerequisites: &ldquo;An active Microsoft 365 Copilot license assigned to your account.&rdquo;</p>
+            </div>
+          </div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Of those people, how many have a Copilot licence today?&rdquo; If the answer is &ldquo;none yet,&rdquo; ask the follow-up: <b>&ldquo;If we started with one team, which team, and how many people is that?&rdquo;</b></div></div>
+          <div id="licBlock"></div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="wcard screen" id="step3">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">3</div><div class="wc-title">
+            <h2>Who actually turns it on</h2><div class="wc-sub">Having the licence isn't using it. Only active users burn credits.</div></div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Realistically, in the first ninety days &mdash; is this the whole group, or a first team?&rdquo; Whatever they say is your active number.</div></div>
+          <div id="actBlock"></div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="wcard screen" id="step4">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">4</div><div class="wc-title">
+            <h2>Who they are &mdash; and how often they'd use it</h2><div class="wc-sub">Two things on this screen: which kinds of people would use Cowork, and <b>how many tasks</b> each of them runs in a month. What a task <i>costs</i> comes next.</div></div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Of the people who'd really use it &mdash; roughly how many are desk-and-document people, how many are in front of customers, how many are technical, and how many are managers?&rdquo; Round numbers. &ldquo;Ten, eight, four, four&rdquo; is a perfectly good answer.</div></div>
+          <div class="explain">
+            <div class="explain-head">&#127917; What's a &ldquo;persona,&rdquo; exactly?</div>
+            <p>Not a job title &mdash; just a rough bucket for how someone spends most of their day.</p>
+            <div class="def-grid">
+              <div class="def"><b>Corporate Knowledge Worker</b>Day-to-day office work &mdash; email, documents, decks, meetings.</div>
+              <div class="def"><b>Customer-Facing</b>Sales, support, account management.</div>
+              <div class="def"><b>Technical</b>IT, developers, data and analytics roles.</div>
+              <div class="def"><b>Manager / Senior Leader</b>Oversight and reporting more than hands-on execution.</div>
+            </div>
+          </div>
+          <div class="explain">
+            <div class="explain-head">&#9881; What makes a task &ldquo;light,&rdquo; &ldquo;medium,&rdquo; or &ldquo;heavy&rdquo;?</div>
+            <p>Think in terms of how long the task would take a person, not how it feels to type the prompt.</p>
+            <div class="def-grid">
+              <div class="tier"><div class="tg">LIGHT &middot; under ~10 min</div><div class="tb">&ldquo;Summarize this document,&rdquo; draft a short email, pull one answer from SharePoint.</div></div>
+              <div class="tier medium"><div class="tg">MEDIUM &middot; ~30&ndash;60 min</div><div class="tb">Research and draft a report, reconcile a spreadsheet, build a first-pass deck.</div></div>
+              <div class="tier heavy"><div class="tg">HEAVY &middot; multi-hour</div><div class="tb">A genuinely multi-step, multi-tool project. The kind of thing you'd block an afternoon for.</div></div>
+            </div>
+          </div>
+          <div style="margin-bottom:18px;">
+            <div style="font-size:.8rem;font-weight:700;color:#6b7280;margin-bottom:4px;">Which of these is closest?</div>
+            <div style="font-size:.79rem;color:#9ca3af;margin-bottom:10px;max-width:78ch;line-height:1.55;">These describe the <b>licensed, active</b> population &mdash; not the whole company. In most of them the field, floor, store or ward sits on a frontline SKU and never reaches this table.</div>
+            <div class="chips" id="presetChips"></div>
+            <div id="presetDesc"></div>
+          </div>
+          <div id="personaBlock"></div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="wcard screen" id="step5">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">5</div><div class="wc-title">
+            <h2>What a task costs &mdash; and how hard Cowork works</h2><div class="wc-sub">Step 4 counted the tasks. This screen puts a credit price on each one, and sets the effort level that scales all of them at once.</div></div></div>
+          <div id="bridgeBlock"></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;When you picture someone actually using this &mdash; is it mostly quick jobs, or the big multi-hour ones?&rdquo; You are calibrating, not auditing. And if anyone there has already run a real task, ask them to type <b>/cost</b> and read you the number &mdash; that beats every default on this screen.</div></div>
+          <div id="effortBlock" style="margin-bottom:20px;"></div>
+          <div class="callout" style="background:var(--muted);border-color:var(--border);border-left-color:var(--teal);">
+            <div class="callout-title">&#127919; Don't guess. Measure.</div>
+            <div class="callout-body">
+              <p>If the customer &mdash; or you, running Cowork internally &mdash; already has tasks running, open a task in Cowork chat and type <code class="mono">/cost</code>. Enter what three real tasks actually cost and this estimate stops being a model.</p>
+              <div id="calBlock" style="margin-top:14px;"></div>
+              <p class="srcline">Two things to know: <code class="mono">/cost</code> shows only what a task has <em>already</em> used &mdash; Microsoft doesn't support checking before you run &mdash; and it is an in-product approximation, not the billing record. <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-copilot-credits-cost" target="_blank" rel="noopener">Microsoft Learn &mdash; Check credit usage with /cost</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="wcard screen" id="step6">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">6</div><div class="wc-title">
+            <h2>How they'll buy the credits</h2><div class="wc-sub">The billing model doesn't change consumption &mdash; it changes the unit price.</div></div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Would you rather pay for this monthly as you use it, or pre-buy a block up front for a discount?&rdquo; For a first year the honest answer is almost always <b>start metered</b> &mdash; they have no baseline yet, and P3 purchases are final.</div></div>
+          <div id="billBlock"></div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="wcard screen" id="step7">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">7</div><div class="wc-title">
+            <h2>Governance readiness</h2><div class="wc-sub">Every answer here moves the licensing recommendation. Nothing is decorative.</div></div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Has IT already turned on anything like sensitivity labels or data-loss protection for AI tools?&rdquo; You're not auditing anything on the spot &mdash; you just want to know what to check first.</div></div>
+          <div id="govBlock"></div>
+        </div>
+      </div>
+
+
+
+    </div>
+
+    <!-- ══════════ THE OUTPUT ══════════ -->
+    <div class="col-results screen" id="results">
+
+      <div class="printonly print-header span2">
+        <div class="print-title">Cowork Cost Estimate</div>
+        <div class="print-meta" id="printMeta"></div>
+        <div class="print-disc">Estimate, not a quote. Figures reflect the inputs shown and Microsoft list prices current at the date above.</div>
+      </div>
+
+      <div class="saystrip span2">
+        <div class="ss-lbl"><span>Read this out loud</span><button class="copybtn no-print" id="btnCopySay">Copy</button></div>
+        <p id="sayLine"></p>
+      </div>
+
+      <div class="ribbon span2" id="ribbon">
+        <div class="ribbon-head"><span>The narrowing &mdash; click any step to see its math</span><span id="ribbonBand"></span></div>
+        <div class="ribbon-chain" id="ribbonChain"></div>
+        <div class="ribbon-deriv" id="ribbonDeriv" style="display:none;"></div>
+      </div>
+
+      <div class="rescard span2" id="cardNumber">
+        <div class="rc-head"><span>The number</span><span id="numTag"></span></div>
+        <div class="rc-body" id="numBody"></div>
+      </div>
+
+      <div class="rescard" id="cardScen">
+        <div class="rc-head"><span>What if they use it more</span></div>
+        <div class="rc-body" id="scenBody"></div>
+      </div>
+
+      <div class="rescard" id="cardBilling">
+        <div class="rc-head"><span>PayGo vs pre-purchase</span></div>
+        <div class="rc-body" id="billOut"></div>
+      </div>
+
+      <div class="rescard span2" id="cardLic">
+        <div class="rc-head"><span>Licensing recommendation</span></div>
+        <div class="rc-body" id="licOut"></div>
+      </div>
+
+      <div class="rescard" id="cardFlags">
+        <div class="rc-head"><span>Readiness &amp; flags</span><span id="flagTag"></span></div>
+        <div class="rc-body" id="flagBody"></div>
+      </div>
+
+      <div class="rescard" id="cardNext">
+        <div class="rc-head"><span>The next step</span></div>
+        <div class="rc-body"><div class="nextstep" id="nextBox"></div></div>
+      </div>
+
+      <div class="rescard span2" id="cardTalk">
+        <div class="rc-head"><span>The talk track</span><button class="copybtn no-print" id="btnCopyTalk">Copy</button></div>
+        <div class="rc-body"><div id="talkBody"></div></div>
+      </div>
+
+      <div class="rescard span2" id="cardRecap">
+        <div class="rc-head"><span>What you told me &mdash; change any answer</span></div>
+        <div class="rc-body" id="recapBody"></div>
+      </div>
+
+      <div class="rescard span2" id="assumeCard">
+        <div class="rc-head"><span>Everything we assumed</span></div>
+        <div class="rc-body" id="assumeBody"></div>
+      </div>
+
+      <details class="wcard span2 no-print" id="advCard" style="padding:0;">
+        <summary style="cursor:pointer;padding:20px 32px;font-size:.9rem;font-weight:700;color:var(--teal);list-style:none;">&#9881; Prices &amp; your service rates &mdash; edit once, reused everywhere</summary>
+        <div style="padding:0 32px 30px;"><div id="priceBlock"></div></div>
+      </details>
+
+      <div class="span2 no-print" style="border-top:1px solid var(--border);padding-top:22px;">
+        <div class="actionsrow">
+          <button class="btn" id="btnBackToQ">&larr; Back to the questions</button>
+          <button class="btn primary" id="btnPrintCust">&#128424; Print customer leave-behind</button>
+          <button class="btn" id="btnPrintInt">&#128203; Print internal working copy</button>
+          <button class="btn" id="btnDownload">&#11015; Download this session (.json)</button>
+          <div class="toggle-pill" id="mathToggle" style="align-self:center;">
+            <button data-math="off" class="on">Numbers</button>
+            <button data-math="on">Numbers + math</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="pagefoot no-print">
+  <p><b>Nothing you enter here is saved, stored, or transmitted anywhere</b> &mdash; not to a server, not to browser storage. Everything lives in this tab's memory only. Microsoft list prices are current as of the Partner Center July 2026 announcements; the two SMB promotional prices expire 31 December 2026. Persona task-mix defaults come from Microsoft's <a href="https://aka.ms/CustomerCoworkEstimator" target="_blank" rel="noopener">Customer Cowork Estimator</a> (Frontier-observed, 27 May 2026). Effort multipliers, the 2.6&times; benchmark, and partner service rates are modelled or editorial estimates and are labelled as such throughout &mdash; none should be repeated to a customer as a Microsoft-published figure. See <a href="coworksession40.html">The 40-Minute Cowork Session</a> for the conversation this tool serves.</p>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   COWORK COST & CONVERSATION SIMULATOR — CALCULATION ENGINE v2
+   Pure. No DOM, no I/O, no Date.now(). compute(state) is total: never throws,
+   never mutates state, always returns a trace.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function (root) {
+  'use strict';
+
+  /* ── Provenance ───────────────────────────────────────────────────────── */
+  var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'editorial': 1 };
+  function weakest(tags) {
+    return tags.filter(Boolean).reduce(function (a, b) { return RANK[a] <= RANK[b] ? a : b; }, 'ms-verified');
+  }
+
+  /* ── Constants ────────────────────────────────────────────────────────── */
+  var CONST = {
+    CREDIT_USD: 0.01,                       // ms-verified
+    TASK_ENVELOPE: { lo: 0.70, hi: 15.00 }, // ms-verified: "a single task typically runs $0.70 to $15"
+    PER_USER_RANGE: { lo: 82, hi: 228 },    // ms-verified: MS Customer Cowork Estimator published range
+    CCCU: { creditsPer: 100, usdPer: 1.00 },// ms-verified: 1 CCCU = $1 retail = 100 credits
+    BENCHMARK: { ratio: 2.6, anchorUsd: 30 },// editorial (TD SYNNEX) / ms-verified anchor F-090
+    BAND: { modeled: 0.30, measured: 0.15 },// editorial: ±30% default, ±15% once calibrated
+    SANITY: { ratioLo: 0.5, ratioHi: 6.0 }
+  };
+
+  /* ── SKU catalog ──────────────────────────────────────────────────────── */
+  var SKUS = [
+    // Copilot-bearing → Cowork-eligible
+    { id:'bbasic_cop', name:'M365 Business Basic + Copilot Business', usd:21.00, cap:300, copilot:true,
+      base:'bbasic', promoEnds:'2026-12-31', prov:'ms-verified', src:'Partner Center, July 2026',
+      blurb:'Cheapest path. Promo — expires 31 Dec 2026. 1–300 seats.' },
+    { id:'cop_biz', name:'M365 Copilot Business (standalone add-on)', usd:18.00, cap:300, copilot:true,
+      addOn:true, copilotComponent:18.00, promoEnds:'2026-12-31', prov:'ms-verified', src:'Partner Center, July 2026',
+      blurb:'Adds Copilot to a base they already own. Promo — expires 31 Dec 2026.' },
+    { id:'bstd_cop', name:'M365 Business Standard with Copilot', usd:23.50, cap:300, copilot:true,
+      base:'bstd', prov:'ms-verified', src:'Partner Center, July 2026',
+      blurb:'Bundle. 300-seat cap, annual term.' },
+    { id:'bprem_cop', name:'M365 Business Premium with Copilot', usd:32.00, cap:300, copilot:true,
+      base:'bprem', prov:'ms-verified', src:'Partner Center, July 2026',
+      blurb:'The governance-inclusive bundle. 300-seat cap, annual term.' },
+    { id:'cop_ent', name:'M365 Copilot (enterprise add-on)', usd:30.00, cap:null, copilot:true,
+      addOn:true, copilotComponent:30.00, prov:'ms-verified', factId:'F-090',
+      blurb:'No seat cap. The path above 300 users.' },
+    { id:'e7', name:'Microsoft 365 E7', usd:99.00, cap:null, copilot:true,
+      copilotComponent:30.00, prov:'ms-verified', factId:'F-049',
+      blurb:'Includes Copilot + Agent 365 + Entra Suite.' },
+    // Non-Copilot bases → NOT Cowork-eligible
+    { id:'bbasic', name:'M365 Business Basic', usd:6.00, cap:300, copilot:false, prov:'editorial' },
+    { id:'bstd',   name:'M365 Business Standard', usd:12.50, cap:300, copilot:false, prov:'editorial' },
+    { id:'bprem',  name:'M365 Business Premium', usd:22.00, cap:300, copilot:false, prov:'ms-verified',
+      src:'Microsoft SMB pricing, US annual' },
+    { id:'e3',     name:'Microsoft 365 E3', usd:36.00, cap:null, copilot:false, prov:'editorial' },
+    { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-modeled',
+      note:'Implied by the E7 a-la-carte arithmetic ($60+$30+$12+$15=$117).' }
+  ];
+  var SKU_BY_ID = {};
+  SKUS.forEach(function (s) { SKU_BY_ID[s.id] = s; });
+
+  /* Governance add-ons — resolved this session */
+  var ADDONS = {
+    defender_suite: { name:'Defender Suite for Business Premium', usd:10.00, cap:300, prov:'ms-verified' },
+    purview_suite:  { name:'Purview Suite for Business Premium',  usd:10.00, cap:300, prov:'ms-verified' },
+    both_suites:    { name:'Defender + Purview Suites (combined)', usd:15.00, cap:300, prov:'ms-verified' }
+  };
+
+  /* ── Personas (Microsoft Customer Cowork Estimator, Frontier data 5/27/2026) ── */
+  var PERSONA_DEFAULTS = [
+    { key:'ckw',  name:'Corporate Knowledge Worker', light:22, medium:11, heavy:5 },
+    { key:'cust', name:'Customer-Facing',            light:17, medium:13, heavy:5 },
+    { key:'tech', name:'Technical',                  light:12, medium:9,  heavy:14 },
+    { key:'mgr',  name:'Manager / Senior Leader',    light:13, medium:6,  heavy:3 }
+  ];
+
+  // w = [Corporate Knowledge Worker, Customer-Facing, Technical, Manager]
+  var PRESETS = {
+    even:    { label:'Even split', w:[0.25,0.25,0.25,0.25],
+               eg:'No assumption at all',
+               why:'A flat quarter each. Use it when you genuinely do not know the shape yet, and say so out loud rather than implying precision you do not have.' },
+    prof:    { label:'Professional services', w:[0.55,0.20,0.05,0.20],
+               eg:'Accounting, law, consulting, architecture, marketing agencies',
+               why:'Fee-earners are desk-and-document people, so the knowledge-worker bucket dominates. Principals and partners carry the manager load, business development is a thin layer, and IT is almost always outsourced \u2014 usually to you.' },
+    finserv: { label:'Financial services &amp; insurance', w:[0.40,0.35,0.05,0.20],
+               eg:'RIAs, insurance agencies, brokers, wealth management',
+               why:'Advisors and producers are customer-facing; paraplanners, operations and compliance are knowledge workers. Expect the regulated-vertical flags to fire, and expect supervision obligations Business Premium alone does not cover.' },
+    clinic:  { label:'Clinic or practice', w:[0.35,0.40,0.05,0.20],
+               eg:'Medical, dental, veterinary, physiotherapy, behavioural health',
+               why:'Front desk, scheduling and billing are customer-facing; clinicians writing notes and letters are knowledge workers. Clinical staff on a frontline SKU never reach this table \u2014 only the licensed group does.' },
+    trades:  { label:'Trades &amp; field service', w:[0.40,0.25,0.05,0.30],
+               eg:'HVAC, electrical, plumbing, construction, landscaping',
+               why:'The field technicians are almost never Copilot-licensed \u2014 they are on a frontline SKU. What is licensed is the office: estimators, project admin, dispatch and a heavy owner/PM layer. That is why this shape looks nothing like the company org chart.' },
+    mfg:     { label:'Manufacturing &amp; distribution', w:[0.40,0.20,0.20,0.20],
+               eg:'Light manufacturing, wholesale, food production, warehousing',
+               why:'The floor is unlicensed. The licensed population is planning, purchasing, quality, customer service and a real engineering group \u2014 which is why Technical is heavier here than in any other non-IT shape.' },
+    retail:  { label:'Retail &amp; hospitality', w:[0.35,0.20,0.10,0.35],
+               eg:'Multi-site retail, restaurant groups, hotels, franchises',
+               why:'Store and venue staff are frontline, not licensed. Licences concentrate at head office and in multi-site management, so the manager share runs unusually high \u2014 which pushes the mix toward shorter, more frequent tasks.' },
+    realest: { label:'Real estate &amp; property', w:[0.30,0.45,0.05,0.20],
+               eg:'Brokerages, leasing, commercial and residential property management',
+               why:'Agents, leasing staff and property managers are customer-facing by definition. Transaction coordination and accounting carry the knowledge-worker load. This is the most customer-facing shape on the list.' },
+    nonprof: { label:'Nonprofit &amp; association', w:[0.45,0.25,0.05,0.25],
+               eg:'Charities, foundations, member associations, faith organisations',
+               why:'Programme staff are knowledge workers; development, fundraising and membership are customer-facing. Grant and donor reporting makes this shape unusually document-heavy for its size.' },
+    msp:     { label:'IT services, MSP &amp; software', w:[0.20,0.20,0.45,0.15],
+               eg:'MSPs, VARs, dev shops, SaaS \u2014 and very often your own firm',
+               why:'Engineers and developers dominate, and the Technical persona carries roughly three times the heavy-task load of a knowledge worker. Expect the highest per-user credit figure of any shape here \u2014 which is exactly why running this on your own tenant first is the cheapest lesson available.' }
+  };
+
+  /* ── Effort ───────────────────────────────────────────────────────────── */
+  // Envelope 15.00/0.70 = 21.43x; tiers consume 1200/125 = 9.6x; residual 2.232x
+  // spread geometrically over the 4 steps from Light to Max.
+  var EFFORT_STEP_DEFAULT = Math.pow((15.00 / 0.70) / (1200 / 125), 1 / 4); // ≈1.2225
+  function effortMultipliers(step) {
+    return { light: 1 / step, medium: 1, high: step, xhigh: Math.pow(step, 2), max: Math.pow(step, 3) };
+  }
+  var EFFORT_LABELS = { light:'Light', medium:'Medium', high:'High', xhigh:'Extra High', max:'Max' };
+
+  /* ── P3 anchors (only three points are sourced) ───────────────────────── */
+  var P3_ANCHORS = [
+    { cccu: 3000,     pct: 5,  note:'Entry tier, ~$2,850 pay-in' },
+    { cccu: 15000,    pct: 6,  note:'Documented Tier 2 example, 1,500,000 credits' },
+    { cccu: 3000000,  pct: 20, note:'Top published discount' }
+  ];
+
+  function p3Discount(cccu) {
+    var a = P3_ANCHORS;
+    if (cccu < a[0].cccu) return { pct: 0, prov:'ms-verified', exact:true, tier:'below-entry' };
+    for (var k = 0; k < a.length; k++) if (cccu === a[k].cccu)
+      return { pct: a[k].pct, prov:'ms-verified', exact:true, tier:'anchor' };
+    if (cccu >= a[a.length - 1].cccu)
+      return { pct: a[a.length - 1].pct, prov:'ms-verified', exact:true, tier:'ceiling' };
+    var i = 0; while (a[i + 1] && a[i + 1].cccu < cccu) i++;
+    var lo = a[i], hi = a[i + 1];
+    // Piecewise, not a single fit: one fit across the whole range returns 8.5%
+    // at 15,000 CCCU against the ~6% Microsoft actually documents.
+    var t = Math.log(cccu / lo.cccu) / Math.log(hi.cccu / lo.cccu);
+    return { pct: lo.pct + t * (hi.pct - lo.pct), prov:'ms-modeled', exact:false,
+             tier:'interpolated', bracket:[lo.pct, hi.pct] };
+  }
+
+  /* ── Default state ────────────────────────────────────────────────────── */
+  function defaults() {
+    return {
+      schemaVersion: 2,
+      meta: { accountName:'', asOfIso:null },
+      org: { totalEmployees:120, vertical:'none', dataResidency:'none',
+             azureCspPlan:'unsure', usageBillingEnabled:'unsure', competingAi:'no' },
+      licenseInventory: [ { skuId:'bprem_cop', seats:60 }, { skuId:'cop_biz', seats:20 }, { skuId:'bstd', seats:40 } ],
+      licenseTouched: false,      // once the partner edits a licence line we stop rescaling it
+      personaPreset: 'even',
+      activation: { mode:'rate', rate:0.65, count:null },
+      personas: PERSONA_DEFAULTS.map(function (p, i) {
+        return { key:p.key, name:p.name, seats:[26,13,6,7][i], light:p.light, medium:p.medium, heavy:p.heavy };
+      }),
+      tierCredits: { light:125, medium:500, heavy:1200 },
+      calibrated: false,
+      effort: { level:'medium', step:EFFORT_STEP_DEFAULT },
+      model: { selection:'auto', enabled:false, multiplier:1.00 },
+      billing: { model:'paygo', capacityPacksCccu:0, commitCoveragePct:1.0, manualP3Pct:null },
+      governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
+                    namedCostOwner:'unsure', insuranceRenewal:'unsure' },
+      partnerServices: { retainerLo:4, retainerHi:8, assessLo:1500, assessHi:7500 },
+      priceOverrides: {}
+    };
+  }
+
+  /* ── Helpers ──────────────────────────────────────────────────────────── */
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function n(v, d) { var x = Number(v); return isFinite(x) ? x : (d || 0); }
+  function skuPrice(state, id) {
+    var o = state.priceOverrides && state.priceOverrides[id];
+    return o != null ? Number(o) : (SKU_BY_ID[id] ? SKU_BY_ID[id].usd : 0);
+  }
+  // Bundled SKUs discount Copilot below standalone. The invoice ratio needs the slice.
+  function copilotComponent(state, id) {
+    var s = SKU_BY_ID[id]; if (!s || !s.copilot) return 0;
+    if (s.copilotComponent != null) return s.copilotComponent;
+    if (s.base && SKU_BY_ID[s.base]) return Math.max(0, skuPrice(state, id) - skuPrice(state, s.base));
+    return skuPrice(state, id);
+  }
+  function largestRemainder(total, weights) {
+    var raw = weights.map(function (w) { return w * total; });
+    var out = raw.map(Math.floor);
+    var rem = total - out.reduce(function (a, b) { return a + b; }, 0);
+    var order = raw.map(function (v, i) { return { i:i, f:v - Math.floor(v) }; })
+                   .sort(function (a, b) { return b.f - a.f; });
+    for (var k = 0; k < rem; k++) out[order[k % order.length].i]++;
+    return out;
+  }
+
+  /* Shallow-merge a possibly-partial state over defaults so compute() is total. */
+  function hydrate(input) {
+    var d = defaults(), s = input || {};
+    Object.keys(d).forEach(function (k) {
+      if (s[k] == null) { s[k] = d[k]; return; }
+      if (Array.isArray(d[k])) { if (!Array.isArray(s[k])) s[k] = d[k]; return; }
+      if (typeof d[k] === 'object') {
+        var merged = {};
+        Object.keys(d[k]).forEach(function (kk) { merged[kk] = s[k][kk] != null ? s[k][kk] : d[k][kk]; });
+        Object.keys(s[k]).forEach(function (kk) { if (merged[kk] == null) merged[kk] = s[k][kk]; });
+        s[k] = merged;
+      }
+    });
+    return s;
+  }
+
+  /* ── compute ──────────────────────────────────────────────────────────── */
+  function compute(rawState) {
+    var state = hydrate(rawState ? JSON.parse(JSON.stringify(rawState)) : null);
+    var trace = [], warn = [], assume = [];
+    function T(id, group, label, expression, detail, value, unit, prov, note) {
+      trace.push({ id:id, group:group, label:label, expression:expression, detail:detail,
+                   value:value, unit:unit, prov:prov, note:note });
+      if (prov && prov !== 'ms-verified' && note) assume.push({ id:id, label:label, note:note, prov:prov });
+      return value;
+    }
+    function W(id, sev, msg, fixes) { warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [] }); }
+
+    /* F1–F5 · the funnel */
+    var employees = Math.max(0, n(state.org.totalEmployees, 0));
+    T('F1','funnel','Total employees','asked','', employees,'people','partner');
+
+    var inv = (state.licenseInventory || []).filter(function (l) { return SKU_BY_ID[l.skuId]; });
+    var copilotLicensed = 0, nonCopilotSeats = 0, licenseMonthly = 0, copilotSpend = 0;
+    var invDetail = [];
+    inv.forEach(function (l) {
+      var s = SKU_BY_ID[l.skuId], seats = Math.max(0, n(l.seats, 0)), price = skuPrice(state, l.skuId);
+      licenseMonthly += seats * price;
+      if (s.copilot) { copilotLicensed += seats; copilotSpend += seats * copilotComponent(state, l.skuId); }
+      else if (!s.addOn) { nonCopilotSeats += seats; }
+      if (seats > 0) invDetail.push(seats + '×' + s.name + ' @$' + price.toFixed(2));
+      if (s.cap && seats > s.cap)
+        W('V-05','warn', s.name + ' caps at ' + s.cap + ' licences; you entered ' + seats +
+          '. Above the cap the enterprise M365 Copilot add-on at $30 is the available path.',
+          [{ label:'Switch to the $30 enterprise add-on', action:'switchToEnterprise' }]);
+      if (s.promoEnds) assume.push({ id:'promo-'+s.id, label:s.name,
+        note:'This price reflects a promotion that ends ' + s.promoEnds + '. Re-verify before quoting.', prov:'ms-verified' });
+    });
+
+    T('F2','funnel','Copilot-licensed users','Σ seats where the SKU includes Copilot', invDetail.join(' + '),
+      copilotLicensed,'users','partner');
+    T('F3','funnel','Non-Copilot seats','Σ seats on base SKUs without Copilot','', nonCopilotSeats,'users','partner');
+
+    var unlicensed = employees - (copilotLicensed + nonCopilotSeats);
+    if (unlicensed < 0)
+      W('V-01','warn','You have ' + (copilotLicensed + nonCopilotSeats) + ' licensed seats against ' + employees +
+        ' employees. Check the headcount in Step 1 or the seat counts in Step 2.', []);
+
+    /* F6 · activation — only licensed users can burn credits */
+    var perActiveModeled = 0; // filled after credits; needed for benchmark mode
+    var active;
+    var requestedActive;
+    if (state.activation.mode === 'count') requestedActive = Math.round(n(state.activation.count, 0));
+    else if (state.activation.mode === 'benchmark') requestedActive = null;
+    else requestedActive = Math.round(clamp(n(state.activation.rate, 0.65), 0, 1) * copilotLicensed);
+
+    /* Credits per persona (needed before benchmark activation can back-solve) */
+    var TC = state.tierCredits, EM = effortMultipliers(n(state.effort.step, EFFORT_STEP_DEFAULT));
+    var effortMult = EM[state.effort.level] != null ? EM[state.effort.level] : 1;
+    var modelMult = state.model.enabled ? n(state.model.multiplier, 1) : 1;
+
+    function creditsPerUser(p) {
+      return (n(p.light) * n(TC.light) + n(p.medium) * n(TC.medium) + n(p.heavy) * n(TC.heavy));
+    }
+    function effectiveCredits(p) { return creditsPerUser(p) * effortMult * modelMult; }
+
+    var personas = state.personas || [];
+    var personaSeats = personas.reduce(function (a, p) { return a + Math.max(0, n(p.seats, 0)); }, 0);
+    var weightedAvgCredits = personaSeats > 0
+      ? personas.reduce(function (a, p) { return a + Math.max(0, n(p.seats,0)) * effectiveCredits(p); }, 0) / personaSeats
+      : personas.reduce(function (a, p) { return a + effectiveCredits(p); }, 0) / (personas.length || 1);
+
+    if (state.activation.mode === 'benchmark') {
+      var perActiveUsdM = weightedAvgCredits * CONST.CREDIT_USD;
+      var fullyActiveM = perActiveUsdM / CONST.BENCHMARK.anchorUsd;
+      var impliedM = fullyActiveM > 0 ? CONST.BENCHMARK.ratio / fullyActiveM : 0;
+      requestedActive = Math.round(clamp(impliedM, 0, 1) * copilotLicensed);
+    }
+
+    active = clamp(requestedActive, 0, copilotLicensed);
+    if (requestedActive > copilotLicensed) {
+      W('V-02','clamp','Only users with an assigned Microsoft 365 Copilot licence can use Cowork, so I capped active users at ' +
+        copilotLicensed + '. If more people need it, that is a licence conversation — add seats in Step 2.',
+        [{ label:'Add ' + (requestedActive - copilotLicensed) + ' more licences', action:'addLicences' }]);
+    }
+    T('F6','funnel','Active in Cowork',
+      state.activation.mode === 'benchmark' ? 'back-solved from the 2.6× benchmark'
+        : state.activation.mode === 'count' ? 'entered directly'
+        : copilotLicensed + ' licensed × ' + Math.round(n(state.activation.rate,0)*100) + '%',
+      '', active,'users', state.activation.mode === 'benchmark' ? 'ms-modeled' : 'partner');
+
+    var greenfield = copilotLicensed === 0;
+    if (greenfield)
+      W('V-03','info','No Copilot-bearing licence in the inventory, so the Cowork bill is $0 today. ' +
+        'This is a licensing conversation first — and Copilot in 30 is the way to start it.', []);
+    if (!greenfield && active === 0)
+      W('V-16','info','Then the Cowork bill is $0. That is a real answer — and it is also the problem. ' +
+        'The conversation here is adoption, not cost.', []);
+
+    /* F7 · persona reconciliation — never two silent denominators.
+       Seats are capped at the active population: you cannot have more Cowork
+       users than people who actually turn it on. Under-allocation is reported,
+       not silently inflated. */
+    var reconciled = personaSeats === active;
+    var effSeats = personas.map(function (p) { return Math.max(0, n(p.seats, 0)); });
+    if (personaSeats > active) {
+      var w = personaSeats > 0 ? effSeats.map(function (s) { return s / personaSeats; }) : [];
+      effSeats = w.length ? largestRemainder(active, w) : effSeats.map(function () { return 0; });
+      W('V-04','warn','Persona seats total ' + personaSeats + ' but only ' + active +
+        ' users are active in Cowork. Figures below are capped at ' + active + '.',
+        [{ label:'Balance personas to ' + active, action:'balancePersonas' },
+         { label:'Set active users to ' + personaSeats, action:'setActive' }]);
+    } else if (personaSeats < active && active > 0) {
+      W('V-04','warn','You have ' + active + ' active users but only ' + personaSeats +
+        ' allocated across personas. Figures below are based on ' + personaSeats + ' allocated users.',
+        [{ label:'Balance personas to ' + active, action:'balancePersonas' },
+         { label:'Set active users to ' + personaSeats, action:'setActive' }]);
+    }
+    var effTotal = effSeats.reduce(function (a, b) { return a + b; }, 0);
+    if (state.personaPreset && state.personaPreset !== 'even' && PRESETS[state.personaPreset])
+      assume.push({ id:'preset', label:'Persona mix shape',
+        note:'The split across the four personas came from the \u201c' +
+             PRESETS[state.personaPreset].label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modelled staffing pattern for that kind of business, not a Microsoft-published figure. The task mix inside each persona is Microsoft\u2019s; only this split is ours.',
+        prov:'editorial' });
+
+    T('F7','funnel','Persona allocation', 'Σ persona seats, capped at active users',
+      personas.map(function (p, i) { return effSeats[i] + ' ' + p.name; }).join(' · '),
+      effTotal,'users','partner');
+
+    /* F9–F11 · credits and cost */
+    var monthlyCredits = personas.reduce(function (a, p, i) {
+      return a + effSeats[i] * effectiveCredits(p);
+    }, 0);
+    monthlyCredits = Math.round(monthlyCredits);
+
+    var creditDetail = personas.filter(function (p, i) { return effSeats[i] > 0; }).map(function (p, i) {
+      var idx = personas.indexOf(p);
+      return effSeats[idx] + '×' + Math.round(effectiveCredits(p)).toLocaleString();
+    }).join(' + ');
+    T('F10','credits','Monthly Copilot Credits','Σ (persona seats × credits/user × effort)',
+      creditDetail + (effortMult !== 1 ? ' (×' + effortMult.toFixed(3) + ' ' + EFFORT_LABELS[state.effort.level] + ' effort)' : ''),
+      monthlyCredits,'credits', state.calibrated ? 'measured' : 'ms-modeled',
+      state.calibrated ? null : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
+        ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
+
+    var monthlyCowork = monthlyCredits * CONST.CREDIT_USD;
+    T('F11','cost','Monthly Cowork cost', 'credits × $0.01',
+      monthlyCredits.toLocaleString() + ' × $0.01', monthlyCowork,'usd',
+      state.calibrated ? 'measured' : 'ms-modeled');
+
+    var band = state.calibrated ? CONST.BAND.measured : CONST.BAND.modeled;
+    var coworkLo = monthlyCowork * (1 - band), coworkHi = monthlyCowork * (1 + band);
+
+    var perActive = effTotal > 0 ? monthlyCowork / effTotal : 0;
+    perActiveModeled = perActive;
+    if (perActive > 0 && (perActive < CONST.PER_USER_RANGE.lo || perActive > CONST.PER_USER_RANGE.hi))
+      W('V-09','warn','At $' + perActive.toFixed(2) + ' per active user per month you are outside Microsoft’s own ' +
+        'published estimator range of $' + CONST.PER_USER_RANGE.lo + '–$' + CONST.PER_USER_RANGE.hi +
+        '. Defensible, but say it as a modelled figure.', []);
+
+    // Per-task sanity against the published envelope
+    ['light','medium','heavy'].forEach(function (t) {
+      var usd = n(TC[t]) * CONST.CREDIT_USD * effortMult;
+      if (usd < CONST.TASK_ENVELOPE.lo || usd > CONST.TASK_ENVELOPE.hi)
+        W('V-08','warn','A ' + t + ' task at ' + EFFORT_LABELS[state.effort.level] + ' effort models at $' +
+          usd.toFixed(2) + ', outside Microsoft’s published typical range of $0.70–$15.', []);
+    });
+
+    /* Licence cost */
+    T('F8','cost','Monthly licence cost','Σ (seats × SKU price)', invDetail.join(' + '), licenseMonthly,'usd','ms-verified');
+    var anchorSpend = copilotLicensed * CONST.BENCHMARK.anchorUsd;
+
+    /* Ratios — two, because there are two questions */
+    var ratioActual = copilotSpend > 0 ? monthlyCowork / copilotSpend : 0;
+    var ratioBench  = anchorSpend  > 0 ? monthlyCowork / anchorSpend  : 0;
+    T('R1','ratio','Ratio vs actual Copilot spend','Cowork ÷ Copilot component of the licences',
+      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + copilotSpend.toFixed(0), ratioActual,'x','ms-modeled');
+    T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork ÷ (licensed × $30)',
+      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x','ms-modeled');
+
+    if (ratioBench > 0 && (ratioBench < CONST.SANITY.ratioLo || ratioBench > CONST.SANITY.ratioHi)) {
+      var heavyTotal = personas.reduce(function (a,p) { return a + n(p.heavy,0); }, 0);
+      W('V-10','warn','This is well outside what we normally see. Before you say it out loud, check these two: ' +
+        'total heavy tasks per user per month is ' + heavyTotal + ', and active users is ' + active + '.', []);
+    }
+
+    /* Benchmark reconciliation — the centrepiece */
+    var fullyActive = perActive / CONST.BENCHMARK.anchorUsd;
+    var impliedActivation = fullyActive > 0 ? CONST.BENCHMARK.ratio / fullyActive : 0;
+    var actualActivation = copilotLicensed > 0 ? active / copilotLicensed : 0;
+    var reconciliation = { perActive:perActive, fullyActive:fullyActive,
+                           impliedActivation:impliedActivation, actualActivation:actualActivation };
+
+    /* Annual, 3-year, billing */
+    var annualCredits = monthlyCredits * 12;
+    var paygoAnnual = annualCredits * CONST.CREDIT_USD;
+    var cccuRequired = annualCredits / CONST.CCCU.creditsPer;
+    var packCredits = n(state.billing.capacityPacksCccu,0) * CONST.CCCU.creditsPer;
+    var afterPacks = Math.max(0, annualCredits - packCredits);
+    var commitCredits = afterPacks * clamp(n(state.billing.commitCoveragePct,1), 0, 1.5);
+    var overageCredits = Math.max(0, afterPacks - commitCredits);
+    var commitCccu = commitCredits / CONST.CCCU.creditsPer;
+    var disc = state.billing.manualP3Pct != null
+      ? { pct:n(state.billing.manualP3Pct,0), prov:'partner', exact:true, tier:'manual' }
+      : p3Discount(commitCccu);
+    var p3Prepay = commitCccu * CONST.CCCU.usdPer * (1 - disc.pct / 100);
+    var p3Annual = p3Prepay + overageCredits * CONST.CREDIT_USD;
+    var p3Saving = paygoAnnual - p3Annual;
+    var breakeven = 1 - disc.pct / 100;
+    if (state.billing.model === 'p3' && cccuRequired < P3_ANCHORS[0].cccu)
+      W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
+        'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
+
+    T('B1','billing','Annual Copilot Credits','monthly × 12','', annualCredits,'credits', state.calibrated?'measured':'ms-modeled');
+    T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', state.calibrated?'measured':'ms-modeled');
+    T('B3','billing','P3 commit required','annual credits ÷ 100 credits per CCCU',
+      Math.round(annualCredits).toLocaleString() + ' ÷ 100', cccuRequired,'cccu','ms-verified');
+    T('B4','billing','P3 discount', disc.exact ? 'published tier' : 'interpolated between published anchors',
+      disc.bracket ? 'bracketed ' + disc.bracket[0] + '%–' + disc.bracket[1] + '%' : '', disc.pct,'pct', disc.prov,
+      disc.exact ? null : 'Microsoft does not publish P3 tier breakpoints. Present the bracket, not a point price.');
+
+    /* Residency + prerequisite gates */
+    if (state.org.dataResidency === 'gov_cloud')
+      W('V-15','block','Cowork is unavailable in GCC, GCC High, DoD and sovereign clouds. No licensing path changes this.', []);
+    if (state.org.dataResidency === 'eu_eea_uk')
+      W('V-14','warn','In the EU/EFTA/UK an admin must opt in to the Anthropic sub-processor — it is off by default.', []);
+    if (state.org.azureCspPlan === 'no')
+      W('V-06','warn','Cowork PayGo billing routes through an Azure subscription on your CSP channel. Confirm this exists before quoting.', []);
+    if (state.org.usageBillingEnabled === 'no')
+      W('V-07','warn','Microsoft lists "usage-based and Cowork billing has been enabled" as a prerequisite. No SKU closes this — it is an admin action.', []);
+
+    var ctx = {
+      employees:employees, copilotLicensed:copilotLicensed, nonCopilotSeats:nonCopilotSeats,
+      unlicensed:unlicensed, active:active, personaSeats:personaSeats, effectiveSeats:effTotal,
+      effSeatsByPersona:effSeats, reconciled:reconciled,
+      greenfield:greenfield, monthlyCredits:monthlyCredits, monthlyCowork:monthlyCowork,
+      coworkLo:coworkLo, coworkHi:coworkHi, band:band, perActive:perActive,
+      licenseMonthly:licenseMonthly, copilotSpend:copilotSpend, anchorSpend:anchorSpend,
+      ratioActual:ratioActual, ratioBench:ratioBench, reconciliation:reconciliation,
+      annualCredits:annualCredits, paygoAnnual:paygoAnnual, cccuRequired:cccuRequired,
+      commitCccu:commitCccu, discount:disc, p3Annual:p3Annual, p3Saving:p3Saving, breakeven:breakeven,
+      allInMonthly: licenseMonthly + monthlyCowork,
+      allInAnnual: (licenseMonthly + monthlyCowork) * 12,
+      allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
+      effortMult:effortMult, effortLabel:EFFORT_LABELS[state.effort.level]
+    };
+
+    var licensing = solveLicensing(state, ctx);
+
+    return { ctx:ctx, licensing:licensing, trace:trace, warnings:warn,
+             assumptions:dedupe(assume), scenarios:scenarios(state, ctx) };
+  }
+
+  function dedupe(arr) {
+    var seen = {}, out = [];
+    arr.forEach(function (a) { if (!seen[a.id]) { seen[a.id] = 1; out.push(a); } });
+    return out;
+  }
+
+  /* ── Scaling scenarios (competitor table stakes) ──────────────────────── */
+  function scenarios(state, ctx) {
+    var TC = state.tierCredits, A = ctx.effectiveSeats, base = ctx.monthlyCowork;
+    function row(label, extraCredits) {
+      var extra = extraCredits * CONST.CREDIT_USD;
+      return { label:label, credits:extraCredits, usd:extra, allIn:base + extra + ctx.licenseMonthly };
+    }
+    return [
+      row('Every active user runs one more light task per week',  A * n(TC.light)  * 4.33),
+      row('…one more medium task per week',                        A * n(TC.medium) * 4.33),
+      row('…one light task every working day',                     A * n(TC.light)  * 21),
+      row('Adoption doubles (' + A + ' → ' + Math.min(A * 2, ctx.copilotLicensed) + ' active)',
+          (Math.min(A * 2, ctx.copilotLicensed) - A) * (A > 0 ? ctx.monthlyCredits / A : 0))
+    ];
+  }
+
+  /* ── Licensing solver ─────────────────────────────────────────────────── */
+  var REGULATED = ['healthcare','finance','legal','public','eu'];
+  var VERTICAL_LABEL = { healthcare:'Healthcare', finance:'Finance', legal:'Legal',
+                         public:'Public sector', eu:'EU/EFTA/UK' };
+
+  function requirements(state, ctx) {
+    var g = state.governance, out = [];
+    if (ctx.active > ctx.copilotLicensed)
+      out.push({ id:'copilot_access', label:'A Copilot licence on every intended Cowork user', mandatory:true, prov:'ms-verified',
+        why:'Cowork requires an assigned Microsoft 365 Copilot licence. You have ' + ctx.active +
+            ' intended Cowork users and ' + ctx.copilotLicensed + ' Copilot licences.' });
+    if (state.org.usageBillingEnabled !== 'yes')
+      out.push({ id:'usage_billing', label:'Usage-based billing enabled', mandatory:true, skuClosable:false, prov:'ms-verified',
+        why:'Microsoft lists this as a Cowork prerequisite. No SKU closes it — it is an admin action in Copilot > Cost Management.' });
+    if (g.purviewLabels !== 'yes')
+      out.push({ id:'labels', label:'Purview sensitivity labels', prov:'editorial',
+        why:'Cowork grounds in tenant data and honours whatever labels already exist. Unlabelled data is retrieved at the same credit cost with none of the controls.' });
+    if (g.dlpForAi !== 'yes')
+      out.push({ id:'dlp', label:'DLP for AI', prov:'editorial',
+        why:'You told us DLP for AI is not in place, so nothing is inspecting what leaves via an agent.' });
+    if (g.defenderCloudApps !== 'yes' || state.org.competingAi === 'yes')
+      out.push({ id:'mdca', label:'Defender for Cloud Apps', prov:'editorial',
+        why: state.org.competingAi === 'yes'
+          ? 'They are already paying for Claude or ChatGPT, so you need visibility into unsanctioned AI alongside Cowork.'
+          : 'Without Defender for Cloud Apps there is no visibility into unsanctioned AI tools alongside Cowork.' });
+    if (REGULATED.indexOf(state.org.vertical) > -1)
+      out.push({ id:'comms', label:'Communication Compliance', prov:'editorial',
+        why: (VERTICAL_LABEL[state.org.vertical] || 'Regulated') +
+             ' accounts typically carry a supervision obligation that Business Premium alone does not cover.' });
+    if (ctx.copilotLicensed >= 300)
+      out.push({ id:'scale', label:'A path above the 300-seat SMB cap', mandatory:true, prov:'ms-verified',
+        why:'At ' + ctx.copilotLicensed + ' Copilot users you are at or past the 300-licence ceiling on every SMB SKU.' });
+    return out;
+  }
+
+  // What each path closes
+  var PATH_CLOSES = {
+    bbasic_cop: ['copilot_access'],
+    cop_biz:    ['copilot_access'],
+    bstd_cop:   ['copilot_access'],
+    bprem_cop:  ['copilot_access','labels'],
+    bprem_cop_suites: ['copilot_access','labels','dlp','mdca','comms'],
+    cop_ent:    ['copilot_access','scale'],
+    e7:         ['copilot_access','labels','dlp','mdca','comms','scale']
+  };
+
+  function solveLicensing(state, ctx) {
+    var req = requirements(state, ctx);
+    // A licensing path covers the whole Copilot estate, not just the active
+    // subset — you cannot put half a tenant on a different SKU. Greenfield
+    // sizes to a 25-user pilot, matching the Copilot in 30 trial.
+    var needed = Math.max(ctx.copilotLicensed, ctx.active) ||
+                 Math.min(Math.max(1, ctx.employees), 25);
+    var underCap = needed <= 300;
+
+    var candidates = [
+      { id:'bbasic_cop', label:'Business Basic + Copilot Business', per:skuPrice(state,'bbasic_cop'), cap:300 },
+      { id:'cop_biz',    label:'Copilot Business (add to their existing base)', per:skuPrice(state,'cop_biz'), cap:300 },
+      { id:'bstd_cop',   label:'Business Standard with Copilot', per:skuPrice(state,'bstd_cop'), cap:300 },
+      { id:'bprem_cop',  label:'Business Premium with Copilot', per:skuPrice(state,'bprem_cop'), cap:300 },
+      { id:'bprem_cop_suites', label:'Business Premium with Copilot + Defender/Purview Suites',
+        per:skuPrice(state,'bprem_cop') + ADDONS.both_suites.usd, cap:300 },
+      { id:'cop_ent',    label:'M365 Copilot enterprise add-on', per:skuPrice(state,'cop_ent'), cap:null },
+      { id:'e7',         label:'Microsoft 365 E7', per:skuPrice(state,'e7'), cap:null }
+    ];
+
+    var scored = candidates.map(function (c) {
+      var violations = [];
+      if (c.cap && needed > c.cap)
+        violations.push(c.label + ' caps at ' + c.cap + ' licences; this account needs ' + needed + '.');
+      if (state.org.dataResidency === 'gov_cloud')
+        violations.push('Cowork is unavailable in GCC/GCC High/DoD and sovereign clouds — no licensing path changes this.');
+      var closesIds = PATH_CLOSES[c.id] || [];
+      var closes = req.filter(function (r) { return r.skuClosable !== false && closesIds.indexOf(r.id) > -1; });
+      var gaps   = req.filter(function (r) { return closes.indexOf(r) === -1; });
+      return { id:c.id, label:c.label, perUser:c.per, monthly:c.per * needed,
+               closes:closes, gaps:gaps, violations:violations, feasible:violations.length === 0 };
+    });
+
+    var complete = scored.filter(function (p) {
+      return p.feasible && p.gaps.filter(function (g) { return g.skuClosable !== false; }).length === 0;
+    }).sort(function (a, b) { return a.monthly - b.monthly; });
+
+    var winner = complete[0] || scored.filter(function (p) { return p.feasible; })
+      .sort(function (a, b) { return (b.closes.length - a.closes.length) || (a.monthly - b.monthly); })[0];
+
+    var runnerUp = complete[1] || null;
+    var cheapestFeasible = scored.filter(function (p) { return p.feasible; })
+      .sort(function (a, b) { return a.monthly - b.monthly; })[0];
+
+    var why = [];
+    if (winner) {
+      why.push(underCap
+        ? 'You have ' + ctx.employees + ' employees — under the 300-seat cap, so the SMB bundles are available to you.'
+        : 'At ' + needed + ' users you are past the 300-seat SMB cap, so only the enterprise paths are available.');
+      if (winner.closes.length)
+        why.push('This path closes ' + winner.closes.length + ' of the ' +
+          req.filter(function(r){return r.skuClosable!==false;}).length + ' gaps you flagged: ' +
+          winner.closes.map(function (c) { return c.label; }).join(', ') + '.');
+      if (cheapestFeasible && cheapestFeasible.id !== winner.id) {
+        var delta = (winner.perUser - cheapestFeasible.perUser);
+        if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label + ' even though it is $' +
+          delta.toFixed(2) + '/user/month cheaper — $' + (delta * needed).toFixed(0) +
+          '/month across ' + needed + ' seats — because it leaves ' +
+          cheapestFeasible.gaps.filter(function(g){return g.skuClosable!==false;}).length +
+          ' of those gaps open on a tenant that is about to send its own data through an agent.');
+      }
+      var residual = winner.gaps.filter(function (g) { return g.skuClosable === false; });
+      if (residual.length) why.push('Still open after any licence change: ' +
+        residual.map(function (r) { return r.label; }).join(', ') + ' — ' + residual[0].why);
+      why.push('If IT tells you those controls are already on, change your answers in the readiness step and this recommendation rewrites itself.');
+    }
+
+    // E7 arithmetic — every component Microsoft-verified
+    var e7 = { alacarte: 60 + 30 + 12 + 15, list: skuPrice(state,'e7') };
+    e7.delta = e7.alacarte - e7.list;
+    e7.pct = e7.alacarte > 0 ? (e7.delta / e7.alacarte) * 100 : 0;
+
+    return { requirements:req, paths:scored, winner:winner, runnerUp:runnerUp,
+             rejected:scored.filter(function (p) { return !p.feasible; }), why:why, e7:e7, needed:needed };
+  }
+
+  /* ── Presets & actions ────────────────────────────────────────────────── */
+  function applyPreset(state, key) {
+    var p = PRESETS[key] || PRESETS.even;
+    var alloc = largestRemainder(computeActiveTarget(state), p.w);
+    state.personas.forEach(function (per, i) { per.seats = alloc[i]; });
+    return state;
+  }
+  function computeActiveTarget(state) {
+    var licensed = (state.licenseInventory || []).reduce(function (a, l) {
+      var s = SKU_BY_ID[l.skuId]; return a + (s && s.copilot ? Math.max(0, n(l.seats,0)) : 0);
+    }, 0);
+    if (state.activation.mode === 'count') return clamp(Math.round(n(state.activation.count,0)), 0, licensed);
+    return Math.round(clamp(n(state.activation.rate,0.65), 0, 1) * licensed);
+  }
+  function balancePersonas(state, target) {
+    var cur = state.personas.map(function (p) { return Math.max(0, n(p.seats,0)); });
+    var tot = cur.reduce(function (a,b) { return a+b; }, 0);
+    var w = tot > 0 ? cur.map(function (c) { return c / tot; }) : [0.25,0.25,0.25,0.25];
+    var alloc = largestRemainder(target, w);
+    state.personas.forEach(function (p, i) { p.seats = alloc[i]; });
+    return state;
+  }
+
+  root.CoworkEngine = {
+    VERSION:'2.0.0', CONST:CONST, SKUS:SKUS, SKU_BY_ID:SKU_BY_ID, ADDONS:ADDONS,
+    PERSONA_DEFAULTS:PERSONA_DEFAULTS, PRESETS:PRESETS, EFFORT_LABELS:EFFORT_LABELS,
+    EFFORT_STEP_DEFAULT:EFFORT_STEP_DEFAULT, effortMultipliers:effortMultipliers,
+    P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
+    defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
+    balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
+    skuPrice:skuPrice, copilotComponent:copilotComponent, weakest:weakest
+  };
+})(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   UI LAYER — pure render of CoworkEngine.compute(state)
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  var E = window.CoworkEngine;
+  var state = E.defaults();
+  var uiMode = 'fast', mathOn = false, prevSnap = null, activeRibbon = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  function usd(v, dp) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
+  function num(v) { return Number(v || 0).toLocaleString(); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]; }); }
+  function pill(kind, label) { return '<span class="pill ' + kind + '">' + label + '</span>'; }
+  function provPill(p) {
+    var m = { 'ms-verified':['verified','Microsoft'], 'measured':['measured','Measured'],
+              'ms-modeled':['modeled','Modelled'], 'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
+    var x = m[p] || ['default','—']; return pill(x[0], x[1]);
+  }
+
+  /* ═══ STEP 2 · licence inventory ═══ */
+  function renderLic() {
+    var el = $('licBlock');
+    var copilotSkus = E.SKUS.filter(function (s) { return s.copilot; });
+    var baseSkus = E.SKUS.filter(function (s) { return !s.copilot; });
+    var rows = state.licenseInventory.map(function (line, i) {
+      var s = E.SKU_BY_ID[line.skuId] || {};
+      var opts = function (list, group) {
+        return '<optgroup label="' + group + '">' + list.map(function (o) {
+          return '<option value="' + o.id + '"' + (o.id === line.skuId ? ' selected' : '') + '>' + esc(o.name) + ' — $' + o.usd.toFixed(2) + '</option>';
+        }).join('') + '</optgroup>';
+      };
+      var price = E.skuPrice(state, line.skuId);
+      return '<tr>' +
+        '<td><select data-lic="' + i + '" data-f="skuId" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:.86rem;font-family:inherit;">' +
+          opts(copilotSkus, 'Includes Copilot — can use Cowork') + opts(baseSkus, 'No Copilot — cannot use Cowork') +
+        '</select>' + (s.blurb ? '<div style="font-size:.72rem;color:#9ca3af;margin-top:4px;">' + esc(s.blurb) + '</div>' : '') + '</td>' +
+        '<td><input type="number" min="0" data-lic="' + i + '" data-f="seats" value="' + (line.seats || 0) + '"></td>' +
+        '<td class="num">' + (s.copilot ? '<span class="check">&#10003;</span>' : '<span style="color:#9ca3af;">&mdash;</span>') + '</td>' +
+        '<td class="num" data-lrow="' + i + '">' + usd(price * (line.seats || 0)) + '</td>' +
+        '<td class="num"><button class="linkbtn" data-lic-del="' + i + '" style="color:#b91c1c;">Remove</button></td>' +
+      '</tr>';
+    }).join('');
+
+    el.innerHTML =
+      '<div class="tablewrap"><table class="dtable"><thead><tr>' +
+      '<th>Licence</th><th style="width:96px;">Seats</th><th style="width:78px;text-align:right;">Cowork?</th><th style="width:110px;text-align:right;">$/month</th><th style="width:78px;"></th>' +
+      '</tr></thead><tbody>' + (rows || '<tr><td colspan="5" style="color:#9ca3af;">No licences added yet.</td></tr>') + '</tbody>' +
+      '<tfoot><tr><td>Total seats</td><td data-ltot>0</td><td></td><td class="num" data-lmoney>&mdash;</td><td></td></tr></tfoot>' +
+      '</table></div>' +
+      '<div id="licNote" style="margin-top:12px;"></div>' +
+      '<div style="margin-top:12px;"><button class="linkbtn" id="licAdd">+ Add another licence line</button></div>';
+
+    Array.prototype.forEach.call(el.querySelectorAll('[data-lic]'), function (inp) {
+      inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', function () {
+        var i = +inp.getAttribute('data-lic'), f = inp.getAttribute('data-f');
+        state.licenseInventory[i][f] = f === 'seats' ? Math.max(0, +inp.value || 0) : inp.value;
+        state.licenseTouched = true;
+        if (f === 'skuId') renderLic();
+        refresh();
+      });
+    });
+    Array.prototype.forEach.call(el.querySelectorAll('[data-lic-del]'), function (b) {
+      b.addEventListener('click', function () {
+        state.licenseTouched = true;
+        state.licenseInventory.splice(+b.getAttribute('data-lic-del'), 1); renderLic(); refresh();
+      });
+    });
+    $('licAdd').addEventListener('click', function () {
+      state.licenseTouched = true;
+      state.licenseInventory.push({ skuId:'bprem_cop', seats:0 }); renderLic(); refresh();
+    });
+  }
+
+  /* The seat count in Step 2 cannot exceed the headcount in Step 1. Until the
+     partner edits a licence line themselves, the prefilled inventory follows
+     the headcount instead of sitting there contradicting it. */
+  function licSeatTotal() {
+    return (state.licenseInventory || []).reduce(function (a, l) { return a + Math.max(0, +l.seats || 0); }, 0);
+  }
+  function scaleLicencesTo(target) {
+    var lines = state.licenseInventory || [], tot = licSeatTotal();
+    if (!lines.length || !tot || target < 0) return;
+    var alloc = E.largestRemainder(Math.round(target), lines.map(function (l) {
+      return Math.max(0, +l.seats || 0) / tot;
+    }));
+    lines.forEach(function (l, i) { l.seats = alloc[i]; });
+  }
+
+  /* Seat counts are typed into, so the money column is patched, not re-rendered. */
+  function patchLic() {
+    var el = $('licBlock'); if (!el) return;
+    var money = 0;
+    state.licenseInventory.forEach(function (line, i) {
+      var row = E.skuPrice(state, line.skuId) * (line.seats || 0);
+      money += row;
+      var td = el.querySelector('[data-lrow="' + i + '"]');
+      if (td) td.textContent = usd(row);
+    });
+    var seats = licSeatTotal(), emp = Math.max(0, +state.org.totalEmployees || 0);
+    var t1 = el.querySelector('[data-ltot]'), t2 = el.querySelector('[data-lmoney]');
+    if (t1) t1.textContent = num(seats);
+    if (t2) t2.textContent = usd(money);
+
+    var note = $('licNote'); if (!note) return;
+    if (seats > emp) {
+      note.innerHTML = '<div class="callout warn" style="margin:0;"><div class="callout-body">' +
+        '<b>' + num(seats) + ' seats against ' + num(emp) + ' employees</b> \u2014 that is ' + num(seats - emp) +
+        ' more licences than people. One of the two numbers is wrong, and you should not say either out loud until it is fixed.' +
+        '<div style="margin-top:9px;display:flex;gap:16px;flex-wrap:wrap;">' +
+        '<button class="linkbtn" data-licfix="scale">Scale these seats down to ' + num(emp) + '</button>' +
+        '<button class="linkbtn" data-licfix="emp">No \u2014 the headcount is ' + num(seats) + '</button>' +
+        '</div></div></div>';
+    } else if (seats === emp) {
+      note.innerHTML = '<div class="ribbon-deriv">' + num(seats) + ' seats across ' + num(emp) +
+        ' employees \u2014 everyone is accounted for.</div>';
+    } else {
+      note.innerHTML = '<div class="ribbon-deriv">' + num(seats) + ' of ' + num(emp) + ' employees carry a licence. The other ' +
+        num(emp - seats) + ' have none \u2014 they are simply out of scope for this number, and they cost nothing here.</div>';
+    }
+    Array.prototype.forEach.call(note.querySelectorAll('[data-licfix]'), function (b) {
+      b.addEventListener('click', function () {
+        if (b.getAttribute('data-licfix') === 'scale') scaleLicencesTo(emp);
+        else { state.org.totalEmployees = seats; $('fEmp').value = seats; }
+        state.licenseTouched = true;
+        renderLic(); refresh();
+      });
+    });
+  }
+
+  /* ═══ STEP 3 · activation ═══ */
+  function renderAct(r) {
+    var presets = [ {k:0.25,l:'A pilot team (~25%)'}, {k:0.5,l:'About half (~50%)'}, {k:0.8,l:'Most of them (~80%)'} ];
+    var m = state.activation.mode, rate = state.activation.rate;
+    $('actBlock').innerHTML =
+      '<div class="chips" style="margin-bottom:14px;">' +
+      presets.map(function (p) {
+        return '<button class="chipbtn' + (m === 'rate' && Math.abs(rate - p.k) < 0.001 ? ' on' : '') + '" data-act-rate="' + p.k + '">' + p.l + '</button>';
+      }).join('') +
+      '<button class="chipbtn' + (m === 'count' ? ' on' : '') + '" data-act-mode="count">I know the number</button>' +
+      '<button class="chipbtn' + (m === 'benchmark' ? ' on' : '') + '" data-act-mode="benchmark">Match the 2.6&times; benchmark</button>' +
+      '</div>' +
+      (m === 'count' ? '<div class="field" style="max-width:220px;margin-bottom:14px;"><label>Active Cowork users</label><input type="number" min="0" id="actCount" value="' + (state.activation.count == null ? r.ctx.active : state.activation.count) + '"></div>' : '') +
+      '<div class="ribbon-deriv" id="actDeriv">' + esc(r.ctx.copilotLicensed) + ' licensed' +
+        (m === 'benchmark' ? ' → back-solved from the 2.6× benchmark' : m === 'count' ? ' → entered directly' : ' × ' + Math.round(rate * 100) + '%') +
+        ' = ' + r.ctx.active + ' active in Cowork\n' +
+        Math.max(0, r.ctx.copilotLicensed - r.ctx.active) + ' licensed users would carry a licence cost and no credit cost.</div>';
+
+    Array.prototype.forEach.call($('actBlock').querySelectorAll('[data-act-rate]'), function (b) {
+      b.addEventListener('click', function () {
+        state.activation.mode = 'rate'; state.activation.rate = +b.getAttribute('data-act-rate');
+        rebalanceToActive(); refresh();
+      });
+    });
+    Array.prototype.forEach.call($('actBlock').querySelectorAll('[data-act-mode]'), function (b) {
+      b.addEventListener('click', function () {
+        state.activation.mode = b.getAttribute('data-act-mode');
+        if (state.activation.mode === 'count' && state.activation.count == null) state.activation.count = r.ctx.active;
+        rebalanceToActive(); refresh();
+      });
+    });
+    if ($('actCount')) $('actCount').addEventListener('input', function (e) {
+      state.activation.count = Math.max(0, +e.target.value || 0); rebalanceToActive(); refresh();
+    });
+  }
+  function rebalanceToActive() {
+    var t = E.computeActiveTarget(state);
+    if (state.activation.mode === 'benchmark') { var rr = E.compute(state); t = rr.ctx.active; }
+    E.balancePersonas(state, t);
+  }
+
+  /* ═══ STEP 4 · personas ═══ */
+  function renderPersonas(r) {
+    $('presetChips').innerHTML = Object.keys(E.PRESETS).map(function (k) {
+      return '<button class="chipbtn' + (state.personaPreset === k ? ' on' : '') + '" data-preset="' + k + '">' +
+        E.PRESETS[k].label + '</button>';
+    }).join('');
+
+    var sel = E.PRESETS[state.personaPreset];
+    $('presetDesc').innerHTML = sel
+      ? '<div class="shapenote"><div class="sn-eg">' + sel.eg + '</div><p>' + sel.why + '</p>' +
+        '<p class="sn-prov">Modelled staffing shape &mdash; ours, not Microsoft\'s. The task counts inside each persona stay Microsoft\'s Frontier-observed defaults. Every cell below is editable, and editing one drops you to a custom mix.</p></div>'
+      : '<div class="shapenote custom"><div class="sn-eg">Custom mix</div><p>You have edited the split by hand, so no preset applies. That is usually the right answer \u2014 the customer just told you their real shape.</p></div>';
+    Array.prototype.forEach.call($('presetChips').querySelectorAll('[data-preset]'), function (b) {
+      b.addEventListener('click', function () {
+        state.personaPreset = b.getAttribute('data-preset');
+        E.applyPreset(state, state.personaPreset);
+        renderPersonas(E.compute(state)); refresh();
+      });
+    });
+
+    var total = r.ctx.monthlyCredits || 1;
+    var rows = state.personas.map(function (p, i) {
+      var eff = r.ctx.effSeatsByPersona[i] || 0;
+      var cpu = (p.light * state.tierCredits.light + p.medium * state.tierCredits.medium + p.heavy * state.tierCredits.heavy) * r.ctx.effortMult;
+      var share = total > 0 ? (eff * cpu / total) * 100 : 0;
+      return '<tr>' +
+        '<td style="font-weight:600;">' + esc(p.name) + '</td>' +
+        ['seats','light','medium','heavy'].map(function (f) {
+          return '<td><input type="number" min="0" data-p="' + i + '" data-f="' + f + '" value="' + p[f] + '"></td>';
+        }).join('') +
+        '<td class="num" data-pcpu="' + i + '">' + num(Math.round(cpu)) + '</td>' +
+        '<td class="num" style="text-align:left;" data-pshare="' + i + '"><span class="sharebar" style="width:' + Math.max(2, share * 0.55) + 'px;"></span>' + share.toFixed(0) + '%</td>' +
+      '</tr>';
+    }).join('');
+
+    $('personaBlock').innerHTML =
+      '<div class="tablewrap"><table class="dtable"><thead><tr>' +
+      '<th>Persona</th><th style="width:86px;">Users</th><th style="width:92px;">Light tasks<br>a month</th><th style="width:96px;">Medium tasks<br>a month</th><th style="width:92px;">Heavy tasks<br>a month</th>' +
+      '<th style="width:100px;text-align:right;">Credits/user</th><th style="width:120px;">Share of credits</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody>' +
+      '<tfoot><tr><td>Allocated</td><td data-pseats>' + r.ctx.personaSeats + '</td><td colspan="3" style="font-weight:400;color:#6b7280;font-size:.8rem;" data-pnote>' +
+        (r.ctx.personaSeats === r.ctx.active ? 'Matches your ' + r.ctx.active + ' active users.' : 'Active users: ' + r.ctx.active) +
+      '</td><td class="num" data-ptotal>' + num(r.ctx.monthlyCredits) + '</td><td class="num" style="text-align:left;">100%</td></tr></tfoot></table></div>' +
+      '<p class="srcline"><b>These four columns are counts, not costs.</b> The Credits/user column applies the prices set on the next screen &mdash; currently ' +
+        num(state.tierCredits.light) + ' / ' + num(state.tierCredits.medium) + ' / ' + num(state.tierCredits.heavy) +
+        ' credits for a light / medium / heavy task, at $0.01 a credit. Role mixes are Microsoft\'s Frontier-observed defaults (Customer Cowork Estimator, 27 May 2026) &mdash; every cell is editable.</p>';
+
+    Array.prototype.forEach.call($('personaBlock').querySelectorAll('[data-p]'), function (inp) {
+      inp.addEventListener('input', function () {
+        state.personas[+inp.getAttribute('data-p')][inp.getAttribute('data-f')] = Math.max(0, +inp.value || 0);
+        state.personaPreset = '';
+        refresh();
+      });
+    });
+  }
+
+  /* Typing in a persona cell must not re-render the inputs underneath the
+     caret — so patch only the derived columns and the footer. */
+  function patchPersonas(r) {
+    var el = $('personaBlock'); if (!el) return;
+    var total = r.ctx.monthlyCredits || 1;
+    state.personas.forEach(function (p, i) {
+      var eff = r.ctx.effSeatsByPersona[i] || 0;
+      var cpu = (p.light * state.tierCredits.light + p.medium * state.tierCredits.medium + p.heavy * state.tierCredits.heavy) * r.ctx.effortMult;
+      var share = total > 0 ? (eff * cpu / total) * 100 : 0;
+      var c1 = el.querySelector('[data-pcpu="' + i + '"]');
+      var c2 = el.querySelector('[data-pshare="' + i + '"]');
+      if (c1) c1.textContent = num(Math.round(cpu));
+      if (c2) c2.innerHTML = '<span class="sharebar" style="width:' + Math.max(2, share * 0.55) + 'px;"></span>' + share.toFixed(0) + '%';
+    });
+    var f1 = el.querySelector('[data-pseats]'), f2 = el.querySelector('[data-pnote]'), f3 = el.querySelector('[data-ptotal]');
+    if (f1) f1.textContent = r.ctx.personaSeats;
+    if (f2) f2.textContent = r.ctx.personaSeats === r.ctx.active
+      ? 'Matches your ' + r.ctx.active + ' active users.' : 'Active users: ' + r.ctx.active;
+    if (f3) f3.textContent = num(r.ctx.monthlyCredits);
+  }
+
+  /* ═══ STEP 5 · the bridge from volume to price ═══ */
+  function renderBridge(r) {
+    var el = $('bridgeBlock'); if (!el) return;
+    var TC = state.tierCredits, best = -1, idx = 0;
+    state.personas.forEach(function (x, i) {
+      var seats = r.ctx.effSeatsByPersona[i] || 0;
+      if (seats > best) { best = seats; idx = i; }
+    });
+    var p = state.personas[idx];
+    var raw = p.light * TC.light + p.medium * TC.medium + p.heavy * TC.heavy;
+    var eff = raw * r.ctx.effortMult;
+    function row(label, count, price) {
+      return '<tr><td>' + count + ' ' + label + (count === 1 ? '' : 's') + ' a month</td>' +
+             '<td class="n">&times; ' + num(price) + ' credits</td>' +
+             '<td class="n">' + num(count * price) + '</td></tr>';
+    }
+    el.innerHTML =
+      '<div class="callout"><div class="callout-title">How this screen joins to the last one</div><div class="callout-body">' +
+      '<p>Step 4 counted <b>how many</b> tasks each person runs. Nothing there was a price. ' +
+      'This screen sets <b>what one task costs in credits</b> &mdash; and the effort level, which scales every task at once. ' +
+      'Multiply the two and you have the bill.</p>' +
+      '<p style="margin-top:12px;font-weight:600;color:var(--navy);">Your ' + esc(p.name) + ' line, worked through:</p>' +
+      '<table class="bridge-t">' +
+        row('light task', p.light, TC.light) +
+        row('medium task', p.medium, TC.medium) +
+        row('heavy task', p.heavy, TC.heavy) +
+        '<tr class="tot"><td>Credits per person, per month</td><td class="n"></td><td class="n">' + num(Math.round(raw)) + '</td></tr>' +
+        '<tr class="eff"><td>&hellip;at ' + esc(r.ctx.effortLabel) + ' effort' +
+          (r.ctx.effortMult === 1 ? ' (the default)' : '') + '</td><td class="n">&times; ' + r.ctx.effortMult.toFixed(3) +
+          '</td><td class="n">' + num(Math.round(eff)) + '</td></tr>' +
+        '<tr class="tot"><td>Cost per person, per month</td><td class="n">&times; $0.01</td><td class="n">' + usd(eff * 0.01, 2) + '</td></tr>' +
+      '</table>' +
+      '<p style="font-size:.82rem;color:#6b7280;margin:0;">The left column came from Step 4 and is fixed here. Everything you change below is the middle column.</p>' +
+      '</div></div>';
+  }
+
+  /* ═══ STEP 5 · effort + calibration ═══ */
+  function renderEffort(r) {
+    var mults = E.effortMultipliers(state.effort.step);
+    var order = ['light','medium','high','xhigh','max'];
+    var base = r.ctx.monthlyCowork / (r.ctx.effortMult || 1);
+    $('effortBlock').innerHTML =
+      '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px;">Effort level &mdash; a real control in Cowork</div>' +
+      '<div class="seg" id="effortSeg">' + order.map(function (k) {
+        return '<button data-eff="' + k + '"' + (state.effort.level === k ? ' class="on"' : '') + '>' + E.EFFORT_LABELS[k] + '</button>';
+      }).join('') + '</div>' +
+      '<div class="ribbon-deriv" id="effDeriv" style="margin-top:12px;">' + effortCopy(state.effort.level, mults, base) + '</div>' +
+      '<p class="srcline">Microsoft publishes the levels and that Medium is the default, but <b>no numeric multiplier</b>. These are modelled from Microsoft\'s published $0.70&ndash;$15 per-task range and are editable in the advanced panel.</p>';
+    Array.prototype.forEach.call($('effortSeg').querySelectorAll('[data-eff]'), function (b) {
+      b.addEventListener('click', function () { state.effort.level = b.getAttribute('data-eff'); refresh(); });
+    });
+
+    $('calBlock').innerHTML =
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">' +
+      ['light','medium','heavy'].map(function (t) {
+        return '<div class="field"><label>' + t + ' task &mdash; credits</label><input type="number" min="0" data-cal="' + t + '" value="' + state.tierCredits[t] + '"></div>';
+      }).join('') + '</div>' +
+      '<div style="margin-top:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">' +
+        '<button class="btn" id="calApply">Use my measured numbers</button>' +
+        (state.calibrated ? '<span class="pill measured">Calibrated &mdash; band tightened to &plusmn;15%</span><button class="linkbtn" id="calReset">Reset to modelled defaults</button>' : '<span style="font-size:.78rem;color:#9ca3af;">Currently modelled &mdash; band is &plusmn;30%</span>') +
+      '</div>';
+    Array.prototype.forEach.call($('calBlock').querySelectorAll('[data-cal]'), function (inp) {
+      inp.addEventListener('input', function () { state.tierCredits[inp.getAttribute('data-cal')] = Math.max(0, +inp.value || 0); refresh(); });
+    });
+    $('calApply').addEventListener('click', function () {
+      var before = E.compute(state).ctx;
+      state.calibrated = true;
+      var after = E.compute(state).ctx;
+      refresh();
+      announce('&#10003; <b>Your estimate just got sharper.</b> You were looking at ' + usd(before.coworkLo) + '&ndash;' + usd(before.coworkHi) +
+               '. With your own measured numbers it is ' + usd(after.coworkLo) + '&ndash;' + usd(after.coworkHi) + '. Three tasks bought you that.');
+    });
+    if ($('calReset')) $('calReset').addEventListener('click', function () {
+      state.calibrated = false; state.tierCredits = { light:125, medium:500, heavy:1200 }; refresh();
+    });
+  }
+  function patchAct(r) {
+    var el = $('actDeriv'); if (!el) return;
+    var m = state.activation.mode;
+    el.textContent = r.ctx.copilotLicensed + ' licensed' +
+      (m === 'benchmark' ? ' \u2192 back-solved from the 2.6\u00d7 benchmark'
+        : m === 'count' ? ' \u2192 entered directly'
+        : ' \u00d7 ' + Math.round(state.activation.rate * 100) + '%') +
+      ' = ' + r.ctx.active + ' active in Cowork\n' +
+      Math.max(0, r.ctx.copilotLicensed - r.ctx.active) + ' licensed users would carry a licence cost and no credit cost.';
+  }
+  function patchEffort(r) {
+    var el = $('effDeriv'); if (!el) return;
+    el.textContent = effortCopy(state.effort.level, E.effortMultipliers(state.effort.step),
+                                r.ctx.monthlyCowork / (r.ctx.effortMult || 1));
+  }
+  function effortCopy(level, mults, base) {
+    var d = { light:'Cowork does less checking and finishes faster.', medium:'The default, and where most tasks should stay.',
+              high:'Cowork thinks longer and checks more sources.', xhigh:'Deeper analysis and more complex reasoning.',
+              max:'For genuinely hard, multi-step work only. Set this per task, not as a tenant default.' };
+    var m = mults[level], delta = (m - 1) * 100;
+    return d[level] + '\n' + (level === 'medium'
+      ? 'This is the number below: ' + usd(base) + '/month.'
+      : (delta > 0 ? 'About ' + Math.round(delta) + '% more credits' : 'About ' + Math.round(-delta) + '% fewer credits') +
+        ' than Medium — around ' + usd(base * m) + '/month for this account.');
+  }
+
+  /* ═══ STEP 6 · billing ═══ */
+  function renderBill(r) {
+    var c = r.ctx;
+    $('billBlock').innerHTML =
+      '<div class="seg" id="billSeg" style="max-width:340px;margin-bottom:16px;">' +
+        '<button data-bill="paygo"' + (state.billing.model === 'paygo' ? ' class="on"' : '') + '>Pay-as-you-go</button>' +
+        '<button data-bill="p3"' + (state.billing.model === 'p3' ? ' class="on"' : '') + '>P3 pre-purchase</button>' +
+      '</div>' +
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
+        '<div class="field"><label>Commit coverage of annual volume</label><input type="number" min="0" max="150" id="billCov" value="' + Math.round(state.billing.commitCoveragePct * 100) + '"></div>' +
+        '<div class="field"><label>Known discount % (from your distributor)</label><input type="number" min="0" max="30" id="billPct" placeholder="leave blank to model" value="' + (state.billing.manualP3Pct == null ? '' : state.billing.manualP3Pct) + '"></div>' +
+      '</div>';
+    Array.prototype.forEach.call($('billSeg').querySelectorAll('[data-bill]'), function (b) {
+      b.addEventListener('click', function () { state.billing.model = b.getAttribute('data-bill'); refresh(); });
+    });
+    $('billCov').addEventListener('input', function (e) { state.billing.commitCoveragePct = Math.max(0, Math.min(1.5, (+e.target.value || 0) / 100)); refresh(); });
+    $('billPct').addEventListener('input', function (e) { state.billing.manualP3Pct = e.target.value === '' ? null : Math.max(0, +e.target.value || 0); refresh(); });
+  }
+
+  /* ═══ STEP 7 · governance ═══ */
+  var GOV = [
+    { k:'purviewLabels', t:'Purview sensitivity labels configured?', d:'Cowork inherits whatever labels already exist.', c:'If No → we recommend the Purview Suite and the recommendation shifts.' },
+    { k:'dlpForAi', t:'DLP for AI configured?', d:'Cowork-specific DLP is "coming soon" — this covers the broader estate.', c:'If No → adds a required gap only the Suites or E7 close.' },
+    { k:'defenderCloudApps', t:'Defender for Cloud Apps deployed?', d:'Visibility into unsanctioned AI tools alongside Cowork.', c:'If No → adds a required gap.' },
+    { k:'namedCostOwner', t:'Named cost owner for Copilot Credits?', d:'Someone paged before a runaway month, not after.', c:'If No → surfaces in the talk track and the retainer pitch.' },
+    { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
+  ];
+  function renderGov() {
+    $('govBlock').innerHTML = GOV.map(function (g) {
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:250px;font-size:.92rem;">' + esc(g.t) +
+          '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' + esc(g.d) + '</span>' +
+          '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">' + esc(g.c) + '</span></div>' +
+        '<div class="seg" data-gov="' + g.k + '" style="width:250px;flex:0 0 auto;">' +
+          ['yes','no','unsure'].map(function (v) {
+            var on = state.governance[g.k] === v;
+            return '<button data-v="' + v + '"' + (on ? ' class="on' + (v === 'no' ? ' warnon' : '') + '"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
+          }).join('') + '</div></div>';
+    }).join('') +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;flex-wrap:wrap;">' +
+      '<div style="flex:1;min-width:250px;font-size:.92rem;">Is usage-based billing already enabled in the tenant?' +
+        '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">A Microsoft prerequisite. No SKU closes it — it is an admin action.</span></div>' +
+      '<div class="seg" data-org="usageBillingEnabled" style="width:250px;flex:0 0 auto;">' +
+        ['yes','no','unsure'].map(function (v) {
+          var on = state.org.usageBillingEnabled === v;
+          return '<button data-v="' + v + '"' + (on ? ' class="on' + (v === 'no' ? ' warnon' : '') + '"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
+        }).join('') + '</div></div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 0 4px;flex-wrap:wrap;">' +
+      '<div style="flex:1;min-width:250px;font-size:.92rem;">Azure/CSP subscription on your channel?' +
+        '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">Cowork PayGo billing routes through it.</span></div>' +
+      '<div class="seg" data-org="azureCspPlan" style="width:250px;flex:0 0 auto;">' +
+        ['yes','no','unsure'].map(function (v) {
+          var on = state.org.azureCspPlan === v;
+          return '<button data-v="' + v + '"' + (on ? ' class="on' + (v === 'no' ? ' warnon' : '') + '"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
+        }).join('') + '</div></div>';
+
+    Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-gov]'), function (seg) {
+      var k = seg.getAttribute('data-gov');
+      Array.prototype.forEach.call(seg.querySelectorAll('button'), function (b) {
+        b.addEventListener('click', function () { state.governance[k] = b.getAttribute('data-v'); renderGov(); refresh(); });
+      });
+    });
+    Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-org]'), function (seg) {
+      var k = seg.getAttribute('data-org');
+      Array.prototype.forEach.call(seg.querySelectorAll('button'), function (b) {
+        b.addEventListener('click', function () { state.org[k] = b.getAttribute('data-v'); renderGov(); refresh(); });
+      });
+    });
+  }
+
+  /* ═══ Advanced prices ═══ */
+  function renderPrices() {
+    var skus = E.SKUS.filter(function (s) { return s.copilot; });
+    $('priceBlock').innerHTML =
+      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:10px;">Microsoft list prices ' + provPill('ms-verified') + '</div>' +
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
+      skus.map(function (s) {
+        return '<div class="field"><label>' + esc(s.name) + (s.promoEnds ? ' <span class="pill estimate">promo ends ' + s.promoEnds + '</span>' : '') + '</label>' +
+          '<input type="number" step="0.5" min="0" data-price="' + s.id + '" value="' + E.skuPrice(state, s.id) + '"></div>';
+      }).join('') + '</div>' +
+      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin:20px 0 10px;">Effort model ' + provPill('ms-modeled') + '</div>' +
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
+        '<div class="field"><label>Effort step multiplier</label><input type="number" step="0.01" min="1" max="3" id="pStep" value="' + state.effort.step.toFixed(4) + '"></div>' +
+      '</div>' +
+      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across the four steps from Light to Max. One stated assumption &mdash; that effort consumes the whole residual &mdash; deliberately conservative-high.</p>' +
+      '<div style="font-size:.8rem;font-weight:700;color:var(--navy);margin:20px 0 10px;">Your service rates ' + provPill('editorial') + '</div>' +
+      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
+        '<div class="field"><label>Governance retainer $/seat/mo (low)</label><input type="number" step="0.5" id="pRetLo" value="' + state.partnerServices.retainerLo + '"></div>' +
+        '<div class="field"><label>&hellip;and high</label><input type="number" step="0.5" id="pRetHi" value="' + state.partnerServices.retainerHi + '"></div>' +
+        '<div class="field"><label>Shadow AI assessment (low)</label><input type="number" step="250" id="pAssLo" value="' + state.partnerServices.assessLo + '"></div>' +
+        '<div class="field"><label>&hellip;and high</label><input type="number" step="250" id="pAssHi" value="' + state.partnerServices.assessHi + '"></div>' +
+      '</div>' +
+      '<p class="srcline">Your service prices are never blended into Microsoft totals and are stored only in this browser session.</p>';
+
+    Array.prototype.forEach.call($('priceBlock').querySelectorAll('[data-price]'), function (inp) {
+      inp.addEventListener('input', function () { state.priceOverrides[inp.getAttribute('data-price')] = +inp.value || 0; refresh(); });
+    });
+    $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
+    [['pRetLo','retainerLo'],['pRetHi','retainerHi'],['pAssLo','assessLo'],['pAssHi','assessHi']].forEach(function (x) {
+      $(x[0]).addEventListener('input', function (e) { state.partnerServices[x[1]] = +e.target.value || 0; refresh(); });
+    });
+  }
+
+  /* ═══ RESULTS ═══ */
+  function renderResults(r) {
+    var c = r.ctx, L = r.licensing;
+
+    /* say line */
+    var name = state.meta.accountName || 'this account';
+    $('sayLine').innerHTML = c.greenfield
+      ? 'For <b>' + esc(name) + '</b> &mdash; nobody has a Copilot licence yet, so Cowork can\'t run at all today. The place to start is a <b>Copilot in 30</b> trial: twenty-five users, thirty days, no licence cost. Once they\'re live we can put a real number on the meter.'
+      : 'For <b>' + esc(name) + '</b> &mdash; if <b>' + c.active + '</b> of your <b>' + c.copilotLicensed + '</b> Copilot users actively use Cowork at typical volumes, you\'d spend roughly <b>' + usd(c.coworkLo) + ' to ' + usd(c.coworkHi) +
+        ' a month</b> on Cowork credits, on top of <b>' + usd(c.licenseMonthly) + ' a month</b> in licences. That\'s about <b>' + usd(c.perActive) + ' per active user</b>, and it\'s metered &mdash; you\'d see it daily in Cost Management, not as a surprise at the end of the month.';
+
+    /* ribbon */
+    $('ribbonBand').innerHTML = (state.calibrated ? pill('measured','Measured &plusmn;15%') : pill('default','Modelled &plusmn;30%'));
+    var chips = [
+      { id:'F1', v:num(c.employees), l:'employees', p:'asked', step:'step1' },
+      { id:'F2', v:num(c.copilotLicensed), l:'Copilot licences', p:'asked', step:'step2' },
+      { id:'F6', v:num(c.active), l:'active in Cowork', p:state.activation.mode === 'benchmark' ? 'derived' : 'asked', step:'step3' },
+      { id:'F7', v:state.personas.filter(function(p,i){return c.effSeatsByPersona[i]>0;}).length + ' groups', l:'persona mix', p:'default', step:'step4' },
+      { id:'F10', v:num(c.monthlyCredits), l:'credits/month', p:state.calibrated ? 'measured' : 'derived', step:'step5' },
+      { id:'F11', v:usd(c.coworkLo) + '–' + usd(c.coworkHi), l:'Cowork/month', p:'derived', step:'step6' }
+    ];
+    $('ribbonChain').innerHTML = chips.map(function (ch, i) {
+      return (i ? '<span class="rc-arrow">&rarr;</span>' : '') +
+        '<button class="rc" data-chip="' + ch.id + '" data-step="' + ch.step + '"><span class="v">' + ch.v + '</span><span class="l">' + ch.l + '</span>' + pill(ch.p, ch.p) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call($('ribbonChain').querySelectorAll('[data-chip]'), function (b) {
+      b.addEventListener('click', function () {
+        var id = b.getAttribute('data-chip');
+        activeRibbon = activeRibbon === id ? null : id;
+        showDeriv(r);
+      });
+    });
+    showDeriv(r);
+
+    /* the number */
+    $('numTag').textContent = c.active + ' active of ' + c.copilotLicensed + ' licensed';
+    var seatPct = c.allInMonthly > 0 ? (c.licenseMonthly / c.allInMonthly) * 100 : 50;
+    $('numBody').innerHTML =
+      '<div class="numgrid">' +
+        cell('numCowork', usd(c.monthlyCowork), 'Cowork credits / month', usd(c.coworkLo) + '–' + usd(c.coworkHi) + ' at ' + (state.calibrated ? '±15%' : '±30%'),
+             num(c.monthlyCredits) + ' credits × $0.01 = ' + usd(c.monthlyCowork)) +
+        cell('numLic', usd(c.licenseMonthly), 'Licences / month', c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats + ' base seats',
+             licDeriv(), 'alt') +
+      '</div>' +
+      '<div style="margin-top:18px;">' +
+        '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:6px;">Seat vs meter &mdash; ' + usd(c.allInMonthly) + '/month all in</div>' +
+        '<div class="splitbar"><span class="sb-seat" style="width:' + seatPct + '%;">' + (seatPct > 14 ? Math.round(seatPct) + '%' : '') + '</span><span class="sb-meter" style="width:' + (100 - seatPct) + '%;">' + ((100 - seatPct) > 14 ? Math.round(100 - seatPct) + '%' : '') + '</span></div>' +
+        '<div class="splitlegend"><span><i style="background:var(--navy);"></i>Licences ' + usd(c.licenseMonthly) + '</span><span><i style="background:var(--teal);"></i>Cowork meter ' + usd(c.monthlyCowork) + '</span></div>' +
+      '</div>' +
+      '<div class="numgrid" style="margin-top:18px;">' +
+        cell('numAnnual', usd(c.allInAnnual), 'All-in / year', 'licences + Cowork × 12', usd(c.allInMonthly) + ' × 12') +
+        cell('numThree', usd(c.allInThreeYear), 'All-in / 3 years', 'at today\'s volumes and prices', usd(c.allInMonthly) + ' × 36') +
+      '</div>' +
+      ratioBlock(c);
+
+    /* scenarios */
+    $('scenBody').innerHTML =
+      '<div class="tablewrap"><table class="dtable"><thead><tr><th>Scenario</th><th style="text-align:right;">Extra credits</th><th style="text-align:right;">Extra $/mo</th><th style="text-align:right;">New all-in</th></tr></thead><tbody>' +
+      r.scenarios.map(function (s) {
+        return '<tr><td>' + esc(s.label) + '</td><td class="num">+' + num(Math.round(s.credits)) + '</td><td class="num">+' + usd(s.usd) + '</td><td class="num">' + usd(s.allIn) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="whybox"><div class="wb-h">Cost controls to put in place</div>' +
+        '<p>1 &middot; A tenant-level monthly spending limit in <b>Copilot &rarr; Cost Management</b>, sized to the high end above.</p>' +
+        '<p>2 &middot; Per-user limits with email alerts at 50% and 80%, so nobody discovers a problem on the invoice.</p>' +
+        '<p>3 &middot; A monthly Cost Management review &mdash; concentration check, top-5 users, and a re-forecast. That review is the retainer.</p></div>';
+
+    /* billing */
+    renderBillOut(r);
+
+    /* flags */
+    var blocks = r.warnings.filter(function (w) { return w.severity === 'block'; });
+    var clamps = r.warnings.filter(function (w) { return w.severity === 'clamp' || w.severity === 'warn'; });
+    var infos  = r.warnings.filter(function (w) { return w.severity === 'info'; });
+    $('flagTag').textContent = r.warnings.length ? r.warnings.length + ' to review' : 'all clear';
+    var flagHtml = blocks.concat(clamps, infos).map(function (w) {
+      var ic = w.severity === 'block' ? '<span class="cross">&#10007;</span>' : w.severity === 'info' ? '&#8505;' : '&#9888;';
+      return '<div class="flag"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
+        (w.fixes && w.fixes.length ? '<div class="fixrow">' + w.fixes.map(function (f) {
+          return '<button class="linkbtn" data-fix="' + f.action + '">' + esc(f.label) + '</button>';
+        }).join('') + '</div>' : '') + '</div></div>';
+    }).join('');
+    var gov = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'];
+    var yes = gov.filter(function (k) { return state.governance[k] === 'yes'; }).length;
+    flagHtml = '<div class="flag"><div class="fi">' + (yes >= 4 ? '<span class="check">&#10003;</span>' : yes <= 1 ? '<span class="cross">&#10007;</span>' : '&#9888;') +
+      '</div><div class="ft"><b>' + yes + ' of 5 governance controls confirmed.</b> ' +
+      (yes <= 1 ? 'Treat this like an ungoverned tenant &mdash; governance readiness is consumption readiness.'
+                : yes >= 4 ? 'This account is close to ready to scale Cowork responsibly.'
+                : 'The unknowns are your discovery questions for the next call.') + '</div></div>' + flagHtml;
+    $('flagBody').innerHTML = flagHtml || '<div class="flag"><div class="fi"><span class="check">&#10003;</span></div><div class="ft">Nothing blocking. Every prerequisite you answered is in place.</div></div>';
+    Array.prototype.forEach.call($('flagBody').querySelectorAll('[data-fix]'), function (b) {
+      b.addEventListener('click', function () { applyFix(b.getAttribute('data-fix'), r); });
+    });
+
+    /* licensing */
+    renderLicOut(r);
+
+    /* talk track */
+    var talk = buildTalk(r);
+    $('talkBody').innerHTML = talk.map(function (t) { return '<p style="font-size:.95rem;line-height:1.7;color:var(--text);margin:0 0 12px;">' + t + '</p>'; }).join('');
+
+    /* next step */
+    renderNext(r);
+
+    /* assumptions */
+    $('assumeBody').innerHTML =
+      '<p style="font-size:.85rem;color:#374151;margin:0 0 12px;">Read this before you walk in. Everything below is modelled or editorial &mdash; not a Microsoft-published figure.</p>' +
+      (r.assumptions.length
+        ? r.assumptions.map(function (a) { return '<div class="flag"><div class="fi">' + provPill(a.prov) + '</div><div class="ft"><b>' + esc(a.label) + '</b> &mdash; ' + esc(a.note) + '</div></div>'; }).join('')
+        : '<div class="flag"><div class="ft">Nothing modelled &mdash; every figure traces to a Microsoft-published price.</div></div>');
+
+    /* print meta */
+    $('printMeta').textContent = (state.meta.accountName || 'Unnamed account') + ' · ' + c.employees + ' employees · ' +
+      c.copilotLicensed + ' Copilot licences · ' + c.active + ' active in Cowork · Generated ' +
+      new Date().toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+  }
+
+  function cell(id, k, l, s, deriv, cls) {
+    return '<div class="numcell ' + (cls || '') + '" id="' + id + '"><div class="nk">' + k + '</div><div class="nl">' + l + '</div>' +
+           '<div class="ns">' + s + '</div><div class="deriv">' + deriv + '</div></div>';
+  }
+  function licDeriv() {
+    return state.licenseInventory.filter(function (l) { return l.seats > 0; }).map(function (l) {
+      var s = E.SKU_BY_ID[l.skuId]; return l.seats + ' × ' + s.name + ' @ ' + usd(E.skuPrice(state, l.skuId), 2);
+    }).join('\n') || 'no licences entered';
+  }
+  function ratioBlock(c) {
+    if (c.greenfield || c.monthlyCowork === 0) return '';
+    var rec = c.reconciliation;
+    return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly</div>' +
+      '<p>Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>, which is <b>' + rec.fullyActive.toFixed(2) + '&times;</b> the $30 Copilot licence. ' +
+      'The 2.6&times; benchmark implies roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b> at this mix. You modelled <b>' + Math.round(rec.actualActivation * 100) + '%</b>, ' +
+      'which is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. The benchmark isn\'t wrong and neither are you &mdash; you\'re assuming a ' +
+      (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark\'s.</p>' +
+      '<p style="font-size:.8rem;color:#6b7280;">Against what this customer actually pays for Copilot (' + usd(c.copilotSpend) + '/mo), the ratio is <b>' + c.ratioActual.toFixed(2) + '&times;</b>. ' +
+      'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the licence is wrong &mdash; on the $18 promo the same usage reads over 8&times;.</p></div>';
+  }
+
+  function renderBillOut(r) {
+    var c = r.ctx, d = c.discount;
+    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes. Take that number to your distributor.</p>';
+    var discLine = d.exact
+      ? '<p>At that volume the published tier is <b>' + d.pct + '%</b>.</p>'
+      : '<p>Microsoft does not publish P3 tier breakpoints. Your volume sits <b>between ' + d.bracket[0] + '% and ' + d.bracket[1] + '%</b>, modelled at <b>' + d.pct.toFixed(1) + '%</b>.</p>';
+    var verdict = c.p3Saving > 0
+      ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilisation.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round(c.commitCccu * 100)) + '-credit commit.</p>' +
+        '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and P3 purchases are final &mdash; no refunds, and it auto-renews.</p>'
+      : '<p>At this volume PayGo is the right answer.</p>';
+    $('billOut').innerHTML =
+      '<div class="numgrid">' +
+        cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
+        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year', (d.exact ? d.pct : d.pct.toFixed(1)) + '% modelled · saves ' + usd(Math.max(0, c.p3Saving)), num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')', 'alt') +
+      '</div>' +
+      '<div class="whybox">' + discLine + certain + verdict +
+      '<p style="font-size:.8rem;color:#6b7280;">P3 is a one-year, paid-up-front commitment. Purchases are final &mdash; no cancellations or exchanges &mdash; it auto-renews by default, and the discount does not stack with other discounts. Consumption order is capacity packs, then P3, then PayGo.</p></div>' +
+      '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';
+  }
+
+  function renderLicOut(r) {
+    var L = r.licensing, c = r.ctx;
+    if (!L.winner) { $('licOut').innerHTML = '<p style="font-size:.9rem;color:#6b7280;">Add at least one licence line to get a recommendation.</p>'; return; }
+    var reqClosable = L.requirements.filter(function (q) { return q.skuClosable !== false; });
+    var rows = L.paths.map(function (p) {
+      var win = p.id === L.winner.id;
+      return '<tr' + (win ? ' class="winner"' : '') + '>' +
+        '<td style="font-weight:' + (win ? '700' : '400') + ';">' + esc(p.label) + (win ? '<br>' + pill('verified','Recommended') : '') + '</td>' +
+        '<td class="num">' + usd(p.perUser, 2) + '</td>' +
+        '<td class="num">' + (p.feasible ? usd(p.monthly) : '<span style="color:#9ca3af;">n/a</span>') + '</td>' +
+        '<td class="num" style="text-align:left;">' + (p.feasible
+          ? (p.gaps.filter(function (g) { return g.skuClosable !== false; }).length === 0
+              ? '<span class="check">&#10003;</span> closes all'
+              : p.closes.length + ' of ' + reqClosable.length)
+          : '<span style="color:#b91c1c;font-size:.8rem;">' + esc(p.violations[0]) + '</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+    $('licOut').innerHTML =
+      '<div class="licgrid">' +
+        '<div class="lg-main">' +
+          '<div class="lg-h">Every path, priced across ' + L.needed + ' Copilot users</div>' +
+          '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+          '<p class="srcline">E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%). Suites priced at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting.</p>' +
+        '</div>' +
+        '<div class="lg-side">' +
+          '<div class="whybox" style="margin-top:0;"><div class="wb-h">Why this one</div>' +
+            L.why.map(function (w) { return '<p>' + esc(w) + '</p>'; }).join('') + '</div>' +
+          (reqClosable.length ? '<div><div class="lg-h">What you told us you\'re missing</div>' +
+            L.requirements.map(function (q) {
+              return '<div class="flag"><div class="fi">' + (q.skuClosable === false ? '&#9888;' : '<span class="cross">&#10007;</span>') + '</div><div class="ft"><b>' + esc(q.label) + '</b> &mdash; ' + esc(q.why) + ' ' + provPill(q.prov) + '</div></div>';
+            }).join('') + '</div>' : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderNext(r) {
+    var c = r.ctx, s = state.partnerServices;
+    var box;
+    if (c.greenfield) {
+      box = { e:'Recommended next step', n:'Copilot in 30 — the 25-user, 30-day trial',
+              p:'No licence cost · CSP, live since 1 Aug 2026',
+              o:'"Before anyone signs anything, let\'s put Copilot in front of twenty-five of your people for thirty days and find out which use cases actually land. Then we price it on evidence."' };
+    } else if (state.org.azureCspPlan === 'no' || state.org.usageBillingEnabled === 'no') {
+      box = { e:'Prerequisite before anything else', n:'Confirm the Azure plan and turn on usage-based billing',
+              p:'Admin action · no SKU closes this',
+              o:'"Nothing on this ladder matters until billing has a path. Let\'s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."' };
+    } else if (c.ratioBench > 3.5 || c.perActive > 200) {
+      box = { e:'Recommended next step', n:'Rung 3 — Managed AI Governance retainer',
+              p:usd(s.retainerLo) + '–' + usd(s.retainerHi) + '/seat/month (' + usd(s.retainerLo * c.active) + '–' + usd(s.retainerHi * c.active) + '/mo here)',
+              o:'"Your AUP is only a document until something enforces it." Monthly Cost Management review, spending-policy tuning, and a concentration-risk check on a bill this size.' };
+    } else {
+      box = { e:'Recommended next step', n:'Rung 1 — Shadow AI Assessment',
+              p:usd(s.assessLo) + '–' + usd(s.assessHi) + ' one-time',
+              o:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee — the land.' };
+    }
+    $('nextBox').innerHTML = '<div class="ns-e">' + box.e + '</div><div class="ns-n">' + esc(box.n) + '</div><div class="ns-p">' + box.p + '</div><div class="ns-o">' + box.o + '</div>';
+  }
+
+  function buildTalk(r) {
+    var c = r.ctx, t = [];
+    if (c.greenfield) {
+      t.push('Nobody here has a Copilot licence yet, so Cowork literally cannot run &mdash; it requires an assigned Microsoft 365 Copilot licence. That\'s not a blocker, it\'s the starting line.');
+      t.push('The way to de-risk this is Copilot in 30: twenty-five users, thirty days, no licence cost. We find out which use cases actually land before anyone commits budget.');
+      return t;
+    }
+    if (state.org.dataResidency === 'gov_cloud')
+      t.push('Before we go further &mdash; Cowork isn\'t available in GCC, GCC High, DoD or sovereign clouds. No licensing path changes that, so let\'s talk about what we can do inside your boundary.');
+    if (state.org.azureCspPlan === 'no')
+      t.push('Before we talk numbers &mdash; does this tenant have an Azure plan under our CSP relationship? Cowork\'s billing routes through Azure, so that\'s the first box to check, not an afterthought.');
+    if (c.copilotLicensed > c.active)
+      t.push('You have ' + c.copilotLicensed + ' Copilot licences and about ' + c.active + ' people who\'d really use Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licences carrying cost with no meter attached &mdash; is worth a conversation on its own.');
+    var govNo = ['purviewLabels','dlpForAi','defenderCloudApps'].filter(function (k) { return state.governance[k] !== 'yes'; }).length;
+    if (govNo >= 2)
+      t.push('Governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honours whatever Purview labels already exist. Right now this tenant doesn\'t have much in place, so the credits get spent either way &mdash; only the output quality and the risk change.');
+    if (state.org.competingAi === 'yes')
+      t.push('Keep Claude. Bring it under management. Cowork is what runs the work your Microsoft 365 tenant already knows about &mdash; a personal subscription sits outside the trust boundary with no Purview labels, no Defender for Cloud Apps visibility, and no Cost Management.');
+    if (c.ratioBench > 3.5)
+      t.push('Your Cowork-to-licence ratio is running above the 2.6&times; benchmark we typically see. Before we talk about capping spend, let\'s find out who\'s driving the heavy-task volume &mdash; that\'s usually where the real value is concentrating too.');
+    if (r.licensing.winner)
+      t.push('The Copilot engine is identical whichever way you licence it &mdash; the difference is the governance stack in the base SKU. For an account this size, ' + esc(r.licensing.winner.label) + ' is the path that closes what you told us is open without over-buying.');
+    t.push('You now have a number the customer will want managed &mdash; and that management is the actual sale. Let\'s name what we\'re selling and get a date on the calendar.');
+    return t;
+  }
+
+  function showDeriv(r) {
+    var el = $('ribbonDeriv');
+    if (!activeRibbon) { el.style.display = 'none'; return; }
+    var step = r.trace.filter(function (t) { return t.id === activeRibbon; })[0];
+    if (!step) { el.style.display = 'none'; return; }
+    var v = step.unit === 'usd' ? usd(step.value) : step.unit === 'x' ? step.value.toFixed(2) + '×' : num(Math.round(step.value));
+    el.style.display = 'block';
+    el.textContent = step.label + '\n' + step.expression + (step.detail ? '\n' + step.detail : '') + '\n= ' + v +
+      (step.note ? '\n\n' + step.note : '');
+  }
+
+  function applyFix(action, r) {
+    if (action === 'balancePersonas') E.balancePersonas(state, r.ctx.active);
+    else if (action === 'setActive') { state.activation.mode = 'count'; state.activation.count = r.ctx.personaSeats; }
+    else if (action === 'addLicences') {
+      var need = r.ctx.active - r.ctx.copilotLicensed;
+      var line = state.licenseInventory.filter(function (l) { return (E.SKU_BY_ID[l.skuId] || {}).copilot; })[0];
+      if (line) line.seats += Math.max(0, need); else state.licenseInventory.push({ skuId:'bprem_cop', seats:Math.max(1, need) });
+      renderLic();
+    } else if (action === 'switchToEnterprise') {
+      state.licenseInventory.forEach(function (l) {
+        var s = E.SKU_BY_ID[l.skuId];
+        if (s && s.copilot && s.cap && l.seats > s.cap) l.skuId = 'cop_ent';
+      });
+      renderLic();
+    }
+    refresh();
+  }
+
+  function announce(html) {
+    var d = document.createElement('div');
+    d.className = 'callout'; d.style.marginTop = '14px';
+    d.innerHTML = '<div class="callout-body">' + html + '</div>';
+    $('calBlock').parentNode.appendChild(d);
+    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 9000);
+  }
+
+  /* ═══ THE WIZARD — one question per screen ═══ */
+  var STEPS = [
+    { id:'step1', t:'The account',       v:function (c) { return c.employees + ' employees'; } },
+    { id:'step2', t:'Copilot licences',  v:function (c) { return c.copilotLicensed + ' licensed'; } },
+    { id:'step3', t:'Active in Cowork',  v:function (c) { return c.active + ' active'; } },
+    { id:'step4', t:'Who & how often', v:function (c) { return c.personaSeats + ' allocated'; } },
+    { id:'step5', t:'What a task costs',   v:function (c) { return c.effortLabel + ' effort'; } },
+    { id:'step6', t:'How they buy',      v:function () { return state.billing.model === 'p3' ? 'P3 pre-purchase' : 'Pay-as-you-go'; } },
+    { id:'step7', t:'Governance',        v:function () { return ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'].filter(function (k) { return state.governance[k] === 'yes'; }).length + ' of 5 confirmed'; } },
+    { id:'results', t:'The full picture',v:function () { return 'number, licensing, talk track'; } }
+  ];
+  /* Fast keeps every question that moves the number — licences, activation,
+     persona mix and task effort. It folds only the two that do not: the
+     billing model (the meter is identical either way) and the governance
+     gates (unknown is already the conservative default). */
+  var FAST = ['step1','step2','step3','step4','step5','results'];
+  var ASSUMED = {
+    step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway',
+    step7:'the governance posture is unknown — every gate becomes a discovery question rather than a confirmed control'
+  };
+  var cur = 'step1';
+  function flow() { return uiMode === 'fast' ? FAST : STEPS.map(function (x) { return x.id; }); }
+  function stepDef(id) { return STEPS.filter(function (x) { return x.id === id; })[0]; }
+  /* Only a caret in a text field needs protecting from a re-render. Buttons
+     and chips must re-render or their selected state never appears. */
+  function focusIn(id) {
+    var el = $(id), a = document.activeElement;
+    if (!el || !a || !el.contains(a)) return false;
+    return a.tagName === 'INPUT' && (a.type === 'number' || a.type === 'text');
+  }
+
+  function setMode(m, silent) {
+    uiMode = m;
+    Array.prototype.forEach.call($('modeToggle').querySelectorAll('button'), function (x) {
+      x.classList.toggle('on', x.getAttribute('data-mode') === m);
+    });
+    if (flow().indexOf(cur) === -1) cur = 'results';
+    if (!silent) goTo(cur);
+  }
+
+  function goTo(id) {
+    if (flow().indexOf(id) === -1 && stepDef(id)) setMode('full', true);
+    cur = id;
+    Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (el) {
+      el.classList.toggle('on', el.id === id);
+    });
+    $('stage').classList.toggle('wide', id === 'results');
+    prevSnap = null;
+    var r = refresh();
+    var top = $('stage').getBoundingClientRect().top + window.pageYOffset - 14;
+    if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
+    return r;
+  }
+
+  function wireGoto(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-goto]'), function (b) {
+      b.addEventListener('click', function () { goTo(b.getAttribute('data-goto')); });
+    });
+  }
+
+  function renderStepper(c) {
+    var f = flow(), idx = f.indexOf(cur);
+    $('stepper').innerHTML = f.map(function (id, i) {
+      var d = stepDef(id);
+      return '<button class="st' + (id === cur ? ' on' : (i < idx ? ' done' : '')) + '" data-goto="' + id + '">' +
+        '<span class="st-bar"></span>' +
+        '<span class="st-l">' + (id === 'results' ? 'The full picture' : (i + 1) + '. ' + esc(d.t)) + '</span>' +
+        '<span class="st-v">' + esc(d.v(c)) + '</span></button>';
+    }).join('');
+    wireGoto($('stepper'));
+    $('stepCount').innerHTML = cur === 'results'
+      ? '<b>The full picture</b> &mdash; everything you need for the rest of the meeting'
+      : 'Question <b>' + (idx + 1) + '</b> of <b>' + (f.length - 1) + '</b>';
+  }
+
+  function buildNavs() {
+    STEPS.forEach(function (d) {
+      if (d.id === 'results') return;
+      var card = $(d.id); if (!card || card.querySelector('.stepnav')) return;
+      var nav = document.createElement('div');
+      nav.className = 'stepnav no-print';
+      nav.innerHTML = '<div class="sn-l"><button class="btn" data-nav="back">&larr; Back</button>' +
+                      '<span class="sn-hint" data-hint></span></div>' +
+                      '<div class="sn-r"><button class="btn primary" data-nav="next"></button></div>';
+      card.appendChild(nav);
+      nav.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-nav]'); if (!b) return;
+        var f = flow(), k = f.indexOf(d.id);
+        if (b.getAttribute('data-nav') === 'back') { if (k > 0) goTo(f[k - 1]); }
+        else goTo(f[Math.min(k + 1, f.length - 1)]);
+      });
+    });
+  }
+
+  function renderNavs() {
+    var f = flow();
+    STEPS.forEach(function (d) {
+      var card = $(d.id); if (!card) return;
+      var nav = card.querySelector('.stepnav'); if (!nav) return;
+      var k = f.indexOf(d.id);
+      nav.querySelector('[data-nav="back"]').style.visibility = k > 0 ? 'visible' : 'hidden';
+      nav.querySelector('[data-nav="next"]').innerHTML =
+        (k === f.length - 2) ? 'See the full picture &rarr;' : 'Continue &rarr;';
+      nav.querySelector('[data-hint]').innerHTML =
+        ASSUMED[d.id] ? 'Nothing to change here? Continue and we assume ' + ASSUMED[d.id] + '.' : '';
+    });
+  }
+
+  /* Each screen closes with the one sentence it just established. */
+  var ECHO = {
+    step1: function (c) {
+      return '<b>' + num(c.employees) + ' employees</b>' + (state.meta.accountName ? ' at <b>' + esc(state.meta.accountName) + '</b>' : '') +
+        '. That is the denominator — and it is the last time we use it. The next two questions narrow it twice.';
+    },
+    step2: function (c) {
+      return c.greenfield
+        ? 'Nobody holds a Copilot licence, so Cowork cannot run at all today and the meter reads <b>$0</b>. Keep going anyway — the output prices the licensing path, which is the actual conversation.'
+        : '<b>' + num(c.copilotLicensed) + '</b> of ' + num(c.employees) + ' people can use Cowork at all. Those licences already cost <b>' + usd(c.licenseMonthly) + ' a month</b> before a single credit is burned.';
+    },
+    step3: function (c) {
+      var idle = Math.max(0, c.copilotLicensed - c.active);
+      return '<b>' + num(c.active) + '</b> of ' + num(c.copilotLicensed) + ' licence-holders would actually turn it on.' +
+        (idle > 0 ? ' The other <b>' + num(idle) + '</b> carry a licence cost with no meter attached — worth a conversation of its own.' : '');
+    },
+    step4: function (c) {
+      var groups = state.personas.filter(function (x, i) { return (c.effSeatsByPersona[i] || 0) > 0; }).length;
+      return 'That is the <b>volume</b> — <b>' + num(c.monthlyCredits) + ' credits a month</b> across <b>' + groups + '</b> ' +
+        (groups === 1 ? 'group' : 'groups') + ', using the default task prices. The next screen sets those prices, and lets you replace them with real measured ones.';
+    },
+    step5: function (c) {
+      return 'Volume &times; price. At <b>' + esc(c.effortLabel) + '</b> effort that is <b>' + usd(c.monthlyCowork) + ' a month</b> on the meter, which you should quote as <b>' +
+        usd(c.coworkLo) + '–' + usd(c.coworkHi) + '</b> — ' + (state.calibrated ? '±15%, because you measured it' : '±30%, because this is still modelled') + '.';
+    },
+    step6: function (c) {
+      return 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
+        num(Math.round(c.cccuRequired)) + ' CCCU</b> — that is the number to take to your distributor, whatever discount they quote.';
+    },
+    step7: function () {
+      var yes = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal']
+        .filter(function (k) { return state.governance[k] === 'yes'; }).length;
+      return '<b>' + yes + ' of 5</b> controls confirmed. Everything still unknown becomes a named discovery question in the output — and every &ldquo;no&rdquo; moves the licensing recommendation.';
+    }
+  };
+  function renderEchoes(c) {
+    Object.keys(ECHO).forEach(function (id) {
+      var card = $(id); if (!card) return;
+      var body = card.querySelector('.wc-body'); if (!body) return;
+      var e = body.querySelector('.echo');
+      if (!e) {
+        e = document.createElement('div');
+        e.className = 'echo';
+        e.innerHTML = '<div class="e-ic">&#10003;</div><div class="e-t"></div>';
+        body.appendChild(e);
+      }
+      e.querySelector('.e-t').innerHTML = ECHO[id](c);
+    });
+  }
+
+  function renderRecap(r) {
+    var c = r.ctx, f = flow();
+    var cards = STEPS.filter(function (d) { return d.id !== 'results'; }).map(function (d) {
+      var folded = f.indexOf(d.id) === -1;
+      return '<div class="recap-i"><div class="r-l">' + esc(d.t) + '</div>' +
+        '<div class="r-v">' + esc(d.v(c)) + '</div>' +
+        (folded ? pill('default','assumed') + ' ' : '') +
+        '<button class="linkbtn" data-goto="' + d.id + '">' + (folded ? 'Ask it &rarr;' : 'Change &rarr;') + '</button></div>';
+    }).join('');
+    $('recapBody').innerHTML =
+      '<p style="font-size:.86rem;color:#374151;margin:0 0 14px;line-height:1.65;">' +
+      (uiMode === 'fast'
+        ? 'You ran the fast path. Every question that moves the dollar figure was asked — licences, activation, persona mix and effort. ' +
+          'The two marked ' + pill('default','assumed') + ' do not change the meter: the billing model prices the same credits either way, ' +
+          'and an unknown governance posture is already the conservative assumption. Ask them and the licensing recommendation and the ' +
+          'billing comparison sharpen; the number itself will not move.'
+        : 'Every answer that built this page. Change any one and everything above rewrites itself — live, in front of them.') +
+      '</p><div class="recap">' + cards + '</div>';
+    wireGoto($('recapBody'));
+  }
+
+  /* ═══ delta flash ═══ */
+  function flash(r) {
+    var snap = { cowork:r.ctx.monthlyCowork, lic:r.ctx.licenseMonthly, all:r.ctx.allInMonthly, credits:r.ctx.monthlyCredits };
+    if (cur !== 'results') { prevSnap = null; return; }
+    if (prevSnap) {
+      [['numCowork','cowork'],['numLic','lic']].forEach(function (x) {
+        var el = $(x[0]); if (!el) return;
+        var d = snap[x[1]] - prevSnap[x[1]];
+        if (Math.abs(d) > 0.5) {
+          el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+          var chip = document.createElement('span');
+          chip.className = 'deltachip' + (d < 0 ? ' down' : '');
+          chip.textContent = (d > 0 ? '+' : '−') + usd(Math.abs(d)) + '/mo';
+          var k = el.querySelector('.nk'); if (k) k.appendChild(chip);
+          setTimeout(function () { if (chip.parentNode) chip.parentNode.removeChild(chip); }, 1800);
+        }
+      });
+    }
+    prevSnap = snap;
+  }
+
+  /* ═══ refresh ═══ */
+  function refresh() {
+    var r = E.compute(state);
+    renderResults(r);
+    renderStepper(r.ctx);
+    renderNavs();
+    patchLic();
+    if (focusIn('actBlock')) patchAct(r); else renderAct(r);
+    if (focusIn('effortBlock') || focusIn('calBlock')) patchEffort(r); else renderEffort(r);
+    if (!focusIn('billBlock'))    renderBill(r);
+    if (focusIn('personaBlock')) patchPersonas(r); else renderPersonas(r);
+    renderCapNote(r);
+    renderBridge(r);
+    renderEchoes(r.ctx);
+    renderRecap(r);
+    flash(r);
+    return r;
+  }
+  function renderCapNote(r) {
+    var c = r.ctx;
+    $('capNote').innerHTML = c.employees > 300
+      ? '<div class="callout warn"><div class="callout-body"><b>' + c.employees + ' employees</b> &mdash; above the 300-seat cap on every SMB Copilot SKU. We\'ll price the enterprise add-on path.</div></div>'
+      : '<div class="ribbon-deriv">Under 300 employees &mdash; the SMB Copilot SKUs and their 300-seat cap apply.</div>';
+  }
+
+  /* ═══ wiring ═══ */
+  $('fName').addEventListener('input', function (e) { state.meta.accountName = e.target.value; refresh(); });
+  $('fEmp').addEventListener('input',  function (e) {
+    var v = Math.max(0, +e.target.value || 0);
+    state.org.totalEmployees = v;
+    if (!state.licenseTouched) { scaleLicencesTo(v); renderLic(); }
+    refresh();
+  });
+  $('fVert').addEventListener('change',function (e) { state.org.vertical = e.target.value; refresh(); });
+  $('fRes').addEventListener('change', function (e) { state.org.dataResidency = e.target.value; refresh(); });
+
+  $('modeToggle').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    setMode(b.getAttribute('data-mode'));
+  });
+  $('btnBackToQ').addEventListener('click', function () { goTo(flow()[0]); });
+  $('mathToggle').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    mathOn = b.getAttribute('data-math') === 'on';
+    document.body.classList.toggle('showmath', mathOn);
+    Array.prototype.forEach.call($('mathToggle').querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); });
+  });
+
+  function copyFrom(sel, btn) {
+    var text = Array.prototype.map.call(document.querySelectorAll(sel), function (p) { return p.textContent; }).join('\n\n');
+    var done = function () { btn.textContent = 'Copied ✓'; btn.classList.add('done'); setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text); done(); });
+    else { fallback(text); done(); }
+  }
+  function fallback(text) {
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+  }
+  $('btnCopySay').addEventListener('click', function () { copyFrom('#sayLine', $('btnCopySay')); });
+  $('btnCopyTalk').addEventListener('click', function () { copyFrom('#talkBody p', $('btnCopyTalk')); });
+
+  $('btnPrintCust').addEventListener('click', function () {
+    document.body.classList.add('print-customer'); document.body.classList.remove('print-internal');
+    window.print(); setTimeout(function () { document.body.classList.remove('print-customer'); }, 500);
+  });
+  $('btnPrintInt').addEventListener('click', function () {
+    document.body.classList.add('print-internal'); document.body.classList.remove('print-customer');
+    window.print(); setTimeout(function () { document.body.classList.remove('print-internal'); }, 500);
+  });
+
+  $('btnDownload').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    var d = new Date(), iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    var nm = (state.meta.accountName || 'cowork-session').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cowork-session';
+    a.href = url; a.download = nm + '-' + iso + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+  $('btnLoad').addEventListener('click', function () { $('loadFile').click(); });
+  $('loadFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) {
+      try {
+        var loaded = JSON.parse(ev.target.result);
+        if (!loaded || typeof loaded !== 'object') throw new Error('shape');
+        state = Object.assign(E.defaults(), loaded);
+        hydrateInputs(); renderLic(); renderGov(); renderPrices();
+        goTo(cur);
+      } catch (err) { alert('That file doesn’t look like a session exported from this tool.'); }
+    };
+    rd.readAsText(f); e.target.value = '';
+  });
+  $('btnClear').addEventListener('click', function () {
+    if (!confirm('Clear everything you’ve entered? Nothing was saved, so this can’t be undone.')) return;
+    location.reload();
+  });
+
+  function hydrateInputs() {
+    $('fName').value = state.meta.accountName || '';
+    $('fEmp').value = state.org.totalEmployees;
+    $('fVert').value = state.org.vertical;
+    $('fRes').value = state.org.dataResidency;
+  }
+
+  /* ═══ init ═══ */
+  hydrateInputs();
+  renderLic();
+  renderGov();
+  renderPrices();
+  buildNavs();
+  goTo('step1');
+})();
+
+</script>
+</body>
+</html>
