@@ -148,6 +148,9 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 .card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
 .card-h { font-weight: 700; color: var(--navy); font-size: .95rem; margin-bottom: 6px; }
 .card-b { font-size: .88rem; color: #374151; margin: 0; }
+.card-say { margin-top: 12px; padding: 10px 12px; background: var(--accent); border-radius: 6px; }
+.card-say b { display: block; font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--teal); margin-bottom: 4px; }
+.card-say span { font-size: .87rem; font-style: italic; color: var(--text); line-height: 1.55; }
 
 /* TAG */
 .tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
@@ -484,15 +487,18 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
       <div class="grid">
         <div class="card">
           <div class="card-h">&ldquo;Don't we already have this with Claude?&rdquo;</div>
-          <p class="card-b">Their team already runs Claude — sanctioned or shadow — and someone just spotted &ldquo;Cowork&rdquo; surface inside Microsoft 365 Copilot, or heard it from their Microsoft rep.<br><br><strong>You say:</strong> &ldquo;Fair question, and it's exactly the one this conversation answers. Same-caliber model, different governance. Let's talk about what changes when it runs inside your Microsoft 365 tenant instead of a personal subscription.&rdquo;</p>
+          <p class="card-b">Their team already runs Claude — sanctioned or shadow — and someone just spotted &ldquo;Cowork&rdquo; surface inside Microsoft 365 Copilot.</p>
+          <div class="card-say"><b>You say</b><span>&ldquo;Fair question, and it's exactly the one this conversation answers. Same-caliber model, different governance. Let's talk about what changes when it runs inside your Microsoft 365 tenant instead of a personal subscription.&rdquo;</span></div>
         </div>
         <div class="card">
-          <div class="card-h">&ldquo;Our Microsoft rep says we should turn this on.&rdquo;</div>
-          <p class="card-b">They already license M365 Copilot. Their account team or CSP renewal call flagged that Cowork is GA and asked if they want it enabled — and they had the sense to ask you first.<br><br><strong>You say:</strong> &ldquo;Good instinct, stopping to ask before you flip that switch — Cowork bills differently than the seat you're used to. Let's size it properly first, so you're not paying full price for output nobody trusts.&rdquo;</p>
+          <div class="card-h">&ldquo;We saw this demoed at a conference and want it.&rdquo;</div>
+          <p class="card-b">An exec or your IT lead sat through a Cowork demo at an industry event or a Microsoft partner conference, walked away excited, and wants it running before anyone's checked the cost or whether their data's ready.</p>
+          <div class="card-say"><b>You say</b><span>&ldquo;Love that energy — let's turn it into a plan instead of a rush. Cowork bills differently than the seat you're used to, and turning it on before your data's ready just means you pay full price for output nobody trusts.&rdquo;</span></div>
         </div>
         <div class="card">
           <div class="card-h">&ldquo;One person tried it and now leadership wants everyone on it.&rdquo;</div>
-          <p class="card-b">An early adopter ran a Cowork task, it impressed a VP, and now there's executive pressure to roll it out with no plan for cost or governance.<br><br><strong>You say:</strong> &ldquo;That's the best kind of pressure to have — but &lsquo;give everyone access&rsquo; is how a $30 seat turns into a runaway bill overnight. Let's build the rollout that keeps the magic and controls the meter.&rdquo;</p>
+          <p class="card-b">An early adopter ran a Cowork task, it impressed a VP, and now there's executive pressure to roll it out with no plan for cost or governance.</p>
+          <div class="card-say"><b>You say</b><span>&ldquo;That's the best kind of pressure to have — but &lsquo;give everyone access&rsquo; is how a $30 seat turns into a runaway bill overnight. Let's build the rollout that keeps the magic and controls the meter.&rdquo;</span></div>
         </div>
       </div>
 
