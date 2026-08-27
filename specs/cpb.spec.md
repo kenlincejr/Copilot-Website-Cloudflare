@@ -30,7 +30,7 @@
 
 | | |
 |---|---:|
-| Changes | **14** (C-09 withdrawn) |
+| Changes | **19** (C-09 withdrawn; C-16..C-20 added post-execution) |
 | LOW risk (value swap in existing markup) | 6 |
 | MED risk (prose rewrite in existing block) | 7 |
 | HIGH risk | 1 (C-08) |
@@ -298,6 +298,88 @@ The fix is to scope the sentence, not delete the stat. The citation line below i
 ```
 ```html after:C-15
         <div style="font-size:.78rem;color:#374151;margin-top:2px;">of MSP-served SMBs using AI have moved to agents — broader-market adoption runs far higher, so in your base the Copilot Studio opportunity is genuinely earlier-stage than the license conversation</div>
+```
+
+---
+
+# Section D — found by `check-facts --cascade` after execution
+
+**These five were missed by the spec as approved.** They were caught on the integration branch by `tools/check-facts.py --cascade`, which reported `F-021` and `F-020` as *half-applied* — updated in some files but still literally present in others. That is precisely the failure the tool exists to catch, and it caught it **before merge**.
+
+**Why the Phase 2 sweep missed the biggest one (C-16).** The sweep only registered a numeric hit if a hard external-source signal appeared within ±160 characters of it. In the three-stat tension panel, `3.3%` and its `Microsoft FY26 Q2 Earnings` attribution are separated by four `<div>` elements carrying long inline `style=` attributes. Those attributes are blanked to whitespace by the sweep, but the whitespace still counts toward the window, so the signal fell outside it. `F-021` caught the label; nothing caught the figure beside it.
+
+**Recorded as a limitation of the ledger, not a one-off.** Any future sweep of this file should widen the window, or collapse blanked runs before measuring distance.
+
+---
+
+### C-16 · Second statement of the penetration figure (tension panel)
+**Type:** value-swap · **Fact IDs:** `F-005` — **occurrence not in the ledger** · **Risk:** LOW
+**Rationale:** An independent restatement of `3.3%` at `3.2rem`, roughly 1,000 lines below the Opening Provocation. Left alone, `cpb.html` would state both `~6.6%` and `3.3%` as the current figure.
+**Design:** `#f87171` is on the allow-list (`DESIGN.md` §4.1). No attribute changes.
+
+```html before:C-16
+    <div style="font-size:3.2rem;font-weight:700;color:#f87171;line-height:1;letter-spacing:-.04em;margin-bottom:8px;">3.3%</div>
+    <div style="font-size:.88rem;font-weight:600;color:#fff;margin-bottom:4px;">Paid Copilot conversion</div>
+    <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.45;">of 450M commercial M365 seats globally</div>
+    <div style="margin-top:14px;font-size:.68rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;">Microsoft FY26 Q2 Earnings</div>
+```
+```html after:C-16
+    <div style="font-size:3.2rem;font-weight:700;color:#f87171;line-height:1;letter-spacing:-.04em;margin-bottom:8px;">6.6%</div>
+    <div style="font-size:.88rem;font-weight:600;color:#fff;margin-bottom:4px;">Paid Copilot conversion</div>
+    <div style="font-size:.76rem;color:rgba(255,255,255,.5);line-height:1.45;">of 450M commercial M365 seats globally</div>
+    <div style="margin-top:14px;font-size:.68rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;">Microsoft FY26 Q4 Earnings</div>
+```
+
+---
+
+### C-17 · Agent 365 written in the future tense
+**Type:** text-rewrite · **Fact IDs:** `F-009`, `F-020` · **Risk:** MED
+**Rationale:** *"goes GA on May 1, 2026"* and *"In its Frontier preview"* both describe a product that has been GA for nearly four months. **The spec's out-of-scope table was wrong about this line.** It dismissed the three remaining `$15` references on the grounds that the price was confirmed unchanged. The price is unchanged; the *tense* is not, and C-14 only fixed the definition site.
+
+```html before:C-17
+  <p>Agent 365 — Microsoft's centralized AI agent control plane — is available at <strong>$15/user/month</strong> and goes GA on May 1, 2026. In its Frontier preview, early adoption data showed rapid agent proliferation across enterprise tenants &mdash; underscoring the governance challenge your customers will face.
+```
+```html after:C-17
+  <p>Agent 365 — Microsoft's centralized AI agent control plane — has been GA since <strong>May 1, 2026</strong> at <strong>$15/user/month</strong>, and since June 1, 2026 new purchases require M365 E5, A5, or Business Premium underneath them. Early adoption data showed rapid agent proliferation across enterprise tenants &mdash; underscoring the governance challenge your customers will face.
+```
+
+---
+
+### C-18 · E7 priced "TBD" in the SKU table
+**Type:** value-swap · **Fact IDs:** `F-049`, `F-007` · **Risk:** LOW
+**Rationale:** E7 is GA and priced at `$99/user/mo` — verified, and stated correctly elsewhere in this same file. `TBD` is now simply wrong.
+
+```html before:C-18
+  <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;white-space:nowrap;font-weight:700;">TBD (GA May 1, 2026)</td>
+```
+```html after:C-18
+  <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;white-space:nowrap;font-weight:700;">$99/user/mo (GA May 1, 2026)</td>
+```
+
+---
+
+### C-19 · E7 priced "TBD" in the SKU ladder
+**Type:** value-swap · **Fact IDs:** `F-049`, `F-007` · **Risk:** LOW
+**Design:** `DESIGN.md` C13 — `.sku-price` content only.
+
+```html before:C-19
+        <div class="sku-price">TBD — GA May 1, 2026</div>
+```
+```html after:C-19
+        <div class="sku-price">$99/user/mo — GA May 1, 2026</div>
+```
+
+---
+
+### C-20 · Stale arithmetic in an HTML comment
+**Type:** value-swap · **Fact IDs:** `F-005`, `F-060` · **Risk:** LOW
+**Rationale:** Invisible to readers, but it is the maintainer's note explaining the block directly beneath it, and it now describes arithmetic the block no longer performs. The Phase 2 sweep blanks comments by design, so this was never registered.
+
+```html before:C-20
+    <!-- Where the number comes from: 15M / 450M = 3.3% -->
+```
+```html after:C-20
+    <!-- Where the number comes from: 30M / 450M = ~6.6% -->
 ```
 
 ---
