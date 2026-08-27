@@ -210,6 +210,9 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 @media (max-width: 640px) { .toolcard .tool-io { grid-template-columns: 1fr; } }
 .toolcard .tool-io div { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
 .toolcard .tool-io b { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin-bottom: 3px; }
+.toolcard .tool-link { display: inline-block; margin-top: 10px; font-size: .82rem; font-weight: 700; color: #0f766e; }
+.toolcard .tool-link::after { content: " \2197"; }
+.toolcard .tool-note { display: block; margin-top: 10px; font-size: .78rem; color: #92400e; background: #fff8ed; border: 1px solid #f5ddb0; border-radius: 6px; padding: 6px 10px; }
 
 /* WORKED EXAMPLE */
 .worked { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 16px 0; box-shadow: var(--shadow-sm); }
@@ -374,6 +377,7 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
     <div><b>You feed it</b>Persona mix, light/medium/heavy task counts, model choice</div>
     <div><b>It returns</b>A monthly credit range and a $ estimate at $0.01/credit</div>
   </div>
+  <a class="tool-link" href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Open the Copilot Credit Estimator</a>
 </div>
 
 <div class="toolcard">
@@ -381,8 +385,9 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
   <p>The browser-based, offline, PDF-exportable partner tool — your go-to for the live moment. Same math as the Credit Estimator, aligned to Microsoft's published task-mix defaults, but built to print a co-branded leave-behind on the spot.</p>
   <div class="tool-io">
     <div><b>You feed it</b>A named account's headcount by role, a P3 pre-purchase toggle</div>
-    <div><b>It returns</b>A printable monthly estimate the partner hands the customer that day</div>
+    <div><b>It returns</b>A printable monthly estimate you hand the customer that day</div>
   </div>
+  <span class="tool-note">Internal TD SYNNEX tool — not yet published to a public URL. Check with your enablement lead for the current build, or use the worked example in Stop 5 as a stand-in.</span>
 </div>
 
 <div class="toolcard">
@@ -392,15 +397,17 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
     <div><b>You feed it</b>Current SKU, seat count, target governance capabilities</div>
     <div><b>It returns</b>A per-capability &#10003; / partial / &#10007; grid and a $/user/month delta</div>
   </div>
+  <span class="tool-note">Internal TD SYNNEX tool — not yet published to a public URL. Use the licensing snapshot in Section 6 as a stand-in until it ships.</span>
 </div>
 
 <div class="toolcard">
   <div class="tool-head"><span class="tool-name">ASPX (AI Business Solutions &amp; Security Partner Experience)</span><span class="tool-when">Used before the session — see Stop 1</span></div>
-  <p>The partner-facing propensity portal at <code>aka.ms/ASPX</code>. Weekly-refreshed, per-tenant Copilot and Cowork signals — this is where your named account for the closing exercise should come from, not a guess.</p>
+  <p>The partner-facing propensity portal. Weekly-refreshed, per-tenant Copilot and Cowork signals — this is where your named account for the closing exercise should come from, not a guess.</p>
   <div class="tool-io">
     <div><b>You feed it</b>Nothing — it's already populated per tenant you administer</div>
     <div><b>It returns</b>Free Copilot MAU, Data Security Maturity, Usage Limits, Cowork MAU</div>
   </div>
+  <a class="tool-link" href="https://aka.ms/ASPX" target="_blank" rel="noopener">Open ASPX</a>
 </div>
 
 <h3>Your materials checklist</h3>
