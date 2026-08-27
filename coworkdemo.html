@@ -265,23 +265,79 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
     vertical-align: top;
   }
 }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: 0 1px 4px rgba(0,0,0,.07); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 700px) {
+  .mh-bar { margin: -20px -16px 0; }
+  .mh-bar-in { padding: 0 16px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -16px 20px; }
+  .masthead-inner { padding: 20px 16px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+/* .meta-row lifted out of .hero — on-light restatement of the .hero .meta-row layout */
+.meta-row { display: flex; flex-wrap: wrap; gap: 18px; margin: 0 0 24px; font-size: .82rem; color: #6b7280; }
+.meta-row span strong { color: var(--navy,#003057); }
 </style>
 </head>
 <body>
 
-<!-- HERO -->
-<div class="hero">
-  <div class="eyebrow">One Prompt Setup · Microsoft Copilot Cowork</div>
-  <h1>Chief of Staff Brief</h1>
-  <p class="sub">Set up an AI Chief of Staff that reads your Microsoft 365 work signals, builds a decision-ready morning brief, and delivers it to Teams and Outlook every weekday. It starts with one prompt, then Cowork asks a few setup questions so the schedule and permissions are created correctly.</p>
-  <div class="meta-row">
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="cowork.html">Cowork</a><span class="sep">/</span><span class="cur">Chief of Staff Brief</span></div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">One Prompt Setup &middot; Cowork</div></div>
+    <h1>Chief of Staff Brief</h1>
+    <p class="sub">Set up an AI Chief of Staff that reads your Microsoft 365 work signals, builds a decision-ready morning brief, and delivers it to Teams and Outlook every weekday. It starts with one prompt, then Cowork asks a few setup questions so the schedule and permissions are created correctly.</p>
+  </div>
+</div>
+
+<div class="meta-row">
     <span><strong>Setup time:</strong> About 5 minutes</span>
     <span><strong>Required:</strong> One prompt</span>
     <span><strong>Model:</strong> Latest Claude Opus</span>
     <span><strong>Default schedule:</strong> Weekdays at 6:30 AM</span>
     <span><strong>Delivery:</strong> Teams self-chat + Outlook inbox</span>
   </div>
-</div>
 
 <!-- TOC -->
 <div class="toc">
@@ -292,6 +348,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
     <li><a href="#cost-control">Built To Spend Carefully</a></li>
     <li><a href="#before-you-start">Before You Start</a></li>
     <li><a href="#setup">Step-by-Step Setup</a></li>
+    <li><a href="#schedule-prompt">Schedule Confirmation Prompt</a></li>
     <li><a href="#setup-questions">Setup Questions and Permissions</a></li>
     <li><a href="#success">What Success Looks Like</a></li>
     <li><a href="#use-it">How To Use It Each Morning</a></li>
@@ -393,6 +450,8 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
   <li><div>Approve the permission cards Cowork presents. These may include creating the scheduled task, posting the brief to your Teams self-chat, emailing the brief to yourself, saving drafts, and creating confirmed-flight travel ticklers.</div></li>
   <li><div>Wait for Cowork to confirm the task was scheduled. The setup is done when the Workspace or Details panel shows <strong>Chief of Staff Brief</strong> with <strong>Active</strong> turned on.</div></li>
   <li><div>Check your Teams self-chat and Outlook inbox. Cowork may run once immediately so you can confirm the brief delivers correctly.</div></li>
+  <li><div>Send one follow-up message in the <strong>same chat</strong> that names your exact delivery time and days, using the <a href="#schedule-prompt">Schedule Confirmation Prompt</a> below. Do this even if you already answered a default-time setup question - it removes any ambiguity about when the recurring task should fire.</div></li>
+  <li><div>Open the <strong>Automations</strong> icon in the Cowork sidebar, select <strong>Manage</strong>, and confirm <strong>Chief of Staff Brief</strong> is listed with the correct days and time and the <strong>Active</strong> toggle turned on. This is the final proof the schedule is really wired up.</div></li>
 </ul>
 
 <div class="alert alert-info">
@@ -529,6 +588,36 @@ VISUAL DESIGN — SINGLE AUTHORITATIVE RENDERING SYSTEM (apply everywhere; the g
 AUTHORIZED WRITES are limited to exactly two: (a) saving Ready-to-Send replies to my Outlook Drafts (never sent), and (b) creating TRAVEL TICKLER calendar events. Travel ticklers only: when a trip is within 7 days and a CONFIRMED flight is on file, place one at-a-glance calendar event at each flight leg&#39;s exact LOCAL DEPARTURE time (30 min, show-as Free, 90-min reminder, departure-airport timezone) titled &quot;✈ &lt;ORIGIN→DEST&gt; &#183; &lt;CARRIER&gt; &lt;FLT#&gt; &#183; &lt;DEP TIME LOCAL&gt;&quot; with a scannable HTML body containing carrier+flight+cabin/seat, airports/terminals/times local, record locator/confirmation # (always), key phone numbers (airline, hotel front desk, rental agency, car service/driver — every phone in source), hotel name+check-in/out+address+phone, rental car company+confirmation+pickup/return+phone, ground transport summary, venue+address (outbound leg only), return-flight summary (outbound leg only), and a footer idempotency tag &quot;[CoS-Tickler-&lt;TripID&gt;]&quot; where TripID is a stable hash of origin+destination+outbound date+carrier+flight#. Before creating, search my calendar for a future event whose body contains that tag — if none create and mark Created; if one exists and the itinerary matches leave it and mark Already Current; if data changed delete old and create new and mark Updated; never duplicate, never create a tickler for a leg already departed, never create from a tentative/unconfirmed itinerary, never modify a real meeting. ALL OTHER calendar changes and all focus-time blocks are PROPOSED only — never created. The weekly time-entry draft stays inline only and is never written anywhere. Deliver only to me, never to a shared channel or another person; never modify, share, or alter any other file, doc, task, or chat artifact.
 
 RUNTIME: if one collector fails, the composer proceeds with the digest it has and notes the gap rather than aborting. Retry a failed Teams post or email send once, then record the failure inside the brief and continue on the other channel. Retry a failed draft-save once, then render that reply inline only and note it. Retry a failed travel-tickler write once, then mark Failed with a one-line reason and continue. Always end with the color-key legend and the trust + tier footer.</div>
+</div>
+
+<!-- SCHEDULE CONFIRMATION -->
+<h2 id="schedule-prompt">Schedule Confirmation Prompt</h2>
+
+<p>After you paste the Full Prompt above and Cowork finishes the setup questions, send one more message in the <strong>same chat</strong> that names your exact delivery time and days. This turns an inferred default into an explicit instruction and gives you a clean confirmation message to check against the Automations panel. Replace <code>6:30 AM</code> and the day list below with whatever schedule you actually want.</p>
+
+<div class="copy-container">
+  <div class="copy-header req">
+    <p class="copy-header-text">Schedule Confirmation Prompt · Paste after the main prompt, once setup is done</p>
+    <button class="copy-btn" onclick="copyText(this, 'p2')">Copy</button>
+  </div>
+  <div class="copy-text" id="p2">Schedule the Chief of Staff Brief you just set up as a recurring Cowork automation named "Chief of Staff Brief" that runs unattended every Monday, Tuesday, Wednesday, Thursday, and Friday at 6:30 AM in my local timezone - no manual chat needed to trigger it. Do not change any of the settings, permissions, or behavior from the prompt above; only create or confirm the recurring schedule. Once it is created, reply back to me with the exact task name, the days, and the time so I can verify it in Automations.</div>
+</div>
+
+<p>After Cowork confirms, open <strong>Automations</strong> in the Cowork sidebar and click <strong>Manage</strong> to see the live list of scheduled tasks.</p>
+
+<div class="screenshot-row screenshot-grid-wide">
+  <div class="screenshot-wrap screenshot-narrow">
+    <div class="screenshot-label">Step 1 - Open Automations in the Cowork sidebar</div>
+    <img src="cowork-automations-nav.svg" alt="Cowork sidebar with the Automations icon highlighted below New task and My tasks" class="screenshot" />
+  </div>
+  <div class="screenshot-wrap">
+    <div class="screenshot-label">Step 2 - Confirm the schedule under Manage</div>
+    <img src="cowork-automations-manage.svg" alt="Cowork Automations Manage tab showing Chief of Staff Brief scheduled every weekday at 06:30 and marked Active" class="screenshot" />
+  </div>
+</div>
+
+<div class="alert alert-success">
+  <strong>You are only done once Automations confirms it.</strong> A reply in chat saying the schedule was created is a good sign, but the Automations &gt; Manage panel showing <strong>Chief of Staff Brief</strong> with the right days, the right time, and the <strong>Active</strong> toggle on is the real confirmation. If it is missing or paused, repeat the Schedule Confirmation Prompt above.
 </div>
 
 <!-- FAQ -->

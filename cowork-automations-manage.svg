@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="220" viewBox="0 0 420 220" role="img" aria-labelledby="title desc">
+  <title id="title">Cowork Automations panel confirming the Chief of Staff Brief schedule</title>
+  <desc id="desc">The Cowork Automations Manage tab showing the Chief of Staff Brief listed as a recurring weekday task at 6:30 AM.</desc>
+  <defs>
+    <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity=".12"/>
+    </filter>
+  </defs>
+
+  <rect width="420" height="220" fill="#fff"/>
+  <rect x="16" y="16" width="388" height="188" rx="14" fill="#fff" stroke="#dedee3" filter="url(#shadow2)"/>
+
+  <text x="36" y="46" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#1a1a1a">Automations</text>
+
+  <rect x="36" y="62" width="76" height="26" rx="13" fill="#efeef0"/>
+  <text x="74" y="79" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="700" fill="#1a1a1a" text-anchor="middle">Manage</text>
+  <text x="140" y="79" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#8a8a92">Runs</text>
+
+  <rect x="36" y="102" width="348" height="80" rx="10" fill="#fff" stroke="#e1e1e5"/>
+  <text x="56" y="128" font-family="Segoe UI, Arial, sans-serif" font-size="14.5" font-weight="700" fill="#1a1a1a">Chief of Staff Brief</text>
+
+  <path d="M58 144a7 7 0 1 1 0 .01M58 137v7l4 3" fill="none" stroke="#6d6d75" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="72" y="150" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#5a5a63">Every week on Monday, Tuesday,</text>
+  <text x="72" y="166" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" fill="#5a5a63">Wednesday, Thursday, Friday at 06:30</text>
+
+  <rect x="326" y="118" width="42" height="22" rx="11" fill="#2e7d46"/>
+  <circle cx="358" cy="129" r="8" fill="#fff"/>
+  <text x="326" y="152" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#2e7d46">Active</text>
+</svg>
