@@ -384,6 +384,22 @@ The fix is to scope the sentence, not delete the stat. The citation line below i
 
 ---
 
+# Section E — a source you supplied, 2026-08-26
+
+### C-21 · Give the Rescue argument a hard number
+**Type:** text-rewrite · **Fact IDs:** `F-143` (new) · **Risk:** MED
+**Rationale:** The Rescue card argues that unused seats are a renewal risk, but it is entirely qualitative — "the usage report writes the don't-renew conversation for them." You supplied a sourced figure that fills exactly this gap: only 20–30% of purchased Copilot seats see sustained weekly use. Traced to independent survey synthesis (Gartner and Forrester enterprise surveys plus reseller channel data, 2025–2026), consistent across multiple outlets — the same epistemic category as the Forrester TEI benchmark set already in the document (`F-001`, `F-015`, `F-024`, `F-027`), not a single Microsoft-stated number. Registered as `F-143`.
+**Design:** Content only, inside the existing Rescue card body. `#a8ecf5`-style emphasis is not used here — the card has no existing `<strong>` emphasis span to match, so plain text is used, consistent with the sibling Door-card bodies (C-06) which are also plain prose with no inline emphasis spans.
+
+```html before:C-21
+        <div style="font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.6;">They wrote the check and the renewal clock is ticking. Without intervention, the usage report writes the &ldquo;don&rsquo;t renew&rdquo; conversation for them. Get there first.</div>
+```
+```html after:C-21
+        <div style="font-size:.8rem;color:rgba(255,255,255,.7);line-height:1.6;">They wrote the check and the renewal clock is ticking. Independent surveys put weekly active use at just 20&ndash;30% of purchased seats &mdash; without intervention, the usage report writes the &ldquo;don&rsquo;t renew&rdquo; conversation for them. Get there first.</div>
+```
+
+---
+
 ## Out of scope — flagged, not changed
 
 Recorded here so a later reader knows these were seen and deliberately left alone.
