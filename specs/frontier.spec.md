@@ -160,6 +160,32 @@ The `51%` block additionally asserts *"measured outcomes, not projections."* Tha
 
 ---
 
+### FR-06 · Collapse the stats grid to one column — **consequence of FR-04**
+**Type:** value-swap (CSS) · **Fact IDs:** none · **Risk:** MED
+**Added during execution, 2026-08-26.** This change was **not** in the spec as approved. It was found by inspecting the rendered structure after FR-04 and is recorded here so the diff still equals the spec.
+
+**The defect FR-04 created.** `.invest-stats` is declared `grid-template-columns: repeat(3, 1fr)` (`frontier.html:370`). FR-04 removed two of its three children. The surviving `71%` stat would render in the **left third of a full-width row**, under a `--border` top rule spanning the whole container — visibly broken, and worse than the unsourced stats it replaced.
+
+**Why this is safe under `DESIGN.md`:**
+- `.invest-stats` appears **exactly once** in the markup, so no other block is affected.
+- `1fr` is **not a new value**. It is already declared for this same class in the media query on the very next line (`@media (max-width: 700px) { .invest-stats { grid-template-columns: 1fr; } }`). The change makes the desktop rule match the rule that already exists for narrow viewports. No token, colour, size, radius, or shadow is introduced — prohibition 1 holds.
+- `.invest-stat:last-child { border-right: none; }` already handles the trailing border for a single child. No further rule is needed.
+
+**Had this not been catchable inside one file, execution would have stopped** rather than reaching into a second one.
+
+```html before:FR-06
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+```
+```html after:FR-06
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--border);
+```
+
+---
+
 ## Out of scope — flagged, not changed
 
 `RESEARCH-DELTA.md` §6 was explicit that the July 2026 announcements **do not restate** the FY25/FY26 program dollar figures on this page, and confirming each needs Partner Center access I do not have. **None of the following were verified, and none are changed.** Treat every one as unverified until someone checks it in Partner Center.

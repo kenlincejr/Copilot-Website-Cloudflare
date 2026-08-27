@@ -21,6 +21,11 @@ Rules enforced, matching the standing execution prompt:
     (cpb C-09).
   * Any edit that would touch a line longer than 4,000 characters aborts the
     whole run - this is the cpb.html base64 guard.
+  * Re-running is safe. A change whose AFTER is already present is reported as
+    already-applied rather than applied twice. The one exception is a
+    block-remove (empty AFTER): its already-applied state is indistinguishable
+    from a missing anchor, so a re-run reports it as SKIPPED. That is a false
+    alarm, not a failure - nothing is written.
 
 Exit code 0 = every change applied, 1 = at least one was skipped.
 """
@@ -70,7 +75,7 @@ def main():
     raw = original = open(target_abs, encoding="utf-8").read()
 
     before, after = parse(spec)
-    applied, skipped, withdrawn = [], [], []
+    applied, skipped, withdrawn, already = [], [], [], []
 
     for cid in sorted(before, key=lambda c: int(c.split("-")[1])):
         if cid not in after:
@@ -78,8 +83,21 @@ def main():
             print(f"SKIP  {cid}: withdrawn (no after: block)")
             continue
 
+        # A block-insert keeps its own anchor inside the replacement, which
+        # makes a naive re-run insert the block a second time. Detect that the
+        # change is already present and skip it as already-applied.
+        insert_style = before[cid] in after[cid]
+        if insert_style and after[cid] in raw:
+            already.append(cid)
+            print(f"SKIP  {cid}: already applied (block-insert)")
+            continue
+
         n = raw.count(before[cid])
         if n != 1:
+            if n == 0 and after[cid].strip() and after[cid] in raw:
+                already.append(cid)
+                print(f"SKIP  {cid}: already applied")
+                continue
             skipped.append((cid, f"BEFORE matched {n}x, expected 1"))
             print(f"SKIP  {cid}: BEFORE matched {n}x, expected exactly 1")
             continue
