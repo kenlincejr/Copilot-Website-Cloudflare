@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Copilot Adoption Audit | Copilot Playbook</title>
+<meta name="description" content="For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't &mdash; plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the fourteen prompts that do the analysis." />
+<link rel="canonical" href="https://copilotplaybook.com/copilot-adoption-audit.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Copilot Adoption Audit" />
+<meta property="og:description" content="Seven things the channel believes about Copilot adoption. Seven the data doesn't. Plus the service line hiding inside a report every one of your customers already owns." />
+<meta property="og:url" content="https://copilotplaybook.com/copilot-adoption-audit.html" />
+<meta property="og:site_name" content="Copilot Playbook" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="The Copilot Adoption Audit" />
+<meta name="twitter:description" content="Two columns every Copilot usage export already contains, the four conversations they hand you, and how to run it across a whole book of SMB customers." />
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* HEADINGS */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+h4 {
+  color: var(--navy);
+  margin: 1.2rem 0 .3rem;
+  font-size: .95rem;
+  font-weight: 700;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* TABLE OF CONTENTS */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  columns: 2;
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+/* BACK TO TOC */
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: #f5ddb0;
+  border-left-color: #d97706;
+}
+.callout.dark {
+  background: var(--navy);
+  border-color: var(--navy);
+  border-left-color: var(--teal-light);
+  color: #fff;
+}
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .85rem;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+/* METRICS */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .78rem; margin-top: 5px; font-style: italic; }
+.metric.warn { border-top-color: #d97706; }
+.metric.warn .k { color: #92400e; }
+
+/* BLOCKQUOTE */
+blockquote {
+  border-left: 4px solid var(--teal);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f5fbfc;
+  font-style: italic;
+  color: #374151;
+}
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .88rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th {
+  background: var(--muted-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: .82rem;
+  border-left: 3px solid var(--teal);
+}
+tr:nth-child(even) td { background: #fafbfc; }
+.tablewrap { overflow-x: auto; }
+table.dense { font-size: .8rem; min-width: 900px; }
+table.dense th, table.dense td { padding: 8px 10px; }
+
+/* STAT RIBBON */
+.stat-ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.stat-ribbon-item {
+  padding: 20px 18px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) {
+  .stat-ribbon { grid-template-columns: repeat(2, 1fr); }
+  .stat-ribbon-item:nth-child(2) { border-right: none; }
+}
+
+/* HERO STATEMENT */
+.hero-statement {
+  background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* DARK PANEL — the opening-provocation shell */
+.dark-panel {
+  background: linear-gradient(135deg, #001f3d 0%, var(--navy) 45%, var(--teal) 130%);
+  border-radius: var(--radius-lg);
+  padding: 30px 34px;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.dark-panel .dp-eyebrow {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+}
+.dark-panel .dp-eyebrow .bar { width: 24px; height: 2px; background: var(--ltblue); border-radius: 1px; }
+.dark-panel .dp-eyebrow .lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.55); }
+.dark-panel .dp-eyebrow .rule { flex: 1; height: 1px; background: rgba(255,255,255,.12); }
+.dark-panel p { color: rgba(255,255,255,.9); font-size: .95rem; }
+.dark-panel h3 { color: #fff; margin-top: 0; }
+.dark-panel strong { color: #fff; }
+
+/* DARK MATH CHIP ROW */
+.chiprow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius); padding: 16px 20px; margin: 18px 0 4px; }
+.chip { display: flex; flex-direction: column; gap: 2px; }
+.chip .cv { font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -.02em; }
+.chip .cv.hl { color: #a8ecf5; }
+.chip .cl { font-size: .7rem; color: rgba(255,255,255,.58); }
+.chip-op { color: rgba(255,255,255,.32); font-size: 1.2rem; font-weight: 300; }
+
+/* PIPELINE (horizontal step flow) */
+.pipeline { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 26px 0 20px; position: relative; }
+.pipeline::before { content: ""; position: absolute; top: 29px; left: 45px; right: 45px; height: 2px; background: var(--border); z-index: 0; }
+.pl-step { position: relative; z-index: 1; flex: 1; text-align: center; padding: 0 6px; }
+.pl-circle { width: 58px; height: 58px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; color: var(--teal); margin: 0 auto 10px; }
+.pl-circle.filled { background: var(--teal); color: #fff; }
+.pl-title { font-weight: 700; color: var(--navy); font-size: .92rem; margin-bottom: 3px; }
+.pl-tag { font-size: .68rem; color: #6b7280; margin-bottom: 6px; }
+.pl-tools { font-size: .74rem; color: #6b7280; line-height: 1.45; }
+@media (max-width: 800px) { .pipeline { flex-direction: column; gap: 22px; } .pipeline::before { display: none; } }
+
+/* VERTICAL TIMELINE */
+.vtimeline { position: relative; margin: 20px 0 20px 8px; padding-left: 26px; border-left: 2px solid var(--border); }
+.vt-item { position: relative; padding-bottom: 26px; }
+.vt-item:last-child { padding-bottom: 0; }
+.vt-item::before { content: ""; position: absolute; left: -33px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); }
+.vt-when { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
+.vt-item h4 { margin: 3px 0 3px; }
+.vt-item p { font-size: .87rem; margin: 0; }
+
+/* PARTNER STORY / NAMED QUOTE */
+.partner-story {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 18px 22px;
+  margin: 18px 0;
+  background: #f8fcfd;
+  box-shadow: var(--shadow-sm);
+}
+.partner-story .ps-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.partner-story .ps-quote { font-size: .95rem; font-style: italic; color: #374151; line-height: 1.7; margin: 0 0 10px; }
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+/* WARNING BANNER */
+.smb-reality {
+  border: 1px solid var(--border);
+  border-left: 4px solid #d97706;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+  background: var(--warn);
+  box-shadow: var(--shadow-sm);
+}
+.smb-reality .sr-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #92400e;
+  margin-bottom: 10px;
+}
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 6px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); position: relative; }
+.tier-card:not(:last-child)::after { content: "\2193"; position: absolute; left: 22px; bottom: -20px; color: var(--border); font-size: 1.1rem; z-index: 2; }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 16px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-desc { font-size: .88rem; color: var(--text); line-height: 1.6; margin: 0 0 8px; }
+.tier-card .tc-facts { display: flex; gap: 18px; flex-wrap: wrap; font-size: .78rem; color: #6b7280; border-top: 1px dashed var(--border); padding-top: 8px; }
+.tier-card .tc-facts strong { color: var(--navy); }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+
+/* Two-column compare */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+
+/* Inline tag */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* ASSET / DELIVERABLE INDEX LIST */
+.asset-index { display: flex; flex-direction: column; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.asset-item { background: #fff; padding: 16px 20px; display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; }
+.asset-item .ai-num { font-size: 1.5rem; font-weight: 700; color: var(--ltblue); line-height: 1; font-family: Consolas,Monaco,monospace; }
+.asset-item h4 { margin: 0 0 4px; }
+.asset-item p { margin: 0 0 5px; font-size: .87rem; }
+.asset-item .ai-meta { font-size: .72rem; color: #9ca3af; font-family: Consolas,Monaco,monospace; text-transform: uppercase; letter-spacing: .04em; }
+@media (max-width: 600px) { .asset-item { grid-template-columns: 28px 1fr; } }
+
+/* RECAP HAIRLINE GRID */
+.recap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.recap-item { background: #fff; padding: 18px 20px; }
+.recap-item .rn { font-family: Consolas,Monaco,monospace; color: var(--teal-light); font-size: .72rem; font-weight: 700; }
+.recap-item h4 { margin: 6px 0 4px; }
+.recap-item p { margin: 0; font-size: .83rem; color: #374151; }
+
+/* REFERENCE LIST */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist li.unlinked { border-left-color: var(--ltblue); }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -32px -28px 0; }
+  .mh-bar-in { padding: 0 28px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -28px 20px; }
+  .masthead-inner { padding: 20px 28px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+
+/* ═══ REVERSAL CARD — belief vs. data ═══ */
+.rev { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 18px 0; box-shadow: var(--shadow-sm); background: #fff; }
+.rev-head { display: flex; align-items: flex-start; gap: 13px; padding: 15px 20px 13px; border-bottom: 1px solid var(--border); background: var(--muted); }
+.rev-num { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 6px; background: var(--teal); color: #fff; font-weight: 700; font-size: .82rem; display: flex; align-items: center; justify-content: center; font-family: Consolas,Monaco,monospace; }
+.rev-head h3 { margin: 0; color: var(--navy); font-size: 1.05rem; line-height: 1.35; font-weight: 700; }
+.rev-body { padding: 4px 20px 16px; }
+.rev-row { padding: 13px 0 0; }
+.rev-row + .rev-row { border-top: 1px dashed var(--border); margin-top: 12px; }
+.rev-lbl { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #9ca3af; margin-bottom: 5px; }
+.rev-row.data .rev-lbl { color: var(--teal); }
+.rev-row.why .rev-lbl { color: #92400e; }
+.rev-row.do .rev-lbl { color: #6d28d9; }
+.rev-row p { margin: 0; font-size: .9rem; line-height: 1.65; color: #374151; }
+.rev-row.belief p { font-style: italic; color: #6b7280; border-left: 2px solid var(--border); padding-left: 12px; }
+.rev-row.data strong { color: var(--navy); }
+.rev-row.do strong { color: #5b21b6; }
+
+/* ═══ QUADRANT CARDS ═══ */
+.quads { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 20px 0; }
+@media (max-width: 760px) { .quads { grid-template-columns: 1fr; } }
+.quad { border: 1px solid var(--border); border-left: 4px solid var(--qc, var(--teal)); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.quad.a { --qc: #6b7280; }
+.quad.b { --qc: #4daab8; }
+.quad.c { --qc: #d97706; }
+.quad.d { --qc: #005F6B; }
+.quad-h { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.quad-k { width: 22px; height: 22px; border-radius: 4px; background: var(--qc); color: #fff; font-size: .72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; font-family: Consolas,Monaco,monospace; }
+.quad-h h4 { margin: 0; font-size: .98rem; color: var(--navy); flex: 1; }
+.quad-share { font-size: .72rem; color: #6b7280; text-align: right; line-height: 1.3; }
+.quad-share b { display: block; font-size: 1.05rem; color: var(--qc); font-weight: 700; }
+.quad p { font-size: .87rem; line-height: 1.6; margin: 8px 0 0; color: #374151; }
+.quad .quad-play { margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--border); font-size: .85rem; color: #374151; }
+.quad .quad-play b { color: var(--qc); font-size: .58rem; text-transform: uppercase; letter-spacing: .09em; display: block; margin-bottom: 4px; }
+
+/* ═══ SCHEMATIC FIGURE ═══ */
+.figure { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; padding: 20px 22px 16px; margin: 22px 0; box-shadow: var(--shadow-sm); }
+.figure svg { display: block; width: 100%; height: auto; }
+.figure figcaption { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: .78rem; color: #6b7280; line-height: 1.6; }
+.figure figcaption strong { color: var(--navy); }
+
+/* ═══ CLICK PATH ═══ */
+.clickpath { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: var(--muted); border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin: 16px 0; font-size: .82rem; }
+.clickpath span { font-weight: 600; color: var(--navy); background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 3px 9px; }
+.clickpath i { color: #9ca3af; font-style: normal; }
+
+/* ═══ CODE / PROMPT BLOCKS ═══ */
+pre.code { background: var(--muted-2); border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 13px 16px; margin: 12px 0; overflow-x: auto; font-family: Consolas,Monaco,monospace; font-size: .8rem; line-height: 1.6; color: #1a2330; white-space: pre-wrap; word-break: break-word; }
+pre.code b { color: #004B87; font-weight: 700; }
+
+.pcard { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow-sm); margin: 16px 0; overflow: hidden; }
+.pcard-h { display: flex; align-items: center; gap: 12px; padding: 13px 18px; background: var(--navy); }
+.pcard-n { font-family: Consolas,Monaco,monospace; font-size: .72rem; font-weight: 700; color: #a8ecf5; letter-spacing: .06em; flex: 0 0 auto; }
+.pcard-h h4 { margin: 0; font-size: .92rem; color: #fff; font-weight: 700; flex: 1; }
+.copybtn { flex: 0 0 auto; font-family: 'Segoe UI','Inter',Georgia,sans-serif; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #fff; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 4px; padding: 5px 11px; cursor: pointer; }
+.copybtn:hover { background: rgba(255,255,255,.22); }
+.copybtn.done { background: #0f766e; border-color: #0f766e; }
+.pcard-b { padding: 14px 18px 16px; }
+.pcard-b .why { margin: 0 0 4px; font-size: .85rem; color: #374151; }
+.pcard-b pre.code { margin: 10px 0 12px; }
+.pcard-check { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; border-top: 1px dashed var(--border); padding-top: 11px; }
+.pcard-check div { font-size: .8rem; color: #374151; line-height: 1.55; }
+.pcard-check .ck { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; display: block; margin-bottom: 3px; }
+.pcard-check .good .ck { color: #0f766e; }
+.pcard-check .bad .ck { color: #dc2626; }
+
+/* ═══ GROUP RULE ═══ */
+.grouprule { display: flex; align-items: center; gap: 12px; margin: 30px 0 6px; }
+.grouprule .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); white-space: nowrap; }
+.grouprule .rule { flex: 1; height: 1px; background: var(--border); }
+
+/* ═══ TRAP LIST ═══ */
+.traps { counter-reset: trap; list-style: none; margin: 18px 0; padding: 0; display: flex; flex-direction: column; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.traps li { counter-increment: trap; background: #fff; padding: 15px 20px 15px 56px; position: relative; margin: 0; }
+.traps li::before { content: counter(trap, decimal-leading-zero); position: absolute; left: 20px; top: 15px; font-family: Consolas,Monaco,monospace; font-size: .82rem; font-weight: 700; color: #dc2626; }
+.traps h4 { margin: 0 0 4px; font-size: .92rem; color: var(--navy); }
+.traps p { margin: 0; font-size: .85rem; color: #374151; line-height: 1.6; }
+.traps p + p { margin-top: 5px; }
+.traps .fix { color: #0f766e; font-weight: 600; }
+
+/* ═══ SCRIPT LINE ═══ */
+.sayline { background: #f3fbfc; border: 1px solid #c8e6eb; border-left: 3px solid var(--teal-light); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin: 12px 0; font-size: .9rem; line-height: 1.65; color: #374151; font-style: italic; }
+.sayline b { color: var(--navy); font-style: normal; font-size: .58rem; text-transform: uppercase; letter-spacing: .09em; display: block; margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="index.html">Resources</a><span class="sep">/</span><span class="cur">The Copilot Adoption Audit</span></div>
+    <div class="mh-date">Updated August 27, 2026</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Customer Zero &middot; Adoption Analytics</div></div>
+    <h1>The Copilot Adoption Audit</h1>
+    <p class="sub">There is a service line hiding inside a report every one of your Copilot customers already owns and nobody has opened. Here is what it told us when we ran it on our own tenant &mdash; seven things the channel believes and seven the data doesn&rsquo;t &mdash; whether any of it survives at thirty seats, and how to run it across your whole book instead of one customer at a time.</p>
+    <p class="mh-meta">For <strong>executives running SMB-focused Microsoft partners</strong> &middot; Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong></p>
+  </div>
+</div>
+
+
+
+<div class="dark-panel">
+  <div class="dp-eyebrow"><div class="bar"></div><div class="lbl">The Opening Provocation</div><div class="rule"></div></div>
+  <h3 style="font-size:1.5rem;line-height:1.25;margin-bottom:12px;">You sold the licences. The renewal is coming. You have no evidence.</h3>
+  <p style="margin:0 0 14px;">Somewhere in your book is a customer who bought Copilot on your recommendation, has been paying for it for a year, and cannot tell you what it did for them. You cannot tell them either. When that renewal lands on the owner&rsquo;s desk next to every other line item, the conversation is not going to be about AI strategy. It is going to be about whether the invoice survives &mdash; and if it does not, the Microsoft&nbsp;365 conversation underneath it gets a lot harder too.</p>
+  <p style="margin:0 0 14px;">The report that settles that argument is already in their tenant. It has been generating quietly since the day the first licence was assigned, it holds a hundred and eighty days of history, and it takes four clicks and a read-only role to export. In our experience almost nobody in the channel has ever opened it.</p>
+  <p style="margin:0 0 4px;">We opened ours. Seven of the things we were confident about turned out to be wrong &mdash; not slightly wrong, <strong>backwards</strong>. The users our dashboards scored as healthy were the most stuck. The cohort we trained was overtaken on the newest capability by people who never attended. And the one metric the whole channel quotes as the health measure goes <em style="color:#a8ecf5;font-style:normal;font-weight:700;">down</em> when a deployment finally starts working properly.</p>
+</div>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">Sections 1&ndash;6 &middot; You run the business &middot; about twenty-five minutes</div>
+    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">Whether there is a service line here and what it is worth. Whether it works at thirty seats. What Microsoft switches off for your smaller customers. How to run it across the whole book instead of one tenant at a time. And the risk you personally carry the moment you start reading employee activity data. <strong>If you only have five minutes, read Section&nbsp;1.</strong></p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Sections 7&ndash;13 &middot; You deliver the work &middot; about thirty-five minutes</div>
+    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">The exact export path and who can pull it. Ten places the columns do not mean what they say. The build, for large tenants and small. Fourteen copy-paste AI prompts. The segment plays, the meeting script and the objection handling. Hand this half to whoever delivers.</p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">The renewal you cannot defend</a></li>
+      <li><a href="#section-2">Seven things the channel believes. Seven the data doesn&rsquo;t.</a></li>
+      <li><a href="#section-3">Does this work at thirty seats?</a></li>
+      <li><a href="#section-4">What Microsoft switches off below fifty seats</a></li>
+      <li><a href="#section-5">Running it across the book, not one tenant at a time</a></li>
+      <li><a href="#section-6">The risk &mdash; this is employee data</a></li>
+      <li><a href="#section-7">The two columns you already have</a></li>
+      <li><a href="#section-8">Pull the export &mdash; the exact path</a></li>
+      <li><a href="#section-9">Ten traps in this data</a></li>
+      <li><a href="#section-10">Build it &mdash; large tenants and small</a></li>
+      <li><a href="#section-11">The prompt library &mdash; fourteen prompts</a></li>
+      <li><a href="#section-12">Four segments, four conversations</a></li>
+      <li><a href="#section-13">Run it on yourself first, and sources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<h2 id="section-1">1 &middot; The renewal you cannot defend</h2>
+
+<p>This is not an adoption-analytics page. Adoption analytics is what it uses. What it is actually about is the gap between what you sold and what you can prove &mdash; and the fact that closing that gap costs you an afternoon, uses a report you already have access to, and turns into a repeatable engagement you can put on a rate card.</p>
+
+<h3>The three things this changes about your business</h3>
+
+<div class="recap-grid">
+  <div class="recap-item">
+    <div class="rn">01</div>
+    <h4>You stop defending renewals with adjectives</h4>
+    <p>&ldquo;People seem to like it&rdquo; is what most partners bring to a Copilot renewal. A sized distribution of that customer&rsquo;s own users &mdash; who is embedded, who tried it and stopped, who is loyal but stuck &mdash; is a different meeting entirely, and it is the same meeting every quarter.</p>
+  </div>
+  <div class="recap-item">
+    <div class="rn">02</div>
+    <h4>You get a reason to be in the room that is not a licence</h4>
+    <p>Every play in Section&nbsp;12 is a service, not a SKU. Three of the four are recurring. None of them requires the customer to buy anything from Microsoft first, which means this works on the customers who have already stopped buying.</p>
+  </div>
+  <div class="recap-item">
+    <div class="rn">03</div>
+    <h4>You find out which of your customers is actually at risk</h4>
+    <p>Run it across the book &mdash; Section&nbsp;5 &mdash; and you get a ranked list of which accounts are quietly failing before the renewal notice does it for you. That is the version of this that changes how you plan a quarter.</p>
+  </div>
+</div>
+
+<h3>What it costs you to stand up</h3>
+
+<p>Less than most partners assume, which is the main reason to say it plainly before anything else.</p>
+
+<table>
+  <thead><tr><th style="width:24%;">Question</th><th>The honest answer</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Who runs it?</strong></td><td>Whoever on your team is comfortable in Excel. A service desk lead or a senior engineer, not a data analyst and not you. The analysis is two columns and a nested IF; the judgement is in the conversation afterwards, which is where your senior people belong.</td></tr>
+    <tr><td><strong>What do we build?</strong></td><td>One workbook, once. Helper columns, a segment table, a chart, wired to two threshold cells. Section&nbsp;10 is the build. The first tenant takes an afternoon because you are learning the column definitions; the second takes four minutes.</td></tr>
+    <tr><td><strong>What access do we need?</strong></td><td>A read-only role in the customer&rsquo;s tenant &mdash; <strong>Reports Reader</strong>. Not Global Administrator. That distinction is worth rehearsing, because &ldquo;we would need global admin&rdquo; is the single most common reason this conversation dies before it starts.</td></tr>
+    <tr><td><strong>Do we need a tool?</strong></td><td>No. Excel and an AI assistant you already pay for. Section&nbsp;11 is the prompt library that does the analysis for you; Section&nbsp;5 covers doing it across many tenants without building anything.</td></tr>
+    <tr><td><strong>What is the first deliverable?</strong></td><td>A one-page read of the customer&rsquo;s own population with four sized segments and a recommended next engagement per segment. It is a leave-behind, it is defensible, and it is built entirely from their data rather than from a vendor benchmark.</td></tr>
+  </tbody>
+</table>
+
+<h3>Where these findings come from, and what we are not showing you</h3>
+
+<p>Section&nbsp;2 came out of running this on our own tenant &mdash; a large enterprise deployment, over a hundred-and-eighty-day window, cross-referenced against the agent usage report and against a training cohort we could identify by name. That scale matters for one reason only: it is big enough that its distribution is a distribution rather than an anecdote, which is exactly what most published Copilot adoption material is not.</p>
+
+<p><strong>We are not publishing the tenant&rsquo;s absolute figures.</strong> No headcounts, no prompt totals, no scatter of real users. What you get is the <em>shape</em> &mdash; percentages, ratios, rates and the direction each relationship runs. That is deliberate, and it is the more useful half. A number from someone else&rsquo;s tenant is a fact your customer cannot act on and will reasonably discount. A shape is a hypothesis they can test in twenty minutes against their own export, and the moment they run it the conversation stops being about your credibility and starts being about their data.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">One honest caveat, stated once, up front</div>
+  <p>Every relationship on this page is <strong>correlational</strong>. Usage telemetry can tell you that a group behaves differently. It cannot tell you why, and it certainly cannot tell you whether anyone got value. A person who submits four hundred prompts and produces nothing is invisible to this data, and so is the person who saved six hours with one prompt. <strong>Do not let anyone in the room &mdash; including you &mdash; convert a correlation on this chart into a causal claim in a slide.</strong> The correct posture is: <em>here is a group that behaves differently; let us go and find out why.</em> Section&nbsp;6 covers what happens when that posture slips.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<h2 id="section-2">2 &middot; Seven things the channel believes. Seven the data doesn&rsquo;t.</h2>
+
+<p>Each card below has the same four parts: the assumption as it is normally spoken aloud in a partner meeting, what the tenant actually showed, why that changes the commercial conversation, and the specific thing to do with the customer instead. Run them in order &mdash; they build. Reversal&nbsp;1 establishes that training is not the bottleneck; Reversal&nbsp;7 establishes what a defensible target looks like once you accept that.</p>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">01</div><h3>Low usage isn&rsquo;t a training problem</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>They are not using it because nobody showed them how. Book more training.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>The quietest group &mdash; <strong>well over half the licensed base</strong> &mdash; showed up on fewer than one day in ten across a six-month window. Yet those same people had already opened Copilot in a <strong>median of seven different applications</strong>. They were never short of exposure. They had tried it, in Word, in Teams, in Outlook, in Excel, and stopped.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>You cannot train someone out of a relevance problem. Breadth of exposure with no depth is the signature of a person who tried the tool against their actual job, found no fit, and moved on. Running the same generic session again produces the same result &mdash; and burns the credibility you needed for the second conversation.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Ask which <strong>job roles</strong> the quiet users sit in. Then run one session per role, forty-five minutes, built on that role&rsquo;s real weekly tasks. Sell it as a <strong>role-based use-case workshop</strong> &mdash; different scope, different price, and it actually moves the number.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">02</div><h3>Your best-looking users are your most stuck</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>Frequent users are the success story. Put them in the case study.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>A small segment turned up <strong>more often than the company median</strong> &mdash; and ran the <strong>lowest prompts-per-active-day rate anywhere in the tenant</strong>, around four. Six months of near-perfect attendance, and a single use case. Every adoption dashboard we had scored them as healthy.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>Frequency measures <strong>trust</strong>, not value. These people believe in the tool &mdash; they come back every third day &mdash; and nobody has ever shown them a second thing to do with it. Because frequency dashboards count them as a win, they never surface as a problem, which is precisely why they are the cheapest expansion in the building.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Filter for users who are <strong>frequently active but low in total prompts</strong>. Run a thirty-minute <em>second use case</em> session with only that group. They convert far better than dormant users, and the repeatability of that motion is what justifies an <strong>ongoing adoption retainer</strong> rather than a one-off workshop.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">03</div><h3>The people we trained got overtaken</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>Training is what drives adoption. Sell more enablement days.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>We could identify, by name, an executive cohort that attended a formal enablement summit. Months later that trained cohort sat <strong>below</strong> their never-attended colleagues on agent adoption &mdash; roughly nineteen percent against twenty-five. On every habit measure &mdash; frequency, depth, breadth of surfaces &mdash; the trained group still led comfortably.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>Training does not fail. It <em>seeds</em>. It reliably produces the habit, and then most of the value lands later, on capabilities that did not exist on the day of the session, in people who were never in the room. Which means the customer credits the tool rather than you &mdash; unless you own what happens after the session.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Stop quoting training days. Quote what catches the ideas training releases: a <strong>recurring intake session</strong> where staff bring requests and you triage what gets built. That is a retainer, and it is the thing that makes you <strong>the centre of excellence your customer cannot afford to hire</strong>.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">04</div><h3>The middle moves &mdash; not the top, not the bottom</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>Target the champions to build a showcase, or the laggards to rescue the investment.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>We split users into quartiles by their <em>starting</em> usage and tracked them forward. The <strong>third quartile</strong> &mdash; the competent, unremarkable middle &mdash; went from effectively no power users to <strong>more than four in ten</strong> over eight months. The top quartile grew as well, but it was already there. The bottom quartile barely moved.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>Champions do not need you and will adopt anything you ship. Laggards may never move, and burn budget proving it. The already-competent middle is the group that converts &mdash; and they will never raise their hand, because from the outside nothing looks wrong with them.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Scope the engagement around the <strong>middle fifty percent by usage</strong> and name that population explicitly in the statement of work. Same effort, materially better outcome, and a case study that says you turned capable people into indispensable ones rather than that you rescued the bottom.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">05</div><h3>Falling prompt counts can mean it is working</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>Prompt volume is the health metric. Down is bad. Put it in the statement of work.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>Our most mature cohort&rsquo;s prompt volume fell by <strong>close to a third</strong> while improving on every other measure we had. And among broad users, the people who had adopted agents were running <strong>fewer</strong> prompts than the people who had not.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>Prompt volume measures <strong>effort</strong>, not outcome. Automation removes effort. So the better an agentic deployment gets, the worse that metric looks &mdash; and if prompt growth is the acceptance criterion in your contract, <strong>you get blamed for the thing that worked</strong>. This is the single most expensive misunderstanding in the list.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Before anything agentic ships, get the success criteria changed <strong>in writing</strong>: tasks completed, active days sustained, surfaces in use, time-to-first-value for a new hire. Sell the <strong>measurement baseline itself</strong> as a paid first phase. It costs a day and it protects the account.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">06</div><h3>Where they chat tells you whether the data estate is broken</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>People using web chat instead of work chat are being lazy, or dodging policy.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>Median web-chat share was <strong>under one percent</strong> &mdash; the population overwhelmingly works in grounded, work-mode chat. Users who <em>mixed</em> web and work chat were the <strong>strongest segment in the company</strong> on every measure. But roughly <strong>one user in ten</strong> lived almost entirely in ungrounded web chat.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>That last group is a <strong>search problem, not a policy problem</strong>. People go outside when the answer is not findable inside. Copilot did not create that condition &mdash; it exposed it, and made it measurable for the first time. Mixing is healthy. Exclusivity is the alarm.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>Ask for the work-versus-web split. If a meaningful group lives in web only, that is your opening for a <strong>SharePoint permissions and Microsoft Purview assessment</strong> &mdash; a security-led engagement that stands on its own merits and is routinely larger than the Copilot licences that surfaced it. The <a href="shadowai.html">Shadow AI Assessment Guide</a> scopes that engagement end to end.</p></div>
+  </div>
+</div>
+
+<div class="rev">
+  <div class="rev-head"><div class="rev-num">07</div><h3>The realistic ceiling is far lower than anyone promises</h3></div>
+  <div class="rev-body">
+    <div class="rev-row belief"><div class="rev-lbl">The assumption</div><p>Set an ambitious target. Twenty prompts a day sounds about right.</p></div>
+    <div class="rev-row data"><div class="rev-lbl">What our tenant showed</div><p>Among genuinely engaged users, the median was around <strong>six prompts per active day</strong>. Only about a quarter ever exceeded ten. Twenty a day sits near the <strong>ninety-fifth percentile of a top-decile deployment</strong> &mdash; that is, it is what the most extreme users of an unusually good rollout do, quoted as if it were an average.</p></div>
+    <div class="rev-row why"><div class="rev-lbl">Why that changes things</div><p>Usage is capped by how many suitable tasks a person genuinely has in a working day, not by their enthusiasm. A round number chosen in a kickoff meeting because it sounds motivating <strong>pre-arranges the verdict at the review</strong>. Nobody will remember who picked it. They will remember that the programme missed it.</p></div>
+    <div class="rev-row do"><div class="rev-lbl">Do this with the customer</div><p>At kickoff, derive the target from <strong>the customer&rsquo;s own baseline distribution</strong> &mdash; <em>move the median from four to eight, and lift the engaged share by a quarter</em> &mdash; not from a number someone liked the sound of. Put it in the statement of work: <strong>you get judged against a bar you can clear.</strong></p></div>
+  </div>
+</div>
+
+<h3>Which of the seven survive at thirty seats</h3>
+
+<p>Those findings came from a tenant with thousands of users. Most of your customers do not have thousands of users, and it would be dishonest to hand you seven claims without telling you which ones you can actually test on a forty-seat professional services firm and which ones you cannot. Three of them get <em>stronger</em> at small scale. Two of them are not measurable at all below roughly a hundred seats, and if you present them as measured you will be caught.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:24%;">Reversal</th><th style="width:15%;">Testable at SMB scale?</th><th>What changes when the tenant is small</th></tr></thead>
+  <tbody>
+    <tr><td><strong>1 &middot; Relevance, not training</strong></td><td><span class="tag ok">Stronger</span></td><td>Surfaces-touched is a per-user count, so it works at any size. And the effect is more pronounced: a thirty-person business has fewer distinct job shapes, so a single badly-aimed generic session misses proportionally more of the company. <strong>This is your best small-tenant finding.</strong></td></tr>
+    <tr><td><strong>2 &middot; Loyal but stuck</strong></td><td><span class="tag ok">Yes</span></td><td>Fully measurable &mdash; but the band may be two or three people. That is a naming exercise, not a segment. Treat it as a list of individuals to invite to one short session, and never present three people as a percentage.</td></tr>
+    <tr><td><strong>3 &middot; Training got overtaken</strong></td><td><span class="tag warn">Rarely</span></td><td>Needs an identifiable trained cohort <em>and</em> an untrained control group. Most SMB customers trained everyone or nobody, so there is no comparison to make. The finding still matters commercially &mdash; see the note below &mdash; but do not claim to have measured it in their tenant.</td></tr>
+    <tr><td><strong>4 &middot; The middle moves</strong></td><td><span class="tag warn">No</span></td><td>Requires quartiles and two points in time. At thirty seats a quartile is seven or eight people and one person changing jobs moves the whole result. <strong>Do not run quartile analysis below about a hundred licensed users.</strong> Use it as a targeting principle, not as a measurement.</td></tr>
+    <tr><td><strong>5 &middot; Falling prompts can be good</strong></td><td><span class="tag">Later</span></td><td>Needs two exports separated by months. You cannot test it on day one &mdash; which is the argument for pulling the first export <em>now</em>, before anything else, so the baseline exists when you need it. The commercial point stands regardless: never write prompt growth into a contract.</td></tr>
+    <tr><td><strong>6 &middot; Grounding tells you about the data estate</strong></td><td><span class="tag ok">Stronger</span></td><td>Per-user work-versus-web columns work at any size, and small businesses tend to have messier, more improvised SharePoint estates than large ones. The governance engagement this opens is frequently larger than the Copilot licences that surfaced it.</td></tr>
+    <tr><td><strong>7 &middot; The ceiling is low</strong></td><td><span class="tag ok">Partly</span></td><td>The median and the maximum are meaningful at any size. <strong>Percentiles are not</strong> &mdash; a ninety-fifth percentile of twenty-five people is one person. Quote the median and the range, never a high percentile, and the finding still does its job of replacing an invented target.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Reversal 3 is the one that costs you something to accept</div>
+  <div class="callout-body"><p>If a meaningful share of your adoption revenue is training days, that finding reads as an attack on your own business. It is not, and the distinction matters: <strong>training is not the thing that fails &mdash; it is the thing that is priced wrong.</strong> It reliably produces the habit, and then most of the value lands months later, on capabilities that did not exist on the day of the session. Sold as a day, you capture the cost of the room and none of the compounding. Sold as a recurring intake &mdash; a standing session where staff bring the requests that training released and you triage what gets built &mdash; you capture the part that keeps growing. Same delivery motion, same people, different contract. The <a href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">Revenue Runway</a> and the <a href="customer-zero-starter-kit/build-sellable-services.html#ladder-heading">Offer Ladder</a> both set out what that repackaging looks like.</p></div>
+</div>
+
+<div class="hero-statement">
+  <p>The through-line: <em>the report they already have is the pipeline nobody reads.</em></p>
+  <div class="hero-sub">Pull the export. Plot two columns. Size each segment. Script four conversations. You walk into the meeting already knowing the answer &mdash; and so does the customer, for the first time.</div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">One guardrail before you take this to a customer</div>
+  <div class="callout-body"><p>Every play on this page is about agent <strong>access</strong> &mdash; turning on what already exists and making it findable &mdash; not about agent <strong>authorship</strong>. Copilot Studio is not the entry point, and a customer whose licensed users are drifting will not be rescued by a custom agent. Build the access motion first; the authorship conversation is the second engagement, not the first.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+
+<h2 id="section-3">3 &middot; Does this work at thirty seats?</h2>
+
+<p>Yes &mdash; but not the way it works at three thousand, and a partner who runs the enterprise version of this method on a thirty-seat tenant will produce a chart that looks authoritative and means nothing. Thirty dots is not a distribution; it is a list wearing a scatter plot as a costume. This section is the small-tenant method, and it is the section most of your customers actually need.</p>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">Roughly 60+ licensed users &mdash; the chart works</div>
+    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">Plot the scatter, split on the tenant&rsquo;s own medians, report segments as percentages. There are enough people in each quadrant that the shape is real and a single individual cannot move it. This is the method in Sections&nbsp;7 and&nbsp;10.</p>
+  </div>
+  <div class="compare-col wrong">
+    <div class="cc-label">Under roughly 60 &mdash; the chart is the wrong instrument</div>
+    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">Do not plot it. Do not use the tenant median as a threshold &mdash; on thirty rows the median moves when one person takes annual leave. Use fixed, externally-defined bands and a ranked table of every licensed user. Everyone fits on one page, which turns out to be an advantage.</p>
+  </div>
+</div>
+
+<h3>3.1 &nbsp;Use Microsoft&rsquo;s thresholds, not your customer&rsquo;s median</h3>
+
+<p>This is the part that makes the small-tenant version defensible, and it is worth knowing even if you only ever work with large tenants: <strong>Microsoft segments Copilot users on exactly the same two axes this method uses.</strong> The Copilot Dashboard in Viva Insights defines its user categories as follows &mdash; note that both tests are applied together, one for depth and one for frequency.</p>
+
+<table>
+  <thead><tr><th style="width:20%;">Microsoft&rsquo;s category</th><th style="width:40%;">Depth test</th><th>Frequency test</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Power user</strong></td><td>Averages <strong>15 or more</strong> Copilot actions per week</td><td><strong>and</strong> used Copilot in at least <strong>9 of the past 12 weeks</strong></td></tr>
+    <tr><td><strong>Habitual user</strong></td><td>Averages <strong>between 1 and 14</strong> Copilot actions per week</td><td><strong>and</strong> used Copilot in at least <strong>9 of the past 12 weeks</strong></td></tr>
+    <tr><td><strong>Novice user</strong></td><td>At least <strong>1</strong> Copilot action in the past 12 weeks</td><td><strong>and</strong> did <strong>not</strong> use Copilot in at least 9 of the past 12 weeks</td></tr>
+  </tbody>
+</table>
+
+<p>That is frequency multiplied by depth, published by Microsoft, with fixed numbers that do not depend on how many people are in the tenant. Which is precisely what a thirty-seat customer needs. It also settles a question that comes up in every one of these meetings: <em>whose definition of &ldquo;power user&rdquo; is this?</em> Not yours.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">Be honest that this is an approximation</div>
+  <p>Microsoft&rsquo;s definitions are stated in <strong>Copilot actions per week over a rolling twelve weeks</strong>. The admin center export gives you <strong>prompts submitted</strong> and <strong>active days</strong> over a window you choose. Those are related but not identical &mdash; a Copilot action is not always a chat prompt (see Trap&nbsp;02 in Section&nbsp;9), so the export systematically <em>undercounts</em> against Microsoft&rsquo;s definition, particularly for Excel-heavy and meeting-heavy users. Say that out loud when you present it. You are applying Microsoft&rsquo;s thresholds to the nearest data you can actually get, and being the person in the room who names the approximation is worth more than the precision you lost.</p>
+</div>
+
+<h3>3.2 &nbsp;The approximation recipe</h3>
+
+<p>Pull a <strong>90-day</strong> window &mdash; roughly thirteen weeks, which lines up with Microsoft&rsquo;s twelve-week frame better than the 180-day window does. Then apply two fixed lines:</p>
+
+<pre class="code"><b>Frequency line</b>   Active Days &gt;= 9
+                  approximates "used Copilot in at least 9 of 12 weeks"
+                  conservative: understates people whose activity clusters
+
+<b>Depth line</b>       Prompts submitted (any app) / 13 &gt;= 15 per week
+                  i.e. total prompts &gt;= 195 over the 90-day window
+                  approximates "15 or more Copilot actions per week"
+                  conservative: a prompt is not the same as an action</pre>
+
+<p>Four bands fall out, and they map onto the four segments used throughout the rest of this document:</p>
+
+<table>
+  <thead><tr><th style="width:22%;">Band</th><th style="width:26%;">Test</th><th>What it means, and what you do</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Embedded</strong><br /><span style="font-size:.75rem;color:#6b7280;">= Champions</span></td><td>Passes both lines</td><td>Frequent and deep. Check their agent activity before anything else &mdash; in our tenant a large share of exactly these people had never used an agent once.</td></tr>
+    <tr><td><strong>Loyal but shallow</strong><br /><span style="font-size:.75rem;color:#6b7280;">= Habitual but shallow</span></td><td>Passes frequency, fails depth</td><td>Microsoft&rsquo;s own &ldquo;habitual&rdquo; category. They trust it and know one thing to do with it. Highest-converting group you will find. One short session, one new task.</td></tr>
+    <tr><td><strong>Project-driven</strong><br /><span style="font-size:.75rem;color:#6b7280;">= Bursty</span></td><td>Fails frequency, passes depth</td><td>Rare but intense. Find the recurring process next to their project work. Check their grounding &mdash; this band skews ungrounded.</td></tr>
+    <tr><td><strong>Drifting</strong><br /><span style="font-size:.75rem;color:#6b7280;">= Drifting</span></td><td>Fails both</td><td>Split it further: those who have touched several Copilot surfaces tried it and stopped, and are recoverable with role-based use cases. Those who have touched none never started, and may simply be a mis-assigned licence.</td></tr>
+  </tbody>
+</table>
+
+<h3>3.3 &nbsp;What you show instead of a chart</h3>
+
+<p>A ranked table of every licensed user, sorted by band then by prompts, with the anonymized identifier, active days, prompts, prompts per active day, surfaces touched, and the band label. At forty seats that is a single page, and it has a property the enterprise version does not: <strong>the customer can look at the whole company at once.</strong> An owner-operator reading forty rows will start narrating them &mdash; <em>&ldquo;that&rsquo;s the finance team, that one&rsquo;s on maternity leave, those two are our estimators&rdquo;</em> &mdash; and that narration is the most valuable twenty minutes in the engagement. You will not get it from a scatter plot.</p>
+
+<div class="callout warn">
+  <div class="callout-title">Two rules that keep this honest at small scale</div>
+  <div class="callout-body">
+    <p><strong>Never report a band of fewer than five people as a group finding.</strong> &ldquo;Forty percent of your bursty users are ungrounded&rdquo; is a sentence about two people, and it is the kind of sentence that gets a partner removed from an account. Below five, report the count and nothing derived from it &mdash; no percentages, no medians, no comparisons.</p>
+    <p><strong>Below about ten licensed users, do not run this as analysis at all.</strong> Read the list, then go and talk to all ten of them. You will learn more in an hour of conversation than the export can tell you, and dressing a nine-row table up as a segmentation is the sort of thing customers remember for the wrong reason.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-4">4 &middot; What Microsoft switches off below fifty seats</h2>
+
+<p>Sooner or later somebody in the room says <em>&ldquo;doesn&rsquo;t Microsoft already give us a dashboard for this?&rdquo;</em> For an enterprise the answer is yes, and it is genuinely good. For most of your customers the answer is <strong>partly, and the useful half is switched off</strong> &mdash; and knowing exactly which half is the strongest argument in this entire document for why a partner is needed at all.</p>
+
+<p>The Copilot Dashboard in Viva Insights is available to any customer with a Microsoft&nbsp;365 or Office&nbsp;365 business or enterprise subscription and an active Exchange Online account. No paid Viva Insights licence is required, and no Copilot licence is required to <em>view</em> it. Data processing starts once the tenant has at least one assigned Copilot licence, and takes up to seven days. So far, so good for a small customer.</p>
+
+<p>Then comes the tier line.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:34%;">Capability</th><th style="width:22%;">Under 50 Copilot licences</th><th>50 or more Copilot licences, or 50+ Viva Insights licences</th></tr></thead>
+  <tbody>
+    <tr><td>Copilot and Copilot Chat adoption insights</td><td><span class="tag ok">Yes</span></td><td>Yes</td></tr>
+    <tr><td>Readiness page</td><td><span class="tag ok">Yes</span></td><td>Yes</td></tr>
+    <tr><td><strong>Agent-related insights, including the Agent Dashboard</strong></td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+    <tr><td><strong>Benchmarks</strong></td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+    <tr><td><strong>Group-level metrics and HR filters</strong></td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+    <tr><td><strong>Intelligent summaries</strong></td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+    <tr><td><strong>Manager group-level view and delegation</strong></td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+    <tr><td>Survey-based sentiment metrics</td><td><span class="tag warn">No</span></td><td>Yes</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read that column again, because it is the whole argument. For a customer with thirty Copilot seats, Microsoft&rsquo;s own analytics surface will not tell them <strong>anything about agents</strong>, will not let them <strong>cut by department</strong>, and gives them <strong>nothing to compare themselves against</strong>. Three of the seven reversals in Section&nbsp;2 are simply not visible to them through the product.</p>
+
+<div class="callout">
+  <div class="callout-title">The answer to &ldquo;doesn&rsquo;t Microsoft already do this?&rdquo;</div>
+  <div class="callout-body"><p>&ldquo;They do &mdash; above fifty Copilot seats. Below that, the agent insights, the group-level cuts and the benchmarks are all switched off, and the dashboard that&rsquo;s left reports a single active-user rate that collapses <em>how often</em> and <em>how deep</em> into one number. That&rsquo;s the number that makes a loyal-but-stuck user look identical to your best performer. <strong>The admin center export is the only place you can un-collapse it, and it works at any tenant size.</strong> That&rsquo;s what we do with it.&rdquo;</p></div>
+</div>
+
+<h3>Two more thresholds, so nobody misreads them</h3>
+
+<ul>
+  <li><strong>Minimum group size.</strong> The dashboard suppresses metrics for any group smaller than the tenant&rsquo;s configured minimum group size &mdash; Microsoft&rsquo;s own worked example uses ten. On a small tenant that means group views return dashes rather than data even when the feature is enabled. The user-detail export in the admin center has no such floor, which is another reason it is the instrument of choice at small scale &mdash; and a reason to read Section&nbsp;6 before you enjoy that fact too much.</li>
+  <li><strong>The 2,500-user figure.</strong> You may see this quoted as a threshold for the Copilot Dashboard. It is not. It governs whether senior leaders are <em>automatically</em> granted access based on Entra manager-hierarchy data, and it applies alongside a second condition about most of the tenant reporting into a single line. It is not a floor on the dashboard itself, and quoting it as one will make a customer&rsquo;s admin correct you.</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-5">5 &middot; Running it across the book, not one tenant at a time</h2>
+
+<p>Everything so far describes one customer. That is the wrong unit for the person running the business. You do not have a Copilot tenant; you have a book &mdash; some number of customers, a subset of whom bought Copilot, and no current way of knowing which of those is quietly failing. This section is the version of the method that operates on the book, and it is the one that changes how you plan a quarter.</p>
+
+<h3>5.1 &nbsp;What it takes per tenant</h3>
+
+<p>Less than the automation instinct suggests. Under a granular delegated admin privileges relationship, request <strong>Reports Reader</strong> in each customer tenant &mdash; a read-only role, the least-privileged one that can read usage reports, and a far easier ask than the administrative roles partners typically hold. Then it is the same four clicks per tenant described in Section&nbsp;8, and a CSV.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">One person, one afternoon, once a quarter</div>
+  <div class="callout-body"><p>Twenty tenants at four clicks each is not a project. It is a recurring calendar entry for whoever owns the customer-success function, and it produces the single most useful artefact your leadership team will look at all quarter. <strong>Resist the urge to build something first.</strong> Partners who start by designing a multi-tenant collector generally never get to the part where the data changes a decision.</p></div>
+</div>
+
+<h3>5.2 &nbsp;The artefact: your book, ranked</h3>
+
+<p>One row per Copilot customer. Every column below comes straight out of the export or out of the segment table you already built &mdash; nothing here requires new analysis, only that you keep the results in one place instead of one workbook per customer.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:16%;">Column</th><th style="width:30%;">Where it comes from</th><th>What it tells you as an operator</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Licensed users</strong></td><td>Export row count, reconciled against assigned licences</td><td>Deal size, and whether the tenant is above or below the thresholds in Sections&nbsp;3 and&nbsp;4.</td></tr>
+    <tr><td><strong>Never-active share</strong></td><td>Users with zero prompts and zero active days</td><td>The most defensible number in the whole exercise, and the one that gets an owner&rsquo;s attention fastest. This is the renewal risk, quantified.</td></tr>
+    <tr><td><strong>Drifting share</strong></td><td>Fails both bands, split by surfaces touched</td><td>How much of the estate tried it and stopped &mdash; recoverable &mdash; versus never started, which may be a licensing error rather than an adoption problem.</td></tr>
+    <tr><td><strong>Embedded share</strong></td><td>Passes both bands</td><td>Whether there is anything to build on. A tenant with no embedded users needs a different first engagement from one with a healthy core.</td></tr>
+    <tr><td><strong>Champions without agent access</strong></td><td>Embedded band, cross-referenced to the agents report</td><td>The fastest agentic win in the account, and the one that does not need anything built. Usually the highest-value cell in the table.</td></tr>
+    <tr><td><strong>Web-only share</strong></td><td>Grounding ratio above 90 percent</td><td>Your security-led opening. Frequently the largest engagement on the row, and it has nothing to do with Copilot licences.</td></tr>
+    <tr><td><strong>Months to renewal</strong></td><td>Your own systems, not the export</td><td>The column that turns the rest of the row into a sequencing decision.</td></tr>
+    <tr><td><strong>Next play</strong></td><td>Section&nbsp;12</td><td>One of four. Assign an owner and a date, or the whole exercise stays interesting and never becomes revenue.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Sort by never-active share descending and filter to renewals inside two quarters, and you have your priority list. Sort by champions-without-agent-access and you have the list of accounts where a two-week engagement produces a visible, quotable result. Those are two different quarters, and the table lets you choose deliberately instead of by whoever shouted loudest.</p>
+
+<h3>5.3 &nbsp;About automating it &mdash; read this before you scope a build</h3>
+
+<p>The obvious next step is to collect this through Microsoft Graph across all tenants on a schedule. The endpoint exists and is documented in Section&nbsp;8.4. There is, however, a documented restriction that will stop a common design pattern dead, and it is better to know now than after a sprint:</p>
+
+<div class="smb-reality">
+  <div class="sr-label">The limitation to verify before you build</div>
+  <p>Microsoft states that calling Microsoft Graph from a <strong>preconsented partner-managed CSP application</strong> is <em>&ldquo;only supported for directory resources (such as user, group, device, organization) and Intune resources.&rdquo;</em> The usage-report endpoints are not directory resources. So the pattern of a single preconsented app iterating your customer list and pulling reports app-only is <strong>not something we can tell you works</strong> &mdash; and we are not going to publish an architecture we have not proven.</p>
+  <p>What is documented and does work is delegated access: an agent signs in with their partner account against the customer tenant as the target, holding the appropriate delegated admin privileges. Whether that path supports the reports endpoints at the scale you want is a <strong>spike worth half a day</strong> against one friendly tenant before it is worth a sprint. Treat automation as an optimisation of a motion that is already running manually, never as the thing that has to work first.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-6">6 &middot; The risk &mdash; this is employee data</h2>
+
+<p>Everything above treats the export as a commercial instrument. It is also a record of how thirty named individuals spent their working days, and the moment you hand a small-business owner a ranked list of their staff, you have created something with a use you did not intend. Partner executives carry this risk personally and it is almost never written down, so here it is.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The framing rule, and it is not negotiable</div>
+  <div class="callout-body"><p>This analysis exists to find <strong>where the tool has not been made useful yet</strong>. It does not measure effort, contribution, productivity or performance, and it cannot &mdash; a person who submits four hundred prompts and produces nothing looks like a star in this data. <strong>If it is ever presented as a measure of how hard someone works, it has been misused, and you will be the one who supplied it.</strong> Say this in the room, before the table goes on the screen, every single time.</p></div>
+</div>
+
+<h3>Six rules for handling the file</h3>
+
+<ol class="traps">
+  <li>
+    <h4>Leave the anonymization on</h4>
+    <p>Microsoft&rsquo;s usage reports conceal user names, display names, groups and sites by default. Every segment size, every band and every chart in this method works perfectly against hashed identifiers, because the analysis is distributional.</p>
+    <p class="fix">Default position: you never ask for names. If the customer wants role-level insight, ask their admin to add a department or job-family column on their side and hand you the file with identities already stripped &mdash; see Section&nbsp;8.5. That ask succeeds far more often, and it leaves no trace to explain.</p>
+  </li>
+  <li>
+    <h4>Understand what turning it off actually does</h4>
+    <p>De-anonymizing is not a setting on your export. It requires <strong>Global Administrator</strong>, it is <strong>tenant-wide</strong>, it applies <strong>retroactively across every usage report</strong> including Graph, Power BI and the Teams admin center, and <strong>showing identifiable user information is a logged event in the Microsoft Purview audit log</strong>.</p>
+    <p class="fix">If it happens, it should be the customer&rsquo;s decision, made by their Global Administrator, with a written reason, and switched back afterwards. Never request it casually to make your analysis tidier.</p>
+  </li>
+  <li>
+    <h4>At small scale, hashed is not anonymous</h4>
+    <p>In a twenty-five person company, &ldquo;the three people in the drifting band who have never opened Copilot in Excel&rdquo; is an identifiable description whether or not the names are showing. Pseudonymisation does very little work at this size, and assuming otherwise is the most common mistake partners make with small tenants.</p>
+    <p class="fix">Report bands, never rows, to anyone other than the person who owns the data. And apply the five-person floor from Section&nbsp;3 to every derived figure without exception.</p>
+  </li>
+  <li>
+    <h4>Decide in advance what you say when the owner asks for names</h4>
+    <p>They will. In a forty-person business the owner knows exactly who the bottom rows are before you finish the sentence, and they will ask you to confirm it.</p>
+    <p class="fix">The answer is that it is their tenant and their data and they can pull it themselves &mdash; and that you would advise against using it that way, because the low rows are overwhelmingly people whose job Copilot has not been fitted to yet, which is a management-of-the-rollout problem rather than a management-of-the-person problem. Say the second half. It is true, it is useful, and it is what stops your analysis becoming somebody&rsquo;s disciplinary evidence.</p>
+  </li>
+  <li>
+    <h4>Get the jurisdiction question answered by them, not by you</h4>
+    <p>Rules on processing employee activity data vary by country and sometimes by workforce agreement &mdash; works councils, collective agreements and local employment law can all bear on this, and some of your customers will have obligations they have never thought about in this context.</p>
+    <p class="fix">Put one line in the engagement paperwork stating that the customer confirms they are permitted to share employee usage data with you for this purpose. You are not qualified to make that determination on their behalf, and you should not try.</p>
+  </li>
+  <li>
+    <h4>Have a retention answer before you have a file</h4>
+    <p>You are about to hold exports containing staff activity records for dozens of organisations. Note also that when a customer deletes a user account, Microsoft removes that user&rsquo;s usage data within 30 days &mdash; your copy will outlive theirs unless you do something about it.</p>
+    <p class="fix">Decide where these files live, who can open them, and when they are destroyed, <em>before</em> the first one lands. A quarterly cadence across a book of customers accumulates this faster than anyone expects.</p>
+  </li>
+</ol>
+
+<div class="callout subtle">
+  <div class="callout-title">Why this section is in the executive half</div>
+  <div class="callout-body"><p>Because it is not a delivery detail. The person who decides whether the firm runs this motion is the person who owns the consequence if it is done badly, and the failure mode is not a bad chart &mdash; it is being the supplier of record for a document that got someone managed out. The rules above cost nothing to follow and they are considerably easier to adopt at the start than to retrofit after a customer&rsquo;s HR director asks where the list came from.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<h2 id="section-7">7 &middot; The two columns you already have</h2>
+
+<p>Every Microsoft&nbsp;365 Copilot usage export contains the same two numbers about every licensed person: <strong>how often they show up</strong>, and <strong>how deep they go when they do</strong>. Active days, and prompts submitted. On their own, each one is a vanity metric that has been misread in every quarterly business review since Copilot shipped. Plotted against each other, they stop being metrics and become a segmentation &mdash; and the install base sorts itself into four groups without anyone having to be clever about it.</p>
+
+<p>The reason this works is that the two axes fail independently. Someone can be present without being deep, or deep without being present, and those are not the same customer problem, do not have the same cause, and do not get fixed by the same engagement. Collapsing them into a single &ldquo;active users&rdquo; percentage &mdash; which is what every adoption dashboard does &mdash; destroys exactly the information you needed.</p>
+
+<figure class="figure">
+<svg viewBox="0 0 900 470" role="img" aria-label="Schematic of the four-quadrant Copilot usage plot: active days on the horizontal axis, prompts submitted on the vertical axis, split into Drifting, Bursty, Habitual but shallow, and Champions.">
+  <rect x="92" y="26" width="768" height="356" fill="#fff" stroke="#dde1e7" stroke-width="1"/>
+  <rect x="92" y="26" width="338" height="178" fill="#f3fbfc"/>
+  <rect x="430" y="26" width="430" height="178" fill="#e4f0f3"/>
+  <rect x="92" y="204" width="338" height="178" fill="#f8fafc"/>
+  <rect x="430" y="204" width="430" height="178" fill="#fff8ed"/>
+
+  <line x1="430" y1="26" x2="430" y2="382" stroke="#003057" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <line x1="92" y1="204" x2="860" y2="204" stroke="#003057" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+  <text x="112" y="52" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700" fill="#4daab8" letter-spacing="1.2">B &nbsp;BURSTY</text>
+  <text x="112" y="72" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Rare visits, deep sessions</text>
+  <text x="112" y="90" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Highest rate per active day</text>
+
+  <text x="452" y="52" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700" fill="#005F6B" letter-spacing="1.2">D &nbsp;CHAMPIONS</text>
+  <text x="452" y="72" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Frequent and deep</text>
+  <text x="452" y="90" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Most of the tenant&#8217;s total activity</text>
+
+  <text x="112" y="312" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700" fill="#6b7280" letter-spacing="1.2">A &nbsp;DRIFTING</text>
+  <text x="112" y="332" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Rare visits, shallow sessions</text>
+  <text x="112" y="350" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Usually the largest group by headcount</text>
+
+  <text x="452" y="312" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700" fill="#d97706" letter-spacing="1.2">C &nbsp;HABITUAL BUT SHALLOW</text>
+  <text x="452" y="332" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Frequent visits, one use case</text>
+  <text x="452" y="350" font-family="Segoe UI, Inter, sans-serif" font-size="12" fill="#6b7280">Lowest rate per active day &#8212; and the best conversion</text>
+
+  <text x="436" y="400" font-family="Consolas, Monaco, monospace" font-size="11" fill="#003057">frequency threshold &#8212; your median, or every third working day</text>
+  <text x="112" y="196" font-family="Consolas, Monaco, monospace" font-size="11" fill="#003057">depth threshold &#8212; your median prompt count</text>
+
+  <text x="476" y="440" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700" fill="#003057" letter-spacing="1.4" text-anchor="middle">ACTIVE DAYS IN THE WINDOW &#8594; FREQUENCY</text>
+  <text x="-204" y="20" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700" fill="#003057" letter-spacing="1.4" text-anchor="middle" transform="rotate(-90)">PROMPTS SUBMITTED &#8593; DEPTH</text>
+  <text x="92" y="462" font-family="Consolas, Monaco, monospace" font-size="11" fill="#9ca3af">0</text>
+  <text x="860" y="462" font-family="Consolas, Monaco, monospace" font-size="11" fill="#9ca3af" text-anchor="end">end of window</text>
+</svg>
+<figcaption><strong>Schematic, not data.</strong> This is the frame, not a plot of anyone&rsquo;s tenant &mdash; deliberately so, because the only version of this chart worth showing a customer is the one built from their own export. Put <em>active days</em> on the horizontal axis and <em>prompts submitted</em> on the vertical, set the vertical axis to a logarithmic scale, draw one threshold line on each axis, and every licensed user lands in exactly one of four boxes. Section&nbsp;10 is the ten-minute build.</figcaption>
+</figure>
+
+<h3>Choosing the two threshold lines</h3>
+
+<p>The thresholds are the only judgement call in the whole method, and it is worth being explicit about them in front of the customer rather than letting them look arbitrary. There are two defensible ways to set them, and one indefensible one.</p>
+
+<table>
+  <thead><tr><th style="width:20%;">Method</th><th style="width:44%;">How you set it</th><th>When to use it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Distributional</strong></td><td>Put both lines at the tenant&rsquo;s own median &mdash; the median active days, and the median prompts. By construction you get four non-empty groups sized relative to that population.</td><td><strong>The default.</strong> Always defensible, never argued with, and it makes cross-tenant comparison meaningless in a good way &mdash; nobody can accuse you of grading them against someone else.</td></tr>
+    <tr><td><strong>Operational</strong></td><td>Pick lines that mean something in English. &ldquo;Active on at least every third working day&rdquo; for frequency; a prompt count that represents sustained rather than exploratory use for depth.</td><td>When the customer needs the segments to map onto a policy or a licence-reclamation decision, where a human has to be able to justify the line to their own management.</td></tr>
+    <tr><td><strong>Borrowed</strong></td><td>Copying our thresholds, or anyone else&rsquo;s, out of a deck.</td><td><strong>Never.</strong> A threshold from another tenant encodes that tenant&rsquo;s window length, licence mix and rollout date. It will silently mis-sort your customer&rsquo;s population and you will not notice.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout subtle">
+  <div class="callout-title">Set the depth axis to logarithmic, and say why</div>
+  <div class="callout-body"><p>Prompt counts span several orders of magnitude in every tenant we have looked at &mdash; a handful of people generate hundreds of times what the median user does. On a linear axis those few compress everyone else into a stripe along the bottom and the chart says nothing. On a log axis the structure appears. <strong>One consequence to handle before it embarrasses you: a logarithmic axis cannot plot zero.</strong> Users with no prompts at all have to be either charted at one or excluded and counted separately &mdash; and if you exclude them, say so on the slide, because in most tenants that is not a rounding error.</p></div>
+</div>
+
+<h3>What each quadrant actually buys you</h3>
+
+<p>The shares below are from the tenant we ran this on, given as percentages of population and of total activity. They are here to show you the <em>characteristic shape</em> &mdash; a large quiet majority generating a small minority of the activity, and a concentrated group generating most of it. Your customer&rsquo;s percentages will differ. The shape rarely does.</p>
+
+<div class="quads">
+  <div class="quad a">
+    <div class="quad-h"><div class="quad-k">A</div><h4>Drifting</h4><div class="quad-share"><b>&asymp;15%</b>of all activity</div></div>
+    <p>Rare visits, shallow sessions &mdash; and in our tenant, well over half the licensed population. The trap is reading this as ignorance. These people had already touched Copilot across a median of seven surfaces. Exposure happened. A reason to come back did not.</p>
+    <div class="quad-play"><b>The play</b>Not training. Use-case design, by job role. This is the group the &ldquo;give us an hour&rdquo; conversation is built for &mdash; and the group whose licences are the customer&rsquo;s largest visible waste.</div>
+  </div>
+  <div class="quad b">
+    <div class="quad-h"><div class="quad-k">B</div><h4>Bursty</h4><div class="quad-share"><b>&asymp;8%</b>of all activity</div></div>
+    <p>They appear rarely and go extremely deep when they do &mdash; the highest prompts-per-active-day rate in the tenant by a wide margin. Capable, project-driven, and not yet embedded in anything that happens weekly.</p>
+    <div class="quad-play"><b>The play</b>Workflow embedding &mdash; find the recurring process their project work sits next to. Check their grounding as well: this segment skews toward ungrounded chat, which makes it a natural governance attach.</div>
+  </div>
+  <div class="quad c">
+    <div class="quad-h"><div class="quad-k">C</div><h4>Habitual but shallow</h4><div class="quad-share"><b>&asymp;5%</b>of all activity</div></div>
+    <p>Present more often than the company median, running the lowest rate per active day anywhere. Months of loyalty to a single use case. Small by headcount, near-invisible on a frequency dashboard, and the most underrated group in the tenant.</p>
+    <div class="quad-play"><b>The play</b>The highest conversion rate you will find. They already trust the tool, so you are selling a second use case, not a mindset. Thirty minutes, one new task, done.</div>
+  </div>
+  <div class="quad d">
+    <div class="quad-h"><div class="quad-k">D</div><h4>Champions</h4><div class="quad-share"><b>&asymp;73%</b>of all activity</div></div>
+    <p>Frequent and deep, roughly three in ten of the population, and generating the overwhelming majority of everything that happens. Here is the finding that pays for the meeting: <strong>a large share of them had never once used an agent.</strong> Not resistance &mdash; nobody had made one findable.</p>
+    <div class="quad-play"><b>The play</b>Agent <em>access</em>, not authorship. Turn on what already exists, put it where they work, make it discoverable. These are the seeds of a centre of excellence, and they are the cheapest agentic win in the account.</div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The number that ends the &ldquo;we need Copilot Studio&rdquo; argument</div>
+  <div class="callout-body"><p>In our tenant the single largest agentic opportunity was not a group that needed agents built. It was the champions &mdash; the most engaged, most capable, highest-volume users in the company &mdash; who had never used an agent at all. If that holds in your customer&rsquo;s tenant, and it usually does, then the first agentic engagement is an <strong>enablement and discoverability</strong> project measured in days, not a development project measured in months. Check it before anyone writes a Copilot Studio line into a proposal. Prompt&nbsp;10 in Section&nbsp;11 tests it directly.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-8">8 &middot; Pull the export &mdash; the exact path</h2>
+
+<p>This is the part that makes the asset usable rather than merely interesting. The customer&rsquo;s admin already has everything you need, and in most cases has never been asked for it. Four clicks, one CSV.</p>
+
+<h3>8.1 &nbsp;Who can pull it</h3>
+
+<p>Viewing usage reports does <strong>not</strong> require Global Administrator, and you should say so early, because &ldquo;we&rsquo;d need to give you global admin&rdquo; is the single most common reason this conversation dies. Any one of these roles is enough: <strong>Reports Reader</strong>, <strong>Usage Summary Reports Reader</strong>, <strong>AI Administrator</strong>, Exchange Administrator, SharePoint Administrator, Teams Administrator, Teams Communications Administrator, User Experience Success Manager, or Global Administrator. Reports Reader is the right ask &mdash; it is read-only, it is purpose-built for this, and it is a five-minute change.</p>
+
+<h3>8.2 &nbsp;The click path</h3>
+
+<div class="clickpath"><span>Microsoft 365 admin center</span><i>&rsaquo;</i><span>Reports</span><i>&rsaquo;</i><span>Usage</span><i>&rsaquo;</i><span>Microsoft Copilot</span><i>&rsaquo;</i><span>Copilot</span><i>&rsaquo;</i><span>Usage tab</span></div>
+
+<p>If <strong>Reports</strong> is not in the navigation menu, select <strong>Show all</strong> first. At the top of the report, set the timeframe filter &mdash; the usage report supports <strong>7, 28, 90 or 180 days</strong>. Take 180. You are looking for the shape of a distribution, and a seven-day window will show you noise and call it a trend.</p>
+
+<p>Scroll to the user-level table, select <strong>Choose columns</strong> and switch on everything, then select <strong>Export</strong>. That produces the CSV. Note that the ellipsis menu on each individual chart also offers an Export &mdash; that exports the chart&rsquo;s aggregate, not the user detail. It is the table export you want.</p>
+
+<h3>8.3 &nbsp;The columns you are exporting</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:26%;">Column</th><th style="width:38%;">What it actually measures</th><th>Why you care</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Prompts submitted (any app)</strong></td><td>Total prompts the user submitted across all in-scope host applications in the selected timeframe.</td><td><strong>Your depth axis.</strong></td></tr>
+    <tr><td><strong>Active Days</strong></td><td>The number of days the user submitted prompts to Copilot Chat within the timeframe.</td><td><strong>Your frequency axis.</strong> Read the definition twice &mdash; see Trap&nbsp;01.</td></tr>
+    <tr><td><strong>Copilot Chat (work) prompts submitted</strong></td><td>Prompts submitted to grounded, work-mode chat.</td><td>Half of the grounding ratio in Reversal&nbsp;6.</td></tr>
+    <tr><td><strong>Copilot Chat (web) prompts submitted</strong></td><td>Prompts submitted to ungrounded web chat.</td><td>The other half. The ratio is the finding, not either number alone.</td></tr>
+    <tr><td><strong>Last activity date (UTC)</strong></td><td>Most recent date the user sent a message to Copilot Chat in any host app. Fixed regardless of the window you selected.</td><td>Separates &ldquo;never started&rdquo; from &ldquo;stopped in month two&rdquo; &mdash; two completely different conversations.</td></tr>
+    <tr><td><strong>Last activity date of Teams / Word / Excel / PowerPoint / Outlook / OneNote / Loop Copilot (UTC)</strong></td><td>Per-application last-touch dates, each independent of the selected window.</td><td><strong>Count the non-blank ones per user and you have a surfaces-touched score</strong> &mdash; the breadth measure behind Reversal&nbsp;1. This is the column set nobody uses.</td></tr>
+    <tr><td><strong>Last activity date of Copilot Chat (work) / (web) / Microsoft 365 App / Microsoft Edge (UTC)</strong></td><td>Last-touch dates for each chat entry point.</td><td>Identifies the web-only population even when their prompt counts are small.</td></tr>
+    <tr><td><strong>User name</strong> &middot; <strong>Display name</strong></td><td>Principal name and full name &mdash; <strong>anonymized by default</strong>.</td><td>You do not need these to build the chart. See 8.5 before asking for them.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.4 &nbsp;If you would rather script it than click it</h3>
+
+<p>The same data is available through Microsoft Graph, which is the right answer if you are running this across a portfolio of tenants rather than one account. <strong>There is a version trap here that will cost you an afternoon if you miss it.</strong></p>
+
+<pre class="code">GET https://graph.microsoft.com/v1.0/copilot/reports/
+    getMicrosoft365CopilotUsageUserDetail(period='D180', version='v2')</pre>
+
+<p>Permission required is <code>Reports.Read.All</code> &mdash; delegated or application. The response is a CSV stream.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">The version trap</div>
+  <p><strong>Version&nbsp;1 &mdash; which is the default if you omit the parameter &mdash; does not contain prompt counts or active days.</strong> It returns refresh date, principal name, display name and a set of per-app last-activity dates, and nothing else. Both axes of this entire method are missing. <strong>You must pass <code>version='v2'</code></strong> to get <em>Prompts submitted for all apps</em>, <em>Active Usage Days for all apps</em>, the work/web chat prompt split, and <em>Copilot Agent Last Activity Date</em>. Also note the period values differ by version: v1 accepts <code>D7 D30 D90 D180 ALL</code>, v2 accepts <code>D7 D28 D90 D180 ALL</code>.</p>
+</div>
+
+<h3>8.5 &nbsp;About the anonymization &mdash; do not turn it off reflexively</h3>
+
+<p>By default Microsoft&nbsp;365 usage reports conceal user names, display names, group names and site names. Every chart and every segment size in this method works perfectly with anonymized data, because the analysis is distributional. <strong>Ask for de-anonymization only when you have a specific, stated reason</strong> &mdash; almost always the same one: joining usage to job role or department so that Reversal&nbsp;1 becomes actionable.</p>
+
+<p>If it is genuinely needed, the setting is <strong>Settings &rsaquo; Org Settings &rsaquo; Services &rsaquo; Reports</strong>, and it is the checkbox <em>&ldquo;Conceal user, group, and site names in all reports&rdquo;</em>. Three things to say out loud before anyone unticks it:</p>
+
+<ul>
+  <li>It requires <strong>Global Administrator</strong> &mdash; a materially bigger ask than Reports Reader, and the reason to avoid needing it.</li>
+  <li>It is <strong>tenant-wide and retroactive across every usage report</strong>, including Graph, Power&nbsp;BI and the Teams admin center &mdash; not scoped to your export.</li>
+  <li>Showing identifiable user information is a <strong>logged event in the Microsoft Purview audit log</strong>. Someone will see it. Better that they see it alongside a documented reason than that they discover it.</li>
+</ul>
+
+<div class="callout subtle">
+  <div class="callout-title">The better join, if you can get it</div>
+  <div class="callout-body"><p>Rather than de-anonymizing the whole tenant, ask the customer&rsquo;s admin to add a single column to the export on their side &mdash; department, job family, or business unit &mdash; and hand you the file with the names already stripped. You get the role dimension that makes Reversal&nbsp;1 sellable, they never flip a tenant-wide privacy setting, and nobody has to explain an audit-log entry. This ask succeeds far more often than the other one.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-9">9 &middot; Ten traps in this data</h2>
+
+<p>The export is generous and the column names are plain English, which is exactly what makes it dangerous. Several columns do not measure what their name implies, and two of them will produce a confidently wrong slide if you take them at face value. Read this section before you build anything &mdash; every item here comes from Microsoft&rsquo;s own documentation, and every one of them is the kind of thing a customer&rsquo;s admin will catch in the meeting if you do not catch it first.</p>
+
+<ol class="traps">
+  <li>
+    <h4>Active Days is a chat measure, not an all-app measure</h4>
+    <p>Microsoft defines <em>Active Days</em> as the number of days the user submitted prompts <strong>to Copilot Chat</strong> in the window. It is not the number of days they used Copilot in general. A person who uses Copilot in Word every single morning and never opens chat can therefore show a low &mdash; even zero &mdash; active-day count while being a genuinely heavy user.</p>
+    <p class="fix">What to do: call your horizontal axis <em>chat frequency</em>, not <em>usage frequency</em>, and cross-check quadrant&nbsp;A against the per-app last-activity columns before you describe anyone as dormant. Some of your &ldquo;drifting&rdquo; users are Word-only regulars, and they are a different conversation entirely.</p>
+  </li>
+  <li>
+    <h4>Not every Copilot action counts as a prompt</h4>
+    <p>Opening the Copilot pane is not activity &mdash; Microsoft counts an intentional action, such as submitting a prompt. And the counting is not uniform across apps: <strong>Edit with Word counts toward &ldquo;prompts submitted in Copilot Chat (work)&rdquo;, while Edit with Excel and Edit with PowerPoint do not.</strong> Teams meeting features such as Intelligent Recap, Interpreter and Facilitator count toward active usage without generating chat prompts at all.</p>
+    <p class="fix">What to do: never present prompt count as a measure of effort expended. It is a measure of one specific interaction pattern, and it under-counts Excel-heavy and meeting-heavy populations systematically.</p>
+  </li>
+  <li>
+    <h4>Your denominator includes people who are not licensed any more</h4>
+    <p>The user-level table shows <strong>everyone who held a Copilot licence at any point in the past 180 days</strong> &mdash; including people whose licence was removed and people who never had a single active day. That is a reasonable design choice for an audit and a terrible one for an adoption percentage.</p>
+    <p class="fix">What to do: reconcile the export row count against currently assigned licences under <strong>Billing &rsaquo; Licenses</strong> before you compute any rate. Otherwise quadrant&nbsp;A is inflated by former employees and reassigned seats, and you will present an adoption failure that is partly a spreadsheet artefact.</p>
+  </li>
+  <li>
+    <h4>The agent report and the usage report do not share a window</h4>
+    <p>The Copilot usage report gives you 7, 28, 90 or 180 days. The agents usage report currently gives you <strong>7 or 30 days only</strong>. Microsoft has said longer windows are coming, but today they are not there.</p>
+    <p class="fix">What to do: never put an agent-adoption percentage and a usage percentage on the same slide as though they described the same period. State both windows explicitly, every time.</p>
+  </li>
+  <li>
+    <h4>The agent report changed what it counts</h4>
+    <p>The original agent usage report covered <strong>only agents your organisation built</strong> &mdash; Copilot Studio, Agents Toolkit, agent builder &mdash; and explicitly excluded agents built by Microsoft or by partners. That report is now deprecated in favour of a newer one that <em>does</em> include Microsoft and third-party agents, breaks usage down by <strong>creator type</strong> (Your Users, Your org, Microsoft, Third-party), and covers unlicensed Copilot Chat users as well as licensed ones.</p>
+    <p class="fix">What to do: check which report you are looking at before comparing anything to a historical figure. An &ldquo;agent adoption&rdquo; number from the old report and one from the new report are not the same measurement, and the new one will look dramatically higher for a reason that has nothing to do with adoption. Note too that SharePoint agents used inside Teams are still not counted.</p>
+  </li>
+  <li>
+    <h4>The data moves after you have exported it</h4>
+    <p>Copilot activity for a given day typically appears within 48 hours, and the system re-validates and backfills <strong>the previous three days</strong> on a rolling basis &mdash; so historical figures can change under you. Separately, client-side events from Word, Excel, PowerPoint, OneNote and Outlook can upload late, which makes those per-app last-activity dates blank or stale for reasons that have nothing to do with user behaviour.</p>
+    <p class="fix">What to do: stamp every chart with the report refresh date and the window, and do not re-run a comparison inside a three-day boundary and call the difference a trend.</p>
+  </li>
+  <li>
+    <h4>A blank last-activity date is not always inactivity</h4>
+    <p>Microsoft documents a specific edge case: if a user used Copilot within 24&nbsp;hours of the licence being assigned and never used it again, their last-activity date can be empty. It looks identical to someone who never started.</p>
+    <p class="fix">What to do: treat blank-with-nonzero-prompts as a data artefact, not as a user. It is a small population, but it is exactly the kind of row that turns into an argument in front of the customer&rsquo;s admin.</p>
+  </li>
+  <li>
+    <h4>Anonymized rows cannot be joined, and deleted users vanish</h4>
+    <p>With concealment on &mdash; the default &mdash; the principal-name column is a hash. You can count, segment and plot; you cannot join to HR data, department lists or a training attendee roster. Separately, when a user account is deleted, Microsoft removes that user&rsquo;s usage data within 30 days, so the chart totals and the user table will not reconcile for any period covering a departure.</p>
+    <p class="fix">What to do: decide the role-join question <em>before</em> you export &mdash; see Section&nbsp;8.5 for the version of that ask which does not require a tenant-wide privacy change.</p>
+  </li>
+  <li>
+    <h4>The audit log is not a usage report</h4>
+    <p>Someone will suggest pulling this from Purview audit instead, because it feels more complete. Microsoft states plainly that audit data is built for security and compliance, is <strong>not</strong> intended as the basis for usage reporting, and that aggregates built on it &mdash; prompt counts, active-user counts &mdash; may not reconcile with the official reports. They will not provide guidance on making them match.</p>
+    <p class="fix">What to do: use the usage report or the Copilot Dashboard in Viva Insights. Use audit for oversharing discovery and compliance, which is a genuinely valuable but completely separate engagement.</p>
+  </li>
+  <li>
+    <h4>Zero is not plottable, and it is not divisible either</h4>
+    <p>A logarithmic depth axis cannot render a user with zero prompts. And prompts-per-active-day &mdash; the single most useful derived measure in this whole method &mdash; divides by a column that is legitimately zero for a large part of the population.</p>
+    <p class="fix">What to do: wrap the rate in <code>IFERROR</code>, plot zero-prompt users at one or exclude them explicitly, and either way <strong>state on the chart how many rows were excluded and why</strong>. A quietly dropped population is how an honest analysis turns into a misleading one.</p>
+  </li>
+</ol>
+
+<div class="callout warn">
+  <div class="callout-title">The meta-trap</div>
+  <div class="callout-body"><p>Nine of the ten items above make your numbers look <em>worse</em> than reality if you ignore them &mdash; inflated dormant populations, undercounted Excel users, missing agent categories. That asymmetry matters commercially: <strong>an unexamined export systematically over-states failure.</strong> If you walk into a review with raw figures, you will be arguing that the customer&rsquo;s investment is in worse shape than it is, and the admin in the room who knows these definitions will dismantle you. Doing the corrections is not pedantry. It is the difference between being the analyst and being the vendor with a scary chart.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-10">10 &middot; Build it &mdash; large tenants and small</h2>
+
+<p>No BI tool, no Power&nbsp;BI licence, no data engineer. Excel, the CSV you just exported, and about ten minutes. The formulas below assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2. <strong>Column letters vary depending on which columns you switched on</strong>, so the first job is to find yours and substitute them &mdash; every formula here is written with the letters spelled out in a legend so the substitution is mechanical.</p>
+
+<pre class="code"><b>Legend &mdash; replace with your actual column letters</b>
+  E  =  Prompts submitted (any app)          &#8592; your depth axis
+  F  =  Active Days                          &#8592; your frequency axis
+  G  =  Copilot Chat (web) prompts submitted
+  H  =  quadrant label      (new helper column you will add)
+  I  =  prompts per day     (new helper column you will add)
+  J  =  plot depth          (new helper column you will add)
+  Assume data runs to row 5000 &mdash; extend to your row count.</pre>
+
+<div class="vtimeline">
+  <div class="vt-item">
+    <div class="vt-when">Minute 0&ndash;2 &middot; Set the thresholds</div>
+    <h4>Two cells, and the only judgement call in the exercise</h4>
+    <p>Put these somewhere out of the way &mdash; say M1 and M2 &mdash; and label them. Everything downstream points at these two cells, so changing a threshold re-sorts the whole population instantly, which is exactly what you want when the customer asks &ldquo;what if we drew the line somewhere else?&rdquo;</p>
+    <pre class="code">M1:  =MEDIAN(F2:F5000)          <b>frequency threshold &#8212; median active days</b>
+M2:  =MEDIAN(E2:E5000)          <b>depth threshold &#8212; median prompts</b></pre>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Minute 2&ndash;4 &middot; Label every user</div>
+    <h4>One nested IF, filled down</h4>
+    <p>This is the whole segmentation. Put it in H2 and fill down.</p>
+    <pre class="code">H2:  =IF(F2&gt;=$M$1,
+       IF(E2&gt;=$M$2,"D Champions","C Habitual shallow"),
+       IF(E2&gt;=$M$2,"B Bursty","A Drifting"))</pre>
+    <p>Then the two derived columns &mdash; the rate that exposes Reversal&nbsp;2 and&nbsp;7, and a plot-safe depth value that survives a log axis.</p>
+    <pre class="code">I2:  =IFERROR(E2/F2,0)          <b>prompts per active day</b>
+J2:  =MAX(E2,1)                 <b>plot depth &#8212; log axis cannot render 0</b></pre>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Minute 4&ndash;7 &middot; Size the four segments</div>
+    <h4>Population share, activity share, and the rate</h4>
+    <p>Build this little block anywhere. It is the table you will actually put in front of the customer &mdash; the chart is the hook, but this is the argument.</p>
+    <pre class="code">count       =COUNTIF($H$2:$H$5000,"D Champions")
+% of people =COUNTIF($H$2:$H$5000,"D Champions")/COUNTA($H$2:$H$5000)
+% of all
+  activity  =SUMIF($H$2:$H$5000,"D Champions",$E$2:$E$5000)/SUM($E$2:$E$5000)
+median rate =MEDIAN(IF($H$2:$H$5000="D Champions",$I$2:$I$5000))
+              <b>array formula &#8212; Ctrl+Shift+Enter on older Excel;</b>
+              <b>there is no MEDIANIFS.</b></pre>
+    <p>Repeat for the other three labels. <strong>The gap between &ldquo;% of people&rdquo; and &ldquo;% of all activity&rdquo; is the finding.</strong> When one segment is a minority of headcount and a large majority of activity, you have just told the customer where their entire return is concentrated &mdash; and how thin it is.</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Minute 7&ndash;9 &middot; Draw it</div>
+    <h4>Scatter, log axis, two threshold lines</h4>
+    <p>Select column F and column J together, then <strong>Insert &rsaquo; Charts &rsaquo; Scatter</strong>. Right-click the vertical axis, choose <strong>Format Axis</strong>, tick <strong>Logarithmic scale</strong> and set the minimum to 1. Shrink the markers and drop their opacity &mdash; at a few thousand points the default marker size produces a solid blob and hides the structure you are trying to show.</p>
+    <p>For the two threshold lines, add two small helper series of two points each &mdash; one vertical, one horizontal &mdash; and format them as dashed lines with no markers:</p>
+    <pre class="code">vertical line    x: =M1, =M1        y: 1, =MAX(J2:J5000)
+horizontal line  x: 0, =MAX(F2:F5000)   y: =M2, =M2</pre>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Minute 9&ndash;10 &middot; Label it honestly</div>
+    <h4>The four things that must be on the chart</h4>
+    <p>The report refresh date. The window length. The row count, and the count of any rows you excluded. And one line stating that the relationships shown are correlational. Those four annotations are what separate a chart the customer&rsquo;s admin trusts from one they spend the meeting attacking.</p>
+  </div>
+</div>
+
+<h3>Three more columns worth ninety seconds each</h3>
+
+<table>
+  <thead><tr><th style="width:26%;">Measure</th><th style="width:38%;">Formula</th><th>What it exposes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Grounding ratio</strong></td><td><code>=IFERROR(G2/E2,"")</code></td><td>Web-chat share of the user&rsquo;s total prompts. Sort descending and the ungrounded-only population appears at the top &mdash; Reversal&nbsp;6, and the opening for the governance engagement.</td></tr>
+    <tr><td><strong>Surfaces touched</strong></td><td><code>=SUMPRODUCT(--(L2:S2&lt;&gt;""))</code><br /><span style="font-size:.78rem;color:#6b7280;">over your per-app last-activity columns</span></td><td>How many different Copilot surfaces this person has ever opened. High surfaces with low depth is the exposure-without-relevance signature behind Reversal&nbsp;1.</td></tr>
+    <tr><td><strong>Realistic ceiling</strong></td><td><code>=PERCENTILE.INC($I$2:$I$5000,0.5)</code><br /><code>=PERCENTILE.INC($I$2:$I$5000,0.75)</code><br /><code>=PERCENTILE.INC($I$2:$I$5000,0.95)</code></td><td>The median, upper-quartile and extreme prompts-per-day rates in <em>this</em> tenant. This is the evidence you use to replace an invented target with a defensible one &mdash; Reversal&nbsp;7.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Do this once as a template, not once per customer</div>
+  <div class="callout-body"><p>Every formula above points at named threshold cells and generic column letters. Build the workbook once, with the helper columns, the segment table and the chart already wired, and each new engagement becomes: paste the export, fix the column references, read the answer. <strong>The second tenant takes four minutes.</strong> That is the difference between an interesting exercise and a repeatable service &mdash; and a repeatable service is the thing you can put a price on.</p></div>
+</div>
+
+<h3>The small-tenant build &mdash; fixed bands, no chart</h3>
+
+<p>Everything above assumes enough people that a median is stable and a scatter is readable. Under roughly sixty licensed users it is not, and Section&nbsp;3 explains why. The small-tenant build is shorter, because you are not drawing anything.</p>
+
+<p>Pull a <strong>90-day</strong> window rather than 180 &mdash; it lines up better with the twelve-week frame Microsoft&rsquo;s own definitions use. Then replace the two median cells with two fixed constants and change one formula:</p>
+
+<pre class="code">M1:  9                          <b>frequency line &mdash; active days, fixed</b>
+M2:  195                        <b>depth line &mdash; prompts over 90 days</b>
+                                <b>(15 per week &times; 13 weeks)</b>
+
+H2:  =IF(F2&gt;=$M$1,
+       IF(E2&gt;=$M$2,"Embedded","Loyal but shallow"),
+       IF(E2&gt;=$M$2,"Project-driven","Drifting"))
+
+K2:  =IF(H2="Drifting",
+       IF(SUMPRODUCT(--(L2:S2&lt;&gt;""))&gt;=3,"tried and stopped","never started"),"")</pre>
+
+<p>That last column is the one that earns its place at small scale. It splits the drifting band into people who explored Copilot across several surfaces and gave up &mdash; recoverable with a role-based session &mdash; and people who never opened it at all, who may simply be holding a licence that should be reassigned. Those two groups get opposite recommendations, and at forty seats the difference between them is usually three or four people you can name.</p>
+
+<p>Then sort by band, then by prompts descending, and print it. That table <em>is</em> the deliverable. No chart, no quadrant diagram, no percentages on any band with fewer than five people in it.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">Keep both branches in one workbook</div>
+  <div class="callout-body"><p>Do not maintain two templates. Put the median formulas and the fixed constants in adjacent cells with a switch, so the same workbook serves a six-hundred-seat customer and a thirty-seat one and you are never guessing which version you are looking at. Label the sheet with which mode produced the numbers &mdash; it will be the first question anyone asks six months later, and Section&nbsp;5&rsquo;s book ranking depends on knowing that the rows are comparable.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-11">11 &middot; The prompt library &mdash; fourteen prompts</h2>
+
+<p>Section&nbsp;6 gets you the chart. This section gets you everything else &mdash; the segment profiles, the cohort tests, the account plan and the meeting scripts &mdash; by handing the export to an AI tool and asking the right fourteen questions. Each prompt below is written to be pasted verbatim, and each one is deliberately constrained: it tells the model what to compute, what format to answer in, and what to do when it cannot answer. That third instruction is the one that matters, and it is the one everybody leaves out. <strong>On a small tenant, P02 and P03 carry the fixed-threshold option and the five-person suppression rule from Section&nbsp;3</strong> &mdash; they are not optional, and the model will not apply them unless you leave them in.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">Before you paste a customer&rsquo;s file into anything</div>
+  <p><strong>Get written permission, and pick the tool deliberately.</strong> The best option by a wide margin is to run these <em>inside the customer&rsquo;s own tenant</em> &mdash; Copilot in Excel on the open workbook, or Copilot Chat in work mode with the file attached &mdash; so the data never leaves their boundary and the whole exercise sits under their existing agreement. Failing that, use a business-tier AI account with data-training disabled, never a consumer one.</p>
+  <p><strong>One genuine advantage you have here:</strong> the export is anonymized by default, so unless someone has turned concealment off, the file contains hashes rather than names. If you did de-anonymize for a role join, <strong>strip the name and principal-name columns before the file goes anywhere</strong> &mdash; the analysis below never needs them.</p>
+</div>
+
+<div class="grouprule"><div class="lbl">Group A &middot; Prepare the file</div><div class="rule"></div></div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P01</div><h4>Schema and hygiene check</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Run this first, always. It catches the wrong export version, the wrong window, and the licence-removed rows from Trap&nbsp;03 before any of them contaminate a number you say out loud.</p>
+    <pre class="code ptext">You are a data analyst. Attached is a Microsoft 365 Copilot usage report user-detail export.
+
+Do not analyse behaviour yet. First, audit the file and report only:
+1. The exact column headers present, in order.
+2. Row count, excluding the header.
+3. Whether the columns "Prompts submitted (any app)" and "Active Days" are present. If either is missing, stop and tell me the export is version 1 rather than version 2 and cannot be used for this analysis.
+4. The report refresh date and the report period length, if present in the file.
+5. For each column: count of blanks, count of zeros, minimum, median, maximum.
+6. Count of rows where every activity column is blank or zero - these are users who were licensed at some point in the window but never active.
+7. Any row that looks like a data artefact: a blank last-activity date combined with a non-zero prompt count.
+
+Present this as a plain table. Do not infer, estimate, or fill in anything that is not in the file. If a value cannot be computed, write "not available" rather than guessing.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A table of column names that match Section&nbsp;8.3, a row count you can reconcile against assigned licences, and an explicit never-active count.</div>
+      <div class="bad"><span class="ck">How it fails</span>If it starts describing adoption in this answer, it has ignored the instruction and you should distrust the rest of the session. Start again.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P02</div><h4>Derive this tenant&rsquo;s own thresholds</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Stops the model &mdash; and you &mdash; importing a threshold from a deck. The output of this prompt is the only pair of numbers the rest of the analysis is allowed to use. <strong>On a tenant under about sixty licensed users, take Option&nbsp;C</strong> &mdash; a median computed on thirty rows moves when one person takes annual leave. See Section&nbsp;3.</p>
+    <pre class="code ptext">Using only this file, propose the two threshold values that will split this population into four usage quadrants.
+
+Give me two options and the numbers for each:
+
+OPTION A - Distributional. The median of Active Days, and the median of Prompts submitted (any app). Report both values.
+
+OPTION B - Operational. A frequency threshold that corresponds to being active on roughly every third working day across this window, and a depth threshold that separates sustained use from exploration. State the reasoning for each number in one sentence, and state clearly that these are judgements rather than statistics.
+
+For each option, show how many users fall into each of the four quadrants:
+  high frequency + high depth, high frequency + low depth,
+  low frequency + high depth, low frequency + low depth.
+
+OPTION C - Fixed, for small tenants. Do not compute these from the file; use them as given, and say so:
+  frequency line = Active Days >= 9 over a 90-day window
+  depth line     = Prompts submitted (any app) >= 195 over a 90-day window
+These approximate Microsoft's own published Copilot user categories - 15 or more Copilot actions per week, and active in at least 9 of the past 12 weeks. Note in your answer that a prompt is not identical to a Copilot action, so this undercounts.
+
+Report the row count of the file first. If it is under about 60 rows, recommend OPTION C and say plainly that a median-based threshold is unstable at this sample size.
+
+Then tell me which option produces the more balanced segmentation for this specific tenant, and why. Do not use thresholds from any other organisation or from your training data. If I ask you to use a number I supply, say so explicitly in your answer so it is on the record.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Two concrete number pairs, four non-empty groups under each, and a recommendation with a reason.</div>
+      <div class="bad"><span class="ck">How it fails</span>Round numbers that look suspiciously like benchmarks under Option&nbsp;A or&nbsp;B. If it proposes exactly 60 days or exactly 375 prompts as a <em>derived</em> value, it has borrowed them &mdash; ask where they came from. Option&nbsp;C is supposed to be fixed; that is the point of it.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P03</div><h4>Build and size the four segments</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The core table. Note the demand for share-of-activity as well as share-of-population &mdash; the gap between those two columns is the entire argument.</p>
+    <pre class="code ptext">Using the thresholds you derived in the previous answer - state which pair you are using at the top of your response - assign every row to exactly one of four segments:
+
+A DRIFTING           low frequency, low depth
+B BURSTY             low frequency, high depth
+C HABITUAL SHALLOW   high frequency, low depth
+D CHAMPIONS          high frequency, high depth
+
+Produce one table with a row per segment and these columns:
+ - user count
+ - share of all users, as a percentage
+ - share of all prompts submitted, as a percentage
+ - median prompts per user
+ - median active days per user
+ - median prompts per active day
+ - median number of distinct Copilot surfaces ever touched, counted from the non-blank per-application last-activity columns
+
+Then, in no more than four sentences, state the single most commercially significant fact in that table. Do not describe all four segments. Pick the one that matters most and say why.
+
+Show the count for every segment even if it is zero. If any segment is empty, say so explicitly rather than omitting the row.
+
+Suppression rule, apply it without being asked: for any segment containing fewer than five users, report the count only. Do not report percentages, medians or comparisons for that segment - write "n < 5, not reported" in those cells instead. Small groups are identifiable even when the names are hashed.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Percentages that sum to 100 in both share columns, and a &ldquo;most significant fact&rdquo; that is usually the population/activity gap.</div>
+      <div class="bad"><span class="ck">How it fails</span>Shares that do not sum to 100, or a missing empty segment. Both mean rows were silently dropped &mdash; run&nbsp;P13. On a small tenant, any percentage attached to a segment of fewer than five people means the suppression rule was ignored.</div>
+    </div>
+  </div>
+</div>
+
+<div class="grouprule"><div class="lbl">Group B &middot; Test the seven reversals against this tenant</div><div class="rule"></div></div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P04</div><h4>Reversal 1 &mdash; is it exposure or relevance?</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The prompt that decides whether the customer should buy more training or stop buying training. Worth running before any proposal is written.</p>
+    <pre class="code ptext">Test one specific hypothesis against this file, and tell me whether it holds here.
+
+HYPOTHESIS: the low-usage population is not short of exposure to Copilot. They have already tried it across multiple applications and stopped, which would make their low usage a relevance problem rather than a training problem.
+
+To test it:
+1. Take the DRIFTING segment only.
+2. For each user, count the distinct per-application last-activity columns that are non-blank. Call this "surfaces touched".
+3. Report the median, quartiles and distribution of surfaces touched for this segment.
+4. Compare it against the same measure for the CHAMPIONS segment.
+5. Report what share of the drifting segment has touched three or more surfaces, and what share has touched exactly zero.
+
+Then state plainly: does the hypothesis hold in this tenant, partially hold, or fail? Give the specific numbers that drive your verdict.
+
+Important: if a meaningful share of the drifting group has touched zero surfaces, the hypothesis fails for them and they are a genuine activation problem rather than a relevance problem. Say so, and size that sub-group separately.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A clear verdict, and a split of the drifting group into &ldquo;tried it and stopped&rdquo; versus &ldquo;never started&rdquo;. Those are two different engagements.</div>
+      <div class="bad"><span class="ck">How it fails</span>A verdict with no numbers attached, or one that skips step&nbsp;5. The zero-surface sub-group is the part people forget.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P05</div><h4>Reversal 2 &mdash; find the loyal, stuck users</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Produces the highest-conversion target list in the tenant &mdash; the people every frequency dashboard is currently scoring as a success.</p>
+    <pre class="code ptext">Identify the users in this file who are frequently active but shallow: active on more days than the tenant median, while running a below-median number of prompts per active day.
+
+Report:
+1. How many users this is, and what share of the licensed population.
+2. Their median prompts per active day, compared against the tenant median and against every other segment. State explicitly whether this is the lowest rate of any segment.
+3. Their median active days compared against the tenant median.
+4. Their grounding mix: median share of prompts in Copilot Chat (web) versus Copilot Chat (work).
+5. Their median surfaces touched.
+
+Then answer this in plain language: is this group behaving like people who do not trust the tool, or like people who trust it completely and only know one thing to do with it? Give the evidence from the numbers above that supports your reading, and name the strongest counter-reading of the same numbers.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A small segment with the lowest per-day rate in the file, and a stated counter-reading. The counter-reading is not optional &mdash; it is how you avoid selling into a misread.</div>
+      <div class="bad"><span class="ck">How it fails</span>A confident narrative with no counter-reading. Push back and ask for one.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P06</div><h4>Reversal 5 &mdash; the falling-prompt test</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Needs two exports from different dates. It is the most valuable prompt on this page, because it is the one that stops a customer writing prompt growth into a contract.</p>
+    <pre class="code ptext">I am attaching two exports of the same tenant's Copilot usage report, taken at different dates. Match users across both files using the anonymised principal-name column.
+
+For the population present in both files:
+1. Report the change in median prompts per user, and in median active days per user.
+2. Report the change in median prompts per active day.
+3. Report the change in median surfaces touched.
+4. Split the matched population by whether their prompt count rose or fell, and for each of those two groups report what happened to their active days and their surfaces touched over the same period.
+
+The question I am actually asking: is there a group here whose prompt volume FELL while their frequency and breadth HELD OR ROSE?
+
+If there is, size it and describe it, because that group is maturing rather than declining and any success metric based on prompt growth will misclassify them as a failure. If there is no such group, say so plainly - do not manufacture the finding because I clearly want it.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>An explicit yes or no on the falling-but-maturing group, with its size. A no is a perfectly good answer.</div>
+      <div class="bad"><span class="ck">How it fails</span>The model finding the pattern because you signalled you wanted it. The last sentence of the prompt exists to make that harder; verify with&nbsp;P13.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P07</div><h4>Reversal 6 &mdash; the grounding split</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Turns a Copilot adoption meeting into a security and information-architecture meeting, which is usually the larger engagement.</p>
+    <pre class="code ptext">Using the Copilot Chat (work) and Copilot Chat (web) prompt columns, analyse where this population actually works.
+
+1. Report the median web-chat share of total chat prompts across all active users.
+2. Report the full distribution: what share of users are work-only, web-only, and genuinely mixed. Define "web-only" as a web share above 90 percent and state the threshold you used.
+3. For each of those three groups, report median total prompts, median active days, median prompts per active day, and median surfaces touched.
+4. State which of the three groups is strongest on those measures.
+5. Size the web-only group as a count and as a percentage.
+
+Then interpret it under this specific framing, and tell me whether the framing fits or not: heavy work-mode use indicates that internal content is findable; heavy web-only use indicates that people are going outside because the answer is not findable inside, which is a search and permissions problem rather than a policy problem.
+
+Name at least two alternative explanations for a high web-only share that have nothing to do with the data estate - for example role type, or the user simply not having been shown work mode.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Three sized groups, a named strongest group, and at least two alternative explanations you have to rule out before selling anything.</div>
+      <div class="bad"><span class="ck">How it fails</span>Jumping straight to &ldquo;you have a shadow AI problem&rdquo;. That may be true, but this data cannot establish it on its own.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P08</div><h4>Reversal 7 &mdash; the realistic ceiling</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Produces the number that goes in the statement of work instead of the number someone invented in a kickoff meeting.</p>
+    <pre class="code ptext">I need a defensible adoption target for this tenant, derived from its own data rather than from a benchmark.
+
+1. Restricting to genuinely engaged users - active on more days than the tenant median - report the distribution of prompts per active day: 25th percentile, median, 75th, 90th, 95th, and maximum.
+2. Report what share of ALL licensed users ever exceed 10 prompts per active day, and what share exceed 20.
+3. State where a target of 20 prompts per user per day would sit as a percentile of this tenant's current engaged population.
+
+Then propose three targets for the next two quarters, each expressed as a movement in this tenant's own distribution rather than as an absolute number - for example "raise the median prompts per active day from X to Y" or "increase the share of users above the frequency threshold from X percent to Y percent".
+
+For each proposed target, state what would have to be true for it to be achievable, and state the risk that it is measuring effort rather than outcome.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Three movement-based targets and a percentile position for any round number the customer is attached to. That percentile is the slide that ends the argument.</div>
+      <div class="bad"><span class="ck">How it fails</span>Proposing absolute targets. Re-run it and insist on movements in their own distribution.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P09</div><h4>The agent gap &mdash; access, not authorship</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The prompt that decides whether the customer&rsquo;s first agentic engagement is a two-week enablement project or a six-month build. Needs the agents usage report as well.</p>
+    <pre class="code ptext">I am attaching two files: the Copilot usage report user-detail export, and the Copilot agents usage report user-detail export.
+
+Before analysing, state clearly at the top of your answer:
+ - the window length of each file, and that they differ
+ - which version of the agents report this is, and therefore whether Microsoft-built and third-party agents are included or excluded
+
+Then, matching users across the two files where possible:
+1. What share of the CHAMPIONS segment - the most frequent and deepest users - has any agent activity at all?
+2. What share of the whole licensed population has any agent activity?
+3. Among users who do use agents, what is the median number of distinct agents used?
+4. Break agent usage down by creator type if that column exists: agents built by your users, by your organisation, by Microsoft, by third parties.
+
+Then answer one question directly: is the constraint in this tenant that there are no agents to use, or that the people most capable of using them have not been given access to the ones that already exist?
+
+Do not compare the two files' percentages as if they covered the same period. State the window mismatch every time you put two numbers side by side.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>The window mismatch stated up front, and a direct access-versus-authorship verdict. In most tenants the answer is access.</div>
+      <div class="bad"><span class="ck">How it fails</span>Silently comparing a 30-day agent figure with a 180-day usage figure. If it does that once, it will do it throughout.</div>
+    </div>
+  </div>
+</div>
+
+<div class="grouprule"><div class="lbl">Group C &middot; Turn it into money and motion</div><div class="rule"></div></div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P10</div><h4>Idle-licence exposure and the reclamation list</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The finance conversation. Deliberately written so the model never invents a price &mdash; you supply the rate, or it reports units only.</p>
+    <pre class="code ptext">Quantify the unrealised licence spend in this tenant. Report in units, not currency, unless I give you a per-user rate - if I have not given you one, do not estimate it, do not use a public list price, and do not guess.
+
+1. Count users with zero prompts and zero active days across the whole window. Express as a count and as a share of the file.
+2. Count users whose last activity date is more than 90 days before the report refresh date. Express as a count and a share.
+3. Count users in the DRIFTING segment who have touched three or more surfaces - these tried it and stopped, and are recoverable.
+4. Count users in the DRIFTING segment who have touched zero surfaces - these never started, and may simply be mis-assigned licences.
+
+Present these as four separate numbers. Do not merge them.
+
+Then, for each of the four, state the correct action in one sentence: reclaim, reassign, re-engage with a role-based use case, or investigate as a data artefact. Be explicit that reclamation candidates must be confirmed against current licence assignment before anyone acts, because this export includes users who held a licence at any point in the window.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Four separate unit counts and four different actions. &ldquo;Never started&rdquo; and &ldquo;tried and stopped&rdquo; must not be merged &mdash; they have opposite remedies.</div>
+      <div class="bad"><span class="ck">How it fails</span>Any dollar figure appearing that you did not supply. That number is invented; delete it.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P11</div><h4>Write the success criteria for the statement of work</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">This is the deliverable that protects you eighteen months later, when the deployment has matured and prompt volume has fallen.</p>
+    <pre class="code ptext">Draft the measurement section of a statement of work for an adoption engagement with this customer, using only measures that can be produced from the Microsoft 365 Copilot usage report and the agents usage report.
+
+Requirements:
+ - Every criterion must be expressed as a movement in THIS tenant's baseline, with the current baseline value stated next to it.
+ - Include at least one criterion that would still show success if total prompt volume fell. Explain in one sentence why that criterion is there. This is deliberate and must survive review.
+ - Include the measurement window, the report refresh cadence, and a named data source for each criterion.
+ - Include an explicit exclusions clause listing what this data cannot evidence: business outcome, time saved, quality of output, and causation.
+ - Include a re-baselining trigger: what change in licensing, headcount or product capability would invalidate the baseline and require it to be reset.
+
+Write it as contract prose, not as bullet points for a slide. Do not include pricing, effort estimates or commercial terms of any kind.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Contract-ready prose with baselines inline, an explicit exclusions clause, and at least one metric immune to falling prompt volume.</div>
+      <div class="bad"><span class="ck">How it fails</span>Generic adoption boilerplate with no baseline numbers in it. If the customer&rsquo;s own figures are not in the text, it is not a baseline.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P12</div><h4>Write the four conversations</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Turns the segmentation into something the account team can actually execute on Monday. Run it last, once the numbers are verified.</p>
+    <pre class="code ptext">Using the segment sizes and profiles you produced earlier, write four short engagement briefs - one per segment - for the partner account team.
+
+Each brief must contain, and nothing else:
+ - The segment name, its size as a count and a percentage, and its share of total activity.
+ - One sentence describing what is actually true about these people, written for a human, not a dashboard.
+ - The single most likely reason they are in this segment, and one alternative reason that would change the approach.
+ - The specific intervention: what session, how long, with whom, and what the participant does during it.
+ - The observable signal that would tell us it worked, expressed in this tenant's own measures.
+ - One thing that would be a mistake to do with this segment, and why.
+
+Constraints: no pricing. No claims about business outcome or time saved. Do not recommend building a custom agent for any segment unless the agent data shows that existing agents are already widely used and insufficient - if it does not show that, say so and recommend access and discoverability instead.
+
+Keep each brief under 150 words.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Four briefs with different interventions, each carrying a &ldquo;do not do this&rdquo; line. Section&nbsp;12 is the worked version to compare against.</div>
+      <div class="bad"><span class="ck">How it fails</span>Four briefs that all recommend training. That means the segmentation was not carried through &mdash; feed it P03&rsquo;s table again.</div>
+    </div>
+  </div>
+</div>
+
+<div class="grouprule"><div class="lbl">Group D &middot; Guard against the model</div><div class="rule"></div></div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P13</div><h4>The verification pass &mdash; make it show its work</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Run this before any number leaves your laptop. It is the single most important prompt on the page, and the one nobody runs.</p>
+    <pre class="code ptext">Stop analysing. I am going to put the numbers you have produced in front of a customer, so audit them now.
+
+For every figure you have stated in this conversation, produce one row containing:
+ - the figure
+ - the exact calculation that produced it, written so I can reproduce it in Excel
+ - the number of rows that went into it
+ - the number of rows excluded, and why
+ - whether it came from the file, from arithmetic on the file, or from your own general knowledge
+
+Then, separately and explicitly, list:
+ - every figure you cannot tie to a specific calculation on this file
+ - every place you filled a gap with an assumption, and what the assumption was
+ - every place you rounded, and how much
+ - every comparison you made between two different time windows
+
+Do not re-state your conclusions. Do not defend them. If a number cannot be traced to this file, say "cannot be traced" and leave it at that. I would rather delete five findings than present one I cannot source.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A traceability table, plus a short list of untraceable figures. There is almost always at least one. Delete it.</div>
+      <div class="bad"><span class="ck">How it fails</span>&ldquo;All figures are derived from the attached file.&rdquo; That is not an audit. Ask again, one figure at a time.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P14</div><h4>Devil&rsquo;s advocate &mdash; argue the opposite</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Every finding here is correlational, and the customer&rsquo;s smartest person will say so. Better that you say it first, with the counter-argument already prepared.</p>
+    <pre class="code ptext">Take the position of a sceptical analyst inside the customer's organisation who thinks this whole exercise is over-reading a usage log.
+
+For each of the main findings you produced:
+1. State the strongest alternative explanation that does not involve any adoption problem - for example role mix, licence assignment timing, seasonality, a product change during the window, or a reporting definition rather than a behaviour.
+2. State what additional data would distinguish your explanation from theirs, and whether that data is obtainable.
+3. Rate the finding: robust, plausible, or fragile.
+
+Then list every finding you would drop entirely before presenting to a sceptical audience, and say why.
+
+Finally: name the one confound that applies to this whole analysis regardless of which finding we are discussing, and write the single sentence I should say out loud in the meeting to acknowledge it before anyone else raises it.</pre>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A ratings list with at least one finding marked fragile, and a single acknowledgement sentence you can actually say in the room.</div>
+      <div class="bad"><span class="ck">How it fails</span>Rating everything robust. That is flattery, not analysis. Tell it to try harder and name a fragile one.</div>
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The order matters more than the prompts do</div>
+  <div class="callout-body"><p>P01 before anything. P02 before any segmentation, so the thresholds are on the record as the tenant&rsquo;s own. P13 before any number is spoken aloud. P14 before the meeting, not after it. Everything in the middle is optional and can be run in whatever order the account needs. <strong>The two guard prompts are the ones people skip and the ones that determine whether this exercise makes you look rigorous or makes you look like someone who pasted a spreadsheet into a chatbot.</strong></p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-12">12 &middot; Four segments, four conversations</h2>
+
+<p>The chart is a hook. This is the part that turns it into pipeline. Each segment has a different cause, a different intervention, a different person who has to be in the room, and a different way of proving it worked. Selling one engagement to all four &mdash; which is what a generic adoption workshop does &mdash; is why so many of them fail to renew.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:15%;">Segment</th><th style="width:21%;">What is actually true</th><th style="width:22%;">The engagement</th><th style="width:21%;">How you prove it worked</th><th>The mistake</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>A &middot; Drifting</strong><br /><span style="font-size:.75rem;color:#6b7280;">Usually the largest group</span></td>
+      <td>Exposed across several surfaces, found no fit with their actual job, stopped. A minority never started at all &mdash; check which.</td>
+      <td>Role-based use-case design. One session per job family, built on that role&rsquo;s real weekly tasks. Not a product tour.</td>
+      <td>Movement across the frequency threshold, by role, within one review period. Surfaces touched is a leading indicator.</td>
+      <td>Booking the same generic training again. It already failed on these exact people, and it costs you the second conversation.</td>
+    </tr>
+    <tr>
+      <td><strong>B &middot; Bursty</strong><br /><span style="font-size:.75rem;color:#6b7280;">Highest rate per active day</span></td>
+      <td>Capable and project-driven. Copilot is a tool they pick up for a specific push, not something embedded in a weekly rhythm.</td>
+      <td>Workflow embedding &mdash; find the recurring process adjacent to their project work. Governance attach, because this segment skews ungrounded.</td>
+      <td>Active days rising while rate per active day falls. That combination is embedding, and it looks like decline if you only watch prompts.</td>
+      <td>Treating them as champions because their per-day rate is impressive. They are the least predictable segment in the tenant.</td>
+    </tr>
+    <tr>
+      <td><strong>C &middot; Habitual but shallow</strong><br /><span style="font-size:.75rem;color:#6b7280;">Best conversion rate</span></td>
+      <td>They trust the tool completely and know exactly one thing to do with it. Every frequency dashboard scores them as a success.</td>
+      <td>A single thirty-minute second-use-case session. You are not selling a mindset &mdash; that work is already done &mdash; you are selling one more task.</td>
+      <td>Rate per active day rising while active days hold. The cleanest signal in the whole method.</td>
+      <td>Ignoring them because they look healthy. This is the cheapest expansion in the account and the easiest one to miss.</td>
+    </tr>
+    <tr>
+      <td><strong>D &middot; Champions</strong><br /><span style="font-size:.75rem;color:#6b7280;">Most of the total activity</span></td>
+      <td>Frequent, deep, across many surfaces &mdash; and frequently, never once an agent user. Not resistance. Nobody made one findable.</td>
+      <td>Agent access and discoverability: turn on what exists, surface it where they already work, name the owner. Then intake.</td>
+      <td>Share of the segment with any agent activity, and distinct agents used. Measured over the agent report&rsquo;s own window.</td>
+      <td>Proposing a Copilot Studio build. You have not yet established that the agents already available are being used and found wanting.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">The sequencing that makes this a programme rather than a workshop</div>
+  <div class="callout-body"><p>Run <strong>C then D then A then B</strong>. C converts fastest and gives you a result to show inside a month. D produces the visible, quotable win that gets the next phase funded. A is the largest population and the slowest, so it needs the credibility the first two earned. B is the smallest and most idiosyncratic and should never be the thing a first engagement is judged on. Almost everyone runs this in exactly the reverse order, starting with the biggest, hardest group and running out of goodwill before anything works.</p></div>
+</div>
+
+<h3>What you are actually selling</h3>
+
+<p>Notice that none of the four engagements above is a licence, and none of them is a training day. Three of them are recurring, and the fourth &mdash; the champions&rsquo; agent-access work &mdash; ends by creating the intake function that becomes recurring. That is deliberate. The service ladder these map onto, with scope and pricing, is set out in the <a href="cpb.html">Frontier Partner Playbook</a>; the internal-first version of the same motion is in the <a href="customer-zero-starter-kit/index.html">Customer Zero Starter Kit</a>.</p>
+
+
+<h3>Running the meeting</h3>
+
+<p>You now have a chart, four sized segments and a set of scripts. The meeting itself is short, and its structure matters more than its content, because the whole effect depends on the customer reaching the conclusion rather than being handed it.</p>
+
+<div class="pipeline">
+  <div class="pl-step">
+    <div class="pl-circle filled">1</div>
+    <div class="pl-title">Pull</div>
+    <div class="pl-tag">Before the meeting</div>
+    <div class="pl-tools">Their admin, Reports Reader, 180-day window, one CSV. Section&nbsp;8.</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle filled">2</div>
+    <div class="pl-title">Plot</div>
+    <div class="pl-tag">Ten minutes</div>
+    <div class="pl-tools">Two columns, log axis, two threshold lines. Four groups appear without you doing anything clever. Section&nbsp;10.</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle filled">3</div>
+    <div class="pl-title">Size</div>
+    <div class="pl-tag">Twenty minutes</div>
+    <div class="pl-tools">Population share and activity share per segment. Verify with P13 before anything is spoken aloud.</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle">4</div>
+    <div class="pl-title">Script</div>
+    <div class="pl-tag">In the room</div>
+    <div class="pl-tools">Four conversations, four owners, four success signals. Section&nbsp;12.</div>
+  </div>
+</div>
+
+<h3>The first four minutes</h3>
+
+<p>Open with the chart on screen and nothing else. No agenda slide, no company overview, no product positioning. The chart is of <em>their</em> tenant, which means it is the only artefact in the meeting that nobody in the room can dismiss.</p>
+
+<div class="sayline"><b>Opening</b>&ldquo;This is every licensed user you have. Across the bottom is how often they show up. Up the side is how much they do when they get there. I haven&rsquo;t added anything &mdash; these are two columns from a report your admin exported on Tuesday. Before I say anything about it, tell me where you thought your people were.&rdquo;</div>
+
+<p>Then be quiet. What follows is the most valuable thirty seconds of the engagement, because whatever they say next is the assumption you are about to test in front of them &mdash; and it is almost always one of the seven in Section&nbsp;2.</p>
+
+<div class="sayline"><b>When they point at the busy corner</b>&ldquo;That group is your entire return, and it&rsquo;s a smaller share of your people than you think. Here&rsquo;s the number that matters though &mdash; this is how many of them have never once used an agent. Not because they refused. Because nobody made one findable.&rdquo;</div>
+
+<div class="sayline"><b>When they point at the quiet corner</b>&ldquo;The instinct is more training. But look at this column &mdash; that group has already opened Copilot in this many different apps. They&rsquo;ve seen it. They tried it against their actual job and it didn&rsquo;t fit. Training them again produces the same chart next quarter.&rdquo;</div>
+
+<div class="sayline"><b>Before anyone commits to a target</b>&ldquo;Whatever number you&rsquo;re about to write down &mdash; let me show you where it sits in your own distribution first. If it&rsquo;s above your ninety-fifth percentile, you&rsquo;ve already decided the programme fails, you just haven&rsquo;t noticed yet.&rdquo;</div>
+
+<h3>The three objections you will get, in the order you will get them</h3>
+
+<table>
+  <thead><tr><th style="width:30%;">The objection</th><th>The answer</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>&ldquo;This is just usage. It doesn&rsquo;t show value.&rdquo;</strong><br /><span style="font-size:.78rem;color:#6b7280;">Usually from the smartest person in the room</span></td>
+      <td>Agree immediately and completely &mdash; it is the correct objection and you should have said it first. Then reframe: this data cannot tell you whether anyone got value, but it can tell you who has not yet had the chance to. Nobody gets value from a tool they open once a fortnight for one task. <strong>The chart is a map of unrealised opportunity, not a scorecard of outcome</strong>, and everything downstream of it is a hypothesis to test with humans.</td>
+    </tr>
+    <tr>
+      <td><strong>&ldquo;Our people are different / that segment is our field staff.&rdquo;</strong></td>
+      <td>Excellent &mdash; that is a role hypothesis and it is testable. It is also the single most valuable thing they can tell you, because it converts an anonymous quadrant into a named population with a known working pattern. Ask for the department or job-family join described in Section&nbsp;8.5 and re-cut it. If they are right, you have just scoped a role-based engagement with their own evidence behind it.</td>
+    </tr>
+    <tr>
+      <td><strong>&ldquo;Microsoft already gives us an adoption dashboard.&rdquo;</strong></td>
+      <td>It does &mdash; above fifty Copilot seats. Below that, the agent insights, the group-level cuts and the benchmarks are all switched off, which is most of what they would want it for. What is left reports <em>active user rate</em>: a single percentage that collapses frequency and depth into one number and therefore cannot tell a loyal-but-stuck user from a champion. <strong>The export is the only place you can un-collapse that, and it works at any tenant size.</strong> This is not a competing tool &mdash; it is the cut nobody is making. Section&nbsp;4 has the full tier table if they want to check.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<h2 id="section-13">13 &middot; Run it on yourself first, and sources</h2>
+
+<p>Everything on this page came out of running it on our own tenant before running it on anyone else&rsquo;s, and that is not a rhetorical flourish &mdash; it is the reason the seven reversals exist. We did not discover them by being clever about the data. We discovered them because we were wrong about our own organisation and the export said so, in a meeting where nobody had to be diplomatic about a customer.</p>
+
+<p>Do that first. Pull your own tenant&rsquo;s export, build the chart, size your four segments, and find out how many of your own most engaged people have never used an agent. Three things follow from it:</p>
+
+<div class="recap-grid">
+  <div class="recap-item">
+    <div class="rn">01</div>
+    <h4>You find out which reversals are real</h4>
+    <p>Some of the seven will hold in your tenant and some will not. Knowing which is which before a customer meeting is the difference between a talk track and a set of borrowed opinions.</p>
+  </div>
+  <div class="recap-item">
+    <div class="rn">02</div>
+    <h4>You build the template on your own data</h4>
+    <p>Every mistake you are going to make with the column definitions in Section&nbsp;9, you make on a file where being wrong costs nothing. The second tenant takes four minutes.</p>
+  </div>
+  <div class="recap-item">
+    <div class="rn">03</div>
+    <h4>You earn the right to run the meeting</h4>
+    <p>&ldquo;Here is what we found when we did this to ourselves, including the part that was embarrassing&rdquo; is a fundamentally different opening from &ldquo;here is an industry benchmark&rdquo;. One of them survives contact with a sceptical CIO.</p>
+  </div>
+</div>
+
+<div class="callout dark">
+  <div class="callout-title">The Customer Zero motion, in one line</div>
+  <div class="callout-body"><p>Run the governance, readiness and adoption motion on your own tenant first, then sell the proof rather than the theory. The full version &mdash; roles, phases, capture discipline and the ladder from internal proof to sellable service &mdash; is in the <a href="customer-zero-starter-kit/become-customer-zero.html" style="color:#a8ecf5;">Become Customer Zero</a> guide, with the commercial half in <a href="customer-zero-starter-kit/build-sellable-services.html" style="color:#a8ecf5;">Build Sellable Services</a>. This page is the analytics companion to both: the specific report to pull, and the specific things to look for in it.</p></div>
+</div>
+
+
+<h3>Sources</h3>
+
+<p>Every product behaviour, column definition, permission and caveat described in Sections&nbsp;8, 9 and&nbsp;10 comes from Microsoft&rsquo;s own documentation, linked below. <strong>Verify before you deliver</strong> &mdash; this reporting surface has changed several times in the last year, the agent report has already been replaced once, and menu labels move.</p>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-365-copilot-usage" target="_blank" rel="noopener">Microsoft Learn &mdash; Microsoft Copilot usage report</a></div><div class="rf-d">The click path, the 7/28/90/180-day windows, the full user-detail column list and definitions, the &ldquo;what counts as active&rdquo; rule, the 180-day licensed-at-any-point table scope, the blank-last-activity edge case, and the statement that audit-log data is not a usage-reporting source. Sections&nbsp;8.2, 8.3, 9.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports" target="_blank" rel="noopener">Microsoft Learn &mdash; Microsoft 365 admin center usage reports overview</a></div><div class="rf-d">The roles that can view usage reports, the exact concealment setting and its path, its tenant-wide and retroactive scope, the Purview audit-log entry it generates, and the 30-day deletion of a removed user&rsquo;s usage data. Sections&nbsp;8.1, 8.5, 9.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/api/admin-settings/reports/copilotreportroot-getmicrosoft365copilotusageuserdetail" target="_blank" rel="noopener">Microsoft Learn &mdash; Graph API: getMicrosoft365CopilotUsageUserDetail</a></div><div class="rf-d">The endpoint, the <code>Reports.Read.All</code> permission, the admin roles required for delegated access, and the version&nbsp;1 versus version&nbsp;2 field lists &mdash; the source of the version trap in Section&nbsp;8.4.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-365-copilot-agents-new" target="_blank" rel="noopener">Microsoft Learn &mdash; Copilot Agents usage report (preview)</a></div><div class="rf-d">The current agent report: 7- and 30-day windows only, creator-type breakdown, licensed and unlicensed users, the per-user and per-agent detail tables, and the exclusion of SharePoint agents used in Teams. Traps&nbsp;04 and&nbsp;05.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-365-copilot-agents" target="_blank" rel="noopener">Microsoft Learn &mdash; Copilot Agent usage report (deprecated)</a></div><div class="rf-d">The superseded report, retained here because historical agent-adoption figures were produced by it &mdash; it counted only organisation-built agents and excluded Microsoft and partner agents. This is what makes old and new agent numbers incomparable.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/viva/insights/org-team-insights/copilot-dashboard" target="_blank" rel="noopener">Microsoft Learn &mdash; Copilot Dashboard in Viva Insights</a></div><div class="rf-d">The tier table in Section&nbsp;4 &mdash; availability at one or more Copilot licences, and the gating of agent insights, benchmarks, intelligent summaries, group-level metrics, delegation and survey data at fifty or more Copilot or Viva Insights licences. Also the source of the power / habitual / novice definitions used in Section&nbsp;3, the minimum-group-size suppression, the seven-day data processing lag, and the 2,500-user senior-leader auto-enablement rule. Note that its population and timeframe can differ from the admin center report, so the two will not always reconcile.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/graph/auth-cloudsolutionprovider" target="_blank" rel="noopener">Microsoft Learn &mdash; Call Microsoft Graph from a Cloud Solution Provider application</a></div><div class="rf-d">The source of the automation limitation in Section&nbsp;5.3: calling Graph from a preconsented partner-managed app is supported only for directory and Intune resources. Also documents the delegated flow, where the agent signs in with a partner account against the customer tenant as target.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/customers/gdap-introduction" target="_blank" rel="noopener">Microsoft Learn &mdash; Granular delegated admin privileges (GDAP) introduction</a></div><div class="rf-d">How to request granular, time-bound roles in a customer tenant. Reports Reader is the least-privileged role that can read usage reports, and it is the only one this method needs &mdash; Section&nbsp;5.1.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/graph/reportroot-authorization" target="_blank" rel="noopener">Microsoft Learn &mdash; Authorization for APIs to read Microsoft 365 usage reports</a></div><div class="rf-d">Which Entra roles a delegated caller must hold before the reports endpoints will answer. Read this before scoping the spike in Section&nbsp;5.3.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-365-copilot-readiness" target="_blank" rel="noopener">Microsoft Learn &mdash; Microsoft Copilot readiness report</a></div><div class="rf-d">The pre-deployment companion: who is eligible, who is licensed, and where the gaps are. Useful when the tenant is not far enough along to have a distribution worth plotting.</div></li>
+</ul>
+
+<div class="callout subtle">
+  <div class="callout-title">A note on what is and is not sourced here</div>
+  <div class="callout-body"><p>Everything about <em>how the reports behave</em> is documented and linked above. Everything in Section&nbsp;2 is an observation from a single tenant, stated as shape rather than as absolute figures, and is <strong>not</strong> a benchmark, a Microsoft finding, or a claim about the market. It is a set of hypotheses that happened to be true in one large deployment and that your customer&rsquo;s export can confirm or refute in twenty minutes. Present it that way and it is unassailable. Present it as an industry statistic and it deserves to be challenged.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<div style="text-align:center;padding:22px 0;color:#6b7280;font-size:.85rem;">
+  <p style="margin:0;">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, TD SYNNEX &nbsp;&middot;&nbsp; <a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
+  <p style="margin:6px 0 0;">Microsoft&rsquo;s reporting surface for Copilot changes frequently &mdash; re-verify column names, report paths and window lengths before re-delivering this content.</p>
+</div>
+
+<script>
+(function () {
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.copybtn') : null;
+    if (!btn) return;
+    var card = btn.closest('.pcard');
+    if (!card) return;
+    var pre = card.querySelector('.ptext');
+    if (!pre) return;
+    var text = pre.textContent;
+    var done = function () {
+      var was = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('done');
+      setTimeout(function () { btn.textContent = was; btn.classList.remove('done'); }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+    } else {
+      fallback(text, done);
+    }
+  });
+  function fallback(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'absolute';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (err) { /* clipboard unavailable */ }
+    document.body.removeChild(ta);
+  }
+})();
+</script>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
