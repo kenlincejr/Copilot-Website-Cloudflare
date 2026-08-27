@@ -2892,7 +2892,9 @@ footer.pagefoot a { color:#6b7280; }
        between screens — but never on first paint, which would scroll the
        masthead off before they have seen it. */
     if (booted) {
-      var top = $('stage').getBoundingClientRect().top + window.pageYOffset - 14;
+      var mh = document.querySelector('.mh-bar');
+      var clearance = (mh ? mh.getBoundingClientRect().height : 0) + 14;
+      var top = $('stage').getBoundingClientRect().top + window.pageYOffset - clearance;
       if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
     }
     return r;
