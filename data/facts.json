@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
  "generated": "2026-08-26",
- "phase": "2 \u2014 inventory only, values unverified",
+ "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
  "fact_count": 142,
  "occurrence_count": 271,
  "facts": [
@@ -161,12 +161,12 @@
    "id": "F-003",
    "kind": "money",
    "value": "$21",
-   "label": "",
+   "label": "M365 Copilot Business list price",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "As of 2026-07-01 the SMB lineup is: M365 Business Standard with Copilot $23.50/user/mo (300 max, GA); M365 Business Premium with Copilot $32/user/mo (300 max, GA); M365 Copilot Business standalone $18/user/mo after a 15% promo extended to Dec 31 2026; M365 Business Basic + Copilot Business $21/user/mo after a 25% promo through Dec 31 2026. The site's flat '$21/user/mo, SMB-capped at 300 seats' is now a PROMOTIONAL bundle price, not a list price.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -210,7 +210,9 @@
      "anchor": "s. IDC max = 50 users \u00d7 $21/user/mo Copilot license",
      "context": ">Sources: IDC #US52483124 (Sep 2024) \u00b7 Forrester TEI FY2025 \u00b7 Playbook estimates. IDC max = 50 users \u00d7 $21/user/mo Copilot license \u00d7 $8.45 multiplier \u00d7 12 months = $106,470."
     }
-   ]
+   ],
+   "new_value": "superseded - see notes",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-004",
@@ -271,12 +273,12 @@
    "id": "F-005",
    "kind": "percent",
    "value": "3.3%",
-   "label": "",
+   "label": "Copilot paid penetration of the M365 commercial base",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was 3.3% (15M/450M, FY26 Q2). Now 30M+ paid seats. 30/450=6.7% (Microsoft's last stated denominator, Jan 2026); 30/464=6.5% (office365itpros estimate). Penetration DOUBLED in two quarters.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -320,18 +322,20 @@
      "anchor": "       <div class=\"pct\">3.3%</div>\n        <div clas",
      "context": "data, governed properly.\u201d That\u2019s your conversation, not Microsoft\u2019s. 3.3% Rescue Bought it, aren\u2019t using it They wrote the check and the renewal"
     }
-   ]
+   ],
+   "new_value": "6.5%-6.7%",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-006",
    "kind": "count",
    "value": "450M",
-   "label": "",
+   "label": "Microsoft 365 commercial paid seats (denominator)",
    "type": "derived",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-01-28",
+   "verified": true,
+   "notes": "Microsoft has NOT restated the commercial seat count since 'over 450 million' at FY26 Q2 (Jan 28 2026). The ~464M figure widely quoted for Q4 is office365itpros applying a ~3% increase to that number - an ESTIMATE, not a disclosure. Do not present 464M as Microsoft-stated.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -368,18 +372,20 @@
      "anchor": " seats; using the prior 450M+ Microsoft 365 commerci",
      "context": "r> Microsoft paid-seat disclosure 20M+ paid Microsoft 365 Copilot seats; using the prior 450M+ Microsoft 365 commercial paid-seat denominator yields roughly 4.4% derived penetration. <a href=\"https://www.microsoft.com/en-us/investor/events/f"
     }
-   ]
+   ],
+   "new_value": "~450M stated / ~464M estimated",
+   "status": "STALE-SHAPED"
   },
   {
    "id": "F-007",
    "kind": "date",
    "value": "Mar 9 2026",
-   "label": "",
+   "label": "M365 E7 GA date",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://samexpert.com/microsoft-365-e7-licensing-guide/",
+   "as_of": "2026-05-01",
+   "verified": true,
+   "notes": "Holds. But the site's framing of E7 as 'Frontier preview today' is now wrong - it has been GA since May 1 2026.",
    "occurrences": [
     {
      "file": "cowork.html",
@@ -416,7 +422,9 @@
      "anchor": "o;s Claude</a> (Bishop, Mar 9 2026)</li>\n  <li><a href=\"ht",
      "context": "-anthropics-claude-in-rollout-of-new-e7-licensing-tier/\">GeekWire \u2014 Microsoft\u2019s new Copilot Cowork integrates Anthropic\u2019s Claude (Bishop, Mar 9 2026) IDM Magazine \u2014 Claude now i"
     }
-   ]
+   ],
+   "new_value": "2026-05-01",
+   "status": "CONFIRMED"
   },
   {
    "id": "F-008",
@@ -470,12 +478,12 @@
    "id": "F-009",
    "kind": "money",
    "value": "$15",
-   "label": "",
+   "label": "Agent 365 list price",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-july",
+   "as_of": "2026-07-01",
+   "verified": true,
+   "notes": "Price holds. But effective 2026-06-01 new Agent 365 purchases require M365 E5/A5/Business Premium, OR Defender Suite + Purview Suite (incl. Edu and FLW variants). The site states no prerequisite. M365 E7 engagements are unaffected because E7 already includes E5 + Agent 365 + M365 Copilot + Entra Suite.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -512,7 +520,9 @@
      "anchor": "ited here is standalone $15/user/month or bundled i",
      "context": "ernance/control-plane problems. It is usually not the near-term priority for most SMBs. It is not included in E3/E5; current packaging cited here is standalone $15/user/month or bundled in E7, with a free Agent Registry for any Microsoft Cloud subscriber. Re-verify pricing and packaging before proposal. Registr"
     }
-   ]
+   ],
+   "new_value": "$15/user/mo (unchanged) - NEW prerequisite",
+   "status": "CHANGED"
   },
   {
    "id": "F-010",
@@ -785,12 +795,12 @@
    "id": "F-016",
    "kind": "percent",
    "value": "4.4%",
-   "label": "",
+   "label": "Derived penetration (starter kit)",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was ~4.4% (20M/450M, FY26 Q3).",
    "occurrences": [
     {
      "file": "customer-zero-starter-kit/index.html",
@@ -820,7 +830,9 @@
      "anchor": "ion research. Treat the 4.4% penetration as a calcul",
      "context": "Adoption-gap figures are drawn from Microsoft FY26 Q3 earnings context and Gartner 2024/2025 Copilot adoption research. Treat the 4.4% penetration as a calculation from disclosed Microsoft seat counts and a prior commercial-seat denominator, not a Microsoft-stated customer percentage. The"
     }
-   ]
+   ],
+   "new_value": "6.5%-6.7%",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-017",
@@ -867,12 +879,12 @@
    "id": "F-018",
    "kind": "count",
    "value": "20M",
-   "label": "",
+   "label": "Microsoft 365 Copilot paid seats (starter kit)",
    "type": "microsoft-reported",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was 20M+ (FY26 Q3).",
    "occurrences": [
     {
      "file": "customer-zero-starter-kit/index.html",
@@ -895,7 +907,9 @@
      "anchor": "losure</strong></td><td>20M+ paid Microsoft 365 Cop",
      "context": "r> Proof point Figure Source Microsoft paid-seat disclosure 20M+ paid Microsoft 365 Copilot seats; using the prior 450M+ Microsoft 365 commercial paid-seat denominator yields roughly 4.4% derived penetration. <a"
     }
-   ]
+   ],
+   "new_value": "30M+",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-019",
@@ -935,12 +949,12 @@
    "id": "F-020",
    "kind": "date",
    "value": "May 1, 2026",
-   "label": "",
+   "label": "Agent 365 / E7 GA date",
    "type": "microsoft-reported",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://samexpert.com/microsoft-365-e7-licensing-guide/",
+   "as_of": "2026-05-01",
+   "verified": true,
+   "notes": "Holds.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -963,18 +977,20 @@
      "anchor": "mo</strong> &middot; GA May 1, 2026</td>\n    </tr>\n  </tbod",
      "context": "d>Server-side in your Microsoft 365 tenant (Graph + Purview) M365 Frontier preview today \u00b7 E7 at $99/user/mo \u00b7 GA May 1, 2026 Sources: Anthropic \u2014 Download Claude ; <a href=\"https://www.an"
     }
-   ]
+   ],
+   "new_value": "2026-05-01",
+   "status": "CONFIRMED"
   },
   {
    "id": "F-021",
    "kind": "fy",
    "value": "FY26 Q2",
-   "label": "",
+   "label": "Reporting quarter for the headline arithmetic",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was FY26 Q2.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -997,18 +1013,20 @@
      "anchor": "b>Source:</b> Microsoft FY26 Q2 earnings disclosure (Ja",
      "context": "w the rollout is run \u2014 and that variable doesn\u2019t live in Redmond. Source: Microsoft FY26 Q2 earnings disclosure (Jan 28, 2026), numerator and denominator. The 3.3% ratio is independent analyst arithmetic \u2014 SAMexpert (Feb 5, 2026), replica"
     }
-   ]
+   ],
+   "new_value": "FY26 Q4",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-022",
    "kind": "fy",
    "value": "FY26 Q3",
-   "label": "",
+   "label": "Reporting quarter (starter kit)",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was FY26 Q3.",
    "occurrences": [
     {
      "file": "customer-zero-starter-kit/index.html",
@@ -1031,7 +1049,9 @@
      "anchor": "re drawn from Microsoft FY26 Q3 earnings context and Ga",
      "context": "ally, not a fresh metric. Adoption-gap figures are drawn from Microsoft FY26 Q3 earnings context and Gartner 2024/2025 Copilot adoption research. Treat the 4.4% penetration as a calculation from disclosed Microsoft seat counts and a"
     }
-   ]
+   ],
+   "new_value": "FY26 Q4",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-023",
@@ -1309,12 +1329,12 @@
    "id": "F-031",
    "kind": "date",
    "value": "Apr 29 2026",
-   "label": "",
+   "label": "Earnings call date (starter kit)",
    "type": "microsoft-reported",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was Apr 29 2026 (FY26 Q3).",
    "occurrences": [
     {
      "file": "customer-zero-starter-kit/index.html",
@@ -1330,7 +1350,9 @@
      "anchor": " FY26 Q3 earnings call, Apr 29 2026</a>; 4.4% is a derived ",
      "context": "oughly 4.4% derived penetration. Microsoft FY26 Q3 earnings call, Apr 29 2026 ; 4.4% is a derived calculation, not a Microsoft-stated customer percentage. SMB ROI model <td"
     }
-   ]
+   ],
+   "new_value": "2026-07-29",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-032",
@@ -1363,12 +1385,12 @@
    "id": "F-033",
    "kind": "date",
    "value": "Feb 5, 2026",
-   "label": "",
+   "label": "Analyst arithmetic citation",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://office365itpros.com/2026/07/30/fy26-q4-microsoft-results/",
+   "as_of": "2026-07-30",
+   "verified": true,
+   "notes": "The Feb 5 2026 SAMexpert citation is tied to the 3.3% figure. If the ratio changes, this citation must change with it or be removed.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -1384,18 +1406,20 @@
      "anchor": "etic &mdash; SAMexpert (Feb 5, 2026), replicated by Stackma",
      "context": "ource: Microsoft FY26 Q2 earnings disclosure (Jan 28, 2026), numerator and denominator. The 3.3% ratio is independent analyst arithmetic \u2014 SAMexpert (Feb 5, 2026), replicated by Stackmatix (Apr 2026) and Office 365 IT Pros."
     }
-   ]
+   ],
+   "new_value": "SAMexpert / Stackmatix / Office 365 IT Pros",
+   "status": "NEEDS-RECHECK"
   },
   {
    "id": "F-034",
    "kind": "date",
    "value": "Jan 28, 2026",
-   "label": "",
+   "label": "Earnings disclosure date",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was Jan 28 2026 (FY26 Q2).",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -1411,7 +1435,9 @@
      "anchor": "Q2 earnings disclosure (Jan 28, 2026), numerator and denomin",
      "context": "\u2014 and that variable doesn\u2019t live in Redmond. Source: Microsoft FY26 Q2 earnings disclosure (Jan 28, 2026), numerator and denominator. The 3.3% ratio is independent analyst arithmetic \u2014 SAMexpert (Feb 5, 2026), replicated by Stackmatix (Apr 2026)"
     }
-   ]
+   ],
+   "new_value": "2026-07-29",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-035",
@@ -1795,12 +1821,12 @@
    "id": "F-049",
    "kind": "money",
    "value": "$99",
-   "label": "",
+   "label": "Microsoft 365 E7 list price",
    "type": "microsoft-reported",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://samexpert.com/microsoft-365-e7-licensing-guide/",
+   "as_of": "2026-05-01",
+   "verified": true,
+   "notes": "Holds. E7 GA May 1 2026 via EA/EAS/MCA-E/CSP. Bundles E5 ($60) + Copilot ($30) + Entra Suite ($12) + Agent 365 ($15) = $117 a la carte, so E7 saves ~$18/user/mo.",
    "occurrences": [
     {
      "file": "cowork.html",
@@ -1816,7 +1842,9 @@
      "anchor": " &middot; E7 at <strong>$99/user/mo</strong> &middo",
      "context": "L.md customization. Server-side in your Microsoft 365 tenant (Graph + Purview) M365 Frontier preview today \u00b7 E7 at $99/user/mo \u00b7 GA May 1, 2026 Sources: Anthropic \u2014 Download Cl"
     }
-   ]
+   ],
+   "new_value": "$99/user/mo",
+   "status": "CONFIRMED"
   },
   {
    "id": "F-050",
@@ -1876,12 +1904,12 @@
    "id": "F-052",
    "kind": "percent",
    "value": "160%",
-   "label": "",
+   "label": "Microsoft's own growth framing",
    "type": "analyst",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was '+160% YoY paid-seat growth' (FY26 Q2 framing). Microsoft did NOT restate a YoY seat-growth percentage at Q4. Nadella: 'We now have over 30 million paid Microsoft 365 Copilot seats.' Substitute the QoQ/enterprise-concentration framing or drop the counter-headline.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -1897,7 +1925,9 @@
      "anchor": "osoft reported <strong>+160% year-over-year paid-sea",
      "context": "thmetic Three percent of the installed base is paying for Copilot. Microsoft reported +160% year-over-year paid-seat growth from the same disclosure. Same data, different headline \u2014 and the headline below is the one your customer al"
     }
-   ]
+   ],
+   "new_value": "net seat adds more than doubled QoQ; 50k+ seat customers up 7x YoY",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-053",
@@ -2092,12 +2122,12 @@
    "id": "F-060",
    "kind": "count",
    "value": "15M",
-   "label": "",
+   "label": "Microsoft 365 Copilot paid seats",
    "type": "derived",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://news.microsoft.com/source/2026/07/29/microsoft-cloud-and-ai-strength-fuels-fourth-quarter-results-4/",
+   "as_of": "2026-07-29",
+   "verified": true,
+   "notes": "Was 15M (FY26 Q2). Microsoft: 'Microsoft 365 Copilot reached over 30 million paid seats.' 15M Q2 -> 20M Q3 -> 30M+ Q4.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -2106,7 +2136,9 @@
      "anchor": "e-height:1.5;\">Take the 15M / ~450M ratio from abov",
      "context": ">Apply the math to a sample of 100 seats Take the 15M / ~450M ratio from above and walk it through what actually happens to a hundred random Microsoft 365 commercial seats. <div"
     }
-   ]
+   ],
+   "new_value": "30M+",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-061",
@@ -2692,12 +2724,12 @@
    "id": "F-090",
    "kind": "money",
    "value": "$30",
-   "label": "",
+   "label": "M365 Copilot enterprise list price",
    "type": "derived",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://samexpert.com/microsoft-365-e7-licensing-guide/",
+   "as_of": "2026-05-01",
+   "verified": true,
+   "notes": "Holds.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -2706,7 +2738,9 @@
      "anchor": "5 Copilot</strong><span>$30/user/mo, enterprise-gra",
      "context": "> M365 Copilot $30/user/mo, enterprise-grade with advanced admin controls and E-suite integration <p"
     }
-   ]
+   ],
+   "new_value": "$30/user/mo",
+   "status": "CONFIRMED"
   },
   {
    "id": "F-091",
@@ -3492,12 +3526,12 @@
    "id": "F-130",
    "kind": "percent",
    "value": "51%",
-   "label": "",
+   "label": "Azure revenue increase for designation earners",
    "type": "unclassified",
    "source_url": "",
    "as_of": "",
-   "verified": false,
-   "notes": "",
+   "verified": true,
+   "notes": "No public Microsoft source found for '51% increase in Azure revenue for designation earners'. Presented as a hard stat in stat-block markup with no attribution. SOFTEN OR REMOVE.",
    "occurrences": [
     {
      "file": "frontier.html",
@@ -3506,7 +3540,9 @@
      "anchor": "v class=\"invest-stat-k\">51%</div>\n      <div class=",
      "context": "ear-over-year growth tracked by partners with Azure certifications specifically 51% Increase in Azure revenue for designation earners \u2014 measured outcomes, not projections"
     }
-   ]
+   ],
+   "new_value": "UNVERIFIABLE",
+   "status": "UNVERIFIABLE"
   },
   {
    "id": "F-131",
@@ -3672,12 +3708,12 @@
    "id": "F-139",
    "kind": "percent",
    "value": "9%",
-   "label": "",
+   "label": "Share of AI-using businesses that use agents",
    "type": "unclassified",
-   "source_url": "",
-   "as_of": "",
-   "verified": false,
-   "notes": "",
+   "source_url": "https://prefactor.tech/learn/ai-agent-adoption-statistics",
+   "as_of": "2026-01-01",
+   "verified": true,
+   "notes": "'Only 9% of businesses using AI are using agents' does not survive 2026 data: 23% actively scaling agentic AI in at least one function plus 39% experimenting (62% at least experimenting); PwC has 79% of companies adopting agents. The 9% figure reads as 2024/2025 vintage. REPLACE OR REMOVE - as written it understates the market by an order of magnitude and the argument it supports ('the Copilot Studio opportunity is even earlier') no longer holds.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -3686,7 +3722,9 @@
      "anchor": "y);line-height:1;\">Only 9%</div>\n        <div styl",
      "context": "> Only 9% of businesses using AI are using agents \u2014 the Copilot Studio opportunity is even ea"
     }
-   ]
+   ],
+   "new_value": "superseded",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-140",
@@ -3712,12 +3750,12 @@
    "id": "F-141",
    "kind": "percent",
    "value": "96%",
-   "label": "",
+   "label": "YoY growth for partners with Azure certifications",
    "type": "unclassified",
    "source_url": "",
    "as_of": "",
-   "verified": false,
-   "notes": "",
+   "verified": true,
+   "notes": "No public Microsoft source found for '96% year-over-year growth'. Same treatment as F-130. SOFTEN OR REMOVE.",
    "occurrences": [
     {
      "file": "frontier.html",
@@ -3726,7 +3764,9 @@
      "anchor": "v class=\"invest-stat-k\">96%</div>\n      <div class=",
      "context": "who earned designations after completing Azure & Modern Work certifications 96% Year-over-year growth tracked by partners with Azure certifications specifically <div class=\"inv"
     }
-   ]
+   ],
+   "new_value": "UNVERIFIABLE",
+   "status": "UNVERIFIABLE"
   },
   {
    "id": "F-142",
@@ -3748,5 +3788,6 @@
     }
    ]
   }
- ]
+ ],
+ "researched": "2026-08-26"
 }
