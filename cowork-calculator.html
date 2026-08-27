@@ -42,7 +42,7 @@ p  { margin: .5rem 0; }
 
 /* ═══ MASTHEAD ═══ */
 .masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); }
-.masthead-inner { max-width: 1680px; margin: 0 auto; padding: 22px 48px 26px; }
+.masthead-inner { max-width: 1320px; margin: 0 auto; padding: 22px 48px 26px; }
 .mh-nav { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
 .mh-nav .crumbs { font-size:.78rem; color:rgba(255,255,255,.55); }
 .mh-nav .crumbs a { color:rgba(255,255,255,.75); }
@@ -51,7 +51,7 @@ p  { margin: .5rem 0; }
 .mh-eyebrow .bar { width:24px; height:2px; background:var(--ltblue); border-radius:1px; }
 .mh-eyebrow .lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.5); }
 .masthead h1 { font-size: 1.85rem; color:#fff; margin: 0 0 8px; letter-spacing:-.3px; font-weight:800; line-height:1.15; }
-.masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); max-width: 940px; line-height:1.6; margin:0; }
+.masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); line-height:1.6; margin:0; }
 .mh-badges { display:flex; gap:12px; flex-wrap:wrap; }
 .mh-badge { font-size:.72rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 16px; }
 
@@ -95,7 +95,7 @@ p  { margin: .5rem 0; }
 /* ═══ STEP NAV ═══ */
 .stepnav { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 32px; background:var(--muted); border-top:1px solid var(--border); flex-wrap:wrap; }
 .stepnav .sn-l, .stepnav .sn-r { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-.stepnav .sn-hint { font-size:.78rem; color:#9ca3af; max-width:420px; line-height:1.5; }
+.stepnav .sn-hint { font-size:.78rem; color:#9ca3af; max-width:720px; line-height:1.5; }
 
 /* ═══ PER-STEP ECHO ═══ */
 .echo { display:flex; gap:12px; align-items:flex-start; margin-top:24px; padding:14px 18px; background:#f3fbfc; border:1px solid #cfe8ec; border-radius:8px; }
@@ -235,7 +235,7 @@ body.at-intro #stepper, body.at-intro .toolbar { display:none; }
 .marg.neg { color:#b91c1c; }
 .marg.zero { color:#9ca3af; font-weight:400; }
 
-.shapenote { margin-top:12px; background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:13px 17px; max-width:80ch; }
+.shapenote { margin-top:12px; background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:13px 17px; }
 .shapenote.custom { border-left-color:#9ca3af; }
 .shapenote .sn-eg { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px; }
 .shapenote.custom .sn-eg { color:#6b7280; }
@@ -337,7 +337,20 @@ body.showmath .deriv { display:block; }
 .lg-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:9px; }
 .dtable tr.winner td { background:var(--accent); }
 .dtable tr.winner td:first-child { box-shadow:inset 3px 0 0 var(--teal); }
-#talkBody { max-width:80ch; }
+
+.ladder { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:8px; margin-top:18px; }
+.rung { border:1px solid var(--border); border-radius:6px; padding:10px 12px; background:#fff; }
+.rung.on { border-color:var(--teal); background:var(--accent); box-shadow:inset 0 0 0 1px var(--teal); }
+.rung .rg-n { font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#9ca3af; }
+.rung.on .rg-n { color:var(--teal); }
+.rung .rg-t { font-size:.82rem; font-weight:700; color:var(--navy); margin:3px 0 4px; line-height:1.3; }
+.rung .rg-p { font-family:'Consolas','Monaco',monospace; font-size:.72rem; color:#6b7280; }
+.rung .rg-s { font-size:.65rem; color:#9ca3af; margin-top:4px; }
+.ns-why { margin:12px 0 0; padding-top:12px; border-top:1px dashed var(--border); }
+.ns-why p { font-size:.86rem; color:#374151; line-height:1.6; margin:0 0 6px; }
+.ns-why p:last-child { margin-bottom:0; }
+.ns-then { font-size:.84rem; color:#00474f; background:rgba(255,255,255,.6); border-radius:6px; padding:10px 13px; margin-top:12px; }
+.ns-then b { color:var(--navy); }
 
 .nextstep { border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:18px 22px; background:var(--accent); }
 .nextstep .ns-e { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); margin-bottom:5px; }
@@ -367,7 +380,7 @@ body.showmath .deriv { display:block; }
 .deltachip { display:inline-block; margin-left:8px; font-size:.65rem; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--accent); color:var(--teal); }
 .deltachip.down { background:#f3fbfc; color:#0f766e; }
 
-footer.pagefoot { max-width:1680px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#9ca3af; line-height:1.7; }
+footer.pagefoot { max-width:1320px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#9ca3af; line-height:1.7; }
 footer.pagefoot a { color:#6b7280; }
 
 /* ═══ PRINT — two artefacts, data only ═══ */
@@ -437,11 +450,6 @@ footer.pagefoot a { color:#6b7280; }
         <div class="tb-note">Nothing is saved &middot; every figure recalculates as you type</div>
       </div>
       <div class="tb-r">
-        <div class="toggle-pill" id="modeToggle">
-          <button data-mode="fast" class="on">Fast &middot; 6 questions</button>
-          <button data-mode="full">Full model &middot; 7</button>
-        </div>
-        <span class="tb-sep"></span>
         <input type="file" id="loadFile" accept="application/json" style="display:none;">
         <button class="tb-link" id="btnLoad">Load session</button>
         <button class="tb-link quiet-danger" id="btnClear">Start over</button>
@@ -457,7 +465,7 @@ footer.pagefoot a { color:#6b7280; }
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">&#9658;</div><div class="wc-title">
             <h2>What you are about to do</h2>
-            <div class="wc-sub">Two minutes of reading, then six questions.</div></div></div>
+            <div class="wc-sub">Two minutes of reading, then seven questions.</div></div></div>
 
           <p class="intro-lede">This runs a Cowork cost conversation end to end &mdash; the way you would run it sitting next to the customer. You answer a handful of short questions, <b>one screen at a time</b>, with the words to say out loud printed beside every field. Nothing is totted up in front of you as you go, on purpose: the customer should answer honestly before anyone sees a number. At the end you get <b>one page</b> &mdash; the figure, the arithmetic behind it, what to sell them, and the talk track for the rest of the meeting.</p>
 
@@ -467,7 +475,7 @@ footer.pagefoot a { color:#6b7280; }
               <div class="whencard">
                 <div class="wn-w">Live, in the room</div>
                 <div class="wn-t">The ninety-second cost story</div>
-                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Take the fast path, ask six questions, and print a leave-behind before the meeting moves on.</div>
+                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Seven short questions, most of them a single tap, and a leave-behind printed before the meeting moves on.</div>
               </div>
               <div class="whencard">
                 <div class="wn-w">Before the call</div>
@@ -574,7 +582,7 @@ footer.pagefoot a { color:#6b7280; }
               <div class="pathrow"><div class="pn">3</div><div class="pt"><b>Active in Cowork</b> &mdash; holding a licence is not using one.</div></div>
               <div class="pathrow"><div class="pn">4</div><div class="pt"><b>Who they are, and how often</b> &mdash; ten staffing shapes fill this in one click.</div></div>
               <div class="pathrow"><div class="pn">5</div><div class="pt"><b>What a task costs</b> &mdash; the credit price of a task, and the effort level that scales all of them.</div></div>
-              <div class="pathrow"><div class="pn">6</div><div class="pt"><b>How they buy</b> <span class="opt">Full model only</span><br><span style="color:#6b7280;">Pay-as-you-go or a P3 pre-purchase. The output compares both whichever you pick, so the fast path assumes pay-as-you-go and says so.</span></div></div>
+              <div class="pathrow"><div class="pn">6</div><div class="pt"><b>How they buy</b> &mdash; pay-as-you-go or a P3 pre-purchase. One tap; the output compares both either way.</div></div>
               <div class="pathrow"><div class="pn">7</div><div class="pt"><b>Governance readiness</b> &mdash; five gates that move the licensing recommendation, plus the two hard prerequisites: usage-based billing, and an Azure plan on your CSP channel. Asked on both paths. If you have not got to it, one tap records that as unasked rather than guessing on the customer's behalf.</div></div>
               <div class="pathrow final"><div class="pn">&#9679;</div><div class="pt"><b>The full picture</b> &mdash; everything at once, printable, and every answer still editable from that page.</div></div>
             </div>
@@ -808,9 +816,12 @@ footer.pagefoot a { color:#6b7280; }
         <div class="rc-body" id="flagBody"></div>
       </div>
 
-      <div class="rescard" id="cardNext">
-        <div class="rc-head"><span>The next step</span></div>
-        <div class="rc-body"><div class="nextstep" id="nextBox"></div></div>
+      <div class="rescard span2" id="cardNext">
+        <div class="rc-head"><span>The next step</span><span id="nextTag"></span></div>
+        <div class="rc-body">
+          <div class="nextstep" id="nextBox"></div>
+          <div style="margin-top:20px;" id="ladderBody"></div>
+        </div>
       </div>
 
       <div class="rescard span2" id="cardTalk">
@@ -1012,7 +1023,12 @@ footer.pagefoot a { color:#6b7280; }
       governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
                     namedCostOwner:'unsure', insuranceRenewal:'unsure' },
       governanceAsked: false,   // false until the partner actually puts the question
-      partnerServices: { retainerLo:4, retainerHi:8, assessLo:1500, assessHi:7500 },
+      partnerServices: { assessLo:1500, assessHi:7500,   // rung 1 · Shadow AI Assessment
+                         aupLo:1000,   aupHi:5000,       // rung 2 · Acceptable Use Policy
+                         retainerLo:4, retainerHi:8,     // rung 3 · Managed AI Governance, per seat
+                         insLo:2500,   insHi:10000,      // rung 4 · Insurance / compliance sprint
+                         vcisoLo:2600, vcisoHi:15000,    // rung 5 · vCISO retainer, per month
+                         trainLo:2,    trainHi:5 },      // rung 6 · Training, per user
       // priceOverrides corrects a stale Microsoft LIST price. It is not a sell price.
       priceOverrides: {},
       // The partner's rate card. mode drives every licence figure in the model.
@@ -1398,7 +1414,8 @@ footer.pagefoot a { color:#6b7280; }
     var licensing = solveLicensing(state, ctx);
 
     return { ctx:ctx, licensing:licensing, trace:trace, warnings:warn,
-             assumptions:dedupe(assume), scenarios:scenarios(state, ctx) };
+             assumptions:dedupe(assume), scenarios:scenarios(state, ctx),
+             next:nextStep(state, ctx) };
   }
 
   function dedupe(arr) {
@@ -1568,6 +1585,190 @@ footer.pagefoot a { color:#6b7280; }
              rejected:scored.filter(function (p) { return !p.feasible; }), why:why, e7:e7, needed:needed };
   }
 
+  /* ── The ARR ladder ───────────────────────────────────────────────────
+     Six service lines from the 40-Minute Cowork Session, section 11. Every
+     price here is an editorial range for a partner to test against their own
+     cost model — never a quote, and never blended into a Microsoft total. */
+  function RUNGS(state) {
+    var s = state.partnerServices;
+    return [
+      { n:1, key:'assess',  name:'Shadow AI Assessment',
+        price:'$' + s.assessLo.toLocaleString() + '\u2013$' + s.assessHi.toLocaleString() + ' one-time',
+        shape:'Project / SOW' },
+      { n:2, key:'aup',     name:'AI Acceptable Use Policy',
+        price:'$' + s.aupLo.toLocaleString() + '\u2013$' + s.aupHi.toLocaleString() + ' one-time',
+        shape:'Project / SOW' },
+      { n:3, key:'govern',  name:'Managed AI Governance',
+        price:'$' + s.retainerLo + '\u2013$' + s.retainerHi + '/seat/month',
+        shape:'Managed / recurring' },
+      { n:4, key:'insure',  name:'Insurance & Compliance Readiness',
+        price:'$' + s.insLo.toLocaleString() + '\u2013$' + s.insHi.toLocaleString() + ' sprint',
+        shape:'Project + recurring' },
+      { n:5, key:'vciso',   name:'vCISO / Compliance Advisory',
+        price:'$' + s.vcisoLo.toLocaleString() + '\u2013$' + s.vcisoHi.toLocaleString() + '/month',
+        shape:'Outcome-based' },
+      { n:6, key:'train',   name:'Client Training & Enablement',
+        price:'$' + s.trainLo + '\u2013$' + s.trainHi + '/user/month',
+        shape:'Managed / recurring' }
+    ];
+  }
+
+  /* First rule that matches wins. Ordered blockers -> land -> expand, so the
+     tool never recommends a retainer to a tenant that cannot buy Cowork yet. */
+  function nextStep(state, ctx) {
+    var g = state.governance, o = state.org, S = state.partnerServices;
+    var asked = !!state.governanceAsked;
+    var rungs = RUNGS(state), byKey = {};
+    rungs.forEach(function (r) { byKey[r.key] = r; });
+    var seatMo = function (lo, hi, seats) {
+      return '$' + Math.round(lo * seats).toLocaleString() + '\u2013$' + Math.round(hi * seats).toLocaleString() + '/month here';
+    };
+    var deniedControls = ['purviewLabels','dlpForAi','defenderCloudApps']
+      .filter(function (k) { return asked && g[k] === 'no'; });
+    var regulated = REGULATED.indexOf(o.vertical) > -1;
+    var seats = Math.max(ctx.active, 1);
+
+    var R = [
+      { id:'blocked-cloud', when: o.dataResidency === 'gov_cloud',
+        eyebrow:'Stop here', rung:null, name:'Cowork is not available in this tenant',
+        price:'No licensing path changes this',
+        why:['GCC, GCC High, DoD and sovereign clouds are out of scope for Cowork entirely.'],
+        opener:'"Before we go any further \u2014 Cowork is not available inside your cloud boundary, and no SKU changes that. What I can do is scope what governed AI looks like for you inside the boundary you already have."',
+        then:'Re-run this on a commercial-cloud tenant, or move the conversation to Purview and Defender on their own merits.' },
+
+      { id:'prereq-no', when: o.azureCspPlan === 'no' || o.usageBillingEnabled === 'no',
+        eyebrow:'Prerequisite before anything else', rung:null,
+        name:'Fix the billing path first',
+        price:'Admin action \u2014 no SKU closes this',
+        why:[ o.azureCspPlan === 'no' ? 'You told us there is no Azure plan on your CSP channel, and Cowork PayGo billing routes through one.' : '',
+              o.usageBillingEnabled === 'no' ? 'You told us usage-based billing is not enabled, which Microsoft lists as a hard prerequisite.' : '' ],
+        opener:'"Nothing on this ladder matters until billing has a path. Let\u2019s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."',
+        then:'Once billing has a path, come back to this page \u2014 the number does not change, but the deal becomes sellable.' },
+
+      { id:'prereq-unsure', when: !asked || o.azureCspPlan === 'unsure' || o.usageBillingEnabled === 'unsure',
+        // A tenant with no Copilot licences, or none in use, has a more urgent
+        // opener than an unconfirmed billing path — let those rules win first.
+        onlyIf: function () {
+          return !ctx.greenfield && ctx.active > 0 &&
+                 (o.azureCspPlan !== 'yes' || o.usageBillingEnabled !== 'yes');
+        },
+        eyebrow:'Confirm before you quote', rung:1, name:byKey.assess.name,
+        price:byKey.assess.price,
+        why:['Nobody has confirmed the Azure plan or usage-based billing yet, and both are hard prerequisites.',
+             'The assessment is the cheapest way to answer them and everything else at the same time.'],
+        opener:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee \u2014 and it answers the billing and governance questions in the same pass.',
+        then:'Rung 2, the Acceptable Use Policy, sells immediately off the back of it. Never sell a policy without an enforcement plan attached.' },
+
+      { id:'greenfield', when: ctx.greenfield,
+        eyebrow:'Recommended next step', rung:0, name:'Copilot in 30 \u2014 the 25-user, 30-day trial',
+        price:'No licence cost \u00b7 CSP, live since 1 Aug 2026',
+        why:['Nobody holds a Copilot licence, so Cowork cannot run at all yet. This is a licensing conversation before it is a consumption one.'],
+        opener:'"Before anyone signs anything, let\u2019s put Copilot in front of twenty-five of your people for thirty days and find out which use cases actually land. Then we price it on evidence."',
+        then:'When they are live, re-run this page against real usage and the estimate stops being a model.' },
+
+      { id:'no-adoption', when: !ctx.greenfield && ctx.active === 0,
+        eyebrow:'This is not a cost problem', rung:6, name:byKey.train.name,
+        price:byKey.train.price + ' \u00b7 ' + seatMo(S.trainLo, S.trainHi, ctx.copilotLicensed),
+        why:['They hold ' + ctx.copilotLicensed + ' Copilot licences and nobody is using Cowork, so the meter reads $0.',
+             'That is a real answer, and it is also the problem: they are paying for licences that generate nothing.'],
+        opener:'"You are already paying for this. The question is not what Cowork would cost \u2014 it is why nobody has switched it on. Short role-based modules, completion tracking, and we revisit the number in ninety days."',
+        then:'Once adoption moves, the Managed AI Governance retainer follows the consumption.' },
+
+      { id:'competing-ai', when: o.competingAi === 'yes',
+        eyebrow:'Recommended next step', rung:1, name:byKey.assess.name,
+        price:byKey.assess.price,
+        why:['They are already paying for Claude or ChatGPT, which sits outside the tenant trust boundary \u2014 no Purview labels, no Defender for Cloud Apps visibility, no Cost Management.'],
+        opener:'"Keep Claude. Bring it under management. Let me show you exactly which AI tools your staff used last month and what left your environment \u2014 then we decide together what gets sanctioned."',
+        then:'The Acceptable Use Policy is the natural close off an assessment that names real tools.' },
+
+      { id:'no-discovery', when: !asked,
+        eyebrow:'Recommended next step', rung:1, name:byKey.assess.name,
+        price:byKey.assess.price,
+        why:['Nobody has been asked what governance is actually in place, so every gate in this page is an assumption rather than a finding.',
+             'Discovery is the honest first sale, and it is the one that converts on specificity.'],
+        opener:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee \u2014 the land.',
+        then:'Rung 2, the Acceptable Use Policy, sells immediately after. Then the retainer that enforces it.' },
+
+      { id:'ungoverned', when: asked && ctx.govConfirmed <= 1,
+        eyebrow:'Recommended next step', rung:1, name:byKey.assess.name,
+        price:byKey.assess.price,
+        why:['Only ' + ctx.govConfirmed + ' of the five governance controls is confirmed, so treat this like an ungoverned tenant.',
+             'Governance readiness is consumption readiness \u2014 the credits get spent either way, only the risk changes.'],
+        opener:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee \u2014 the land.',
+        then:'Rung 2 next: "You have a policy for passwords and remote access; you have none for the fastest-spreading tool in your business."' },
+
+      { id:'needs-aup', when: deniedControls.length > 0,
+        eyebrow:'Recommended next step', rung:2, name:byKey.aup.name,
+        price:byKey.aup.price,
+        why:['You confirmed ' + deniedControls.length + ' control' + (deniedControls.length > 1 ? 's are' : ' is') + ' missing, so there is a named gap to write a policy around.',
+             'Never sell a policy without an enforcement plan attached \u2014 the retainer is the enforcement.'],
+        opener:'"You have a policy for passwords and remote access; you have none for the fastest-spreading tool in your business. Let\u2019s write it, and then let\u2019s make something enforce it."',
+        then:'Rung 3, Managed AI Governance, at ' + byKey.govern.price + ' \u2014 ' + seatMo(S.retainerLo, S.retainerHi, seats) + '.' },
+
+      { id:'insurance', when: g.insuranceRenewal === 'yes' && asked,
+        eyebrow:'Timing is the opening', rung:4, name:byKey.insure.name,
+        price:byKey.insure.price,
+        why:['Their cyber insurance renews inside twelve months, and AI usage attestations now appear on renewal applications.',
+             'A renewal date is a deadline someone else set for you.'],
+        opener:'"If your application asks whether employees share data with AI systems, right now the honest answer is \u2018we don\u2019t know.\u2019 Here is how we get you an answer you can support with evidence."',
+        then:'Training with completion tracking runs underneath it \u2014 completion records are exactly what the insurer asks for.' },
+
+      { id:'regulated-vciso', when: regulated && ctx.employees >= 50 && ctx.employees <= 1000,
+        eyebrow:'Where this account ends up', rung:5, name:byKey.vciso.name,
+        price:byKey.vciso.price,
+        why:[(VERTICAL_LABEL[o.vertical] || 'This vertical') + ' carries a supervision obligation that Business Premium alone does not cover.',
+             'At ' + ctx.employees + ' employees they need security leadership and cannot justify a full-time CISO.'],
+        opener:'"You need someone accountable for this, and you cannot justify a full-time hire. That is the role I am offering to fill \u2014 with the assessment and the policy as the first ninety days of it."',
+        then:'Land with Rung 1 and Rung 2 first. The retainer is the destination, not the opener.' },
+
+      { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActive > 200,
+        eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
+        price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
+        why:['At ' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
+             'Investigate before you cap \u2014 concentrated usage is usually where the value is concentrating too.'],
+        opener:'"Your AUP is only a document until something enforces it." Monthly Cost Management review, spending-policy tuning, and a concentration check on a bill this size.',
+        then:'Training underneath it, so the heavy users learn the cheaper prompt patterns.' },
+
+      { id:'no-owner', when: asked && g.namedCostOwner !== 'yes' && ctx.monthlyCowork > 0,
+        eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
+        price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
+        why:['There is no named cost owner for Copilot Credits, and this account is about to carry a metered bill.',
+             'Somebody should be paged before a runaway month, not after it.'],
+        opener:'"Nobody owns this number yet. That is the job: a monthly Cost Management review, spending limits with alerts at 50 and 80 per cent, and a concentration check before it becomes an invoice conversation."',
+        then:'Insurance and compliance readiness when their renewal comes round.' },
+
+      { id:'at-scale', when: ctx.copilotLicensed >= 300,
+        eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
+        price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
+        why:['At ' + ctx.copilotLicensed + ' Copilot licences this is past every SMB cap and into enterprise governance.',
+             'At this size the monthly review is not optional \u2014 it is the only thing standing between them and a surprise.'],
+        opener:'"At this headcount the question is not whether AI gets governed, it is who does it every month. That is the retainer."',
+        then:'vCISO advisory is the natural expansion once the monthly motion is running.' },
+
+      { id:'well-governed', when: asked && ctx.govConfirmed >= 4,
+        eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
+        price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
+        why:['They have ' + ctx.govConfirmed + ' of five controls confirmed, so this is not a remediation sale.',
+             'It is an operations sale: someone has to run the monthly motion and keep the evidence.'],
+        opener:'"You have done the hard part. What you do not have is someone running it every month and keeping the evidence your auditor will ask for."',
+        then:'Training with completion tracking is the cheapest add and the easiest renewal.' }
+    ];
+
+    for (var i = 0; i < R.length; i++) {
+      var r = R[i];
+      if (!r.when) continue;
+      if (r.onlyIf && !r.onlyIf()) continue;
+      r.why = r.why.filter(Boolean);
+      return { pick:r, rungs:rungs };
+    }
+
+    var d = byKey.assess;
+    return { pick:{ id:'default', eyebrow:'Recommended next step', rung:1, name:d.name, price:d.price,
+      why:['Nothing here is blocking, and nothing is urgent \u2014 which makes discovery the honest opener.'],
+      opener:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee \u2014 the land.',
+      then:'Rungs 1 and 2 are the mandatory pair. Everything else compounds off them.' }, rungs:rungs };
+  }
+
   /* ── Presets & actions ────────────────────────────────────────────────── */
   function applyPreset(state, key) {
     var p = PRESETS[key] || PRESETS.even;
@@ -1597,6 +1798,7 @@ footer.pagefoot a { color:#6b7280; }
     EFFORT_STEP_DEFAULT:EFFORT_STEP_DEFAULT, effortMultipliers:effortMultipliers,
     P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
     defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
+    RUNGS:RUNGS, nextStep:nextStep,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
     skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
     addonPrice:addonPrice, addonListPrice:addonListPrice,
@@ -1614,7 +1816,7 @@ footer.pagefoot a { color:#6b7280; }
   'use strict';
   var E = window.CoworkEngine;
   var state = E.defaults();
-  var uiMode = 'fast', mathOn = false, prevSnap = null, activeRibbon = null;
+  var mathOn = false, prevSnap = null, activeRibbon = null;
 
   var $ = function (id) { return document.getElementById(id); };
   function usd(v, dp) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
@@ -2134,13 +2336,20 @@ footer.pagefoot a { color:#6b7280; }
         : '') +
 
       '<div class="ratehead"><div class="rh-t">Your service rates ' + provPill('editorial') + '</div></div>' +
-      '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
-        '<div class="field"><label>Governance retainer $/seat/mo (low)</label><input type="number" step="0.5" id="pRetLo" value="' + state.partnerServices.retainerLo + '"></div>' +
-        '<div class="field"><label>&hellip;and high</label><input type="number" step="0.5" id="pRetHi" value="' + state.partnerServices.retainerHi + '"></div>' +
-        '<div class="field"><label>Shadow AI assessment (low)</label><input type="number" step="250" id="pAssLo" value="' + state.partnerServices.assessLo + '"></div>' +
-        '<div class="field"><label>&hellip;and high</label><input type="number" step="250" id="pAssHi" value="' + state.partnerServices.assessHi + '"></div>' +
-      '</div>' +
-      '<p class="srcline">These drive the recommended next step in the output. They are never blended into a Microsoft total \u2014 the output keeps a visual break between what Microsoft charges and what you charge.</p>' +
+      '<div class="tablewrap"><table class="dtable"><thead><tr><th>Rung</th><th style="width:130px;text-align:right;">Low</th><th style="width:130px;text-align:right;">High</th><th style="width:150px;">Charged</th></tr></thead><tbody>' +
+      [['1 &middot; Shadow AI Assessment','pAssLo','assessLo','pAssHi','assessHi','one-time',250],
+       ['2 &middot; AI Acceptable Use Policy','pAupLo','aupLo','pAupHi','aupHi','one-time',250],
+       ['3 &middot; Managed AI Governance','pRetLo','retainerLo','pRetHi','retainerHi','per seat, per month',0.5],
+       ['4 &middot; Insurance &amp; Compliance Readiness','pInsLo','insLo','pInsHi','insHi','sprint',250],
+       ['5 &middot; vCISO / Compliance Advisory','pVcLo','vcisoLo','pVcHi','vcisoHi','per month',100],
+       ['6 &middot; Client Training &amp; Enablement','pTrLo','trainLo','pTrHi','trainHi','per user, per month',0.5]
+      ].map(function (x) {
+        return '<tr><td><b>' + x[0] + '</b></td>' +
+          '<td class="money"><input type="number" step="' + x[6] + '" min="0" id="' + x[1] + '" data-svc="' + x[2] + '" value="' + state.partnerServices[x[2]] + '"></td>' +
+          '<td class="money"><input type="number" step="' + x[6] + '" min="0" id="' + x[3] + '" data-svc="' + x[4] + '" value="' + state.partnerServices[x[4]] + '"></td>' +
+          '<td style="font-size:.8rem;color:#6b7280;">' + x[5] + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="srcline">These six are the ARR ladder from section 11 of the 40-Minute Cowork Session, and they drive which next step the output recommends. The published ranges are editorial starting points to test against your own cost model &mdash; not survey data, and never a quote. They are never blended into a Microsoft total; the output keeps a visual break between what Microsoft charges and what you charge.</p>' +
 
       '<div class="ratehead"><div class="rh-t">Effort model ' + provPill('ms-modeled') + '</div></div>' +
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
@@ -2197,8 +2406,10 @@ footer.pagefoot a { color:#6b7280; }
       state.pricing.creditSellUsd = Math.max(0, +e.target.value || 0); refresh();
     });
     $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
-    [['pRetLo','retainerLo'],['pRetHi','retainerHi'],['pAssLo','assessLo'],['pAssHi','assessHi']].forEach(function (x) {
-      $(x[0]).addEventListener('input', function (e) { state.partnerServices[x[1]] = +e.target.value || 0; refresh(); });
+    Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-svc]'), function (inp) {
+      inp.addEventListener('input', function () {
+        state.partnerServices[inp.getAttribute('data-svc')] = Math.max(0, +inp.value || 0); refresh();
+      });
     });
     $('btnRateDown').addEventListener('click', downloadRateCard);
     $('btnRateLoad').addEventListener('click', function () { $('rateFile').click(); });
@@ -2491,26 +2702,29 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   function renderNext(r) {
-    var c = r.ctx, s = state.partnerServices;
-    var box;
-    if (c.greenfield) {
-      box = { e:'Recommended next step', n:'Copilot in 30 — the 25-user, 30-day trial',
-              p:'No licence cost · CSP, live since 1 Aug 2026',
-              o:'"Before anyone signs anything, let\'s put Copilot in front of twenty-five of your people for thirty days and find out which use cases actually land. Then we price it on evidence."' };
-    } else if (state.org.azureCspPlan === 'no' || state.org.usageBillingEnabled === 'no') {
-      box = { e:'Prerequisite before anything else', n:'Confirm the Azure plan and turn on usage-based billing',
-              p:'Admin action · no SKU closes this',
-              o:'"Nothing on this ladder matters until billing has a path. Let\'s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."' };
-    } else if (c.ratioBench > 3.5 || c.perActive > 200) {
-      box = { e:'Recommended next step', n:'Rung 3 — Managed AI Governance retainer',
-              p:usd(s.retainerLo) + '–' + usd(s.retainerHi) + '/seat/month (' + usd(s.retainerLo * c.active) + '–' + usd(s.retainerHi * c.active) + '/mo here)',
-              o:'"Your AUP is only a document until something enforces it." Monthly Cost Management review, spending-policy tuning, and a concentration-risk check on a bill this size.' };
-    } else {
-      box = { e:'Recommended next step', n:'Rung 1 — Shadow AI Assessment',
-              p:usd(s.assessLo) + '–' + usd(s.assessHi) + ' one-time',
-              o:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee — the land.' };
-    }
-    $('nextBox').innerHTML = '<div class="ns-e">' + box.e + '</div><div class="ns-n">' + esc(box.n) + '</div><div class="ns-p">' + box.p + '</div><div class="ns-o">' + box.o + '</div>';
+    var n = r.next.pick, rungs = r.next.rungs;
+    $('nextBox').innerHTML =
+      '<div class="ns-e">' + esc(n.eyebrow) + '</div>' +
+      '<div class="ns-n">' + (n.rung ? 'Rung ' + n.rung + ' \u2014 ' : '') + esc(n.name) + '</div>' +
+      '<div class="ns-p">' + n.price + '</div>' +
+      '<div class="ns-o">' + n.opener + '</div>' +
+      (n.why && n.why.length
+        ? '<div class="ns-why">' + n.why.map(function (w) { return '<p>' + esc(w) + '</p>'; }).join('') + '</div>'
+        : '') +
+      (n.then ? '<div class="ns-then"><b>And then:</b> ' + n.then + '</div>' : '');
+
+    $('ladderBody').innerHTML =
+      '<p style="font-size:.85rem;color:#374151;margin:0 0 4px;line-height:1.6;">Six service lines compound off the same discovery engagement. ' +
+      'The highlighted rung is the one this account\'s answers point at &mdash; the rest is the path after it. ' +
+      'Every price is an editable estimate of yours, never a Microsoft figure, and never blended into a Microsoft total.</p>' +
+      '<div class="ladder">' + rungs.map(function (g) {
+        return '<div class="rung' + (g.n === n.rung ? ' on' : '') + '">' +
+          '<div class="rg-n">Rung ' + g.n + (g.n === n.rung ? ' \u00b7 recommended' : '') + '</div>' +
+          '<div class="rg-t">' + esc(g.name) + '</div>' +
+          '<div class="rg-p">' + g.price + '</div>' +
+          '<div class="rg-s">' + esc(g.shape) + '</div></div>';
+      }).join('') + '</div>' +
+      '<p class="srcline">Ranges come from section 11 of the 40-Minute Cowork Session and are editorial starting points for you to test against your own cost model. Set your own on the pricing screen and they follow you into every future session.</p>';
   }
 
   function buildTalk(r) {
@@ -2596,14 +2810,11 @@ footer.pagefoot a { color:#6b7280; }
      persona mix and task effort. It folds only the two that do not: the
      billing model (the meter is identical either way) and the governance
      gates (unknown is already the conservative default). */
-  var FAST = ['step0','step1','step2','step3','step4','step5','step7','results'];
-  var ASSUMED = {
-    step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway'
-  };
+
   var cur = 'intro', booted = false;
   /* 'intro' is a cover, not a step: it carries no answer, so it stays out of
      the stepper and out of the question count. */
-  function flow() { return ['intro'].concat(uiMode === 'fast' ? FAST : STEPS.map(function (x) { return x.id; })); }
+  function flow() { return ['intro'].concat(STEPS.map(function (x) { return x.id; })); }
   function chips() { return flow().filter(function (id) { return id !== 'intro'; }); }
   function stepDef(id) { return STEPS.filter(function (x) { return x.id === id; })[0]; }
   /* Only a caret in a text field needs protecting from a re-render. Buttons
@@ -2614,17 +2825,7 @@ footer.pagefoot a { color:#6b7280; }
     return a.tagName === 'INPUT' && (a.type === 'number' || a.type === 'text');
   }
 
-  function setMode(m, silent) {
-    uiMode = m;
-    Array.prototype.forEach.call($('modeToggle').querySelectorAll('button'), function (x) {
-      x.classList.toggle('on', x.getAttribute('data-mode') === m);
-    });
-    if (flow().indexOf(cur) === -1) cur = 'results';
-    if (!silent) goTo(cur);
-  }
-
   function goTo(id) {
-    if (flow().indexOf(id) === -1 && stepDef(id)) setMode('full', true);
     cur = id;
     Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (el) {
       el.classList.toggle('on', el.id === id);
@@ -2704,7 +2905,7 @@ footer.pagefoot a { color:#6b7280; }
       nav.querySelector('[data-hint]').innerHTML =
         d.id === 'step0'
           ? 'Skip this and every licence figure uses Microsoft list price. You can come back to it from the output at any time.'
-          : (ASSUMED[d.id] ? 'Nothing to change here? Continue and we assume ' + ASSUMED[d.id] + '.' : '');
+          : '';
     });
   }
 
@@ -2770,21 +2971,13 @@ footer.pagefoot a { color:#6b7280; }
   function renderRecap(r) {
     var c = r.ctx, f = flow();
     var cards = STEPS.filter(function (d) { return d.id !== 'results'; }).map(function (d) {
-      var folded = f.indexOf(d.id) === -1;
       return '<div class="recap-i"><div class="r-l">' + esc(d.t) + '</div>' +
         '<div class="r-v">' + esc(d.v(c)) + '</div>' +
-        (folded ? pill('default','assumed') + ' ' : '') +
-        '<button class="linkbtn" data-goto="' + d.id + '">' + (folded ? 'Ask it &rarr;' : 'Change &rarr;') + '</button></div>';
+        '<button class="linkbtn" data-goto="' + d.id + '">Change &rarr;</button></div>';
     }).join('');
     $('recapBody').innerHTML =
       '<p style="font-size:.86rem;color:#374151;margin:0 0 14px;line-height:1.65;">' +
-      (c.sellMode ? '' : '') +
-      (uiMode === 'fast'
-        ? 'You ran the fast path. Every question that moves the dollar figure was asked — licences, activation, persona mix and effort. ' +
-          'The two marked ' + pill('default','assumed') + ' do not change the meter: the billing model prices the same credits either way, ' +
-          'and an unknown governance posture is already the conservative assumption. Ask them and the licensing recommendation and the ' +
-          'billing comparison sharpen; the number itself will not move.'
-        : 'Every answer that built this page. Change any one and everything above rewrites itself — live, in front of them.') +
+      'Every answer that built this page. Change any one and everything above rewrites itself — live, in front of them.' +
       '</p><div class="recap">' + cards + '</div>';
     wireGoto($('recapBody'));
   }
@@ -2847,10 +3040,6 @@ footer.pagefoot a { color:#6b7280; }
   $('fVert').addEventListener('change',function (e) { state.org.vertical = e.target.value; refresh(); });
   $('fRes').addEventListener('change', function (e) { state.org.dataResidency = e.target.value; refresh(); });
 
-  $('modeToggle').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    setMode(b.getAttribute('data-mode'));
-  });
   $('btnBackToQ').addEventListener('click', function () { goTo('step1'); });
   $('mathToggle').addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
