@@ -160,6 +160,59 @@ p  { margin: .5rem 0; }
 .chipbtn.on { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal); }
 .chipbtn.on::before { content:"\2713\00a0"; font-weight:800; }
 .chipnote { font-size:.76rem; color:#9ca3af; align-self:center; }
+/* ═══ COVER SCREEN ═══ */
+body.at-intro #stepper, body.at-intro .toolbar { display:none; }
+.intro-lede { font-size:1.02rem; line-height:1.7; color:#374151; max-width:76ch; }
+.intro-lede b { color:var(--navy); }
+.introsec { margin-top:34px; }
+.introsec > h3 { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--teal); margin:0 0 14px; }
+.whengrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+.whencard { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); padding:15px 17px; background:#fff; }
+.whencard .wn-t { font-size:.9rem; font-weight:700; color:var(--navy); margin-bottom:5px; }
+.whencard .wn-w { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:7px; }
+.whencard .wn-d { font-size:.84rem; color:#6b7280; line-height:1.55; }
+/* flow diagram */
+.flowwrap { border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:18px 20px 14px; margin-bottom:16px; overflow-x:auto; }
+.flowdiag { width:100%; min-width:660px; height:auto; display:block; }
+.flowdiag text { font-family:'Segoe UI','Inter',Georgia,sans-serif; }
+.fd-lane   { fill:var(--teal); font-size:10px; font-weight:700; letter-spacing:1.3px; }
+.fd-div    { stroke:var(--border); stroke-dasharray:3 4; }
+.fd-node   { fill:#fff; stroke:var(--border); stroke-width:1; }
+.fd-node-a { fill:#fff; stroke:var(--teal); stroke-width:1.5; }
+.fd-final  { fill:var(--navy); }
+.fd-num    { fill:var(--teal); font-size:10.5px; font-weight:800; }
+.fd-t      { fill:var(--navy); font-size:12.5px; font-weight:700; }
+.fd-d      { fill:#6b7280; font-size:10.5px; }
+.fd-tw     { fill:#fff; font-size:12.5px; font-weight:700; }
+.fd-dw     { fill:#a8ecf5; font-size:10.5px; }
+.fd-arrow  { stroke:#b6bcc5; fill:none; stroke-width:1.6; }
+.fd-wedge  { fill:var(--accent); stroke:#c5dde3; }
+.fd-cap    { fill:#6b7280; font-size:10.5px; }
+.fd-capb   { fill:var(--navy); font-size:11px; font-weight:700; }
+.fd-base   { fill:var(--muted); stroke:var(--border); }
+.fd-eq     { fill:var(--teal); font-size:11.5px; font-weight:700; }
+
+.pathlist { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.pathrow { display:flex; gap:15px; align-items:flex-start; padding:13px 18px; border-bottom:1px solid var(--border); background:#fff; }
+.pathrow:last-child { border-bottom:none; }
+.pathrow.setup { background:var(--muted); }
+.pathrow.final { background:var(--accent); }
+.pathrow .pn { flex:0 0 auto; width:26px; height:26px; border-radius:6px; background:var(--muted-2); color:var(--navy); font-size:.76rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.pathrow.setup .pn { background:var(--navy); color:#fff; }
+.pathrow.final .pn { background:var(--teal); color:#fff; }
+.pathrow .pt { font-size:.89rem; color:#374151; line-height:1.55; }
+.pathrow .pt b { color:var(--navy); }
+.pathrow .pt .opt { font-size:.72rem; color:#9ca3af; font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-left:6px; }
+.promises { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+.promise { display:flex; gap:12px; align-items:flex-start; background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:14px 17px; }
+.promise .pr-i { flex:0 0 auto; font-size:1.05rem; }
+.promise .pr-t { font-size:.85rem; color:#374151; line-height:1.6; }
+.promise .pr-t b { color:var(--navy); display:block; margin-bottom:3px; }
+.outlist { columns:2; column-gap:32px; font-size:.87rem; color:#374151; line-height:1.75; margin:0; padding-left:20px; }
+@media (max-width:720px){ .outlist { columns:1; } }
+.outlist li { break-inside:avoid; }
+.introfoot { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:34px; padding-top:22px; border-top:1px solid var(--border); }
+
 .modecards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:4px 0 22px; }
 .modecard { text-align:left; border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:16px 18px; cursor:pointer; font-family:inherit; }
 .modecard:hover { border-color:var(--ltblue); }
@@ -397,6 +450,168 @@ footer.pagefoot a { color:#6b7280; }
 
     <!-- ══════════ THE INTERVIEW ══════════ -->
     <div class="col-build no-print" id="buildCol">
+
+      <!-- COVER · WHAT THIS IS -->
+      <div class="wcard screen" id="intro">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">&#9658;</div><div class="wc-title">
+            <h2>What you are about to do</h2>
+            <div class="wc-sub">Two minutes of reading, then five questions.</div></div></div>
+
+          <p class="intro-lede">This runs a Cowork cost conversation end to end &mdash; the way you would run it sitting next to the customer. You answer a handful of short questions, <b>one screen at a time</b>, with the words to say out loud printed beside every field. Nothing is totted up in front of you as you go, on purpose: the customer should answer honestly before anyone sees a number. At the end you get <b>one page</b> &mdash; the figure, the arithmetic behind it, what to sell them, and the talk track for the rest of the meeting.</p>
+
+          <div class="introsec">
+            <h3>When a partner reaches for this</h3>
+            <div class="whengrid">
+              <div class="whencard">
+                <div class="wn-w">Live, in the room</div>
+                <div class="wn-t">The ninety-second cost story</div>
+                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Take the fast path, ask five questions, and print a leave-behind before the meeting moves on.</div>
+              </div>
+              <div class="whencard">
+                <div class="wn-w">Before the call</div>
+                <div class="wn-t">Model a named account</div>
+                <div class="wn-d">Pre-fill what you already know from Partner Center, open the full model, and decide which SOW to lead with before you dial.</div>
+              </div>
+              <div class="whencard">
+                <div class="wn-w">Every month after</div>
+                <div class="wn-t">Re-forecast against reality</div>
+                <div class="wn-d">Load last month's session file, enter what tasks actually cost from Cost Management, and watch the estimate tighten from &plusmn;30% to &plusmn;15%.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="introsec">
+            <h3>The path you will walk</h3>
+            <div class="flowwrap">
+              <svg class="flowdiag" viewBox="0 0 1040 330" role="img" aria-labelledby="flowTitle flowDesc">
+                <title id="flowTitle">How the Cowork Cost Simulator works</title>
+                <desc id="flowDesc">Three stages. First narrow the company down: total employees, then the people holding a Copilot licence, then the people who actually use Cowork. Then price it: how many tasks each of them runs, and what a task costs. That produces the full picture — the number, the licensing recommendation and the talk track. Underneath it all sits your pricing basis, set up front, which every dollar figure follows.</desc>
+
+                <!-- lanes -->
+                <text class="fd-lane" x="40"  y="14">1 &#183; NARROW IT DOWN</text>
+                <text class="fd-lane" x="524" y="14">2 &#183; PUT A PRICE ON IT</text>
+                <text class="fd-lane" x="844" y="14">3 &#183; SAY IT OUT LOUD</text>
+                <line class="fd-div" x1="508" y1="24" x2="508" y2="252"/>
+                <line class="fd-div" x1="828" y1="24" x2="828" y2="252"/>
+
+                <!-- narrowing nodes -->
+                <rect class="fd-node" x="40"  y="30" width="148" height="74" rx="8"/>
+                <text class="fd-num" x="56" y="50">1</text>
+                <text class="fd-t"   x="56" y="70">The account</text>
+                <text class="fd-d"   x="56" y="88">Everyone who works there</text>
+
+                <rect class="fd-node" x="196" y="30" width="148" height="74" rx="8"/>
+                <text class="fd-num" x="212" y="50">2</text>
+                <text class="fd-t"   x="212" y="70">Copilot licences</text>
+                <text class="fd-d"   x="212" y="88">Who <tspan font-style="italic">can</tspan> use Cowork</text>
+
+                <rect class="fd-node" x="352" y="30" width="148" height="74" rx="8"/>
+                <text class="fd-num" x="368" y="50">3</text>
+                <text class="fd-t"   x="368" y="70">Active in Cowork</text>
+                <text class="fd-d"   x="368" y="88">Who actually <tspan font-style="italic">does</tspan></text>
+
+                <!-- pricing nodes -->
+                <rect class="fd-node" x="524" y="30" width="140" height="74" rx="8"/>
+                <text class="fd-num" x="540" y="50">4</text>
+                <text class="fd-t"   x="540" y="70">Who &amp; how often</text>
+                <text class="fd-d"   x="540" y="88">Tasks a month, each</text>
+
+                <rect class="fd-node" x="680" y="30" width="148" height="74" rx="8"/>
+                <text class="fd-num" x="696" y="50">5</text>
+                <text class="fd-t"   x="696" y="70">What a task costs</text>
+                <text class="fd-d"   x="696" y="88">Credits, and effort</text>
+
+                <!-- output -->
+                <rect class="fd-final" x="844" y="30" width="156" height="74" rx="8"/>
+                <text class="fd-tw" x="862" y="60">The full picture</text>
+                <text class="fd-dw" x="862" y="80">One page, printable</text>
+
+                <!-- connectors -->
+                <path class="fd-arrow" d="M188 67 h8"   marker-end="url(#fdArrow)"/>
+                <path class="fd-arrow" d="M344 67 h8"   marker-end="url(#fdArrow)"/>
+                <path class="fd-arrow" d="M500 67 h16"  marker-end="url(#fdArrow)"/>
+                <path class="fd-arrow" d="M664 67 h10"  marker-end="url(#fdArrow)"/>
+                <path class="fd-arrow" d="M828 67 h8"   marker-end="url(#fdArrow)"/>
+                <defs>
+                  <marker id="fdArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M0 0 L10 5 L0 10 z" fill="#b6bcc5"/>
+                  </marker>
+                </defs>
+
+                <!-- the narrowing wedge -->
+                <polygon class="fd-wedge" points="40,140 500,164 500,196 40,220"/>
+                <text class="fd-capb" x="52"  y="176">Everyone</text>
+                <text class="fd-cap"  x="52"  y="192">the whole company</text>
+                <text class="fd-capb" x="496" y="176" text-anchor="end">The few who burn credits</text>
+                <text class="fd-cap"  x="496" y="192" text-anchor="end">the only people who cost anything here</text>
+                <text class="fd-cap"  x="40"  y="240">Two narrowings most calculators skip entirely.</text>
+
+                <!-- the multiplication -->
+                <rect class="fd-node-a" x="524" y="140" width="304" height="80" rx="8"/>
+                <text class="fd-eq" x="546" y="168">tasks &#215; credits per task &#215; effort</text>
+                <text class="fd-eq" x="546" y="188">&#215; your credit rate</text>
+                <text class="fd-cap" x="546" y="208">Volume, then price. Never mixed up.</text>
+
+                <!-- outputs -->
+                <text class="fd-capb" x="844" y="152">The number</text>
+                <text class="fd-capb" x="844" y="172">What to sell them</text>
+                <text class="fd-capb" x="844" y="192">What to say next</text>
+                <text class="fd-cap"  x="844" y="212">Customer copy or internal copy</text>
+
+                <!-- the basis underneath -->
+                <path class="fd-arrow" d="M520 290 v-24" marker-end="url(#fdArrow)"/>
+                <rect class="fd-base" x="40" y="290" width="960" height="34" rx="8"/>
+                <text class="fd-capb" x="60" y="312">&#36;  Set up your pricing first</text>
+                <text class="fd-cap"  x="232" y="312">Microsoft list price, or your own sell rates &#8212; every dollar figure above follows the basis you pick.</text>
+              </svg>
+            </div>
+            <div class="pathlist">
+              <div class="pathrow setup"><div class="pn">&#36;</div><div class="pt"><b>Set up your pricing</b> &mdash; Microsoft list, or your own sell rates with your margin and managed service on top. Save it to a file and load it at the start of every future session.</div></div>
+              <div class="pathrow"><div class="pn">1</div><div class="pt"><b>The account</b> &mdash; how many people work there in total.</div></div>
+              <div class="pathrow"><div class="pn">2</div><div class="pt"><b>Copilot licences</b> &mdash; only an assigned Microsoft 365 Copilot licence makes Cowork possible at all. Everyone else costs nothing here.</div></div>
+              <div class="pathrow"><div class="pn">3</div><div class="pt"><b>Active in Cowork</b> &mdash; holding a licence is not using one.</div></div>
+              <div class="pathrow"><div class="pn">4</div><div class="pt"><b>Who they are, and how often</b> &mdash; ten staffing shapes fill this in one click.</div></div>
+              <div class="pathrow"><div class="pn">5</div><div class="pt"><b>What a task costs</b> &mdash; the credit price of a task, and the effort level that scales all of them.</div></div>
+              <div class="pathrow"><div class="pn">6</div><div class="pt"><b>How they buy</b>, and <b>7 &middot; Governance readiness</b> <span class="opt">Full model only</span><br><span style="color:#6b7280;">Neither changes the dollar figure &mdash; they sharpen the billing comparison and the licensing recommendation. The fast path assumes sensible answers and says so.</span></div></div>
+              <div class="pathrow final"><div class="pn">&#9679;</div><div class="pt"><b>The full picture</b> &mdash; everything at once, printable, and every answer still editable from that page.</div></div>
+            </div>
+          </div>
+
+          <div class="introsec">
+            <h3>What you walk out with</h3>
+            <ul class="outlist">
+              <li>A line to read out loud, ready to copy</li>
+              <li>A monthly cost range, with its arithmetic on show</li>
+              <li>The seat-versus-meter split, annual and three-year</li>
+              <li>What happens if they use it more than you assumed</li>
+              <li>Pay-as-you-go against a P3 pre-purchase</li>
+              <li>A licensing recommendation that explains its reasoning</li>
+              <li>Readiness flags and the prerequisites still open</li>
+              <li>The talk track, and the next rung to sell</li>
+              <li>Every modelled assumption, labelled as modelled</li>
+              <li>A customer leave-behind or an internal working copy</li>
+            </ul>
+          </div>
+
+          <div class="introsec">
+            <h3>Two things to know before you start</h3>
+            <div class="promises">
+              <div class="promise"><span class="pr-i">&#128274;</span><div class="pr-t"><b>Nothing you type is stored anywhere</b>Not on a server, not in this browser. Close the tab and it is gone. Keep a copy by downloading a session file &mdash; and download your rate card separately, because that one has no customer data in it and you will want it every time.</div></div>
+              <div class="promise"><span class="pr-i">&#128290;</span><div class="pr-t"><b>Every number shows its work</b>Microsoft-published prices are cited. Anything modelled or editorial is labelled as modelled, and listed again at the end, so you never repeat one to a customer as though Microsoft published it.</div></div>
+            </div>
+          </div>
+
+          <div class="introfoot">
+            <button class="btn primary" data-goto="step0">Start &mdash; set up my pricing &rarr;</button>
+            <button class="btn" id="introSkip">Skip it, use Microsoft list prices &rarr;</button>
+            <span style="flex:1;"></span>
+            <button class="linkbtn" id="introLoadSession">&#11014; Load a saved session</button>
+            <button class="linkbtn" id="introLoadRate">&#11014; Load a rate card</button>
+          </div>
+        </div>
+      </div>
 
       <!-- STEP 0 · THE RATE CARD -->
       <div class="wcard screen" id="step0">
@@ -2305,8 +2520,11 @@ footer.pagefoot a { color:#6b7280; }
     step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway',
     step7:'the governance posture is unknown — every gate becomes a discovery question rather than a confirmed control'
   };
-  var cur = 'step1';
-  function flow() { return uiMode === 'fast' ? FAST : STEPS.map(function (x) { return x.id; }); }
+  var cur = 'intro';
+  /* 'intro' is a cover, not a step: it carries no answer, so it stays out of
+     the stepper and out of the question count. */
+  function flow() { return ['intro'].concat(uiMode === 'fast' ? FAST : STEPS.map(function (x) { return x.id; })); }
+  function chips() { return flow().filter(function (id) { return id !== 'intro'; }); }
   function stepDef(id) { return STEPS.filter(function (x) { return x.id === id; })[0]; }
   /* Only a caret in a text field needs protecting from a re-render. Buttons
      and chips must re-render or their selected state never appears. */
@@ -2346,7 +2564,9 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   function renderStepper(c) {
-    var f = flow(), idx = f.indexOf(cur);
+    document.body.classList.toggle('at-intro', cur === 'intro');
+    if (cur === 'intro') return;
+    var f = chips(), idx = f.indexOf(cur);
     $('stepper').innerHTML = f.map(function (id, i) {
       var d = stepDef(id);
       return '<button class="st' + (id === cur ? ' on' : (i < idx ? ' done' : '')) + '" data-goto="' + id + '">' +
@@ -2389,6 +2609,7 @@ footer.pagefoot a { color:#6b7280; }
       var card = $(d.id); if (!card) return;
       var nav = card.querySelector('.stepnav'); if (!nav) return;
       var k = f.indexOf(d.id);
+      nav.querySelector('[data-nav="back"]').innerHTML = (k === 1) ? '&larr; Overview' : '&larr; Back';
       nav.querySelector('[data-nav="back"]').style.visibility = k > 0 ? 'visible' : 'hidden';
       nav.querySelector('[data-nav="next"]').innerHTML =
         (k === f.length - 2) ? 'See the full picture &rarr;'
@@ -2616,7 +2837,13 @@ footer.pagefoot a { color:#6b7280; }
   renderGov();
   renderPricing();
   buildNavs();
-  goTo('step0');
+  wireGoto($('intro'));
+  $('introSkip').addEventListener('click', function () {
+    state.pricing.mode = 'list'; renderPricing(); goTo('step1');
+  });
+  $('introLoadSession').addEventListener('click', function () { $('loadFile').click(); });
+  $('introLoadRate').addEventListener('click', function () { $('rateFile').click(); });
+  goTo('intro');
 })();
 
 </script>
