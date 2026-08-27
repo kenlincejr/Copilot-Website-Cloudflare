@@ -328,7 +328,30 @@ These are hard-coded, frequent, and legitimate. They are **part of the system** 
 | `#f5ddb0`, `#d97706`, `#92400e` | — | Warn callout border / rule / title |
 | `#0f766e`, `#b91c1c` | — | check / cross |
 
-**Prohibition:** no color outside §1 + §4 may be introduced by an execution chat. If new content genuinely needs one, it stops and asks.
+### 4.1 Alert palette — *added 2026-08-26, missed in the first pass*
+
+The original §4 catalogued the greys and the callout colors but **missed the red/amber alert palette entirely**, which is used ~60 times. Found when the Phase 5 design lint flagged `#fef2f2` on a `cpb.html` diff as a new color; it was pre-existing and in use 19 times. Any lint built on the incomplete list would have produced a false positive on every comparison row in the file.
+
+| Value | Count | Role |
+|---|---:|---|
+| `#dc2626` | 31 | Alert red — `<strong>` label in the red comparison rows |
+| `#fef2f2` | 19 | Alert red ground — comparison-row background |
+| `#fca5a5` | 6 | On-dark alert red (Door 1 / Door 2 glyphs) |
+| `#f87171` | 3 | On-dark alert red, border/fill variant |
+| `#fbbf24` | 3 | Amber accent on dark |
+| `#fee2e2` | 2 | Alert red, lighter ground |
+
+**Also present** in `CopilotApp.html` / `CopilotIB.html` as the tokenised triads (`--red #7f1d1d`, `--red-bg #fef2f2`, `--red-bd #fecaca`) — see §1.2. `#fef2f2` is therefore *both* a token value there and a hard-coded value in `cpb.html`. Do not attempt to reconcile them; note it and move on.
+
+**Prohibition:** no color outside §1 + §4 (including §4.1) may be introduced by an execution chat. If new content genuinely needs one, it stops and asks.
+
+**Lint caveat.** The §9 lint is line-based, so it reports every color on a *changed line*, not only colors that are *new*. Before treating a hit as a finding, check it against `main`:
+
+```bash
+git show main:<file> | grep -c '<color>'
+```
+
+A non-zero count means the value was carried through an unchanged attribute on a changed line — not introduced.
 
 ---
 
