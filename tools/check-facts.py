@@ -82,15 +82,30 @@ def main():
 
         verdicts = {v for _, _, v in results}
 
-        # the finding that matters: a cascade fact applied unevenly
-        half = len(files) > 1 and "OK" in verdicts and "MOVED" in verdicts
+        # The finding that matters is a cascade fact updated in some files and
+        # not others. An anchor going MOVED is NOT that signal on its own - an
+        # anchor drifts whenever neighbouring text changes, even when the value
+        # itself was deliberately retained. Comparing anchors alone produced a
+        # 3-in-5 false-positive rate in practice.
+        #
+        # The real test is the VALUE: inconsistent means the old value is gone
+        # from some files and still present in others.
+        half = False
+        if len(files) > 1:
+            present = {fl for fl in files
+                       if read(fl) is not None and f["value"] in read(fl)}
+            absent = files - present
+            half = bool(present) and bool(absent)
+            if half:
+                results = results + [("--- value still present in: "
+                                      + ", ".join(sorted(present)), 0, "")]
         if half:
             problems.append((f, results))
 
         if changed_only and verdicts == {"OK"}:
             continue
 
-        flag = "  <== HALF-APPLIED" if half else ""
+        flag = "  <== INCONSISTENT (old value gone from some files, kept in others)" if half else ""
         print(f"{f['id']} [{f['kind']}] {f['value']}{flag}")
         for fl, ln, v in results:
             print(f"     {v:14s} {fl}:{ln}")
@@ -102,8 +117,8 @@ def main():
 
     if problems:
         print()
-        print(f"!!! {len(problems)} cascade fact(s) applied to some files but "
-              f"not others:")
+        print(f"!!! {len(problems)} cascade fact(s) where the old value was "
+              f"removed from some files but kept in others:")
         for f, _ in problems:
             print(f"    {f['id']}  {f['value']}")
         print("    The site is internally inconsistent. Fix before merging.")
