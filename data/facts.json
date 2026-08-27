@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
- "fact_count": 142,
- "occurrence_count": 271,
+ "fact_count": 143,
+ "occurrence_count": 273,
  "facts": [
   {
    "id": "F-001",
@@ -3785,6 +3785,34 @@
      "anchor_unique": true,
      "anchor": "       <div class=\"pct\">96.7%</div>\n        <div clas",
      "context": "e into two addressable motions \u2014 and the same five services sell into both. 96.7% Acquisition Haven\u2019t bought yet They already have free Copilot Chat. Th"
+    }
+   ]
+  },
+  {
+   "id": "F-143",
+   "kind": "percent",
+   "value": "20-30%",
+   "label": "Share of purchased Copilot seats with sustained weekly use",
+   "type": "analyst",
+   "source_url": "https://valueaddvc.com/blog/microsoft-copilot-enterprise-adoption-what-the-data-shows-about-real-usage-vs-hype",
+   "as_of": "2026",
+   "verified": true,
+   "status": "CONFIRMED",
+   "notes": "User-supplied lead, verified 2026-08-26. Traced to independent survey synthesis - Gartner and Forrester enterprise surveys plus reseller channel data, 2025-2026 - reported consistently across multiple outlets (Stackmatix, valueaddvc, others), not a single Microsoft-stated figure. Same epistemic category as the Forrester TEI benchmark set (F-001, F-015, F-024, F-027): analyst synthesis, not a company disclosure. Used to replace the previously-unattributed '64% of licensed seats go unused' claim in ledger.html (RESEARCH-DELTA.md Section 8 / ledger.spec.md's out-of-scope table) with a sourced figure, and to sharpen the qualitative Rescue/Door 2 argument in cpb.html with a concrete number.",
+   "occurrences": [
+    {
+     "file": "cpb.html",
+     "line": 1622,
+     "anchor_unique": true,
+     "anchor": "Independent surveys put weekly active use at just 20&ndash;30% of purchased seats &mdash; without intervention",
+     "context": "Rescue market card, Opening Provocation, Two Opportunities One Playbook"
+    },
+    {
+     "file": "ledger.html",
+     "line": 533,
+     "anchor_unique": true,
+     "anchor": "Independent surveys put <strong>weekly active use at just 20&ndash;30% of purchased seats</strong> without a structured program",
+     "context": "Line 02, The market, Rescue card"
     }
    ]
   }
