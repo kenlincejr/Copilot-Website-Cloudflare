@@ -3710,10 +3710,10 @@
    "value": "9%",
    "label": "Share of AI-using businesses that use agents",
    "type": "unclassified",
-   "source_url": "https://prefactor.tech/learn/ai-agent-adoption-statistics",
+   "source_url": "",
    "as_of": "2026-01-01",
    "verified": true,
-   "notes": "'Only 9% of businesses using AI are using agents' does not survive 2026 data: 23% actively scaling agentic AI in at least one function plus 39% experimenting (62% at least experimenting); PwC has 79% of companies adopting agents. The 9% figure reads as 2024/2025 vintage. REPLACE OR REMOVE - as written it understates the market by an order of magnitude and the argument it supports ('the Copilot Studio opportunity is even earlier') no longer holds.",
+   "notes": "CORRECTION to the first Phase 3 read: this claim IS sourced - 'Inforcer MSP AI Report, 2026' sits directly beneath it in the markup. The figure is not unsourced and probably is not wrong for its own population (agent use among MSP-served SMBs). The defect is the WORDING: 'of businesses using AI are using agents' generalises an MSP-panel finding to all businesses. Broad-market 2026 data is far higher - 23% actively scaling agentic AI in at least one function plus 39% experimenting; PwC puts adoption at 79%. FIX = scope the sentence to its source population, not delete the stat.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -3723,8 +3723,8 @@
      "context": "> Only 9% of businesses using AI are using agents \u2014 the Copilot Studio opportunity is even ea"
     }
    ],
-   "new_value": "superseded",
-   "status": "SUPERSEDED"
+   "new_value": "9% (source is MSP-scoped, not all businesses)",
+   "status": "SCOPE-ERROR"
   },
   {
    "id": "F-140",

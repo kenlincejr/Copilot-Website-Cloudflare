@@ -390,7 +390,9 @@ Because it stays distinct, for spec purposes `ledger.html` has its **own** catal
 7. **New markup is assembled from §3 catalog snippets.** Anything not derivable from the catalog needs sign-off recorded in the spec.
 8. **Match the local convention.** cpb.html is a hybrid; a change inside a class-based block uses classes, a change inside an inline-styled block uses inline styles. Do not convert one to the other.
 9. **One file per execution chat.** If a change appears to require a second file, stop and report.
-10. **Prices are frozen.** *(Decided 2026-08-26.)* No execution chat may alter a currency value that is not registered in `data/facts.json`. The service price sheet — `$350`/`$400` per agent, `$15`/`$25`/`$55` per user, `$3,500`, `$8,000`, and every scenario dollar line derived from them — is out of scope for this refresh. Roughly 200 currency anchors across the site are deliberately unregistered for exactly this reason (see `FACTS.md` §6). A diff that changes a dollar figure with no fact ID behind it is a failed execution.
+10. **Your service prices are frozen. Microsoft's list prices are not.** *(Decided 2026-08-26.)* No execution chat may alter a currency value that is not registered in `data/facts.json`. The service price sheet — `$350`/`$400` per agent, `$15`/`$25`/`$55` per user, `$3,500`, `$8,000`, and every scenario dollar line derived from them — is out of scope. Roughly 200 currency anchors across the site are deliberately unregistered for exactly this reason (see `FACTS.md` §6). A diff that changes a dollar figure with no fact ID behind it is a failed execution.
+
+    **Microsoft-published prices are in scope** where they carry a fact ID: SKU list prices, promotional rates, licensing prerequisites, and program figures. Scenario arithmetic that *derives* from a Microsoft price (e.g. `50 users × $21/user/month × 12 = $12,600`) sits on the boundary — **flag it in the spec, do not recompute it.** Changing a derived total is a service-price change wearing a licensing costume.
 
 ---
 
