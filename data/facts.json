@@ -3,7 +3,7 @@
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
  "fact_count": 143,
- "occurrence_count": 273,
+ "occurrence_count": 274,
  "facts": [
   {
    "id": "F-001",
@@ -3798,7 +3798,7 @@
    "as_of": "2026",
    "verified": true,
    "status": "CONFIRMED",
-   "notes": "User-supplied lead, verified 2026-08-26. Traced to independent survey synthesis - Gartner and Forrester enterprise surveys plus reseller channel data, 2025-2026 - reported consistently across multiple outlets (Stackmatix, valueaddvc, others), not a single Microsoft-stated figure. Same epistemic category as the Forrester TEI benchmark set (F-001, F-015, F-024, F-027): analyst synthesis, not a company disclosure. Used to replace the previously-unattributed '64% of licensed seats go unused' claim in ledger.html (RESEARCH-DELTA.md Section 8 / ledger.spec.md's out-of-scope table) with a sourced figure, and to sharpen the qualitative Rescue/Door 2 argument in cpb.html with a concrete number.",
+   "notes": "User-supplied lead, verified 2026-08-26. Traced to independent survey synthesis - Gartner and Forrester enterprise surveys plus reseller channel data, 2025-2026 - reported consistently across multiple outlets (Stackmatix, valueaddvc, others), not a single Microsoft-stated figure. Same epistemic category as the Forrester TEI benchmark set (F-001, F-015, F-024, F-027): analyst synthesis, not a company disclosure. Used to replace the previously-unattributed '64% of licensed seats go unused' claim in ledger.html (RESEARCH-DELTA.md Section 8 / ledger.spec.md's out-of-scope table) with a sourced figure, and to sharpen the qualitative Rescue/Door 2 argument in cpb.html with a concrete number. Found a THIRD occurrence of the same underlying claim during pre-push verification: cpb.html:2440 said 'Industry data says 64% of licensed seats go unused' with zero attribution - identical unsourced pattern to the ledger.html instance, missed by the Phase 2 sweep (no hard-source signal within its context window). Fixed to match. NOT touched: cpb.html ~line 1830, a separate stat card reading '64% / Of Licensed Seats Go Unused' already cited to 'Stackmatix - Copilot Adoption Analysis 2026' - this has its own attribution and was not independently verified against Stackmatix directly (site returned 403). Left alone; flagged for the user's manual review.",
    "occurrences": [
     {
      "file": "cpb.html",
@@ -3813,6 +3813,13 @@
      "anchor_unique": true,
      "anchor": "Independent surveys put <strong>weekly active use at just 20&ndash;30% of purchased seats</strong> without a structured program",
      "context": "Line 02, The market, Rescue card"
+    },
+    {
+     "file": "cpb.html",
+     "line": 2440,
+     "anchor_unique": true,
+     "anchor": "Independent surveys put weekly active use at just 20&ndash;30% of purchased seats without a structured program",
+     "context": "Champion card, 'What they reveal: they don't know' - renewal risk framing"
     }
    ]
   }
