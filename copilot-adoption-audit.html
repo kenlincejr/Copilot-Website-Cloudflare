@@ -1321,7 +1321,19 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <h2 id="section-10">10 &middot; Build it &mdash; large tenants and small</h2>
 
-<p>No BI tool, no Power&nbsp;BI licence, no data engineer. <strong><a href="copilot-adoption-audit-workbook.xlsx">Download the workbook</a></strong>, paste your export into the first tab, and read the answer off the third. It detects its own columns by header text &mdash; so it does not matter which columns the admin switched on or what order they came out in &mdash; picks large-tenant or small-tenant thresholds from the row count, applies the five-person suppression rule for you, and draws the chart.</p>
+<div class="callout">
+  <div class="callout-title">Download the workbook</div>
+  <div class="callout-body">
+    <p><a href="copilot-adoption-audit-workbook.xlsx"><strong>copilot-adoption-audit-workbook.xlsx</strong></a> &mdash; no BI tool, no Power&nbsp;BI licence, no data engineer. It detects its own columns by header text, so it does not matter which columns the admin switched on or what order they came out in, and it applies the five-person suppression rule for you.</p>
+    <p><strong>How to populate it with your data:</strong></p>
+    <ol>
+      <li>Pull the export as described in Section&nbsp;8 &mdash; Copilot usage report &rsaquo; the <strong>Usage</strong> tab &rsaquo; the user-level table &rsaquo; <strong>Export</strong>, with every column switched on first.</li>
+      <li>Open the workbook and go to the <strong>Paste Export</strong> tab. Delete the three yellow example rows, then paste your CSV starting at cell&nbsp;A1, headers included.</li>
+      <li>Go to <strong>Setup</strong> and fill in the customer name, report period and refresh date. Every detected field should read <strong>FOUND</strong>; if one reads NOT FOUND, re-check that column was switched on in the export.</li>
+      <li>Read the answer off <strong>Segments</strong> and <strong>Chart</strong>. Any band under five people is suppressed automatically &mdash; report the count, not a percentage.</li>
+    </ol>
+  </div>
+</div>
 
 <p>The rest of this section is what the workbook is doing, written out. Read it if you would rather build your own, if you need to explain a number to a customer&rsquo;s admin, or if you simply do not want to trust a spreadsheet you did not write. The formulas assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2, and are written with column letters spelled out in a legend so substitution is mechanical.</p>
 
