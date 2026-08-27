@@ -419,6 +419,65 @@ Because it stays distinct, for spec purposes `ledger.html` has its **own** catal
 
 ---
 
+## 8b. Two rules that keep getting broken
+
+Both of these have been caught in review on more than one file. They are not
+preferences; treat them as prohibitions with the same weight as the colour and
+type rules above.
+
+### 8b.1 Prose runs the full width of its container
+
+**Prohibition:** do not put `max-width` on a paragraph, a callout body, a note,
+a lede, a standfirst, or any other run of prose.
+
+A capped measure is good typography in the abstract and wrong here, because
+these pages put prose directly above and below full-width tables, card grids
+and diagrams. A paragraph that stops 200-400px short of the elements bracketing
+it does not read as a considered measure -- it reads as a bug, and it has been
+reported as one every time it has shipped.
+
+If a line genuinely feels too long, **narrow the container, not the sentence**,
+so the text still ends where its container does. `.masthead-inner` was reduced
+from `1680px` to `1320px` for exactly this reason rather than capping the
+standfirst inside it.
+
+Allowed uses of `max-width`: page and section shells (`.stage`, `.masthead-inner`,
+`footer.pagefoot`), form controls and inputs, and text that is a **flex sibling**
+of another element in the same row, where an uncapped run would crowd it out
+(`.statbar .small` next to `.statbar .big`, or `.stepnav .sn-hint` next to the
+Continue button). Nothing else. A paragraph that owns its own row is never capped.
+
+```bash
+# any hit inside a prose rule is a finding
+grep -nE 'max-width:[^;}]*(ch|em)' <file>
+grep -nE '\.(lede|sub|note|callout|hint|body|track)[^{]*\{[^}]*max-width' <file>
+```
+
+### 8b.2 A reference to another playbook document is a link
+
+**Prohibition:** do not name another document, section or stop in prose without
+linking to it.
+
+If the text says "Stop 5 of the 40-Minute Cowork Session", "section 11", "the
+Licensing Snapshot" or "the Azure Billing Setup guide", the reader must be able
+to click it. Partners use these documents side by side in a live meeting; making
+them hunt for a named section is a real cost.
+
+- Section anchors: `coworksession40.html#section-11` -- every `<h2>` in that file
+  carries `id="section-N"`.
+- Stop anchors: `coworksession40.html#stop-5` -- every `.stop` carries `id="stop-N"`.
+- Add the anchor to the target file if it does not exist yet, rather than
+  linking to the top of the page and leaving the reader to scroll.
+- Style with `a.docref`. External links get `target="_blank" rel="noopener"`;
+  same-site links do not.
+
+```bash
+# candidate references that may not be linked
+grep -noE '(Stop [0-9]|[Ss]ection [0-9]+|40-Minute Cowork Session|Licensing Snapshot)' <file>
+```
+
+---
+
 ## 9. Design lint (Phase 6)
 
 Grep every touched file for values not on the allow-list:

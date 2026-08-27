@@ -211,6 +211,11 @@ body.at-intro #stepper, body.at-intro .toolbar { display:none; }
 .outlist { columns:2; column-gap:32px; font-size:.87rem; color:#374151; line-height:1.75; margin:0; padding-left:20px; }
 @media (max-width:720px){ .outlist { columns:1; } }
 .outlist li { break-inside:avoid; }
+/* cross-document reference: always a real link, never bare prose */
+a.docref { color:var(--teal); font-weight:600; border-bottom:1px solid #a8d3da; text-decoration:none; }
+a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text-decoration:none; }
+.srcline a.docref, .rg-s a.docref { font-weight:600; }
+
 .introfoot { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:34px; padding-top:22px; border-top:1px solid var(--border); }
 
 .modecards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:4px 0 22px; }
@@ -475,17 +480,17 @@ footer.pagefoot a { color:#6b7280; }
               <div class="whencard">
                 <div class="wn-w">Live, in the room</div>
                 <div class="wn-t">The ninety-second cost story</div>
-                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Seven short questions, most of them a single tap, and a leave-behind printed before the meeting moves on.</div>
+                <div class="wn-d"><a class="docref" href="coworksession40.html#stop-5">Stop 5 of the 40-Minute Cowork Session</a>. Seven short questions, most of them a single tap, and a leave-behind printed before the meeting moves on.</div>
               </div>
               <div class="whencard">
                 <div class="wn-w">Before the call</div>
                 <div class="wn-t">Model a named account</div>
-                <div class="wn-d">Pre-fill what you already know from Partner Center, open the full model, and decide which SOW to lead with before you dial.</div>
+                <div class="wn-d">Pre-fill what you already know from Partner Center and decide which SOW to lead with before you dial &mdash; the menu is <a class="docref" href="coworksession40.html#section-11">section 11's ARR ladder</a>.</div>
               </div>
               <div class="whencard">
                 <div class="wn-w">Every month after</div>
                 <div class="wn-t">Re-forecast against reality</div>
-                <div class="wn-d">Load last month's session file, enter what tasks actually cost from Cost Management, and watch the estimate tighten from &plusmn;30% to &plusmn;15%.</div>
+                <div class="wn-d">Load last month's session file, enter what tasks actually cost from Cost Management, and watch the estimate tighten from &plusmn;30% to &plusmn;15%. The monthly motion is <a class="docref" href="coworksession40.html#section-11">Rung 3 of the ladder</a>.</div>
               </div>
             </div>
           </div>
@@ -668,7 +673,7 @@ footer.pagefoot a { color:#6b7280; }
             <div class="callout-title">This is the whole ballgame</div>
             <div class="callout-body">
               <p><b>Only someone with an assigned Microsoft 365 Copilot licence can use Cowork at all.</b> Everyone else in the company is out of scope for this number &mdash; they cost nothing here and they generate nothing. So the question is never &ldquo;how many employees.&rdquo; It is &ldquo;how many licences.&rdquo;</p>
-              <p class="srcline" style="margin-top:8px;">Microsoft Learn &mdash; <em>Get started with Copilot Cowork</em>, Prerequisites: &ldquo;An active Microsoft 365 Copilot license assigned to your account.&rdquo;</p>
+              <p class="srcline" style="margin-top:8px;">Microsoft Learn &mdash; <em>Get started with Copilot Cowork</em>, Prerequisites: &ldquo;An active Microsoft 365 Copilot license assigned to your account.&rdquo; The SKUs and what each one includes are in <a class="docref" href="coworksession40.html#section-6">section 6, the Licensing Snapshot</a>.</p>
             </div>
           </div>
           <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Of those people, how many have a Copilot licence today?&rdquo; If the answer is &ldquo;none yet,&rdquo; ask the follow-up: <b>&ldquo;If we started with one team, which team, and how many people is that?&rdquo;</b></div></div>
@@ -760,7 +765,7 @@ footer.pagefoot a { color:#6b7280; }
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">7</div><div class="wc-title">
             <h2>Governance readiness</h2><div class="wc-sub">Every answer here moves the licensing recommendation. Nothing is decorative.</div></div></div>
-          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Has IT already turned on anything like sensitivity labels or data-loss protection for AI tools?&rdquo; You're not auditing anything on the spot &mdash; you just want to know what to check first.</div></div>
+          <div class="coach"><span class="co-ic">&#128483;</span><div class="co-txt"><b>Ask out loud:</b> &ldquo;Has IT already turned on anything like sensitivity labels or data-loss protection for AI tools?&rdquo; You're not auditing anything on the spot &mdash; you just want to know what to check first. The Azure and CSP billing gate at the bottom of this screen is walked through step by step in the <a class="docref" href="azure-billing-setup.html">Azure Billing Setup guide</a>.</div></div>
           <div id="govBlock"></div>
         </div>
       </div>
@@ -1642,6 +1647,7 @@ footer.pagefoot a { color:#6b7280; }
         price:'Admin action \u2014 no SKU closes this',
         why:[ o.azureCspPlan === 'no' ? 'You told us there is no Azure plan on your CSP channel, and Cowork PayGo billing routes through one.' : '',
               o.usageBillingEnabled === 'no' ? 'You told us usage-based billing is not enabled, which Microsoft lists as a hard prerequisite.' : '' ],
+        link:{ href:'azure-billing-setup.html', text:'Walk it through \u2014 the Azure Billing Setup guide' },
         opener:'"Nothing on this ladder matters until billing has a path. Let\u2019s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."',
         then:'Once billing has a path, come back to this page \u2014 the number does not change, but the deal becomes sellable.' },
 
@@ -1661,6 +1667,7 @@ footer.pagefoot a { color:#6b7280; }
 
       { id:'greenfield', when: ctx.greenfield,
         eyebrow:'Recommended next step', rung:0, name:'Copilot in 30 \u2014 the 25-user, 30-day trial',
+        link:{ href:'coworksession40.html#section-6', text:'How to position it \u2014 section 6, the Licensing Snapshot' },
         price:'No licence cost \u00b7 CSP, live since 1 Aug 2026',
         why:['Nobody holds a Copilot licence, so Cowork cannot run at all yet. This is a licensing conversation before it is a consumption one.'],
         opener:'"Before anyone signs anything, let\u2019s put Copilot in front of twenty-five of your people for thirty days and find out which use cases actually land. Then we price it on evidence."',
@@ -2349,7 +2356,7 @@ footer.pagefoot a { color:#6b7280; }
           '<td class="money"><input type="number" step="' + x[6] + '" min="0" id="' + x[3] + '" data-svc="' + x[4] + '" value="' + state.partnerServices[x[4]] + '"></td>' +
           '<td style="font-size:.8rem;color:#6b7280;">' + x[5] + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
-      '<p class="srcline">These six are the ARR ladder from section 11 of the 40-Minute Cowork Session, and they drive which next step the output recommends. The published ranges are editorial starting points to test against your own cost model &mdash; not survey data, and never a quote. They are never blended into a Microsoft total; the output keeps a visual break between what Microsoft charges and what you charge.</p>' +
+      '<p class="srcline">These six are the ARR ladder from <a class="docref" href="coworksession40.html#section-11" target="_blank" rel="noopener">section 11 of the 40-Minute Cowork Session</a>, and they drive which next step the output recommends. The published ranges are editorial starting points to test against your own cost model &mdash; not survey data, and never a quote. They are never blended into a Microsoft total; the output keeps a visual break between what Microsoft charges and what you charge.</p>' +
 
       '<div class="ratehead"><div class="rh-t">Effort model ' + provPill('ms-modeled') + '</div></div>' +
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
@@ -2549,7 +2556,7 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="whybox"><div class="wb-h">Cost controls to put in place</div>' +
         '<p>1 &middot; A tenant-level monthly spending limit in <b>Copilot &rarr; Cost Management</b>, sized to the high end above.</p>' +
         '<p>2 &middot; Per-user limits with email alerts at 50% and 80%, so nobody discovers a problem on the invoice.</p>' +
-        '<p>3 &middot; A monthly Cost Management review &mdash; concentration check, top-5 users, and a re-forecast. That review is the retainer.</p></div>';
+        '<p>3 &middot; A monthly Cost Management review &mdash; concentration check, top-5 users, and a re-forecast. That review is the retainer, and the month-by-month motion behind it is written out in <a class="docref" href="coworksession40.html#section-11" target="_blank" rel="noopener">section 11 of the session guide</a>.</p></div>';
 
     /* billing */
     renderBillOut(r);
@@ -2688,7 +2695,7 @@ footer.pagefoot a { color:#6b7280; }
         '<div class="lg-main">' +
           '<div class="lg-h">Every path, priced across ' + L.needed + ' Copilot users</div>' +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%). That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting.</p>' +
+          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%). That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting, and read it beside <a class="docref" href="coworksession40.html#section-6" target="_blank" rel="noopener">section 6, the Licensing Snapshot</a>.</p>' +
         '</div>' +
         '<div class="lg-side">' +
           '<div class="whybox" style="margin-top:0;"><div class="wb-h">Why this one</div>' +
@@ -2711,7 +2718,8 @@ footer.pagefoot a { color:#6b7280; }
       (n.why && n.why.length
         ? '<div class="ns-why">' + n.why.map(function (w) { return '<p>' + esc(w) + '</p>'; }).join('') + '</div>'
         : '') +
-      (n.then ? '<div class="ns-then"><b>And then:</b> ' + n.then + '</div>' : '');
+      (n.then ? '<div class="ns-then"><b>And then:</b> ' + n.then + '</div>' : '') +
+      (n.link ? '<div style="margin-top:10px;"><a class="docref" href="' + n.link.href + '" target="_blank" rel="noopener">' + esc(n.link.text) + ' &rarr;</a></div>' : '');
 
     $('ladderBody').innerHTML =
       '<p style="font-size:.85rem;color:#374151;margin:0 0 4px;line-height:1.6;">Six service lines compound off the same discovery engagement. ' +
@@ -2724,7 +2732,7 @@ footer.pagefoot a { color:#6b7280; }
           '<div class="rg-p">' + g.price + '</div>' +
           '<div class="rg-s">' + esc(g.shape) + '</div></div>';
       }).join('') + '</div>' +
-      '<p class="srcline">Ranges come from section 11 of the 40-Minute Cowork Session and are editorial starting points for you to test against your own cost model. Set your own on the pricing screen and they follow you into every future session.</p>';
+      '<p class="srcline">Ranges come from <a class="docref" href="coworksession40.html#section-11" target="_blank" rel="noopener">section 11 of the 40-Minute Cowork Session</a> and are editorial starting points for you to test against your own cost model. Set your own on the pricing screen and they follow you into every future session.</p>';
   }
 
   function buildTalk(r) {
