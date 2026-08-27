@@ -438,7 +438,7 @@ footer.pagefoot a { color:#6b7280; }
       </div>
       <div class="tb-r">
         <div class="toggle-pill" id="modeToggle">
-          <button data-mode="fast" class="on">Fast &middot; 5 questions</button>
+          <button data-mode="fast" class="on">Fast &middot; 6 questions</button>
           <button data-mode="full">Full model &middot; 7</button>
         </div>
         <span class="tb-sep"></span>
@@ -457,7 +457,7 @@ footer.pagefoot a { color:#6b7280; }
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">&#9658;</div><div class="wc-title">
             <h2>What you are about to do</h2>
-            <div class="wc-sub">Two minutes of reading, then five questions.</div></div></div>
+            <div class="wc-sub">Two minutes of reading, then six questions.</div></div></div>
 
           <p class="intro-lede">This runs a Cowork cost conversation end to end &mdash; the way you would run it sitting next to the customer. You answer a handful of short questions, <b>one screen at a time</b>, with the words to say out loud printed beside every field. Nothing is totted up in front of you as you go, on purpose: the customer should answer honestly before anyone sees a number. At the end you get <b>one page</b> &mdash; the figure, the arithmetic behind it, what to sell them, and the talk track for the rest of the meeting.</p>
 
@@ -467,7 +467,7 @@ footer.pagefoot a { color:#6b7280; }
               <div class="whencard">
                 <div class="wn-w">Live, in the room</div>
                 <div class="wn-t">The ninety-second cost story</div>
-                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Take the fast path, ask five questions, and print a leave-behind before the meeting moves on.</div>
+                <div class="wn-d">Stop 5 of the 40-Minute Cowork Session. Take the fast path, ask six questions, and print a leave-behind before the meeting moves on.</div>
               </div>
               <div class="whencard">
                 <div class="wn-w">Before the call</div>
@@ -574,7 +574,8 @@ footer.pagefoot a { color:#6b7280; }
               <div class="pathrow"><div class="pn">3</div><div class="pt"><b>Active in Cowork</b> &mdash; holding a licence is not using one.</div></div>
               <div class="pathrow"><div class="pn">4</div><div class="pt"><b>Who they are, and how often</b> &mdash; ten staffing shapes fill this in one click.</div></div>
               <div class="pathrow"><div class="pn">5</div><div class="pt"><b>What a task costs</b> &mdash; the credit price of a task, and the effort level that scales all of them.</div></div>
-              <div class="pathrow"><div class="pn">6</div><div class="pt"><b>How they buy</b>, and <b>7 &middot; Governance readiness</b> <span class="opt">Full model only</span><br><span style="color:#6b7280;">Neither changes the dollar figure &mdash; they sharpen the billing comparison and the licensing recommendation. The fast path assumes sensible answers and says so.</span></div></div>
+              <div class="pathrow"><div class="pn">6</div><div class="pt"><b>How they buy</b> <span class="opt">Full model only</span><br><span style="color:#6b7280;">Pay-as-you-go or a P3 pre-purchase. The output compares both whichever you pick, so the fast path assumes pay-as-you-go and says so.</span></div></div>
+              <div class="pathrow"><div class="pn">7</div><div class="pt"><b>Governance readiness</b> &mdash; five gates that move the licensing recommendation, plus the two hard prerequisites: usage-based billing, and an Azure plan on your CSP channel. Asked on both paths. If you have not got to it, one tap records that as unasked rather than guessing on the customer's behalf.</div></div>
               <div class="pathrow final"><div class="pn">&#9679;</div><div class="pt"><b>The full picture</b> &mdash; everything at once, printable, and every answer still editable from that page.</div></div>
             </div>
           </div>
@@ -1010,6 +1011,7 @@ footer.pagefoot a { color:#6b7280; }
       billing: { model:'paygo', capacityPacksCccu:0, commitCoveragePct:1.0, manualP3Pct:null },
       governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
                     namedCostOwner:'unsure', insuranceRenewal:'unsure' },
+      governanceAsked: false,   // false until the partner actually puts the question
       partnerServices: { retainerLo:4, retainerHi:8, assessLo:1500, assessHi:7500 },
       // priceOverrides corrects a stale Microsoft LIST price. It is not a sell price.
       priceOverrides: {},
@@ -1284,6 +1286,13 @@ footer.pagefoot a { color:#6b7280; }
       sellMode ? 'Σ (seats × your sell price)' : 'Σ (seats × Microsoft list price)',
       invDetail.join(' + '), licenseMonthly,'usd', sellMode ? 'partner' : 'ms-verified');
 
+    if (!state.governanceAsked)
+      assume.push({ id:'gov-unasked', label:'Governance posture',
+        note:'The five governance gates were never put to the customer, so every one is treated as open. That is the ' +
+             'conservative direction \u2014 it can only over-state what they need, never under-state it \u2014 but it is an ' +
+             'assumption, not something they told you. Ask before you quote the licensing recommendation.',
+        prov:'editorial' });
+
     if (sellMode) {
       assume.push({ id:'pricing-basis', label:'Licence pricing basis',
         note:'Every licence figure on this page is your own sell price, not Microsoft list. ' +
@@ -1368,6 +1377,10 @@ footer.pagefoot a { color:#6b7280; }
       coworkLo:coworkLo, coworkHi:coworkHi, band:band, perActive:perActive,
       licenseMonthly:licenseMonthly, copilotSpend:copilotSpend, anchorSpend:anchorSpend,
       sellMode:sellMode, creditUsd:CU, creditRateLabel:rateLbl,
+      governanceAsked: !!state.governanceAsked,
+      govConfirmed: GOV_KEYS.filter(function (k) { return state.governance[k] === 'yes'; }).length,
+      govDenied:    GOV_KEYS.filter(function (k) { return state.governance[k] === 'no'; }).length,
+      govUnknown:   GOV_KEYS.filter(function (k) { return state.governance[k] !== 'yes' && state.governance[k] !== 'no'; }).length,
       licenseList:licenseList, licenseSell:licenseSell,
       licenseCost:anyCost ? licenseCost : null,
       licenseMarginMonthly:anyCost ? (licenseMonthly - licenseCost) : null,
@@ -1416,8 +1429,18 @@ footer.pagefoot a { color:#6b7280; }
   var VERTICAL_LABEL = { healthcare:'Healthcare', finance:'Finance', legal:'Legal',
                          public:'Public sector', eu:'EU/EFTA/UK' };
 
+  var GOV_KEYS = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'];
+
   function requirements(state, ctx) {
     var g = state.governance, out = [];
+    var asked = !!state.governanceAsked;
+    /* The same gap reads three different ways depending on how we know about
+       it. Asserting "you told us" when nobody was asked is how a tool ends up
+       putting words in a customer's mouth. */
+    function why(key, saidNo, saidUnsure, neverAsked) {
+      if (!asked) return neverAsked;
+      return g[key] === 'no' ? saidNo : saidUnsure;
+    }
     if (ctx.active > ctx.copilotLicensed)
       out.push({ id:'copilot_access', label:'A Copilot licence on every intended Cowork user', mandatory:true, prov:'ms-verified',
         why:'Cowork requires an assigned Microsoft 365 Copilot licence. You have ' + ctx.active +
@@ -1427,15 +1450,24 @@ footer.pagefoot a { color:#6b7280; }
         why:'Microsoft lists this as a Cowork prerequisite. No SKU closes it — it is an admin action in Copilot > Cost Management.' });
     if (g.purviewLabels !== 'yes')
       out.push({ id:'labels', label:'Purview sensitivity labels', prov:'editorial',
-        why:'Cowork grounds in tenant data and honours whatever labels already exist. Unlabelled data is retrieved at the same credit cost with none of the controls.' });
+        why: why('purviewLabels',
+          'You told us sensitivity labels are not configured. Cowork grounds in tenant data and honours whatever labels exist \u2014 unlabelled data is retrieved at the same credit cost with none of the controls.',
+          'Nobody was sure whether sensitivity labels are configured, so treat this as open. Cowork honours whatever labels exist; unlabelled data is retrieved at the same credit cost with none of the controls.',
+          'Not asked. Until someone confirms it, assume labels are not configured \u2014 unlabelled data is retrieved at the same credit cost with none of the controls.') });
     if (g.dlpForAi !== 'yes')
       out.push({ id:'dlp', label:'DLP for AI', prov:'editorial',
-        why:'You told us DLP for AI is not in place, so nothing is inspecting what leaves via an agent.' });
+        why: why('dlpForAi',
+          'You told us DLP for AI is not in place, so nothing is inspecting what leaves via an agent.',
+          'Nobody was sure whether DLP for AI is configured, so assume nothing is inspecting what leaves via an agent until someone checks.',
+          'Not asked. Until someone confirms it, assume nothing is inspecting what leaves via an agent.') });
     if (g.defenderCloudApps !== 'yes' || state.org.competingAi === 'yes')
       out.push({ id:'mdca', label:'Defender for Cloud Apps', prov:'editorial',
         why: state.org.competingAi === 'yes'
           ? 'They are already paying for Claude or ChatGPT, so you need visibility into unsanctioned AI alongside Cowork.'
-          : 'Without Defender for Cloud Apps there is no visibility into unsanctioned AI tools alongside Cowork.' });
+          : why('defenderCloudApps',
+              'You told us Defender for Cloud Apps is not deployed, so there is no visibility into unsanctioned AI tools alongside Cowork.',
+              'Nobody was sure whether Defender for Cloud Apps is deployed, so visibility into unsanctioned AI is unproven.',
+              'Not asked. Until someone confirms it, assume there is no visibility into unsanctioned AI tools alongside Cowork.') });
     if (REGULATED.indexOf(state.org.vertical) > -1)
       out.push({ id:'comms', label:'Communication Compliance', prov:'editorial',
         why: (VERTICAL_LABEL[state.org.vertical] || 'Regulated') +
@@ -1953,7 +1985,15 @@ footer.pagefoot a { color:#6b7280; }
     { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
   ];
   function renderGov() {
-    $('govBlock').innerHTML = GOV.map(function (g) {
+    $('govBlock').innerHTML =
+      '<div class="quickfill" style="margin-bottom:18px;">' +
+        (state.governanceAsked
+          ? '<b>Answered.</b><span>Every &ldquo;no&rdquo; and every &ldquo;unsure&rdquo; below becomes a named gap in the licensing recommendation.</span>' +
+            '<button class="linkbtn" id="govReset" style="margin-left:auto;">Reset &mdash; we did not actually get to this</button>'
+          : '<b>Have not asked yet?</b><span>Skip it and the output will say so, instead of reporting silence as a finding.</span>' +
+            '<button class="btn" id="govSkip" style="padding:8px 14px;margin-left:auto;">Treat all five as discovery questions &rarr;</button>') +
+      '</div>' +
+      GOV.map(function (g) {
       return '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">' +
         '<div style="flex:1;min-width:250px;font-size:.92rem;">' + esc(g.t) +
           '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' + esc(g.d) + '</span>' +
@@ -1984,14 +2024,34 @@ footer.pagefoot a { color:#6b7280; }
     Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-gov]'), function (seg) {
       var k = seg.getAttribute('data-gov');
       Array.prototype.forEach.call(seg.querySelectorAll('button'), function (b) {
-        b.addEventListener('click', function () { state.governance[k] = b.getAttribute('data-v'); renderGov(); refresh(); });
+        b.addEventListener('click', function () {
+          state.governance[k] = b.getAttribute('data-v');
+          state.governanceAsked = true;
+          renderGov(); refresh();
+        });
       });
     });
     Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-org]'), function (seg) {
       var k = seg.getAttribute('data-org');
       Array.prototype.forEach.call(seg.querySelectorAll('button'), function (b) {
-        b.addEventListener('click', function () { state.org[k] = b.getAttribute('data-v'); renderGov(); refresh(); });
+        b.addEventListener('click', function () {
+          state.org[k] = b.getAttribute('data-v');
+          state.governanceAsked = true;
+          renderGov(); refresh();
+        });
       });
+    });
+    if ($('govSkip')) $('govSkip').addEventListener('click', function () {
+      state.governanceAsked = false;
+      GOV.forEach(function (g) { state.governance[g.k] = 'unsure'; });
+      var f = flow(), k = f.indexOf('step7');
+      renderGov(); goTo(f[Math.min(k + 1, f.length - 1)]);
+    });
+    if ($('govReset')) $('govReset').addEventListener('click', function () {
+      state.governanceAsked = false;
+      GOV.forEach(function (g) { state.governance[g.k] = 'unsure'; });
+      state.org.usageBillingEnabled = 'unsure'; state.org.azureCspPlan = 'unsure';
+      renderGov(); refresh();
     });
   }
 
@@ -2287,7 +2347,11 @@ footer.pagefoot a { color:#6b7280; }
     var blocks = r.warnings.filter(function (w) { return w.severity === 'block'; });
     var clamps = r.warnings.filter(function (w) { return w.severity === 'clamp' || w.severity === 'warn'; });
     var infos  = r.warnings.filter(function (w) { return w.severity === 'info'; });
-    $('flagTag').textContent = r.warnings.length ? r.warnings.length + ' to review' : 'all clear';
+    var tagBits = [];
+    if (r.warnings.length) tagBits.push(r.warnings.length + ' to review');
+    if (!c.governanceAsked) tagBits.push('governance not asked');
+    else if (c.govUnknown) tagBits.push(c.govUnknown + ' still unknown');
+    $('flagTag').textContent = tagBits.length ? tagBits.join(' \u00b7 ') : 'all clear';
     var flagHtml = blocks.concat(clamps, infos).map(function (w) {
       var ic = w.severity === 'block' ? '<span class="cross">&#10007;</span>' : w.severity === 'info' ? '&#8505;' : '&#9888;';
       return '<div class="flag"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
@@ -2295,17 +2359,30 @@ footer.pagefoot a { color:#6b7280; }
           return '<button class="linkbtn" data-fix="' + f.action + '">' + esc(f.label) + '</button>';
         }).join('') + '</div>' : '') + '</div></div>';
     }).join('');
-    var gov = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'];
-    var yes = gov.filter(function (k) { return state.governance[k] === 'yes'; }).length;
-    flagHtml = '<div class="flag"><div class="fi">' + (yes >= 4 ? '<span class="check">&#10003;</span>' : yes <= 1 ? '<span class="cross">&#10007;</span>' : '&#9888;') +
-      '</div><div class="ft"><b>' + yes + ' of 5 governance controls confirmed.</b> ' +
-      (yes <= 1 ? 'Treat this like an ungoverned tenant &mdash; governance readiness is consumption readiness.'
-                : yes >= 4 ? 'This account is close to ready to scale Cowork responsibly.'
-                : 'The unknowns are your discovery questions for the next call.') + '</div></div>' + flagHtml;
+    var govLead;
+    if (!c.governanceAsked) {
+      govLead = '<div class="flag"><div class="fi" style="color:#9ca3af;font-weight:700;">?</div><div class="ft">' +
+        '<b>Governance readiness was not asked.</b> These five are your discovery list for the next call &mdash; not findings ' +
+        'about this tenant. Everything below treats them as open, which can only over-state what they need, never under-state it.' +
+        '<div class="fixrow"><button class="linkbtn" data-goto="step7">Ask them now &mdash; about thirty seconds &rarr;</button></div>' +
+        '</div></div>';
+    } else {
+      var yes = c.govConfirmed, unk = c.govUnknown;
+      govLead = '<div class="flag"><div class="fi">' +
+        (yes >= 4 ? '<span class="check">&#10003;</span>' : yes <= 1 ? '<span class="cross">&#10007;</span>' : '&#9888;') +
+        '</div><div class="ft"><b>' + yes + ' of 5 governance controls confirmed' +
+        (c.govDenied ? ', ' + c.govDenied + ' confirmed missing' : '') +
+        (unk ? ', ' + unk + ' still unknown' : '') + '.</b> ' +
+        (yes <= 1 ? 'Treat this like an ungoverned tenant &mdash; governance readiness is consumption readiness.'
+                  : yes >= 4 ? 'This account is close to ready to scale Cowork responsibly.'
+                  : 'The unknowns are your discovery questions for the next call.') + '</div></div>';
+    }
+    flagHtml = govLead + flagHtml;
     $('flagBody').innerHTML = flagHtml || '<div class="flag"><div class="fi"><span class="check">&#10003;</span></div><div class="ft">Nothing blocking. Every prerequisite you answered is in place.</div></div>';
     Array.prototype.forEach.call($('flagBody').querySelectorAll('[data-fix]'), function (b) {
       b.addEventListener('click', function () { applyFix(b.getAttribute('data-fix'), r); });
     });
+    wireGoto($('flagBody'));
 
     /* licensing */
     renderLicOut(r);
@@ -2450,7 +2527,9 @@ footer.pagefoot a { color:#6b7280; }
     if (c.copilotLicensed > c.active)
       t.push('You have ' + c.copilotLicensed + ' Copilot licences and about ' + c.active + ' people who\'d really use Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licences carrying cost with no meter attached &mdash; is worth a conversation on its own.');
     var govNo = ['purviewLabels','dlpForAi','defenderCloudApps'].filter(function (k) { return state.governance[k] !== 'yes'; }).length;
-    if (govNo >= 2)
+    if (!state.governanceAsked)
+      t.push('One thing I want to check before we go further: governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honours whatever Purview labels already exist. I haven\'t asked what you have switched on yet &mdash; and it matters, because the credits get spent either way. Only the output quality and the risk change.');
+    else if (govNo >= 2)
       t.push('Governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honours whatever Purview labels already exist. Right now this tenant doesn\'t have much in place, so the credits get spent either way &mdash; only the output quality and the risk change.');
     if (state.org.competingAi === 'yes')
       t.push('Keep Claude. Bring it under management. Cowork is what runs the work your Microsoft 365 tenant already knows about &mdash; a personal subscription sits outside the trust boundary with no Purview labels, no Defender for Cloud Apps visibility, and no Cost Management.');
@@ -2508,17 +2587,18 @@ footer.pagefoot a { color:#6b7280; }
     { id:'step4', t:'Who & how often', v:function (c) { return c.personaSeats + ' allocated'; } },
     { id:'step5', t:'What a task costs',   v:function (c) { return c.effortLabel + ' effort'; } },
     { id:'step6', t:'How they buy',      v:function () { return state.billing.model === 'p3' ? 'P3 pre-purchase' : 'Pay-as-you-go'; } },
-    { id:'step7', t:'Governance',        v:function () { return ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'].filter(function (k) { return state.governance[k] === 'yes'; }).length + ' of 5 confirmed'; } },
+    { id:'step7', t:'Governance',        v:function () { return state.governanceAsked
+        ? ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'].filter(function (k) { return state.governance[k] === 'yes'; }).length + ' of 5 confirmed'
+        : 'not asked yet'; } },
     { id:'results', t:'The full picture',v:function () { return 'number, licensing, talk track'; } }
   ];
   /* Fast keeps every question that moves the number — licences, activation,
      persona mix and task effort. It folds only the two that do not: the
      billing model (the meter is identical either way) and the governance
      gates (unknown is already the conservative default). */
-  var FAST = ['step0','step1','step2','step3','step4','step5','results'];
+  var FAST = ['step0','step1','step2','step3','step4','step5','step7','results'];
   var ASSUMED = {
-    step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway',
-    step7:'the governance posture is unknown — every gate becomes a discovery question rather than a confirmed control'
+    step6:'pay-as-you-go at $0.01 a credit — which is what we would recommend for a first year anyway'
   };
   var cur = 'intro', booted = false;
   /* 'intro' is a cover, not a step: it carries no answer, so it stays out of
@@ -2665,10 +2745,11 @@ footer.pagefoot a { color:#6b7280; }
       return 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
         num(Math.round(c.cccuRequired)) + ' CCCU</b> — that is the number to take to your distributor, whatever discount they quote.';
     },
-    step7: function () {
-      var yes = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal']
-        .filter(function (k) { return state.governance[k] === 'yes'; }).length;
-      return '<b>' + yes + ' of 5</b> controls confirmed. Everything still unknown becomes a named discovery question in the output — and every &ldquo;no&rdquo; moves the licensing recommendation.';
+    step7: function (c) {
+      if (!c.governanceAsked)
+        return 'Not asked. The output will say so plainly and treat all five as open — which over-states what they need rather than under-stating it. It will never claim the customer told you anything.';
+      return '<b>' + c.govConfirmed + ' of 5</b> controls confirmed' + (c.govUnknown ? ', ' + c.govUnknown + ' still unknown' : '') +
+        '. Every &ldquo;no&rdquo; and every &ldquo;unsure&rdquo; becomes a named gap in the licensing recommendation.';
     }
   };
   function renderEchoes(c) {
