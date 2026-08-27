@@ -69,12 +69,17 @@ def check(spec_path, target_path, applied=False, quiet=False):
         print(f"FAIL {spec_path}: no before: blocks found")
         return 0, 1
 
-    want = 0 if applied else 1
     ok = bad = 0
 
     for cid in sorted(before, key=sort_key):
         n = raw.count(before[cid])
         note = ""
+
+        # A block-insert keeps its own anchor inside the replacement, so after
+        # execution its BEFORE legitimately still matches once. Expecting zero
+        # there would report a correct edit as a failure.
+        insert_style = cid in after and before[cid] in after[cid]
+        want = (1 if insert_style else 0) if applied else 1
 
         if cid not in after:
             note = "  <-- NO MATCHING after: BLOCK"
@@ -84,6 +89,8 @@ def check(spec_path, target_path, applied=False, quiet=False):
             na = raw.count(after[cid])
             if after[cid].strip() and na < 1:
                 note = "  <-- AFTER text not found; change may not have applied"
+            elif insert_style:
+                note = "  (block-insert; anchor retained by design)"
         else:
             if not after[cid].strip():
                 note = "  (block-remove; idempotency check skipped)"
