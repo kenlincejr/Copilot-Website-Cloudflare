@@ -90,17 +90,30 @@ p  { margin: .5rem 0; }
 .col-results.screen.on { display:grid; }
 
 /* ═══ STEPPER ═══ */
-.stepper { display:flex; align-items:stretch; gap:5px; margin-bottom:10px; flex-wrap:wrap; }
-.st { flex:1 1 0; min-width:82px; border:none; background:none; cursor:pointer; padding:0; text-align:left; }
-.st .st-bar { height:4px; border-radius:2px; background:var(--muted-2); margin-bottom:7px; transition:background .18s; }
-.st.done .st-bar { background:var(--ltblue); }
-.st.on   .st-bar { background:var(--teal); }
-.st .st-l { font-size:.7rem; font-weight:700; color:#9ca3af; display:block; line-height:1.3; }
-.st.on   .st-l { color:var(--navy); }
-.st.done .st-l { color:#6b7280; }
-.st .st-v { font-size:.67rem; color:#c0c6ce; display:block; margin-top:2px; line-height:1.3; }
-.st.on .st-v, .st.done .st-v { color:#9ca3af; }
+.stepper { display:flex; align-items:stretch; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.st { display:flex; flex-direction:column; align-items:center; flex:1 1 0; min-width:96px; gap:5px;
+      border:1px solid var(--border); background:#fff; cursor:pointer; padding:10px 8px 9px; text-align:center;
+      border-radius:10px; transition:background .15s,border-color .15s,box-shadow .15s; }
+.st:hover { border-color:var(--ltblue); background:var(--muted); }
+.st.done { background:var(--accent); border-color:var(--accent); }
+.st.on   { background:var(--teal); border-color:var(--teal); box-shadow:var(--shadow-sm); }
+.st .st-ic { width:26px; height:26px; border-radius:8px; background:var(--muted-2); color:#aab0b9; flex:0 0 auto;
+             display:flex; align-items:center; justify-content:center; transition:background .18s,color .18s; }
+.st .st-ic svg { width:15px; height:15px; display:block; }
+.st.done .st-ic { background:#fff; color:var(--teal-light); }
+.st.on   .st-ic { background:rgba(255,255,255,.2); color:#fff; }
+.st .st-eyebrow { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#aab0b9; }
+.st.on   .st-eyebrow { color:rgba(255,255,255,.7); }
+.st.done .st-eyebrow { color:var(--teal-light); }
+.st .st-l { font-size:.72rem; font-weight:700; color:#4b5563; line-height:1.25; }
+.st.on   .st-l { color:#fff; }
+.st.done .st-l { color:var(--navy); }
+.st .st-v { font-size:.68rem; font-weight:600; color:#5b6472; line-height:1.25; margin-top:auto; padding-top:7px;
+            width:100%; border-top:1px solid var(--border); }
+.st.on   .st-v { color:#fff; border-top-color:rgba(255,255,255,.3); }
+.st.done .st-v { color:var(--teal); border-top-color:rgba(0,95,107,.16); }
 .st:hover .st-l { color:var(--teal); }
+.st:hover .st-ic { color:var(--teal); }
 .toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
             border-top:1px solid var(--border); margin-top:12px; padding-top:11px; margin-bottom:22px; }
 .tb-l  { min-width:0; }
@@ -2890,17 +2903,34 @@ footer.pagefoot a { color:#6b7280; }
     });
   }
 
+  /* One small line icon per step, same stroke weight throughout so the rail
+     reads as one family rather than a grab-bag of glyphs. */
+  var STEP_ICON = {
+    step0:   '<path d="M3 4h10M3 8h10M3 12h10"/><circle cx="6" cy="4" r="1.4" fill="currentColor" stroke="none"/><circle cx="10" cy="8" r="1.4" fill="currentColor" stroke="none"/><circle cx="7" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+    step1:   '<path d="M3 13.5V6l5-3 5 3v7.5"/><path d="M1.5 13.5h13"/><path d="M6.5 13.5V10h3v3.5"/>',
+    step2:   '<circle cx="5.2" cy="5.2" r="2.7"/><path d="M7.1 7.1 13 13M10.6 9.6l1.6 1.6M12.4 7.8 14 9.4"/>',
+    step3:   '<path d="M1.5 8h2.6l1.4-3.4L8 12l1.7-6.6L11 8h3.5"/>',
+    step4:   '<circle cx="5.6" cy="5.4" r="2.1"/><circle cx="11" cy="6.2" r="1.7"/><path d="M1.6 13.2c.4-2.5 1.9-3.8 4-3.8s3.5 1.3 4 3.8M10 9.6c1.8 0 3 1.2 3.4 3.4"/>',
+    step5:   '<circle cx="8" cy="8.4" r="5.6"/><path d="M8 5v3.6l2.4 1.6M5.6 1.4h4.8"/>',
+    step6:   '<rect x="1.6" y="3.8" width="12.8" height="9" rx="1.6"/><path d="M1.6 6.8h12.8"/><path d="M4 10.4h3"/>',
+    step7:   '<path d="M8 1.6 13.6 3.6v4.1c0 3.4-2.3 5.9-5.6 6.7-3.3-.8-5.6-3.3-5.6-6.7V3.6L8 1.6Z"/><path d="M5.7 8 7.2 9.5 10.4 6.2"/>',
+    results: '<path d="M3 14.5V2.2"/><path d="M3 3.4c1.6-1 3-1 4.6 0s3 1 4.6 0v6c-1.6 1-3 1-4.6 0s-3-1-4.6 0Z"/>'
+  };
+  function stIcon(id) { return '<span class="st-ic">' +
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+    (STEP_ICON[id] || '') + '</svg></span>'; }
+
   function renderStepper(c) {
     document.body.classList.toggle('at-intro', cur === 'intro');
     if (cur === 'intro') return;
     var f = chips(), idx = f.indexOf(cur);
     $('stepper').innerHTML = f.map(function (id, i) {
       var d = stepDef(id);
+      var eyebrow = id === 'step0' ? 'Set up' : '';
       return '<button class="st' + (id === cur ? ' on' : (i < idx ? ' done' : '')) + '" data-goto="' + id + '">' +
-        '<span class="st-bar"></span>' +
-        '<span class="st-l">' + (id === 'results' ? 'The full picture'
-            : id === 'step0' ? 'Set up \u00b7 ' + esc(d.t)
-            : i + '. ' + esc(d.t)) + '</span>' +
+        stIcon(id) +
+        (eyebrow ? '<span class="st-eyebrow">' + eyebrow + '</span>' : '') +
+        '<span class="st-l">' + esc(d.t) + '</span>' +
         '<span class="st-v">' + esc(d.v(c)) + '</span></button>';
     }).join('');
     wireGoto($('stepper'));
