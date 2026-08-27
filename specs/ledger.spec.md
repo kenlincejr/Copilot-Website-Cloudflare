@@ -152,11 +152,27 @@ Every change below is text inside an existing class-styled element. **No class i
 
 ---
 
+# Section C — a source you supplied, 2026-08-26
+
+### L-09 · Replace the unattributed 64% with a sourced figure
+**Type:** text-rewrite · **Fact IDs:** `F-143` (new) · **Risk:** MED
+**Rationale:** The out-of-scope table below (as originally authored) flagged `ledger.html:534`'s *"64% of licensed seats go unused"* as unregistered and unattributed — a load-bearing claim for the Rescue motion with no citation anywhere near it. You supplied a source for a closely related, properly-traceable figure: only 20–30% of purchased Copilot seats see sustained weekly use. Traced to independent survey synthesis (Gartner and Forrester enterprise surveys plus reseller channel data, 2025–2026), consistent across multiple outlets — same epistemic category as the Forrester TEI benchmark set already in this document (`F-001`), not a single Microsoft-stated number. Registered as `F-143`.
+
+**This does not just add a citation to the old number — it replaces it.** "64% unused" and "20–30% see weekly use" are not the same measurement (unused could mean zero use ever; not-weekly-active could still include monthly users), so keeping both would plant two different, adjacent-looking percentages for the same argument. The sourced figure replaces the unsourced one rather than sitting beside it.
+
+```html before:L-09
+        <p>They wrote the check and the renewal clock is running. <strong>64% of licensed seats go unused</strong> week over week without a structured program. Get there before the usage report writes the non-renewal for them.</p>
+```
+```html after:L-09
+        <p>They wrote the check and the renewal clock is running. Independent surveys put <strong>weekly active use at just 20&ndash;30% of purchased seats</strong> without a structured program. Get there before the usage report writes the non-renewal for them.</p>
+```
+
+---
+
 ## Out of scope — flagged, not changed
 
 | Location | Item | Why untouched |
 |---|---|---|
-| `ledger.html:534` | *"**64% of licensed seats go unused** week over week"* | Not registered in `facts.json` — it carries no source in the markup and did not surface in the Phase 2 sweep because no hard external-source signal sits near it. **Recommend adding it to the ledger and verifying it.** It is a load-bearing claim for the Rescue motion and it is unattributed. |
 | `ledger.html:554` | `$8.45` (`F-001`) | Forrester/IDC benchmark set. **Unverified** — see `RESEARCH-DELTA.md` §8. |
 | `ledger.html:795` | `$1,750`–`$10,000+` MCI range (`F-039`, `F-040`) | Microsoft program figures, not restated in the July 2026 announcements. Flagged as unverified in `RESEARCH-DELTA.md` §6, not cleared. |
 | Whole file | Fonts, tokens, dark/print overrides | `DESIGN.md` §6 — deliberately distinct. Prohibition 6. |
