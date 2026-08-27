@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The 40-Minute Cowork Session</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — matches copilotplaybook.com system of record
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1200px; margin: 0 auto;
+  padding: 32px 28px; line-height: 1.7; background: #fff;
+}
+h2 { color: var(--navy); margin: 3.2rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.section-eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin: 3.2rem 0 -1.4rem; }
+h2:first-of-type, .section-eyebrow + h2 { margin-top: .4rem; }
+
+/* TOC */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; border-left-color: var(--teal); }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: .4rem 0 0 1.1rem; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 20px 0; }
+.metric { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .8rem; margin-top: 2px; }
+
+/* BLOCKQUOTE */
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+.tablewrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: .89rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); white-space: nowrap; }
+tr:nth-child(even) td { background: #fafbfc; }
+td:first-child { font-weight: 600; color: var(--text); }
+table.dense th, table.dense td { font-size: .78rem; padding: 8px 10px; }
+table.dense td:first-child { font-weight: 400; color: #6b7280; }
+
+/* STAT BAR */
+.statbar { background: var(--teal); color: #fff; border-radius: var(--radius); padding: 18px 24px; margin: 18px 0; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+.statbar .big { font-weight: 700; font-size: 1.4rem; white-space: nowrap; letter-spacing: -.3px; }
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+/* HERO STATEMENT */
+.hero-statement { background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin: 24px 0; text-align: center; box-shadow: var(--shadow-md); }
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* PARTNER STORY */
+.partner-story { border: 1px solid var(--border); border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px; margin: 18px 0; background: #f8fcfd; box-shadow: var(--shadow-sm); }
+.partner-story .ps-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 10px; }
+.partner-story .ps-quote { font-size: .95rem; font-style: italic; color: #374151; line-height: 1.7; margin: 0 0 10px; }
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+/* SMB REALITY / ALERT BANNER */
+.smb-reality { border: 1px solid var(--border); border-left: 4px solid #d97706; border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 20px 0; background: var(--warn); box-shadow: var(--shadow-sm); }
+.smb-reality .sr-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #92400e; margin-bottom: 10px; }
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-tag { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.alt .tc-tag { color: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.sec .tc-tag { color: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+.tier-card.warn-t .tc-tag { color: #92400e; }
+
+/* COMPARE GRID */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+.compare-col p { font-size: .9rem; }
+
+/* CARDS / GRID */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.card-h { font-weight: 700; color: var(--navy); font-size: .95rem; margin-bottom: 6px; }
+.card-b { font-size: .88rem; color: #374151; margin: 0; }
+
+/* TAG */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* CHECK / CROSS */
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.dodont { list-style: none; margin: .6rem 0 1rem; padding: 0; }
+.dodont li { padding-left: 1.6rem; position: relative; margin: .5rem 0; font-size: .93rem; }
+.dodont .check, .dodont .cross { position: absolute; left: 0; top: 1px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: .6rem 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.checklist li { padding-left: 1.7rem; position: relative; font-size: .93rem; color: #374151; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 3px; width: 15px; height: 15px; border: 1.5px solid var(--teal); border-radius: 3px; background: #fff; }
+.checklist li strong { color: var(--navy); }
+
+/* ═══ FLOW MAP (opening visual) ═══ */
+.flowmap { margin: 22px 0 10px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fbfdfd; box-shadow: var(--shadow-md); padding: 22px 18px 10px; }
+.flowmap svg { width: 100%; height: auto; display: block; }
+.flowmap-cap { font-size: .8rem; color: #6b7280; padding: 10px 8px 4px; font-style: italic; }
+
+/* ═══ CONVERSATION STOPS (the beat-by-beat walkthrough) ═══ */
+.stops { margin: 24px 0 10px; }
+.stop { display: flex; gap: 20px; position: relative; margin-bottom: 6px; }
+.stop-rail { flex: 0 0 48px; position: relative; display: flex; flex-direction: column; align-items: center; }
+.stop-rail .dot { width: 48px; height: 48px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.05rem; box-shadow: var(--shadow-sm); border: 3px solid #fff; outline: 1px solid var(--border); flex: 0 0 auto; }
+.stop-rail .line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 24px; }
+.stop:last-child .stop-rail .line { display: none; }
+.stop.act2 .dot { background: #0f766e; }
+.stop.act3 .dot { background: #6d28d9; }
+.stop-content { flex: 1; min-width: 0; padding-bottom: 32px; }
+.stop-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.stop-head h3 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.stop-time { font-family: 'Consolas','Monaco',monospace; font-size: .82rem; font-weight: 700; color: #fff; background: var(--teal); padding: 5px 12px; border-radius: 20px; letter-spacing: .01em; white-space: nowrap; }
+.stop.act2 .stop-time { background: #0f766e; }
+.stop.act3 .stop-time { background: #6d28d9; }
+.beat { margin: 12px 0; }
+.beat-label { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.beat-label .ic { display:inline-flex; width:16px; height:16px; border-radius:3px; background:var(--teal); }
+.beat.say .beat-label .ic { background: var(--teal); }
+.beat.show .beat-label .ic { background: #6d28d9; }
+.beat.tool .beat-label .ic { background: #0f766e; }
+.beat-body { font-size: .93rem; color: var(--text); }
+.segue { margin: 16px 0 4px; background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%); color: #fff; border-radius: var(--radius); padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); }
+.segue .arrow { font-size: 1.1rem; flex: 0 0 auto; color: #a8ecf5; }
+.segue .txt { font-size: .87rem; line-height: 1.5; }
+.segue .txt strong { color: #a8ecf5; }
+
+/* TOOL CARD */
+.toolcard { border: 1px solid var(--border); border-top: 3px solid #0f766e; border-radius: var(--radius); padding: 16px 20px; margin: 14px 0; background: #f7fbfa; box-shadow: var(--shadow-sm); }
+.toolcard .tool-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.toolcard .tool-name { font-weight: 700; color: var(--navy); font-size: .98rem; }
+.toolcard .tool-when { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #0f766e; }
+.toolcard p { font-size: .88rem; margin: .3rem 0; }
+.toolcard .tool-io { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; font-size: .82rem; }
+@media (max-width: 640px) { .toolcard .tool-io { grid-template-columns: 1fr; } }
+.toolcard .tool-io div { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; }
+.toolcard .tool-io b { display: block; font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; margin-bottom: 3px; }
+
+/* WORKED EXAMPLE */
+.worked { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 16px 0; box-shadow: var(--shadow-sm); }
+.worked-head { background: var(--navy); color: #fff; padding: 10px 16px; font-size: .8rem; font-weight: 700; letter-spacing: .03em; }
+.worked table { box-shadow: none; border-radius: 0; margin: 0; }
+.worked .total td { background: var(--muted-2); font-weight: 700; color: var(--navy); border-top: 2px solid var(--teal); }
+
+/* ARR LADDER RUNGS */
+.rungs { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.rung { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; background: #fff; box-shadow: var(--shadow-sm); }
+.rung .rn { width: 32px; height: 32px; border-radius: 50%; background: var(--muted-2); color: var(--teal); font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--teal); }
+.rung .rname { font-weight: 700; color: var(--navy); font-size: .95rem; }
+.rung .rdesc { font-size: .84rem; color: #6b7280; font-weight: 400; margin-top: 2px; }
+.rung .rprice { font-family: 'Consolas','Monaco',monospace; font-size: .85rem; color: var(--teal); font-weight: 700; white-space: nowrap; }
+.rung.recur { background: #f3fbfc; border-color: #c8e6eb; }
+.rung.hinge { background: linear-gradient(135deg, #004a55 0%, var(--teal) 100%); border-color: var(--teal); }
+.rung.hinge .rn { background: #fff; }
+.rung.hinge .rname, .rung.hinge .rprice { color: #fff; }
+.rung.hinge .rdesc { color: rgba(255,255,255,.85); }
+
+/* RESOURCE LIST */
+.reslist-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 14px 0; }
+.reslist-group .rg-head { background: var(--muted-2); padding: 8px 16px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy); }
+.reslist-item { padding: 12px 16px; border-top: 1px solid var(--border); background: #fff; }
+.reslist-item .t { font-weight: 700; font-size: .9rem; }
+.reslist-item .d { font-size: .82rem; color: #6b7280; margin-top: 2px; }
+
+@media (max-width: 720px) { body { padding: 20px 14px; } .stop { gap: 12px; } .stop-rail { flex-basis: 36px; } .stop-rail .dot { width: 36px; height: 36px; font-size: .85rem; } }
+</style>
+</head>
+<body>
+
+<div style="text-align:center;padding:36px 0 28px;border-bottom:3px solid #005F6B;margin-bottom:22px;">
+  <div style="font-size:2.3rem;font-weight:700;color:#003057;letter-spacing:-.5px;line-height:1.15;">TD SYNNEX &nbsp;<span style="color:#005F6B;">The 40-Minute Cowork Session</span></div>
+  <div style="font-size:1.25rem;font-weight:600;color:#1a2330;margin-top:14px;">Your Complete Guide — the Conversation, the Tools, the Licensing, and What Comes Next</div>
+  <div style="font-size:.95rem;color:#6b7280;margin-top:10px;">For: <strong>Partners running the Cowork conversation</strong> &middot; Customer Zero: Copilot Practice Builder Workshop &nbsp;&middot;&nbsp; Last updated: August 27, 2026</div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-0">The Conversation Map</a></li>
+      <li><a href="#section-1">Purpose &amp; Outcomes</a></li>
+      <li><a href="#section-2">Before You Walk In — Tools You'll Use</a></li>
+      <li><a href="#section-3">The Shape of the Session</a></li>
+      <li><a href="#section-4">The Conversation, Beat by Beat</a></li>
+      <li><a href="#section-5">The Deep Claude Cowork Comparison</a></li>
+      <li><a href="#section-6">The Licensing Snapshot</a></li>
+      <li><a href="#section-7">Objection Vault</a></li>
+      <li><a href="#section-8">The Eight Discovery Questions</a></li>
+      <li><a href="#section-9">If You Have 90 Minutes</a></li>
+      <li><a href="#section-10">Keep Your Delivery Sharp</a></li>
+      <li><a href="#section-11">What's Next — The Path After Minute 40</a></li>
+      <li><a href="#section-12">Walk-Out Artifact &amp; the 30/60/90</a></li>
+      <li><a href="#section-13">Reference Library</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero-statement">
+  <p>Do not sell Cowork. <em>Sell the management of Cowork.</em></p>
+  <div class="hero-sub">Forty minutes is exactly enough time to make that sentence stick — if you leave with the lineup in your head, the reframe on your tongue, a real number on paper, and a named customer on your index card.</div>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 0 — THE MAP -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-0">0. The Conversation Map</h2>
+<p>Before the minute-by-minute detail, see the whole shape at once: seven beats inside the 40 minutes, then the branch you should be walking toward the moment you finish. Nothing below is optional filler — every box on this map gets its own fully-scripted stop in Section 4, and the branch at the right gets its own roadmap in Section 11.</p>
+
+<div class="flowmap">
+<svg viewBox="0 0 1180 300" role="img" aria-label="Flow diagram of the seven session beats leading to the post-session ARR ladder">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#9aa5b1"></path>
+    </marker>
+  </defs>
+  <text x="1000" y="20" text-anchor="end" font-size="11" font-weight="700" fill="#6b7280" font-family="Segoe UI, sans-serif" letter-spacing="0.04em">TOTAL RUNTIME &mdash; 40 MINUTES</text>
+
+  <!-- connecting spine -->
+  <line x1="70" y1="70" x2="1000" y2="70" stroke="#dde1e7" stroke-width="2" marker-end="url(#arrow)"></line>
+
+  <!-- Beat 1 -->
+  <g font-family="Segoe UI, sans-serif">
+    <circle cx="70" cy="70" r="26" fill="#005F6B"></circle>
+    <text x="70" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">1</text>
+    <text x="70" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">Provocation</text>
+
+    <circle cx="200" cy="70" r="26" fill="#005F6B"></circle>
+    <text x="200" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">2</text>
+    <text x="200" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">The 3 Surfaces</text>
+
+    <circle cx="345" cy="70" r="26" fill="#005F6B"></circle>
+    <text x="345" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">3</text>
+    <text x="345" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">Shadow AI Wedge</text>
+
+    <circle cx="490" cy="70" r="26" fill="#0f766e"></circle>
+    <text x="490" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">4</text>
+    <text x="490" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">Same Model Reframe</text>
+
+    <circle cx="635" cy="70" r="26" fill="#0f766e"></circle>
+    <text x="635" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">5</text>
+    <text x="635" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">The Cost Story</text>
+
+    <circle cx="780" cy="70" r="26" fill="#6d28d9"></circle>
+    <text x="780" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">6</text>
+    <text x="780" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">The SOW Menu</text>
+
+    <circle cx="925" cy="70" r="26" fill="#6d28d9"></circle>
+    <text x="925" y="76" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">7</text>
+    <text x="925" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#003057">30-Day Contract</text>
+  </g>
+
+  <!-- branch to the ladder -->
+  <line x1="925" y1="96" x2="925" y2="180" stroke="#9aa5b1" stroke-width="2" marker-end="url(#arrow)"></line>
+  <rect x="700" y="188" width="450" height="94" rx="10" fill="#fff8ed" stroke="#d97706" stroke-width="1.4"></rect>
+  <text x="925" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e" font-family="Segoe UI, sans-serif">WHAT'S NEXT — THE ARR LADDER</text>
+  <text x="925" y="234" text-anchor="middle" font-size="11" fill="#374151" font-family="Segoe UI, sans-serif">Assessment &rarr; AUP &rarr; Managed Governance &rarr; Insurance</text>
+  <text x="925" y="250" text-anchor="middle" font-size="11" fill="#374151" font-family="Segoe UI, sans-serif">Readiness &rarr; vCISO Retainer &mdash; training runs under every rung</text>
+  <text x="925" y="270" text-anchor="middle" font-size="10.5" fill="#92400e" font-weight="700" font-family="Segoe UI, sans-serif">See Section 11 for the full roadmap &amp; pricing</text>
+</svg>
+</div>
+<p class="flowmap-cap">Figure 0 — Beats 1&ndash;3 (teal) place Cowork on the map and open the governance wedge. Beats 4&ndash;5 (dark teal) survive the two objections that actually kill deals. Beats 6&ndash;7 (purple) convert the sale into a named next step — which is also where the session hands off into the six-rung ARR ladder that runs for months afterward.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-1">1. Purpose &amp; Outcomes</h2>
+
+<p>Forty minutes is not enough time to teach Cowork. It's enough time to give you the four moves you need to have the conversation — and this design is built around exactly those four, in order. This guide picks up exactly where the Shadow AI discovery conversation leaves off: your customer has a Copilot license, or is about to, and now you have to decide what to say about Cowork.</p>
+
+<div class="callout">
+  <div class="callout-title">By the end, you can</div>
+  <div class="callout-body">
+    <p><strong>(a)</strong> explain Cowork's place in the customer conversation without a demo, <strong>(b)</strong> run the co-sell talk track against a Claude or ChatGPT preference, <strong>(c)</strong> size Cowork consumption for a customer's monthly bill on paper, and <strong>(d)</strong> name the two follow-on SOWs you'll pursue after any Cowork sale.</p>
+  </div>
+</div>
+
+<p>Everything below is a building block, deliberately. Each stop in Section 4 is independently reusable in a one-on-one customer meeting, a lunch-and-learn, or a QBR — if you only retain Stop 4 (the reframe) or Stop 5 (the cost story), you still walk out able to run half the conversation.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — TOOLS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-2">2. Before You Walk In — the Tools You'll Actually Use</h2>
+<p>This conversation is deliberately low-tech in delivery — no live tenant, no login risk — but it leans on four real tools you'll use <em>live</em>, not just cite afterward. Know each one cold before you walk in.</p>
+
+<div class="toolcard">
+  <div class="tool-head"><span class="tool-name">Copilot Credit Estimator</span><span class="tool-when">Used in Stop 5</span></div>
+  <p>Microsoft's official interactive credit-forecasting tool. Enter agent type, licensing option, and expected feature usage; it returns a monthly Copilot Credit range. This is the tool of record — the Cowork Cost Simulator below is the co-branded, offline version of the same math.</p>
+  <div class="tool-io">
+    <div><b>You feed it</b>Persona mix, light/medium/heavy task counts, model choice</div>
+    <div><b>It returns</b>A monthly credit range and a $ estimate at $0.01/credit</div>
+  </div>
+</div>
+
+<div class="toolcard">
+  <div class="tool-head"><span class="tool-name">Cowork Cost Simulator</span><span class="tool-when">Used live in Stop 5</span></div>
+  <p>The browser-based, offline, PDF-exportable partner tool — your go-to for the live moment. Same math as the Credit Estimator, aligned to Microsoft's published task-mix defaults, but built to print a co-branded leave-behind on the spot.</p>
+  <div class="tool-io">
+    <div><b>You feed it</b>A named account's headcount by role, a P3 pre-purchase toggle</div>
+    <div><b>It returns</b>A printable monthly estimate the partner hands the customer that day</div>
+  </div>
+</div>
+
+<div class="toolcard">
+  <div class="tool-head"><span class="tool-name">License Uplift Calculator</span><span class="tool-when">Referenced in Stop 6 / Section 6</span></div>
+  <p>Three-column comparison — Business Premium alone, Business Premium + Defender Suite + Purview Suite, and E5 — with a line-by-line capability delta. Proves the SMB-native path (BP + Suites) covers what most Cowork rollouts need without an E5 forklift.</p>
+  <div class="tool-io">
+    <div><b>You feed it</b>Current SKU, seat count, target governance capabilities</div>
+    <div><b>It returns</b>A per-capability &#10003; / partial / &#10007; grid and a $/user/month delta</div>
+  </div>
+</div>
+
+<div class="toolcard">
+  <div class="tool-head"><span class="tool-name">ASPX (AI Business Solutions &amp; Security Partner Experience)</span><span class="tool-when">Used before the session — see Stop 1</span></div>
+  <p>The partner-facing propensity portal at <code>aka.ms/ASPX</code>. Weekly-refreshed, per-tenant Copilot and Cowork signals — this is where your named account for the closing exercise should come from, not a guess.</p>
+  <div class="tool-io">
+    <div><b>You feed it</b>Nothing — it's already populated per tenant you administer</div>
+    <div><b>It returns</b>Free Copilot MAU, Data Security Maturity, Usage Limits, Cowork MAU</div>
+  </div>
+</div>
+
+<h3>Your materials checklist</h3>
+<ul class="checklist">
+  <li><strong>One screenshot, not a login</strong> — the Cost Management &rarr; Agents &amp; services view from a real month-one tenant (&sect;13), printed large enough to reference at a glance.</li>
+  <li><strong>The Cowork Cost Simulator</strong>, loaded offline on your machine.</li>
+  <li><strong>An ASPX export</strong> for at least one real reseller ID, pulled the morning you run this.</li>
+  <li><strong>The objection cards</strong> — for practicing the Stop 4 drill with a colleague, if time allows (Section 9).</li>
+  <li><strong>A blank index card</strong> — for your closing 30-day commitment in Stop 7.</li>
+</ul>
+
+<div class="callout subtle">
+  <div class="callout-title">Keep in your pocket</div>
+  <div class="callout-body"><p>If you haven't run the Shadow AI discovery conversation with this account yet, spend thirty extra seconds on the one sentence that connects the two: <em>&ldquo;Cowork grounds in your customer's M365 data through Work IQ, and it honors whatever Purview labels are already there. Ungoverned data in, unreliable output out &mdash; at the same credit cost.&rdquo;</em></p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-3">3. The Shape of the Session</h2>
+<p>Three acts in forty minutes — each one a building block you can redeploy on its own. The pacing is intentionally front-loaded on objection handling because that's where deals actually die: not in the pitch, in the second question from the CFO or the CIO who already has a Claude subscription.</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Place it on the map</div><div class="tc-tag">Stops 1&ndash;3 &middot; Min 0&ndash;18</div></div>
+      <p class="tc-desc">Where Cowork sits relative to Copilot Chat and the M365 Copilot seat, and why the Shadow AI conversation had to come first. No pitch yet — just the mental model the rest of the session hangs from.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Survive the two objections that kill the deal</div><div class="tc-tag">Stops 4&ndash;5 &middot; Min 18&ndash;32</div></div>
+      <p class="tc-desc">&ldquo;We already use Claude&rdquo; and &ldquo;this is going to cost a fortune.&rdquo; Both get a reframe and a number, not a slogan.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Turn it into pipeline</div><div class="tc-tag">Stops 6&ndash;7 &middot; Min 32&ndash;40</div></div>
+      <p class="tc-desc">Not a wrap-up — a commitment. You leave with a named account, a booked call, and the two SOWs you'll pitch next.</p>
+    </div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 4 — THE WALKTHROUGH -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-4">4. The Conversation, Beat by Beat</h2>
+<p>Every stop below has the same three-part anatomy: <strong>what you say</strong> (the talk track), <strong>what you show</strong> (the visual or comparison), and <strong>the segue</strong> — the exact line that pulls the conversation into the next stop. Read it top to bottom once before your first live run; after that, the segues alone are enough to keep you on track.</p>
+
+<div class="stops">
+
+  <!-- STOP 1 -->
+  <div class="stop">
+    <div class="stop-rail"><div class="dot">1</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>Opening Provocation</h3><span class="stop-time">0:00&ndash;0:04</span></div>
+
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you say</div>
+        <div class="beat-body">Read four numbers cold, no framing — pause two seconds after: <strong>136,956 credits, 19 active users, 260 sessions, 69% scheduled.</strong> Then: &ldquo;This tenant spent real money on Cowork last month. Nobody in that room could tell you, without pulling this report, whether that was a great month or a runaway one. That's the whole session — not whether Cowork works, but who's watching the meter.&rdquo;</div>
+      </div>
+
+      <div class="beat show"><div class="beat-label"><span class="ic"></span>What you show</div>
+        <div class="beat-body">The single Cost Management &rarr; Agents &amp; services screenshot from your prep folder (&sect;2). If you pulled an ASPX export that morning, flash your named account's own <strong>Free Copilot MAU</strong> and <strong>Users Experiencing Usage Limits</strong> figures right alongside it — the contrast between &ldquo;here's a governed tenant's number&rdquo; and &ldquo;here's your account's ungoverned number&rdquo; is the whole opening in one slide.</div>
+      </div>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;So before we talk about what Cowork does, let's agree on where it sits — because pitching it like a bigger Copilot Chat is the fastest way to lose the thread.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 2 -->
+  <div class="stop">
+    <div class="stop-rail"><div class="dot">2</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The Copilot vs. Cowork Model</h3><span class="stop-time">0:04&ndash;0:12</span></div>
+
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you say</div>
+        <div class="beat-body">Three surfaces, spoken in order, each with one sentence of &ldquo;what it costs&rdquo; and one of &ldquo;what it's for.&rdquo; Land Microsoft's own framing verbatim — partners can repeat it without softening it.</div>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Surface</th><th>What it is</th><th>Buying motion</th></tr></thead>
+          <tbody>
+            <tr><td>Copilot Chat</td><td>Fast, grounded, single-conversation work — draft, summarize, ask</td><td>Included in the M365 Copilot seat</td></tr>
+            <tr><td>M365 Copilot</td><td>Copilot inside Word, Excel, PowerPoint, Outlook, Teams</td><td>Fixed per-user/month via CSP — the ARR anchor</td></tr>
+            <tr><td>Copilot Cowork</td><td>Agentic execution of long-running, multi-step work — returns a completed result, not a draft</td><td>Usage-based, Copilot Credits, PayGo or pre-purchase</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <blockquote>Cowork &ldquo;executes complex, long-running, multi-tool tasks&hellip; and returns a completed result, not just a draft or a recommendation.&rdquo;<span class="attr">&mdash; Charles Lamanna, Microsoft 365 Blog, GA announcement, June 16, 2026</span></blockquote>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;That third row is the one your customer's data has to be ready for. Which is exactly why this isn't the first Cowork conversation you have — it's the second.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 3 -->
+  <div class="stop">
+    <div class="stop-rail"><div class="dot">3</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The Shadow AI Wedge</h3><span class="stop-time">0:12&ndash;0:18</span></div>
+
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you say</div>
+        <div class="beat-body">One sentence, said slowly: <strong>&ldquo;Governance readiness is consumption readiness.&rdquo;</strong> Cowork grounds in Microsoft 365 data through Work IQ and honors Purview sensitivity labels — a poorly governed estate yields unreliable Cowork output at the <strong>same credit cost.</strong> If you already ran the Shadow AI discovery conversation with this account, this is a callback: &ldquo;Remember the oversharing finding from this morning — three &lsquo;Confidential&rsquo; sites shared with everyone? Cowork will happily pull from those the same way Copilot Chat would. The credits get spent either way; only the output quality changes.&rdquo;</div>
+      </div>
+
+      <div class="beat show"><div class="beat-label"><span class="ic"></span>What you show</div>
+        <div class="beat-body">The Purview support snapshot — what Cowork governs today vs. not yet, so you don't overclaim:</div>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="cc-label">Supported today</div>
+          <p>Sensitivity label inheritance on outputs &middot; audit logging of prompts/responses &middot; eDiscovery on Cowork content &middot; Data Lifecycle Management &amp; retention &middot; Communication Compliance policies</p>
+        </div>
+        <div class="compare-col wrong">
+          <div class="cc-label">Not yet — say this honestly</div>
+          <p>DLP specific to Cowork (Microsoft lists it &ldquo;coming soon&rdquo;) &middot; Cowork interactions in the Apps &amp; Agents dashboard &middot; Cowork interactions in the AI observability page</p>
+        </div>
+      </div>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;Now — the objection you're all thinking about, because every one of your customers already has an AI subscription that isn't Microsoft's.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 4 -->
+  <div class="stop act2">
+    <div class="stop-rail"><div class="dot">4</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>&ldquo;Same Model, Different Governance&rdquo;</h3><span class="stop-time">0:18&ndash;0:26</span></div>
+      <p style="font-size:.9rem;color:#6b7280;margin-top:-4px;">The highest-leverage eight minutes in the session.</p>
+
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you say</div>
+        <div class="beat-body">Say the line, then justify it, then drill it once with a colleague if you have time to rehearse (full drill in Section 9).</div>
+      </div>
+
+      <blockquote>&ldquo;Keep Claude. Bring it under management. Cowork is what runs the work your Microsoft 365 tenant already knows about.&rdquo;<span class="attr">The line to use three times per Cowork conversation</span></blockquote>
+
+      <div class="beat show"><div class="beat-label"><span class="ic"></span>What you show</div>
+        <div class="beat-body">Two facts to keep straight, so you don't over-promise on model quality:</div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-title">The two facts</div>
+        <div class="callout-body"><p>The underlying model is the <em>same family</em> — Copilot Cowork runs Anthropic Opus 4.8 and Sonnet 4.6 at GA, with GPT 5.5 in Frontier and a lower-cost Cowork&nbsp;1 model coming. Don't argue &ldquo;our model is better&rdquo; — you'll lose that argument. Instead: Microsoft's own disclosed internal testing showed Copilot Cowork averaging <strong>30&ndash;40% cheaper per prompt</strong> than Claude Cowork with its Microsoft 365 connector, on the same model, same tasks (125 runs, 12 prompts, both on Opus 4.8, June 2026).</p></div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-col wrong">
+          <div class="cc-label">Personal Claude / ChatGPT subscription</div>
+          <p><strong>Outside the trust boundary.</strong> No Purview labels, no Defender for Cloud Apps visibility, no Cost Management, no Entra identity binding. The model may be excellent — the operations around it don't exist.</p>
+        </div>
+        <div class="compare-col">
+          <div class="cc-label">Copilot Cowork</div>
+          <p><strong>Inside the Microsoft 365 trust boundary.</strong> Purview, Defender for Cloud Apps, Entra, and Cost Management all apply automatically. Don't out-argue model quality — out-argue enterprise operations.</p>
+        </div>
+      </div>
+
+      <p style="font-size:.85rem;color:#6b7280;">Want the full dimension-by-dimension teardown (billing, regional constraints, partner monetization)? That's Section 5 — keep it in your back pocket for the CIO who wants receipts.</p>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;Now that you've kept the account instead of losing it to &lsquo;we already have AI&rsquo; — let's make sure the number on the invoice doesn't lose it for you six weeks later.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 5 -->
+  <div class="stop act2">
+    <div class="stop-rail"><div class="dot">5</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The Customer Cost Story</h3><span class="stop-time">0:26&ndash;0:32</span></div>
+
+      <div class="statbar">
+        <div class="big">2.6&times;</div>
+        <div class="small">For an actively engaged user, Cowork credit consumption runs at roughly <strong>2.6&times; the cost of the underlying Microsoft 365 Copilot license itself.</strong> Cowork is not an add-on line item — it is the larger line item.</div>
+      </div>
+
+      <div class="beat tool"><div class="beat-label"><span class="ic"></span>What you open</div>
+        <div class="beat-body">The Cowork Cost Simulator, live. Pull your named account's rough headcount and a guess at light/medium/heavy task mix, then run the number on the spot — the point isn't precision, it's proving the exercise takes ninety seconds and produces a printable page.</div>
+      </div>
+
+      <div class="worked">
+        <div class="worked-head">WORKED EXAMPLE — the math behind the tool, using Microsoft's disclosed default task-mix patterns</div>
+        <div class="tablewrap">
+          <table class="dense">
+            <thead><tr><th>Persona</th><th>Light tasks/mo</th><th>Medium</th><th>Heavy</th><th>Credits/user/mo</th><th>Est. $/user/mo</th></tr></thead>
+            <tbody>
+              <tr><td>Corporate Knowledge Worker</td><td>22</td><td>11</td><td>5</td><td>14,250</td><td>$142.50</td></tr>
+              <tr><td>Customer-Facing</td><td>17</td><td>13</td><td>5</td><td>14,625</td><td>$146.25</td></tr>
+              <tr><td>Technical</td><td>12</td><td>9</td><td>14</td><td>22,800</td><td>$228.00</td></tr>
+              <tr><td>Manager / Senior Leader</td><td>13</td><td>6</td><td>3</td><td>8,225</td><td>$82.25</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:10px 16px;font-size:.78rem;color:#6b7280;">Formula: credits/user = (Light&times;125) + (Medium&times;500) + (Heavy&times;1,200), billed at $0.01/credit. Role mixes are Microsoft's Frontier-observed defaults — all editable in the room via the Simulator. Your account's real mix is what you plug in live; this table is the arithmetic underneath the tool, not a substitute for running it.</div>
+      </div>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;You now have a number the customer will want managed. That management is the actual sale — let's name what you're selling.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 6 -->
+  <div class="stop act3">
+    <div class="stop-rail"><div class="dot">6</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The Follow-On SOWs</h3><span class="stop-time">0:32&ndash;0:38</span></div>
+
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you say</div>
+        <div class="beat-body">Cowork itself is rarely the revenue — the ladder rungs it opens are. Name exactly two as mandatory; the rest are optional add-ons scaled to the account. (The full six-rung ARR ladder that starts here is Section 11 — this is the two rungs that come immediately off a Cowork sale.)</div>
+      </div>
+
+      <div class="tier-ladder">
+        <div class="tier-card sec">
+          <div class="tc-bar"></div>
+          <div class="tc-body">
+            <div class="tc-header"><div class="tc-num">M1</div><div class="tc-name">Managed AI Governance retainer</div><div class="tc-tag">Mandatory &middot; $4&ndash;$8/seat/mo</div></div>
+            <p class="tc-desc">Monthly Cost Management + Cowork Usage review, spending-policy tuning, per-user limit adjustment, concentration-risk check. The recurring hinge of the whole ladder.</p>
+          </div>
+        </div>
+        <div class="tier-card sec">
+          <div class="tc-bar"></div>
+          <div class="tc-body">
+            <div class="tc-header"><div class="tc-num">M2</div><div class="tc-name">Oversharing Remediation</div><div class="tc-tag">Mandatory &middot; $8K&ndash;$18K fixed fee</div></div>
+            <p class="tc-desc">The SharePoint/Teams cleanup that makes Cowork's grounding trustworthy in the first place — priced as its own line, not folded into the license quote.</p>
+          </div>
+        </div>
+        <div class="tier-card warn-t">
+          <div class="tc-bar"></div>
+          <div class="tc-body">
+            <div class="tc-header"><div class="tc-num">O</div><div class="tc-name">AUP authoring &middot; sanctioned-app onboarding &middot; vCISO retainer</div><div class="tc-tag">Optional, sized to the account</div></div>
+            <p class="tc-desc">AI Acceptable Use Policy authoring ($1K&ndash;$5K), sanctioned third-party AI onboarding under Entra SSO ($3,500&ndash;$5,000/app), and a vCISO retainer for regulated verticals ($2,600&ndash;$15K/mo).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;That's the whole conversation, compressed. The only thing left is making sure you actually run it this month, not someday.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <!-- STOP 7 -->
+  <div class="stop act3">
+    <div class="stop-rail"><div class="dot">7</div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The 30-Day Contract</h3><span class="stop-time">0:38&ndash;0:40</span></div>
+      <div class="beat say"><div class="beat-label"><span class="ic"></span>What you do</div>
+        <div class="beat-body">No slide — just an index card. Write down the customer's name, the date of your first call, and the one sentence you'll open with. Say it out loud — to a colleague, your manager, whoever's around — public commitment is the point, not the paperwork.</div>
+      </div>
+      <div class="segue" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue into what's next:</strong> the call you just booked is the opening move of Section 11's ARR ladder — the assessment, the AUP, and the governance retainer all trace back to this one index card.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 5 — DEEP COMPARISON -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-5">5. The Deep Claude Cowork Comparison — for When You Get Pushback</h2>
+<p>Stop 4 gives you the reframe. This section is what's behind it — pull it out when a colleague, or a customer later, wants the full dimension-by-dimension teardown.</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Dimension</th><th>Microsoft Copilot Cowork</th><th>Claude Cowork (Anthropic)</th></tr></thead>
+    <tbody>
+      <tr><td>Model</td><td>Opus 4.8 &amp; Sonnet 4.6 at GA, GPT 5.5 in Frontier</td><td>Anthropic Claude models</td></tr>
+      <tr><td>Deployment</td><td>Cloud, integrated with M365 tenant</td><td>Desktop (macOS/Windows/Linux) + web + mobile</td></tr>
+      <tr><td>Prerequisite</td><td>M365 Copilot USL (~$30/user/mo) + usage</td><td>Claude Pro at ~$17/mo (annual)</td></tr>
+      <tr><td>Effective monthly cost</td><td>$30 license + variable usage — typically higher for active users</td><td>$17 (Pro) — agentic use may push toward Max</td></tr>
+      <tr><td>Data grounding</td><td>Work IQ — automatic across email, meetings, files, chats, people</td><td>Explicit per-task connection; M365 connector available</td></tr>
+      <tr><td>Governance</td><td>Purview (DSPM, labels, audit, eDiscovery, IRM, DLM, Comm Compliance); Defender for Cloud Apps; Entra</td><td>SOC 2 II, ISO 27001/42001, HIPAA; Cowork activity not yet in audit logs per Anthropic</td></tr>
+      <tr><td>Cost controls</td><td>Spending policies at tenant/group/user; alert thresholds; PayGo or P3</td><td>Flat subscription; no partner-managed spend controls</td></tr>
+      <tr><td>Billing</td><td>Copilot Credits via Azure/CSP; PayGo $0.01/credit or P3 discount</td><td>Direct subscription with Anthropic</td></tr>
+      <tr><td>Partner monetization</td><td>Recurring CSP margin + governance retainer + adoption + AgentOps</td><td>One-time implementation; no CSP resale; no tenant to manage</td></tr>
+      <tr><td>Regional constraints</td><td>EU/EFTA/UK/gov-cloud tenants face Anthropic sub-processor constraints; gov cloud blocked</td><td>Broader macOS/Linux support, but no M365-native controls</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>Rehearsed objection handles</h3>
+<div class="grid">
+  <div class="card"><div class="card-h">&ldquo;Claude is a better model.&rdquo;</div><p class="card-b">Same model family under both. Cowork's edge isn't the model — it's what wraps it: governance, cost controls, and a tenant you already manage.</p></div>
+  <div class="card"><div class="card-h">&ldquo;Claude Cowork is cheaper.&rdquo;</div><p class="card-b">Microsoft's disclosed internal testing showed Copilot Cowork 30&ndash;40% cheaper per prompt on the same model, same tasks. Offer to run the comparison live.</p></div>
+  <div class="card"><div class="card-h">&ldquo;We just want the desktop app.&rdquo;</div><p class="card-b">Fine for one person. Ask who manages spend, audits prompts, and enforces DLP across the team — that's the tenant story only Copilot Cowork has.</p></div>
+  <div class="card"><div class="card-h">&ldquo;Anthropic has SOC 2 / ISO certs too.&rdquo;</div><p class="card-b">True — but Cowork activity isn't yet captured in Anthropic's own audit logs or Compliance API. Purview captures it today, inside your existing estate.</p></div>
+  <div class="card"><div class="card-h">&ldquo;It's simpler — one subscription.&rdquo;</div><p class="card-b">Simpler until spend needs a cap, an owner, or an auditor. That's exactly the governance retainer the partner is built to run.</p></div>
+</div>
+
+<div class="smb-reality">
+  <div class="sr-label">Where you must not overstate</div>
+  <p><strong>Don't</strong> claim Cowork is universally cheaper — the 30&ndash;40% figure is specific to Microsoft's tested prompt set.</p>
+  <p><strong>Don't</strong> claim DLP is available for Cowork today — it's &ldquo;coming soon.&rdquo;</p>
+  <p><strong>Don't</strong> claim Cowork appears in every Purview surface today — Apps &amp; Agents and AI observability don't show it yet.</p>
+  <p><strong>Don't</strong> sell Cowork into EU/EFTA/UK/gov-cloud tenants without checking Anthropic sub-processor status.</p>
+  <p><strong>Don't</strong> sell Cowork before the customer has a CSP-channel Azure subscription — they'll hit the billing wall.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 6 — LICENSING -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-6">6. The Licensing Snapshot — What to Quote Without Blinking</h2>
+<p>Stop 6's objection &ldquo;we don't own Purview or Defender for Cloud Apps&rdquo; only lands cleanly if you have the current SMB licensing math memorized. Here it is.</p>
+
+<div class="metrics">
+  <div class="metric"><div class="k">$22</div><div class="l">Business Premium, per user/month, paid yearly (2026 pricing)</div></div>
+  <div class="metric"><div class="k">~$15</div><div class="l">Combined Defender + Purview Suite add-on for Business Premium, per user/month — the E5-capability unlock without the E5 forklift</div></div>
+  <div class="metric"><div class="k">50%</div><div class="l">Promotional discount on Purview Suite when purchased alongside Microsoft 365 Copilot</div></div>
+</div>
+
+<div class="grid">
+  <div class="card"><span class="tag warn">Wrong pitch</span><div class="card-h">&ldquo;You need to upgrade to E5.&rdquo;</div><p class="card-b">Business Premium customers hear this as &ldquo;double my Microsoft bill&rdquo; — deal stalls.</p></div>
+  <div class="card"><span class="tag ok">Right pitch</span><div class="card-h">Same Copilot engine, right stack</div><p class="card-b"><strong>&ldquo;The Copilot AI engine is identical on Business Premium and E5&rdquo;</strong> — Microsoft states this plainly. The difference is the governance stack in the base SKU, not the Copilot feature set.</p></div>
+  <div class="card"><span class="tag ok">SMB-native path</span><div class="card-h">BP + Copilot + Purview Suite</div><p class="card-b">Business Premium + Copilot + Purview Suite add-on + optional Defender Suite add-on. Same Copilot experience, right governance stack, no E5 forklift.</p></div>
+  <div class="card"><span class="tag warn">Verify before quoting</span><div class="card-h">The DSPM for AI catch</div><p class="card-b">DSPM for AI ships in the Purview Suite for Business Premium add-on for third-party AI monitoring, but full Copilot data assessments may still require E5 Compliance in some configurations. Confirm against current licensing tables before quoting.</p></div>
+</div>
+
+<p style="font-size:.9rem;">This is exactly what the <strong>License Uplift Calculator</strong> (&sect;2) is built to walk a customer through line by line — three columns (BP alone / BP + Suites / E5), each Shadow AI capability marked &#10003; / partial / &#10007;, so nobody has to take the delta on faith.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 7 — OBJECTION VAULT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-7">7. Objection Vault — What You'll Hear Every Week</h2>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Objection</th><th>The reframe</th><th>The evidence</th></tr></thead>
+    <tbody>
+      <tr><td>&ldquo;Our staff isn't using AI.&rdquo;</td><td>The bet is on you naming exactly how many are — before an audit does. Most AI-using employees are on personal, unmanaged accounts.</td><td>Free Copilot MAU from ASPX + a 14-day Defender for Cloud Apps scan closes this in three weeks</td></tr>
+      <tr><td>&ldquo;We already use Claude — why Cowork?&rdquo;</td><td>Same-caliber model, different governance, different grounding, different identity boundary. Keep Claude. Add Cowork.</td><td>Stop 4 script &middot; &sect;5 deep comparison</td></tr>
+      <tr><td>&ldquo;Copilot is too expensive.&rdquo;</td><td>You're already paying for AI — it's just not on your P&amp;L. Employees are on personal subscriptions today. Governance is the difference between exposure and asset.</td><td>Independent unmanaged-AI exposure research (&sect;13)</td></tr>
+      <tr><td>&ldquo;Cowork credits are unpredictable.&rdquo;</td><td>Set caps and per-user alerts before the pilot. Month one gives you the baseline; treat it as an operating discipline, not a surprise bill.</td><td>The month-one admin field report (&sect;13)</td></tr>
+      <tr><td>&ldquo;We'll just block ChatGPT and Claude.&rdquo;</td><td>Don't. Blocking without sanctioning drives Shadow AI further underground — to personal devices you can't see at all. Sanction one or two, monitor the rest.</td><td>The two-layer governance model (&sect;13)</td></tr>
+      <tr><td>&ldquo;We don't own Purview / Defender for Cloud Apps.&rdquo;</td><td>The Business Premium Defender + Purview Suite add-ons close the gap at a fraction of E5 cost, discounted alongside a Copilot purchase.</td><td>Section 6 licensing snapshot</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 8 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-8">8. The Eight Discovery Questions You Walk In With</h2>
+<p>These are the bridge from this conversation to your first customer call. Better still: don't start from a blank slate. Pull your top account through ASPX first (&sect;2) so Question 8 already has a data point behind it before the customer even answers.</p>
+
+<ol>
+  <li>Which AI tools does the leadership team <em>know</em> your staff is using?</li>
+  <li>Which AI tools does your staff <em>actually</em> use? (It's more than the answer to Q1.)</li>
+  <li>What data classification standard exists today — what labels, and who owns them?</li>
+  <li>Do you have an AI Acceptable Use Policy? When was it last reviewed?</li>
+  <li>Is there an approved Copilot budget, and is Cowork line-itemed separately from it?</li>
+  <li>What's your cyber insurance renewal date — does the questionnaire ask about AI use?</li>
+  <li>What does your SharePoint estate look like — Copilot-ready, or an oversharing risk?</li>
+  <li>If you named your top three AI use cases, what would they be? <em>(The Cowork positioning wedge — chat can't do them; Cowork can.)</em></li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 9 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-9">9. If You Have 90 Minutes Instead of 40</h2>
+<p>The forty-minute design is deliberately spare. When the agenda allows a longer block, these five exercises turn the same building blocks into hands-on practice.</p>
+
+<ol class="steps">
+  <li><strong>Simulate your own customer.</strong> Open the Cost Simulator (&sect;2), enter a real target account's persona mix, model a pre-purchase discount, and print a co-branded leave-behind.</li>
+  <li><strong>Design your Cowork monthly retainer.</strong> Scorecard, artifacts, cadence, price point for a 25-seat customer — talk it through with a colleague or your manager.</li>
+  <li><strong>The billing-wall drill.</strong> Have a colleague play the customer's CFO while you walk the Azure plan purchase and Cost Management activation from memory.</li>
+  <li><strong>The Claude objection drill.</strong> Pair up: one of you plays a CIO who prefers Claude Cowork, the other reframes using Stop 4's script and the &sect;5 deep comparison. Two rounds each, then switch.</li>
+  <li><strong>The month-one review dry run.</strong> Using a sample tenant's numbers, draft your month-two recommendation, then have a peer tear it apart.</li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 10 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-10">10. Keep Your Delivery Sharp</h2>
+
+<ul class="dodont">
+  <li><span class="check">&#10003;</span> Lead with the customer's own number — you have ASPX access, so pull it before Stop 1.</li>
+  <li><span class="check">&#10003;</span> Say &ldquo;same model, different governance&rdquo; three times — Stop 4, again in Stop 5, once more in the close.</li>
+  <li><span class="check">&#10003;</span> Say &ldquo;sanction&rdquo; in the same breath as &ldquo;block,&rdquo; every time. The posture is discover &rarr; sanction &rarr; govern, not shutdown.</li>
+  <li><span class="check">&#10003;</span> Protect the clock in Stop 4, not Stop 2. The lineup card can compress to ninety seconds if things are moving fast; the objection reframe needs its full eight minutes.</li>
+  <li><span class="check">&#10003;</span> Close with the written commitment, not open Q&amp;A. Save questions for after — write your card, say it out loud, and move.</li>
+  <li><span class="cross">&#10007;</span> Do not demo Cowork live. This is a strategic conversation, not a lab — if you must show anything, it's the screenshot, not a live tenant.</li>
+  <li><span class="cross">&#10007;</span> Do not sell Cowork into EU/EFTA/UK/gov-cloud tenants without a caveat — check Anthropic sub-processor status first.</li>
+  <li><span class="cross">&#10007;</span> Do not plan to sell Cowork before confirming a CSP-channel Azure subscription exists — you'll hit the billing wall in week one.</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 11 — WHAT'S NEXT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-11">11. What's Next — the Path After Minute 40</h2>
+<p>The index card from Stop 7 is the first rung of a ladder, not a one-off sale. Six service lines compound off the same 4-week discovery engagement that starts with the call you just booked — training runs underneath every rung as the recurring evidence layer that keeps audit and insurance renewals painless.</p>
+
+<div class="rungs">
+  <div class="rung"><div class="rn">1</div><div><div class="rname">Shadow AI Assessment</div><div class="rdesc">The land. One-time, fixed fee. Discovery scan on a real tenant, then convert on specificity: &ldquo;Here are the 14 AI tools your staff used last month, and here is the client data that left your environment.&rdquo;</div></div><div class="rprice">$1.5K&ndash;$7.5K</div></div>
+
+  <div class="rung"><div class="rn">2</div><div><div class="rname">AI Acceptable Use Policy (AUP)</div><div class="rdesc">Sold immediately after the assessment. &ldquo;You have a policy for passwords and remote access; you have none for the fastest-spreading tool in your business.&rdquo; Never sell a policy without an enforcement plan attached.</div></div><div class="rprice">$1K&ndash;$5K</div></div>
+
+  <div class="rung hinge"><div class="rn">3</div><div><div class="rname">Managed AI Governance — THE RECURRING HINGE</div><div class="rdesc">Ongoing enforcement, policy cascade, prompt DLP/redaction, blocking of unsanctioned tools, monthly usage/risk reporting. &ldquo;Your AUP is only a document until something enforces it.&rdquo;</div></div><div class="rprice">$2&ndash;$8/seat/mo</div></div>
+
+  <div class="rung recur"><div class="rn">4</div><div><div class="rname">Insurance / Compliance Readiness</div><div class="rdesc">Hybrid sprint + recurring. &ldquo;If your application asks whether employees share data with AI systems, right now the honest answer is &lsquo;we don't know.&rsquo; Here's how we get you an answer you can support.&rdquo;</div></div><div class="rprice">$2.5K&ndash;$10K sprint</div></div>
+
+  <div class="rung"><div class="rn">5</div><div><div class="rname">vCISO / Compliance Advisory Retainer</div><div class="rdesc">For 50&ndash;1,000 employee firms that need security leadership but can't justify a full-time CISO. Share of MSPs offering vCISO more than tripled year-over-year; 50%+ of assessment clients convert.</div></div><div class="rprice">$2.6K&ndash;$15K/mo</div></div>
+
+  <div class="rung recur"><div class="rn">6</div><div><div class="rname">Client Training &amp; Enablement — runs under every rung</div><div class="rdesc">Short role-based modules on what not to paste into public AI tools, with completion tracking. &ldquo;Training completion records are exactly what your insurer and auditor ask for.&rdquo;</div></div><div class="rprice">$2&ndash;$5/user/mo</div></div>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">The three revenue shapes to keep in your head</div>
+  <div class="callout-body"><p>Every dollar on this ladder sits in one of three buckets: <strong>Project/SOW</strong> (Rungs 1, 2, 4), <strong>Managed Governance/AgentOps</strong> (Rungs 3, 6), or <strong>Outcome-Based</strong> (Rung 5). Naming them once keeps the ladder legible and stops partners from accidentally price-anchoring on hourly billing.</p></div>
+</div>
+
+<h3>And specifically for Cowork accounts — the admin motion that earns the retainer</h3>
+<p>Once a customer is live on Cowork, the Managed AI Governance retainer (Rung 3) has concrete monthly work behind it — pulled straight from the field-tested Cowork admin playbook:</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Admin view</th><th>Best for</th><th>Date behavior</th><th>Refresh behavior</th></tr></thead>
+    <tbody>
+      <tr><td>Copilot &rarr; Cost Management</td><td>Credits, limits, policies, users/groups, agents/services, prepaid vs. PayGo</td><td>Supports an exact calendar month</td><td>Overview every 4 hrs; Consumption every 2 hrs</td></tr>
+      <tr><td>Copilot &rarr; Cowork &rarr; Usage</td><td>Active users, tasks, scheduled vs. user-initiated, retention, adoption</td><td>Rolling 7/28/90/180 days; default 28</td><td>Check the visible &ldquo;Last updated&rdquo; timestamp</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p style="font-size:.9rem;">The monthly scorecard you should ship on that retainer: Cowork Credits used (exact calendar month), active users and sessions, median/top-5 concentration, % tasks scheduled vs. user-initiated, retained users week-over-week, and users at &ge;50%/&ge;80% of their limit as the early-warning list.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 12 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-12">12. The Walk-Out Artifact and the 30/60/90</h2>
+
+<h3>In hand at 0:40</h3>
+<div class="metrics">
+  <div class="metric"><div class="k">1</div><div class="l">Index card — customer name, call date, opening line</div></div>
+  <div class="metric"><div class="k">8</div><div class="l">Discovery-question card (&sect;8)</div></div>
+  <div class="metric"><div class="k">6</div><div class="l">Objection-handling table (&sect;7), printable as a one-pager</div></div>
+  <div class="metric"><div class="k">1</div><div class="l">Live Cost Simulator estimate for a named account, if run in Stop 5</div></div>
+</div>
+
+<h3>The follow-on 30/60/90</h3>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>Horizon</th><th>Partner motion</th></tr></thead>
+    <tbody>
+      <tr><td>Day 30</td><td>First call made on the named account; Azure plan live on at least one customer tenant; Cost Management review scheduled.</td></tr>
+      <tr><td>Day 60</td><td>First Managed AI Governance retainer sold; oversharing remediation scoped or completed on the pilot customer.</td></tr>
+      <tr><td>Day 90</td><td>The retainer motion repeatable across three or more accounts; seller team drilled on the Claude objection; practice revenue reported against the base-case model.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 13 — REFERENCES -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-13">13. Reference Library</h2>
+<p>Every figure, quote, and talk track in this guide traces to one of the sources below. Cite these by name when someone pushes back — the credibility is earned, not asserted.</p>
+
+<div class="reslist-group">
+  <div class="rg-head">Microsoft official — canonical</div>
+  <div class="reslist-item"><div class="t"><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/16/copilot-cowork-is-now-generally-available/" target="_blank" rel="noopener">Copilot Cowork Is Now Generally Available</a></div><div class="d">Charles Lamanna, Microsoft 365 Blog, June 16, 2026 — GA announcement, pricing model, the &ldquo;completed result&rdquo; line</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-admin-governance" target="_blank" rel="noopener">Manage Copilot Cowork for Your Organization</a></div><div class="d">Microsoft Learn — access, discoverability, admin controls</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits" target="_blank" rel="noopener">Usage-Based Billing and Cost Management for Copilot Credits</a></div><div class="d">Microsoft Learn — the definitive Cost Management reference behind Stop 5</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Copilot Credit Estimator</a></div><div class="d">Microsoft's official interactive credit-forecasting tool</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/purview/deploymentmodels/depmod-data-leak-shadow-ai-intro" target="_blank" rel="noopener">Prevent Data Leak to Shadow AI</a></div><div class="d">Microsoft Learn — the four-step Discover / Block / Protect / Govern model</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://www.microsoft.com/en-us/microsoft-365-copilot/copilot-vs-claude-enterprise" target="_blank" rel="noopener">Compare Copilot vs. Claude Enterprise</a></div><div class="d">Microsoft's own comparison page — background for &sect;5</div></div>
+</div>
+
+<div class="reslist-group">
+  <div class="rg-head">MVP &amp; community field references</div>
+  <div class="reslist-item"><div class="t"><a href="https://flowaltdelete.ca/" target="_blank" rel="noopener">Josh Cook — Flow Alt Delete</a></div><div class="d">Microsoft MVP; the &ldquo;Copilot Cowork First Month&rdquo; write-up is the source of the credit/user/scheduled-task figures in Stop 1 and the admin playbook in &sect;11</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://nikkichapple.com/govern-shadow-ai-microsoft-purview-defender-dspm/" target="_blank" rel="noopener">How To Govern Shadow AI Using Microsoft Purview, Defender and DSPM</a></div><div class="d">Nikki Chapple, Microsoft MVP — the &ldquo;control the apps / control the data&rdquo; model behind &ldquo;sanction, don't block&rdquo;</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://nikkichapple.com/microsoft-purview-browser-extension-protect-ai/" target="_blank" rel="noopener">Microsoft Purview Browser Extension: Governing AI Shadow IT</a></div><div class="d">Nikki Chapple — endpoint DLP in the browser tab</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://tenantwizards.com/blog/shadow-ai-microsoft-365-purview-block/" target="_blank" rel="noopener">Shadow AI in Microsoft 365: Find and Block It with Purview</a></div><div class="d">Tenant Wizards (Danny Vorst)</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://empowering.cloud/" target="_blank" rel="noopener">Empowering.Cloud</a></div><div class="d">Tom Arbuthnot's Microsoft 365 AI Workplace Updates</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://www.linkedin.com/pulse/when-its-caution-becomes-security-risk-shadow-trap-ken-young-mtcue" target="_blank" rel="noopener">When IT's Caution Becomes a Security Risk: The Shadow IT Trap</a></div><div class="d">Ken Young, Microsoft — the &ldquo;delay is risk displacement&rdquo; framing</div></div>
+</div>
+
+<div class="partner-story">
+  <div class="ps-label">Publishing note</div>
+  <p class="ps-quote">This guide is designed to stand alone as a downloadable resource on copilotplaybook.com, cross-linked to its companion documents so the credibility chain — Microsoft official, named MVP, internal playbook — stays visible to any partner who opens it cold.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+</body>
+</html>
