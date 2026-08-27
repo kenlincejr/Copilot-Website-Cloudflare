@@ -311,19 +311,32 @@ a:hover { text-decoration: underline; }
   font-size: .88rem;
 }
 
+/* Flex, not grid: a partial last row centres itself instead of hanging
+   left. --cols sets the cards-per-row; card width stays identical in
+   every section so rows of 2, 3, or 4 all read as the same family. */
 .card-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  --cols: 4;
+  --card-gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--card-gap);
   align-items: stretch;
   margin: 0 0 8px;
 }
-.card-grid.center-two {
-  grid-template-columns: repeat(2, minmax(0, 280px));
-  justify-content: center;
+.card-grid > * {
+  flex: 0 1 calc((100% - (var(--cols) - 1) * var(--card-gap)) / var(--cols));
+  min-width: 0;
+  max-width: 100%;
+}
+/* Five-card sections: break 3 + 2 rather than 4 + 1. */
+.card-grid.cols-3 {
+  --cols: 3;
+  max-width: 880px;
+  margin-inline: auto;
 }
 .card-grid.center-three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  --cols: 3;
   max-width: 880px;
   margin-inline: auto;
 }
@@ -509,12 +522,11 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 980px) {
   .card-grid,
+  .card-grid.cols-3,
+  .card-grid.center-two,
   .card-grid.center-three {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --cols: 2;
     max-width: none;
-  }
-  .card-grid.center-two {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .journey-strip { display: none; }
   .field-frame { grid-template-columns: 1fr; }
@@ -527,9 +539,10 @@ a:hover { text-decoration: underline; }
   .brand-row { gap: 10px; margin-bottom: 14px; }
   .brand-logo { width: 178px; }
   .card-grid,
+  .card-grid.cols-3,
   .card-grid.center-two,
   .card-grid.center-three {
-    grid-template-columns: 1fr;
+    --cols: 1;
   }
   .resource-title { min-height: auto; }
   .section-label { align-items: flex-start; }
@@ -934,7 +947,7 @@ a:hover { text-decoration: underline; }
   <section aria-labelledby="cowork-heading">
     <div class="section-label" id="cowork-heading">The Cowork Suite - Guide, Session, Demo, And Billing</div>
     <p class="section-note">Everything built around Copilot Cowork lives together here: learn it, run the customer session, demo it live, model the cost and conversation live with a customer, and set up the Azure billing it depends on.</p>
-    <div class="card-grid">
+    <div class="card-grid cols-3">
       <article class="resource-card accent-teal">
         <div class="resource-head">
           <div class="resource-badge">
