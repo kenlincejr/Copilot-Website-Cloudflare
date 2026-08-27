@@ -15,11 +15,9 @@ The v2 plan listed six HTML targets. The repo actually contains **21 HTML files*
 | `cpb.html` | 9,077 | 1.36 MB | The Frontier Partner Playbook, v9. Primary asset. |
 | `frontier.html` | 1,773 | 121 KB | Frontier program economics |
 | `cowork.html` | 1,811 | 116 KB | Cowork |
-| `landing.html` | ~1,100 | 99 KB | Landing |
 | `cpbops.html` | 916 | 96 KB | Ops companion |
 | `index.html` | 1,059 | 95 KB | Site index / resource directory |
 | `CopilotIB.html` | — | 68 KB | Install-base play |
-| `ledger.html` | 905 | 52 KB | **Separate design language — see §6** |
 | `coworkdemo.html` | — | 47 KB | Cowork demo script |
 | `CopilotApp.html` | — | 47 KB | App play |
 | `cpbbackup.html` | — | 250 KB | **Stale fork — see §7** |
@@ -54,14 +52,13 @@ Defined identically inside the `<style>` element of `cpb.html`, `frontier.html`,
 | `--shadow-sm` | `0 1px 4px rgba(0,0,0,.07)` | |
 | `--shadow-md` | `0 4px 16px rgba(0,0,0,.09)` | |
 | `--radius` | `8px` | |
-| `--radius-lg` | `10px` | `12px` in index.html and landing.html |
+| `--radius-lg` | `10px` | `12px` in index.html |
 
 ### 1.2 Per-file additions
 
 | File | Adds | Verdict |
 |---|---|---|
 | `index.html` | `--ice #a8ecf5`, `--cyan #48cae4`, `--navy-deep #002142`, `--excel #107c41`, `--blue #1e40af`, `--purple #4c1d95`, `--amber #d97706`, `--orange #c2410c`, `--slate #334155` | **Intentional.** Category palette for the resource directory; each card gets an accent via `.accent-*` classes. |
-| `landing.html` | the same category palette plus `--pdf #b3261e`, `--amber-dark #92400e`, `--shadow-lg 0 12px 32px rgba(0,0,0,.13)` | **Intentional.** Same directory idiom. |
 | `CopilotApp.html`, `CopilotIB.html` | semantic triads `--green/-bg/-bd` (`#065f46`/`#f0fdf4`/`#bbf7d0`), `--orange/-bg/-bd` (`#92400e`/`#fff8ed`/`#f5ddb0`), `--red/-bg/-bd` (`#7f1d1d`/`#fef2f2`/`#fecaca`) | **Intentional.** Status coding. |
 | `coworkdemo.html` | `--success #ecfdf5`, `--opt-bg #f5f3ff`, `--opt-border #7c3aed`, `--opt-light #ede9fe` | **Intentional.** Demo-script branch coloring. |
 
@@ -70,9 +67,9 @@ Defined identically inside the `<style>` element of `cpb.html`, `frontier.html`,
 | Divergence | Detail | Recommendation |
 |---|---|---|
 | **`--ltblue`** | `#6EC1E4` at `cpb.html:53`; `#4daab8` in `frontier.html`, `cowork.html`, `CopilotApp.html`, `CopilotIB.html` | **Drift.** These are not the same hue family — `#6EC1E4` is a sky blue, `#4daab8` a desaturated teal. Recommend normalizing cpb.html to `#4daab8`. **Requires sign-off — it is a visible change.** Until signed off, leave alone. |
-| **`--radius-lg`** | `10px` in the playbook family, `12px` in `index.html`/`landing.html` | **Intentional.** Directory pages use softer cards. Leave. |
+| **`--radius-lg`** | `10px` in the playbook family, `12px` in `index.html` | **Intentional.** The directory page uses softer cards. Leave. |
 | **`--soft` / `--line`** | `index.html` names `--muted` as `--soft` and `--border` as `--line`; values identical | **Drift, cosmetic only.** Not worth a rename pass. Leave — noted so nobody "fixes" it into a broken state. |
-| **`#a8ecf5`** | Hard-coded 25× in `cpb.html` as the on-dark highlight; formalized as `--ice` in `index.html`/`landing.html` | Not a bug. cpb.html predates the token. Do **not** convert during the refresh — 25 substitutions for zero visual change is pure risk. |
+| **`#a8ecf5`** | Hard-coded 25× in `cpb.html` as the on-dark highlight; formalized as `--ice` in `index.html` | Not a bug. cpb.html predates the token. Do **not** convert during the refresh — 25 substitutions for zero visual change is pure risk. |
 | **`cpbbackup.html`** | Entirely different values: `--teal:#007C89`, `--text:#1f2933`, `--muted:#f4f6f8`, `--accent:#e6f3f5`, `--warn:#fff4e5`, `--border:#e5e7eb` | **Stale fork of an older system.** See §7. |
 
 ---
@@ -90,9 +87,7 @@ Defined identically inside the `<style>` element of `cpb.html`, `frontier.html`,
 | Code (CopilotApp / CopilotIB) | `'Cascadia Code', 'Courier New', monospace` | |
 | Code (coworkdemo) | `'Courier New', monospace` | |
 
-`ledger.html` uses a completely different set — see §6.
-
-**Prohibition:** no webfont may be added to any playbook-family file. Only `ledger.html` loads external fonts, and that is a deliberate exception.
+**Prohibition:** no webfont may be added to any file. Since `ledger.html` was deleted (§6), the repo now loads no external fonts at all — keep it that way.
 
 ### 2.2 Scale
 
@@ -307,6 +302,60 @@ CSS at `cpb.html:585–615`; 9 instances. `.sku-card > .sku-bar + .sku-body`; th
 
 **Use when:** presenting a priced service tier. Do not invent a new card shape for pricing.
 
+### C14 · Page masthead — **the standard header for every page**
+
+*Added 2026-08-27. Supersedes all six header idioms that preceded it. Reference
+implementation and canonical CSS: `coworksession40.html`. Full contract:
+[`specs/header-system.spec.md`](specs/header-system.spec.md).*
+
+A dark full-bleed masthead whose navigation row pins to the top of the viewport
+on scroll. Every page gets exactly one. It carries four things the old headers
+did not reliably carry: a link home, a breadcrumb, a date, and a real `<h1>`.
+
+```html
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="…"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="parent.html">Parent</a><span class="sep">/</span><span class="cur">This Page</span></div>
+    <div class="mh-date">Updated Month D, YYYY</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Doc Type &middot; Family</div></div>
+    <h1>Page Title</h1>
+    <p class="sub">Standfirst. One or two sentences.</p>
+    <p class="mh-meta">Audience or attribution. Optional.</p>
+  </div>
+</div>
+```
+
+**Five rules that are not negotiable:**
+
+1. **`.mh-bar` is a direct child of `<body>`.** Nested inside any wrapper,
+   `position:sticky` releases the moment that wrapper scrolls out of view. This
+   was verified in a browser, not assumed.
+2. **The negative margins must match that file's `body` padding exactly** — see
+   the measured table in the spec. A margin larger than the padding produces a
+   horizontal scrollbar; smaller leaves a white gutter and is not full-bleed.
+   Re-point them inside any `@media` block where that file changes body padding.
+3. **`[id] { scroll-margin-top: 58px; }` ships with the block.** Without it every
+   back-to-TOC link lands underneath the pinned bar.
+4. **The `@media print` override is not optional.** These documents are
+   leave-behinds; the override hides the bar and flattens the gradient to white.
+5. **The SVG is the TD SYNNEX mark, copied verbatim** — 1,208 characters, inlined,
+   no image request. It lives inside the `<a>` because it *is* the home affordance.
+   Do not substitute a generic house or arrow glyph.
+
+`var(--navy,#003057)` and `var(--teal,#005F6B)` carry fallbacks so the block is
+portable into files that rename shared tokens (§1.3).
+
+**Use when:** every page, without exception. Anchor ids stay as they are — this
+replaces the banner, not the document structure.
+
 ---
 
 ## 4. Off-palette colors in active use
@@ -377,29 +426,37 @@ A non-zero count means the value was carried through an unchanged attribute on a
 | `cowork.html` | shared + `--ltblue #4daab8` | **Class-first, clean** | 19 / 294 | 20 ids, 19 `<h2 id>` | `.back-to-toc` + `<nav>` at :405 | present — `Last updated: April 22, 2026` in the byline footer |
 | `cpbops.html` | shared (single-line `:root`) | Class-first, moderate inline | 245 / 451 | 11 ids, 9 `<h2 id>` | `id="toc"` at :278 | **none** |
 | `index.html` | shared + category palette; `--soft`/`--line` names | **Pure class, zero inline** | 0 / 220 | 5 ids | `<nav>` at :792, no TOC | per-card `<p class="resource-updated">Last updated Mon DD, YYYY` |
-| `landing.html` | shared + category palette + `--shadow-lg` | **Pure class** | 1 / 140 | 0 | none | **none** |
 | `CopilotApp.html` | shared + semantic triads | Class-first | 7 / 154 | 15 | — | **none** |
 | `CopilotIB.html` | shared + semantic triads | Class-first | 34 / 335 | 9 | — | **none** |
 | `coworkdemo.html` | reduced + demo palette | **Pure class** | 0 / 34 | 12 | — | **none** |
-| `ledger.html` | own set (§6) | **Pure class** | 2 / 281 | 0 | none | **none** |
 | `cpbbackup.html` | stale set | Hybrid | 508 / 692 | 21 | — | **none** |
 
 **Stamp normalization is a Phase 6 task**, not a Phase 5 one. Only `cowork.html` and `index.html` currently carry dates, and they use two different formats (`Last updated: April 22, 2026` vs `Last updated May 17, 2026` — note the colon).
 
 ---
 
-## 6. ledger.html — a deliberately separate design language
+## 6. ledger.html and landing.html — deleted 2026-08-27
 
-`ledger.html` is not a variant of the playbook system. It is a statement-of-account treatment: ruled line items, tabular figures, a perforated action stub at the foot of the page.
+**Both files were removed from the repo on owner instruction, 2026-08-27.**
 
-- **Fonts:** Fraunces (display serif), Public Sans (body), IBM Plex Mono (figures). Loaded from Google Fonts — the only external font load in the repo.
-- **Tokens:** a paper/ink/rule vocabulary (`--paper`, `--card`, `--card-2`, `--ink`, `--ink-2`, `--ink-3`, `--rule`, `--rule-2`) rather than navy/muted/border.
-- **Full dual-theme:** a light `:root`, a `@media (prefers-color-scheme:dark)` override, an explicit dark-class override, **and** a print override at :445. Nothing else in the repo does this.
-- **Accent:** gold `#9A6205` / `#E2AC42`, plus `--sky #2E8FB5`. It shares only `--teal #005F6B` and `--navy #003057` with the house palette.
+`ledger.html` was a deliberately separate design language: a statement-of-account
+treatment with Fraunces / Public Sans / IBM Plex Mono, a paper-and-ink token
+vocabulary and a gold accent. The 2026-08-26 decision was that it stayed distinct.
+That decision is **superseded** — the file is gone, and with it the repo's only
+external font load.
 
-**DECIDED 2026-08-26: it stays distinct.** It reads as a different artifact class — a field ledger, not a playbook chapter — and normalizing it would destroy the thing that makes it worth having.
+`landing.html` duplicated `index.html`'s resource-directory idiom and described
+itself as the "Partner Resource Hub" alongside it. Two files claiming to be home
+made the C14 breadcrumb ambiguous; `sitemap.xml` puts `/` → `index.html` at
+priority 1.0, so `index.html` is home and `landing.html` was redundant.
 
-Because it stays distinct, for spec purposes `ledger.html` has its **own** catalog and its own prohibitions: nothing in §3 applies to it, and no §1 token may leak into it.
+**Before removal it was verified that no HTML page linked to either file, and that
+neither appeared in `sitemap.xml`.** The only remaining references are historical —
+in `FACTS.md`, `RESEARCH-DELTA.md`, and the archived specs `specs/ledger.spec.md`
+and `specs/landing-urlfix.spec.md`. Those are records of work already done; leave
+them as they are. Do not treat them as live targets.
+
+Both files remain recoverable from git history.
 
 ---
 
@@ -411,18 +468,18 @@ Because it stays distinct, for spec purposes `ledger.html` has its **own** catal
 | 2 | `index_html.css` (1.4 KB) | **Also orphaned** — not mentioned in the plan. `index.html` has zero stylesheet links; its styles live in an inline `<style>` block. | Delete in Phase 6 alongside `lincezone.css`. |
 | 3 | `cpbbackup.html` (250 KB) | Live on the domain. Uses a **stale token set** (`--teal:#007C89`, not `#005F6B`) and a stale font stack (`Segoe UI, Roboto, Arial`). 17 stale stats per the plan. | Move out of the web root or delete. It is a fork, not a backup — reconciling it is not worth the cost. |
 | 4 | `--ltblue` split | `#6EC1E4` (cpb) vs `#4daab8` (everywhere else) | Normalize cpb → `#4daab8`. **Needs your sign-off** — visible change. |
-| 5 | `ledger.html` design | Separate language, see §6 | **DECIDED 2026-08-26: stays distinct.** Committed to `main` so Phase 5 branches have a baseline. §3 does not apply to it; it gets its own catalog. |
+| 5 | `ledger.html` / `landing.html` | Both **deleted 2026-08-27**, see §6. Supersedes the 2026-08-26 "stays distinct" decision. | **Closed.** Recoverable from git history if either is ever wanted back. |
 
 ---
 
 ## 8. Prohibitions — binding on every execution chat
 
 1. **Never introduce a color, font-family, font-size, radius, or shadow value that is not in §1, §2, or §4.** If content needs one, stop and ask.
-2. **Never add a CSS class to a file that does not already define it.** Check the file's own `<style>` block first. `index.html`, `landing.html`, `coworkdemo.html`, and `ledger.html` are pure-class files — adding an inline `style=` attribute to any of them is a violation.
+2. **Never add a CSS class to a file that does not already define it.** Check the file's own `<style>` block first. `index.html` and `coworkdemo.html` are pure-class files — adding an inline `style=` attribute to either of them is a violation.
 3. **Never reformat, re-indent, prettify, or normalize whitespace.** Diffs must be semantic. A whitespace-only hunk is a failed execution.
 4. **Never touch `cpb.html:1913`** — one 546,847-character line containing the sole base64 image blob in the repo. Do not read it, split it, or let a tool rewrite it. Any diff that touches line 1913 is an automatic revert.
 5. **Never touch `lincezone.css` or `index_html.css`** during Phases 1–5. They are orphaned; deleting them is a deliberate Phase 6 decision, not a cleanup.
-6. **Never let §1–§4 leak into `ledger.html`, `customer-zero-starter-kit/*`, or `frontier-navigator/*`.** They are separate systems.
+6. **Never let §1–§4 leak into `customer-zero-starter-kit/*` or `frontier-navigator/*`.** They are separate systems.
 7. **New markup is assembled from §3 catalog snippets.** Anything not derivable from the catalog needs sign-off recorded in the spec.
 8. **Match the local convention.** cpb.html is a hybrid; a change inside a class-based block uses classes, a change inside an inline-styled block uses inline styles. Do not convert one to the other.
 9. **One file per execution chat.** If a change appears to require a second file, stop and report.

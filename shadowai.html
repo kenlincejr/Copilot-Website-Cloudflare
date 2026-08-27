@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Shadow AI Assessment Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* HEADINGS */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+h4 {
+  color: var(--navy);
+  margin: 1.2rem 0 .3rem;
+  font-size: .95rem;
+  font-weight: 700;
+}
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* TABLE OF CONTENTS */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  columns: 2;
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+/* BACK TO TOC */
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: #f5ddb0;
+  border-left-color: #d97706;
+}
+.callout.dark {
+  background: var(--navy);
+  border-color: var(--navy);
+  border-left-color: var(--teal-light);
+  color: #fff;
+}
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .85rem;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+/* METRICS */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .78rem; margin-top: 5px; font-style: italic; }
+.metric.warn { border-top-color: #d97706; }
+.metric.warn .k { color: #92400e; }
+
+/* BLOCKQUOTE */
+blockquote {
+  border-left: 4px solid var(--teal);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f5fbfc;
+  font-style: italic;
+  color: #374151;
+}
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .88rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th {
+  background: var(--muted-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: .82rem;
+  border-left: 3px solid var(--teal);
+}
+tr:nth-child(even) td { background: #fafbfc; }
+.tablewrap { overflow-x: auto; }
+table.dense { font-size: .8rem; min-width: 900px; }
+table.dense th, table.dense td { padding: 8px 10px; }
+
+/* STAT RIBBON */
+.stat-ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.stat-ribbon-item {
+  padding: 20px 18px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) {
+  .stat-ribbon { grid-template-columns: repeat(2, 1fr); }
+  .stat-ribbon-item:nth-child(2) { border-right: none; }
+}
+
+/* HERO STATEMENT */
+.hero-statement {
+  background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* DARK PANEL — the opening-provocation shell */
+.dark-panel {
+  background: linear-gradient(135deg, #001f3d 0%, var(--navy) 45%, var(--teal) 130%);
+  border-radius: var(--radius-lg);
+  padding: 30px 34px;
+  margin: 20px 0;
+  box-shadow: var(--shadow-md);
+}
+.dark-panel .dp-eyebrow {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+}
+.dark-panel .dp-eyebrow .bar { width: 24px; height: 2px; background: var(--ltblue); border-radius: 1px; }
+.dark-panel .dp-eyebrow .lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.55); }
+.dark-panel .dp-eyebrow .rule { flex: 1; height: 1px; background: rgba(255,255,255,.12); }
+.dark-panel p { color: rgba(255,255,255,.9); font-size: .95rem; }
+.dark-panel h3 { color: #fff; margin-top: 0; }
+.dark-panel strong { color: #fff; }
+
+/* DARK MATH CHIP ROW */
+.chiprow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius); padding: 16px 20px; margin: 18px 0 4px; }
+.chip { display: flex; flex-direction: column; gap: 2px; }
+.chip .cv { font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -.02em; }
+.chip .cv.hl { color: #a8ecf5; }
+.chip .cl { font-size: .7rem; color: rgba(255,255,255,.58); }
+.chip-op { color: rgba(255,255,255,.32); font-size: 1.2rem; font-weight: 300; }
+
+/* PIPELINE (horizontal step flow) */
+.pipeline { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin: 26px 0 20px; position: relative; }
+.pipeline::before { content: ""; position: absolute; top: 29px; left: 45px; right: 45px; height: 2px; background: var(--border); z-index: 0; }
+.pl-step { position: relative; z-index: 1; flex: 1; text-align: center; padding: 0 6px; }
+.pl-circle { width: 58px; height: 58px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; color: var(--teal); margin: 0 auto 10px; }
+.pl-circle.filled { background: var(--teal); color: #fff; }
+.pl-title { font-weight: 700; color: var(--navy); font-size: .92rem; margin-bottom: 3px; }
+.pl-tag { font-size: .68rem; color: #6b7280; margin-bottom: 6px; }
+.pl-tools { font-size: .74rem; color: #6b7280; line-height: 1.45; }
+@media (max-width: 800px) { .pipeline { flex-direction: column; gap: 22px; } .pipeline::before { display: none; } }
+
+/* VERTICAL TIMELINE */
+.vtimeline { position: relative; margin: 20px 0 20px 8px; padding-left: 26px; border-left: 2px solid var(--border); }
+.vt-item { position: relative; padding-bottom: 26px; }
+.vt-item:last-child { padding-bottom: 0; }
+.vt-item::before { content: ""; position: absolute; left: -33px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); }
+.vt-when { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
+.vt-item h4 { margin: 3px 0 3px; }
+.vt-item p { font-size: .87rem; margin: 0; }
+
+/* PARTNER STORY / NAMED QUOTE */
+.partner-story {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 18px 22px;
+  margin: 18px 0;
+  background: #f8fcfd;
+  box-shadow: var(--shadow-sm);
+}
+.partner-story .ps-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.partner-story .ps-quote { font-size: .95rem; font-style: italic; color: #374151; line-height: 1.7; margin: 0 0 10px; }
+.partner-story .ps-attr { font-size: .82rem; color: #6b7280; font-weight: 600; }
+.partner-story strong { color: var(--navy); }
+
+/* WARNING BANNER */
+.smb-reality {
+  border: 1px solid var(--border);
+  border-left: 4px solid #d97706;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+  background: var(--warn);
+  box-shadow: var(--shadow-sm);
+}
+.smb-reality .sr-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #92400e;
+  margin-bottom: 10px;
+}
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 6px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); position: relative; }
+.tier-card:not(:last-child)::after { content: "\2193"; position: absolute; left: 22px; bottom: -20px; color: var(--border); font-size: 1.1rem; z-index: 2; }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 16px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-desc { font-size: .88rem; color: var(--text); line-height: 1.6; margin: 0 0 8px; }
+.tier-card .tc-facts { display: flex; gap: 18px; flex-wrap: wrap; font-size: .78rem; color: #6b7280; border-top: 1px dashed var(--border); padding-top: 8px; }
+.tier-card .tc-facts strong { color: var(--navy); }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+
+/* Two-column compare */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+
+/* Inline tag */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* ASSET / DELIVERABLE INDEX LIST */
+.asset-index { display: flex; flex-direction: column; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.asset-item { background: #fff; padding: 16px 20px; display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; }
+.asset-item .ai-num { font-size: 1.5rem; font-weight: 700; color: var(--ltblue); line-height: 1; font-family: Consolas,Monaco,monospace; }
+.asset-item h4 { margin: 0 0 4px; }
+.asset-item p { margin: 0 0 5px; font-size: .87rem; }
+.asset-item .ai-meta { font-size: .72rem; color: #9ca3af; font-family: Consolas,Monaco,monospace; text-transform: uppercase; letter-spacing: .04em; }
+@media (max-width: 600px) { .asset-item { grid-template-columns: 28px 1fr; } }
+
+/* RECAP HAIRLINE GRID */
+.recap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.recap-item { background: #fff; padding: 18px 20px; }
+.recap-item .rn { font-family: Consolas,Monaco,monospace; color: var(--teal-light); font-size: .72rem; font-weight: 700; }
+.recap-item h4 { margin: 6px 0 4px; }
+.recap-item p { margin: 0; font-size: .83rem; color: #374151; }
+
+/* REFERENCE LIST */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist li.unlinked { border-left-color: var(--ltblue); }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -32px -28px 0; }
+  .mh-bar-in { padding: 0 28px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -28px 20px; }
+  .masthead-inner { padding: 20px 28px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><span class="cur">Shadow AI Assessment</span></div>
+    <div class="mh-date">Updated August 26, 2026</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Assessment Guide &middot; Governance</div></div>
+    <h1>The Shadow AI Assessment Guide</h1>
+    <p class="sub">Discovering, governing, and monetizing AI use in Microsoft SMB tenants.</p>
+    <p class="mh-meta">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong></p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">Why Shadow AI Is the First Conversation</a></li>
+      <li><a href="#section-2">The Shadow AI Reality — What SMBs Actually Have Running</a></li>
+      <li><a href="#section-3">Microsoft's Four-Step Model — Discover, Block, Protect, Govern</a></li>
+      <li><a href="#section-4">The Assessment Delivery Model</a></li>
+      <li><a href="#section-5">A Sample Engagement — 120 Users, 50 Copilot Seats</a></li>
+      <li><a href="#section-6">The Licensing Motion — Positioning the Suites</a></li>
+      <li><a href="#section-7">Sanction, Don't Just Block</a></li>
+      <li><a href="#section-8">The Top AI Apps — Enterprise Onboarding Matrix</a></li>
+      <li><a href="#section-9">Finding the Conversation — Reading Partner Signal Data</a></li>
+      <li><a href="#section-10">The Revenue Ladder — Six Service Lines</a></li>
+      <li><a href="#section-11">Objection Handling</a></li>
+      <li><a href="#section-12">Companion Assets Worth Building</a></li>
+      <li><a href="#section-13">Where the Premium Sits — Regulated Verticals</a></li>
+      <li><a href="#section-14">"It's Not a Big Deal" — And Why That's Wrong</a></li>
+      <li><a href="#section-15">The Partner's Non-Negotiables</a></li>
+      <li><a href="#section-16">Next Steps</a></li>
+      <li><a href="#section-17">Reference Library &amp; Further Reading</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero-statement">
+  <p>The question isn&rsquo;t whether your customer&rsquo;s employees are using AI. It&rsquo;s whether <em>you&rsquo;re</em> the one who found out first.</p>
+  <div class="hero-sub">A structured Shadow AI assessment is the single best first conversation a Microsoft partner can have with an SMB in 2026 &mdash; it opens with the customer&rsquo;s own problem, not your product, and it compounds into a durable governance practice.</div>
+</div>
+
+<hr>
+
+<!-- SECTION 1 -->
+<h2 id="section-1">1. Why Shadow AI Is the First Conversation</h2>
+
+<p>By the time a partner sits down to talk about a Copilot license, the AI conversation has usually already started &mdash; just not with IT in the room. Employees are pasting client emails into free ChatGPT accounts, dropping proprietary code into personal Cursor or Claude sessions, and running meeting recordings through consumer transcription apps. None of it shows up in a firewall log, because every one of those tools is a trusted TLS endpoint that every URL filter waves through as "productivity."</p>
+
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">The pitch that stalls</div>
+    <p><strong>Lead with the plumbing.</strong> Permissions, Conditional Access, MFA. Technically correct, and it asks a prospect to get excited about your compliance checklist before they've agreed there's a problem worth solving.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">The pitch that opens doors</div>
+    <p><strong>Lead with Shadow AI discovery.</strong> It starts from something the prospect already privately suspects is true about their own business, and offers to make it visible &mdash; on their terms, before someone else finds it for them.</p>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The reframe to walk in with</div>
+  <div class="callout-body">
+    <p>Governance and consumption are the same problem, not two separate ones. Whatever AI surface a customer eventually turns on &mdash; Copilot, a sanctioned ChatGPT Enterprise seat, an internal agent &mdash; inherits whatever permissions and data hygiene already exist in the tenant. An assessment that surfaces unsanctioned AI use is also the exact prerequisite work for making any AI purchase pay off. <strong>Governance readiness is consumption readiness.</strong></p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 2 -->
+<h2 id="section-2">2. The Shadow AI Reality — What SMBs Actually Have Running</h2>
+
+<h3>2.1 &middot; The pattern you will find on nearly every engagement</h3>
+
+<div class="metrics">
+  <div class="metric warn">
+    <div class="k">62%</div>
+    <div class="l">of AI-using employees use chatbots or virtual assistants as their primary AI tool; writing/editing tools rank second</div>
+    <div class="s">Gallup, 2025 workplace AI research</div>
+  </div>
+  <div class="metric warn">
+    <div class="k">91%</div>
+    <div class="l">of employees report their organization uses at least one AI tool today</div>
+    <div class="s">McKinsey, State of AI, 2025</div>
+  </div>
+  <div class="metric">
+    <div class="k">~20%</div>
+    <div class="l">of data breaches now involve Shadow AI as a contributing factor, per industry breach research</div>
+    <div class="s">Verizon DBIR, most recent edition</div>
+  </div>
+  <div class="metric warn">
+    <div class="k">66%</div>
+    <div class="l">of AI-using workers admit they used AI despite believing it violated company policy</div>
+    <div class="s">PagerDuty, 2026 workplace survey</div>
+  </div>
+  <div class="metric warn">
+    <div class="k">~75%</div>
+    <div class="l">of workers use AI at work, and most of that use is unauthorized — a consolidation of several analyst studies</div>
+    <div class="s">Community synthesis of Gartner, Microsoft, IBM, Cyberhaven, Netskope research</div>
+  </div>
+  <div class="metric">
+    <div class="k">$400K</div>
+    <div class="l">estimated annual cost per company in security and compliance exposure from unmanaged AI use — a community benchmark, not a survey figure</div>
+    <div class="s">Industry benchmark estimate; treat as directional</div>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Read the numbers as a range, not a receipt</div>
+  <div class="callout-body"><p>The figures above come from a mix of primary research (Gallup, McKinsey, PagerDuty) and secondary community synthesis. Use the primary-sourced ones with confidence in an executive conversation; treat the synthesized and benchmark figures as directional, and always re-check the current edition of any cited report before quoting an exact number to a customer.</p></div>
+</div>
+
+<h3>2.2 &middot; The categories you'll actually find</h3>
+<p>The following categories show up on nearly every SMB discovery scan, well before any purpose-built discovery tool is even switched on. Treat this as the starter checklist for the conversation, not an exhaustive taxonomy.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Category</th><th>Common tools</th><th>Typical exposure</th></tr></thead>
+<tbody>
+<tr><td>General LLM assistants</td><td>ChatGPT, Claude, Gemini, Copilot Chat (personal), Perplexity, Meta AI</td><td>Client emails, contracts, HR data pasted into personal accounts</td></tr>
+<tr><td>AI coding assistants</td><td>GitHub Copilot (personal), Cursor, Windsurf, Codeium, Claude Code</td><td>Proprietary source code, secrets, connection strings</td></tr>
+<tr><td>Meeting notes / recording</td><td>Otter.ai, Fireflies.ai, Fathom, Read.ai, Zoom AI Companion</td><td>Confidential meeting content, financials, personnel decisions</td></tr>
+<tr><td>Writing / editing</td><td>Grammarly (personal), Wordtune, QuillBot</td><td>Legal, HR, client-facing content routed through personal accounts</td></tr>
+<tr><td>Productivity / knowledge</td><td>Notion AI, ClickUp AI, Coda AI, Mem</td><td>Company docs, project plans, roadmaps</td></tr>
+<tr><td>Design / marketing</td><td>Canva AI, Adobe Firefly, Midjourney, Ideogram</td><td>Brand assets, client campaigns, PII embedded in image inputs</td></tr>
+<tr><td>Sales / RevOps AI</td><td>Gong, Apollo.io AI, Clay, Lavender</td><td>Full CRM records synced to an unmanaged AI vendor</td></tr>
+<tr><td>Enterprise search / RAG</td><td>Glean, Guru, You.com Enterprise, Dust</td><td>Broad SharePoint/Drive access under a personal or loosely-scoped grant</td></tr>
+<tr><td>Web-scraping AI</td><td>Diffbot, Browse.ai, Bardeen, PhantomBuster</td><td>Undocumented data-extraction pipelines with no security review</td></tr>
+<tr><td>Voice / avatar AI</td><td>ElevenLabs, HeyGen, Synthesia, Descript</td><td>Executive voice cloning, deepfake and impersonation risk</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 3 -->
+<h2 id="section-3">3. Microsoft's Four-Step Model — Discover, Block, Protect, Govern</h2>
+
+<p>Microsoft publishes a formal deployment model in Microsoft Purview called <em>Prevent data leak to shadow AI</em>. It's worth anchoring to because it's the reference architecture a customer's auditors, cyber insurer, and Microsoft account team already expect to see reflected in a serious engagement.</p>
+
+<div class="pipeline">
+  <div class="pl-step">
+    <div class="pl-circle">01</div>
+    <div class="pl-title">Discover</div>
+    <div class="pl-tag">Unknown AI use is surfaced</div>
+    <div class="pl-tools">Defender for Cloud Apps<br>Entra Internet Access<br>Purview DSPM for AI</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle">02</div>
+    <div class="pl-title">Block</div>
+    <div class="pl-tag">Unsanctioned apps blocked, deliberately</div>
+    <div class="pl-tools">Conditional Access<br>Session policies<br>Intune / Defender for Endpoint</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle">03</div>
+    <div class="pl-title">Protect</div>
+    <div class="pl-tag">Sensitive data can't leave</div>
+    <div class="pl-tools">Purview DLP (AI category)<br>Sensitivity labels<br>Purview browser extension</div>
+  </div>
+  <div class="pl-step">
+    <div class="pl-circle filled">04</div>
+    <div class="pl-title">Govern</div>
+    <div class="pl-tag">Prompts retained and auditable</div>
+    <div class="pl-tools">Purview Audit (Premium)<br>Communication Compliance<br>eDiscovery</div>
+  </div>
+</div>
+
+<h3>3.1 &middot; What each step actually means for a partner</h3>
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Discover</div></div>
+      <p class="tc-desc">Defender for Cloud Apps has had Cloud Discovery for years; the AI-specific category plus the Entra Internet Access network-layer signal together approximate visibility partners historically had to buy from a dedicated CASB vendor.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Block</div></div>
+      <p class="tc-desc">Two enforcement paths: Conditional Access plus a Defender for Cloud Apps session policy for browser sessions, or Intune / managed-browser enforcement at the device level. Community best practice: don't block everything on day one — close the highest-risk consumer apps first and monitor the rest while the sanctioning conversation happens.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Protect</div></div>
+      <p class="tc-desc">Purview DLP now has an AI-app category as a first-class condition. A reasonable starter rule: location = devices onboarded to Defender for Endpoint; condition = a Confidential label or a sensitive info type; action = block upload to the AI-app category; mode = audit first for two weeks, then enforce.</p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Govern</div></div>
+      <p class="tc-desc">Configure Audit (Premium) retention — a full year, not the 180-day default — before an incident, not after. Communication Compliance can capture AI interaction logs where the tool integrates with Microsoft's information-protection stack; for third-party tools, coverage depends entirely on the vendor.</p>
+    </div>
+  </div>
+</div>
+
+<h3>3.2 &middot; The two-layer simplification worth teaching every customer</h3>
+<p>Microsoft MVP Nikki Chapple frames the same architecture as two decisions, and it's the cleanest version of this story for an executive conversation:</p>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">Control the apps</div>
+    <p>Decide <strong>where</strong> data is allowed to go. This is Defender for Cloud Apps, Entra, and Intune working together to build the sanctioned/monitored/blocked list.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Control the data</div>
+    <p>Decide <strong>what</strong> data is allowed to leave, regardless of destination. This is Purview DLP, sensitivity labels, and DSPM for AI.</p>
+  </div>
+</div>
+
+<div class="partner-story">
+  <div class="ps-label">The line to borrow for the executive room</div>
+  <p class="ps-quote">Microsoft provides the control plane. The customer's organization defines the control model. Your job as the partner is to help them write that model down &mdash; nobody else in the room is going to.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 4 -->
+<h2 id="section-4">4. The Assessment Delivery Model</h2>
+
+<h3>4.1 &middot; The five-capability self-audit — can you deliver this today?</h3>
+<p>Before quoting a Shadow AI assessment, run the same five-capability audit on your own tenant first. Selling discovery you haven't personally survived is the fastest way to under-scope a SOW — dual-track it: run the snapshot on yourself, then sell it to customers.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>#</th><th>Capability</th><th>Why the assessment needs it</th><th>Typical SMB-partner starting point</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Identity and access visibility</td><td>Who is using what, under which account</td><td>Usually already have it — Entra ID P1 ships in Business Premium</td></tr>
+<tr><td>2</td><td>Application discovery</td><td>The engine that finds unsanctioned AI tools</td><td>Confirm — needs Defender for Cloud Apps</td></tr>
+<tr><td>3</td><td>Data classification and DLP</td><td>To say <em>what</em> data went where — this is what sells the remediation</td><td>Partial — sensitivity labels ship in Business Premium; deeper DLP needs the Purview add-on</td></tr>
+<tr><td>4</td><td>Policy authoring</td><td>Write the AI Acceptable Use Policy and the DLP rules</td><td>Have the skill — the AUP itself is almost always missing</td></tr>
+<tr><td>5</td><td>Ongoing monitoring</td><td>The step that converts a one-time report into recurring revenue</td><td>Confirm — needs the licensing in place at the customer or partner-tenant level</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>4.2 &middot; The engagement flow — from first meeting to managed governance</h3>
+<div class="vtimeline">
+  <div class="vt-item">
+    <div class="vt-when">Week 0</div>
+    <h4>Executive AI conversation &middot; 30 min</h4>
+    <p>Frame Shadow AI as an ongoing exposure, not a one-time compliance exercise. Get a named executive sponsor and confirm scope, seat count, and data sensitivity.</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Week 1</div>
+    <h4>Discovery configuration &middot; 4&ndash;8 hrs</h4>
+    <p>Enable Cloud Discovery, Entra Internet Access, and DSPM for AI. Deploy the Purview browser extension to a pilot device group. Onboard endpoints to Defender for Endpoint if not already done.</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Weeks 2&ndash;3</div>
+    <h4>Telemetry collection &middot; 10&ndash;21 days</h4>
+    <p>Passive collection, no user disruption. A 14-day minimum is the community standard; extend to 21 days if usage is unusually cyclical (month-end close, seasonal work).</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Week 4</div>
+    <h4>Analysis and report drafting &middot; 8&ndash;16 hrs</h4>
+    <p>Categorize discovered apps, attribute usage by user and department, quantify sensitive-data exposure, map to risk ratings, and prioritize remediation.</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Week 5</div>
+    <h4>Executive readout &middot; 60&ndash;90 min</h4>
+    <p>A focused deck: exposure heatmap, top apps, top exposed users, business impact, remediation roadmap, licensing gaps, and the next-step SOW menu.</p>
+  </div>
+  <div class="vt-item">
+    <div class="vt-when">Week 6+</div>
+    <h4>Remediation SOWs and managed-governance kickoff</h4>
+    <p>Fixed-fee AUP, oversharing remediation, sanctioned-app onboarding, and the Managed AI Governance retainer.</p>
+  </div>
+</div>
+
+<h3>4.3 &middot; Realistic timing and staffing for a 25&ndash;300 seat customer</h3>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Phase</th><th>Elapsed time</th><th>Partner effort</th><th>Skills required</th></tr></thead>
+<tbody>
+<tr><td>Executive intake</td><td>1&ndash;2 days</td><td>~2 hrs</td><td>AI-fluent seller / vCIO</td></tr>
+<tr><td>Discovery tool configuration</td><td>2&ndash;5 days</td><td>4&ndash;8 hrs</td><td>M365 admin comfortable in Defender + Purview</td></tr>
+<tr><td>Telemetry collection</td><td>14&ndash;21 days</td><td>Passive</td><td>&mdash;</td></tr>
+<tr><td>Analysis + report</td><td>3&ndash;5 days</td><td>8&ndash;16 hrs</td><td>Security analyst / consultant</td></tr>
+<tr><td>Executive readout</td><td>1 day</td><td>2 hrs + prep</td><td>vCIO / AI practice lead</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>4&ndash;6 weeks</strong></td><td><strong>16&ndash;28 hrs</strong></td><td>1 practice lead + 1 M365 admin</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">What that envelope implies for pricing</div>
+  <div class="callout-body"><p>Community-reported SMB assessment pricing clusters around <strong>$1,500&ndash;$7,500 fixed fee</strong> for a 20&ndash;200 seat customer, climbing past $15K for regulated or mid-market accounts. Independent MSP benchmarking (Cynomi) puts the share of assessment clients who convert to a follow-on retainer at <strong>50%+</strong> &mdash; and that conversion rate rises further when the assessment surfaces a specific, named risk rather than a generic score. Treat both figures as planning inputs, not guarantees, and validate against your own delivery cost.</p></div>
+</div>
+
+<h3>4.4 &middot; What the finished engagement produces</h3>
+<div class="asset-index">
+  <div class="asset-item"><span class="ai-num">01</span><div><h4>Exposure heatmap</h4><p>Departments crossed with the sensitivity of the data leaving them.</p></div></div>
+  <div class="asset-item"><span class="ai-num">02</span><div><h4>Ranked AI app inventory</h4><p>Top apps by user count, top apps by risk.</p></div></div>
+  <div class="asset-item"><span class="ai-num">03</span><div><h4>Ranked exposure list</h4><p>Highest-risk individuals, with a separate executive-only version.</p></div></div>
+  <div class="asset-item"><span class="ai-num">04</span><div><h4>SharePoint oversharing summary</h4><p>What any future AI product would be able to see on day one.</p></div></div>
+  <div class="asset-item"><span class="ai-num">05</span><div><h4>Licensing gap analysis</h4><p>Current state versus recommended state, mapped to the Suite add-ons in Section 6.</p></div></div>
+  <div class="asset-item"><span class="ai-num">06</span><div><h4>Three-tier remediation roadmap</h4><p>Quick wins (0&ndash;30 days), foundational (30&ndash;90 days), strategic (90+ days).</p></div></div>
+  <div class="asset-item"><span class="ai-num">07</span><div><h4>Draft AI Acceptable Use Policy</h4><p>Customized to the sanctioned tools and the customer's vertical, not boilerplate.</p></div></div>
+  <div class="asset-item"><span class="ai-num">08</span><div><h4>Follow-on SOW menu</h4><p>Priced by service line — see Section 10.</p></div></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 5 -->
+<h2 id="section-5">5. A Sample Engagement — 120 Users, 50 Copilot Seats</h2>
+<p>This is a composite, representative walkthrough built to teach the pattern of a common SMB deal — the numbers are illustrative of what a real 14-day scan at this seat count typically turns up, not a specific named customer's data.</p>
+
+<h3>5.1 &middot; The profile</h3>
+<ul>
+<li><strong>Company:</strong> 120 employees, professional services</li>
+<li><strong>Current licensing:</strong> 90 Business Premium, 30 Business Standard</li>
+<li><strong>The ask:</strong> 50 Microsoft 365 Copilot licenses for finance, senior consultants, and leadership</li>
+<li><strong>Doesn't yet own:</strong> Defender for Cloud Apps (standalone), the Purview Suite add-on</li>
+<li><strong>Already owns via Business Premium, mostly unconfigured:</strong> Entra ID P1, Intune, Defender for Business, Purview sensitivity labels and basic DLP</li>
+</ul>
+
+<h3>5.2 &middot; Handling "we don't own Purview or Defender for Cloud Apps"</h3>
+<p>This is the objection that stalls the deal if it's handled as a forklift upgrade to E5. It isn't one. Microsoft sells a Defender Suite and a Purview Suite specifically scoped to Business Premium, and the two can be bundled at a meaningful discount when purchased alongside Copilot. The pitch is not "buy more Microsoft" &mdash; it's "the tool that powers this assessment is the same tool that governs Copilot after it's turned on."</p>
+
+<div class="partner-story">
+  <div class="ps-label">A version of the talk track</div>
+  <p class="ps-quote">You're about to spend real money on 50 Copilot seats. Before you turn it on, we need to know two things: what your team is already pasting into ChatGPT and Claude today, and whether Copilot's own grounding is going to surface data your labels weren't ready for. We do that with a four-week Shadow AI and Copilot Readiness Assessment. The Purview Suite add-on we'll turn on for those 50 seats does triple duty &mdash; it powers this assessment now, it governs Copilot once it's live, and it gives you your first documented AI compliance evidence ahead of your next cyber-insurance renewal.</p>
+</div>
+
+<h3>5.3 &middot; Representative findings, at this seat count</h3>
+
+<div class="chiprow" style="background:var(--navy);">
+  <div class="chip"><span class="cv hl">58</span><span class="cl">of 120 users touched an unsanctioned AI tool</span></div>
+  <span class="chip-op">/</span>
+  <div class="chip"><span class="cv">120</span><span class="cl">total headcount</span></div>
+  <span class="chip-op">=</span>
+  <div class="chip"><span class="cv hl">~48%</span><span class="cl">of the whole company, in 14 days</span></div>
+</div>
+
+<ul>
+<li><strong>11 distinct AI apps</strong> discovered — led by general chat assistants, meeting transcription, and personal writing tools.</li>
+<li><strong>43 sensitive-info-type hits</strong> in the DLP audit log — client emails, identifying information, engagement-letter templates.</li>
+<li><strong>12 users</strong> authenticating to AI tools with a personal Microsoft or Google account rather than corporate identity — the strongest single signal that governance, not just policy, is missing.</li>
+<li><strong>3 SharePoint sites</strong> classified "Confidential" turn out to be shared far more broadly than intended — exactly the kind of finding that becomes a hard gate before any AI grounding product goes live.</li>
+</ul>
+
+<div class="callout warn">
+  <div class="callout-title">The gate</div>
+  <div class="callout-body"><p>The customer doesn't get to flip on Copilot until the oversharing findings are remediated &mdash; not because the partner is being obstructive, but because AI output layered on top of ungoverned data will erode the customer's confidence in the product itself before it ever has a chance to prove its value. Show the value of getting this right first; then sell the protection that keeps it right.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 6 -->
+<h2 id="section-6">6. The Licensing Motion — Positioning the Suites</h2>
+
+<h3>6.1 &middot; What changed for SMB licensing</h3>
+<ul>
+<li>Microsoft sells <strong>Defender and Purview Suite add-ons scoped to Business Premium</strong> — SMB-specific bundles that unlock governance capability that used to require an E5 upgrade.</li>
+<li>Confirm current pricing directly on Microsoft's Business add-ons page before quoting; list prices and bundling change (see the Reference Library for the live URL).</li>
+<li>Microsoft has run promotional pricing on the Purview Suite when purchased alongside Microsoft 365 Copilot — worth checking at the time of the deal.</li>
+</ul>
+
+<h3>6.2 &middot; The upsell logic worth teaching</h3>
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">The pitch that stalls</div>
+    <p><strong>"You need to upgrade to E5."</strong> A Business Premium customer hears this as "double my Microsoft bill," and the deal stalls right there.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">The pitch that lands</div>
+    <p><strong>Same Copilot engine, right governance stack.</strong> The Copilot AI experience is the same on Business Premium and E5 — the difference is the governance tooling in the base SKU, not the AI feature set. Business Premium + Copilot + the Suite add-ons gets there without the forklift.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Verify before quoting</div>
+  <div class="callout-body"><p>Exact feature coverage between the Business Premium Suite add-ons and full E5 Compliance shifts as Microsoft updates its licensing tables. Confirm the specific capability — especially anything DSPM- or Copilot-assessment-related — against the current Microsoft licensing comparison before a proposal goes out.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 7 -->
+<h2 id="section-7">7. Sanction, Don't Just Block</h2>
+
+<p>The instinct after a discovery scan is to block everything unsanctioned. Resist it. Blocking without sanctioning drives usage further underground — onto personal devices and personal networks the partner has zero visibility into — and it burns the goodwill that made the customer receptive to the conversation in the first place. The credible position is narrower and more durable: <strong>bring the tools people already trust under management, rather than take them away.</strong></p>
+
+<div class="partner-story">
+  <div class="ps-label">The reframe for a Claude- or ChatGPT-attached team</div>
+  <p class="ps-quote">If your team relies on Claude or ChatGPT, we're not taking it away. We're bringing it inside the fence — enterprise SSO, SCIM provisioning, an admin console, a signed data processing agreement, and audit logging. Once that's in place, the tool your team already trusts is no longer a liability on your books; it's an asset with a paper trail.</p>
+</div>
+
+<h3>The plan for a customer who won't adopt Microsoft's own AI stack</h3>
+<div class="vtimeline">
+  <div class="vt-item"><div class="vt-when">Step 1</div><h4>Sanction their preferred tool</h4><p>Move them to an enterprise tier — Claude Enterprise, ChatGPT Enterprise, or another vendor's enterprise plan, matched to their preference.</p></div>
+  <div class="vt-item"><div class="vt-when">Step 2</div><h4>Wire it to Entra</h4><p>SSO via SAML, SCIM for lifecycle management, and an admin console configured for data retention, model access, and audit export.</p></div>
+  <div class="vt-item"><div class="vt-when">Step 3</div><h4>Layer Purview around it</h4><p>The browser extension, DLP AI-category policies, and Defender for Cloud Apps monitoring — the same tools, pointed at a different sanctioned destination.</p></div>
+  <div class="vt-item"><div class="vt-when">Step 4</div><h4>Keep it recurring</h4><p>Monthly reporting on usage, cost, and DLP incidents under the same Managed AI Governance retainer described in Section 10.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 8 -->
+<h2 id="section-8">8. The Top AI Apps — Enterprise Onboarding Matrix</h2>
+<p>Keep this as a living document — expand it quarterly. Pricing and SSO/SCIM support change often enough that this table intentionally omits dollar figures; confirm current terms directly with each vendor before quoting a sanctioned-app onboarding SOW.</p>
+
+<div class="tablewrap">
+<table class="dense">
+<thead><tr><th>#</th><th>App</th><th>Category</th><th>Entra SSO</th><th>SCIM</th><th>Admin console</th><th>Notable data-boundary / governance</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>OpenAI ChatGPT Enterprise</td><td>LLM assistant</td><td>✅ SAML</td><td>✅</td><td>Global Admin console</td><td>Data excluded from training by default; SOC 2</td></tr>
+<tr><td>2</td><td>OpenAI ChatGPT Business</td><td>LLM assistant</td><td>✅ SAML (Business tier)</td><td>✅</td><td>Workspace admin</td><td>Data-exclusion by default</td></tr>
+<tr><td>3</td><td>Anthropic Claude Enterprise</td><td>LLM assistant</td><td>✅ SAML</td><td>✅ (JIT/SCIM)</td><td>Console organizations</td><td>Audit logs, custom retention, RBAC</td></tr>
+<tr><td>4</td><td>Anthropic Claude Team</td><td>LLM assistant</td><td>✅ SAML</td><td>Partial</td><td>Team admin</td><td>Smaller-org tier</td></tr>
+<tr><td>5</td><td>Google Gemini Enterprise</td><td>LLM assistant + agents</td><td>✅ via IdP config</td><td>✅</td><td>Google Cloud console</td><td>Separate token/compute billing</td></tr>
+<tr><td>6</td><td>Gemini in Google Workspace</td><td>Assistant</td><td>✅ (Workspace SSO)</td><td>✅</td><td>Workspace admin</td><td>Bundled in Business Standard/Plus/Enterprise plans</td></tr>
+<tr><td>7</td><td>Perplexity Enterprise Pro</td><td>Research / search</td><td>✅ SAML</td><td>✅</td><td>Enterprise admin</td><td>SOC 2</td></tr>
+<tr><td>8</td><td>GitHub Copilot Business / Enterprise</td><td>AI coding</td><td>✅ SAML via GitHub Enterprise Cloud</td><td>✅</td><td>GitHub org / enterprise settings</td><td>IP indemnification (Business+); public-code filter</td></tr>
+<tr><td>9</td><td>Cursor Teams / Enterprise</td><td>AI coding</td><td>✅ SAML 2.0</td><td>Partial</td><td>Cursor org</td><td>Privacy Mode retention controls</td></tr>
+<tr><td>10</td><td>Codeium / Windsurf</td><td>AI coding</td><td>✅ SAML (Teams/Enterprise)</td><td>✅</td><td>Windsurf admin</td><td>Codebase-indexing scope configurable per repo</td></tr>
+<tr><td>11</td><td>Glean</td><td>Enterprise search + assistant</td><td>✅ SAML/OIDC</td><td>✅</td><td>Glean workspace admin</td><td>Permissions-aware connectors; tenant data boundary maintained</td></tr>
+<tr><td>12</td><td>Notion AI</td><td>Productivity</td><td>✅ SAML</td><td>✅</td><td>Notion workspace admin</td><td>DPA available; enterprise data segregation</td></tr>
+<tr><td>13</td><td>Grammarly Business / Enterprise</td><td>Writing</td><td>✅ SAML</td><td>✅</td><td>Grammarly admin console</td><td>Enterprise data doesn't train models</td></tr>
+<tr><td>14</td><td>Otter.ai Enterprise</td><td>Meeting AI</td><td>✅ SAML</td><td>✅</td><td>Otter admin</td><td>Meeting retention and sharing controls</td></tr>
+<tr><td>15</td><td>Fireflies.ai Business</td><td>Meeting AI</td><td>✅ SAML</td><td>Partial</td><td>Fireflies admin</td><td>Storage-region controls</td></tr>
+<tr><td>16</td><td>Zoom AI Companion</td><td>Meeting AI</td><td>✅ Zoom SSO / Entra</td><td>✅</td><td>Zoom admin</td><td>Off by default; no third-party training on customer data</td></tr>
+<tr><td>17</td><td>Read.ai / Fathom Business</td><td>Meeting AI</td><td>Varies; some SAML</td><td>Partial</td><td>Vendor admin</td><td>Consent / recording notifications</td></tr>
+<tr><td>18</td><td>Copilot Studio / custom agents</td><td>Agent platform</td><td>✅ via Microsoft 365 identity</td><td>N/A</td><td>Power Platform admin center</td><td>Full Purview + Entra governance, natively</td></tr>
+<tr><td>19</td><td>Microsoft Copilot Chat (free)</td><td>LLM assistant</td><td>✅ Entra</td><td>N/A</td><td>M365 admin center</td><td>Enterprise Data Protection at the commercial data boundary</td></tr>
+<tr><td>20</td><td>Canva Enterprise (Magic AI)</td><td>Design</td><td>✅ SAML</td><td>✅</td><td>Canva admin</td><td>Enterprise-wide brand kit + admin controls</td></tr>
+<tr><td>21</td><td>Adobe Firefly for Enterprise</td><td>Design</td><td>✅ SAML</td><td>✅</td><td>Adobe Admin Console</td><td>Commercial-safe training-data statement</td></tr>
+<tr><td>22</td><td>Midjourney</td><td>Design</td><td>⚠️ Discord-based, limited SSO</td><td>⚠️</td><td>Server-level moderation</td><td>Recommend blocking for regulated data</td></tr>
+<tr><td>23</td><td>HeyGen / Synthesia Enterprise</td><td>Video / avatar</td><td>✅ SAML</td><td>Partial</td><td>Vendor admin</td><td>Voice-cloning consent + retention controls</td></tr>
+<tr><td>24</td><td>ElevenLabs Enterprise</td><td>Voice AI</td><td>✅ SAML</td><td>Partial</td><td>Vendor admin</td><td>Voice-clone authorization controls</td></tr>
+<tr><td>25</td><td>Gong / Clari Copilot</td><td>Sales AI</td><td>✅ SAML</td><td>✅</td><td>Gong / Clari admin</td><td>CRM data-boundary controls</td></tr>
+<tr><td>26</td><td>Apollo.io AI</td><td>Sales AI</td><td>✅ Growth/Enterprise</td><td>Partial</td><td>Apollo admin</td><td>CRM sync scope controls</td></tr>
+<tr><td>27</td><td>Clay</td><td>Data enrichment AI</td><td>✅ SAML (Enterprise)</td><td>Partial</td><td>Clay workspace</td><td>Multi-source enrichment audit trail</td></tr>
+<tr><td>28</td><td>Jasper Enterprise</td><td>Marketing AI</td><td>✅ SAML</td><td>Partial</td><td>Jasper admin</td><td>Brand voice + guardrails</td></tr>
+<tr><td>29</td><td>Writer Enterprise</td><td>Enterprise gen-AI</td><td>✅ SAML</td><td>✅</td><td>Writer admin</td><td>Custom private models; data isolation</td></tr>
+<tr><td>30</td><td>Mistral Le Chat Enterprise</td><td>LLM assistant</td><td>✅ SAML</td><td>Partial</td><td>Mistral admin</td><td>EU-data-residency option</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>For each partner-sanctioned app, the onboarding pattern is the same six steps:</p>
+<ol>
+<li>Add the app via the Entra ID enterprise app gallery, or configure a custom SAML app.</li>
+<li>Configure single sign-on with the vendor's SP metadata.</li>
+<li>Configure SCIM for lifecycle management — this is what makes the AI account disappear the day the employee does.</li>
+<li>Configure the vendor's admin console: data retention, model access, audit export.</li>
+<li>Get the data processing agreement signed and complete a privacy review.</li>
+<li>Mark the vendor's domain <strong>Sanctioned</strong> in Defender for Cloud Apps, and add it as a monitored destination in Purview DLP.</li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 9 -->
+<h2 id="section-9">9. Finding the Conversation — Reading Partner Signal Data</h2>
+<p>Microsoft's partner-facing propensity tooling in Partner Center — surfaced through the AI Business Solutions &amp; Security Partner Experience (ASPX) — exposes weekly-refreshed, per-tenant signals that map directly onto a Shadow AI conversation. If your organization has Partner Center access, these are worth building into a weekly call-list routine rather than treating as background reporting.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Signal</th><th>What it tells the partner</th><th>The Shadow AI conversation move</th></tr></thead>
+<tbody>
+<tr><td>Free Copilot Chat MAU (unlicensed)</td><td>Users on free Copilot Chat this month</td><td>These users are proving demand — and are very likely also using ChatGPT/Claude under personal accounts. Sell the assessment.</td></tr>
+<tr><td>Free-to-paid whitespace %</td><td>Ratio of free monthly active users to paid</td><td>A high ratio signals both Copilot license upsell potential and Shadow AI exposure</td></tr>
+<tr><td>Copilot-eligible seats</td><td>The Copilot-eligible base at the tenant</td><td>Total addressable seats for both the license conversation and the governance retainer</td></tr>
+<tr><td>Users hitting free-tier usage limits</td><td>Free-tier users being throttled</td><td>The strongest demand signal available — "your own users hitting a wall" is the opener</td></tr>
+<tr><td>Adoption status</td><td>An estimate of the tenant's Copilot health</td><td>A "failure to adopt" flag is usually a governance problem, not a licensing one — an assessment opportunity</td></tr>
+<tr><td>Data security maturity</td><td>A tiered estimate from Minimal to Advanced-Healthy</td><td>The sharpest single opener — Minimal and Limited-Unhealthy tenants are the top of the weekly call list</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The pattern worth running weekly</div>
+  <div class="callout-body">
+    <p>Rank tenants by a blend of (a) users hitting free-tier usage limits, (b) unlicensed Copilot Chat activity, and (c) a weak data-security maturity signal. Take the top 15&ndash;20 for the week's call list. The customer's own numbers make the strongest possible opener: <em>"You have people already hitting a usage ceiling on the free tier. They're trying to do AI work today &mdash; the only question is whether it's happening inside your tenant or inside their personal accounts."</em></p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 10 -->
+<h2 id="section-10">10. The Revenue Ladder — Six Service Lines</h2>
+<p>The assessment is the land. What makes the practice durable is that every rung above it has a natural trigger from the one below — nothing has to be sold cold. Pricing ranges below are editorial estimates meant as a starting point; test them against your own cost model before quoting.</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Shadow AI Assessment</div><span class="tag">One-time, fixed fee</span></div>
+      <p class="tc-desc">The land. A discovery-led engagement that converts into a specific finding ("here are the 14 AI tools your staff used last month, and here is the client data that left your environment") rather than a generic audit pitch.</p>
+      <div class="tc-facts"><span><strong>Price:</strong> $1,500&ndash;$7,500 SMB; $15K+ regulated</span><span><strong>Buyer:</strong> Owner/GM, 20&ndash;200 seats</span></div>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">AI Acceptable Use Policy authoring</div><span class="tag">One-time deliverable</span></div>
+      <p class="tc-desc">Sold immediately after the assessment. A customized policy referencing the sanctioned tools, prohibited data classes, and — critically — an enforcement design. Never sell a policy without a control attached to it.</p>
+      <div class="tc-facts"><span><strong>Price:</strong> $1,000&ndash;$5,000</span><span><strong>Motion:</strong> "You have a policy for passwords. You have none for the fastest-spreading tool in your business."</span></div>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Managed AI Governance</div><span class="tag">Recurring MRR</span></div>
+      <p class="tc-desc">The recurring engine: ongoing enforcement, policy cascade, blocking of unsanctioned tools, identity-gated access, and a monthly usage/risk report the customer can hand to an auditor or insurer. Best packaged as a tier on an existing MSP contract rather than a standalone SKU.</p>
+      <div class="tc-facts"><span><strong>Price:</strong> ~$2&ndash;$8/seat/month</span><span><strong>Motion:</strong> "Your AUP is only a document until something enforces it."</span></div>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Insurance / compliance readiness</div><span class="tag">Sprint + recurring</span></div>
+      <p class="tc-desc">Triggered by a cyber-renewal date or an enterprise customer's security questionnaire. "If your application asks whether employees share data with AI systems, right now the honest answer is 'we don't know' — here's how we get you an answer you can support."</p>
+      <div class="tc-facts"><span><strong>Price:</strong> $2,500&ndash;$10,000 sprint; ISO 42001 $15K&ndash;$50K+</span></div>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">5</div><div class="tc-name">vCISO / compliance advisory retainer</div><span class="tag">Recurring retainer</span></div>
+      <p class="tc-desc">For firms that need security leadership but can't justify a full-time hire. The MSP market's own data backs the trend: Cynomi's 2025 benchmark found the share of MSPs and MSSPs offering vCISO services rose from 21% to 67% year over year.</p>
+      <div class="tc-facts"><span><strong>Price:</strong> $2,600&ndash;$15,000/month</span><span><strong>Buyer:</strong> 50&ndash;1,000 employee firms</span></div>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">6</div><div class="tc-name">Client training / enablement</div><span class="tag">Runs alongside every rung</span></div>
+      <p class="tc-desc">Short, role-based modules on what not to paste into public AI tools, with completion tracking. "Training completion records are exactly what your insurer and your auditor ask for."</p>
+      <div class="tc-facts"><span><strong>Price:</strong> $2&ndash;$5/user/month</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 11 -->
+<h2 id="section-11">11. Objection Handling</h2>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Objection</th><th>The reframe</th></tr></thead>
+<tbody>
+<tr><td>"Our staff isn't using AI."</td><td>The bet is on naming exactly how many are, before an audit — or a breach — does it for you. A large share of AI-using employees are on personal accounts, not sanctioned ones.</td></tr>
+<tr><td>"We already have DLP."</td><td>Traditional DLP watches for structured data — credit card numbers moving to a file-sharing site. It does not watch for a paragraph of client content pasted into a browser tab. That's exactly the gap the Purview browser extension exists to close.</td></tr>
+<tr><td>"Our firewall blocks the risky stuff."</td><td>ChatGPT, Claude, Gemini, and Perplexity are all trusted TLS endpoints categorized as productivity tools by every standard URL filter. A firewall has no reason to block any of them.</td></tr>
+<tr><td>"Our team is small — it's fine."</td><td>A 40-seat firm shows roughly the same statistical distribution of AI use as a 400-seat firm — it just has less resilience per incident when something goes wrong.</td></tr>
+<tr><td>"We'll deal with it after we turn on Copilot."</td><td>Then Copilot inherits every oversharing permission that already exists, and the customer's first real AI experience is AI surfacing content they didn't know was exposed. Show the value first — but gate it behind the governance work.</td></tr>
+<tr><td>"We'll just block everything."</td><td>Blocking without sanctioning pushes usage further underground, onto personal devices you can't see at all. Sanction one or two tools, monitor the rest, block only the highest-risk consumer apps.</td></tr>
+<tr><td>"An AUP is enough."</td><td>A policy with no enforcement behind it is a wall with no gate. Sell the policy with the control attached, every time.</td></tr>
+<tr><td>"We don't own Purview or Defender for Cloud Apps."</td><td>The Business Premium Purview Suite add-on is a fraction of the Copilot spend, and often discounted further when bundled with it. It powers the assessment today and governs Copilot tomorrow. See Section 6.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 12 -->
+<h2 id="section-12">12. Companion Assets Worth Building</h2>
+<p>Ten asset concepts worth productizing on top of this guide — each one shortens the sales cycle for a rung on the ladder in Section 10.</p>
+
+<div class="asset-index">
+  <div class="asset-item"><span class="ai-num">01</span><div><h4>Shadow AI Assessment Playbook</h4><p>A full week-by-week delivery method mapped to Microsoft's four-step model, with tool-configuration walkthroughs, a report template, and an executive-readout skeleton.</p><span class="ai-meta">Enables rung 1</span></div></div>
+  <div class="asset-item"><span class="ai-num">02</span><div><h4>AI App Enterprise Onboarding Matrix</h4><p>The living matrix in Section 8, expanded quarterly with SSO/SCIM detail, DPA availability, and data-training defaults per vendor.</p><span class="ai-meta">Enables rung 3</span></div></div>
+  <div class="asset-item"><span class="ai-num">03</span><div><h4>AI Acceptable Use Policy template</h4><p>A modular template — sanctioned-tools list, prohibited data classes, monitoring statement, enforcement steps, framework crosswalk.</p><span class="ai-meta">Rung 2</span></div></div>
+  <div class="asset-item"><span class="ai-num">04</span><div><h4>Executive read-out deck template</h4><p>Cover, exposure heatmap, top apps, top exposed users, business impact, remediation roadmap, licensing gap, timeline, appendix.</p><span class="ai-meta">Bridges rung 1 &rarr; 2&ndash;5</span></div></div>
+  <div class="asset-item"><span class="ai-num">05</span><div><h4>Partner-signal runbook</h4><p>The Section 9 method, turned into a weekly 30-minute routine that converts propensity data into a ranked call list.</p><span class="ai-meta">Front-loads rung 1</span></div></div>
+  <div class="asset-item"><span class="ai-num">06</span><div><h4>Fixed-fee SOW templates</h4><p>One per service line in Section 10, with deliverables and exclusions pinned so the assessment doesn't quietly become an unpaid Purview deployment.</p><span class="ai-meta">All rungs</span></div></div>
+  <div class="asset-item"><span class="ai-num">07</span><div><h4>Recurring QBR pack</h4><p>Monthly and quarterly cadence: AI usage summary, newly discovered apps, DLP incident summary, sanctioned-app health, license utilization, risk-register updates.</p><span class="ai-meta">Rungs 3&ndash;5</span></div></div>
+  <div class="asset-item"><span class="ai-num">08</span><div><h4>"Sanction, don't block" briefing</h4><p>The Section 7 material as a partner-branded one-pager. Converts the biggest objection into a three-minute pre-read that lands the meeting.</p><span class="ai-meta">Enables rungs 2&ndash;3</span></div></div>
+  <div class="asset-item"><span class="ai-num">09</span><div><h4>License uplift calculator</h4><p>Business Premium vs. Business Premium + Suites vs. E5, with the Shadow AI capability delta line by line.</p><span class="ai-meta">Enables every Copilot deal</span></div></div>
+  <div class="asset-item"><span class="ai-num">10</span><div><h4>Regulated-vertical addenda</h4><p>HIPAA / GLBA / SOC 2 / ISO 42001 / EU AI Act supplements to the base playbook, capturing the extra evidence requirements and where the premium sits.</p><span class="ai-meta">Rungs 1, 2, 4, 5</span></div></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 13 -->
+<h2 id="section-13">13. Where the Premium Sits — Regulated Verticals</h2>
+<p>Vertical-specific work in a regulated customer is genuine additional scope, not padding — and it's usually visible enough that the customer recognizes it as real. Community-observed pricing premiums of roughly 20&ndash;40% above generalist rates in these verticals reflect that extra work, not markup for its own sake.</p>
+
+<div class="tablewrap">
+<table>
+<thead><tr><th>Vertical</th><th>Framework</th><th>What's different</th></tr></thead>
+<tbody>
+<tr><td>Healthcare</td><td>HIPAA</td><td>PHI-specific sensitive-info-type tuning, a signed BAA for every sanctioned AI vendor, and an ePHI-specific incident-response overlay.</td></tr>
+<tr><td>Finance</td><td>GLBA, SOC 2</td><td>Client financial data classification, customer-identification data classes, and non-public information DLP.</td></tr>
+<tr><td>Legal</td><td>Privilege &amp; ethical walls</td><td>Attorney-work-product classification, matter-scoped access control, and ethical-wall enforcement wherever an AI agent could otherwise cross one.</td></tr>
+<tr><td>Public sector</td><td>Government / defense</td><td>Data-residency and sovereignty considerations; sanctioned-app selection narrows to vendors with a compliant government-cloud boundary.</td></tr>
+<tr><td>EU / global</td><td>EU AI Act, ISO 42001</td><td>Formal AI system inventory, risk classification, and human-oversight documentation — genuine implementation-grade compliance work.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 14 -->
+<h2 id="section-14">14. "It's Not a Big Deal" — And Why That's Wrong</h2>
+
+<div class="smb-reality">
+  <div class="sr-label">The objections you'll hear, and the honest answer to each</div>
+  <p><strong>"Nobody in our shop is doing this."</strong> Even a single unlicensed Copilot Chat user, or one hit in a two-week Defender for Cloud Apps scan, closes this objection in days, not weeks.</p>
+  <p><strong>"We already have DLP."</strong> DLP was built to watch structured data leave through a file share, not to watch a paragraph get pasted into a browser tab.</p>
+  <p><strong>"Our firewall blocks the risky stuff."</strong> Every major consumer AI assistant is a trusted, categorized productivity endpoint. Firewalls let it through by design.</p>
+  <p><strong>"We're too small to matter."</strong> Smaller firms show the same adoption pattern as large ones — with less resilience when something goes wrong.</p>
+  <p><strong>"We'll deal with it after Copilot is live."</strong> By then, Copilot has already inherited every oversharing permission in the tenant.</p>
+  <p><strong>"Blocking is the answer."</strong> Blocking without sanctioning drives use further underground, to devices and networks the partner can't see at all.</p>
+  <p><strong>"An AUP is enough."</strong> A policy with no enforcement mechanism behind it protects no one.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 15 -->
+<h2 id="section-15">15. The Partner's Non-Negotiables</h2>
+<div class="recap-grid">
+  <div class="recap-item"><span class="rn">01</span><h4>Discover before licensing</h4><p>The first paid conversation is Shadow AI discovery, not a Copilot quote.</p></div>
+  <div class="recap-item"><span class="rn">02</span><h4>Governance readiness is consumption readiness</h4><p>Any AI product a customer later turns on inherits whatever data hygiene already exists.</p></div>
+  <div class="recap-item"><span class="rn">03</span><h4>Keep the customer's preferred AI</h4><p>Sanction it. Don't block it. Bring it under Entra and Purview management instead.</p></div>
+  <div class="recap-item"><span class="rn">04</span><h4>Anchor to Microsoft's four-step model</h4><p>Discover, Block, Protect, Govern — every finding maps to a step.</p></div>
+  <div class="recap-item"><span class="rn">05</span><h4>Business Premium plus Suites, not a forced E5 upgrade</h4><p>The Copilot engine is the same; the Suite add-ons are the SMB-native governance path.</p></div>
+  <div class="recap-item"><span class="rn">06</span><h4>Sell the ladder, not the SKU</h4><p>Assessment &rarr; AUP &rarr; Managed Governance &rarr; Insurance readiness &rarr; vCISO. Every rung triggers the next.</p></div>
+  <div class="recap-item"><span class="rn">07</span><h4>Run it on yourself first</h4><p>Before selling a Shadow AI assessment, complete one on your own tenant.</p></div>
+  <div class="recap-item"><span class="rn">08</span><h4>Use your own signal data as the weekly call list</h4><p>Free-tier usage limits and weak security-maturity scores are the strongest openers you have.</p></div>
+  <div class="recap-item"><span class="rn">09</span><h4>A policy without a control isn't governance</h4><p>Never sell an AUP without an enforcement mechanism attached to it.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 16 -->
+<h2 id="section-16">16. Next Steps</h2>
+<p>What to build first, in rough priority order:</p>
+<ol>
+<li>Publish this guide as the standing Shadow AI reference page, and link it from every related asset on the site.</li>
+<li>Ship the <strong>License Uplift Calculator</strong> (companion asset 9) as an embedded, interactive tool.</li>
+<li>Turn the <strong>AI App Onboarding Matrix</strong> (Section 8) into a living page with a quarterly refresh cadence.</li>
+<li>Package the <strong>AUP template, executive read-out deck, QBR pack,</strong> and the <strong>six SOW templates</strong> as a downloadable, email-gated partner kit.</li>
+<li>Ship the <strong>"Sanction, Don't Block" briefing</strong> as an open, ungated download — it's the objection-handler most partners will forward inbound.</li>
+<li>Add a <strong>regulated-vertical addendum library</strong> as expandable subsections under each vertical in Section 13.</li>
+<li>Wire the <strong>partner-signal runbook</strong> (Section 9) as a partner-only page behind Partner Center authentication.</li>
+<li>Cross-link every asset to its named source — Chapple, Tenant Wizards, CIAOPS — so the practice stays grounded in named, checkable authority.</li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 17 -->
+<h2 id="section-17">17. Reference Library &amp; Further Reading</h2>
+<p>Every linked item below was checked at the time this guide was written. Product pages, pricing, and licensing tables change on Microsoft's own schedule — re-verify before quoting a customer. Items without a live link are cited by name only; confirm the current URL before publishing them externally.</p>
+
+<h3>Microsoft, official</h3>
+<ul class="reflist">
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/purview/deploymentmodels/depmod-data-leak-shadow-ai-intro" target="_blank" rel="noopener">Prevent data leak to shadow AI &mdash; Microsoft Purview deployment model</a></div><div class="rf-d">The official four-step Discover / Block / Protect / Govern architecture this guide is built around.</div></li>
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/purview/deploymentmodels/depmod-overview" target="_blank" rel="noopener">Microsoft Purview deployment models &mdash; overview</a></div><div class="rf-d">The full family of scenario-based models, including Secure and Govern Copilot Agents.</div></li>
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/purview/data-security-posture-management-application-card" target="_blank" rel="noopener">Data Security Posture Management (DSPM) for AI</a></div><div class="rf-d">The in-portal visibility surface for third-party AI app interactions and Copilot activity.</div></li>
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/purview/dlp-chrome-learn-about" target="_blank" rel="noopener">Microsoft Purview browser extension</a></div><div class="rf-d">Endpoint DLP extended into the browser tab, for Edge, Chrome, and Firefox.</div></li>
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/manage-generative-ai-apps" target="_blank" rel="noopener">Manage generative AI apps &mdash; Defender for Cloud Apps</a></div><div class="rf-d">The Cloud App Catalog's generative-AI category, sanctioning, and risk scoring.</div></li>
+<li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/entra/global-secure-access/concept-shadow-ai-discovery" target="_blank" rel="noopener">Shadow AI discovery &mdash; Microsoft Entra Internet Access</a></div><div class="rf-d">Network-layer detection of unsanctioned AI apps, ahead of app-level classification.</div></li>
+<li><div class="rf-t"><a href="https://www.microsoft.com/en-us/microsoft-365/business/additional-services-plans-and-pricing" target="_blank" rel="noopener">Microsoft 365 Business &mdash; additional services, plans, and pricing</a></div><div class="rf-d">Current pricing for the Defender and Purview Suite add-ons scoped to Business Premium. Confirm live pricing here before quoting.</div></li>
+<li><div class="rf-t"><a href="https://www.microsoft.com/en-us/microsoft-365-copilot/copilot-vs-chatgpt-enterprise" target="_blank" rel="noopener">Microsoft 365 Copilot vs. ChatGPT Enterprise</a></div><div class="rf-d">Microsoft's own comparison of grounding, permissions, and governance boundary.</div></li>
+</ul>
+
+<h3>MVP and community authority</h3>
+<ul class="reflist">
+<li><div class="rf-t"><a href="https://nikkichapple.com/govern-shadow-ai-microsoft-purview-defender-dspm/" target="_blank" rel="noopener">Nikki Chapple &mdash; How to govern shadow AI using Microsoft Purview, Defender, and DSPM</a></div><div class="rf-d">Source of the "control the apps / control the data" framing used in Section 3.</div></li>
+<li><div class="rf-t"><a href="https://nikkichapple.com/microsoft-purview-browser-extension-protect-ai/" target="_blank" rel="noopener">Nikki Chapple &mdash; Microsoft Purview browser extension: governing AI shadow IT</a></div></li>
+<li><div class="rf-t"><a href="https://tenantwizards.com/blog/shadow-ai-microsoft-365-purview-block/" target="_blank" rel="noopener">Danny Vorst / Tenant Wizards &mdash; Shadow AI in Microsoft 365: find and block it with Purview</a></div><div class="rf-d">A practitioner walkthrough of the same four-step model with configuration detail.</div></li>
+<li><div class="rf-t"><a href="https://blog.ciaops.com/2025/10/08/microsoft-defender-and-purview-suites-for-m365-business-premium-detailed-breakdown/" target="_blank" rel="noopener">Robert Crane / CIAOPS &mdash; Microsoft Defender and Purview Suites for M365 Business Premium</a></div><div class="rf-d">The detailed licensing breakdown behind Section 6. Verify against the live Microsoft pricing page above.</div></li>
+<li class="unlinked"><div class="rf-t">ShadowLock &mdash; State of Shadow AI (2026)</div><div class="rf-d">Community synthesis of Gartner, Microsoft, IBM, Cyberhaven, and Netskope research; source of the ~75% and $400K figures in Section 2. Treat as directional and re-confirm before quoting.</div></li>
+</ul>
+
+<h3>Research and benchmark data</h3>
+<ul class="reflist">
+<li><div class="rf-t"><a href="https://www.gallup.com/workplace/699689/ai-use-at-work-rises.aspx" target="_blank" rel="noopener">Gallup &mdash; AI use at work rises (2025)</a></div><div class="rf-d">Source for the AI-tool-preference figures in Section 2 — re-check the exact percentage in the current edition.</div></li>
+<li><div class="rf-t"><a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey &mdash; The State of AI (2025)</a></div><div class="rf-d">Source for the organizational AI-adoption figure.</div></li>
+<li><div class="rf-t"><a href="https://www.verizon.com/business/resources/reports/dbir/" target="_blank" rel="noopener">Verizon Data Breach Investigations Report</a></div><div class="rf-d">Source for the AI-bolstered breach-technique figure. Confirm the current edition's exact number before quoting.</div></li>
+<li><div class="rf-t"><a href="https://www.pagerduty.com/newsroom/shadow-ai-workplace-survey-2026/" target="_blank" rel="noopener">PagerDuty &mdash; 2026 shadow AI workplace survey</a></div><div class="rf-d">Source for the 66% policy-violation admission figure.</div></li>
+<li><div class="rf-t"><a href="https://cynomi.com/state-of-the-vciso-2025/" target="_blank" rel="noopener">Cynomi &mdash; State of the vCISO 2025</a></div><div class="rf-d">Source for the 21%&rarr;67% year-over-year vCISO-adoption figure in Section 10.</div></li>
+<li><div class="rf-t"><a href="https://www.kaseya.com/press-release/ai-emerges-as-the-key-to-scaling-msp-operations-as-growth-gets-harder/" target="_blank" rel="noopener">Kaseya &mdash; 2026 State of the MSP Report</a></div><div class="rf-d">48% of MSPs rank AI/automation as their #1 client priority for 2026; only 13% currently monetize it meaningfully — the gap this guide exists to close.</div></li>
+</ul>
+
+<div class="callout subtle">
+  <div class="callout-title">A note on sourcing</div>
+  <div class="callout-body"><p>Statistics with a live link above are attributed to the specific report that produced them. A handful of figures throughout this guide — the ~75% shadow-AI-use estimate, the $400K exposure benchmark, and the SOW pricing ranges in Sections 4 and 10 — are community or editorial estimates rather than primary survey data. They're useful for planning and framing; treat them as directional in front of a customer, and lead with the primary-sourced numbers when precision matters.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<div style="text-align:center;padding:22px 0;color:#6b7280;font-size:.85rem;">
+  <p style="margin:0;">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, TD SYNNEX &nbsp;&middot;&nbsp; <a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
+  <p style="margin:6px 0 0;">Re-verify pricing, licensing tables, and product names before re-delivering this content &mdash; this space moves quickly.</p>
+</div>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
