@@ -472,7 +472,7 @@ footer.pagefoot a { color:#6b7280; }
             <h2>What you are about to do</h2>
             <div class="wc-sub">Two minutes of reading, then seven questions.</div></div></div>
 
-          <p class="intro-lede">This runs a Cowork cost conversation end to end &mdash; the way you would run it sitting next to the customer. You answer a handful of short questions, <b>one screen at a time</b>, with the words to say out loud printed beside every field. Nothing is totted up in front of you as you go, on purpose: the customer should answer honestly before anyone sees a number. At the end you get <b>one page</b> &mdash; the figure, the arithmetic behind it, what to sell them, and the talk track for the rest of the meeting.</p>
+          <p class="intro-lede">This works out what Cowork actually costs a specific customer &mdash; usually one you already know, with usage numbers you already have. You answer a handful of short questions, <b>one screen at a time</b>, with the words to say out loud printed beside every field for the ones worth confirming with them directly. At the end you get <b>one page</b> &mdash; the figure, the arithmetic behind it, what to sell them, and the talk track for the rest of the meeting.</p>
 
           <div class="introsec">
             <h3>When a partner reaches for this</h3>
@@ -2655,7 +2655,7 @@ footer.pagefoot a { color:#6b7280; }
 
   function renderBillOut(r) {
     var c = r.ctx, d = c.discount;
-    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes. Take that number to your distributor.</p>';
+    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes. Take that number to your TD SYNNEX sales rep.</p>';
     var discLine = d.exact
       ? '<p>At that volume the published tier is <b>' + d.pct + '%</b>.</p>'
       : '<p>Microsoft does not publish P3 tier breakpoints. Your volume sits <b>between ' + d.bracket[0] + '% and ' + d.bracket[1] + '%</b>, modelled at <b>' + d.pct.toFixed(1) + '%</b>.</p>';
@@ -2952,7 +2952,7 @@ footer.pagefoot a { color:#6b7280; }
     },
     step6: function (c) {
       return 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
-        num(Math.round(c.cccuRequired)) + ' CCCU</b> — that is the number to take to your distributor, whatever discount they quote.';
+        num(Math.round(c.cccuRequired)) + ' CCCU</b> — that is the number to take to your TD SYNNEX sales rep, whatever discount they quote.';
     },
     step7: function (c) {
       if (!c.governanceAsked)
