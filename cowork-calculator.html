@@ -368,11 +368,18 @@ body.showmath .deriv { display:block; }
 .whybox p { font-size:.86rem; color:#374151; line-height:1.65; margin:0 0 8px; }
 .whybox p:last-child { margin-bottom:0; }
 
+.bridge-wrap { overflow-x:auto; margin:14px 0 10px; }
 .bridge-t { border-collapse:collapse; font-size:.86rem; margin:14px 0 10px; }
+.bridge-wrap .bridge-t { margin:0; min-width:100%; }
 .bridge-t td { padding:5px 16px 5px 0; color:#374151; white-space:nowrap; }
+.bridge-t th { padding:0 16px 6px 0; text-align:left; font-size:.7rem; font-weight:700; text-transform:uppercase;
+               letter-spacing:.06em; color:#6b7280; border-bottom:1px solid var(--border); white-space:nowrap; }
+.bridge-t th.n { text-align:right; }
 .bridge-t td.n { font-family:'Consolas','Monaco',monospace; text-align:right; }
+.bridge-t .mini { display:block; font-family:'Consolas','Monaco',monospace; font-size:.72rem; color:#9ca3af; margin-top:2px; }
 .bridge-t tr.tot td { border-top:1px solid #c5dde3; font-weight:700; color:var(--navy); padding-top:9px; }
 .bridge-t tr.eff td { color:#92400e; }
+.bridge-t tr.hot td { color:#92400e; font-weight:600; }
 
 .licgrid { display:grid; grid-template-columns:1fr; gap:24px; align-items:start; }
 @media (min-width:920px){ .licgrid { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:32px; } }
@@ -2396,38 +2403,89 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   /* ═══ STEP 5 · the bridge from volume to price ═══ */
+  /* Every group with seats on it, not just the largest.
+
+     This table used to work through one persona — whichever held the most
+     seats — and label its bottom line "Cost per person, per month". Two things
+     were wrong with that. The label read as the account's number when it was
+     one group's, and the groups are not close to each other: on stock settings
+     they run from $82.25 to $228.00 a person on identical prices. Hiding that
+     spread hid the single most useful thing this screen has to say, which is
+     that who you switch on matters more than what a task costs.
+
+     It also multiplied by a hardcoded $0.01. Every other dollar figure in the
+     tool follows the rate set on step 0, so a partner reselling the meter at
+     their own rate was shown their cost basis under a label that said cost per
+     person. The rate is now creditUsd(state) and it is named underneath. */
   function renderBridge(r) {
     var el = $('bridgeBlock'); if (!el) return;
-    var TC = state.tierCredits, best = -1, idx = 0;
-    state.personas.forEach(function (x, i) {
-      var seats = r.ctx.effSeatsByPersona[i] || 0;
-      if (seats > best) { best = seats; idx = i; }
-    });
-    var p = state.personas[idx];
-    var raw = p.light * TC.light + p.medium * TC.medium + p.heavy * TC.heavy;
-    var eff = raw * r.ctx.effortMult;
-    function row(label, count, price) {
-      return '<tr><td>' + count + ' ' + label + (count === 1 ? '' : 's') + ' a month</td>' +
-             '<td class="n">&times; ' + num(price) + ' credits</td>' +
-             '<td class="n">' + num(count * price) + '</td></tr>';
+    var TC = state.tierCredits, c = r.ctx, CU = E.creditUsd(state);
+    // effortMult and modelMult both scale every task, so they travel together.
+    var scale = c.effortMult * c.modelMult;
+
+    var rows = state.personas.map(function (p, i) {
+      var raw = p.light * TC.light + p.medium * TC.medium + p.heavy * TC.heavy;
+      return { name:p.name, seats:c.effSeatsByPersona[i] || 0, p:p, raw:raw, eff:raw * scale };
+    }).filter(function (x) { return x.seats > 0; });
+
+    if (!rows.length) {
+      el.innerHTML = '<div class="callout"><div class="callout-title">How this screen joins to the last one</div>' +
+        '<div class="callout-body"><p>Nobody is allocated to a group yet, so there is nothing to price. ' +
+        'Go back to step 4 and put seats against at least one group.</p></div></div>';
+      return;
     }
+
+    // The spread is the point, so mark the two ends of it.
+    var hi = rows[0], lo = rows[0];
+    rows.forEach(function (x) { if (x.eff > hi.eff) hi = x; if (x.eff < lo.eff) lo = x; });
+
+    var effHead = '<th class="n">at ' + esc(c.effortLabel) + ' effort<span class="mini">&times; ' +
+      scale.toFixed(3) + (c.modelMult !== 1 ? ' incl. model' : '') + '</span></th>';
+
+    var body = rows.map(function (x) {
+      var mark = rows.length > 1 && (x === hi || x === lo) ? ' class="hot"' : '';
+      return '<tr' + mark + '>' +
+        '<td><b>' + esc(x.name) + '</b>' +
+          '<span class="mini">' + x.p.light + '&times;' + num(TC.light) + ' + ' +
+            x.p.medium + '&times;' + num(TC.medium) + ' + ' +
+            x.p.heavy + '&times;' + num(TC.heavy) + '</span></td>' +
+        '<td class="n">' + num(x.seats) + '</td>' +
+        '<td class="n">' + num(Math.round(x.raw)) + '</td>' +
+        '<td class="n">' + num(Math.round(x.eff)) + '</td>' +
+        '<td class="n">' + usd(x.eff * CU, 2) + '</td>' +
+      '</tr>';
+    }).join('');
+
     el.innerHTML =
       '<div class="callout"><div class="callout-title">How this screen joins to the last one</div><div class="callout-body">' +
       '<p>Step 4 counted <b>how many</b> tasks each person runs. Nothing there was a price. ' +
       'This screen sets <b>what one task costs in credits</b> &mdash; and the effort level, which scales every task at once. ' +
       'Multiply the two and you have the bill.</p>' +
-      '<p style="margin-top:12px;font-weight:600;color:var(--navy);">Your ' + esc(p.name) + ' line, worked through:</p>' +
-      '<table class="bridge-t">' +
-        row('light task', p.light, TC.light) +
-        row('medium task', p.medium, TC.medium) +
-        row('heavy task', p.heavy, TC.heavy) +
-        '<tr class="tot"><td>Credits per person, per month</td><td class="n"></td><td class="n">' + num(Math.round(raw)) + '</td></tr>' +
-        '<tr class="eff"><td>&hellip;at ' + esc(r.ctx.effortLabel) + ' effort' +
-          (r.ctx.effortMult === 1 ? ' (the default)' : '') + '</td><td class="n">&times; ' + r.ctx.effortMult.toFixed(3) +
-          '</td><td class="n">' + num(Math.round(eff)) + '</td></tr>' +
-        '<tr class="tot"><td>Cost per person, per month</td><td class="n">&times; $0.01</td><td class="n">' + usd(eff * 0.01, 2) + '</td></tr>' +
-      '</table>' +
-      '<p style="font-size:.82rem;color:#6b7280;margin:0;">The left column came from Step 4 and is fixed here. Everything you change below is the middle column.</p>' +
+      '<p style="margin-top:12px;font-weight:600;color:var(--navy);">' +
+        (rows.length === 1 ? 'Your one group' : 'All ' + rows.length + ' of your groups') + ', worked through:</p>' +
+      '<div class="bridge-wrap"><table class="bridge-t">' +
+        '<thead><tr><th>Group<span class="mini">light + medium + heavy</span></th>' +
+          '<th class="n">Users</th><th class="n">Credits per person</th>' + effHead +
+          '<th class="n">Cost per person</th></tr></thead><tbody>' + body +
+        '<tr class="tot"><td>Whole account</td>' +
+          '<td class="n">' + num(c.basisSeats) + '</td>' +
+          '<td class="n"></td>' +
+          '<td class="n">' + num(c.monthlyCredits) + '</td>' +
+          '<td class="n">' + usd(c.monthlyCowork) + '</td></tr>' +
+      '</tbody></table></div>' +
+      (rows.length > 1 && hi !== lo
+        ? '<p style="font-size:.82rem;color:#6b7280;margin:0 0 8px;">Same prices, same effort level: one ' +
+          esc(hi.name) + ' costs <b>' + usd(hi.eff * CU, 2) + '</b> a month against <b>' + usd(lo.eff * CU, 2) +
+          '</b> for a ' + esc(lo.name) +
+          (lo.eff > 0 ? ' — a <b>' + (hi.eff / lo.eff).toFixed(1) + '&times;</b> spread' : '') +
+          '. Which of them you switch on moves this bill further than anything on this screen does.</p>'
+        : '') +
+      '<p style="font-size:.82rem;color:#6b7280;margin:0;">The task counts came from step 4 and are fixed here. ' +
+      'Everything you change below is the credit price of a task, and the effort level that scales all of them. ' +
+      'Cost is at <b>' + esc(c.creditRateLabel) + '</b> a credit &mdash; ' +
+      (c.sellMode && CU !== E.CONST.CREDIT_USD
+        ? 'your sell rate, set on step 0. Microsoft meters it at $0.01.'
+        : 'Microsoft\u2019s published rate.') + '</p>' +
       '</div></div>';
   }
 
