@@ -948,6 +948,127 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-8">8. The Consumption Model, and How You Manage It</h2>
 
+<p><strong>Phase 4</strong> of the arc &mdash; the one partners skip. This section resolves the margin trap <a href="#section-2">&sect;2</a> opened with, and that is its whole job. It does not restate the AgentOps commercial architecture; the tiers, the components and what to charge for them are in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a>.</p>
+
+<h3>Get the vocabulary right first</h3>
+
+<p>The billing unit is the <strong>Copilot Credit</strong>. Capacity is pooled at the tenant and allocable per environment. Channel material still talking about &ldquo;messages&rdquo; is working from pre-rename documentation &mdash; though the older vocabulary survives inside Microsoft's own tables, where the tenant billing capability column still reads &ldquo;prepaid message packs.&rdquo; The terms map; the material around them usually does not.</p>
+
+<!-- FIGURE C-4 — the credit meter and the 125% cliff. Authored in Part C. -->
+
+<h3>The rate card</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Agent feature</th><th>Billing rate</th><th>Used by a Microsoft 365 Copilot licensed user</th></tr></thead>
+  <tbody>
+    <tr><td>Classic answer</td><td>1 Copilot Credit</td><td>No charge</td></tr>
+    <tr><td>Generative answer</td><td>2 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td><strong>Agent action</strong></td><td><strong>5 Copilot Credits</strong></td><td>No charge (Computer-Using Agents excluded)</td></tr>
+    <tr><td>Tenant graph grounding for messages</td><td>10 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Agent flow actions, per 100 actions</td><td>13 Copilot Credits</td><td>No charge, only via the &ldquo;When an agent calls the flow&rdquo; trigger</td></tr>
+    <tr><td>Text and generative AI tools &mdash; basic, per 10 responses</td><td>1 Copilot Credit</td><td>No charge</td></tr>
+    <tr><td>Text and generative AI tools &mdash; standard, per 10 responses</td><td>15 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Text and generative AI tools &mdash; premium, per 10 responses</td><td>100 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Content processing tools, per page</td><td>8 Copilot Credits</td><td>No charge</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Correct the folklore before you quote</div>
+  <div class="callout-body"><p>Several 2026 channel blogs state that an autonomous agent action costs <strong>25 or more credits</strong>. <strong>Microsoft Learn says an agent action is 5.</strong> A partner budgeting on the blog number over-quotes the run rate by a factor of five, loses on price, and never finds out why.</p><p>Check the rate card, not the commentary, and check it again before each quote &mdash; the page carries an ms.date and a 180-day update cycle for a reason.</p></div>
+</div>
+
+<h3>Two things that make the arithmetic non-obvious</h3>
+
+<p><strong>One interaction can bill on several meters at once.</strong> Microsoft's own example: a tenant-graph-grounded agent may spend <strong>12 credits on a single complex prompt</strong> &mdash; 10 for the grounding, 2 for the generative answer. Nobody quoting per-conversation gets this right by intuition.</p>
+
+<p><strong>Reasoning models bill twice.</strong> When an agent uses a reasoning-capable model, Copilot Studio bills the <em>feature rate</em> for the operation <strong>plus</strong> the premium text-and-generative-AI-tools rate for the reasoning model's token usage. Swapping in a reasoning model is a pricing decision disguised as a quality decision, and it is the single biggest silent cost driver in the platform.</p>
+
+<h3>Overage enforcement &mdash; the thing that will burn a partner</h3>
+
+<p>This is not a billing footnote. It is a service-availability event with no user-facing warning, and it belongs in the managed-service agreement.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th></th><th>Custom agents</th><th>Agent flows</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Trigger</strong></td><td><strong>125%</strong> of prepaid capacity</td><td>Prepaid capacity fully consumed (100%)</td></tr>
+    <tr><td><strong>What happens</strong></td><td><strong>Custom agents are disabled.</strong> An ongoing conversation is not interrupted; every subsequent attempt to invoke the agent is rejected</td><td>New flow runs cannot start. Runs already in progress complete. <strong>The agent remains available for everything else</strong></td></tr>
+    <tr><td><strong>Who is told</strong></td><td>Email to the tenant&rsquo;s designated administrator, plus a post in the Power Platform admin center</td><td>Flow authors see a design-time warning in the Copilot Studio designer</td></tr>
+    <tr><td><strong>What the user sees</strong></td><td>&ldquo;There is a billing issue.&rdquo; or &ldquo;This agent is currently unavailable. It has reached its usage limit.&rdquo;</td><td>Nothing obvious. The agent still answers &mdash; it just stops doing things</td></tr>
+    <tr><td><strong>Reset</strong></td><td>When capacity is increased or reset</td><td>Monthly, when prepaid credits renew</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read the notification row and the user row together. <strong>The people who find out first are the customer's users, and the way they find out is the agent breaking.</strong> The admin gets an email; nobody is watching that mailbox at the moment it matters. If a partner is selling a managed service over this platform, detecting the 125% event before the customer does is a large part of what they are actually being paid for.</p>
+
+<p>And the flow column is worse in one specific way: <strong>a partial failure is harder to detect than a dead one.</strong> The agent answers normally and silently stops completing actions. Nobody raises a ticket for an agent that is still talking.</p>
+
+<div class="callout">
+  <div class="callout-title">The day-one control almost nobody sets</div>
+  <div class="callout-body"><p><strong>Per-agent monthly consumption limits</strong>: Power Platform admin center &rarr; <strong>Licensing</strong> &rarr; <strong>Copilot Studio</strong> &rarr; <strong>Manage Agents</strong>. Microsoft's own framing is that these cap usage <em>before</em> enforcement is triggered.</p><p>It costs nothing, takes minutes, and converts an uncontrolled tenant-wide kill switch into a per-agent budget. Set it during phase 4, on every agent, before launch. Note the escape hatch as well: pay-as-you-go environments are exempt from enforcement entirely, because overage bills to the linked Azure subscription instead.</p></div>
+</div>
+
+<div class="srcline">Source for the rate card, the reasoning-model double meter, the 12-credit example, the enforcement thresholds, the exact end-user messages and the per-agent cap: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Microsoft Learn &mdash; Billing rates and management</a> (ms.date 3 August 2026).</div>
+
+<h3>The recurring service &mdash; this is the resolution</h3>
+
+<p>Microsoft publishes an official <strong>Copilot Studio agent usage estimator</strong> and points to it from the billing page. Use it. But understand what it can and cannot be: an estimate built from agent type, traffic, orchestration, knowledge and tools, made against a rate card where a single prompt can touch three meters and a model swap can double the bill.</p>
+
+<p><strong>That gap between the estimate and the invoice is not a flaw to apologise for. It is the service.</strong></p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Estimate</div><div class="tc-tag">phase 4, before the SOW</div></div>
+      <p class="tc-desc">Run the estimator against the actual design &mdash; the harness, the orchestration mode, the knowledge sources, the tools. Produce a forecast the customer has seen and signed off, not a number they discover later.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Cap</div><div class="tc-tag">before launch, every agent</div></div>
+      <p class="tc-desc">Set the per-agent monthly limit in the admin center. This is the control that turns a possible outage into a known ceiling, and it is the one most partners never touch.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Monitor</div><div class="tc-tag">recurring</div></div>
+      <p class="tc-desc">Consumption details per environment in the admin center; per-agent consumption on the agent&rsquo;s Monitor page. Watch the trend, not the total &mdash; the 125% event is a slope, and it is visible weeks before it lands.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">True-up</div><div class="tc-tag">monthly, and it is billable</div></div>
+      <p class="tc-desc">Reconcile forecast against actual, reallocate capacity between environments, adjust the caps, and tell the customer what changed and why. This is a recurring deliverable with an artefact attached &mdash; which is exactly what a flat fee over a metered cost base was missing.</p>
+    </div>
+  </div>
+</div>
+
+<p><strong>Four steps, recurring, tool-supported, and every one of them is labour and judgement rather than a licence resale.</strong> That is the answer to <a href="#section-2">&sect;2</a>'s margin trap: you do not fix a metered cost base by pricing around it, you fix it by selling the management of the meter.</p>
+
+<h3>The build-burn clause</h3>
+
+<p>On the GitHub Copilot harness, in Microsoft's words:</p>
+
+<blockquote>Billing starts when you start building. Unlike the standard harness, which starts billing after publish, the GitHub Copilot harness charges credits from the moment you start building. Experiences such as creating an automated solution with natural language, previewing and testing the agent, and generating and creating agent evaluations all consume credits.<span class="attr">Microsoft Learn &mdash; Overview of usage-based billing (GitHub Copilot harness), ms.date 18 August 2026</span></blockquote>
+
+<p>Read that as a partner. <strong>On this harness your own development, testing and QA consume the customer's credits, before anything is published and before anything works.</strong> Every SOW that selects the GitHub Copilot harness needs a clause naming who funds development consumption and a cap on it. Almost none in the channel currently have one.</p>
+
+<p>This guide names the clause and the cap. <strong>It does not name a fee</strong> &mdash; what to charge is <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">the revenue runway's</a> question, not this one.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-2</span> Open tenant test &mdash; how big is the build burn?</div>
+  <p>Microsoft documents <em>that</em> pre-publish activity consumes credits. <strong>Nobody has published how much.</strong> Without a number, the clause above is a warning rather than a negotiating position, and a partner cannot tell whether the honest answer is &ldquo;a rounding error, absorb it&rdquo; or &ldquo;a material line, cap it at a stated figure.&rdquo;</p>
+  <p class="u-settle">What would settle it: build one trivial agent on the GitHub Copilot harness in an isolated environment, do a normal amount of previewing, testing and evaluation, and read total credits consumed on the agent&rsquo;s Monitor page before publishing it. One afternoon converts a warning into a number.</p>
+</div>
+
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
@@ -957,6 +1078,95 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-9">9. Measuring It</h2>
 
+<p><strong>Phase 2</strong> of the arc, and it appears here &mdash; before the build sections rather than after them &mdash; for one reason: <strong>the baseline has to be captured before anything is built.</strong> It cannot be added retroactively, and a partner who reaches the end of a build and starts thinking about measurement has already lost the argument they were going to need at renewal.</p>
+
+<p>The good news is larger than most partners realise. <strong>Microsoft has already published the outcome formula.</strong> You do not have to defend a home-made ROI model in front of a sceptical finance person, because the model is Microsoft's, the defaults are sourced, and the report computes it.</p>
+
+<h3>Four value drivers, each with Microsoft&rsquo;s own pricing formula</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Value driver</th><th>What it measures</th><th>How to price it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Efficiency</strong></td><td>Productive hours your team gets back, reinvested in higher-value work</td><td>Productive hours returned &times; fully loaded productive-hour value</td></tr>
+    <tr><td><strong>Quality</strong></td><td>Error reduction, consistency and compliance</td><td>(Error rate before &minus; error rate after) &times; volume &times; cost per error</td></tr>
+    <tr><td><strong>Revenue</strong></td><td>Top-line lift from retained, expanded or new business</td><td>Conversion or deflection delta &times; volume &times; unit revenue &times; <strong>attribution discount</strong></td></tr>
+    <tr><td><strong>Strategic</strong></td><td>Decision velocity, employee confidence, optionality and resilience</td><td>Option premium on capability + retention value of talent + resilience value</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Do not skip past the attribution discount</div>
+  <div class="callout-body"><p>It is the last term in the revenue formula, and it is <strong>Microsoft conceding that attribution is contestable</strong> &mdash; in its own published pricing method, before anyone argues about it.</p><p>Copy that discount into the engagement rather than defending a clean attribution you cannot support. Agreeing the discount up front, with the sponsor, converts the hardest conversation at renewal into a parameter that was settled in phase 2.</p></div>
+</div>
+
+<h3>Agent Assisted Hours &mdash; the published formula</h3>
+
+<p>For conversational agents:</p>
+
+<blockquote>Agent Assisted Hours = (Knowledge references + Weighted sessions without knowledge references) &times; Time savings multiplier &divide; 60<span class="attr">Microsoft Learn &mdash; Measure the impact of your agents</span></blockquote>
+
+<ul>
+  <li>Each knowledge source reference counts once and is multiplied by the time savings multiplier.</li>
+  <li>Sessions without knowledge references are weighted by outcome: <strong>resolved counts as 1.0, escalated or abandoned counts as 0.7.</strong></li>
+  <li>The default time savings multiplier is <strong>6 minutes</strong>, sourced to Microsoft research on information retrieval tasks.</li>
+  <li><strong>Agent Assisted Value = Agent Assisted Hours &times; hourly rate.</strong> The default hourly rate is <span class="prov prov-ms">MS</span> <strong>$72</strong>, based on US Bureau of Labor Statistics data on employer costs for employee compensation, and it is editable in the report's calculator.</li>
+</ul>
+
+<p>Microsoft's own worked example runs 10,000 engaged sessions in a month to <strong>1,440 hours per month</strong> of returned capacity. At the default rate that is a six-figure monthly number and a seven-figure annual one &mdash; but the hours are the durable figure, because the rate is the customer's to set.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The commercial consequence</div>
+  <div class="callout-body"><p><strong>Whoever configures the hourly rate and the multipliers owns the renewal conversation.</strong></p><p>Those constants are not administrative trivia. They decide what number appears on the sponsor's slide every quarter, and setting them is a defensible, recurring, billable piece of judgement work performed inside Microsoft's own report &mdash; not a spreadsheet the partner has to defend line by line.</p></div>
+</div>
+
+<h3>The three failure patterns &mdash; and the slide they retire</h3>
+
+<p>Microsoft names three reasons the value story weakens after launch. This is the highest-value short passage on the page, because all three are things partners currently do.</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-h">1 &middot; Measurement that stops at pilot</div>
+    <p class="card-b">Instrumentation is strong during the pilot, then drifts as the agent moves to production. Microsoft&rsquo;s fix: <strong>embed measurement in the deployment workflow itself</strong>, so every production agent keeps emitting the signals the review depends on.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">2 &middot; Activity that doesn&rsquo;t tie to outcomes</div>
+    <p class="card-b">Sessions and user counts show usage; they are not value. Every KPI has to trace back to one of the four value drivers, or it is decoration.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">3 &middot; The time-savings trap</div>
+    <p class="card-b"><strong>&ldquo;Claiming value based on theoretical time savings alone undermines credibility.&rdquo;</strong> Build a chain of evidence from adoption, through operational KPIs, to business outcomes.</p>
+  </div>
+</div>
+
+<p>The third one deserves to be said plainly, because it is aimed squarely at the channel's current pitch. <strong>The &ldquo;X hours per week &times; headcount &times; salary&rdquo; slide is the thing Microsoft is warning against</strong>, and a partner can now retire it with a vendor citation rather than an opinion. That is a much easier conversation internally than arguing about it on instinct.</p>
+
+<div class="srcline">Source for the four value drivers, the AAH formula and its constants, the session weighting, and the three failure patterns: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Microsoft Learn &mdash; Measure the impact of your agents</a> (ms.date 4 June 2026). The default hourly rate is Microsoft&rsquo;s own, sourced by Microsoft to <a href="https://www.bls.gov/news.release/ecec.t04.htm" target="_blank" rel="noopener">US BLS Employer Costs for Employee Compensation</a>, and registered in this site&rsquo;s fact ledger as F-154.</div>
+
+<h3>Where each metric is actually read</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Value driver</th><th>Metrics</th><th>Where to read them</th></tr></thead>
+  <tbody>
+    <tr><td>Efficiency</td><td>Hours saved, Agent Assisted Hours, Agent Assisted Value, cycle time, touchless rate, cost per transaction</td><td>Copilot Studio Savings calculator; Copilot Studio agents report (Viva Insights)</td></tr>
+    <tr><td>Quality</td><td>Resolution rate, first-contact resolution, escalation rate, abandon rate, groundedness, instruction-following score</td><td>Copilot Studio Analytics; Copilot Agent Kit rubrics</td></tr>
+    <tr><td>Revenue</td><td>Conversion lift, retention delta, cross-sell rate, advisor capacity</td><td>Copilot business impact report (Viva Insights)</td></tr>
+    <tr><td>Strategic</td><td>New capabilities shipped, workflows redesigned, employee sentiment on AI, talent signals</td><td>Copilot Studio custom metrics; Viva Glint Copilot Impact Survey</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Microsoft also pairs a leading and a lagging indicator per driver and reviews them <strong>quarterly</strong>. That cadence is not incidental &mdash; it is the same 90-day rhythm that <a href="#section-10">&sect;10</a> shows Microsoft prescribing for the whole programme, and together they are a managed-service contract shape written by the vendor.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-4</span> Open tenant test &mdash; can an SMB actually reach these reports?</div>
+  <p>Several of the surfaces above live in <strong>Viva Insights advanced and analyst templates</strong> &mdash; the Copilot Studio agents report and the Copilot business impact report among them. <strong>Whether they are reachable in a Microsoft 365 Business Premium tenant, and what additional licensing they require, is not established here.</strong> If they are not reachable, the formula still stands but the partner computes it by hand from Copilot Studio Analytics, which is more work and a weaker artefact.</p>
+  <p>Also unconfirmed: whether the default hourly rate and the time-savings multipliers are editable in an SMB tenant, which is the difference between owning the renewal conversation and watching a default number appear.</p>
+  <p class="u-settle">What would settle it: open the Copilot Studio agents report in a Business Premium tenant. Record whether it loads, what licence it demands, and whether the calculator on the Agent Assisted Value card accepts a changed rate.</p>
+</div>
+
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
@@ -965,6 +1175,154 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- Part B · B-10 · gaps 9, 10 · figure C-5 · the title section -->
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-10">10. The Agent Is Never Done</h2>
+
+<p><strong>Phase 6</strong> of the arc, and the claim the page is named after. It is not a sales position invented by this guide. <strong>Microsoft says it, in four separate places, none of which is a marketing page</strong> &mdash; and two of the ten security risks in <a href="#section-6">&sect;6</a> are failures that cannot exist until time has passed.</p>
+
+<p>The argument that drift justifies a retainer is already made in <a class="docref" href="cpbops.html#s4">the Agent Build Engagement Worklist</a>. This section does not re-derive it. It supplies what neither that worklist nor the playbook carries: <strong>a taxonomy of how an agent ages, and a register of what fails, how you would see it, and who owns it.</strong> Both of those describe activity; neither describes failure detection.</p>
+
+<!-- FIGURE C-5 — six drifts mapped to detection surface and free tool. Authored in Part C. -->
+
+<h3>Microsoft&rsquo;s own support for the thesis, in four places</h3>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">The lifecycle has no terminal state</div><div class="tc-tag">agent development lifecycle</div></div>
+      <p class="tc-desc">Five phases: discovery, experimentation, build, deploy, and <strong>operational steady state</strong> &mdash; defined as continuously monitoring, evaluating and adjusting <em>&ldquo;to maintain operability standards as business requirements and underlying technologies evolve.&rdquo;</em> <strong>There is no &ldquo;complete&rdquo; phase.</strong> The lifecycle ends in a state, not an event.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Microsoft prescribes a recurring rhythm</div><div class="tc-tag">measure the impact of your agents</div></div>
+      <p class="tc-desc"><em>&ldquo;Operate an expansion rhythm, treating the program as recurring quarterly work. Pick a new high-volume workflow, build or configure the agent, measure against baseline for 90 days, review with the sponsor, and decide whether to scale it or retire it.&rdquo;</em> <strong>A 90-day measurement window, a sponsor review and a scale-or-retire decision is a recurring-revenue contract shape written by the vendor.</strong></p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Treating Responsible AI as a one-time review is a named anti-pattern</div><div class="tc-tag">agentic AI maturity model</div></div>
+      <p class="tc-desc"><em>&ldquo;AI systems change over time as prompts, data, and usage patterns evolve. Bias, misuse, and trust drift typically appear after go-live, not before. Teams are unprepared when issues surface and revert to reactive shutdowns.&rdquo;</em> Microsoft names the resulting behaviour the <strong>&ldquo;panic and switch things off&rdquo;</strong> response pattern.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Drift is named in the build guidance itself</div><div class="tc-tag">agent development lifecycle</div></div>
+      <p class="tc-desc"><em>&ldquo;Minimize the time between experimentation and build phases to reduce the risk of model or data drift affecting agent performance.&rdquo;</em> And on the free proof of concept much of the channel gives away: experimentation <em>&ldquo;must be grounded on real-world data sets and current models rather than synthetic or limited test data. Proof of concept ideation using synthetic data increases the risk of agents not performing as expected in production environments.&rdquo;</em></p>
+    </div>
+  </div>
+</div>
+
+<div class="srcline">Sources: <a href="https://learn.microsoft.com/en-us/agents/architecture/deployment-lifecycle" target="_blank" rel="noopener">Microsoft Learn &mdash; Agent development lifecycle</a> (ms.date 6 July 2026); <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Measure the impact of your agents</a> (ms.date 4 June 2026); <a href="https://learn.microsoft.com/en-us/agents/adoption-maturity-model/maturity-model-security-governance" target="_blank" rel="noopener">Agentic AI maturity model &mdash; AI governance and security</a> (ms.date 31 March 2026).</div>
+
+<h3>Table 1 &mdash; the six ways an agent ages</h3>
+
+<p>A taxonomy is only useful if each entry comes with a way of seeing it. The third column is the one that turns this from a slide into a service.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Drift</th><th>What actually changes</th><th>How you detect it</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Data drift</strong></td>
+      <td>The grounding corpus ages. Content is moved, renamed, superseded or archived; the agent keeps citing it</td>
+      <td>Source-authority review against the twenty-five sites; citation analysis in Copilot Studio Analytics; groundedness scored against a rubric</td>
+    </tr>
+    <tr>
+      <td><strong>Model drift</strong></td>
+      <td>The model underneath the agent changes. Microsoft names model drift as a risk in its own build guidance &mdash; and the customer does not choose the version</td>
+      <td>A regression run of the golden prompt set on a schedule. <strong>This is the one that has no alert</strong>, so it has to be a calendar item</td>
+    </tr>
+    <tr>
+      <td><strong>Connector drift</strong></td>
+      <td>The agent is only as good as what it reaches through, and connectors, APIs and MCP tools change under it</td>
+      <td>Agent Review Tool anti-pattern scan; DLP policy review; action failure rates in the Agent Insights Hub</td>
+    </tr>
+    <tr>
+      <td><strong>Permission drift</strong></td>
+      <td>Tenant ACLs move. Sharing scope, credential mode or authentication gets changed by a maker after go-live</td>
+      <td>Agent Inventory re-run against the <a href="#section-6">&sect;6</a> baseline &mdash; a diff, not a fresh audit</td>
+    </tr>
+    <tr>
+      <td><strong>Process drift</strong></td>
+      <td>The business changes the workflow the agent encodes. <strong>The agent does not know, and nothing errors</strong></td>
+      <td>Only the sponsor review catches this. It is why the 90-day cadence has a human in it</td>
+    </tr>
+    <tr>
+      <td><strong>Cost drift</strong></td>
+      <td>Volume grows, or a reasoning model is swapped in and the agent starts billing on two meters</td>
+      <td>Consumption trend per environment and per agent; the true-up step in <a href="#section-8">&sect;8</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Model drift is the sharp one</div>
+  <div class="callout-body"><p>Five of the six drifts originate with the customer or their content. <strong>Model drift originates with Microsoft.</strong> The reasoning underneath the agent can change without the customer asking for it, and the agent's behaviour can change with it.</p><p>This guide does not claim the customer has no recourse &mdash; that is a product question this research has not settled. What it does claim is narrower and sufficient: <strong>there is no alert for it.</strong> If nobody re-runs a known set of prompts on a schedule, a behaviour change arrives as a user complaint months later, and by then nobody can say when it started.</p></div>
+</div>
+
+<h3>Table 2 &mdash; the failure register</h3>
+
+<p>This is the artefact. Named failure, the surface it becomes visible on, the free tool that shows it, and who is accountable. A managed service that cannot fill in the last two columns is selling attendance, not operations.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Named failure</th><th>Detection surface</th><th>Free tool</th><th>Accountable owner</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>The 125% kill</strong> &mdash; custom agents disabled at 125% of prepaid capacity</td>
+      <td>Admin email and a Power Platform admin center post. <strong>Users find out by the agent breaking</strong></td>
+      <td>Consumption trend in the admin center; per-agent caps set in advance</td>
+      <td>Partner &mdash; this is an availability event in the managed-service agreement</td>
+    </tr>
+    <tr>
+      <td><strong>Partial flow enforcement</strong> &mdash; flows blocked at capacity while the agent keeps answering</td>
+      <td>Design-time warning to flow authors only. No user-visible signal</td>
+      <td>Agent flow actions line in the consumption details grid</td>
+      <td>Partner</td>
+    </tr>
+    <tr>
+      <td><strong>Dormant agents</strong> (top-10 risk #5) &mdash; stale privileged access nobody is watching</td>
+      <td>Nothing. Dormancy has no event</td>
+      <td>Agent Inventory; Compliance Hub thresholds and SLA timers</td>
+      <td>Partner, on the review cadence</td>
+    </tr>
+    <tr>
+      <td><strong>Orphaned agents</strong> (top-10 risk #10) &mdash; no active owner, so no review cycle reaches them</td>
+      <td>Nothing, by definition</td>
+      <td>Agent Inventory ownership field; the named-owner rule from <a href="#section-7">&sect;7</a></td>
+      <td>Customer names the owner; partner enforces that one exists</td>
+    </tr>
+    <tr>
+      <td><strong>Knowledge rot</strong> &mdash; stale corpus, four-to-six hour sync, ALM not carrying knowledge across environments</td>
+      <td>Silent. Answers get quietly worse</td>
+      <td>Agent Debugger for what was actually retrieved; Conversation Analyzer over recent transcripts; rubric-graded groundedness</td>
+      <td>Customer owns content currency; partner owns detecting that it slipped</td>
+    </tr>
+    <tr>
+      <td><strong>Configuration regression</strong> &mdash; a maker flips authentication, credentials or sharing after go-live</td>
+      <td>Publish-time security scan warns the maker, and only the maker</td>
+      <td>Agent Review Tool; Agent Inventory diffed against the <a href="#section-6">&sect;6</a> baseline</td>
+      <td>Partner</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Every tool in the third column is free and open source, from Microsoft's Power CAT team &mdash; <a href="#section-13">&sect;13</a> has the links. <strong>That is the point, and it is the commercial argument as well as the technical one.</strong> The tooling costs nothing, so the margin is entirely in the labour and the judgement. A partner who says &ldquo;we license a governance platform&rdquo; is beaten by one who says &ldquo;we run the Compliance Hub, we set the thresholds, we own the SLA timer.&rdquo;</p>
+
+<h3>Two risks that prove the thesis</h3>
+
+<p>Look again at risks <strong>5</strong> and <strong>10</strong> in <a href="#section-6">&sect;6</a>. A dormant agent and an orphaned agent are not build defects. <strong>They cannot be prevented at build time, because at build time neither condition exists.</strong> They come into being through the passage of time and the movement of people, and the only thing that finds them is a recurring review.</p>
+
+<p>And they come from Microsoft's <em>security</em> organisation, not its marketing. That is a materially different citation to put in front of a sceptical buyer than a vendor's recurring-revenue pitch.</p>
+
+<h3>Microsoft&rsquo;s tiering, and how it lines up</h3>
+
+<p>Microsoft's maturity model separates agents into <strong>personal productivity</strong>, <strong>departmental or team</strong>, and <strong>mission-critical</strong>, and explicitly names applying one set of controls to all three an anti-pattern: it over-restricts productivity agents, which drives shadow AI, while under-governing the mission-critical ones. That is a risk-and-criticality tiering of the agents themselves. The three AgentOps tiers in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a> are a tiering of <em>the service you sell</em>. They are compatible and they are not the same axis &mdash; use Microsoft's tiering to decide how hard to govern a given agent, and the playbook's to decide what to charge for governing it.</p>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
