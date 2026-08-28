@@ -1718,9 +1718,14 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       'under it is Microsoft’s list price for the enterprise add-on; the 2.6× itself is not Microsoft’s.');
 
     if (ratioBench > 0 && (ratioBench < CONST.SANITY.ratioLo || ratioBench > CONST.SANITY.ratioHi)) {
-      var heavyTotal = personas.reduce(function (a,p) { return a + n(p.heavy,0); }, 0);
+      /* Only the personas that actually carry seats contribute. Summing all
+         four reported a heavy-task total nobody entered against the allocated
+         groups, and at the low outlier it reported a number while the one
+         allocated group's heavy count was zero (finding #20). The label names
+         the denominator so the figure can be checked against the screen. */
+      var heavyTotal = personas.reduce(function (a,p,i) { return a + (effSeats[i] > 0 ? n(p.heavy,0) : 0); }, 0);
       W('V-10','warn','This is well outside what we normally see. Before you say it out loud, check these two: ' +
-        'total heavy tasks per user per month is ' + heavyTotal + ', and active users is ' + active + '.', []);
+        'total heavy tasks per user per month across your allocated groups is ' + heavyTotal + ', and active users is ' + active + '.', []);
     }
 
     /* Benchmark reconciliation — the centerpiece */
@@ -1994,6 +1999,19 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       govConfirmed: GOV_KEYS.filter(function (k) { return state.governance[k] === 'yes'; }).length,
       govDenied:    GOV_KEYS.filter(function (k) { return state.governance[k] === 'no'; }).length,
       govUnknown:   GOV_KEYS.filter(function (k) { return state.governance[k] !== 'yes' && state.governance[k] !== 'no'; }).length,
+      // The live warnings array, by reference. Render blocks that have to agree
+      // with a warning printed beside them need to see it — the ratio block and
+      // V-10 were pointing in opposite directions on one screen (finding #20),
+      // which is only possible while the copy cannot read the flag.
+      warnings: warn,
+      // Vertical, resolved once. The regulated-vertical talk-track line and the
+      // rung-5 rule both need it, and only the rung rule carries a headcount
+      // floor (finding #23).
+      regulated: REGULATED.indexOf(state.org.vertical) > -1,
+      verticalLabel: VERTICAL_LABEL[state.org.vertical] || null,
+      competingAi: state.org.competingAi === 'yes' ? 'yes' : state.org.competingAi === 'unsure' ? 'unsure' : 'no',
+      azureCspPlan: state.org.azureCspPlan === 'yes' ? 'yes' : state.org.azureCspPlan === 'no' ? 'no' : 'unsure',
+      usageBillingEnabled: state.org.usageBillingEnabled === 'yes' ? 'yes' : state.org.usageBillingEnabled === 'no' ? 'no' : 'unsure',
       licenseList:licenseList, licenseSell:licenseSell,
       licenseCost:(anyCost && !costMissing) ? licenseCost : null,
       // Only a complete cost picture produces a margin. A partial one silently
@@ -2321,6 +2339,11 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       .filter(function (k) { return asked && g[k] === 'no'; });
     var regulated = REGULATED.indexOf(o.vertical) > -1;
     var seats = Math.max(ctx.active, 1);
+    /* Outside CSP the Azure plan and the Microsoft Customer Agreement are the
+       customer's own — there is no "our CSP channel" to put anything on, and
+       the billing cards two blocks away have branched correctly on this all
+       along while the gate copy did not (finding #18). */
+    var outsideCsp = ctx.cspMotion === 'notCsp';
 
     var R = [
       { id:'blocked-cloud', when: o.dataResidency === 'gov_cloud',
@@ -2334,10 +2357,16 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         eyebrow:'Prerequisite before anything else', rung:null,
         name:'Fix the billing path first',
         price:'Admin action \u2014 no SKU closes this',
-        why:[ o.azureCspPlan === 'no' ? 'You told us there is no Azure plan on your CSP channel, and Cowork PayGo billing routes through one.' : '',
+        why:[ o.azureCspPlan === 'no'
+                ? (outsideCsp
+                    ? 'You told us there is no Azure plan on the customer\u2019s own Microsoft Customer Agreement, and Cowork PayGo billing routes through one.'
+                    : 'You told us there is no Azure plan on your CSP channel, and Cowork PayGo billing routes through one.')
+                : '',
               o.usageBillingEnabled === 'no' ? 'You told us usage-based billing is not enabled, which Microsoft lists as a hard prerequisite.' : '' ],
         link:{ href:'azure-billing-setup.html', text:'Walk it through \u2014 the Azure Billing Setup guide' },
-        opener:'"Nothing on this ladder matters until billing has a path. Let\u2019s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."',
+        opener: outsideCsp
+          ? '"Nothing on this ladder matters until billing has a path. Outside CSP that path is the customer\u2019s own Azure subscription under their own Microsoft Customer Agreement \u2014 let\u2019s get it stood up and usage-based billing switched on in Cost Management before we quote anything."'
+          : '"Nothing on this ladder matters until billing has a path. Let\u2019s confirm the Azure plan sits on our CSP channel and switch on usage-based billing in Cost Management before we quote anything."',
         then:'Once billing has a path, come back to this page \u2014 the number does not change, but the deal becomes sellable.' },
 
       { id:'prereq-unsure', when: !asked || o.azureCspPlan === 'unsure' || o.usageBillingEnabled === 'unsure',
@@ -2349,7 +2378,9 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         },
         eyebrow:'Confirm before you quote', rung:1, name:byKey.assess.name,
         price:byKey.assess.price,
-        why:['Nobody has confirmed the Azure plan or usage-based billing yet, and both are hard prerequisites.',
+        why:[(outsideCsp
+                ? 'Nobody has confirmed the customer’s own Azure plan or usage-based billing yet, and both are hard prerequisites.'
+                : 'Nobody has confirmed the Azure plan or usage-based billing yet, and both are hard prerequisites.'),
              'The assessment is the cheapest way to answer them and everything else at the same time.'],
         opener:'"Here are the AI tools your staff used last month, and here is the client data that left your environment." One-time, fixed fee \u2014 and it answers the billing and governance questions in the same pass.',
         then:'Rung 2, the Acceptable Use Policy, sells immediately off the back of it. Never sell a policy without an enforcement plan attached.' },
@@ -2421,7 +2452,9 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
         why:['At $' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
-             'Investigate before you cap \u2014 concentrated usage is usually where the value is concentrating too.'],
+             /* Consumption framing, not value framing (finding #23): the tool
+                has no view on what the usage is worth, only on what it costs. */
+             'Concentrated usage is the group whose usage is driving the number \u2014 understand it before you cap it.'],
         opener:'"Your AUP is only a document until something enforces it." Monthly Cost Management review, spending-policy tuning, and a concentration check on a bill this size.',
         then:'Training underneath it, so the heavy users learn the cheaper prompt patterns.' },
 
@@ -3155,7 +3188,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
           var on = state.org.usageBillingEnabled === v;
           return '<button data-v="' + v + '"' + (on ? ' class="on' + (v === 'no' ? ' warnon' : '') + '"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
         }).join('') + '</div></div>' +
-    '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 0 4px;flex-wrap:wrap;">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;">' +
       '<div style="flex:1;min-width:250px;font-size:.92rem;">Azure/CSP subscription on your channel?' +
         '<span style="display:block;font-size:.78rem;color:#6b7280;margin-top:3px;">Cowork PayGo billing routes through it. ' +
         (function () {
@@ -3175,6 +3208,20 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         ['yes','no','unsure'].map(function (v) {
           var on = state.org.azureCspPlan === v;
           return '<button data-v="' + v + '"' + (on ? ' class="on' + (v === 'no' ? ' warnon' : '') + '"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
+        }).join('') + '</div></div>' +
+    /* The displacement question (R7b, finding #17). org.competingAi shipped
+       with a default, a rung-1 rule and a talk-track line and no way to
+       answer it — the account fact most likely to be true had no input. It is
+       not one of the five governance controls and does not set
+       governanceAsked; "yes" is not a gap, it is a starting position. */
+    '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0 4px;flex-wrap:wrap;">' +
+      '<div style="flex:1;min-width:250px;font-size:.92rem;">Are they already paying for Claude, ChatGPT or another AI tool?' +
+        '<span style="display:block;font-size:.78rem;color:#6b7280;margin-top:3px;">A personal or team subscription outside the tenant, not a Microsoft one.</span>' +
+        '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">If Yes &rarr; the next step becomes the assessment, and the talk track changes.</span></div>' +
+      '<div class="seg" role="group" aria-label="Are they already paying for Claude, ChatGPT or another AI tool?" data-org="competingAi" style="width:250px;flex:0 0 auto;">' +
+        ['yes','no','unsure'].map(function (v) {
+          var on = state.org.competingAi === v;
+          return '<button data-v="' + v + '"' + (on ? ' class="on"' : '') + '>' + (v === 'yes' ? 'Yes' : v === 'no' ? 'No' : 'Unsure') + '</button>';
         }).join('') + '</div></div>';
 
     Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-gov]'), function (seg) {
@@ -3187,12 +3234,17 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         });
       });
     });
+    /* [data-org] is NOT a governance answer (R7a, finding #6). The two
+       prerequisite questions and the displacement question live on this
+       screen for convenience, but tapping one of them used to flip
+       governanceAsked — after which the output claimed the customer had told
+       us about five controls nobody had mentioned. Only the five [data-gov]
+       toggles above set that flag. */
     Array.prototype.forEach.call($('govBlock').querySelectorAll('[data-org]'), function (seg) {
       var k = seg.getAttribute('data-org');
       Array.prototype.forEach.call(seg.querySelectorAll('button'), function (b) {
         b.addEventListener('click', function () {
           state.org[k] = b.getAttribute('data-v');
-          state.governanceAsked = true;
           renderGov(); refresh();
         });
       });
@@ -3759,14 +3811,33 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   function ratioBlock(c) {
     if (c.greenfield || c.monthlyCowork === 0) return '';
     var rec = c.reconciliation;
+    /* Two guards, both from finding #20.
+       (i) An activation rate above 100% is not a reading, it is arithmetic
+           running past its own domain \u2014 624% activation appeared on screen.
+           The percentage is withheld rather than clamped; a clamped 100% is
+           a number nobody computed.
+       (ii) When V-10 is on the same screen saying the inputs look wrong, the
+           reassurance underneath it may not say the opposite. It becomes the
+           input check V-10 is already asking for, pointed at the same two
+           entries V-10 names. */
+    var impliedOk = rec.impliedActivation > 0 && rec.impliedActivation <= 1;
+    var actualOk  = rec.actualActivation  > 0 && rec.actualActivation  <= 1;
+    var v10 = (c.warnings || []).some(function (w) { return w.id === 'V-10'; });
+    var closing = v10
+      ? 'Before you read anything into that gap, check the two entries most likely to be behind it: the heavy-task counts on step 4 and the active-user count on step 3. A ratio this far off the benchmark is usually an entry, not a finding.'
+      : 'The benchmark isn\'t wrong and neither are you &mdash; you\'re assuming a ' +
+        (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark\'s.';
     return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly ' + provPill('editorial') + '</div>' +
       '<p>Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>, which is <b>' + rec.fullyActive.toFixed(2) + '&times;</b> the $30 Copilot license. ' +
-      'The 2.6&times; benchmark implies roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b> at this mix. You modeled <b>' + Math.round(rec.actualActivation * 100) + '%</b>, ' +
-      'which is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. The benchmark isn\'t wrong and neither are you &mdash; you\'re assuming a ' +
-      (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark\'s.</p>' +
+      (impliedOk ? 'The 2.6&times; benchmark implies roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b> at this mix. ' : '') +
+      (actualOk
+        ? 'You modeled <b>' + Math.round(rec.actualActivation * 100) + '%</b>, which is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. '
+        : 'That is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. ') +
+      closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Against what this customer actually pays for Copilot (' + usd(c.copilotSpend) + '/mo), the ratio is <b>' + c.ratioActual.toFixed(2) + '&times;</b>. ' +
       'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the license is wrong. The same usage measured against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Copilot Business promo reads <b>' +
-      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b>, and against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on <b>' + (c.perActiveMs / E.SKU_BY_ID['cop_ent'].usd).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p></div>';
+      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b>, and against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on <b>' + (c.perActiveMs / E.SKU_BY_ID['cop_ent'].usd).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p>' +
+      '</div>';
   }
 
   function renderBillOut(r) {
@@ -4058,6 +4129,22 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       '</div>';
   }
 
+  /* Two lines the talk track used to carry and should never have (R7c,
+     finding #18). Both are addressed to the partner: one is a Partner Center
+     lookup no customer can answer, the other names the sale. #cardNext is
+     already in the customer strip set, and the .partner-only class is the
+     belt to that braces. */
+  function partnerNote(c) {
+    var bits = [];
+    if (c.azureCspPlan !== 'yes')
+      bits.push('<p><b>Pre-call check.</b> ' + (c.cspMotion === 'notCsp'
+        ? 'Outside CSP the Azure plan and the Microsoft Customer Agreement are the customer’s own, so Partner Center will not answer this — ask their admin who owns that subscription before the call.'
+        : 'Does this tenant have an Azure plan under your CSP relationship, and is usage-based billing switched on? Partner Center answers both. The customer cannot, so do not ask them.') + '</p>');
+    bits.push('<p>You now have a number the customer will want managed &mdash; and that management is the actual sale. Name what you are selling and get a date on the calendar.</p>');
+    return '<div class="partner-only" id="nextPartnerNote" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.85rem;color:#374151;line-height:1.6;">' +
+      bits.join('') + '</div>';
+  }
+
   function renderNext(r) {
     var n = r.next.pick, rungs = r.next.rungs;
     $('nextBox').innerHTML =
@@ -4069,7 +4156,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         ? '<div class="ns-why">' + n.why.map(function (w) { return '<p>' + esc(w) + '</p>'; }).join('') + '</div>'
         : '') +
       (n.then ? '<div class="ns-then"><b>And then:</b> ' + n.then + '</div>' : '') +
-      (n.link ? '<div style="margin-top:10px;"><a class="docref" href="' + n.link.href + '" target="_blank" rel="noopener">' + esc(n.link.text) + ' &rarr;</a></div>' : '');
+      (n.link ? '<div style="margin-top:10px;"><a class="docref" href="' + n.link.href + '" target="_blank" rel="noopener">' + esc(n.link.text) + ' &rarr;</a></div>' : '') +
+      partnerNote(r.ctx);
 
     $('ladderBody').innerHTML =
       '<p style="font-size:.85rem;color:#374151;margin:0 0 4px;line-height:1.6;">Six service lines compound off the same discovery engagement. ' +
@@ -4095,22 +4183,52 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     }
     if (state.org.dataResidency === 'gov_cloud')
       t.push('Before we go further &mdash; Cowork isn\'t available in GCC, GCC High, DoD or sovereign clouds. No licensing path changes that, so let\'s talk about what we can do inside your boundary.');
+    /* The Partner Center half of this question left the talk track entirely
+       (R7c, finding #18) — it is addressed to the partner and the customer
+       cannot answer it. What remains is the part the customer's own admin
+       can answer, and outside CSP the subscription and the MCA are theirs,
+       so there is no "our CSP relationship" to name. */
     if (state.org.azureCspPlan === 'no')
-      t.push('Before we talk numbers &mdash; does this tenant have an Azure plan under our CSP relationship? Cowork\'s billing routes through Azure, so that\'s the first box to check, not an afterthought.');
+      t.push(c.cspMotion === 'notCsp'
+        ? 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription on your own Microsoft Customer Agreement, and there isn’t one yet. That’s an admin step on your side, and it comes before anything anyone quotes.'
+        : 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription, and there isn’t one set up for you yet. That’s the first box to check, not an afterthought.');
     if (c.copilotLicensed > c.active)
       t.push('You have ' + c.copilotLicensed + ' Copilot licenses and about ' + c.active + ' people who\'d really use Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licenses carrying cost with no meter attached &mdash; is worth a conversation on its own.');
-    var govNo = ['purviewLabels','dlpForAi','defenderCloudApps'].filter(function (k) { return state.governance[k] !== 'yes'; }).length;
+    /* Three states, three sentences (R7a, finding #6). govNo counts only an
+       explicit "no" — an unsure is not a missing control, it is an unanswered
+       question, and the engine's own three-way why() has said so all along.
+       Rolling unsure into govNo is how the talk track came to report silence
+       as a finding. */
+    var GOVC = ['purviewLabels','dlpForAi','defenderCloudApps'];
+    var govNo = GOVC.filter(function (k) { return state.governance[k] === 'no'; }).length;
+    var govUnsure = GOVC.filter(function (k) { return state.governance[k] !== 'yes' && state.governance[k] !== 'no'; }).length;
+    var govLead = 'Governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honors whatever Purview labels already exist. ';
     if (!state.governanceAsked)
       t.push('One thing I want to check before we go further: governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honors whatever Purview labels already exist. I haven\'t asked what you have switched on yet &mdash; and it matters, because the credits get spent either way. Only the output quality and the risk change.');
     else if (govNo >= 2)
-      t.push('Governance readiness is consumption readiness. Cowork grounds in your Microsoft 365 data through Work IQ and honors whatever Purview labels already exist. Right now this tenant doesn\'t have much in place, so the credits get spent either way &mdash; only the output quality and the risk change.');
-    if (state.org.competingAi === 'yes')
+      t.push(govLead + 'You confirmed ' + govNo + ' of those controls are not in place, so the credits get spent either way &mdash; only the output quality and the risk change.');
+    else if (govUnsure >= 2)
+      t.push(govLead + 'Nobody in the room was sure which of these are switched on, so we are working from an open question rather than a finding &mdash; and the credits get spent either way. Only the output quality and the risk change.');
+    if (c.competingAi === 'yes')
       t.push('Keep Claude. Bring it under management. Cowork is what runs the work your Microsoft 365 tenant already knows about &mdash; a personal subscription sits outside the trust boundary with no Purview labels, no Defender for Cloud Apps visibility, and no Cost Management.');
+    /* The regulated line no longer waits for 50 employees (R7e, finding #23).
+       The rung-5 vCISO rule keeps its headcount floor — a twenty-person firm
+       is not a vCISO account — but the obligation itself does not scale with
+       headcount, and saying nothing about it was the wrong silence. */
+    if (c.regulated && c.verticalLabel)
+      t.push('One thing that follows from where you operate: ' + esc(c.verticalLabel) + ' carries a supervision obligation over how AI touches your records. It applies at your size, not only at enterprise scale &mdash; so it belongs in the licensing conversation rather than after it.');
     if (c.ratioBench > 3.5)
-      t.push('Your Cowork-to-license ratio is running above the 2.6&times; benchmark we typically see. Before we talk about capping spend, let\'s find out who\'s driving the heavy-task volume &mdash; that\'s usually where the real value is concentrating too.');
+      t.push('Your Cowork-to-license ratio is running above the 2.6&times; benchmark we typically see. Before we talk about capping spend, let\'s find out who is driving the heavy-task volume &mdash; that is the group whose usage is driving the number, and understanding it comes before capping it.');
+    /* "What you told us is open" is a claim about a conversation. When the
+       five gates were never put, the honest clause names the gap in our
+       knowledge, not a gap in their tenant (finding #6a). */
     if (r.licensing.winner)
-      t.push('The Copilot engine is identical whichever way you license it &mdash; the difference is the governance stack in the base SKU. For an account this size, ' + esc(r.licensing.winner.label) + ' is the path that closes what you told us is open without over-buying.');
-    t.push('You now have a number the customer will want managed &mdash; and that management is the actual sale. Let\'s name what we\'re selling and get a date on the calendar.');
+      t.push('The Copilot engine is identical whichever way you license it &mdash; the difference is the governance stack in the base SKU. For an account this size, ' + esc(r.licensing.winner.label) + ' is the path that ' +
+        (state.governanceAsked
+          ? 'closes what you told us is open'
+          : 'closes the gaps we have not yet confirmed are closed') + ' without over-buying.');
+    /* The closer moved to #cardNext (R7c, finding #18): it is addressed to
+       the partner and sat inside the copy-to-clipboard customer talk track. */
     return t;
   }
 

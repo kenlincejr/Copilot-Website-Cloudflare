@@ -1159,8 +1159,8 @@ function customerSurface(r, L) {
   // wizard semantics
   ok(/aria-current="step"/.test(src), 'the active stepper button carries aria-current="step"');
   ok(/\(id === cur \? ' aria-current="step"' : ''\)/.test(src), 'aria-current follows the current step');
-  eq((src.match(/role="group" aria-label=/g) || []).length, 4,
-     'the four yes/no/unsure toggle rows are grouped with an accessible label (5 gov rows share one template)');
+  eq((src.match(/role="group" aria-label=/g) || []).length, 5,
+     'the yes/no/unsure toggle rows are grouped with an accessible label (5 gov rows share one template; R7b adds the competingAi row)');
 }
 
 /* ── R6.8 · The customer-view toggle chrome (idea 5) ────────────────────── */
@@ -1199,8 +1199,346 @@ function customerSurface(r, L) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   (R7–R8 sections append here)
+   R7 — Conversation-engine truthfulness
+   (findings #6, #17, #18, #20, #23 — v3 spec §R7)
+
+   The talk track, the ratio block and the partner note live in the UI layer
+   and are not exported, so rather than paraphrase them this section LIFTS
+   THEIR SOURCE out of the page and runs it. Same self-extracting principle as
+   the engine above: nothing to keep in sync, and a copy edit that breaks an
+   invariant fails here rather than in front of a customer.
    ══════════════════════════════════════════════════════════════════════════ */
+
+function uiSource(name, endMarker) {
+  const start = src.indexOf('  function ' + name + '(');
+  const end = src.indexOf(endMarker, start);
+  if (start < 0 || end < 0) throw new Error('could not lift ' + name + ' out of the page');
+  return src.slice(start, end);
+}
+function escUi(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]); }
+/* Deps are bound as parameters; `state` is bound per call so a sweep can move
+   it. Compiling per state is cheap and keeps the closure honest. */
+function makeUiFn(name, endMarker, deps) {
+  const args = Object.keys(deps);
+  return new Function(...args, uiSource(name, endMarker) + '\nreturn ' + name + ';')(...args.map(k => deps[k]));
+}
+function talkFor(st) {
+  const r = E.compute(st);
+  const build = makeUiFn('buildTalk', '\n  function showDeriv', { E, state: st, esc: escUi });
+  return { r, text: build(r).join('\n') };
+}
+const partnerNote = makeUiFn('partnerNote', '\n  function renderNext', { E });
+const ratioBlockUi = makeUiFn('ratioBlock', '\n  function renderBillOut',
+  { E, usd, num, provPill: () => '' });
+function nextFor(st) { const r = E.compute(st); return E.nextStep(st, r.ctx); }
+function nextText(pick) {
+  return [pick.eyebrow, pick.name, pick.price, pick.opener, (pick.why || []).join(' '), pick.then || ''].join(' ');
+}
+
+/* ── R7.1 · Governance honesty (#6) ─────────────────────────────────────── */
+{
+  // (a) the clause branches on governanceAsked
+  const unasked = st({ governanceAsked: false });
+  const asked = st({ governanceAsked: true,
+    governance: { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes',
+                  namedCostOwner:'yes', insuranceRenewal:'yes' } });
+  const tU = talkFor(unasked), tA = talkFor(asked);
+  ok(tU.r.licensing.winner, 'the unasked state still produces a licensing winner (the clause is reachable)');
+  ok(!/told us/i.test(tU.text), 'governance unasked: no "told us" phrasing anywhere in the talk track');
+  ok(/closes the gaps we have not yet confirmed are closed/.test(tU.text),
+     'governance unasked: the clause names the gap in our knowledge');
+  ok(/closes what you told us is open/.test(tA.text), 'governance asked: today’s sentence survives');
+
+  // a sweep — no state with governanceAsked false may produce "told us"
+  const sweep = [];
+  ['none','legal','healthcare','finance','public','eu'].forEach(v => {
+    ['direct','indirectReseller','indirectProvider','notCsp','unsure'].forEach(m => {
+      ['no','unsure','yes'].forEach(a => {
+        ['yes','no','unsure'].forEach(ca => {
+          const s = E.defaults();
+          s.governanceAsked = false;
+          s.org.vertical = v; s.org.azureCspPlan = a; s.org.competingAi = ca;
+          s.channel.motion = m;
+          sweep.push(s);
+        });
+      });
+    });
+  });
+  let toldUs = 0;
+  sweep.forEach(s => { if (/told us/i.test(talkFor(s).text)) toldUs++; });
+  eq(toldUs, 0, 'state sweep (' + sweep.length + ' unasked states): "told us" never renders');
+
+  // (b) only the five [data-gov] toggles set the flag — the handler is split
+  const govHandler = src.match(/querySelectorAll\('\[data-gov\]'\)[\s\S]{0,600}?\n    \}\);/);
+  const orgHandler = src.match(/querySelectorAll\('\[data-org\]'\)[\s\S]{0,600}?\n    \}\);/);
+  ok(govHandler && /state\.governanceAsked = true;/.test(govHandler[0]),
+     'the [data-gov] handler sets governanceAsked');
+  ok(orgHandler && !/state\.governanceAsked/.test(orgHandler[0]),
+     'the [data-org] handler never touches governanceAsked (Azure/CSP, usage billing, competingAi)');
+  eq((src.match(/state\.governanceAsked = true;/g) || []).length, 1,
+     'exactly one site in the file sets governanceAsked true');
+  // and the three questions that share that handler are the three named ones
+  const orgSegs = (src.match(/data-org="(\w+)"/g) || []).map(s => s.slice(10, -1));
+  eq(orgSegs.sort().join(','), 'azureCspPlan,competingAi,usageBillingEnabled',
+     'the [data-org] rows are exactly the two prerequisites plus the displacement question');
+
+  // (c) govNo counts only an explicit 'no'; unsure gets its own sentence
+  const allUnsure = st({ governanceAsked: true });   // defaults are all 'unsure'
+  const twoNo = st({ governanceAsked: true,
+    governance: { purviewLabels:'no', dlpForAi:'no', defenderCloudApps:'yes',
+                  namedCostOwner:'unsure', insuranceRenewal:'unsure' } });
+  const tUn = talkFor(allUnsure).text, tNo = talkFor(twoNo).text;
+  ok(/Nobody in the room was sure/.test(tUn), 'unsure-dominant gets the "nobody was sure" register');
+  ok(!/are not in place/.test(tUn), 'unsure-dominant is never reported as confirmed-missing');
+  ok(/You confirmed 2 of those controls are not in place/.test(tNo), 'two explicit "no"s are counted and named');
+  ok(!/Nobody in the room was sure/.test(tNo), 'a confirmed-missing state does not also claim nobody was sure');
+  ok(src.indexOf('doesn\'t have much in place') === -1,
+     'the tenant-poverty sentence is gone from the file');
+  // one 'no' and one 'unsure' is neither branch — the talk track stays quiet
+  const oneEach = st({ governanceAsked: true,
+    governance: { purviewLabels:'no', dlpForAi:'yes', defenderCloudApps:'yes',
+                  namedCostOwner:'yes', insuranceRenewal:'yes' } });
+  ok(!/Governance readiness is consumption readiness/.test(talkFor(oneEach).text),
+     'a single named gap does not trigger either summary sentence');
+}
+
+/* ── R7.2 · The displacement question goes live (#17) ───────────────────── */
+{
+  // the toggle exists, follows the y/n/u segment pattern, and is labelled
+  ok(/data-org="competingAi"/.test(src), 'step 7 carries a competingAi segment');
+  ok(/role="group" aria-label="Are they already paying for Claude, ChatGPT or another AI tool\?" data-org="competingAi"/.test(src),
+     'the segment is a labelled group, matching the other toggle rows');
+  ok(/Are they already paying for Claude, ChatGPT or another AI tool\?<\/div>|Are they already paying for Claude, ChatGPT or another AI tool\?'/.test(src),
+     'the question renders as the row label');
+  ok(/var on = state\.org\.competingAi === v;/.test(src), 'the segment reflects state.org.competingAi');
+
+  // normalize carries the enum through a partial load (the org branch)
+  eq(E.normalize({ org: { totalEmployees: 50 } }).org.competingAi, 'no',
+     'a partial org load keeps the competingAi default');
+  eq(E.normalize({ org: { competingAi: 'yes' } }).org.competingAi, 'yes',
+     'normalize carries a loaded competingAi through');
+  eq(E.compute(st({ org: Object.assign(E.defaults().org, { competingAi:'garbage' }) })).ctx.competingAi, 'no',
+     'ctx normalizes an unknown competingAi value to no');
+
+  // the rule is reachable: prerequisites answered, governance asked and clean
+  const s = E.defaults();
+  s.governanceAsked = true;
+  s.governance = { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes',
+                   namedCostOwner:'yes', insuranceRenewal:'no' };
+  s.org.azureCspPlan = 'yes'; s.org.usageBillingEnabled = 'yes';
+  s.org.competingAi = 'yes';
+  eq(nextFor(s).pick.id, 'competing-ai', 'competingAi yes reaches the competing-ai rung-1 rule');
+  s.org.competingAi = 'no';
+  ok(nextFor(s).pick.id !== 'competing-ai', 'competingAi no does not reach it');
+  s.org.competingAi = 'unsure';
+  ok(nextFor(s).pick.id !== 'competing-ai', 'competingAi unsure does not reach it either');
+
+  // and the talk-track line is live
+  s.org.competingAi = 'yes';
+  ok(/Keep Claude\. Bring it under management\./.test(talkFor(s).text),
+     'the displacement talk-track line renders when the answer is yes');
+}
+
+/* ── R7.3 · Motion-aware gate copy (#18) ────────────────────────────────── */
+{
+  const MOTIONS = ['direct','indirectProvider','indirectReseller','notCsp','unsure'];
+  MOTIONS.forEach(m => {
+    // prereq-no
+    const sNo = E.defaults();
+    sNo.channel.motion = m; sNo.org.azureCspPlan = 'no';
+    const pNo = nextFor(sNo).pick;
+    eq(pNo.id, 'prereq-no', m + ': azureCspPlan no lands on prereq-no');
+    const txtNo = nextText(pNo);
+    if (m === 'notCsp') {
+      ok(!/our CSP/i.test(txtNo), 'notCsp: prereq-no never says "our CSP"');
+      ok(/Microsoft Customer Agreement/.test(txtNo), 'notCsp: prereq-no names the customer’s own MCA');
+    } else {
+      ok(/our CSP channel/.test(txtNo), m + ': prereq-no keeps the CSP-channel wording');
+    }
+    // prereq-unsure
+    const sUn = E.defaults();
+    sUn.channel.motion = m;
+    const pUn = nextFor(sUn).pick;
+    eq(pUn.id, 'prereq-unsure', m + ': the stock unanswered state lands on prereq-unsure');
+    const txtUn = nextText(pUn);
+    ok(!/our CSP/i.test(txtUn) || m !== 'notCsp', 'notCsp: prereq-unsure never says "our CSP"');
+    if (m === 'notCsp') ok(/customer’s own Azure plan/.test(txtUn), 'notCsp: prereq-unsure names the customer’s own plan');
+
+    // the talk track, on the same state
+    const tNo = talkFor(sNo).text;
+    if (m === 'notCsp') {
+      ok(!/our CSP/i.test(tNo), 'notCsp: the talk track never says "our CSP"');
+      ok(!/CSP relationship/.test(tNo), 'notCsp: the talk track never says "CSP relationship"');
+      ok(/your own Microsoft Customer Agreement/.test(tNo), 'notCsp: the talk track names their own MCA');
+    }
+    // whole notCsp walkthrough: talk + next step + partner note
+    if (m === 'notCsp') {
+      const whole = tNo + ' ' + txtNo + ' ' + partnerNote(E.compute(sNo).ctx);
+      ok(!/our CSP/i.test(whole), 'notCsp walkthrough: no "our CSP" phrasing anywhere');
+    }
+  });
+
+  // the Partner Center question left the talk track for EVERY motion
+  MOTIONS.forEach(m => {
+    const s = E.defaults(); s.channel.motion = m; s.org.azureCspPlan = 'no';
+    const t = talkFor(s).text;
+    ok(!/under our CSP relationship/.test(t), m + ': the Partner Center question is out of the talk track');
+    ok(!/CSP relationship\?/.test(t), m + ': no Partner Center question mark in the talk track');
+  });
+  ok(!/does this tenant have an Azure plan under our CSP relationship/.test(uiSource('buildTalk', '\n  function showDeriv')),
+     'the Partner Center line is gone from buildTalk’s source');
+
+  // it became a partner-only pre-call note in #cardNext
+  const cUnsure = E.compute(E.defaults()).ctx;
+  const noteU = partnerNote(cUnsure);
+  ok(/class="partner-only"/.test(noteU), 'the pre-call note renders inside a .partner-only block');
+  ok(/Pre-call check/.test(noteU), 'the note is framed as a pre-call check');
+  ok(/Partner Center answers both/.test(noteU), 'the in-CSP note points at Partner Center');
+  const sYes = E.defaults(); sYes.org.azureCspPlan = 'yes';
+  ok(!/Pre-call check/.test(partnerNote(E.compute(sYes).ctx)),
+     'the pre-call note is absent once the Azure plan is confirmed');
+  const sN = E.defaults(); sN.channel.motion = 'notCsp';
+  ok(/Partner Center will not answer this/.test(partnerNote(E.compute(sN).ctx)),
+     'outside CSP the note says Partner Center cannot answer it');
+
+  // the closer moved out of the talk track and into the partner note
+  const anyTalk = talkFor(E.defaults()).text;
+  ok(!/name what we/i.test(anyTalk), 'the "let’s name what we’re selling" closer is out of the talk track');
+  ok(!/the actual sale/.test(anyTalk), 'the talk track no longer addresses the partner');
+  ok(/Name what you are selling and get a date on the calendar/.test(noteU),
+     'the closer renders in the partner note instead');
+  ok(src.indexOf('partnerNote(r.ctx)') > 0, 'renderNext emits the partner note into #cardNext');
+}
+
+/* ── R7.4 · Ratio-block sanity (#20) ────────────────────────────────────── */
+{
+  /* V-10's heavy-task figure counts only personas that carry seats. One
+     allocated group at 60 heavy tasks, three unallocated at 99 each: the old
+     sum reported 357 tasks nobody entered against the allocated group. */
+  const s = E.defaults();
+  s.personas.forEach((p, i) => {
+    p.seats = i === 1 ? 40 : 0; p.light = 0; p.medium = 0; p.heavy = i === 1 ? 60 : 99;
+  });
+  s.activation.mode = 'count'; s.activation.count = 40;
+  const rH = E.compute(s);
+  const v10 = rH.warnings.filter(w => w.id === 'V-10')[0];
+  ok(v10, 'the high-outlier state fires V-10 (ratio ' + rH.ctx.ratioBench.toFixed(2) + '×)');
+  if (v10) {
+    ok(/across your allocated groups/.test(v10.message), 'V-10 names the denominator it summed over');
+    ok(/allocated groups is 60,/.test(v10.message),
+       'V-10 reports only the allocated persona’s heavy count (got: ' + v10.message + ')');
+    ok(!/is 357/.test(v10.message), 'V-10 does not sum the unallocated personas');
+  }
+  /* The low outlier is the case finding #20 named: the allocated group's
+     heavy count is genuinely 0 and V-10 must say 0, not a figure from
+     personas holding no seats. */
+  const lo = E.defaults();
+  lo.personas.forEach((p, i) => {
+    p.seats = i === 1 ? 40 : 0; p.light = 1; p.medium = 0; p.heavy = i === 1 ? 0 : 99;
+  });
+  lo.activation.mode = 'count'; lo.activation.count = 40;
+  const vLo = E.compute(lo).warnings.filter(w => w.id === 'V-10')[0];
+  ok(vLo && /allocated groups is 0,/.test(vLo.message),
+     'at the low outlier V-10 reports 0 heavy tasks, not the unallocated personas’ counts');
+
+  // no rendered activation percentage above 100, across a fuzz sweep
+  const fuzz = [];
+  [1, 4, 25, 60, 200, 900].forEach(seats => {
+    [0.05, 0.35, 0.65, 1.0].forEach(rate => {
+      [0, 1, 8, 40, 400].forEach(heavy => {
+        const f = E.defaults();
+        f.activation = { mode:'rate', rate: rate, count:null };
+        f.personas.forEach((p, i) => { p.seats = i === 0 ? seats : Math.round(seats / 3); p.heavy = heavy; });
+        fuzz.push(f);
+      });
+    });
+  });
+  ['benchmark','count'].forEach(mode => {
+    const f = E.defaults(); f.activation = { mode: mode, rate:0.65, count: 3 }; fuzz.push(f);
+  });
+  let over = 0, rendered = 0, suppressed = 0;
+  fuzz.forEach(f => {
+    const c = E.compute(f).ctx;
+    const html = ratioBlockUi(c);
+    if (!html) return;
+    rendered++;
+    const pcts = (html.match(/>(\d+)%/g) || []).map(x => +x.replace(/[>%]/g, ''));
+    pcts.forEach(p => { if (p > 100) over++; });
+    if (c.reconciliation.impliedActivation > 1 && !/% activation/.test(html)) suppressed++;
+  });
+  ok(rendered > 20, 'the ratio fuzz sweep actually rendered (' + rendered + ' blocks)');
+  eq(over, 0, 'no rendered activation percentage exceeds 100% across the fuzz sweep');
+  ok(suppressed > 0, 'the implied-activation sentence is suppressed above 100% (' + suppressed + ' cases)');
+
+  // when V-10 fires, the reassurance becomes an input check
+  ok(rH.ctx.monthlyCowork > 0 && rH.warnings.some(w => w.id === 'V-10'),
+     'the V-10 state renders a ratio block (precondition for the checks below)');
+  const v10Html = ratioBlockUi(rH.ctx);
+  ok(!/isn't wrong and neither are you/.test(v10Html),
+     'V-10 present: the reassurance does not argue with the warning above it');
+  ok(/check the two entries most likely to be behind it/.test(v10Html),
+     'V-10 present: the block points at the two entries V-10 names');
+  ok(/heavy-task counts on step 4/.test(v10Html) && /active-user count on step 3/.test(v10Html),
+     'the input-check framing mirrors V-10’s own two figures');
+  // and on a clean state it is still the reassurance
+  const clean = ratioBlockUi(E.compute(E.defaults()).ctx);
+  ok(/isn't wrong and neither are you/.test(clean), 'no V-10: the reassurance survives unchanged');
+  ok(/% activation/.test(clean), 'stock defaults still render the implied-activation sentence');
+}
+
+/* ── R7.5 · The value wobble (#23) ──────────────────────────────────────── */
+{
+  eq((src.match(/real value/g) || []).length, 0, 'grep "real value" returns nothing');
+  eq((src.match(/where the value is concentrating/g) || []).length, 0,
+     'the value-concentration phrasing is gone from both sites');
+  eq((src.match(/the group whose usage is driving the number/g) || []).length, 2,
+     'both sites carry the consumption framing');
+
+  // the talk-track site
+  const hot = E.defaults();
+  hot.personas.forEach(p => { p.heavy = p.heavy + 20; });
+  const th = talkFor(hot);
+  ok(th.r.ctx.ratioBench > 3.5, 'the hot state clears the ratio threshold (precondition)');
+  ok(/the group whose usage is driving the number/.test(th.text), 'the talk-track site is reworded');
+
+  // the next-step site
+  const conc = E.defaults();
+  conc.governanceAsked = true;
+  conc.governance = { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes',
+                      namedCostOwner:'yes', insuranceRenewal:'no' };
+  conc.org.azureCspPlan = 'yes'; conc.org.usageBillingEnabled = 'yes';
+  conc.personas.forEach(p => { p.heavy = p.heavy + 40; });
+  const pc = nextFor(conc).pick;
+  eq(pc.id, 'concentration', 'the hot state reaches the concentration rule (precondition)');
+  ok(/the group whose usage is driving the number/.test(nextText(pc)), 'the next-step site is reworded');
+
+  // the regulated line renders regardless of headcount
+  ['healthcare','finance','legal','public','eu'].forEach(v => {
+    const small = E.defaults();
+    small.org.vertical = v; small.org.totalEmployees = 20;
+    const t = talkFor(small);
+    ok(t.r.ctx.regulated, v + ': ctx flags the vertical regulated');
+    ok(/carries a supervision obligation/.test(t.text),
+       v + ' at 20 employees: the regulated talk-track line renders');
+    ok(/It applies at your size, not only at enterprise scale/.test(t.text),
+       v + ': the line says the obligation does not scale with headcount');
+  });
+  const notReg = E.defaults(); notReg.org.vertical = 'none';
+  ok(!/carries a supervision obligation/.test(talkFor(notReg).text),
+     'an unregulated vertical stays silent');
+
+  // the rung-5 floor is untouched
+  const smallLegal = E.defaults();
+  smallLegal.org.vertical = 'legal'; smallLegal.org.totalEmployees = 20;
+  smallLegal.governanceAsked = true;
+  smallLegal.governance = { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes',
+                            namedCostOwner:'yes', insuranceRenewal:'no' };
+  smallLegal.org.azureCspPlan = 'yes'; smallLegal.org.usageBillingEnabled = 'yes';
+  ok(nextFor(smallLegal).pick.id !== 'regulated-vciso',
+     'the vCISO rung keeps its 50-employee floor');
+  ok(/regulated && ctx\.employees >= 50 && ctx\.employees <= 1000/.test(src),
+     'the rung rule’s headcount guard is unchanged in source');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
