@@ -928,8 +928,16 @@ grep -noE '([Ss]ection [0-9]+|Stop [0-9]|Agent Build Engagement Worklist|Outcome
 ```bash
 # 5 · §8.10 — currency count must equal provenance count, and both must be small
 grep -oE '\$[0-9][0-9,.]*' agent-never-done.html | wc -l
-grep -c 'class="prov' agent-never-done.html
+# exclude the §15 .provkey legend, which renders one sample chip per class
+grep -o 'class="prov prov-[a-z]*"' agent-never-done.html | wc -l   # = currency + 4 legend samples
+grep -c 'class="prov prov-ms">MS</span> <strong>\$' agent-never-done.html
 ```
+
+**Note, added 2026-08-28.** The naive `grep -c 'class="prov'` over-counts by five: the
+`.provkey` legend in **B-15** renders one sample chip for each of the four provenance classes,
+and `.provkey` itself matches the same prefix. The gate's *intent* is that **no currency figure
+ships without a chip** — check that, not raw equality. As built the page carries **one** currency
+figure (`$72`, F-154, `prov-ms`), so the legend accounts for the whole delta.
 ```bash
 # 6 · anchor integrity — every in-page href resolves to an id
 python -c "import io,re;s=io.open('agent-never-done.html',encoding='utf-8').read();ids=set(re.findall(r'id=\"([^\"]+)\"',s));hs=sorted(set(re.findall(r'href=\"#([^\"]+)\"',s)));print('missing:',[h for h in hs if h not in ids])"
