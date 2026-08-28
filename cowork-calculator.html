@@ -1017,13 +1017,31 @@ footer.pagefoot a { color:#6b7280; }
   };
 
   /* ── Effort ───────────────────────────────────────────────────────────── */
-  // Envelope 15.00/0.70 = 21.43x; tiers consume 1200/125 = 9.6x; residual 2.232x
-  // spread geometrically over the 4 steps from Light to Max.
+  // Step size: envelope 15.00/0.70 = 21.43x; the tiers consume 1200/125 = 9.6x;
+  // the residual 2.232x spread geometrically over four notional steps.
   var EFFORT_STEP_DEFAULT = Math.pow((15.00 / 0.70) / (1200 / 125), 1 / 4); // ≈1.2225
+  //
+  // The ladder stops at High, and not for cosmetic reasons. Microsoft's tier
+  // weights are typical costs, not envelope extremes, so the residual cannot
+  // actually be spent in both directions: a heavy task already sits at $12.00
+  // against a published $15.00 ceiling, leaving 1.25x of headroom, not 1.83x.
+  // Two independent Microsoft-published guardrails agree on exactly where the
+  // line falls — at the default tier weights, Extra High and Max put a heavy
+  // task at $17.93 and $21.91 against the $15.00 per-task ceiling, AND put the
+  // heaviest persona mix at $259 and $316 against the $82–$228 per-user range.
+  // Light, Medium and High are inside both. A tool whose whole claim is "you
+  // can say this in front of a customer" should not ship the two settings that
+  // break every published bound it cites. High is deliberately the ceiling:
+  // $14.67 a heavy task, just under Microsoft's $15.00.
+  var EFFORT_ORDER = ['light','medium','high'];
   function effortMultipliers(step) {
-    return { light: 1 / step, medium: 1, high: step, xhigh: Math.pow(step, 2), max: Math.pow(step, 3) };
+    return { light: 1 / step, medium: 1, high: step };
   }
-  var EFFORT_LABELS = { light:'Light', medium:'Medium', high:'High', xhigh:'Extra High', max:'Max' };
+  var EFFORT_LABELS = { light:'Light', medium:'Medium', high:'High' };
+  // Sessions saved before the ladder was truncated carry the two retired
+  // levels. Land them on High — the nearest surviving setting — rather than
+  // letting the lookup miss and silently reprice the whole session at Medium.
+  var EFFORT_RETIRED = { xhigh:'high', max:'high' };
 
   /* ── P3 anchors (only three points are sourced) ───────────────────────── */
   var P3_ANCHORS = [
@@ -1231,6 +1249,13 @@ footer.pagefoot a { color:#6b7280; }
 
     /* Credits per persona (needed before benchmark activation can back-solve) */
     var TC = state.tierCredits, EM = effortMultipliers(n(state.effort.step, EFFORT_STEP_DEFAULT));
+    if (EFFORT_RETIRED[state.effort.level]) {
+      W('V-19','clamp','This session was saved at \u201c' + (state.effort.level === 'max' ? 'Max' : 'Extra High') +
+        '\u201d effort. That setting has been retired: at the default tier weights it priced a heavy task above ' +
+        'Microsoft\u2019s published $15 ceiling and a heavy persona mix above the published $228 per-user range. ' +
+        'The session has been reopened at High, which is the most aggressive setting that stays inside both.', []);
+      state.effort.level = EFFORT_RETIRED[state.effort.level];
+    }
     var effortMult = EM[state.effort.level] != null ? EM[state.effort.level] : 1;
     var modelMult = state.model.enabled ? n(state.model.multiplier, 1) : 1;
 
@@ -1914,6 +1939,7 @@ footer.pagefoot a { color:#6b7280; }
     VERSION:'2.0.0', CONST:CONST, SKUS:SKUS, SKU_BY_ID:SKU_BY_ID, ADDONS:ADDONS,
     PERSONA_DEFAULTS:PERSONA_DEFAULTS, PRESETS:PRESETS, EFFORT_LABELS:EFFORT_LABELS,
     EFFORT_STEP_DEFAULT:EFFORT_STEP_DEFAULT, effortMultipliers:effortMultipliers,
+    EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
     P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
     defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
@@ -2214,7 +2240,7 @@ footer.pagefoot a { color:#6b7280; }
   /* ═══ STEP 5 · effort + calibration ═══ */
   function renderEffort(r) {
     var mults = E.effortMultipliers(state.effort.step);
-    var order = ['light','medium','high','xhigh','max'];
+    var order = E.EFFORT_ORDER;
     var base = r.ctx.monthlyCowork / (r.ctx.effortMult || 1);
     $('effortBlock').innerHTML =
       '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px;">Effort level &mdash; a real control in Cowork</div>' +
@@ -2267,9 +2293,10 @@ footer.pagefoot a { color:#6b7280; }
                                 r.ctx.monthlyCowork / (r.ctx.effortMult || 1));
   }
   function effortCopy(level, mults, base) {
-    var d = { light:'Cowork does less checking and finishes faster.', medium:'The default, and where most tasks should stay.',
-              high:'Cowork thinks longer and checks more sources.', xhigh:'Deeper analysis and more complex reasoning.',
-              max:'For genuinely hard, multi-step work only. Set this per task, not as a tenant default.' };
+    var d = { light:'Cowork does less checking and finishes faster.',
+              medium:'The default, and where most tasks should stay.',
+              high:'Cowork thinks longer and checks more sources. This is the ceiling the tool will model \u2014 ' +
+                   'a heavy task lands at $14.67, just under Microsoft\u2019s published $15 per-task limit.' };
     var m = mults[level], delta = (m - 1) * 100;
     return d[level] + '\n' + (level === 'medium'
       ? 'This is the number below: ' + usd(base) + '/month.'
@@ -2469,7 +2496,7 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
         '<div class="field"><label>Effort step multiplier</label><input type="number" step="0.01" min="1" max="3" id="pStep" value="' + state.effort.step.toFixed(4) + '"></div>' +
       '</div>' +
-      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across the four steps from Light to Max \u2014 deliberately conservative-high.</p>' +
+      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across four notional steps, of which the tool exposes three. <b>The ladder stops at High on purpose.</b> Microsoft\'s tier weights are typical costs, not envelope extremes &mdash; a heavy task already sits at $12.00 against a $15.00 ceiling &mdash; so a fourth and fifth step would price a heavy task at $17.93 and $21.91, and push the heaviest persona mix to $259 and $316 a user against Microsoft\'s published $82&ndash;$228. Light, Medium and High stay inside both published bounds. Raise this multiplier above the default and the tool will tell you when you leave them.</p>' +
 
       '<div class="nosave" style="margin:26px 0 0;"><span style="font-size:1.05rem;">&#128190;</span><div class="ns-t">' +
         '<b>Save this rate card and reuse it.</b> Nothing here is stored in this browser, so download it once and load it at the start of every future session \u2014 it carries your prices and service rates, and no customer data at all.' +
@@ -3248,6 +3275,11 @@ footer.pagefoot a { color:#6b7280; }
         var loaded = JSON.parse(ev.target.result);
         if (!loaded || typeof loaded !== 'object') throw new Error('shape');
         state = Object.assign(E.defaults(), loaded);
+        // A session saved on the old five-step ladder would leave the effort
+        // segment with nothing selected. Land it on High here too, so the
+        // control matches the number the engine is about to compute.
+        if (state.effort && E.EFFORT_RETIRED[state.effort.level])
+          state.effort.level = E.EFFORT_RETIRED[state.effort.level];
         hydrateInputs(); renderLic(); renderGov(); renderPricing();
         goTo(cur);
       } catch (err) { alert('That file doesn’t look like a session exported from this tool.'); }
