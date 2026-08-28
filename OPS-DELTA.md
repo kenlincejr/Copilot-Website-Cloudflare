@@ -303,6 +303,4 @@ The dead link (A7) should point at [aka.ms/incentivesguide](https://aka.ms/incen
 - [Microsoft Community Hub — Microsoft 365 E7 and Agent 365 are now generally available](https://techcommunity.microsoft.com/blog/microsoft_365blog/microsoft-365-e7-and-agent-365-are-now-generally-available/4516295)
 - [Forrester — The Total Economic Impact of Microsoft 365 Copilot](https://tei.forrester.com/go/microsoft/M365Copilot/?lang=en-us)
 - [Message Center MC1427972 — Restricted content discovery enhancements](https://mc.merill.net/message/MC1427972)
-- [Pax8 — FY27 Microsoft incentives updates](https://www.pax8.com/blog/microsoft-incentives-fy27-updates/)
-- [Sherweb — Microsoft FY27 CSP incentives](https://www.sherweb.com/blog/partner/csp-programs-incentives/microsoft-fy27-csp-incentives/)
 - [Copilot Studio Agent Consumption Estimator](https://microsoft.github.io/copilot-studio-estimator/)
