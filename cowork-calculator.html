@@ -255,14 +255,21 @@ a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text
 .introfoot { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:34px; padding-top:22px; border-top:1px solid var(--border); }
 
 .modecards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:4px 0 22px; }
-.modecard { text-align:left; border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:16px 18px; cursor:pointer; font-family:inherit; }
+.modecard { text-align:left; border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:16px 18px; cursor:pointer; font-family:inherit;
+             display:flex; flex-direction:column; }
 .modecard:hover { border-color:var(--ltblue); }
 .modecard.on { border-color:var(--teal); background:var(--accent); box-shadow:inset 0 0 0 1px var(--teal); }
 .modecard .mc-t { font-size:.95rem; font-weight:700; color:var(--navy); margin-bottom:5px; }
 .modecard.on .mc-t::before { content:"\2713\00a0"; color:var(--teal); }
 .modecard .mc-d { font-size:.83rem; color:#6b7280; line-height:1.55; }
 .modecard .mc-tag { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); margin-bottom:4px; }
-.modecard .mc-me { font-size:.76rem; color:var(--navy); margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
+/* Every motion card carries a tag row whether or not it has a tag, so the
+   titles sit on the same line across the row; and the consequence line is
+   pushed to the bottom, so the dashed rules align however long the blurbs run. */
+.modecard .mc-me { font-size:.76rem; color:var(--navy); margin-top:auto; padding-top:9px; border-top:1px dashed var(--border); }
+.modecard .mc-me b { color:var(--teal); }
+.modecards.motion { grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+.modecards.motion .mc-d { margin-bottom:10px; }
 .basisbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; border:1px solid var(--border); border-left:4px solid #9ca3af; border-radius:0 var(--radius) var(--radius) 0; background:var(--muted); padding:13px 18px; }
 .basisbar.sell { border-left-color:var(--teal); background:#f3fbfc; }
 .basisbar .bb-t { font-size:.85rem; color:#374151; line-height:1.6; }
@@ -1098,7 +1105,11 @@ footer.pagefoot a { color:#6b7280; }
     notCsp:           { label:'Outside CSP',             short:'outside CSP',       billing:false, csp:false },
     unsure:           { label:'Not established',         short:'not established',   billing:false, csp:true }
   };
-  var MOTION_ORDER = ['direct','indirectProvider','indirectReseller','notCsp'];
+  /* The picker offers only the motions a reader of this tool is actually in.
+     'indirectProvider' stays in MOTIONS — it behaves identically to direct bill
+     and any rate card that already carries it still resolves — but a
+     distributor is not the audience, so it is not on the card row. */
+  var MOTION_ORDER = ['direct','indirectReseller','notCsp'];
   function motionOf(state) {
     var m = state.channel && state.channel.motion;
     return MOTIONS[m] ? m : 'unsure';
@@ -2721,31 +2732,28 @@ footer.pagefoot a { color:#6b7280; }
        earn. Nothing the customer sees moves with the answer. */
     var mot = E.motionOf(state);
     var MOTION_COPY = {
-      direct: { t:'Direct-bill CSP partner',
-        d:'You transact with Microsoft directly. You create the Azure plan, Microsoft invoices you, partner-earned credit lands on your invoice, and you place a Copilot Credit pre-purchase order yourself.',
-        me:'&rarr; The meter costs you Microsoft\u2019s $0.01 a credit, less whatever PEC you earn.' },
-      indirectProvider: { t:'Indirect provider (distributor)',
-        d:'You hold the Microsoft billing relationship and sell through a reseller network. For customers you serve directly the mechanics are the same as direct bill.',
-        me:'&rarr; The meter costs you Microsoft\u2019s $0.01 a credit, less whatever PEC you earn.' },
+      direct: { t:'Direct-bill CSP partner', tag:'You bill Microsoft direct',
+        d:'You hold the billing relationship with Microsoft. You create the Azure plan, Microsoft invoices you, and you place a Copilot Credit pre-purchase order yourself.',
+        me:'You pay Microsoft <b>$0.01</b> a credit, less the PEC you earn.' },
       indirectReseller: { t:'Indirect reseller', tag:'Most TD SYNNEX partners',
-        d:'You buy through TD SYNNEX or another distributor. Your provider holds the Azure plan and the Microsoft invoice; you own the customer, you set what they pay, and you buy the meter from your distributor.',
-        me:'&rarr; The meter costs you your provider\u2019s rate, not Microsoft\u2019s. PEC lands on their invoice, not yours.' },
-      notCsp: { t:'Outside CSP',
-        d:'The customer buys from Microsoft directly on an Enterprise Agreement or their own Microsoft Customer Agreement, or through a different partner. You advise.',
-        me:'&rarr; The meter is on the customer\u2019s own Azure invoice. Your margin here is services.' }
+        d:'You buy through TD SYNNEX or another distributor. They hold the Azure plan and the Microsoft invoice; you own the customer and set what they pay.',
+        me:'You pay <b>your provider\u2019s rate</b>. PEC lands on their invoice, not yours.' },
+      notCsp: { t:'Outside CSP', tag:'You advise, you don\u2019t bill',
+        d:'The customer buys direct from Microsoft on an Enterprise Agreement or their own Customer Agreement, or through a different partner.',
+        me:'The meter is on <b>their</b> Azure bill. Your margin is services.' }
     };
 
     $('pricingBlock').innerHTML =
       '<div class="callout"><div class="callout-title">First \u2014 who are you in this transaction?</div><div class="callout-body">' +
         '<p>Every partner-economics figure in this tool \u2014 what the meter costs you, what margin you hold on it, who is even allowed to place a pre-purchase order \u2014 turns on <b>who holds the Azure billing account</b> for this customer. Not on who owns the relationship. On whose invoice Microsoft sends.</p>' +
-        '<p>The answer changes nothing the <i>customer</i> sees. It changes almost everything on your side of the page, and a margin calculation shown to a partner who cannot earn it is worse than no calculation at all \u2014 so until this is set, the tool withholds yours.</p>' +
+        '<p><b>It moves no number the customer sees.</b> The monthly figure, the band, the licensing recommendation and the leave-behind are identical on all three. What it moves is your side of the page: which cost question you get asked, whether a meter margin can be computed at all, and who is allowed to place a pre-purchase order. A margin shown to a partner who cannot earn it is worse than no margin, so until this is set the tool withholds yours.</p>' +
       '</div></div>' +
 
-      '<div class="modecards" id="motionCards">' +
+      '<div class="modecards motion" id="motionCards">' +
         E.MOTION_ORDER.map(function (k) {
           var m = MOTION_COPY[k];
           return '<button class="modecard' + (mot === k ? ' on' : '') + '" data-motion="' + k + '">' +
-            (m.tag ? '<div class="mc-tag">' + m.tag + '</div>' : '') +
+            '<div class="mc-tag">' + (m.tag || '&nbsp;') + '</div>' +
             '<div class="mc-t">' + m.t + '</div>' +
             '<div class="mc-d">' + m.d + '</div>' +
             '<div class="mc-me">' + m.me + '</div></button>';
