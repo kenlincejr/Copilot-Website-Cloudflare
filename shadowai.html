@@ -83,6 +83,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
 a { color: var(--teal); text-decoration: none; }
 a:hover { text-decoration: underline; }
+a.docref { font-weight: 600; border-bottom: 1px dotted var(--ltblue); }
 
 /* TABLE OF CONTENTS */
 .toc {
@@ -181,10 +182,12 @@ a:hover { text-decoration: underline; }
 /* METRICS */
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin: 20px 0;
 }
+@media (max-width: 800px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .metrics { grid-template-columns: 1fr; } }
 .metric {
   border: 1px solid var(--border);
   border-top: 3px solid var(--teal);
@@ -408,6 +411,8 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 /* RECAP HAIRLINE GRID */
 .recap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.recap-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 700px) { .recap-grid.cols-3 { grid-template-columns: 1fr; } }
 .recap-item { background: #fff; padding: 18px 20px; }
 .recap-item .rn { font-family: Consolas,Monaco,monospace; color: var(--teal-light); font-size: .72rem; font-weight: 700; }
 .recap-item h4 { margin: 6px 0 4px; }
@@ -496,16 +501,18 @@ table.dense th, table.dense td { padding: 8px 10px; }
       <li><a href="#section-5">A Sample Engagement — 120 Users, 50 Copilot Seats</a></li>
       <li><a href="#section-6">The Licensing Motion — Positioning the Suites</a></li>
       <li><a href="#section-7">Sanction, Don't Just Block</a></li>
-      <li><a href="#section-8">The Top AI Apps — Enterprise Onboarding Matrix</a></li>
-      <li><a href="#section-9">Finding the Conversation — Reading Partner Signal Data</a></li>
-      <li><a href="#section-10">The Revenue Ladder — Six Service Lines</a></li>
-      <li><a href="#section-11">Objection Handling</a></li>
-      <li><a href="#section-12">Companion Assets Worth Building</a></li>
-      <li><a href="#section-13">Where the Premium Sits — Regulated Verticals</a></li>
-      <li><a href="#section-14">"It's Not a Big Deal" — And Why That's Wrong</a></li>
-      <li><a href="#section-15">The Partner's Non-Negotiables</a></li>
-      <li><a href="#section-16">Next Steps</a></li>
-      <li><a href="#section-17">Reference Library &amp; Further Reading</a></li>
+      <li><a href="#section-8">What Strong AI Controls Look Like</a></li>
+      <li><a href="#section-9">Rolling Out the Policy — Making It Stick</a></li>
+      <li><a href="#section-10">The Top AI Apps — Enterprise Onboarding Matrix</a></li>
+      <li><a href="#section-11">Finding the Conversation — Reading Partner Signal Data</a></li>
+      <li><a href="#section-12">The Revenue Ladder — Six Service Lines</a></li>
+      <li><a href="#section-13">Objection Handling</a></li>
+      <li><a href="#section-14">Companion Assets Worth Building</a></li>
+      <li><a href="#section-15">Where the Premium Sits — Regulated Verticals</a></li>
+      <li><a href="#section-16">"It's Not a Big Deal" — And Why That's Wrong</a></li>
+      <li><a href="#section-17">The Partner's Non-Negotiables</a></li>
+      <li><a href="#section-18">Next Steps</a></li>
+      <li><a href="#section-19">Reference Library &amp; Further Reading</a></li>
     </ul>
   </div>
 </nav>
@@ -519,6 +526,12 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 <!-- SECTION 1 -->
 <h2 id="section-1">1. Why Shadow AI Is the First Conversation</h2>
+
+<div class="dark-panel">
+  <div class="dp-eyebrow"><div class="bar"></div><div class="lbl">The Frame</div><div class="rule"></div></div>
+  <p>AI adoption has already happened inside the customer's business. Employees are drafting content, analyzing data, and automating work with tools nobody in IT approved &mdash; and a growing share of those tools are wired directly into email, file storage, and other core systems. Security and governance haven't kept pace. Most organizations can't answer what AI is actually running, what data it can touch, or where that data goes once it leaves.</p>
+  <p><strong>Blocking AI isn't the answer. Governance is.</strong> The customers who capture the full value of AI are the ones who can see it clearly enough to govern it &mdash; not the ones trying to ban it outright. That's the wedge: every SMB is somewhere on this curve, and almost none of them have closed the visibility gap on their own.</p>
+</div>
 
 <p>By the time a partner sits down to talk about a Copilot license, the AI conversation has usually already started &mdash; just not with IT in the room. Employees are pasting client emails into free ChatGPT accounts, dropping proprietary code into personal Cursor or Claude sessions, and running meeting recordings through consumer transcription apps. None of it shows up in a firewall log, because every one of those tools is a trusted TLS endpoint that every URL filter waves through as "productivity."</p>
 
@@ -775,10 +788,10 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="asset-item"><span class="ai-num">02</span><div><h4>Ranked AI app inventory</h4><p>Top apps by user count, top apps by risk.</p></div></div>
   <div class="asset-item"><span class="ai-num">03</span><div><h4>Ranked exposure list</h4><p>Highest-risk individuals, with a separate executive-only version.</p></div></div>
   <div class="asset-item"><span class="ai-num">04</span><div><h4>SharePoint oversharing summary</h4><p>What any future AI product would be able to see on day one.</p></div></div>
-  <div class="asset-item"><span class="ai-num">05</span><div><h4>Licensing gap analysis</h4><p>Current state versus recommended state, mapped to the Suite add-ons in Section 6.</p></div></div>
+  <div class="asset-item"><span class="ai-num">05</span><div><h4>Licensing gap analysis</h4><p>Current state versus recommended state, mapped to the Suite add-ons in <a class="docref" href="#section-6">Section 6</a>.</p></div></div>
   <div class="asset-item"><span class="ai-num">06</span><div><h4>Three-tier remediation roadmap</h4><p>Quick wins (0&ndash;30 days), foundational (30&ndash;90 days), strategic (90+ days).</p></div></div>
   <div class="asset-item"><span class="ai-num">07</span><div><h4>Draft AI Acceptable Use Policy</h4><p>Customized to the sanctioned tools and the customer's vertical, not boilerplate.</p></div></div>
-  <div class="asset-item"><span class="ai-num">08</span><div><h4>Follow-on SOW menu</h4><p>Priced by service line — see Section 10.</p></div></div>
+  <div class="asset-item"><span class="ai-num">08</span><div><h4>Follow-on SOW menu</h4><p>Priced by service line — see <a class="docref" href="#section-12">Section 12</a>.</p></div></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
@@ -875,14 +888,121 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="vt-item"><div class="vt-when">Step 1</div><h4>Sanction their preferred tool</h4><p>Move them to an enterprise tier — Claude Enterprise, ChatGPT Enterprise, or another vendor's enterprise plan, matched to their preference.</p></div>
   <div class="vt-item"><div class="vt-when">Step 2</div><h4>Wire it to Entra</h4><p>SSO via SAML, SCIM for lifecycle management, and an admin console configured for data retention, model access, and audit export.</p></div>
   <div class="vt-item"><div class="vt-when">Step 3</div><h4>Layer Purview around it</h4><p>The browser extension, DLP AI-category policies, and Defender for Cloud Apps monitoring — the same tools, pointed at a different sanctioned destination.</p></div>
-  <div class="vt-item"><div class="vt-when">Step 4</div><h4>Keep it recurring</h4><p>Monthly reporting on usage, cost, and DLP incidents under the same Managed AI Governance retainer described in Section 10.</p></div>
+  <div class="vt-item"><div class="vt-when">Step 4</div><h4>Keep it recurring</h4><p>Monthly reporting on usage, cost, and DLP incidents under the same Managed AI Governance retainer described in <a class="docref" href="#section-12">Section 12</a>.</p></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
 <!-- SECTION 8 -->
-<h2 id="section-8">8. The Top AI Apps — Enterprise Onboarding Matrix</h2>
+<h2 id="section-8">8. What Strong AI Controls Look Like</h2>
+
+<p>A strong AI policy doesn't need to be complex. It needs to be clear, enforceable, and built on the right foundations. <a class="docref" href="#section-3">Section 3</a> covers the technical control plane &mdash; Discover, Block, Protect, Govern. This is the governance layer that sits on top of it: five controls a partner can actually stand up as deliverables, each one reducing exposure when a mistake happens, data is mishandled, or an output can't be trusted.</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">AI asset inventory</div></div>
+      <p class="tc-desc">The complete picture of every AI tool in use: who owns it, what business purpose it serves, and what data it can access. Most customers discover significantly more AI usage than they expected once the scan runs &mdash; this is what the <a class="docref" href="#section-4">Assessment</a> produces.</p>
+      <div class="tc-facts"><span><strong>Key question:</strong> Is there a process to request approval of a new tool, and how often is the inventory reviewed?</span></div>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Acceptable use policy</div></div>
+      <p class="tc-desc">The rules employees need to work confidently and safely with AI: which tools are approved, what data can be shared, and what's off-limits. Without clear expectations, employees make their own judgment calls, and exposure follows. More on drafting this in 8.1 below.</p>
+      <div class="tc-facts"><span><strong>Key question:</strong> May employees use personal AI accounts for work, and what happens when someone wants a tool that isn't yet approved?</span></div>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Access and least privilege</div></div>
+      <p class="tc-desc">AI tools connected to email, file storage, CRMs, and collaboration platforms should have access only to what they strictly need. An over-permissioned tool is among the most common and most preventable sources of exposure &mdash; a single compromised tool with broad access doesn't create a limited incident, it creates a gateway. More on making this an ongoing discipline in 8.2 below.</p>
+      <div class="tc-facts"><span><strong>Key question:</strong> Who granted each tool's permissions, were they reviewed before granting, and can access be revoked quickly during an incident?</span></div>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Human review requirements</div></div>
+      <p class="tc-desc">AI accelerates work, but accountability stays human. Define which outputs require review before they're shared or acted on &mdash; especially customer communications, financial analysis, legal content, and security recommendations. The risk isn't that AI gets something wrong occasionally; it's that no one defined when a human needed to check.</p>
+      <div class="tc-facts"><span><strong>Key question:</strong> Who is responsible for reviewing each output category, and how is accountability documented when something is acted on unreviewed?</span></div>
+    </div>
+  </div>
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">5</div><div class="tc-name">Incident response preparedness</div></div>
+      <p class="tc-desc">Data exposure through an unsanctioned tool, unauthorized use, a hallucinated output acted on, or a compliance violation from data shared externally are scenarios a legacy IR plan won't account for. More on building this with the customer in 8.3 below.</p>
+      <div class="tc-facts"><span><strong>Key question:</strong> If an employee violated the AI policy today, would anyone know &mdash; and how fast could access be revoked from the tool involved?</span></div>
+    </div>
+  </div>
+</div>
+
+<h3 id="section-8-1">8.1 &middot; Building the AI Acceptable Use Policy</h3>
+<p>The AUP is the second rung on the <a class="docref" href="#section-12">revenue ladder</a> and the deliverable customers most often already know they're missing. Draft it around the customer's actual sanctioned/unsanctioned list from the assessment, not a generic template &mdash; and never sell it without an enforcement mechanism attached (see 8.2 and the objection in <a class="docref" href="#section-13">Section 13</a>). A working AUP defines:</p>
+<ul>
+  <li>Which tools are explicitly approved, and which are prohibited</li>
+  <li>What data can be shared with AI tools, and what's off-limits &mdash; client data, financial records, PII, and IP called out by name</li>
+  <li>Whether employees may use personal AI accounts for work, and what happens when someone requests a tool that isn't yet approved</li>
+  <li>Whether rules differ by role, department, or employment type</li>
+  <li>What constitutes misuse, and what the consequences are</li>
+  <li>How the policy will be communicated and acknowledged &mdash; a signature or an unread PDF makes the difference between a real control and a paper one</li>
+</ul>
+
+<h3 id="section-8-2">8.2 &middot; Access and least privilege as an ongoing discipline</h3>
+<p><a class="docref" href="#section-3">Section 3</a> covers the initial Microsoft-stack configuration for the Protect step. Least privilege is what keeps that configuration honest after go-live &mdash; permissions drift the moment a new integration gets approved or a tool's scope quietly expands. Build a recurring review into the Managed AI Governance retainer:</p>
+<ul>
+  <li>Does each connected tool still need its current level of access to function?</li>
+  <li>Are permissions reviewed on a set cadence, not just at onboarding?</li>
+  <li>Do any tools hold admin access that could be reduced?</li>
+  <li>How are permission changes tracked and logged, and how is access revoked when a tool is decommissioned?</li>
+</ul>
+
+<h3 id="section-8-3">8.3 &middot; Building AI incident response with the customer</h3>
+<p>Most customers' existing IR plan was written before an AI tool could aggregate data across every system it technically has access to, or before an autonomous coding agent could execute a multi-step action chain on its own. That plan needs an AI-specific overlay, not a rewrite. Work through this with the customer as part of the readiness sprint in <a class="docref" href="#section-12">rung 4</a>:</p>
+<ul>
+  <li><strong>Define what counts as an AI incident here</strong> &mdash; data exposure through an unsanctioned tool, unauthorized use, a hallucinated output acted on, or a compliance violation from data shared externally.</li>
+  <li><strong>Name who responds</strong>, and document the escalation path for each incident type.</li>
+  <li><strong>Confirm how fast access can be revoked</strong> from a suspect tool, and whether AI tool activity logs are retained long enough to support an investigation.</li>
+  <li><strong>Run at least one AI scenario through a tabletop exercise</strong> before it's needed for real &mdash; and decide in advance whether and how affected clients get notified if their data is exposed.</li>
+</ul>
+
+<div class="callout warn">
+  <div class="callout-title">Why this can't wait for an incident</div>
+  <div class="callout-body"><p>An AI agent operates under the user's own account and permissions, and its activity blends into normal behavior by design. A tool built around watching for anomalies has no baseline to compare against, and an agent that's been excluded from monitoring to cut noise leaves a real blind spot. The IR plan has to account for that before the first incident, not after it.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 9 -->
+<h2 id="section-9">9. Rolling Out the Policy — Making It Stick</h2>
+
+<p>Building the policy is the starting point. Getting it adopted, followed, and maintained over time is where most engagements fall short &mdash; and it's also where a one-time AUP deliverable turns into the recurring governance retainer in <a class="docref" href="#section-12">Section 12</a>.</p>
+
+<div class="recap-grid cols-3">
+  <div class="recap-item"><span class="rn">01</span><h4>Leadership models the behavior</h4><p>Adoption fails when the policy reads as an IT initiative rather than an organizational priority. If the expectation doesn't apply at the top, it won't stick anywhere.</p></div>
+  <div class="recap-item"><span class="rn">02</span><h4>Explain the reasoning, not just the rules</h4><p>Employees who understand why a guardrail exists are far more likely to follow it. Fold the AUP into existing security-awareness material and frame it around real consequences.</p></div>
+  <div class="recap-item"><span class="rn">03</span><h4>Involve employees in the process</h4><p>Policies drafted with input from the people who use the tools earn higher adoption and surface practical gaps before the policy goes live.</p></div>
+  <div class="recap-item"><span class="rn">04</span><h4>Enforce from day one</h4><p>Configure monitoring before rollout, not after the first incident. A useful test: if an employee violated this policy today, would anyone know?</p></div>
+  <div class="recap-item"><span class="rn">05</span><h4>Review and update regularly</h4><p>The AI landscape moves too fast for a static policy. Set a defined review cadence &mdash; annually at minimum &mdash; so it keeps pace with new tools and new risk.</p></div>
+  <div class="recap-item"><span class="rn">06</span><h4>Make reporting easy and safe</h4><p>Give employees a low-friction way to flag an AI concern, and a no-blame culture that surfaces issues before they escalate rather than after.</p></div>
+</div>
+
+<div class="partner-story">
+  <div class="ps-label">Why this belongs in the SOW, not just the policy doc</div>
+  <p class="ps-quote">A policy without enforcement is a paper artifact. The rollout work &mdash; configuring monitoring, training completion tracking, the quarterly review &mdash; is exactly what turns a one-time AUP deliverable into the Managed AI Governance retainer, and it's the part most partners leave on the table.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- SECTION 10 -->
+<h2 id="section-10">10. The Top AI Apps — Enterprise Onboarding Matrix</h2>
 <p>Keep this as a living document — expand it quarterly. Pricing and SSO/SCIM support change often enough that this table intentionally omits dollar figures; confirm current terms directly with each vendor before quoting a sanctioned-app onboarding SOW.</p>
 
 <div class="tablewrap">
@@ -937,7 +1057,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 9 -->
-<h2 id="section-9">9. Finding the Conversation — Reading Partner Signal Data</h2>
+<h2 id="section-11">11. Finding the Conversation — Reading Partner Signal Data</h2>
 <p>Microsoft's partner-facing propensity tooling in Partner Center — surfaced through the AI Business Solutions &amp; Security Partner Experience (ASPX) — exposes weekly-refreshed, per-tenant signals that map directly onto a Shadow AI conversation. If your organization has Partner Center access, these are worth building into a weekly call-list routine rather than treating as background reporting.</p>
 
 <div class="tablewrap">
@@ -965,7 +1085,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 10 -->
-<h2 id="section-10">10. The Revenue Ladder — Six Service Lines</h2>
+<h2 id="section-12">12. The Revenue Ladder — Six Service Lines</h2>
 <p>The assessment is the land. What makes the practice durable is that every rung above it has a natural trigger from the one below — nothing has to be sold cold. Pricing ranges below are editorial estimates meant as a starting point; test them against your own cost model before quoting.</p>
 
 <div class="tier-ladder">
@@ -1023,7 +1143,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 11 -->
-<h2 id="section-11">11. Objection Handling</h2>
+<h2 id="section-13">13. Objection Handling</h2>
 <div class="tablewrap">
 <table>
 <thead><tr><th>Objection</th><th>The reframe</th></tr></thead>
@@ -1035,7 +1155,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <tr><td>"We'll deal with it after we turn on Copilot."</td><td>Then Copilot inherits every oversharing permission that already exists, and the customer's first real AI experience is AI surfacing content they didn't know was exposed. Show the value first — but gate it behind the governance work.</td></tr>
 <tr><td>"We'll just block everything."</td><td>Blocking without sanctioning pushes usage further underground, onto personal devices you can't see at all. Sanction one or two tools, monitor the rest, block only the highest-risk consumer apps.</td></tr>
 <tr><td>"An AUP is enough."</td><td>A policy with no enforcement behind it is a wall with no gate. Sell the policy with the control attached, every time.</td></tr>
-<tr><td>"We don't own Purview or Defender for Cloud Apps."</td><td>The Business Premium Purview Suite add-on is a fraction of the Copilot spend, and often discounted further when bundled with it. It powers the assessment today and governs Copilot tomorrow. See Section 6.</td></tr>
+<tr><td>"We don't own Purview or Defender for Cloud Apps."</td><td>The Business Premium Purview Suite add-on is a fraction of the Copilot spend, and often discounted further when bundled with it. It powers the assessment today and governs Copilot tomorrow. See <a class="docref" href="#section-6">Section 6</a>.</td></tr>
 </tbody>
 </table>
 </div>
@@ -1044,18 +1164,20 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 12 -->
-<h2 id="section-12">12. Companion Assets Worth Building</h2>
-<p>Ten asset concepts worth productizing on top of this guide — each one shortens the sales cycle for a rung on the ladder in Section 10.</p>
+<h2 id="section-14">14. Companion Assets Worth Building</h2>
+<p>Ten asset concepts worth productizing on top of this guide — each one shortens the sales cycle for a rung on the ladder in <a class="docref" href="#section-12">Section 12</a>.</p>
 
 <div class="asset-index">
   <div class="asset-item"><span class="ai-num">01</span><div><h4>Shadow AI Assessment Playbook</h4><p>A full week-by-week delivery method mapped to Microsoft's four-step model, with tool-configuration walkthroughs, a report template, and an executive-readout skeleton.</p><span class="ai-meta">Enables rung 1</span></div></div>
-  <div class="asset-item"><span class="ai-num">02</span><div><h4>AI App Enterprise Onboarding Matrix</h4><p>The living matrix in Section 8, expanded quarterly with SSO/SCIM detail, DPA availability, and data-training defaults per vendor.</p><span class="ai-meta">Enables rung 3</span></div></div>
+  <div class="asset-item"><span class="ai-num">02</span><div><h4>AI App Enterprise Onboarding Matrix</h4><p>The living matrix in <a class="docref" href="#section-10">Section 10</a>, expanded quarterly with SSO/SCIM detail, DPA availability, and data-training defaults per vendor.</p><span class="ai-meta">Enables rung 3</span></div></div>
   <div class="asset-item"><span class="ai-num">03</span><div><h4>AI Acceptable Use Policy template</h4><p>A modular template — sanctioned-tools list, prohibited data classes, monitoring statement, enforcement steps, framework crosswalk.</p><span class="ai-meta">Rung 2</span></div></div>
   <div class="asset-item"><span class="ai-num">04</span><div><h4>Executive read-out deck template</h4><p>Cover, exposure heatmap, top apps, top exposed users, business impact, remediation roadmap, licensing gap, timeline, appendix.</p><span class="ai-meta">Bridges rung 1 &rarr; 2&ndash;5</span></div></div>
-  <div class="asset-item"><span class="ai-num">05</span><div><h4>Partner-signal runbook</h4><p>The Section 9 method, turned into a weekly 30-minute routine that converts propensity data into a ranked call list.</p><span class="ai-meta">Front-loads rung 1</span></div></div>
-  <div class="asset-item"><span class="ai-num">06</span><div><h4>Fixed-fee SOW templates</h4><p>One per service line in Section 10, with deliverables and exclusions pinned so the assessment doesn't quietly become an unpaid Purview deployment.</p><span class="ai-meta">All rungs</span></div></div>
+  <div class="asset-item"><span class="ai-num">05</span><div><h4>Partner-signal runbook</h4><p>The <a class="docref" href="#section-11">Section 11</a> method, turned into a weekly 30-minute routine that converts propensity data into a ranked call list.</p><span class="ai-meta">Front-loads rung 1</span></div></div>
+  <div class="asset-item"><span class="ai-num">06</span><div><h4>Fixed-fee SOW templates</h4><p>One per service line in <a class="docref" href="#section-12">Section 12</a>, with deliverables and exclusions pinned so the assessment doesn't quietly become an unpaid Purview deployment.</p><span class="ai-meta">All rungs</span></div></div>
   <div class="asset-item"><span class="ai-num">07</span><div><h4>Recurring QBR pack</h4><p>Monthly and quarterly cadence: AI usage summary, newly discovered apps, DLP incident summary, sanctioned-app health, license utilization, risk-register updates.</p><span class="ai-meta">Rungs 3&ndash;5</span></div></div>
-  <div class="asset-item"><span class="ai-num">08</span><div><h4>"Sanction, don't block" briefing</h4><p>The Section 7 material as a partner-branded one-pager. Converts the biggest objection into a three-minute pre-read that lands the meeting.</p><span class="ai-meta">Enables rungs 2&ndash;3</span></div></div>
+  <div class="asset-item"><span class="ai-num">08</span><div><h4>"Sanction, don't block" briefing</h4><p>The <a class="docref" href="#section-7">Section 7</a> material as a partner-branded one-pager. Converts the biggest objection into a three-minute pre-read that lands the meeting.</p><span class="ai-meta">Enables rungs 2&ndash;3</span></div></div>
+  <div class="asset-item"><span class="ai-num">11</span><div><h4>AI Controls self-assessment checklist</h4><p>The key-questions list under each of the five controls in <a class="docref" href="#section-8">Section 8</a>, turned into a scored discovery-intake questionnaire.</p><span class="ai-meta">Enables rung 1 &amp; 2</span></div></div>
+  <div class="asset-item"><span class="ai-num">12</span><div><h4>AI incident response one-pager</h4><p>The <a class="docref" href="#section-8">Section 8.3</a> scenarios and escalation questions, packaged as a tabletop-exercise kit for the readiness sprint.</p><span class="ai-meta">Enables rung 4</span></div></div>
   <div class="asset-item"><span class="ai-num">09</span><div><h4>License uplift calculator</h4><p>Business Premium vs. Business Premium + Suites vs. E5, with the Shadow AI capability delta line by line.</p><span class="ai-meta">Enables every Copilot deal</span></div></div>
   <div class="asset-item"><span class="ai-num">10</span><div><h4>Regulated-vertical addenda</h4><p>HIPAA / GLBA / SOC 2 / ISO 42001 / EU AI Act supplements to the base playbook, capturing the extra evidence requirements and where the premium sits.</p><span class="ai-meta">Rungs 1, 2, 4, 5</span></div></div>
 </div>
@@ -1064,7 +1186,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 13 -->
-<h2 id="section-13">13. Where the Premium Sits — Regulated Verticals</h2>
+<h2 id="section-15">15. Where the Premium Sits — Regulated Verticals</h2>
 <p>Vertical-specific work in a regulated customer is genuine additional scope, not padding — and it's usually visible enough that the customer recognizes it as real. Community-observed pricing premiums of roughly 20&ndash;40% above generalist rates in these verticals reflect that extra work, not markup for its own sake.</p>
 
 <div class="tablewrap">
@@ -1084,7 +1206,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 14 -->
-<h2 id="section-14">14. "It's Not a Big Deal" — And Why That's Wrong</h2>
+<h2 id="section-16">16. "It's Not a Big Deal" — And Why That's Wrong</h2>
 
 <div class="smb-reality">
   <div class="sr-label">The objections you'll hear, and the honest answer to each</div>
@@ -1101,8 +1223,8 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 15 -->
-<h2 id="section-15">15. The Partner's Non-Negotiables</h2>
-<div class="recap-grid">
+<h2 id="section-17">17. The Partner's Non-Negotiables</h2>
+<div class="recap-grid cols-3">
   <div class="recap-item"><span class="rn">01</span><h4>Discover before licensing</h4><p>The first paid conversation is Shadow AI discovery, not a Copilot quote.</p></div>
   <div class="recap-item"><span class="rn">02</span><h4>Governance readiness is consumption readiness</h4><p>Any AI product a customer later turns on inherits whatever data hygiene already exists.</p></div>
   <div class="recap-item"><span class="rn">03</span><h4>Keep the customer's preferred AI</h4><p>Sanction it. Don't block it. Bring it under Entra and Purview management instead.</p></div>
@@ -1118,16 +1240,16 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 16 -->
-<h2 id="section-16">16. Next Steps</h2>
+<h2 id="section-18">18. Next Steps</h2>
 <p>What to build first, in rough priority order:</p>
 <ol>
 <li>Publish this guide as the standing Shadow AI reference page, and link it from every related asset on the site.</li>
 <li>Ship the <strong>License Uplift Calculator</strong> (companion asset 9) as an embedded, interactive tool.</li>
-<li>Turn the <strong>AI App Onboarding Matrix</strong> (Section 8) into a living page with a quarterly refresh cadence.</li>
+<li>Turn the <strong>AI App Onboarding Matrix</strong> (<a class="docref" href="#section-10">Section 10</a>) into a living page with a quarterly refresh cadence.</li>
 <li>Package the <strong>AUP template, executive read-out deck, QBR pack,</strong> and the <strong>six SOW templates</strong> as a downloadable, email-gated partner kit.</li>
 <li>Ship the <strong>"Sanction, Don't Block" briefing</strong> as an open, ungated download — it's the objection-handler most partners will forward inbound.</li>
-<li>Add a <strong>regulated-vertical addendum library</strong> as expandable subsections under each vertical in Section 13.</li>
-<li>Wire the <strong>partner-signal runbook</strong> (Section 9) as a partner-only page behind Partner Center authentication.</li>
+<li>Add a <strong>regulated-vertical addendum library</strong> as expandable subsections under each vertical in <a class="docref" href="#section-15">Section 15</a>.</li>
+<li>Wire the <strong>partner-signal runbook</strong> (<a class="docref" href="#section-11">Section 11</a>) as a partner-only page behind Partner Center authentication.</li>
 <li>Cross-link every asset to its named source — Chapple, Tenant Wizards, CIAOPS — so the practice stays grounded in named, checkable authority.</li>
 </ol>
 
@@ -1135,7 +1257,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <hr>
 
 <!-- SECTION 17 -->
-<h2 id="section-17">17. Reference Library &amp; Further Reading</h2>
+<h2 id="section-19">19. Reference Library &amp; Further Reading</h2>
 <p>Every linked item below was checked at the time this guide was written. Product pages, pricing, and licensing tables change on Microsoft's own schedule — re-verify before quoting a customer. Items without a live link are cited by name only; confirm the current URL before publishing them externally.</p>
 
 <h3>Microsoft, official</h3>
@@ -1152,20 +1274,20 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 <h3>MVP and community authority</h3>
 <ul class="reflist">
-<li><div class="rf-t"><a href="https://nikkichapple.com/govern-shadow-ai-microsoft-purview-defender-dspm/" target="_blank" rel="noopener">Nikki Chapple &mdash; How to govern shadow AI using Microsoft Purview, Defender, and DSPM</a></div><div class="rf-d">Source of the "control the apps / control the data" framing used in Section 3.</div></li>
+<li><div class="rf-t"><a href="https://nikkichapple.com/govern-shadow-ai-microsoft-purview-defender-dspm/" target="_blank" rel="noopener">Nikki Chapple &mdash; How to govern shadow AI using Microsoft Purview, Defender, and DSPM</a></div><div class="rf-d">Source of the "control the apps / control the data" framing used in <a class="docref" href="#section-3">Section 3</a>.</div></li>
 <li><div class="rf-t"><a href="https://nikkichapple.com/microsoft-purview-browser-extension-protect-ai/" target="_blank" rel="noopener">Nikki Chapple &mdash; Microsoft Purview browser extension: governing AI shadow IT</a></div></li>
 <li><div class="rf-t"><a href="https://tenantwizards.com/blog/shadow-ai-microsoft-365-purview-block/" target="_blank" rel="noopener">Danny Vorst / Tenant Wizards &mdash; Shadow AI in Microsoft 365: find and block it with Purview</a></div><div class="rf-d">A practitioner walkthrough of the same four-step model with configuration detail.</div></li>
-<li><div class="rf-t"><a href="https://blog.ciaops.com/2025/10/08/microsoft-defender-and-purview-suites-for-m365-business-premium-detailed-breakdown/" target="_blank" rel="noopener">Robert Crane / CIAOPS &mdash; Microsoft Defender and Purview Suites for M365 Business Premium</a></div><div class="rf-d">The detailed licensing breakdown behind Section 6. Verify against the live Microsoft pricing page above.</div></li>
-<li class="unlinked"><div class="rf-t">ShadowLock &mdash; State of Shadow AI (2026)</div><div class="rf-d">Community synthesis of Gartner, Microsoft, IBM, Cyberhaven, and Netskope research; source of the ~75% and $400K figures in Section 2. Treat as directional and re-confirm before quoting.</div></li>
+<li><div class="rf-t"><a href="https://blog.ciaops.com/2025/10/08/microsoft-defender-and-purview-suites-for-m365-business-premium-detailed-breakdown/" target="_blank" rel="noopener">Robert Crane / CIAOPS &mdash; Microsoft Defender and Purview Suites for M365 Business Premium</a></div><div class="rf-d">The detailed licensing breakdown behind <a class="docref" href="#section-6">Section 6</a>. Verify against the live Microsoft pricing page above.</div></li>
+<li class="unlinked"><div class="rf-t">ShadowLock &mdash; State of Shadow AI (2026)</div><div class="rf-d">Community synthesis of Gartner, Microsoft, IBM, Cyberhaven, and Netskope research; source of the ~75% and $400K figures in <a class="docref" href="#section-2">Section 2</a>. Treat as directional and re-confirm before quoting.</div></li>
 </ul>
 
 <h3>Research and benchmark data</h3>
 <ul class="reflist">
-<li><div class="rf-t"><a href="https://www.gallup.com/workplace/699689/ai-use-at-work-rises.aspx" target="_blank" rel="noopener">Gallup &mdash; AI use at work rises (2025)</a></div><div class="rf-d">Source for the AI-tool-preference figures in Section 2 — re-check the exact percentage in the current edition.</div></li>
+<li><div class="rf-t"><a href="https://www.gallup.com/workplace/699689/ai-use-at-work-rises.aspx" target="_blank" rel="noopener">Gallup &mdash; AI use at work rises (2025)</a></div><div class="rf-d">Source for the AI-tool-preference figures in <a class="docref" href="#section-2">Section 2</a> — re-check the exact percentage in the current edition.</div></li>
 <li><div class="rf-t"><a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey &mdash; The State of AI (2025)</a></div><div class="rf-d">Source for the organizational AI-adoption figure.</div></li>
 <li><div class="rf-t"><a href="https://www.verizon.com/business/resources/reports/dbir/" target="_blank" rel="noopener">Verizon Data Breach Investigations Report</a></div><div class="rf-d">Source for the AI-bolstered breach-technique figure. Confirm the current edition's exact number before quoting.</div></li>
 <li><div class="rf-t"><a href="https://www.pagerduty.com/newsroom/shadow-ai-workplace-survey-2026/" target="_blank" rel="noopener">PagerDuty &mdash; 2026 shadow AI workplace survey</a></div><div class="rf-d">Source for the 66% policy-violation admission figure.</div></li>
-<li><div class="rf-t"><a href="https://cynomi.com/state-of-the-vciso-2025/" target="_blank" rel="noopener">Cynomi &mdash; State of the vCISO 2025</a></div><div class="rf-d">Source for the 21%&rarr;67% year-over-year vCISO-adoption figure in Section 10.</div></li>
+<li><div class="rf-t"><a href="https://cynomi.com/state-of-the-vciso-2025/" target="_blank" rel="noopener">Cynomi &mdash; State of the vCISO 2025</a></div><div class="rf-d">Source for the 21%&rarr;67% year-over-year vCISO-adoption figure in <a class="docref" href="#section-12">Section 12</a>.</div></li>
 <li><div class="rf-t"><a href="https://www.kaseya.com/press-release/ai-emerges-as-the-key-to-scaling-msp-operations-as-growth-gets-harder/" target="_blank" rel="noopener">Kaseya &mdash; 2026 State of the MSP Report</a></div><div class="rf-d">48% of MSPs rank AI/automation as their #1 client priority for 2026; only 13% currently monetize it meaningfully — the gap this guide exists to close.</div></li>
 </ul>
 

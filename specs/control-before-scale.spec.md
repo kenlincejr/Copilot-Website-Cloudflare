@@ -290,7 +290,7 @@ reviewed us"), the recurring-fee objection ("why pay monthly for a one-time clea
 answered by Microsoft re-attesting its own containers every six months), and the
 permissions myth from B-05.
 
-The eight softer objections in [`shadowai.html#section-11`](../shadowai.html#section-11) are
+The eight softer objections in [`shadowai.html#section-13`](../shadowai.html#section-13) are
 linked, not restated.
 
 Also here: **the pilot dies at month three for adoption reasons, not governance reasons**
