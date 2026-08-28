@@ -485,6 +485,22 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 /* ═══ QUADRANT CARDS ═══ */
 .quads { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 20px 0; }
+.xray { border: 1px solid var(--border); border-radius: var(--radius-lg); background: linear-gradient(180deg,#fff 0%,#fbfcfd 100%); box-shadow: var(--shadow-sm); margin: 22px 0; padding: 20px 22px 22px; }
+.xray > .xray-fig { border: 0; box-shadow: none; margin: 0; padding: 0; background: transparent; }
+.xray > .quads { margin: 0; }
+.xray-link { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; }
+.xray-link .xl-rule { flex: 1; height: 1px; background: linear-gradient(to right,transparent,var(--border) 30%,var(--border) 70%,transparent); }
+.xray-link .xl-txt { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .11em; color: var(--teal); white-space: nowrap; }
+/* cards mirror the plot: B top-left, D top-right, A bottom-left, C bottom-right.
+   DOM order stays A-B-C-D so the single-column view still reads alphabetically. */
+@media (min-width: 720px) {
+  .xray > .quads { grid-template-areas: "b d" "a c"; }
+  .xray > .quads > .quad.a { grid-area: a; }
+  .xray > .quads > .quad.b { grid-area: b; }
+  .xray > .quads > .quad.c { grid-area: c; }
+  .xray > .quads > .quad.d { grid-area: d; }
+}
+@media (max-width: 719px) { .quads { grid-template-columns: 1fr; } }
 @media (max-width: 760px) { .quads { grid-template-columns: 1fr; } }
 .quad { border: 1px solid var(--border); border-left: 4px solid var(--qc, var(--teal)); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; background: #fff; box-shadow: var(--shadow-sm); }
 .quad.a { --qc: #6b7280; }
@@ -576,6 +592,28 @@ pre.code b { color: #004B87; font-weight: 700; }
 .traps p + p { margin-top: 5px; }
 .traps .fix { color: #0f766e; font-weight: 600; }
 
+/* ═══ OPENING · BEAT BAR ═══ */
+.beatbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 22px 0 22px; box-shadow: var(--shadow-md); }
+.beat { background: #fff; padding: 17px 22px 19px; }
+.beat .bt-l { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #9ca3af; margin-bottom: 7px; }
+.beat .bt-t { font-size: 1.25rem; font-weight: 700; line-height: 1.25; color: var(--navy); letter-spacing: -.3px; }
+.beat .bt-s { font-size: .82rem; line-height: 1.5; color: #6b7280; margin-top: 7px; }
+.beat.gap { background: #fef2f2; }
+.beat.gap .bt-l { color: #dc2626; }
+.beat.gap .bt-s { color: #92400e; }
+@media (max-width: 800px) { .beatbar { grid-template-columns: 1fr; } }
+
+/* ═══ OPENING · REVERSAL TEASERS (on dark) ═══ */
+.teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,.08); border-radius: 6px; overflow: hidden; margin: 18px 0 0; }
+.tsr { background: rgba(255,255,255,.04); padding: 15px 18px 17px; }
+.tsr .tsr-n { font-family: Consolas,Monaco,monospace; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #a8ecf5; margin-bottom: 9px; }
+.tsr .tsr-b { margin: 0 0 9px; font-size: .82rem; line-height: 1.5; color: rgba(255,255,255,.55); font-style: italic; border-left: 2px solid rgba(255,255,255,.12); padding-left: 10px; }
+.tsr .tsr-d { margin: 0; font-size: .95rem; line-height: 1.5; color: #fff; font-weight: 600; }
+.tsr .tsr-d em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.dp-foot { margin: 16px 0 0; font-size: .82rem; color: rgba(255,255,255,.55); }
+.dp-foot a { color: #a8ecf5; font-weight: 600; }
+@media (max-width: 800px) { .teasers { grid-template-columns: 1fr; } }
+
 /* ═══ SCRIPT LINE ═══ */
 .sayline { background: #f3fbfc; border: 1px solid #c8e6eb; border-left: 3px solid var(--teal-light); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 16px; margin: 12px 0; font-size: .9rem; line-height: 1.65; color: #374151; font-style: italic; }
 .sayline b { color: var(--navy); font-style: normal; font-size: .58rem; text-transform: uppercase; letter-spacing: .09em; display: block; margin-bottom: 5px; }
@@ -604,12 +642,70 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 
 
+<div class="beatbar">
+  <div class="beat">
+    <div class="bt-l">What you did</div>
+    <div class="bt-t">You sold the licences.</div>
+    <div class="bt-s">On your recommendation, a year ago.</div>
+  </div>
+  <div class="beat">
+    <div class="bt-l">What is coming</div>
+    <div class="bt-t">The renewal is coming.</div>
+    <div class="bt-s">Onto the owner&rsquo;s desk, next to every other line item.</div>
+  </div>
+  <div class="beat gap">
+    <div class="bt-l">What you have</div>
+    <div class="bt-t">You have no evidence.</div>
+    <div class="bt-s">Neither does the customer. That is the whole problem.</div>
+  </div>
+</div>
+
+<p>Somewhere in your book is a customer who bought Copilot on your recommendation, has been paying for it for a year, and cannot tell you what it did for them. When that renewal lands, the conversation is not going to be about AI strategy &mdash; it is going to be about whether the invoice survives, and if it does not, the Microsoft&nbsp;365 conversation underneath it gets a lot harder too.</p>
+
+<p><strong>The report that settles that argument is already in their tenant.</strong> It has been generating quietly since the day the first licence was assigned. In our experience almost nobody in the channel has ever opened it &mdash; which is strange, because the cost of opening it looks like this:</p>
+
+<div class="stat-ribbon">
+  <div class="stat-ribbon-item">
+    <div class="sr-k">180 days</div>
+    <div class="sr-l">Of history already sitting in every Copilot tenant you sold, whether anyone looks or not</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">4 clicks</div>
+    <div class="sr-l">From the admin portal to a CSV on your desktop</div>
+    <div class="sr-s">Exact path in Section&nbsp;8</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">Read-only</div>
+    <div class="sr-l"><strong>Reports Reader</strong> &mdash; not Global Administrator, which is the reason this conversation usually dies early</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">Nothing</div>
+    <div class="sr-l">No tool, no licence, no data engineer. Excel and an AI assistant you already pay for</div>
+  </div>
+</div>
+
 <div class="dark-panel">
-  <div class="dp-eyebrow"><div class="bar"></div><div class="lbl">The Opening Provocation</div><div class="rule"></div></div>
-  <h3 style="font-size:1.5rem;line-height:1.25;margin-bottom:12px;">You sold the licences. The renewal is coming. You have no evidence.</h3>
-  <p style="margin:0 0 14px;">Somewhere in your book is a customer who bought Copilot on your recommendation, has been paying for it for a year, and cannot tell you what it did for them. You cannot tell them either. When that renewal lands on the owner&rsquo;s desk next to every other line item, the conversation is not going to be about AI strategy. It is going to be about whether the invoice survives &mdash; and if it does not, the Microsoft&nbsp;365 conversation underneath it gets a lot harder too.</p>
-  <p style="margin:0 0 14px;">The report that settles that argument is already in their tenant. It has been generating quietly since the day the first licence was assigned, it holds a hundred and eighty days of history, and it takes four clicks and a read-only role to export. In our experience almost nobody in the channel has ever opened it.</p>
-  <p style="margin:0 0 4px;">We opened ours. Seven of the things we were confident about turned out to be wrong &mdash; not slightly wrong, <strong>backwards</strong>. The users our dashboards scored as healthy were the most stuck. The cohort we trained was overtaken on the newest capability by people who never attended. And the one metric the whole channel quotes as the health measure goes <em style="color:#a8ecf5;font-style:normal;font-weight:700;">down</em> when a deployment finally starts working properly.</p>
+  <div class="dp-eyebrow"><div class="bar"></div><div class="lbl">We opened ours &middot; three of the seven reversals</div><div class="rule"></div></div>
+  <h3 style="font-size:1.5rem;line-height:1.25;margin-bottom:10px;">Seven things we were confident about turned out to be wrong. Not slightly wrong &mdash; <em style="color:#a8ecf5;font-style:normal;font-weight:800;">backwards</em>.</h3>
+  <p style="margin:0;">Each one was a sentence we had said out loud to a customer. Here are three, in the form the rest of Section&nbsp;2 uses: what the channel says, and what the tenant showed.</p>
+  <div class="teasers">
+    <div class="tsr">
+      <div class="tsr-n">Reversal 02</div>
+      <p class="tsr-b">&ldquo;Our heaviest users are the success story. Put them in the case study.&rdquo;</p>
+      <p class="tsr-d">The users our dashboards scored as <em>healthiest</em> were the most stuck.</p>
+    </div>
+    <div class="tsr">
+      <div class="tsr-n">Reversal 03</div>
+      <p class="tsr-b">&ldquo;Training is what drives adoption. Sell more enablement days.&rdquo;</p>
+      <p class="tsr-d">The cohort we trained was <em>overtaken</em> on the newest capability by people who never attended.</p>
+    </div>
+    <div class="tsr">
+      <div class="tsr-n">Reversal 05</div>
+      <p class="tsr-b">&ldquo;Prompt volume is the health metric. Down is bad.&rdquo;</p>
+      <p class="tsr-d">The number the whole channel quotes goes <em>down</em> when a deployment finally starts working properly.</p>
+    </div>
+  </div>
+  <p class="dp-foot">The other four &mdash; and what to do about each &mdash; are in <a href="#section-2">Section&nbsp;2</a>.</p>
 </div>
 
 <div class="compare-grid">
@@ -1044,7 +1140,14 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <p>The reason this works is that the two axes fail independently. Someone can be present without being deep, or deep without being present, and those are not the same customer problem, do not have the same cause, and do not get fixed by the same engagement. Collapsing them into a single &ldquo;active users&rdquo; percentage &mdash; which is what every adoption dashboard does &mdash; destroys exactly the information you needed.</p>
 
-<figure class="figure">
+<h3>The four groups, and what each one buys you</h3>
+
+<p>Below is the frame with an invented population plotted on it, and underneath it the four groups it produces. <strong>Each card sits where its quadrant sits on the chart</strong> &mdash; Bursty top left, Champions top right, Drifting bottom left, Habitual bottom right &mdash; so you can read down from a corner of the plot to the conversation it justifies.</p>
+
+<p>One thing to be clear about, because the two halves come from different places. <strong>The plotted points are synthetic</strong>, so that nobody&rsquo;s tenant is on display. <strong>The percentages on the cards are real</strong> &mdash; ours, from the tenant we ran this on, which is why they are given as shares of activity and never as headcounts. They are here to show you the <em>characteristic shape</em>: a large quiet majority generating a small minority of the activity, and a concentrated group generating most of it. Your customer&rsquo;s percentages will differ. The shape rarely does.</p>
+
+<div class="xray">
+<figure class="figure xray-fig">
 <svg viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four-quadrant Copilot usage plot with a synthetic point cloud: active days on the horizontal axis, prompts submitted on a logarithmic vertical axis, split by two threshold lines into Drifting, Bursty, Habitual but shallow, and Champions.">
   <rect x="92" y="26" width="768" height="356" fill="#fff" stroke="#dde1e7" stroke-width="1"/>
   <rect x="92" y="26" width="329.1" height="121.2" fill="#f3fbfc"/>
@@ -1074,27 +1177,11 @@ pre.code b { color: #004B87; font-weight: 700; }
 <figcaption><strong>The frame, over an invented tenant.</strong> The four boxes and the two threshold lines are the method; <strong>the points are synthetic</strong> &mdash; a plausible distribution rather than anyone&rsquo;s real data, because the only version of this chart worth showing a customer is the one built from their own export. The shape is what to look at: a large quiet mass low and to the left, a correlated diagonal running up to the right, and the two thin groups off the diagonal that nobody ever reports on. Put <em>active days</em> on the horizontal axis and <em>prompts submitted</em> on the vertical, set the vertical axis to a logarithmic scale, draw one threshold line on each axis, and every licensed user lands in exactly one of four boxes. <a href="#section-10">Section&nbsp;10</a> has the prompts that build it.</figcaption>
 </figure>
 
-<h3>Choosing the two threshold lines</h3>
-
-<p>The thresholds are the only judgement call in the whole method, and it is worth being explicit about them in front of the customer rather than letting them look arbitrary. There are two defensible ways to set them, and one indefensible one.</p>
-
-<table>
-  <thead><tr><th style="width:20%;">Method</th><th style="width:44%;">How you set it</th><th>When to use it</th></tr></thead>
-  <tbody>
-    <tr><td><strong>Distributional</strong></td><td>Put both lines at the tenant&rsquo;s own median &mdash; the median active days, and the median prompts. By construction you get four non-empty groups sized relative to that population.</td><td><strong>The default.</strong> Always defensible, never argued with, and it makes cross-tenant comparison meaningless in a good way &mdash; nobody can accuse you of grading them against someone else.</td></tr>
-    <tr><td><strong>Operational</strong></td><td>Pick lines that mean something in English. &ldquo;Active on at least every third working day&rdquo; for frequency; a prompt count that represents sustained rather than exploratory use for depth.</td><td>When the customer needs the segments to map onto a policy or a licence-reclamation decision, where a human has to be able to justify the line to their own management.</td></tr>
-    <tr><td><strong>Borrowed</strong></td><td>Copying our thresholds, or anyone else&rsquo;s, out of a deck.</td><td><strong>Never.</strong> A threshold from another tenant encodes that tenant&rsquo;s window length, licence mix and rollout date. It will silently mis-sort your customer&rsquo;s population and you will not notice.</td></tr>
-  </tbody>
-</table>
-
-<div class="callout subtle">
-  <div class="callout-title">Set the depth axis to logarithmic, and say why</div>
-  <div class="callout-body"><p>Prompt counts span several orders of magnitude in every tenant we have looked at &mdash; a handful of people generate hundreds of times what the median user does. On a linear axis those few compress everyone else into a stripe along the bottom and the chart says nothing. On a log axis the structure appears. <strong>One consequence to handle before it embarrasses you: a logarithmic axis cannot plot zero.</strong> Users with no prompts at all have to be either charted at one or excluded and counted separately &mdash; and if you exclude them, say so on the slide, because in most tenants that is not a rounding error.</p></div>
-</div>
-
-<h3>What each quadrant actually buys you</h3>
-
-<p>The shares below are from the tenant we ran this on, given as percentages of population and of total activity. They are here to show you the <em>characteristic shape</em> &mdash; a large quiet majority generating a small minority of the activity, and a concentrated group generating most of it. Your customer&rsquo;s percentages will differ. The shape rarely does.</p>
+  <div class="xray-link">
+    <span class="xl-rule"></span>
+    <span class="xl-txt">Each card below sits where its quadrant sits above</span>
+    <span class="xl-rule"></span>
+  </div>
 
 <div class="quads">
   <div class="quad a">
@@ -1118,6 +1205,27 @@ pre.code b { color: #004B87; font-weight: 700; }
     <div class="quad-play"><b>The play</b>Agent <em>access</em>, not authorship. Turn on what already exists, put it where they work, make it discoverable. These are the seeds of a centre of excellence, and they are the cheapest agentic win in the account.</div>
   </div>
 </div>
+</div>
+
+<h3>Choosing the two threshold lines</h3>
+
+<p>The thresholds are the only judgement call in the whole method, and it is worth being explicit about them in front of the customer rather than letting them look arbitrary. There are two defensible ways to set them, and one indefensible one.</p>
+
+<table>
+  <thead><tr><th style="width:20%;">Method</th><th style="width:44%;">How you set it</th><th>When to use it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Distributional</strong></td><td>Put both lines at the tenant&rsquo;s own median &mdash; the median active days, and the median prompts. By construction you get four non-empty groups sized relative to that population.</td><td><strong>The default.</strong> Always defensible, never argued with, and it makes cross-tenant comparison meaningless in a good way &mdash; nobody can accuse you of grading them against someone else.</td></tr>
+    <tr><td><strong>Operational</strong></td><td>Pick lines that mean something in English. &ldquo;Active on at least every third working day&rdquo; for frequency; a prompt count that represents sustained rather than exploratory use for depth.</td><td>When the customer needs the segments to map onto a policy or a licence-reclamation decision, where a human has to be able to justify the line to their own management.</td></tr>
+    <tr><td><strong>Borrowed</strong></td><td>Copying our thresholds, or anyone else&rsquo;s, out of a deck.</td><td><strong>Never.</strong> A threshold from another tenant encodes that tenant&rsquo;s window length, licence mix and rollout date. It will silently mis-sort your customer&rsquo;s population and you will not notice.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout subtle">
+  <div class="callout-title">Set the depth axis to logarithmic, and say why</div>
+  <div class="callout-body"><p>Prompt counts span several orders of magnitude in every tenant we have looked at &mdash; a handful of people generate hundreds of times what the median user does. On a linear axis those few compress everyone else into a stripe along the bottom and the chart says nothing. On a log axis the structure appears. <strong>One consequence to handle before it embarrasses you: a logarithmic axis cannot plot zero.</strong> Users with no prompts at all have to be either charted at one or excluded and counted separately &mdash; and if you exclude them, say so on the slide, because in most tenants that is not a rounding error.</p></div>
+</div>
+
+
 
 <div class="callout">
   <div class="callout-title">The number that ends the &ldquo;we need Copilot Studio&rdquo; argument</div>
