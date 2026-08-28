@@ -261,6 +261,8 @@ a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text
 .modecard .mc-t { font-size:.95rem; font-weight:700; color:var(--navy); margin-bottom:5px; }
 .modecard.on .mc-t::before { content:"\2713\00a0"; color:var(--teal); }
 .modecard .mc-d { font-size:.83rem; color:#6b7280; line-height:1.55; }
+.modecard .mc-tag { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); margin-bottom:4px; }
+.modecard .mc-me { font-size:.76rem; color:var(--navy); margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); }
 .basisbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; border:1px solid var(--border); border-left:4px solid #9ca3af; border-radius:0 var(--radius) var(--radius) 0; background:var(--muted); padding:13px 18px; }
 .basisbar.sell { border-left-color:var(--teal); background:#f3fbfc; }
 .basisbar .bb-t { font-size:.85rem; color:#374151; line-height:1.6; }
@@ -623,7 +625,7 @@ footer.pagefoot a { color:#6b7280; }
               </svg>
             </div>
             <div class="pathlist">
-              <div class="pathrow setup"><div class="pn">&#36;</div><div class="pt"><b>Set up your pricing</b> &mdash; Microsoft list, or your own sell rates with your margin and managed service on top. Save it to a file and load it at the start of every future session.</div></div>
+              <div class="pathrow setup"><div class="pn">&#36;</div><div class="pt"><b>Who you are, and your pricing</b> &mdash; first which CSP motion you are in, because a direct-bill partner, an indirect reseller buying through TD SYNNEX, and a partner outside CSP altogether have three different cost bases on the same meter and the tool refuses to blur them. Then Microsoft list, or your own sell rates with your margin and managed service on top. Save both to a file and load it at the start of every future session.</div></div>
               <div class="pathrow"><div class="pn">1</div><div class="pt"><b>The account</b> &mdash; how many people work there in total.</div></div>
               <div class="pathrow"><div class="pn">2</div><div class="pt"><b>Copilot licenses</b> &mdash; only an assigned Microsoft 365 Copilot license makes Cowork possible at all. Everyone else costs nothing here.</div></div>
               <div class="pathrow"><div class="pn">3</div><div class="pt"><b>Active in Cowork</b> &mdash; holding a license is not using one.</div></div>
@@ -1066,6 +1068,35 @@ footer.pagefoot a { color:#6b7280; }
              tier:'interpolated', bracket:[lo.pct, hi.pct] };
   }
 
+  /* ── Which CSP motion the partner is in ───────────────────────────
+     Partner identity, not account data, so it sits on its own branch of state
+     and travels with the rate card rather than the session file.
+
+     It is not a labelling exercise. It decides who holds the Azure billing
+     account, and therefore three things this tool would otherwise get wrong:
+     who can earn partner-earned credit (it adjusts the invoiced partner's own
+     Azure invoice and nobody else's), who is allowed to place a Copilot Credit
+     P3 order, and what a credit actually costs the partner reading the page.
+
+     Microsoft is explicit that buying reservations on behalf of a customer
+     "applies only to Direct bill and indirect providers partners in the Cloud
+     Solution Provider (CSP) program". An indirect reseller cannot place the
+     order at all; they are inherited as Partner of Record from whichever
+     subscription their provider selects.
+     learn.microsoft.com/partner-center/customers/azure-reservations-buying */
+  var MOTIONS = {
+    direct:           { label:'Direct-bill CSP partner', short:'direct bill',       billing:true,  csp:true },
+    indirectProvider: { label:'Indirect provider',       short:'indirect provider', billing:true,  csp:true },
+    indirectReseller: { label:'Indirect reseller',       short:'indirect reseller', billing:false, csp:true },
+    notCsp:           { label:'Outside CSP',             short:'outside CSP',       billing:false, csp:false },
+    unsure:           { label:'Not established',         short:'not established',   billing:false, csp:true }
+  };
+  var MOTION_ORDER = ['direct','indirectProvider','indirectReseller','notCsp'];
+  function motionOf(state) {
+    var m = state.channel && state.channel.motion;
+    return MOTIONS[m] ? m : 'unsure';
+  }
+
   /* ── Default state ────────────────────────────────────────────────────── */
   function defaults() {
     return {
@@ -1073,6 +1104,12 @@ footer.pagefoot a { color:#6b7280; }
       meta: { accountName:'', asOfIso:null },
       org: { totalEmployees:120, vertical:'none', dataResidency:'none',
              azureCspPlan:'unsure', usageBillingEnabled:'unsure', competingAi:'no' },
+      // Which CSP motion the partner is in, and what their provider bills them
+      // per credit if they buy through one. 'unsure' is the honest default and,
+      // like every other posture question in this file, withholds rather than
+      // guesses — here it withholds the whole meter cost basis, because a margin
+      // figure shown to a partner who cannot earn it is worse than no figure.
+      channel: { motion:'unsure', providerCreditUsd:null },
       licenseInventory: [ { skuId:'bprem_cop', seats:60 }, { skuId:'cop_biz', seats:20 }, { skuId:'bstd', seats:40 } ],
       licenseTouched: false,      // once the partner edits a license line we stop rescaling it
       personaPreset: 'even',
@@ -1465,23 +1502,74 @@ footer.pagefoot a { color:#6b7280; }
        which is why it is modeled rather than assumed away.
        'unsure' is the default and withholds every margin figure, because a
        guessed cost basis is worse than no cost basis. */
-    var pecCfg   = state.pricing.pec || {};
-    var pecKnown = pecCfg.status === 'yes' || pecCfg.status === 'no';
-    var pecPct   = pecCfg.status === 'yes' ? clamp(n(pecCfg.pct, 15), 0, 15) : 0;
-    var paygoPartnerCost = pecKnown ? paygoAnnual * (1 - pecPct / 100) : null;
-    var p3PartnerCost    = pecKnown ? p3Annual : null;   // no PEC on a pre-purchase plan
-    var chosenIsP3       = state.billing.model === 'p3';
-    var partnerCostAnnual = pecKnown ? (chosenIsP3 ? p3PartnerCost : paygoPartnerCost) : null;
+    var cspMotion = motionOf(state);
+    var holdsBillingAccount = MOTIONS[cspMotion].billing;
+    var inCsp = MOTIONS[cspMotion].csp;
+
+    var pecCfg = state.pricing.pec || {};
+    /* PEC is not a discount on a price sheet. It is an adjustment to the
+       invoiced partner's own Azure invoice, and a partner who does not hold
+       the billing account has no such invoice. So for them the PEC answer
+       sitting on the rate card is not merely unanswered \u2014 it does not apply,
+       and it must not be allowed to leak through into a margin figure. */
+    var pecApplies = holdsBillingAccount;
+    var pecKnown = pecApplies && (pecCfg.status === 'yes' || pecCfg.status === 'no');
+    var pecPct   = (pecApplies && pecCfg.status === 'yes') ? clamp(n(pecCfg.pct, 15), 0, 15) : 0;
+
+    /* An indirect reseller does not buy the meter from Microsoft. They buy it
+       from their indirect provider at whatever rate that provider sets, and
+       that rate is the only cost basis they have. Null until they say. */
+    var providerCreditUsd = (cspMotion === 'indirectReseller')
+      ? num_(state.channel && state.channel.providerCreditUsd) : null;
+    if (providerCreditUsd != null && !(providerCreditUsd >= 0)) providerCreditUsd = null;
+    var providerKnown = providerCreditUsd != null;
+
+    var chosenIsP3 = state.billing.model === 'p3';
+    var paygoPartnerCost = pecKnown      ? paygoAnnual * (1 - pecPct / 100)
+                         : providerKnown ? annualCredits * providerCreditUsd
+                         : null;
+    /* No PEC on a pre-purchase plan: it is bought through the Reservations
+       blade and reservations are excluded. And on the indirect motion the
+       provider places the order, so how much of the tier discount reaches the
+       reseller is a commercial question this tool cannot see. Withheld. */
+    var p3PartnerCost = pecKnown ? p3Annual : null;
+    var partnerCostAnnual = chosenIsP3 ? p3PartnerCost : paygoPartnerCost;
+    var costBasisKnown = partnerCostAnnual != null;
     // What the customer is billed for the meter, at the partner's credit rate.
     var meterBilledAnnual = annualCredits * CU;
-    var meterMarginAnnual = pecKnown ? (meterBilledAnnual - partnerCostAnnual) : null;
+    var meterMarginAnnual = costBasisKnown ? (meterBilledAnnual - partnerCostAnnual) : null;
 
-    if (!pecKnown)
+    if (cspMotion === 'unsure')
+      assume.push({ id:'motion-unknown', label:'Which CSP motion you are in',
+        note:'Nobody has said whether you hold the Azure billing account for this customer or buy through an ' +
+             'indirect provider. That one answer decides whether partner-earned credit can reach you at all, who ' +
+             'is allowed to place a P3 order, and what a credit costs you \u2014 so every meter margin figure is ' +
+             'withheld until it is set. Nothing the customer sees moves either way.',
+        prov:'partner' });
+
+    if (holdsBillingAccount && !pecKnown)
       assume.push({ id:'pec-unknown', label:'Your cost basis for the meter',
         note:'Nobody has confirmed whether Copilot Credit consumption earns partner-earned credit on your Azure plan ' +
              'price sheet, so the tool cannot say what a credit costs you \u2014 only what it costs the customer. ' +
              'Every margin figure on the meter is withheld rather than guessed. Check the Azure plan consumption ' +
              'price list in Partner Center: PEC applies only to services on that list, and reservations are excluded.',
+        prov:'partner' });
+
+    if (pecKnown && pecPct > 0)
+      assume.push({ id:'pec-contingent', label:'Partner-earned credit is contingent, and it stops quietly',
+        note:'PEC is tied to holding an eligible admin role on the customer\u2019s Azure resources. Microsoft\u2019s own ' +
+             'position is that where that access is removed, the invoiced partner is no longer eligible for PEC on ' +
+             'their Azure invoice \u2014 and nothing announces it. The credit simply stops appearing in the rated usage ' +
+             'file. Every cost and margin figure here assumes the access is still in place on the day you read it.',
+        prov:'partner' });
+
+    if (cspMotion === 'indirectReseller' && !providerKnown)
+      assume.push({ id:'provider-rate-unknown', label:'What your provider bills you per credit',
+        note:'You buy the meter from your indirect provider, not from Microsoft, so Microsoft\u2019s $0.01 is not your ' +
+             'cost and partner-earned credit lands on their invoice rather than yours. Until that rate is entered on ' +
+             'the pricing screen the tool has no cost basis for you and every meter margin figure is withheld. Ask ' +
+             'your distributor for the Azure plan consumption rate on this account \u2014 it is the same question as ' +
+             'asking what a license costs you, and it has an answer.',
         prov:'partner' });
 
     // The inversion. A P3 discount smaller than the PEC it forfeits makes the
@@ -1513,6 +1601,21 @@ footer.pagefoot a { color:#6b7280; }
           Math.round(p3Exposure).toLocaleString() + ' paid up front for a year, non-cancellable, non-exchangeable ' +
           'and auto-renewing. That is a real financial position and it belongs to whoever holds it.', []);
     }
+    /* Partner of Record on a reservation is inherited from the subscription at
+       purchase and cannot be changed afterwards; Microsoft's documented remedy
+       is to cancel and re-buy. A Copilot Credit P3 cannot be cancelled. The two
+       rules together mean a Partner of Record mistake on this order is
+       permanent for the full twelve-month term, and nothing on the purchase
+       screen says so. */
+    if (cspMotion === 'indirectReseller' && chosenIsP3 && p3Exposure > 0)
+      W('V-24','warn','You cannot place this order yourself. Buying reservations on behalf of a customer is a ' +
+        'direct-bill and indirect-provider motion \u2014 as an indirect reseller you hand the ' +
+        Math.round(commitCccu).toLocaleString() + ' CCCU figure to your provider and they place it. Settle two ' +
+        'things before they do. Partner of Record is inherited from the subscription they select and cannot be ' +
+        'changed after purchase; the documented fix is to cancel and re-buy, and a Copilot Credit P3 cannot be ' +
+        'cancelled \u2014 so a Partner of Record mistake here is yours for twelve months. And the $' +
+        Math.round(p3Exposure).toLocaleString() + ' lands on their paper before it lands on yours, which changes ' +
+        'who you are actually asking to carry it.', []);
     if (state.billing.model === 'p3' && cccuRequired < P3_ANCHORS[0].cccu)
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
@@ -1534,6 +1637,21 @@ footer.pagefoot a { color:#6b7280; }
       W('V-06','warn','Cowork PayGo billing routes through an Azure subscription on your CSP channel. Confirm this exists before quoting.', []);
     if (state.org.usageBillingEnabled === 'no')
       W('V-07','warn','Microsoft lists "usage-based and Cowork billing has been enabled" as a prerequisite. No SKU closes this — it is an admin action.', []);
+    /* A sell rate on the meter describes a transaction. Outside CSP there is no
+       such transaction to describe \u2014 the meter lands on the customer's own Azure
+       invoice at Microsoft's rate and the partner is not in the middle of it.
+       A warning rather than a block: modelling on the customer's behalf is a
+       legitimate reason to be on this page. */
+    if (cspMotion === 'notCsp' && sellMode && CU !== CONST.CREDIT_USD)
+      W('V-25','warn','You are showing the meter at ' + rateLbl + ' a credit against Microsoft\u2019s published $0.01, on ' +
+        'a motion where you do not hold the billing relationship. Outside CSP the meter lands on the customer\u2019s own ' +
+        'Azure invoice at Microsoft\u2019s rate \u2014 there is no transaction here for you to price. Quote it at $0.01 and ' +
+        'put your margin where it actually sits, in the services around it.', []);
+    if (cspMotion === 'unsure')
+      W('V-26','info','One answer decides every partner-economics figure on this page: do you hold the Azure billing ' +
+        'account for this customer, or do you buy through an indirect provider? Set it at the top of the pricing ' +
+        'screen. Until then the tool shows the customer\u2019s numbers in full and withholds yours \u2014 a margin ' +
+        'calculation shown to a partner who cannot earn it is worse than none.', []);
 
     var ctx = {
       employees:employees, copilotLicensed:copilotLicensed, nonCopilotSeats:nonCopilotSeats,
@@ -1564,7 +1682,11 @@ footer.pagefoot a { color:#6b7280; }
       ratioActual:ratioActual, ratioBench:ratioBench, reconciliation:reconciliation,
       annualCredits:annualCredits, paygoAnnual:paygoAnnual, cccuRequired:cccuRequired,
       commitCccu:commitCccu, discount:disc, p3Annual:p3Annual, p3Saving:p3Saving, breakeven:breakeven,
-      pecStatus:pecCfg.status || 'unsure', pecPct:pecPct, pecKnown:pecKnown,
+      cspMotion:cspMotion, motionLabel:MOTIONS[cspMotion].label, motionShort:MOTIONS[cspMotion].short,
+      holdsBillingAccount:holdsBillingAccount, inCsp:inCsp,
+      providerCreditUsd:providerCreditUsd, providerKnown:providerKnown,
+      costBasisKnown:costBasisKnown, pecApplies:pecApplies,
+      pecStatus:pecApplies ? (pecCfg.status || 'unsure') : 'n/a', pecPct:pecPct, pecKnown:pecKnown,
       paygoPartnerCost:paygoPartnerCost, p3PartnerCost:p3PartnerCost,
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
@@ -2012,6 +2134,7 @@ footer.pagefoot a { color:#6b7280; }
     EFFORT_STEP_DEFAULT:EFFORT_STEP_DEFAULT, effortMultipliers:effortMultipliers,
     EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
     P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
+    MOTIONS:MOTIONS, MOTION_ORDER:MOTION_ORDER, motionOf:motionOf,
     defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
@@ -2449,7 +2572,20 @@ footer.pagefoot a { color:#6b7280; }
         }).join('') + '</div></div>' +
     '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 0 4px;flex-wrap:wrap;">' +
       '<div style="flex:1;min-width:250px;font-size:.92rem;">Azure/CSP subscription on your channel?' +
-        '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">Cowork PayGo billing routes through it.</span></div>' +
+        '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">Cowork PayGo billing routes through it. ' +
+        (function () {
+          // "Your channel" means something different in each motion, and an
+          // indirect reseller answering "yes" is answering about a plan that
+          // sits on somebody else's billing account.
+          var m = E.motionOf(state);
+          return m === 'indirectReseller'
+              ? 'As an indirect reseller you cannot create it yourself \u2014 the plan and the MCA attestation go through your provider, and the subscription has to be linked to their billing account.'
+            : m === 'notCsp'
+              ? 'Outside CSP this is the customer\u2019s own subscription and their own Microsoft Customer Agreement, not yours.'
+            : m === 'unsure'
+              ? 'What &ldquo;your channel&rdquo; means here depends on which CSP motion you are in \u2014 set it at the top of the pricing screen.'
+              : 'You can create it yourself; an Azure plan implies the customer has already accepted the Microsoft Customer Agreement.';
+        })() + '</span></div>' +
       '<div class="seg" data-org="azureCspPlan" style="width:250px;flex:0 0 auto;">' +
         ['yes','no','unsure'].map(function (v) {
           var on = state.org.azureCspPlan === v;
@@ -2520,8 +2656,48 @@ footer.pagefoot a { color:#6b7280; }
       '</tr>';
     }).join('');
 
+    /* Which CSP motion the partner is in. This sits ABOVE the rate card
+       because it is the more fundamental question: the rate card asks whose
+       price we are showing, and this asks whether the partner is party to the
+       transaction at all. Get it wrong and the tool shows a margin nobody can
+       earn. Nothing the customer sees moves with the answer. */
+    var mot = E.motionOf(state);
+    var MOTION_COPY = {
+      direct: { t:'Direct-bill CSP partner',
+        d:'You transact with Microsoft directly. You create the Azure plan, Microsoft invoices you, partner-earned credit lands on your invoice, and you place a Copilot Credit pre-purchase order yourself.',
+        me:'&rarr; The meter costs you Microsoft\u2019s $0.01 a credit, less whatever PEC you earn.' },
+      indirectProvider: { t:'Indirect provider (distributor)',
+        d:'You hold the Microsoft billing relationship and sell through a reseller network. For customers you serve directly the mechanics are the same as direct bill.',
+        me:'&rarr; The meter costs you Microsoft\u2019s $0.01 a credit, less whatever PEC you earn.' },
+      indirectReseller: { t:'Indirect reseller', tag:'Most TD SYNNEX partners',
+        d:'You buy through TD SYNNEX or another distributor. Your provider holds the Azure plan and the Microsoft invoice; you own the customer, you set what they pay, and you buy the meter from your distributor.',
+        me:'&rarr; The meter costs you your provider\u2019s rate, not Microsoft\u2019s. PEC lands on their invoice, not yours.' },
+      notCsp: { t:'Outside CSP',
+        d:'The customer buys from Microsoft directly on an Enterprise Agreement or their own Microsoft Customer Agreement, or through a different partner. You advise.',
+        me:'&rarr; The meter is on the customer\u2019s own Azure invoice. Your margin here is services.' }
+    };
+
     $('pricingBlock').innerHTML =
-      '<div class="callout"><div class="callout-title">Why this screen exists</div><div class="callout-body">' +
+      '<div class="callout"><div class="callout-title">First \u2014 who are you in this transaction?</div><div class="callout-body">' +
+        '<p>Every partner-economics figure in this tool \u2014 what the meter costs you, what margin you hold on it, who is even allowed to place a pre-purchase order \u2014 turns on <b>who holds the Azure billing account</b> for this customer. Not on who owns the relationship. On whose invoice Microsoft sends.</p>' +
+        '<p>The answer changes nothing the <i>customer</i> sees. It changes almost everything on your side of the page, and a margin calculation shown to a partner who cannot earn it is worse than no calculation at all \u2014 so until this is set, the tool withholds yours.</p>' +
+      '</div></div>' +
+
+      '<div class="modecards" id="motionCards">' +
+        E.MOTION_ORDER.map(function (k) {
+          var m = MOTION_COPY[k];
+          return '<button class="modecard' + (mot === k ? ' on' : '') + '" data-motion="' + k + '">' +
+            (m.tag ? '<div class="mc-tag">' + m.tag + '</div>' : '') +
+            '<div class="mc-t">' + m.t + '</div>' +
+            '<div class="mc-d">' + m.d + '</div>' +
+            '<div class="mc-me">' + m.me + '</div></button>';
+        }).join('') +
+      '</div>' +
+      '<p class="srcline">' + (mot === 'unsure'
+        ? '<b>Not set.</b> If you buy through a distributor you are almost certainly an indirect reseller for CSP purposes; Partner Center &rarr; <b>Settings &rarr; Account settings</b> lists your program type either way. The difference between the three is walked through in <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">section 3 of the Azure Billing Setup guide</a>.'
+        : 'Set to <b>' + esc(E.MOTIONS[mot].label) + '</b>. <button class="linkbtn" id="motionClear" style="font-size:.78rem;">Clear this</button> \u2014 or read <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">section 3 of the Azure Billing Setup guide</a> if that no longer looks right.') + '</p>' +
+
+      '<div class="callout"><div class="callout-title">Then: whose price are we showing?</div><div class="callout-body">' +
         '<p>Microsoft lists Business Basic + Copilot Business at <b>$21</b>. You probably do not buy it at $21, and your customer almost certainly does not pay $21 \u2014 by the time your managed service is wrapped around it they might be billed <b>$50 a seat</b>. A cost conversation built on list price is a cost conversation the customer will not recognize when the invoice arrives.</p>' +
         '<p>So this tool asks first: <b>whose price are we showing?</b> Everything downstream \u2014 the monthly figure, the seat-versus-meter split, the licensing recommendation, the leave-behind you print \u2014 runs on your answer.</p>' +
       '</div></div>' +
@@ -2569,23 +2745,35 @@ footer.pagefoot a { color:#6b7280; }
         : '') +
 
       '<div class="ratehead"><div class="rh-t">What the meter costs you ' + provPill('partner') + '</div></div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:4px 0 16px;flex-wrap:wrap;">' +
-        '<div style="flex:1;min-width:280px;font-size:.92rem;">Does Copilot Credit consumption earn partner-earned credit on your Azure plan?' +
-          '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' +
-          'Cowork bills to an Azure subscription under your CSP billing account, so PEC is the only thing that moves your cost basis.</span>' +
-          '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">' +
-          'Unsure → every meter margin figure is withheld rather than guessed.</span></div>' +
-        '<div class="seg" id="pecSeg" style="width:250px;flex:0 0 auto;">' +
-          [['yes','Yes'],['no','No'],['unsure','Unsure']].map(function (o) {
-            var on = (pr.pec && pr.pec.status) === o[0];
-            return '<button data-pec="' + o[0] + '"' + (on ? ' class="on"' : '') + '>' + o[1] + '</button>';
-          }).join('') + '</div></div>' +
-      ((pr.pec && pr.pec.status) === 'yes'
-        ? '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:8px;">' +
-            '<div class="field"><label>Your PEC rate (%)</label><input type="number" step="0.5" min="0" max="15" id="pPec" value="' + (pr.pec.pct != null ? pr.pec.pct : 15) + '"></div>' +
-          '</div>'
-        : '') +
-      '<p class="srcline">Partner-earned credit pays up to <b>15%</b> on eligible Azure plan consumption when you hold managed-services access on the customer’s estate. It applies only to services on the Azure plan consumption price list in Partner Center &mdash; check yours. <b>Reservations and savings plans are excluded</b>, and a Copilot Credit P3 is purchased through the Reservations blade, so the tool models pay-as-you-go as PEC-eligible and a commit as not. That asymmetry can make the discounted path the more expensive one for you, and the output says so when it happens.</p>' +
+      /* Three different questions live here, and which one the partner gets is
+         decided by the motion above. Asking a reseller about PEC produces an
+         answer the tool must then throw away, so it is not asked. */
+      (E.MOTIONS[mot].billing
+        ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:4px 0 16px;flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:280px;font-size:.92rem;">Does Copilot Credit consumption earn partner-earned credit on your Azure plan?' +
+              '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' +
+              'You hold the billing account, so Cowork bills to an Azure subscription on your invoice and PEC is the only thing that moves your cost basis.</span>' +
+              '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">' +
+              'Unsure → every meter margin figure is withheld rather than guessed.</span></div>' +
+            '<div class="seg" id="pecSeg" style="width:250px;flex:0 0 auto;">' +
+              [['yes','Yes'],['no','No'],['unsure','Unsure']].map(function (o) {
+                var on = (pr.pec && pr.pec.status) === o[0];
+                return '<button data-pec="' + o[0] + '"' + (on ? ' class="on"' : '') + '>' + o[1] + '</button>';
+              }).join('') + '</div></div>' +
+          ((pr.pec && pr.pec.status) === 'yes'
+            ? '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:8px;">' +
+                '<div class="field"><label>Your PEC rate (%)</label><input type="number" step="0.5" min="0" max="15" id="pPec" value="' + (pr.pec.pct != null ? pr.pec.pct : 15) + '"></div>' +
+              '</div>'
+            : '') +
+          '<p class="srcline">Partner-earned credit pays up to <b>15%</b> on eligible Azure plan consumption when you hold managed-services access on the customer\u2019s estate. It applies only to services on the Azure plan consumption price list in Partner Center &mdash; check yours. <b>Reservations and savings plans are excluded</b>, and a Copilot Credit P3 is purchased through the Reservations blade, so the tool models pay-as-you-go as PEC-eligible and a commit as not. That asymmetry can make the discounted path the more expensive one for you, and the output says so when it happens. PEC is also <b>contingent and silent</b>: it is tied to retained admin access on the customer\u2019s resources, and if that access lapses the credit stops with no notification. <a class="docref" href="azure-billing-setup.html#section-8" target="_blank" rel="noopener">Section 8</a> of the setup guide has the shape of the model.</p>'
+        : mot === 'indirectReseller'
+        ? '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
+            '<div class="field"><label>What your provider bills you per credit</label><input type="number" step="0.001" min="0" id="pProv" placeholder="ask your distributor" value="' + money(state.channel.providerCreditUsd) + '"></div>' +
+          '</div>' +
+          '<p class="srcline">You do not buy this meter from Microsoft. The Azure plan sits on your provider\u2019s billing account, Microsoft invoices <i>them</i>, and partner-earned credit is an adjustment to <b>the invoiced partner\u2019s</b> Azure invoice \u2014 so it accrues to your distributor, not to you. Whether any of it reaches you is a commercial question between you and them, and this tool cannot see it. What it can use is one number: <b>what they bill you per Copilot Credit</b>. Ask for it the same way you ask what a license costs you. Leave it blank and every meter margin figure is withheld rather than guessed. <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">Section 3</a> has the full split of what each motion can and cannot do.</p>'
+        : mot === 'notCsp'
+        ? '<p class="srcline">Outside CSP there is nothing to fill in here, and that is not a gap in the tool. The Copilot Credit meter lands on the customer\u2019s own Azure invoice at Microsoft\u2019s published rate; you hold no billing account, earn no partner-earned credit, and set no credit rate. Your margin on this deal is the licensing path and the services around it \u2014 both of which the output still computes in full.</p>'
+        : '<p class="srcline">Answer the motion question at the top of this screen and the right cost question appears here. A direct-bill or indirect-provider partner is asked about partner-earned credit; an indirect reseller is asked what their distributor bills them per credit; outside CSP there is no cost basis to ask about. Until then the tool shows the customer\u2019s numbers in full and withholds yours.</p>') +
 
       '<div class="ratehead"><div class="rh-t">Your two per-seat service rates ' + provPill('editorial') + '</div></div>' +
       '<div class="tablewrap"><table class="dtable"><thead><tr><th>Rung</th><th style="width:130px;text-align:right;">Low</th><th style="width:130px;text-align:right;">High</th><th style="width:150px;">Charged</th></tr></thead><tbody>' +
@@ -2614,6 +2802,21 @@ footer.pagefoot a { color:#6b7280; }
         '</div></div></div>';
 
     /* wiring */
+    Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-motion]'), function (b) {
+      b.addEventListener('click', function () {
+        state.channel.motion = b.getAttribute('data-motion');
+        renderPricing(); refresh();
+      });
+    });
+    if ($('motionClear')) $('motionClear').addEventListener('click', function () {
+      state.channel.motion = 'unsure';
+      renderPricing(); refresh();
+    });
+    if ($('pProv')) $('pProv').addEventListener('input', function (e) {
+      var v = e.target.value;
+      state.channel.providerCreditUsd = (v === '') ? null : Math.max(0, +v || 0);
+      refresh();
+    });
     Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-pmode]'), function (b) {
       b.addEventListener('click', function () {
         state.pricing.mode = b.getAttribute('data-pmode');
@@ -2654,7 +2857,7 @@ footer.pagefoot a { color:#6b7280; }
       state.pricing.creditSellUsd = Math.max(0, +e.target.value || 0); refresh();
     });
     $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
-    Array.prototype.forEach.call($('pecSeg').querySelectorAll('[data-pec]'), function (b) {
+    if ($('pecSeg')) Array.prototype.forEach.call($('pecSeg').querySelectorAll('[data-pec]'), function (b) {
       b.addEventListener('click', function () {
         state.pricing.pec = state.pricing.pec || { status:'unsure', pct:15 };
         state.pricing.pec.status = b.getAttribute('data-pec');
@@ -2694,7 +2897,10 @@ footer.pagefoot a { color:#6b7280; }
     var card = { __type:'cowork-rate-card', version:1,
                  pricing:state.pricing, priceOverrides:state.priceOverrides,
                  partnerServices:state.partnerServices, effortStep:state.effort.step,
-                 pec:state.pricing.pec };
+                 pec:state.pricing.pec,
+                 // Which motion you are in is a fact about you, not about the
+                 // account, so it belongs on the card you reload every time.
+                 channel:state.channel };
     var blob = new Blob([JSON.stringify(card, null, 2)], { type:'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
     a.href = url; a.download = 'my-cowork-rate-card.json';
@@ -2717,6 +2923,12 @@ footer.pagefoot a { color:#6b7280; }
         // Leave it 'unsure' rather than inheriting a cost basis nobody set.
         if (c.pec) state.pricing.pec = { status:c.pec.status || 'unsure',
                                          pct:(c.pec.pct != null ? c.pec.pct : 15) };
+        // A card saved before the motion question existed carries no answer.
+        // Unknown, not assumed \u2014 the whole point of asking.
+        if (c.channel) state.channel = {
+          motion: E.MOTIONS[c.channel.motion] ? c.channel.motion : 'unsure',
+          providerCreditUsd: (c.channel.providerCreditUsd != null && isFinite(c.channel.providerCreditUsd))
+            ? Math.max(0, c.channel.providerCreditUsd) : null };
         renderPricing(); refresh();
       } catch (err) { alert('That file does not look like a rate card exported from this tool.'); }
     };
@@ -2918,7 +3130,28 @@ footer.pagefoot a { color:#6b7280; }
 
   function renderBillOut(r) {
     var c = r.ctx, d = c.discount;
-    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes. Take that number to your TD SYNNEX sales rep.</p>';
+    /* Who is allowed to place this order is not a formality. Microsoft's
+       reservation-purchase article applies only to direct-bill and indirect
+       provider partners; an indirect reseller cannot place it and is instead
+       inherited as Partner of Record from the subscription their provider
+       picks. Telling every reader to "take it to your TD SYNNEX rep" was right
+       for most of them and wrong for the rest. */
+    var buyPath =
+      c.cspMotion === 'indirectReseller'
+        ? 'You cannot place that order yourself \u2014 buying reservations on behalf of a customer is a direct-bill ' +
+          'and indirect-provider motion. Take the number to your TD SYNNEX rep and have them place it, and settle ' +
+          'Partner of Record before they do: it is inherited from the subscription they select and cannot be changed ' +
+          'afterwards.'
+      : c.holdsBillingAccount
+        ? 'You place that order yourself \u2014 Partner Center, the customer\u2019s row, Add products &rarr; Azure &rarr; ' +
+          'Reservations, or the Reservations blade in the Azure portal against their subscription.'
+      : c.cspMotion === 'notCsp'
+        ? 'The customer places that order on their own subscription; it needs the owner or reservation-purchaser ' +
+          'role. It is their money and their auto-renewal either way.'
+        : 'Who is allowed to place that order depends on which CSP motion you are in, and nobody has said. Set it at ' +
+          'the top of the pricing screen \u2014 an indirect reseller cannot place it at all.';
+    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes.</p>' +
+      '<p>' + buyPath + '</p>';
     var discLine = d.exact
       ? '<p>At that volume the published tier is <b>' + d.pct + '%</b>.</p>'
       : '<p>Microsoft does not publish P3 tier breakpoints. Your volume sits <b>between ' + d.bracket[0] + '% and ' + d.bracket[1] + '%</b>, modeled at <b>' + d.pct.toFixed(1) + '%</b>.</p>';
@@ -2973,6 +3206,72 @@ footer.pagefoot a { color:#6b7280; }
   /* The meter has two prices: what the customer is billed, and what it costs
      you. They are different transactions and PEC only touches one of them. */
   function partnerCostBlock(c) {
+    var foot = '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
+
+    /* Motion decides which of four different things this block has to say. For
+       a partner who does not hold the billing account the PEC conversation is
+       not unanswered, it is inapplicable \u2014 and telling them that is far more
+       useful than showing them a blank where a margin should be. */
+    if (c.cspMotion === 'unsure') {
+      if (!c.sellMode) return '';
+      return '<div class="whybox partner-only"><div class="wb-h">What the meter costs you &mdash; one question away</div>' +
+        '<p>You are billing the meter at ' + esc(c.creditRateLabel) + ' a credit, which is ' + usd(c.meterBilledAnnual) +
+        ' a year to this customer. What it <i>costs</i> you depends entirely on whether you hold the Azure billing ' +
+        'account for them, and nobody has said.</p>' +
+        '<p>If you do, your cost is Microsoft\u2019s $0.01 less whatever partner-earned credit you earn. If you buy ' +
+        'through TD SYNNEX or another distributor, your cost is whatever <i>they</i> bill you and PEC never touches ' +
+        'your invoice at all. Those are different numbers and the tool will not average them. ' +
+        'Set the motion at the top of the pricing screen and this fills in.</p>' + foot;
+    }
+
+    if (c.cspMotion === 'notCsp') {
+      return '<div class="whybox partner-only"><div class="wb-h">There is no meter margin here &mdash; and that is the answer, not a gap</div>' +
+        '<p>Outside CSP the Copilot Credit meter lands on the customer\u2019s own Azure invoice at Microsoft\u2019s published ' +
+        'rate. You hold no billing account on it, earn no partner-earned credit from it, and set no credit rate \u2014 ' +
+        'you are not a party to that transaction.</p>' +
+        '<p>Everything above the meter is still yours. The licensing path, the governance gaps, and the services ' +
+        'ladder are where this deal pays you, and the output prices all three. Lead the conversation there rather ' +
+        'than on a consumption number you do not touch.</p>' + foot;
+    }
+
+    if (c.cspMotion === 'indirectReseller') {
+      var head = '<div class="whybox partner-only" style="border-left-color:#0f766e;">' +
+        '<div class="wb-h">What the meter costs you &mdash; through your provider</div>';
+      if (!c.providerKnown)
+        return head +
+          '<p><b>You do not buy this meter from Microsoft.</b> The Azure plan sits on your indirect provider\u2019s ' +
+          'billing account and Microsoft invoices them, not you. Partner-earned credit is an adjustment to the ' +
+          '<i>invoiced</i> partner\u2019s Azure invoice \u2014 so it accrues to your distributor. Whether any of it reaches ' +
+          'you is a commercial question between you and them, and nothing in this tool can see the answer.</p>' +
+          '<p>You are billing the meter at ' + esc(c.creditRateLabel) + ' a credit, ' + usd(c.meterBilledAnnual) +
+          ' a year to this customer. Your margin on it is that figure less whatever your provider bills you per ' +
+          'credit \u2014 one number, and they have it. Ask for it the same way you ask what a license costs you, put ' +
+          'it on the pricing screen, and this fills in. Until then it is withheld rather than guessed.</p>' +
+          '<p style="font-size:.82rem;">Meanwhile the two margins the tool <i>can</i> compute for you are the ones ' +
+          'that do not depend on your distributor: the licenses, and the services ladder underneath the next-step ' +
+          'block. <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">Section 3</a> ' +
+          'of the setup guide has what each motion can and cannot do.</p>' + foot;
+      if (c.billingModel === 'p3')
+        return head +
+          '<p>Your provider bills you ' + usd(c.providerCreditUsd, 3) + ' a credit on pay-as-you-go, which would put ' +
+          'this account\u2019s meter at <b>' + usd(c.annualCredits * c.providerCreditUsd) + ' a year</b> against the ' +
+          usd(c.meterBilledAnnual) + ' you bill.</p>' +
+          '<p><b>On the commit path the tool withholds it.</b> Your provider places the P3 order, not you, and how ' +
+          'much of the tier discount reaches your price sheet is theirs to decide. Guessing it here would invent a ' +
+          'margin. Ask them what the commit does to your per-credit rate before you quote one.</p>' + foot;
+      return head +
+        '<p>On pay-as-you-go this account\u2019s meter costs you <b>' + usd(c.partnerCostAnnual) + ' a year</b> \u2014 ' +
+        num(Math.round(c.annualCredits)) + ' credits at ' + usd(c.providerCreditUsd, 3) + ', your provider\u2019s rate. ' +
+        'You are billing ' + usd(c.meterBilledAnnual) + ', so your position on the meter is <b>' +
+        usd(c.meterMarginAnnual) + ' a year</b>' +
+        (Math.abs(c.meterMarginAnnual) < 1 ? ' \u2014 you are passing it through at cost.' : '.') + '</p>' +
+        '<p>That is a distributor price, not a Microsoft one. It already contains whatever partner-earned credit ' +
+        'your provider earns and chooses to pass on, so do not add PEC on top of it \u2014 and re-check it at renewal, ' +
+        'because it is theirs to move.</p>' + foot;
+    }
+
+    /* Direct bill and indirect provider: the partner holds the billing
+       account, so PEC is the lever and the original question applies. */
     if (!c.sellMode && c.pecStatus === 'unsure') return '';
     if (!c.pecKnown)
       return '<div class="whybox partner-only"><div class="wb-h">What the meter costs you &mdash; not established</div>' +
@@ -3002,7 +3301,12 @@ footer.pagefoot a { color:#6b7280; }
           '</b>, P3 <b>' + usd(c.p3PartnerCost) + '</b>. ' +
           (c.paygoPartnerCost < c.p3PartnerCost
             ? 'Pay-as-you-go is the cheaper path <i>for you</i> despite P3\u2019s headline discount, because the commit forfeits PEC.'
-            : 'The commit clears your PEC rate, so P3 is genuinely the cheaper path for you as well as the customer.') + '</p>'
+            : 'The commit clears your PEC rate, so P3 is genuinely the cheaper path for you as well as the customer.') + '</p>' +
+          '<p style="font-size:.82rem;">Both figures are contingent. PEC is tied to holding an eligible admin role ' +
+          'on the customer\u2019s Azure resources \u2014 lose that access and the invoiced partner stops being eligible, ' +
+          'with no notification and no line item to miss. The credit just stops appearing in the rated usage file. ' +
+          'Whatever you build on this number, diary the access check with it. ' +
+          '<a class="docref" href="azure-billing-setup.html#section-8" target="_blank" rel="noopener">Section 8</a>.</p>'
         : '') +
       '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
   }
@@ -3153,7 +3457,10 @@ footer.pagefoot a { color:#6b7280; }
 
   /* ═══ THE WIZARD — one question per screen ═══ */
   var STEPS = [
-    { id:'step0', t:'Your pricing',      v:function () { return state.pricing.mode === 'sell' ? 'your sell prices' : 'Microsoft list'; } },
+    { id:'step0', t:'Your pricing',      v:function () {
+        var basis = state.pricing.mode === 'sell' ? 'your sell prices' : 'Microsoft list';
+        var m = E.motionOf(state);
+        return m === 'unsure' ? basis : E.MOTIONS[m].short + ' \u00b7 ' + basis; } },
     { id:'step1', t:'The account',       v:function (c) { return c.employees + ' employees'; } },
     { id:'step2', t:'Copilot licenses',  v:function (c) { return c.copilotLicensed + ' licensed'; } },
     { id:'step3', t:'Active in Cowork',  v:function (c) { return c.active + ' active'; } },
@@ -3323,8 +3630,15 @@ footer.pagefoot a { color:#6b7280; }
         usd(c.coworkLo) + '–' + usd(c.coworkHi) + '</b> — ' + (state.calibrated ? '±15%, because you measured it' : '±30%, because this is still modeled') + '.';
     },
     step6: function (c) {
+      var who = c.cspMotion === 'indirectReseller'
+          ? 'the number to take to your TD SYNNEX rep, who places the order for you'
+        : c.holdsBillingAccount
+          ? 'the number you order against yourself, whatever discount lands'
+        : c.cspMotion === 'notCsp'
+          ? 'the number the customer orders against on their own subscription'
+          : 'the number someone orders against \u2014 and which someone depends on a CSP motion nobody has set yet';
       return 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
-        num(Math.round(c.cccuRequired)) + ' CCCU</b> — that is the number to take to your TD SYNNEX sales rep, whatever discount they quote.';
+        num(Math.round(c.cccuRequired)) + ' CCCU</b> \u2014 that is ' + who + '.';
     },
     step7: function (c) {
       if (!c.governanceAsked)

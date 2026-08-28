@@ -311,6 +311,36 @@ Both layers are real: the partner owns the billing relationship and invoices thr
 
 ### 5.3 F5a — Which CSP motion (the correctness fix)
 
+> **Shipped 2026-08-28, ahead of F1–F4.** F5a and F5b are built and on `feature/agent-never-done`. The
+> shipped shape differs from the draft below in four ways, each argued in the commit message:
+>
+> 1. **State lives at `state.channel`, not `state.org`.** Which motion you are in is a fact about the
+>    *partner*, not about the account, so it travels with the rate card the partner reloads every session
+>    rather than with the customer's session file. `ctx.cspMotion` and `ctx.holdsBillingAccount` are
+>    exposed exactly as specified below, so every invariant in §5.7 reads unchanged.
+> 2. **A fifth motion, `notCsp`.** This is a public site and a real share of readers advise a customer who
+>    buys on an EA or their own MCA, or through a different partner. They hold no billing account either,
+>    but for a different reason and with a different remedy, and collapsing them into `unsure` told them
+>    nothing.
+> 3. **Indirect resellers get a cost basis rather than a blank.** Suppression alone leaves the largest
+>    audience on the site with no partner economics at all. A reseller does not buy the meter from
+>    Microsoft — they buy it from their provider, at a rate the provider sets and can quote. One optional
+>    field, `channel.providerCreditUsd`, restores the whole PayGo margin calculation for them. The P3 path
+>    stays withheld: the provider places that order and how much of the tier discount reaches the
+>    reseller's price sheet is not visible from here.
+> 4. **A new warning, V-24 — the Partner of Record trap.** Microsoft's reservation-purchase article
+>    applies "only to Direct bill and indirect providers partners"; a reseller cannot place a P3 order and
+>    is instead *inherited* as Partner of Record from whichever subscription their provider selects. That
+>    assignment cannot be changed post-purchase, and the documented remedy — cancel and re-buy — does not
+>    exist for a Copilot Credit P3. So a PoR mistake on this order is permanent for the full twelve-month
+>    term, and nothing on the purchase screen says so.
+>
+> Still open in F5: **F5c** (markup visibility) and **F5d** (MACC line).
+> Sources: [reservations, who may buy](https://learn.microsoft.com/en-us/partner-center/customers/azure-reservations-buying) ·
+> [PEC FAQ, who is eligible](https://learn.microsoft.com/en-us/partner-center/billing/partner-earned-credit-faq) ·
+> [Copilot Credit P3](https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/copilot-credit-p3)
+
+
 Every block added in `7c398f5` — `partnerCostBlock()`, the V-21 inversion warning, `paygoPartnerCost`, `meterMarginAnnual` — assumes the partner holds the Azure billing account. An **indirect reseller** does not; the indirect provider does. No PEC accrues to them, they cannot set the meter rate, and someone else creates the subscription. On a TD SYNNEX-oriented site a large share of readers are indirect resellers, and the tool will currently show them a margin calculation that cannot apply.
 
 **State:**
