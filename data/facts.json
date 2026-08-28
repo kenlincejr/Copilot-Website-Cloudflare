@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
- "fact_count": 153,
- "occurrence_count": 284,
+ "fact_count": 154,
+ "occurrence_count": 285,
  "facts": [
   {
    "id": "F-001",
@@ -4038,6 +4038,28 @@
      "anchor_unique": true,
      "anchor": "An active Microsoft 365 Copilot license assigned to your account",
      "context": "An active Microsoft 365 Copilot license assigned to your account"
+    }
+   ],
+   "new_value": "",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-154",
+   "kind": "money",
+   "value": "$72",
+   "label": "Microsoft default hourly rate in the Agent Assisted Value formula (Copilot Studio agents report)",
+   "type": "microsoft",
+   "source_url": "https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact",
+   "as_of": "2026-06-04",
+   "verified": true,
+   "notes": "Microsoft-published constant in Microsoft's own formula; Microsoft sources it to US BLS Employer Costs for Employee Compensation (https://www.bls.gov/news.release/ecec.t04.htm). Editable in the report calculator. Rendered with class prov-ms. Fetched and verified against Microsoft Learn 2026-08-28; review by 2027-02-28. Reachability of the report in an SMB tenant is open tenant test TT-4.",
+   "occurrences": [
+    {
+     "file": "agent-never-done.html",
+     "line": 1114,
+     "anchor_unique": true,
+     "anchor": "ov prov-ms\">MS</span> <strong>$72</strong>, based on",
+     "context": "r is 6 minutes, sourced to Microsoft research on information retrieval tasks. Agent Assisted Value = Agent Assisted Hours &times; hourly rate. The default hourly rate is MS $72, based on US Bureau of Labor Statistics data on employer costs for employee compensation, and it is editable in the report's calculator. Microsoft's own worked example runs 10,000 engaged sessions in a month to <"
     }
    ],
    "new_value": "",

@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Agent Is Never Done | Copilot Playbook</title>
+<meta name="description" content="What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners &mdash; the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain." />
+<link rel="canonical" href="https://copilotplaybook.com/agent-never-done.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Agent Is Never Done" />
+<meta property="og:description" content="The Copilot seat you don't need, the harness you have to choose, the credit meter that decides your margin, and the six ways an agent ages after go-live." />
+<meta property="og:url" content="https://copilotplaybook.com/agent-never-done.html" />
+<meta property="og:site_name" content="Copilot Playbook" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="The Agent Is Never Done" />
+<meta name="twitter:description" content="Practice guidance for partners building on Copilot Studio &mdash; what must be true before you build, and where the recurring revenue lives after." />
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — matches copilotplaybook.com system of record
+   DESIGN.md §1. No value below is new.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1160px; margin: 0 auto;
+  padding: 32px 28px; line-height: 1.7; background: #fff;
+}
+h2 { color: var(--navy); margin: 3.2rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.section-eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin: 3.2rem 0 -1.4rem; }
+h2:first-of-type, .section-eyebrow + h2 { margin-top: .4rem; }
+
+/* CROSS-REFERENCE LINK — DESIGN.md §8b.2. Every named document or section is one of these. */
+a.docref { font-weight: 600; border-bottom: 1px dotted var(--ltblue); }
+
+/* TOC */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS — DESIGN.md §3 C1 */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; border-left-color: var(--teal); }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: .4rem 0 0 1.1rem; }
+
+/* BLOCKQUOTE */
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES — DESIGN.md §3 C9. Never restyle a table inline. */
+.tablewrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: .89rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); white-space: nowrap; }
+tr:nth-child(even) td { background: #fafbfc; }
+td:first-child { font-weight: 600; color: var(--text); }
+table.dense th, table.dense td { font-size: .78rem; padding: 8px 10px; }
+table.dense td:first-child { font-weight: 400; color: #6b7280; }
+
+/* STAT RIBBON */
+.stat-ribbon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 20px 0; box-shadow: var(--shadow-md); }
+.stat-ribbon-item { padding: 20px 18px; background: #fff; border-right: 1px solid var(--border); border-top: 3px solid var(--teal); display: flex; flex-direction: column; gap: 4px; }
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) { .stat-ribbon { grid-template-columns: repeat(2, 1fr); } .stat-ribbon-item:nth-child(2) { border-right: none; } }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-tag { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.alt .tc-tag { color: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.sec .tc-tag { color: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+.tier-card.warn-t .tc-tag { color: #92400e; }
+
+/* COMPARE GRID */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+.compare-col p { font-size: .9rem; }
+
+/* CARDS / GRID — DESIGN.md §3 C5 */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.card-h { font-weight: 700; color: var(--navy); font-size: .95rem; margin-bottom: 6px; }
+.card-b { font-size: .88rem; color: #374151; margin: 0; }
+
+/* TAG */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* CHECK / CROSS — DESIGN.md §3 C12 */
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.dodont { list-style: none; margin: .6rem 0 1rem; padding: 0; }
+.dodont li { padding-left: 1.6rem; position: relative; margin: .5rem 0; font-size: .93rem; }
+.dodont .check, .dodont .cross { position: absolute; left: 0; top: 1px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: .6rem 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.checklist li { padding-left: 1.7rem; position: relative; font-size: .93rem; color: #374151; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 3px; width: 15px; height: 15px; border: 1.5px solid var(--teal); border-radius: 3px; background: #fff; }
+.checklist li strong { color: var(--navy); }
+
+/* ═══ FLOW MAP — the wrapper every Part C figure ships inside ═══ */
+.flowmap { margin: 22px 0 10px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fbfdfd; box-shadow: var(--shadow-md); padding: 22px 18px 10px; }
+.flowmap svg { width: 100%; height: auto; display: block; }
+.flowmap-cap { font-size: .8rem; color: #6b7280; padding: 10px 8px 4px; font-style: italic; }
+
+/* ═══ CONVERSATION STOPS — section 14, the run of show ═══ */
+.stops { margin: 24px 0 10px; }
+.stop { display: flex; gap: 20px; position: relative; margin-bottom: 6px; }
+.stop-rail { flex: 0 0 48px; position: relative; display: flex; flex-direction: column; align-items: center; }
+.stop-rail .dot { width: 48px; height: 48px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.05rem; box-shadow: var(--shadow-sm); border: 3px solid #fff; outline: 1px solid var(--border); flex: 0 0 auto; }
+.stop-rail .line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 24px; }
+.stop:last-child .stop-rail .line { display: none; }
+.stop.act2 .dot { background: #0f766e; }
+.stop.act3 .dot { background: #6d28d9; }
+.stop-content { flex: 1; min-width: 0; padding-bottom: 32px; }
+.stop-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.stop-head h3 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.stop-time { font-family: 'Consolas','Monaco',monospace; font-size: .82rem; font-weight: 700; color: #fff; background: var(--teal); padding: 5px 12px; border-radius: 20px; letter-spacing: .01em; white-space: nowrap; }
+.stop.act2 .stop-time { background: #0f766e; }
+.stop.act3 .stop-time { background: #6d28d9; }
+.beat { margin: 12px 0; }
+.beat-label { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.beat-label .ic { display:inline-flex; width:16px; height:16px; border-radius:3px; background:var(--teal); }
+.beat.say .beat-label .ic { background: var(--teal); }
+.beat.show .beat-label .ic { background: #6d28d9; }
+.beat.tool .beat-label .ic { background: #0f766e; }
+.beat-body { font-size: .93rem; color: var(--text); }
+.segue { margin: 16px 0 4px; background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%); color: #fff; border-radius: var(--radius); padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); }
+.segue .arrow { font-size: 1.1rem; flex: 0 0 auto; color: #a8ecf5; }
+.segue .txt { font-size: .87rem; line-height: 1.5; }
+.segue .txt strong { color: #a8ecf5; }
+
+/* ═══ RUNGS — section 4, the conversation staircase ═══ */
+.rungs { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.rung { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; background: #fff; box-shadow: var(--shadow-sm); }
+.rung .rn { width: 32px; height: 32px; border-radius: 50%; background: var(--muted-2); color: var(--teal); font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--teal); }
+.rung .rname { font-weight: 700; color: var(--navy); font-size: .95rem; }
+.rung .rdesc { font-size: .84rem; color: #6b7280; font-weight: 400; margin-top: 2px; }
+.rung .rlink { font-size: .85rem; font-weight: 700; color: var(--teal); white-space: nowrap; }
+.rung.recur { background: #f3fbfc; border-color: #c8e6eb; }
+.rung.hinge { background: linear-gradient(135deg, #004a55 0%, var(--teal) 100%); border-color: var(--teal); }
+.rung.hinge .rn { background: #fff; }
+.rung.hinge .rname, .rung.hinge .rlink { color: #fff; }
+.rung.hinge .rdesc { color: rgba(255,255,255,.85); }
+@media (max-width: 640px) { .rung { grid-template-columns: 32px 1fr; } .rung .rlink { grid-column: 2; } }
+
+/* RESOURCE LIST — section 13, the toolchain register */
+.reslist-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 14px 0; }
+.reslist-group .rg-head { background: var(--muted-2); padding: 8px 16px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy); }
+.reslist-item { padding: 12px 16px; border-top: 1px solid var(--border); background: #fff; }
+.reslist-item .t { font-weight: 700; font-size: .9rem; }
+.reslist-item .d { font-size: .82rem; color: #6b7280; margin-top: 2px; }
+
+/* REFERENCE LIST — section 15, the sources this page cites */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist li.unlinked { border-left-color: var(--ltblue); }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* ═══ NEW COMPONENTS FOR THIS PAGE ═══ */
+
+/* PROVENANCE CHIP — every currency figure carries one. DESIGN.md §8.10, spec PART D. */
+.prov { display: inline-block; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; vertical-align: 2px; margin-left: 5px; white-space: nowrap; }
+.prov-ms     { background: var(--accent); color: var(--teal); }
+.prov-survey { background: #dcfce7; color: #166534; }
+.prov-range  { background: #fef3c7; color: #92400e; }
+.prov-model  { background: #ede9fe; color: #5b21b6; }
+.provkey { display: flex; flex-wrap: wrap; gap: 14px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin: 16px 0; font-size: .8rem; color: #374151; }
+.provkey span.pk { display: flex; align-items: baseline; gap: 6px; }
+
+/* UNVER — an open tenant test. Names what is unknown and what would settle it. */
+.unver { border: 1px solid #f5ddb0; border-left: 4px solid #d97706; background: var(--warn); border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 18px 0; box-shadow: var(--shadow-sm); }
+.unver .u-label { display: flex; align-items: center; gap: 9px; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 7px; }
+.unver .u-label .tt { background: #d97706; color: #fff; border-radius: 4px; padding: 1px 7px; font-size: .6rem; letter-spacing: .06em; }
+.unver p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+.unver p.u-settle { margin-top: 7px; padding-top: 7px; border-top: 1px solid #f5ddb0; font-size: .82rem; }
+.unver strong { color: #92400e; }
+
+/* SOURCE LINE — DESIGN.md §3 C8b, promoted to a class because this page carries ~40 of them. */
+.srcline { margin-top: 8px; font-size: .68rem; color: #9ca3af; font-style: italic; }
+
+/* TRAP — a silent failure. It reports success and returns nothing. */
+.trap { border: 1px solid var(--border); border-left: 4px solid #92400e; background: #fff; border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 16px 0; box-shadow: var(--shadow-sm); }
+.trap .t-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 6px; }
+.trap h4 { margin: 0 0 5px; }
+.trap p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+
+@media (max-width: 720px) { body { padding: 20px 14px; } .stop { gap: 12px; } .stop-rail { flex-basis: 36px; } .stop-rail .dot { width: 36px; height: 36px; font-size: .85rem; } }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { max-width: 1320px; padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -20px -14px 0; }
+  .mh-bar-in { padding: 0 14px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -14px 20px; }
+  .masthead-inner { padding: 20px 14px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="index.html">Copilot Playbook</a><span class="sep">/</span><span>Copilot Studio</span><span class="sep">/</span><span class="cur">The Agent Is Never Done</span></div>
+    <div class="mh-date">Updated August 28, 2026</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Partner Field Guide &middot; Copilot Studio</div></div>
+    <h1>The Agent Is Never Done</h1>
+    <p class="sub">What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished.</p>
+    <p class="mh-meta">For <strong>partners building and running Copilot Studio agents</strong> &middot; Practice guidance &mdash; not a statement of work, and not a pricing model</p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">What Good Looks Like &mdash; End to End</a></li>
+      <li><a href="#section-2">The Engagement You Think You&rsquo;re Selling</a></li>
+      <li><a href="#section-3">The Seat You Don&rsquo;t Need</a></li>
+      <li><a href="#section-4">Agent Plumbing Is Not Copilot Plumbing</a></li>
+      <li><a href="#section-5">Choose the Harness</a></li>
+      <li><a href="#section-6">The Agent Governance Baseline</a></li>
+      <li><a href="#section-7">What Must Be True Before You Build</a></li>
+      <li><a href="#section-8">The Consumption Model</a></li>
+      <li><a href="#section-9">Measuring It</a></li>
+      <li><a href="#section-10">The Agent Is Never Done</a></li>
+      <li><a href="#section-11">Agent 365 &mdash; the Escalation</a></li>
+      <li><a href="#section-12">Buying the First 80%</a></li>
+      <li><a href="#section-13">The Toolchain Register</a></li>
+      <li><a href="#section-14">The Room</a></li>
+      <li><a href="#section-15">What We Could Not Verify</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 1 — WHAT GOOD LOOKS LIKE -->
+<!-- Part B · B-00 · absorbs B-04 · depends on TT-6 · figure C-1 -->
+<!-- The page's map and its scope-firewall device. -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-1">1. What Good Looks Like &mdash; the Engagement End to End</h2>
+
+<p>This section is the whole engagement on one page: the first conversation, the assessment that pays for itself, the build, and the thing that is still generating revenue two years later. Everything after it is detail. A partner who reads only this section should be able to describe a complete, well-run Copilot Studio engagement to a customer &mdash; what happens, in what order, how long it takes, who does it, what gets signed, and what has to be true in the tenant at each step. Every phase below links down to the section that does the work.</p>
+
+<p><strong>Two other staircases exist on this site, and this is neither of them.</strong> The six-stage ladder in <a class="docref" href="cpb.html#9-the-agent-maturity-model-a-staircase-to-frontier-partner">section 9 of the Frontier Partner Playbook</a> measures <em>your practice</em> as it matures across many customers. The five-phase worklist in <a class="docref" href="cpbops.html#s4">section 4 of the Ops Companion</a> is your <em>internal delivery instrument</em> &mdash; Discover, Design, Build &amp; Test, Deploy &amp; Train, AgentOps &mdash; and it is the right document to hand a delivery lead on day one of a build. This arc is <em>one customer's engagement, end to end</em>, and it is wider than the worklist at both ends. It adds two billable phases ahead of Discover, and it carries a credit-management layer after go-live that the worklist has no concept of because it predates metered agents.</p>
+
+<div class="stat-ribbon">
+  <div class="stat-ribbon-item">
+    <div class="sr-k">7</div>
+    <div class="sr-l">Phases, first conversation to ongoing managed AgentOps</div>
+    <div class="sr-s">Three of them recur</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">2</div>
+    <div class="sr-l">Phases that happen before anyone signs a build SOW</div>
+    <div class="sr-s">Both are billable. Most partners give them away</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">4</div>
+    <div class="sr-l">The phase partners skip &mdash; economics, priced before the build is quoted</div>
+    <div class="sr-s">Skip it and the customer meets the run rate on a Microsoft invoice</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">90</div>
+    <div class="sr-l">Days between sponsor reviews once the agent is live</div>
+    <div class="sr-s">Microsoft&rsquo;s published rhythm &mdash; measure, review, scale or retire</div>
+  </div>
+</div>
+
+<!-- FIGURE C-1 — the engagement arc. Authored in Part C. -->
+
+<h3>The arc</h3>
+
+<p>Read the table across, not down. The <strong>Paper</strong> column names the shape of the commercial instrument, never a rate &mdash; the rates live in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a>, and this page does not restate them. <strong>Who delivers</strong> names the organisation, not the job title; for roles, the minimum viable team and what you can safely subcontract, see <a class="docref" href="copilot-readiness-engagement.html#section-15">section 15 of the Copilot Readiness Engagement</a>.</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Duration</th>
+      <th>Who delivers</th>
+      <th>Paper</th>
+      <th>Licensing &mdash; what must be true</th>
+      <th>Detail in</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>0 &middot; Standing and visibility</strong><br><span class="tag">no paper</span> The conversation you are already entitled to have</td>
+      <td>One conversation, 30&ndash;60 minutes. Longer if a discovery scan runs first</td>
+      <td>Partner &mdash; the existing account relationship</td>
+      <td>None. If you are writing paper here you have mistimed it</td>
+      <td>Any Microsoft&nbsp;365 or Office&nbsp;365 subscription. <strong>No Copilot seat.</strong> Copilot Chat is included and can consume custom agents on a metered basis</td>
+      <td><a href="#section-2">&sect;2</a>, <a href="#section-3">&sect;3</a>, and <a class="docref" href="shadowai.html">the Shadow AI Assessment Guide</a> for the discovery-led opening</td>
+    </tr>
+    <tr>
+      <td><strong>1 &middot; The agent governance baseline</strong><br><span class="tag">assessment</span> What is already running, and how far it can reach</td>
+      <td>1&ndash;2 weeks</td>
+      <td>Partner. No vendor purchase required first</td>
+      <td>Fixed-fee assessment. Short-form &mdash; this is not the build SOW</td>
+      <td>Power Platform administrator access, plus <strong>AI Administrator</strong> or Global Reader. Microsoft recommends least privilege over Global Admin. Nothing needs buying</td>
+      <td><a href="#section-6">&sect;6</a> &mdash; and <a class="docref" href="copilot-readiness-engagement.html#section-9">section 9 of the Copilot Readiness Engagement</a> for why the Copilot equivalent of this phase stalls in an SMB tenant</td>
+    </tr>
+    <tr>
+      <td><strong>2 &middot; Candidate and baseline</strong><br><span class="tag">assessment</span> One named workflow, and the number you will be judged against</td>
+      <td>1&ndash;2 weeks &mdash; Weeks&nbsp;1&ndash;2 of the build-side clock</td>
+      <td>Partner, with the customer&rsquo;s named process owner. The owner is not optional</td>
+      <td>Assessment, or the first phase of the SOW</td>
+      <td>None new. The constraint here is organisational, not licensing &mdash; somebody has to own the process</td>
+      <td><a href="#section-9">&sect;9</a></td>
+    </tr>
+    <tr>
+      <td><strong>3 &middot; Prerequisites and harness</strong><br><span class="tag">sow</span> The environment, the boundary, and which runtime you are building on</td>
+      <td>2 weeks &mdash; Weeks&nbsp;2&ndash;4</td>
+      <td>Partner, with the customer&rsquo;s Power Platform admin. Distributor for the licensing conversation</td>
+      <td>SOW</td>
+      <td>A Power Platform environment with <strong>Dataverse</strong>, production or sandbox &mdash; trial and developer environments are not eligible for pay-as-you-go. A <strong>DLP policy</strong> separating Business from Non-Business connectors. Managed Environments if you need sharing limits or pipelines &mdash; see the open question at <a href="#section-7">&sect;7</a></td>
+      <td><a href="#section-5">&sect;5</a>, <a href="#section-7">&sect;7</a></td>
+    </tr>
+    <tr>
+      <td><strong>4 &middot; Economics</strong><br><span class="tag warn">the skipped one</span> What it costs to run, and who pays for the build burn</td>
+      <td>2&ndash;3 days, inside phase 3&rsquo;s window. <strong>It gates the quote</strong></td>
+      <td>Partner. Distributor for capacity packs</td>
+      <td>None of its own &mdash; its output is the number the build SOW is written around</td>
+      <td>Copilot Credit capacity packs. Since April 2026 these can be bought <strong>without an Azure subscription</strong>. Per-agent monthly caps configured before launch, not after</td>
+      <td><a href="#section-8">&sect;8</a></td>
+    </tr>
+    <tr>
+      <td><strong>5 &middot; Build and deploy</strong><br><span class="tag">sow</span> The part that looks like the project</td>
+      <td>Weeks&nbsp;4&ndash;8 simple, 4&ndash;14 complex; live by Weeks&nbsp;8&ndash;10</td>
+      <td>Partner &mdash; or a prebuilt-agent vendor for the first 80%, with the partner carrying the last mile</td>
+      <td>SOW. The retainer is signed here, not later</td>
+      <td>Capacity packs live. <strong>The harness decides when billing starts</strong> &mdash; on one of them your own development and QA consume the customer&rsquo;s credits before anything is published</td>
+      <td><a href="#section-5">&sect;5</a>, <a href="#section-12">&sect;12</a></td>
+    </tr>
+    <tr>
+      <td><strong>6 &middot; Managed AgentOps</strong><br><span class="tag ok">recurring</span> Where it stops being a project</td>
+      <td>Indefinite. 90-day measurement cycle, then a sponsor review that scales it or retires it</td>
+      <td>Partner. Microsoft operates the platform beneath you and changes it without asking</td>
+      <td>Retainer &mdash; a managed services agreement, not a renewal of the build</td>
+      <td>Capacity packs and caps under active management. <strong>Agent 365 only when a trigger fires</strong>, not as an entry ticket</td>
+      <td><a href="#section-10">&sect;10</a>, <a href="#section-11">&sect;11</a>, and <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a> for what to charge</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcline">Week ranges for phases 2&ndash;5 are the build-side clock published in <a class="docref" href="cpbops.html#s4">section 4 of the Ops Companion</a>, restated here so the two documents stay consistent. Phases 0, 1 and 6 have no equivalent there.</div>
+
+<h3>Phase 4 is the one partners skip</h3>
+
+<p>Every other phase in this arc has an obvious owner and an obvious moment. Economics does not. It sits between the design work and the quote, it produces no deliverable the customer asked for, and it is the easiest thing in the engagement to defer. So partners defer it &mdash; they quote build labour, sign the SOW, ship the agent, and let the customer discover the monthly run rate on a Microsoft invoice they were never shown a forecast for.</p>
+
+<p>That is the single most relationship-damaging move in this motion, and it is entirely avoidable. The estimate takes days, the tooling is free and published by Microsoft, and the per-agent cap that prevents the worst outcome is a setting nobody has to buy. <a href="#section-8">&sect;8</a> is the whole method &mdash; estimate, cap, monitor, true-up &mdash; and it is also where the recurring revenue in this arc actually comes from.</p>
+
+<div class="callout">
+  <div class="callout-title">The two phases ahead of the paper</div>
+  <div class="callout-body"><p>Phases 0 and 1 sit entirely before the point where <a class="docref" href="cpbops.html#s4">the build worklist</a> begins, and <strong>both are billable</strong>. A partner whose engagement starts at Discover has given away the assessment that qualifies the customer, the finding that justifies the SOW, and the only work in the arc that can be sold into a tenant which has bought nothing yet. Phase 1 is the wedge &mdash; <a href="#section-6">&sect;6</a> is why it works where the Copilot readiness assessment does not.</p></div>
+</div>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-6</span> Open tenant test &mdash; phase 1&rsquo;s finding volume</div>
+  <p>Agent Inventory has not yet been run against a real SMB tenant for this guide. <strong>How many agents already exist in a typical Business Premium tenant &mdash; and how many use maker credentials, no authentication, or have no named owner &mdash; is unknown.</strong> Phase 1&rsquo;s duration is scoped on the work the assessment requires, not on a measured finding count, and a tenant with dozens of undocumented agents would push it past two weeks.</p>
+  <p class="u-settle">What would settle it: run Agent Inventory from the Copilot Agent Kit against three real SMB tenants and record agent count, authentication mode, credential mode and ownership state for each. The tool is free and the run is non-invasive.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — THE ENGAGEMENT PARTNERS THINK THEY'RE SELLING -->
+<!-- Part B · B-01 · gap 1 · reads against the standard set in §1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-2">2. The Engagement Partners Think They&rsquo;re Selling</h2>
+
+<p><a href="#section-1">&sect;1</a> is the standard. This section is what is actually being sold instead, and the three ways it breaks. Each break is resolved by a later section, and it is worth naming which one now, because the rest of this guide is the resolution.</p>
+
+<h3>The instinct is not stupid</h3>
+
+<p>Partners gravitate to building an agent because an agent is <em>project-shaped</em>. It has a scope, a demo, a delivery date and a number. It fits the way a partner already sells &mdash; a statement of work, a fixed fee, a handover. Nothing about that instinct is irrational, and that is exactly the problem: familiarity is doing the work that analysis should be doing. The engagement gets structured around the part that is easiest to quote rather than the part that carries the risk or the revenue.</p>
+
+<p>This guide does not re-argue how to price outcome-based work &mdash; the fixed base, the kicker, and the five gates are already written up in the <a class="docref" href="cpb.html#outcome-based-primer">outcome-based project work primer</a>. The argument here is narrower and comes earlier: <strong>the shape of the engagement is wrong before the pricing model is even chosen.</strong></p>
+
+<h3>Break 1 &mdash; a large share of these projects get cancelled</h3>
+
+<p>Gartner predicts that <strong>over 40% of agentic AI projects will be cancelled by the end of 2027</strong>, and names three causes: escalating costs, unclear business value, and inadequate risk controls. It also names <strong>&ldquo;agent washing&rdquo;</strong> &mdash; vendors rebranding assistants, RPA and chatbots as agentic &mdash; and estimates that only about <strong>130 of the thousands</strong> of agentic AI vendors are real. A January 2025 Gartner poll of 3,412 webinar attendees found 19% had made significant investments in agentic AI, 42% conservative, 8% none, and 31% waiting or unsure.</p>
+
+<p>Read the three cancellation causes against the arc in <a href="#section-1">&sect;1</a> and they are not abstract risks. <strong>Escalating cost is phase 4 skipped. Unclear business value is phase 2 skipped. Inadequate risk controls is phase 1 skipped.</strong> Gartner is describing, in aggregate, engagements that started at the build.</p>
+
+<div class="srcline">Source: Gartner press release, 25 June 2025 &mdash; <a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">Gartner Predicts Over 40% of Agentic AI Projects Will Be Canceled by End of 2027</a>. A prediction and a poll, not a measurement of completed projects &mdash; cite it as such.</div>
+
+<h3>Break 2 &mdash; the measurement stops at the pilot</h3>
+
+<p>This one is not an analyst's opinion. It is Microsoft describing its own customers, in the guidance page that also supplies the ROI formula:</p>
+
+<blockquote>Instrumentation is strong during the pilot, and then drifts as the agent moves to production.<span class="attr">Microsoft Learn &mdash; Measure the impact of your agents, &ldquo;Measurement that stops at pilot&rdquo;</span></blockquote>
+
+<p>A project-shaped engagement makes this almost inevitable. Instrumentation is scoped as part of the build, the build ends, and nobody owns the signal afterwards. <a href="#section-9">&sect;9</a> is the whole answer &mdash; including the two further failure patterns Microsoft names in the same breath, one of which retires the slide most of the channel is currently presenting.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Microsoft Learn &mdash; Measure the impact of your agents</a> (ms.date 4 June 2026).</div>
+
+<h3>Break 3 &mdash; the margin trap, and this one is the spine</h3>
+
+<p>The third break is the reason this page exists. A partner sells a flat monthly fee. The cost of delivering it is not flat &mdash; it moves with prompts, with actions, with how long an agent runs in the background. The customer's invoice stays the same every month while the cost of honouring it does not. ChannelE2E put the state of the channel plainly in its own headline: <strong>AI-native is the new pitch; MSPs are still working out the pricing.</strong></p>
+
+<p><strong>A flat-fee managed service over a metered cost base is a margin trap, and it is the single most likely way for a partner to lose money on an agent that is working perfectly.</strong> <a href="#section-8">&sect;8</a> resolves it &mdash; not by avoiding metered billing, but by turning the meter into the recurring service. That is the argument this whole guide is built to land.</p>
+
+<div class="srcline">Source: <a href="https://www.channele2e.com/news/channel-brief-ai-native-is-the-new-pitch-msps-are-still-working-out-the-pricing" target="_blank" rel="noopener">ChannelE2E Channel Brief &mdash; &ldquo;AI-native is the new pitch. MSPs are still working out the pricing&rdquo;</a> (2026). Trade press, not survey data.</div>
+
+<div class="callout warn">
+  <div class="callout-title">Adjacent evidence &mdash; read it carefully, it is a different product</div>
+  <div class="callout-body"><p>Through mid-2026 a large, sustained community grievance ran about <strong>GitHub Copilot</strong> credit consumption: allocations exhausted in days, and a core complaint that there was <em>no cost preview before a task runs</em>. <strong>That is GitHub Copilot credits, not Copilot Studio Copilot Credits.</strong> They are different meters on different products and this guide does not conflate them.</p><p>It is admissible for exactly one thing, and it is worth having in mind before phase 4: <strong>it shows how customers react when metered AI billing surprises them.</strong> The reaction is not a renegotiation. It is a loss of trust in whoever sold it.</p></div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The three breaks compose</div>
+  <div class="callout-body"><p>Gartner says these projects get cancelled on cost and unclear value. Microsoft says measurement drifts after the pilot and that time-savings claims undermine credibility. The channel's own trade press says the pricing model does not match the cost base.</p><p><strong>Every one of those is a gap between a project ending and an outcome being demonstrated.</strong> That gap is the partner's job, and it is where the recurring revenue is &mdash; which is the same claim as &ldquo;the agent is never done,&rdquo; approached from the commercial side rather than the technical one.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — THE SEAT YOU DON'T NEED -->
+<!-- Part B · B-02 · gap 6 · depends on TT-1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-3">3. The Seat You Don&rsquo;t Need</h2>
+
+<p>The prevailing channel sequence is <em>sell Copilot seats &rarr; prove adoption &rarr; then talk about agents</em>. That sequence gates the entire agent conversation behind a per-seat commitment the customer has not made, and for most SMB customers it is the reason the conversation never starts.</p>
+
+<p><strong>It is not a real prerequisite.</strong> Microsoft's own agent governance documentation says so directly:</p>
+
+<blockquote>Microsoft Copilot Chat is available at no additional cost for all Microsoft Entra account users with a Microsoft 365 or Office 365 subscription. &hellip; If your organization requires agents that incorporate your organization's data, you can provide access to agents that are billed based on metered consumption.<span class="attr">Microsoft Learn &mdash; Prerequisites, Microsoft Copilot agent governance</span></blockquote>
+
+<p>Read that as a partner rather than as an admin. An agent engagement can begin in a tenant with <strong>zero Microsoft 365 Copilot seats</strong>. The customer's existing Microsoft 365 or Office 365 subscription is the entitlement; the agent's usage is metered separately in Copilot Credits. The seat is a capability upgrade, not an entry gate &mdash; and it can be sold later, on evidence, instead of first, on faith.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/agent-essentials/agent-prerequisites" target="_blank" rel="noopener">Microsoft Learn &mdash; Prerequisites, Microsoft Copilot agent governance</a> (ms.date 17 June 2026). The same page sets the admin roles for phase 1: <strong>AI Admin</strong>, Global Admin, or Global Reader for view-only, with Microsoft explicitly recommending the least-privileged role.</div>
+
+<h3>The price of the unlock &mdash; because this is not free</h3>
+
+<p>Metered is not free, and narrower is not the same as cheaper. Three things get given up on the no-seat path, and a partner who presents the unlock without them will be corrected by the customer's first invoice or the agent's first bad week.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>What you give up</th><th>Detail</th><th>Consequence</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Free at the point of use</strong></td>
+      <td>Agent usage is billed in Copilot Credits. Employee-facing usage <em>is</em> included for users who hold a Microsoft 365 Copilot licence, so the meter runs precisely because nobody has one</td>
+      <td>The run rate is now a line item somebody has to forecast &mdash; <a href="#section-8">&sect;8</a></td>
+    </tr>
+    <tr>
+      <td><strong>Reach</strong></td>
+      <td>The Copilot chat harness publishes to <strong>internal teams only</strong>. Files, skills and memory are &ldquo;not a focus&rdquo;, and it does not retry or find alternative paths when a step fails</td>
+      <td>Scoping constraint, not a blocker &mdash; but it decides which harness you are on, which decides the bill. <a href="#section-5">&sect;5</a></td>
+    </tr>
+    <tr>
+      <td><strong>What the agent can read</strong></td>
+      <td>Without a Microsoft 365 Copilot licence in the same tenant, generative answers can only use <strong>SharePoint files under 7&nbsp;MB</strong>. With a licence, and tenant graph grounding with semantic search turned on, the limit is <strong>200&nbsp;MB</strong></td>
+      <td><strong>A licensing decision silently changes what the agent can read.</strong> Nothing errors. The agent simply does not know things</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>That third row deserves to be read twice. It is the first appearance of a pattern that runs through this entire guide and gets its own component in <a href="#section-7">&sect;7</a>: <strong>the failures that matter in Copilot Studio are usually silent.</strong> The agent reports healthy, answers confidently, and is simply missing the file that would have made the answer right.</p>
+
+<div class="srcline">Sources: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-copilot-studio" target="_blank" rel="noopener">Microsoft Learn &mdash; Knowledge sources summary</a> (7&nbsp;MB / 200&nbsp;MB limits and tenant graph grounding); <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/harnesses-overview" target="_blank" rel="noopener">Harnesses in Copilot Studio</a> (ms.date 28 July 2026) for the Copilot chat harness column; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Billing rates and management</a> (ms.date 3 August 2026) for the Microsoft 365 Copilot inclusion.</div>
+
+<h3>How the credits are actually bought</h3>
+
+<p>Two mechanisms, and the difference matters at phase 4 because only one of them protects the customer from being switched off:</p>
+
+<ul>
+  <li><strong>Prepaid capacity packs</strong> &mdash; a pooled tenant allocation, allocable per environment, managed in the Power Platform admin center. This is the default, and it is the one subject to overage enforcement.</li>
+  <li><strong>Pay-as-you-go</strong> &mdash; enabled by <strong>linking an Azure subscription billing plan to the environment</strong>. Overage is billed to the Azure subscription instead, so <strong>enforcement does not apply</strong>.</li>
+</ul>
+
+<p>That is a genuine architectural choice with a commercial consequence, and it belongs in the phase 4 conversation rather than being discovered later. <a href="#section-8">&sect;8</a> carries it.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-1</span> Open tenant test &mdash; the no-seat path, end to end</div>
+  <p>The documentation supports every sentence above, and <strong>the full path has not been walked in a live tenant for this guide.</strong> What is untested: in a Microsoft 365 Business Premium tenant with zero Copilot seats, can you purchase Copilot Credit capacity, allocate it to an environment, and publish a working agent that users reach through Copilot Chat &mdash; without hitting a licensing wall that the docs do not mention?</p>
+  <p>One related claim circulating in the channel is <strong>not</strong> asserted here: that since April 2026 capacity packs can be bought with no Azure subscription at all. What Microsoft Learn does state is narrower and is what this section relies on &mdash; that prepaid credits are managed through the Power Platform admin center, and that it is <em>pay-as-you-go</em> which requires linking an Azure subscription billing plan.</p>
+  <p class="u-settle">What would settle it: run it once. A Business Premium tenant, no Copilot seats, buy the smallest capacity allocation, publish one agent to Copilot Chat, and record every point at which a licence was requested. This is the cheapest high-value test in the register and it validates the central claim of the page.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 4 — AGENT PLUMBING IS NOT COPILOT PLUMBING -->
+<!-- Part B · B-03 · gap 12 · the B-02 → B-03 adjacency is fixed as §3 → §4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-4">4. Agent Plumbing Is Not Copilot Plumbing</h2>
+
+<p>This section exists to make <a href="#section-3">&sect;3</a> safe to say out loud. The obvious objection to &ldquo;you don't need a Copilot seat&rdquo; is that the readiness work still has to happen &mdash; and the readiness work is exactly what an SMB cannot afford or, as it turns out, cannot license. That objection is right about the work and wrong about which work.</p>
+
+<!-- FIGURE C-2 — the two plumbings. Authored in Part C. -->
+
+<h3>Two different problems that share a vocabulary</h3>
+
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">Copilot readiness &mdash; a tenant-wide data problem</div>
+    <p>Microsoft 365 Copilot grounds on the whole tenant graph. The moment a seat is assigned, <strong>every oversharing defect anywhere in the tenant becomes reachable</strong>. That is why the channel's readiness playbook is SharePoint Advanced Management, Data Access Governance reports and EEEU cleanup &mdash; the blast radius is the tenant, so the remediation has to be too.</p>
+    <p><strong>And that path does not execute in most SMB tenants.</strong> The licence wall is documented in <a class="docref" href="copilot-readiness-engagement.html#section-9">section 9 of the Copilot Readiness Engagement</a>: the tooling the playbook depends on requires an E-SKU base, and Microsoft 365 Business Premium does not qualify.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Agent readiness &mdash; a scoped configuration problem</div>
+    <p>An agent's blast radius is not the tenant graph. It is three much smaller things: <strong>what the maker explicitly pointed it at, who it acts as, and who can reach it.</strong> Those are Power Platform and Copilot Studio controls.</p>
+    <p><strong>None of them require an E-SKU base.</strong> Authentication mode, credentials, sharing scope, connector policy and environment strategy are all reachable in a Business Premium tenant, and all of them are configuration rather than remediation.</p>
+  </div>
+</div>
+
+<blockquote>The no-seat path does not remove the plumbing. It <strong>swaps</strong> it &mdash; trading a tenant-wide permissions remediation the SMB cannot license for a scoped agent-governance job it can.</blockquote>
+
+<h3>There is a structural reason the swap works</h3>
+
+<p>This is not a licensing coincidence that happens to be convenient. It follows from the same constraint that <a href="#section-3">&sect;3</a> listed as a cost.</p>
+
+<p>No Microsoft 365 Copilot licence in the tenant means <strong>tenant graph grounding is not on the table</strong>. The agent reads only the knowledge sources a maker explicitly attached &mdash; and under generative orchestration each agent is capped at <strong>25 SharePoint site URLs</strong>. The metered path is narrower than the licensed path, and <em>the narrowness is the safety property</em>. You assess twenty-five named sites, not the whole tenant.</p>
+
+<p>That is what makes the phase 1 assessment in <a href="#section-1">&sect;1</a> a fixed-fee, one-to-two-week engagement instead of an open-ended remediation programme. The scope is bounded by the product.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-copilot-studio" target="_blank" rel="noopener">Microsoft Learn &mdash; Knowledge sources summary</a> (25 SharePoint site URLs per agent under generative orchestration; tenant graph grounding with semantic search requires a Microsoft 365 Copilot licence in the same tenant).</div>
+
+<h3>Where this argument stops &mdash; and it does stop</h3>
+
+<p>Overstating this would be the most damaging thing in the guide, so here is the limit, stated in the section rather than buried in a footnote.</p>
+
+<div class="callout warn">
+  <div class="callout-title">Reduced, not eliminated</div>
+  <div class="callout-body"><p>With <strong>end-user credentials</strong> &mdash; the secure default &mdash; the agent resolves the signed-in user's own permissions. So a genuinely overshared site <em>inside</em> those twenty-five remains reachable by exactly the people who could already reach it. The oversharing defect is not fixed by scoping the agent.</p><p>What shrinks is <strong>amplification</strong>: the problem of a machine surfacing something a user could technically open but would never have found. That shrinks from tenant-wide to twenty-five named sites, which is the difference between a programme and a task.</p><p>And it shrinks only while the credential setting holds. Flip it to <strong>maker-provided credentials</strong> and the whole argument inverts &mdash; every invoker inherits the maker's permissions, and the twenty-five-site boundary stops being a boundary at all. That setting is the first thing <a href="#section-6">&sect;6</a> audits, and it is the reason &sect;6 exists.</p></div>
+</div>
+
+<p>So the honest formulation, and the one to use in front of a customer: <strong>you still assess the sources you ground in &mdash; but you assess twenty-five sites, not the tenant, and you can do it on the licences they already own.</strong></p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 5 — CHOOSE THE HARNESS -->
+<!-- Part B · B-05 · gap 1 · figure C-3 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-5">5. Choose the Harness</h2>
+
+<p>Before this guide, the word <em>harness</em> did not appear anywhere on this site. It is now the most consequential word in a Copilot Studio scope, because it is the single choice that determines what the agent can do, where it can be published, and <strong>when the meter starts running</strong>.</p>
+
+<blockquote>Whatever you build in Microsoft Copilot Studio, a <em>harness</em> powers it behind the scenes. You design your agent or workflow, while the model you select supplies the reasoning and generation. The harness is a <em>runtime</em> that exists between the two: it determines when to call the model, what components to send it, interprets what comes back, and calls the right tools.<span class="attr">Microsoft Learn &mdash; Harnesses in Copilot Studio</span></blockquote>
+
+<p>Microsoft lists four things the harness decides. Three are capability questions a maker cares about. The fourth is <strong>&ldquo;How your usage is billed&rdquo;</strong> &mdash; and that one is the partner's problem, not the maker's.</p>
+
+<!-- FIGURE C-3 — the harness fork. Authored in Part C. -->
+
+<h3>The three harnesses</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Consideration</th><th>GitHub Copilot harness</th><th>Standard harness</th><th>Copilot chat harness</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Best for</strong></td><td>Complex, multi-step business processes</td><td>Rule-based agents and structured conversations</td><td>Extending M365 Copilot Chat with enterprise knowledge</td></tr>
+    <tr><td><strong>How it works</strong></td><td>Reasons through a goal on its own, step by step</td><td>Follows the topics and rules you define</td><td>Connects enterprise knowledge to M365 Copilot Chat</td></tr>
+    <tr><td><strong>Recovers from problems</strong></td><td>Retries and finds alternative paths automatically</td><td>Follows the paths you&rsquo;ve built</td><td>Not a focus</td></tr>
+    <tr><td><strong>Works with files</strong></td><td>Creates, edits and reasons over Word, Excel, PowerPoint and PDF</td><td>Not a focus</td><td>Not a focus</td></tr>
+    <tr><td><strong>Skills and memory</strong></td><td>Yes</td><td>Not a focus</td><td>Not a focus</td></tr>
+    <tr><td><strong>Publishing</strong></td><td>Internal teams or external customers</td><td>Internal teams or external customers</td><td><strong>Internal teams only</strong></td></tr>
+    <tr><td><strong>Billing</strong></td><td>Usage-based &mdash; and <strong>it starts when you start building</strong></td><td>Copilot Credits per the rate card, after publish</td><td>Consumption, or included in Microsoft 365 Copilot licences</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/harnesses-overview" target="_blank" rel="noopener">Microsoft Learn &mdash; Harnesses in Copilot Studio</a> (ms.date 28 July 2026). The comparison rows are Microsoft&rsquo;s own; the billing row is expanded from <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/billing-credit-overview" target="_blank" rel="noopener">Overview of usage-based billing</a> (ms.date 18 August 2026) and <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Billing rates and management</a> (ms.date 3 August 2026).</div>
+
+<h3>Why this is a scoping decision and not a technical one</h3>
+
+<p>&ldquo;Build me an agent that answers questions from our policy documents&rdquo; is a Copilot chat harness job: knowledge grounding, internal only, billed as consumption or covered by a Copilot licence. &ldquo;Build me an agent that reads invoices, matches them to purchase orders and routes the exceptions&rdquo; is a GitHub Copilot harness job &mdash; a different capability set, a different failure mode, and a different meter that <em>starts running during your own development</em>.</p>
+
+<p>Those two sentences arrive in a discovery call sounding equally vague. They are not the same engagement and they are not the same price.</p>
+
+<div class="callout">
+  <div class="callout-title">The line to remember</div>
+  <div class="callout-body"><p><strong>A partner who quotes without naming the harness has not scoped the work.</strong> Name it in the design phase, write it into the SOW, and treat a request to change it mid-build as the scope change it actually is &mdash; because it moves both the capability and the invoice.</p></div>
+</div>
+
+<p>This section scopes the engagement. It does not price it: <a href="#section-8">&sect;8</a> does that, and everything there assumes a harness has already been chosen. One consequence is sharp enough to flag here rather than leave to &sect;8 &mdash; on the GitHub Copilot harness, <strong>your own build, preview, test and evaluation runs consume the customer&rsquo;s credits before anything is published.</strong> That needs a clause and a cap, and almost no SOW in the channel currently has one.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 6 — THE AGENT GOVERNANCE BASELINE -->
+<!-- Part B · B-06 · gap 12 · depends on TT-6 · figure C-6 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-6">6. The Agent Governance Baseline</h2>
+
+<p>This is <strong>phase 1</strong> of the arc, and it is the assessment that earns the rest of the engagement. It is distinct from <a href="#section-7">&sect;7</a> in a way worth stating precisely: <strong>this section is auditing what already exists in the tenant. &sect;7 is preparing to build something new.</strong> Partners routinely collapse the two and lose the billable assessment in the process.</p>
+
+<!-- FIGURE C-6 — blast radius, the three settings. Authored in Part C. -->
+
+<h3>Three settings decide the blast radius</h3>
+
+<p>Microsoft's framing is that agents are secure by default and that makers can change those defaults &ldquo;for valid scenarios without knowing the risk.&rdquo; Copilot Studio runs an automatic security scan and warns the maker before publishing. <strong>It warns. It does not stop them.</strong></p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Setting</th><th>Secure default</th><th>The dangerous value</th><th>What it means</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Authentication mode</strong></td>
+      <td>Authenticate with Microsoft</td>
+      <td><strong>No authentication</strong></td>
+      <td>Anyone who has the link can interact with the agent</td>
+    </tr>
+    <tr>
+      <td><strong>Credentials to use</strong><br>(connectors and flows)</td>
+      <td>End user credentials</td>
+      <td><strong>Maker-provided credentials</strong></td>
+      <td>Every user of the agent operates with the maker&rsquo;s permissions, not their own</td>
+    </tr>
+    <tr>
+      <td><strong>Sharing scope</strong></td>
+      <td>Shared with no one</td>
+      <td>Shared with everyone in the organisation</td>
+      <td>No access boundary</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/security-scan" target="_blank" rel="noopener">Microsoft Learn &mdash; Automatic security scan in Copilot Studio</a>. The three settings, their defaults and the warning behaviour are Microsoft&rsquo;s; the consequence column is this guide&rsquo;s reading of them.</div>
+
+<div class="callout warn">
+  <div class="callout-title">Maker-provided credentials is the agent-era open SharePoint site</div>
+  <div class="callout-body"><p>The middle row is the one to audit first. It is permanent privilege escalation for every person who invokes the agent, configured by a single dropdown, with a warning at publish time as the only friction.</p><p><strong>And it is invisible to every Copilot readiness report the channel currently sells.</strong> Data Access Governance does not see it. SharePoint Advanced Management does not see it. It lives in Power Platform, and it is precisely the setting that inverts the containment argument in <a href="#section-4">&sect;4</a>.</p></div>
+</div>
+
+<h3>Microsoft&rsquo;s top ten &mdash; the checklist, already written</h3>
+
+<p>In February 2026 Microsoft's security organisation published the ten agent misconfigurations it observes in the wild. This is the assessment checklist for phase 1, and it did not have to be invented by anyone in the channel.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>#</th><th>Misconfiguration</th><th>Consequence</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Broad organisational sharing</td><td>Unintended access, expanded attack surface</td></tr>
+    <tr><td>2</td><td>Missing authentication</td><td>Public exposure, unauthorised access</td></tr>
+    <tr><td>3</td><td>Risky HTTP request actions</td><td>Governance bypass, insecure communications</td></tr>
+    <tr><td>4</td><td>Email-based data exfiltration</td><td>Data leakage via prompt injection</td></tr>
+    <tr><td>5</td><td><strong>Dormant agents and connections</strong></td><td>Hidden attack surface, stale privileged access</td></tr>
+    <tr><td>6</td><td><strong>Author (maker) authentication</strong></td><td>Privilege escalation, separation-of-duties bypass</td></tr>
+    <tr><td>7</td><td>Hardcoded credentials</td><td>Credential leakage, unauthorised system access</td></tr>
+    <tr><td>8</td><td>Model Context Protocol (MCP) tools</td><td>Undocumented access paths, unintended interactions</td></tr>
+    <tr><td>9</td><td>Generative orchestration lacking instructions</td><td>Prompt abuse, behaviour drift, unintended actions</td></tr>
+    <tr><td>10</td><td><strong>Orphaned agents</strong></td><td>Lack of governance, outdated logic, unmanaged access</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="srcline">Source: <a href="https://www.microsoft.com/en-us/security/blog/2026/02/12/copilot-studio-agent-security-top-10-risks-detect-prevent/" target="_blank" rel="noopener">Microsoft Security Blog &mdash; Detecting and mitigating common agent misconfigurations</a>, 12 February 2026.</div>
+
+<p><strong>Note items 5 and 10.</strong> Dormant agents and orphaned agents are not build failures. They cannot be prevented at build time at all &mdash; they only appear with the passage of time, and only a recurring review finds them. They are the strongest available evidence for the argument in <a href="#section-10">&sect;10</a>, and they come from Microsoft's <em>security</em> organisation rather than its marketing.</p>
+
+<div class="callout warn">
+  <div class="callout-title">The detection method Microsoft recommends is no longer free</div>
+  <div class="callout-body"><p>The February blog directs readers to <strong>Advanced Hunting community queries</strong> in the AI Agents folder of the security portal. On <strong>1 July 2026</strong> that path moved behind a Microsoft Agent 365 licence &mdash; Microsoft published the risk list in February and licensed its recommended detection method five months later. <a href="#section-11">&sect;11</a> covers the transition in full.</p><p><strong>The checklist itself is still free to read, and it is still free to run &mdash; just not Microsoft's way.</strong> The no-licence path is the <strong>Copilot Agent Kit</strong>: <em>Agent Inventory</em> for the tenant-wide registry of every custom agent with its features, authentication mode and knowledge sources, and the <em>Agent Review Tool</em> for the anti-pattern scan. Both are free and open source, from Microsoft's Power CAT team. <a href="#section-13">&sect;13</a> has the links.</p></div>
+</div>
+
+<h3>Why this is a better wedge than the Copilot readiness assessment</h3>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-h">It runs where the alternative cannot</div>
+    <p class="card-b">The tenant-wide Copilot readiness path needs an E-SKU base that Business Premium does not provide &mdash; <a class="docref" href="copilot-readiness-engagement.html#section-9">the Copilot Readiness Engagement, section 9</a>. This assessment needs Power Platform admin access and an AI Administrator or Global Reader role.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">It finds live defects, not theoretical exposure</div>
+    <p class="card-b">An oversharing report describes what <em>could</em> happen. An agent running on maker credentials with no authentication is something that <em>is</em> happening, today, with a name attached to it.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">The customer has bought nothing yet</div>
+    <p class="card-b">No Copilot seats, no capacity packs, no governance licence. The assessment is sellable into a tenant at its current licensing, which is what makes it phase 1 rather than a post-sale activity.</p>
+  </div>
+</div>
+
+<p>In most SMB tenants there are already agents nobody inventoried &mdash; made in Copilot Chat, in Teams, in Agent Builder, by people who were not thinking about authentication modes. Finding them is the finding that justifies everything after it.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-6</span> Open tenant test &mdash; is the wedge real or theoretical?</div>
+  <p><strong>Agent Inventory has not been run against a real SMB tenant for this guide.</strong> The claim that &ldquo;in most SMB tenants there are already agents nobody inventoried&rdquo; is a reasonable inference from how Copilot Chat and Agent Builder work &mdash; it is not a measurement, and this guide does not present it as one. If a typical Business Premium tenant turns out to hold two agents, both owned and both authenticated, phase 1 is a much shorter conversation.</p>
+  <p class="u-settle">What would settle it: run Agent Inventory across three real SMB tenants and record, for each agent found, its authentication mode, its credential mode, whether it is shared organisation-wide, and whether it has a named owner. That single table would turn this section from an argument into evidence &mdash; and it is the same run that would let a partner price phase 1 properly.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 7 — WHAT MUST BE TRUE BEFORE YOU BUILD -->
+<!-- Part B · B-07 · gaps 5, 7 · depends on TT-3, TT-5 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-7">7. What Must Be True Before You Build</h2>
+
+<p><strong>Phase 3</strong> of the arc. <a href="#section-6">&sect;6</a> audited what exists; this is what has to be put in place before anything new is published. Five layers, in dependency order &mdash; and then the failures that do not announce themselves, which are the reason this section is long.</p>
+
+<p>The environment strategy overlaps with Phase 2 of the <a class="docref" href="cpbops.html#s4">Agent Build Engagement Worklist</a>, which carries the ALM detail for a delivery lead. This section covers what that worklist assumes rather than restating it.</p>
+
+<h3>Layer 1 &mdash; who can make an agent at all</h3>
+
+<p>The default Power Platform environment is open to every licensed user in the tenant, and production agents should never live there. Restrict environment creation, decide who holds a maker role, and adopt the <strong>zoned governance model</strong> Microsoft describes at maturity level 300 &mdash; environments designated <em>safe</em>, <em>supported</em> and <em>IT managed</em>, each with different controls.</p>
+
+<p>Present the zoned model as a named deliverable rather than a bullet in a methodology slide. It is a discrete, explicable piece of work with a before and an after, and it is one of the few governance artefacts a non-technical sponsor can actually picture.</p>
+
+<h3>Layer 2 &mdash; what the agent can connect to</h3>
+
+<p>A <strong>Power Platform DLP / data policy</strong> separating Business from Non-Business connectors is the agent's real safety boundary. Microsoft's maturity model names failing to treat it as one an anti-pattern, in these words:</p>
+
+<blockquote>Teams allow agents to connect broadly (connectors, actions, HTTP) without consistent policy constraints, which increases data exfiltration and unintended action risk.<span class="attr">Microsoft Learn &mdash; Agentic AI maturity model, universal governance anti-patterns</span></blockquote>
+
+<p>Restrict raw HTTP actions and unreviewed MCP tools by policy &mdash; risks 3 and 8 in <a href="#section-6">&sect;6</a>. And prefer an approval workflow over a silent block: <strong>Power Shield</strong> in the Copilot Agent Kit lets a maker request connector access through a DLP approval flow rather than discovering they are blocked and routing around you. Governance that gets bypassed is not governance.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-5</span> Open question &mdash; Managed Environments licensing</div>
+  <p>Sharing limits and pipelines require <strong>Managed Environments</strong>. Public guidance indicates Managed Environments is gated on premium per-user licensing across the tenant &mdash; Power Apps Premium, Power Automate Premium, Power Pages or qualifying Dynamics 365 &mdash; with <strong>no standalone SKU</strong>. <strong>This guide does not assert that, because it has not been confirmed, and it is the most likely place for the no-seat path in <a href="#section-3">&sect;3</a> to hit a wall with a real cost attached.</strong></p>
+  <p>Two things are unresolved: whether every user needs a premium licence or only makers, and whether a Copilot Studio standalone licence qualifies on its own.</p>
+  <p class="u-settle">What would settle it: the current Microsoft Power Platform Licensing Guide, read against a distributor quote for the specific tenant &mdash; and get the answer in writing before it goes in a proposal.</p>
+</div>
+
+<h3>Layer 3 &mdash; who the agent acts as</h3>
+
+<p>This layer belongs to <a href="#section-6">&sect;6</a> and is listed here only so the dependency order is complete: end-user credentials rather than maker credentials, authentication on, and &mdash; for an agent that acts on its own rather than as a signed-in user &mdash; its own identity in Entra, which makes it a new principal subject to conditional access and identity governance. Microsoft also recommends <strong>Privileged Identity Management</strong> for just-in-time activation of the AI Administrator and Search Administrator roles, with approval and MFA.</p>
+
+<h3>Layer 4 &mdash; what it can read</h3>
+
+<p>Scope the twenty-five sites deliberately and assess <em>those</em>. Microsoft frames knowledge readiness as four dimensions: source scope, permissions, <strong>source authority</strong> and ownership. Source authority is the one nobody checks &mdash; not <em>can the agent read this?</em> but <em>is this content approved, current, and the version the business actually follows?</em> An agent grounded in a superseded policy document is confidently, fluently wrong, and no permissions review will catch it.</p>
+
+<h3>Layer 5 &mdash; what is recorded, and who owns it</h3>
+
+<p>Purview treats agents as auditable entities: agent interactions are auditable, prompts and responses are discoverable, and retention policies apply to AI prompts and outputs. <strong>What of this is reachable on Business Premium is not established here</strong> &mdash; it is the same unresolved question left open in <a class="docref" href="copilot-readiness-engagement.html#section-21">the Copilot Readiness Engagement, section 21</a>, which asks whether DSPM for AI is genuinely reachable for a Business Premium customer. This guide does not settle it on that page&rsquo;s behalf.</p>
+
+<p>Then the cheapest control on the list: <strong>a named accountable owner for every agent.</strong> Risks 5 and 10 in <a href="#section-6">&sect;6</a> are unfixable without one, and Agent Inventory is the registry that holds it.</p>
+
+<h3>The traps &mdash; failures that report success</h3>
+
+<p>These are the highest-frequency real-world failures in Copilot Studio and they have one property in common: <strong>nothing errors.</strong> The status says Ready. The agent answers. The answer is just missing something.</p>
+
+<div class="trap">
+  <div class="t-label">Trap 1 &mdash; sensitivity labels silently remove knowledge</div>
+  <h4>Labelled and password-protected documents cannot be indexed</h4>
+  <p>Microsoft's wording is unambiguous: <em>&ldquo;You can't index documents that use sensitivity labels of confidential or highly confidential, or are password protected. If you add these types of documents, they show as ready for use but don't provide responses.&rdquo;</em></p>
+  <p><strong>They show as ready for use.</strong> A customer who has done classification well &mdash; exactly the mature customer a partner wants &mdash; gets an agent that answers nothing about its most important content, with no error anywhere to explain why.</p>
+  <p><strong>The inverse is a genuinely useful control.</strong> Labelling is a cheap, reliable way to hold content <em>out</em> of an agent, it needs no extra tooling, and it works on Business Premium. Used deliberately it is a feature; discovered accidentally it is a failed pilot.</p>
+</div>
+
+<div class="trap">
+  <div class="t-label">Trap 2 &mdash; ALM does not carry knowledge</div>
+  <h4>Importing an agent does not bring its knowledge processing with it</h4>
+  <p>Microsoft states it for every unstructured knowledge source type: <em>&ldquo;Application Lifecycle Management (ALM) isn't supported for this feature. Importing agents doesn't result in automated knowledge source processing.&rdquo;</em></p>
+  <p>This breaks the clean dev &rarr; test &rarr; prod story that every governance conversation depends on, and it needs saying out loud in the design phase rather than discovered on promotion day. Plan for knowledge sources to be reconfigured per environment, and budget for it.</p>
+</div>
+
+<div class="trap">
+  <div class="t-label">Trap 3 &mdash; the agent is never reading live data</div>
+  <h4>Knowledge synchronisation is four to six hours</h4>
+  <p>Across OneDrive, SharePoint upload, Salesforce, Confluence, ServiceNow and Zendesk sources, Microsoft gives the same figure: <em>synchronisation frequency is four to six hours.</em> Whatever the demo implied, the agent is answering from a corpus that is up to six hours stale.</p>
+  <p>That is fine for policy documents and wrong for anything with a deadline attached. If the workflow needs current data, it needs an action against a live system, not a knowledge source &mdash; which is a different harness conversation and a different price.</p>
+</div>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-3</span> Open tenant test &mdash; does anything at all surface?</div>
+  <p>Microsoft says a labelled document shows as ready and returns nothing. <strong>What has not been checked is whether any signal reaches anyone</strong> &mdash; a warning in the maker experience, an entry in the knowledge status detail, or a trace in the Agent Debugger. If there is a signal, it belongs in the phase 3 checklist. If there is genuinely none, that is worth telling every customer before they classify anything.</p>
+  <p class="u-settle">What would settle it: add one Confidential-labelled document as a knowledge source, wait for Ready, ask a question only that document can answer, and record what the maker sees, what the user sees, and what the debugger shows.</p>
+</div>
+
+<h3>The capacity trap &mdash; why pilots pass and launches fail</h3>
+
+<p>Generative AI rate limits are set <strong>per Dataverse environment</strong> and they scale with how much capacity the tenant owns:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Quota per Dataverse environment</th><th>Tenant billing capability</th></tr></thead>
+  <tbody>
+    <tr><td>50 RPM / 1,000 RPH</td><td>1&ndash;10 prepaid packs</td></tr>
+    <tr><td>80 RPM / 1,600 RPH</td><td>11&ndash;50 prepaid packs</td></tr>
+    <tr><td>100 RPM / 2,000 RPH</td><td>51&ndash;150 prepaid packs</td></tr>
+    <tr><td><strong>10 RPM / 200 RPH</strong></td><td><strong>Trial or developer environments</strong></td></tr>
+    <tr><td>100 RPM / 2,000 RPH</td><td>Pay-as-you-go environments</td></tr>
+    <tr><td>100 RPM / 2,000 RPH</td><td>Microsoft 365 Copilot users</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read the fourth row against the first. <strong>A pilot run in a developer environment has one-fifth the throughput of the environment it will launch into</strong> &mdash; and it passes anyway, because six testers never approach ten requests a minute. Launch day puts a hundred people on it inside an hour and the user-visible symptom is a failure notice when they send a message.</p>
+
+<p>Microsoft's own guidance is to estimate peak traffic windows rather than relying on monthly averages, and it is right: monthly volume can look entirely comfortable while a Monday-morning spike breaks the agent. Rate-limit increases can be requested, but the path runs through support and is not guaranteed.</p>
+
+<div class="srcline">Sources: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-quotas" target="_blank" rel="noopener">Microsoft Learn &mdash; Quotas and limits</a> (ms.date 18 June 2026) for the rate limits, the sensitivity-label and ALM notes, and the four-to-six-hour synchronisation frequency; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-add-unstructured-data" target="_blank" rel="noopener">Add unstructured data as a knowledge source</a> (ms.date 11 June 2026); <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/plan-agent-throughput-rate-limits" target="_blank" rel="noopener">Plan Copilot Studio agent deployments for throughput and rate limits</a>; <a href="https://learn.microsoft.com/en-us/agents/adoption-maturity-model/maturity-model-security-governance" target="_blank" rel="noopener">Agentic AI maturity model &mdash; AI governance and security</a> (ms.date 31 March 2026) for the zoned model and the connector anti-pattern.</div>
+
+<h3>The structural limits worth knowing before you scope</h3>
+
+<p>None of these are traps &mdash; they are documented, findable and hard. They are here because a partner who meets them mid-build is having a scope conversation instead of a design one.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td>Knowledge sources per agent</td><td>500 across all types</td></tr>
+    <tr><td>SharePoint site URLs per agent, generative orchestration</td><td><strong>25</strong></td></tr>
+    <tr><td>Instructions for a Copilot agent</td><td>8,000 characters</td></tr>
+    <tr><td>Topics per agent (Dataverse environments)</td><td>1,000</td></tr>
+    <tr><td>Trigger phrases per topic</td><td>200</td></tr>
+    <tr><td>Skills per agent</td><td>100</td></tr>
+    <tr><td>SharePoint lists</td><td>15 lists, up to 35,000 rows across them</td></tr>
+    <tr><td>SharePoint list query depth</td><td>First 2,048 rows only</td></tr>
+    <tr><td>Maximum file size</td><td>512 MB &mdash; but 7 MB for generative answers without a Copilot licence in tenant</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 8 — THE CONSUMPTION MODEL, AND HOW YOU MANAGE IT -->
+<!-- Part B · B-08 · gaps 2, 3, 4 · depends on TT-2 · figure C-4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-8">8. The Consumption Model, and How You Manage It</h2>
+
+<p><strong>Phase 4</strong> of the arc &mdash; the one partners skip. This section resolves the margin trap <a href="#section-2">&sect;2</a> opened with, and that is its whole job. It does not restate the AgentOps commercial architecture; the tiers, the components and what to charge for them are in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a>.</p>
+
+<h3>Get the vocabulary right first</h3>
+
+<p>The billing unit is the <strong>Copilot Credit</strong>. Capacity is pooled at the tenant and allocable per environment. Channel material still talking about &ldquo;messages&rdquo; is working from pre-rename documentation &mdash; though the older vocabulary survives inside Microsoft's own tables, where the tenant billing capability column still reads &ldquo;prepaid message packs.&rdquo; The terms map; the material around them usually does not.</p>
+
+<!-- FIGURE C-4 — the credit meter and the 125% cliff. Authored in Part C. -->
+
+<h3>The rate card</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Agent feature</th><th>Billing rate</th><th>Used by a Microsoft 365 Copilot licensed user</th></tr></thead>
+  <tbody>
+    <tr><td>Classic answer</td><td>1 Copilot Credit</td><td>No charge</td></tr>
+    <tr><td>Generative answer</td><td>2 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td><strong>Agent action</strong></td><td><strong>5 Copilot Credits</strong></td><td>No charge (Computer-Using Agents excluded)</td></tr>
+    <tr><td>Tenant graph grounding for messages</td><td>10 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Agent flow actions, per 100 actions</td><td>13 Copilot Credits</td><td>No charge, only via the &ldquo;When an agent calls the flow&rdquo; trigger</td></tr>
+    <tr><td>Text and generative AI tools &mdash; basic, per 10 responses</td><td>1 Copilot Credit</td><td>No charge</td></tr>
+    <tr><td>Text and generative AI tools &mdash; standard, per 10 responses</td><td>15 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Text and generative AI tools &mdash; premium, per 10 responses</td><td>100 Copilot Credits</td><td>No charge</td></tr>
+    <tr><td>Content processing tools, per page</td><td>8 Copilot Credits</td><td>No charge</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Correct the folklore before you quote</div>
+  <div class="callout-body"><p>Several 2026 channel blogs state that an autonomous agent action costs <strong>25 or more credits</strong>. <strong>Microsoft Learn says an agent action is 5.</strong> A partner budgeting on the blog number over-quotes the run rate by a factor of five, loses on price, and never finds out why.</p><p>Check the rate card, not the commentary, and check it again before each quote &mdash; the page carries an ms.date and a 180-day update cycle for a reason.</p></div>
+</div>
+
+<h3>Two things that make the arithmetic non-obvious</h3>
+
+<p><strong>One interaction can bill on several meters at once.</strong> Microsoft's own example: a tenant-graph-grounded agent may spend <strong>12 credits on a single complex prompt</strong> &mdash; 10 for the grounding, 2 for the generative answer. Nobody quoting per-conversation gets this right by intuition.</p>
+
+<p><strong>Reasoning models bill twice.</strong> When an agent uses a reasoning-capable model, Copilot Studio bills the <em>feature rate</em> for the operation <strong>plus</strong> the premium text-and-generative-AI-tools rate for the reasoning model's token usage. Swapping in a reasoning model is a pricing decision disguised as a quality decision, and it is the single biggest silent cost driver in the platform.</p>
+
+<h3>Overage enforcement &mdash; the thing that will burn a partner</h3>
+
+<p>This is not a billing footnote. It is a service-availability event with no user-facing warning, and it belongs in the managed-service agreement.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th></th><th>Custom agents</th><th>Agent flows</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Trigger</strong></td><td><strong>125%</strong> of prepaid capacity</td><td>Prepaid capacity fully consumed (100%)</td></tr>
+    <tr><td><strong>What happens</strong></td><td><strong>Custom agents are disabled.</strong> An ongoing conversation is not interrupted; every subsequent attempt to invoke the agent is rejected</td><td>New flow runs cannot start. Runs already in progress complete. <strong>The agent remains available for everything else</strong></td></tr>
+    <tr><td><strong>Who is told</strong></td><td>Email to the tenant&rsquo;s designated administrator, plus a post in the Power Platform admin center</td><td>Flow authors see a design-time warning in the Copilot Studio designer</td></tr>
+    <tr><td><strong>What the user sees</strong></td><td>&ldquo;There is a billing issue.&rdquo; or &ldquo;This agent is currently unavailable. It has reached its usage limit.&rdquo;</td><td>Nothing obvious. The agent still answers &mdash; it just stops doing things</td></tr>
+    <tr><td><strong>Reset</strong></td><td>When capacity is increased or reset</td><td>Monthly, when prepaid credits renew</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read the notification row and the user row together. <strong>The people who find out first are the customer's users, and the way they find out is the agent breaking.</strong> The admin gets an email; nobody is watching that mailbox at the moment it matters. If a partner is selling a managed service over this platform, detecting the 125% event before the customer does is a large part of what they are actually being paid for.</p>
+
+<p>And the flow column is worse in one specific way: <strong>a partial failure is harder to detect than a dead one.</strong> The agent answers normally and silently stops completing actions. Nobody raises a ticket for an agent that is still talking.</p>
+
+<div class="callout">
+  <div class="callout-title">The day-one control almost nobody sets</div>
+  <div class="callout-body"><p><strong>Per-agent monthly consumption limits</strong>: Power Platform admin center &rarr; <strong>Licensing</strong> &rarr; <strong>Copilot Studio</strong> &rarr; <strong>Manage Agents</strong>. Microsoft's own framing is that these cap usage <em>before</em> enforcement is triggered.</p><p>It costs nothing, takes minutes, and converts an uncontrolled tenant-wide kill switch into a per-agent budget. Set it during phase 4, on every agent, before launch. Note the escape hatch as well: pay-as-you-go environments are exempt from enforcement entirely, because overage bills to the linked Azure subscription instead.</p></div>
+</div>
+
+<div class="srcline">Source for the rate card, the reasoning-model double meter, the 12-credit example, the enforcement thresholds, the exact end-user messages and the per-agent cap: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Microsoft Learn &mdash; Billing rates and management</a> (ms.date 3 August 2026).</div>
+
+<h3>The recurring service &mdash; this is the resolution</h3>
+
+<p>Microsoft publishes an official <strong>Copilot Studio agent usage estimator</strong> and points to it from the billing page. Use it. But understand what it can and cannot be: an estimate built from agent type, traffic, orchestration, knowledge and tools, made against a rate card where a single prompt can touch three meters and a model swap can double the bill.</p>
+
+<p><strong>That gap between the estimate and the invoice is not a flaw to apologise for. It is the service.</strong></p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Estimate</div><div class="tc-tag">phase 4, before the SOW</div></div>
+      <p class="tc-desc">Run the estimator against the actual design &mdash; the harness, the orchestration mode, the knowledge sources, the tools. Produce a forecast the customer has seen and signed off, not a number they discover later.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Cap</div><div class="tc-tag">before launch, every agent</div></div>
+      <p class="tc-desc">Set the per-agent monthly limit in the admin center. This is the control that turns a possible outage into a known ceiling, and it is the one most partners never touch.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Monitor</div><div class="tc-tag">recurring</div></div>
+      <p class="tc-desc">Consumption details per environment in the admin center; per-agent consumption on the agent&rsquo;s Monitor page. Watch the trend, not the total &mdash; the 125% event is a slope, and it is visible weeks before it lands.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">True-up</div><div class="tc-tag">monthly, and it is billable</div></div>
+      <p class="tc-desc">Reconcile forecast against actual, reallocate capacity between environments, adjust the caps, and tell the customer what changed and why. This is a recurring deliverable with an artefact attached &mdash; which is exactly what a flat fee over a metered cost base was missing.</p>
+    </div>
+  </div>
+</div>
+
+<p><strong>Four steps, recurring, tool-supported, and every one of them is labour and judgement rather than a licence resale.</strong> That is the answer to <a href="#section-2">&sect;2</a>'s margin trap: you do not fix a metered cost base by pricing around it, you fix it by selling the management of the meter.</p>
+
+<h3>The build-burn clause</h3>
+
+<p>On the GitHub Copilot harness, in Microsoft's words:</p>
+
+<blockquote>Billing starts when you start building. Unlike the standard harness, which starts billing after publish, the GitHub Copilot harness charges credits from the moment you start building. Experiences such as creating an automated solution with natural language, previewing and testing the agent, and generating and creating agent evaluations all consume credits.<span class="attr">Microsoft Learn &mdash; Overview of usage-based billing (GitHub Copilot harness), ms.date 18 August 2026</span></blockquote>
+
+<p>Read that as a partner. <strong>On this harness your own development, testing and QA consume the customer's credits, before anything is published and before anything works.</strong> Every SOW that selects the GitHub Copilot harness needs a clause naming who funds development consumption and a cap on it. Almost none in the channel currently have one.</p>
+
+<p>This guide names the clause and the cap. <strong>It does not name a fee</strong> &mdash; what to charge is <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">the revenue runway's</a> question, not this one.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-2</span> Open tenant test &mdash; how big is the build burn?</div>
+  <p>Microsoft documents <em>that</em> pre-publish activity consumes credits. <strong>Nobody has published how much.</strong> Without a number, the clause above is a warning rather than a negotiating position, and a partner cannot tell whether the honest answer is &ldquo;a rounding error, absorb it&rdquo; or &ldquo;a material line, cap it at a stated figure.&rdquo;</p>
+  <p class="u-settle">What would settle it: build one trivial agent on the GitHub Copilot harness in an isolated environment, do a normal amount of previewing, testing and evaluation, and read total credits consumed on the agent&rsquo;s Monitor page before publishing it. One afternoon converts a warning into a number.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 9 — MEASURING IT -->
+<!-- Part B · B-09 · gap 8 · depends on TT-4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-9">9. Measuring It</h2>
+
+<p><strong>Phase 2</strong> of the arc, and it appears here &mdash; before the build sections rather than after them &mdash; for one reason: <strong>the baseline has to be captured before anything is built.</strong> It cannot be added retroactively, and a partner who reaches the end of a build and starts thinking about measurement has already lost the argument they were going to need at renewal.</p>
+
+<p>The good news is larger than most partners realise. <strong>Microsoft has already published the outcome formula.</strong> You do not have to defend a home-made ROI model in front of a sceptical finance person, because the model is Microsoft's, the defaults are sourced, and the report computes it.</p>
+
+<h3>Four value drivers, each with Microsoft&rsquo;s own pricing formula</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Value driver</th><th>What it measures</th><th>How to price it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Efficiency</strong></td><td>Productive hours your team gets back, reinvested in higher-value work</td><td>Productive hours returned &times; fully loaded productive-hour value</td></tr>
+    <tr><td><strong>Quality</strong></td><td>Error reduction, consistency and compliance</td><td>(Error rate before &minus; error rate after) &times; volume &times; cost per error</td></tr>
+    <tr><td><strong>Revenue</strong></td><td>Top-line lift from retained, expanded or new business</td><td>Conversion or deflection delta &times; volume &times; unit revenue &times; <strong>attribution discount</strong></td></tr>
+    <tr><td><strong>Strategic</strong></td><td>Decision velocity, employee confidence, optionality and resilience</td><td>Option premium on capability + retention value of talent + resilience value</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Do not skip past the attribution discount</div>
+  <div class="callout-body"><p>It is the last term in the revenue formula, and it is <strong>Microsoft conceding that attribution is contestable</strong> &mdash; in its own published pricing method, before anyone argues about it.</p><p>Copy that discount into the engagement rather than defending a clean attribution you cannot support. Agreeing the discount up front, with the sponsor, converts the hardest conversation at renewal into a parameter that was settled in phase 2.</p></div>
+</div>
+
+<h3>Agent Assisted Hours &mdash; the published formula</h3>
+
+<p>For conversational agents:</p>
+
+<blockquote>Agent Assisted Hours = (Knowledge references + Weighted sessions without knowledge references) &times; Time savings multiplier &divide; 60<span class="attr">Microsoft Learn &mdash; Measure the impact of your agents</span></blockquote>
+
+<ul>
+  <li>Each knowledge source reference counts once and is multiplied by the time savings multiplier.</li>
+  <li>Sessions without knowledge references are weighted by outcome: <strong>resolved counts as 1.0, escalated or abandoned counts as 0.7.</strong></li>
+  <li>The default time savings multiplier is <strong>6 minutes</strong>, sourced to Microsoft research on information retrieval tasks.</li>
+  <li><strong>Agent Assisted Value = Agent Assisted Hours &times; hourly rate.</strong> The default hourly rate is <span class="prov prov-ms">MS</span> <strong>$72</strong>, based on US Bureau of Labor Statistics data on employer costs for employee compensation, and it is editable in the report's calculator.</li>
+</ul>
+
+<p>Microsoft's own worked example runs 10,000 engaged sessions in a month to <strong>1,440 hours per month</strong> of returned capacity. At the default rate that is a six-figure monthly number and a seven-figure annual one &mdash; but the hours are the durable figure, because the rate is the customer's to set.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The commercial consequence</div>
+  <div class="callout-body"><p><strong>Whoever configures the hourly rate and the multipliers owns the renewal conversation.</strong></p><p>Those constants are not administrative trivia. They decide what number appears on the sponsor's slide every quarter, and setting them is a defensible, recurring, billable piece of judgement work performed inside Microsoft's own report &mdash; not a spreadsheet the partner has to defend line by line.</p></div>
+</div>
+
+<h3>The three failure patterns &mdash; and the slide they retire</h3>
+
+<p>Microsoft names three reasons the value story weakens after launch. This is the highest-value short passage on the page, because all three are things partners currently do.</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-h">1 &middot; Measurement that stops at pilot</div>
+    <p class="card-b">Instrumentation is strong during the pilot, then drifts as the agent moves to production. Microsoft&rsquo;s fix: <strong>embed measurement in the deployment workflow itself</strong>, so every production agent keeps emitting the signals the review depends on.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">2 &middot; Activity that doesn&rsquo;t tie to outcomes</div>
+    <p class="card-b">Sessions and user counts show usage; they are not value. Every KPI has to trace back to one of the four value drivers, or it is decoration.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">3 &middot; The time-savings trap</div>
+    <p class="card-b"><strong>&ldquo;Claiming value based on theoretical time savings alone undermines credibility.&rdquo;</strong> Build a chain of evidence from adoption, through operational KPIs, to business outcomes.</p>
+  </div>
+</div>
+
+<p>The third one deserves to be said plainly, because it is aimed squarely at the channel's current pitch. <strong>The &ldquo;X hours per week &times; headcount &times; salary&rdquo; slide is the thing Microsoft is warning against</strong>, and a partner can now retire it with a vendor citation rather than an opinion. That is a much easier conversation internally than arguing about it on instinct.</p>
+
+<div class="srcline">Source for the four value drivers, the AAH formula and its constants, the session weighting, and the three failure patterns: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Microsoft Learn &mdash; Measure the impact of your agents</a> (ms.date 4 June 2026). The default hourly rate is Microsoft&rsquo;s own, sourced by Microsoft to <a href="https://www.bls.gov/news.release/ecec.t04.htm" target="_blank" rel="noopener">US BLS Employer Costs for Employee Compensation</a>, and registered in this site&rsquo;s fact ledger as F-154.</div>
+
+<h3>Where each metric is actually read</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Value driver</th><th>Metrics</th><th>Where to read them</th></tr></thead>
+  <tbody>
+    <tr><td>Efficiency</td><td>Hours saved, Agent Assisted Hours, Agent Assisted Value, cycle time, touchless rate, cost per transaction</td><td>Copilot Studio Savings calculator; Copilot Studio agents report (Viva Insights)</td></tr>
+    <tr><td>Quality</td><td>Resolution rate, first-contact resolution, escalation rate, abandon rate, groundedness, instruction-following score</td><td>Copilot Studio Analytics; Copilot Agent Kit rubrics</td></tr>
+    <tr><td>Revenue</td><td>Conversion lift, retention delta, cross-sell rate, advisor capacity</td><td>Copilot business impact report (Viva Insights)</td></tr>
+    <tr><td>Strategic</td><td>New capabilities shipped, workflows redesigned, employee sentiment on AI, talent signals</td><td>Copilot Studio custom metrics; Viva Glint Copilot Impact Survey</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Microsoft also pairs a leading and a lagging indicator per driver and reviews them <strong>quarterly</strong>. That cadence is not incidental &mdash; it is the same 90-day rhythm that <a href="#section-10">&sect;10</a> shows Microsoft prescribing for the whole programme, and together they are a managed-service contract shape written by the vendor.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-4</span> Open tenant test &mdash; can an SMB actually reach these reports?</div>
+  <p>Several of the surfaces above live in <strong>Viva Insights advanced and analyst templates</strong> &mdash; the Copilot Studio agents report and the Copilot business impact report among them. <strong>Whether they are reachable in a Microsoft 365 Business Premium tenant, and what additional licensing they require, is not established here.</strong> If they are not reachable, the formula still stands but the partner computes it by hand from Copilot Studio Analytics, which is more work and a weaker artefact.</p>
+  <p>Also unconfirmed: whether the default hourly rate and the time-savings multipliers are editable in an SMB tenant, which is the difference between owning the renewal conversation and watching a default number appear.</p>
+  <p class="u-settle">What would settle it: open the Copilot Studio agents report in a Business Premium tenant. Record whether it loads, what licence it demands, and whether the calculator on the Agent Assisted Value card accepts a changed rate.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 10 — THE AGENT IS NEVER DONE -->
+<!-- Part B · B-10 · gaps 9, 10 · figure C-5 · the title section -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-10">10. The Agent Is Never Done</h2>
+
+<p><strong>Phase 6</strong> of the arc, and the claim the page is named after. It is not a sales position invented by this guide. <strong>Microsoft says it, in four separate places, none of which is a marketing page</strong> &mdash; and two of the ten security risks in <a href="#section-6">&sect;6</a> are failures that cannot exist until time has passed.</p>
+
+<p>The argument that drift justifies a retainer is already made in <a class="docref" href="cpbops.html#s4">the Agent Build Engagement Worklist</a>. This section does not re-derive it. It supplies what neither that worklist nor the playbook carries: <strong>a taxonomy of how an agent ages, and a register of what fails, how you would see it, and who owns it.</strong> Both of those describe activity; neither describes failure detection.</p>
+
+<!-- FIGURE C-5 — six drifts mapped to detection surface and free tool. Authored in Part C. -->
+
+<h3>Microsoft&rsquo;s own support for the thesis, in four places</h3>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">The lifecycle has no terminal state</div><div class="tc-tag">agent development lifecycle</div></div>
+      <p class="tc-desc">Five phases: discovery, experimentation, build, deploy, and <strong>operational steady state</strong> &mdash; defined as continuously monitoring, evaluating and adjusting <em>&ldquo;to maintain operability standards as business requirements and underlying technologies evolve.&rdquo;</em> <strong>There is no &ldquo;complete&rdquo; phase.</strong> The lifecycle ends in a state, not an event.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">Microsoft prescribes a recurring rhythm</div><div class="tc-tag">measure the impact of your agents</div></div>
+      <p class="tc-desc"><em>&ldquo;Operate an expansion rhythm, treating the program as recurring quarterly work. Pick a new high-volume workflow, build or configure the agent, measure against baseline for 90 days, review with the sponsor, and decide whether to scale it or retire it.&rdquo;</em> <strong>A 90-day measurement window, a sponsor review and a scale-or-retire decision is a recurring-revenue contract shape written by the vendor.</strong></p>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Treating Responsible AI as a one-time review is a named anti-pattern</div><div class="tc-tag">agentic AI maturity model</div></div>
+      <p class="tc-desc"><em>&ldquo;AI systems change over time as prompts, data, and usage patterns evolve. Bias, misuse, and trust drift typically appear after go-live, not before. Teams are unprepared when issues surface and revert to reactive shutdowns.&rdquo;</em> Microsoft names the resulting behaviour the <strong>&ldquo;panic and switch things off&rdquo;</strong> response pattern.</p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">4</div><div class="tc-name">Drift is named in the build guidance itself</div><div class="tc-tag">agent development lifecycle</div></div>
+      <p class="tc-desc"><em>&ldquo;Minimize the time between experimentation and build phases to reduce the risk of model or data drift affecting agent performance.&rdquo;</em> And on the free proof of concept much of the channel gives away: experimentation <em>&ldquo;must be grounded on real-world data sets and current models rather than synthetic or limited test data. Proof of concept ideation using synthetic data increases the risk of agents not performing as expected in production environments.&rdquo;</em></p>
+    </div>
+  </div>
+</div>
+
+<div class="srcline">Sources: <a href="https://learn.microsoft.com/en-us/agents/architecture/deployment-lifecycle" target="_blank" rel="noopener">Microsoft Learn &mdash; Agent development lifecycle</a> (ms.date 6 July 2026); <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Measure the impact of your agents</a> (ms.date 4 June 2026); <a href="https://learn.microsoft.com/en-us/agents/adoption-maturity-model/maturity-model-security-governance" target="_blank" rel="noopener">Agentic AI maturity model &mdash; AI governance and security</a> (ms.date 31 March 2026).</div>
+
+<h3>Table 1 &mdash; the six ways an agent ages</h3>
+
+<p>A taxonomy is only useful if each entry comes with a way of seeing it. The third column is the one that turns this from a slide into a service.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Drift</th><th>What actually changes</th><th>How you detect it</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Data drift</strong></td>
+      <td>The grounding corpus ages. Content is moved, renamed, superseded or archived; the agent keeps citing it</td>
+      <td>Source-authority review against the twenty-five sites; citation analysis in Copilot Studio Analytics; groundedness scored against a rubric</td>
+    </tr>
+    <tr>
+      <td><strong>Model drift</strong></td>
+      <td>The model underneath the agent changes. Microsoft names model drift as a risk in its own build guidance &mdash; and the customer does not choose the version</td>
+      <td>A regression run of the golden prompt set on a schedule. <strong>This is the one that has no alert</strong>, so it has to be a calendar item</td>
+    </tr>
+    <tr>
+      <td><strong>Connector drift</strong></td>
+      <td>The agent is only as good as what it reaches through, and connectors, APIs and MCP tools change under it</td>
+      <td>Agent Review Tool anti-pattern scan; DLP policy review; action failure rates in the Agent Insights Hub</td>
+    </tr>
+    <tr>
+      <td><strong>Permission drift</strong></td>
+      <td>Tenant ACLs move. Sharing scope, credential mode or authentication gets changed by a maker after go-live</td>
+      <td>Agent Inventory re-run against the <a href="#section-6">&sect;6</a> baseline &mdash; a diff, not a fresh audit</td>
+    </tr>
+    <tr>
+      <td><strong>Process drift</strong></td>
+      <td>The business changes the workflow the agent encodes. <strong>The agent does not know, and nothing errors</strong></td>
+      <td>Only the sponsor review catches this. It is why the 90-day cadence has a human in it</td>
+    </tr>
+    <tr>
+      <td><strong>Cost drift</strong></td>
+      <td>Volume grows, or a reasoning model is swapped in and the agent starts billing on two meters</td>
+      <td>Consumption trend per environment and per agent; the true-up step in <a href="#section-8">&sect;8</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Model drift is the sharp one</div>
+  <div class="callout-body"><p>Five of the six drifts originate with the customer or their content. <strong>Model drift originates with Microsoft.</strong> The reasoning underneath the agent can change without the customer asking for it, and the agent's behaviour can change with it.</p><p>This guide does not claim the customer has no recourse &mdash; that is a product question this research has not settled. What it does claim is narrower and sufficient: <strong>there is no alert for it.</strong> If nobody re-runs a known set of prompts on a schedule, a behaviour change arrives as a user complaint months later, and by then nobody can say when it started.</p></div>
+</div>
+
+<h3>Table 2 &mdash; the failure register</h3>
+
+<p>This is the artefact. Named failure, the surface it becomes visible on, the free tool that shows it, and who is accountable. A managed service that cannot fill in the last two columns is selling attendance, not operations.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Named failure</th><th>Detection surface</th><th>Free tool</th><th>Accountable owner</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>The 125% kill</strong> &mdash; custom agents disabled at 125% of prepaid capacity</td>
+      <td>Admin email and a Power Platform admin center post. <strong>Users find out by the agent breaking</strong></td>
+      <td>Consumption trend in the admin center; per-agent caps set in advance</td>
+      <td>Partner &mdash; this is an availability event in the managed-service agreement</td>
+    </tr>
+    <tr>
+      <td><strong>Partial flow enforcement</strong> &mdash; flows blocked at capacity while the agent keeps answering</td>
+      <td>Design-time warning to flow authors only. No user-visible signal</td>
+      <td>Agent flow actions line in the consumption details grid</td>
+      <td>Partner</td>
+    </tr>
+    <tr>
+      <td><strong>Dormant agents</strong> (top-10 risk #5) &mdash; stale privileged access nobody is watching</td>
+      <td>Nothing. Dormancy has no event</td>
+      <td>Agent Inventory; Compliance Hub thresholds and SLA timers</td>
+      <td>Partner, on the review cadence</td>
+    </tr>
+    <tr>
+      <td><strong>Orphaned agents</strong> (top-10 risk #10) &mdash; no active owner, so no review cycle reaches them</td>
+      <td>Nothing, by definition</td>
+      <td>Agent Inventory ownership field; the named-owner rule from <a href="#section-7">&sect;7</a></td>
+      <td>Customer names the owner; partner enforces that one exists</td>
+    </tr>
+    <tr>
+      <td><strong>Knowledge rot</strong> &mdash; stale corpus, four-to-six hour sync, ALM not carrying knowledge across environments</td>
+      <td>Silent. Answers get quietly worse</td>
+      <td>Agent Debugger for what was actually retrieved; Conversation Analyzer over recent transcripts; rubric-graded groundedness</td>
+      <td>Customer owns content currency; partner owns detecting that it slipped</td>
+    </tr>
+    <tr>
+      <td><strong>Configuration regression</strong> &mdash; a maker flips authentication, credentials or sharing after go-live</td>
+      <td>Publish-time security scan warns the maker, and only the maker</td>
+      <td>Agent Review Tool; Agent Inventory diffed against the <a href="#section-6">&sect;6</a> baseline</td>
+      <td>Partner</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Every tool in the third column is free and open source, from Microsoft's Power CAT team &mdash; <a href="#section-13">&sect;13</a> has the links. <strong>That is the point, and it is the commercial argument as well as the technical one.</strong> The tooling costs nothing, so the margin is entirely in the labour and the judgement. A partner who says &ldquo;we license a governance platform&rdquo; is beaten by one who says &ldquo;we run the Compliance Hub, we set the thresholds, we own the SLA timer.&rdquo;</p>
+
+<h3>Two risks that prove the thesis</h3>
+
+<p>Look again at risks <strong>5</strong> and <strong>10</strong> in <a href="#section-6">&sect;6</a>. A dormant agent and an orphaned agent are not build defects. <strong>They cannot be prevented at build time, because at build time neither condition exists.</strong> They come into being through the passage of time and the movement of people, and the only thing that finds them is a recurring review.</p>
+
+<p>And they come from Microsoft's <em>security</em> organisation, not its marketing. That is a materially different citation to put in front of a sceptical buyer than a vendor's recurring-revenue pitch.</p>
+
+<h3>Microsoft&rsquo;s tiering, and how it lines up</h3>
+
+<p>Microsoft's maturity model separates agents into <strong>personal productivity</strong>, <strong>departmental or team</strong>, and <strong>mission-critical</strong>, and explicitly names applying one set of controls to all three an anti-pattern: it over-restricts productivity agents, which drives shadow AI, while under-governing the mission-critical ones. That is a risk-and-criticality tiering of the agents themselves. The three AgentOps tiers in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a> are a tiering of <em>the service you sell</em>. They are compatible and they are not the same axis &mdash; use Microsoft's tiering to decide how hard to govern a given agent, and the playbook's to decide what to charge for governing it.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 11 — AGENT 365 -->
+<!-- Part B · B-11 · gap 13 · depends on TT-7, TT-8, TT-9 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-11">11. Agent 365 &mdash; the Escalation, Not the Entry Ticket</h2>
+
+<p>This section supplies the qualification logic &mdash; <em>when</em> the Agent 365 dial gets turned up, and what to use before it does. Where Agent 365 sits in the commercial stack is already settled in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a>, and this section does not restate it.</p>
+
+<p>It opens with something more urgent than positioning: <strong>a licensing change that has already happened, and that most of the channel has not noticed.</strong></p>
+
+<h3>What changed on 1 July 2026</h3>
+
+<blockquote>Effective July 1, 2026, AI agent security capabilities for Microsoft Copilot Studio and Microsoft Foundry agents require a Microsoft Agent 365 license. These capabilities are no longer covered by existing Defender for Cloud Apps or Defender for Cloud licenses. Tenants without an Agent 365-eligible license lose access to these capabilities on July 1, 2026.<span class="attr">Microsoft Learn &mdash; Transition Copilot Studio and Foundry agent security capabilities to Microsoft Agent 365</span></blockquote>
+
+<p>For Copilot Studio agents specifically, what a tenant without an eligible licence lost:</p>
+
+<ul>
+  <li><strong>Agent discovery and posture</strong></li>
+  <li><strong>Agent threat detection and real-time protection</strong></li>
+  <li><strong>Investigation of agent activity in Advanced Hunting</strong></li>
+</ul>
+
+<p>Three further changes are worth knowing because they break things quietly:</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Change</th><th>Consequence</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Tenants configured to <strong>Block</strong> on existing Agent 365 real-time protection rules <strong>stopped blocking on 1 July 2026</strong></td>
+      <td>To resume blocking, rules must be redefined under the new policy experience. <strong>A control that was enforcing is now not enforcing, and nothing announced it in the tenant.</strong></td>
+    </tr>
+    <tr>
+      <td>The <code>AIAgentsInfo</code> Advanced Hunting table is deprecated in favour of <code>AgentsInfo</code></td>
+      <td>Saved queries, custom detections and workbooks referencing the old table need updating</td>
+    </tr>
+    <tr>
+      <td>The <strong>AI Agents</strong> sub-tab under Cloud Assets was <strong>removed for all customers</strong></td>
+      <td>Licensed or not, that navigation path is gone</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">One boundary Microsoft has not drawn, so neither will this guide</div>
+  <div class="callout-body"><p>The same transition document also states: <em>&ldquo;Real-time protection for Microsoft Copilot Studio through Defender for Cloud Apps remains unchanged for tenants that continue using this experience. No action is required.&rdquo;</em></p><p>That sits awkwardly beside the headline, and reconciling the two would require drawing a line Microsoft has not drawn. <strong>Treat the exact boundary as unresolved.</strong> If a customer depends on Copilot Studio real-time protection through Defender for Cloud Apps, confirm their specific configuration rather than reasoning from either sentence alone.</p></div>
+</div>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/defender-xdr/security-for-ai/transition-agent-security-to-agent-365" target="_blank" rel="noopener">Microsoft Learn &mdash; Transition Microsoft Copilot Studio and Microsoft Foundry agent security capabilities to Microsoft Agent 365</a> (ms.date 2 June 2026, updated 1 July 2026).</div>
+
+<h3>The overlap map &mdash; what an SMB actually needs on day one</h3>
+
+<p>This is the part a partner cannot easily assemble alone, and it is the reason the positioning at the end of this section holds.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>The job</th><th>Agent 365</th><th>Free or included alternative</th></tr></thead>
+  <tbody>
+    <tr><td>Tenant-wide agent inventory</td><td>Agent registry &mdash; broadest coverage, including non-Microsoft platforms via registry sync</td><td><strong>Copilot Agent Kit &rarr; Agent Inventory</strong> (Copilot Studio agents); Power Platform inventory</td></tr>
+    <tr><td>Ownerless and dormant agent detection</td><td>&ldquo;Agents without owners&rdquo; card, rules-based lifecycle enforcement</td><td><strong>Agent Inventory + a review cadence</strong></td></tr>
+    <tr><td>Configuration risk / anti-pattern scan</td><td>Agents-at-risk, aggregated from Entra, Defender and Purview</td><td><strong>Agent Review Tool</strong>; the built-in publish-time security scan</td></tr>
+    <tr><td>Policy enforcement, SLA timers, quarantine</td><td>Rules-based lifecycle policy, approval flow, blocking</td><td><strong>Compliance Hub</strong> &mdash; thresholds, risk levels, SLA timers, quarantine and delete</td></tr>
+    <tr><td>Connector / DLP boundary</td><td>Purview and Entra integration</td><td><strong>Power Platform DLP data policies</strong>; Power Shield for approval workflow</td></tr>
+    <tr><td>Runtime analytics and telemetry</td><td>Agent run-time, active users, trending agents</td><td><strong>Agent Insights Hub</strong>; Copilot Studio Analytics</td></tr>
+    <tr><td>Debugging a bad conversation</td><td>&mdash;</td><td><strong>Agent Debugger</strong> &mdash; step-by-step decisions, timing, token usage</td></tr>
+    <tr><td>Business value measurement</td><td>Agent run-time hours</td><td><strong>Copilot Studio agents report</strong>; Savings calculator; Agent Value in the Kit</td></tr>
+    <tr><td><strong>Threat detection, real-time protection, Advanced Hunting over agent activity</strong></td><td><strong>Agent 365 only, since 1 July 2026</strong></td><td><strong>No free equivalent. This is the genuine gap.</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Read the last row against all the others. <strong>Almost everything an SMB needs on day one is free.</strong> Inventory, anti-pattern scanning, compliance policy with SLA timers, debugging, analytics and value measurement are all in the Copilot Agent Kit at zero licence cost, plus Power Platform DLP. What is genuinely Agent 365-only is the <em>security-operations</em> layer &mdash; detection and response over agent activity.</p>
+
+<div class="callout dark">
+  <div class="callout-title">The positioning</div>
+  <div class="callout-body"><p><strong>Agent 365 is the escalation, not the entry ticket.</strong></p><p>A partner who tells an SMB they need a per-user governance licence before they can govern a single agent is wrong on the facts, and has priced themselves out of the first engagement in the process. Lead with the free baseline in <a href="#section-6">&sect;6</a>. Earn the right to the next conversation.</p></div>
+</div>
+
+<h3>Four honest triggers &mdash; not a default</h3>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-h">1 &middot; Agent count outgrows a human</div>
+    <p class="card-b">The registry stops being a spreadsheet job. Ownerless and dormant agents &mdash; risks 5 and 10 &mdash; are the tell that the count has crossed the line.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">2 &middot; An agent gets autonomy or its own identity</div>
+    <p class="card-b">Once an agent acts on its own rather than as a signed-in user, it is a new principal in the tenant, and Entra-backed identity governance stops being optional.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">3 &middot; Agents appear from platforms you do not control</div>
+    <p class="card-b">SharePoint agents, Agent Builder, or non-Microsoft platforms. <strong>Registry sync is the only thing that sees across all of them</strong> &mdash; the Copilot Agent Kit does not.</p>
+  </div>
+  <div class="card">
+    <div class="card-h">4 &middot; A regulatory or contractual obligation</div>
+    <p class="card-b">Where the customer must demonstrate detection and response over agent activity, not just configuration hygiene. After 1 July 2026 that is Agent 365 or nothing.</p>
+  </div>
+</div>
+
+<h3>The sales mechanic</h3>
+
+<p>Agent 365 admin-led trials are <strong>25 seats for 30 days</strong>. The Microsoft admin center shows a banner with the remaining trial days, and admins with billing permissions can view details and purchase directly from it.</p>
+
+<p>That is a natural paid discovery engagement: run the registry across the tenant, produce the findings, and let the expiry force a decision that would otherwise drift. <strong>Do not let it lapse silently.</strong> A trial that ends with nobody watching is worse than never having run one, because the customer now believes they looked.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-7</span> Open question &mdash; is Agent 365 purchasable on Business Premium at all?</div>
+  <p>Microsoft Learn says: <em>&ldquo;Microsoft Agent 365 works best when using Microsoft E5 as a pre-requisite.&rdquo;</em> That is hedged language, not a requirement statement, and <strong>no Microsoft page reviewed for this guide states a Microsoft 365 Business Premium path in those words.</strong> Channel aggregators claim one exists for tenants under 300 seats. Those are not the same claim.</p>
+  <p><strong>This is the exact failure mode <a class="docref" href="copilot-readiness-engagement.html#section-9">the Copilot Readiness Engagement, section 9</a> documents with SAM</strong> &mdash; two readings of one hedged licensing page, in opposite directions. This guide does not pick one.</p>
+  <p class="u-settle">What would settle it: the CSP price list or a distributor catalogue check for the specific tenant, in writing.</p>
+</div>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-8</span> Open question &mdash; who counts as a licensed user?</div>
+  <p>Agent 365 is licensed <strong>per user</strong>, and Microsoft states that <em>&ldquo;at least one user must be licensed with a qualifying Microsoft Agent 365 license to enable Agent 365.&rdquo;</em> What is not established in public guidance is who has to be licensed in practice: <strong>every user who interacts with an agent, every maker, or only the governing admins?</strong></p>
+  <p>The spread is not marginal. A sixty-person company with one help-desk agent everybody talks to is either <strong>three licences or sixty</strong> &mdash; a twentyfold difference in the same deployment. A partner who quotes the wrong reading either loses the deal or eats the difference.</p>
+  <p class="u-settle">What would settle it: get the answer from your distributor or Microsoft <strong>in writing, for the specific deployment shape</strong>, before it goes anywhere near a proposal. This is the single most important number to resolve before quoting Agent 365, and there is no shame in saying so to the customer &mdash; the alternative is guessing on their invoice.</p>
+</div>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-agent-365/overview" target="_blank" rel="noopener">Microsoft Learn &mdash; Microsoft Agent 365 overview</a> (ms.date 19 August 2026) for general availability on 1 May 2026, per-user licensing, the E5 hedge and the one-licensed-user statement; the transition document above for the trial terms.</div>
+
+<p>One last thing worth saying plainly, because it shapes how the managed service should be designed. Microsoft published an agent risk list in February and licensed its recommended detection method in July. <strong>Assume more of this surface becomes licensed over time, and build the service so the labour and the judgement are the product</strong> &mdash; those are the parts that do not get absorbed into a SKU.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 12 — BUYING THE FIRST 80% -->
+<!-- Part B · B-12 · gap 11 · SG-2 closed -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-12">12. Buying the First 80% &mdash; a Prebuilt Agent, and the Last Mile</h2>
+
+<p>There are options for partners who want to get to market quickly with a prebuilt solution and let a vendor carry the heavy lifting on the build. <strong>The point of this section is that such options exist and are resellable today</strong> &mdash; not that any particular one should be chosen. The reasoning below applies to any prebuilt-agent vendor; one is used as the worked example because it is on the line card.</p>
+
+<h3>What a prebuilt agent gallery is</h3>
+
+<p><strong>UnifyCloud's CloudAtlas AI Factory</strong> is the example, and a TD SYNNEX partner's rep supports that conversation. It is an AI use case gallery &mdash; roughly two hundred production-intent use cases, each with case study, demo and proof-of-concept actions, filterable by industry (including a <em>Small and Midsize Business</em> category) and by solution area, where conversational AI is the largest group, followed by data analysis, customer support, knowledge management and employee onboarding. Adjacent modules in the same console cover custom POC generation, AI policies, responsible-AI evaluation and solution assessment. UnifyCloud is a Microsoft Solutions Partner and the product is listed on Microsoft Marketplace.</p>
+
+<div class="srcline">Sources: <a href="https://marketplace.microsoft.com/en-us/product/saas/unify-cloud-llc.ca-aifactory?tab=overview" target="_blank" rel="noopener">CloudAtlas AI Factory on Microsoft Marketplace</a>; <a href="https://www.unifycloud.com/cloudatlas-ai/ai-factory/" target="_blank" rel="noopener">UnifyCloud &mdash; CloudAtlas AI Factory</a>. The gallery counts and category breakdown are from the product interface. <strong>That it is on the TD SYNNEX line card and resellable today is stated on the authority of the line card, not of a public source</strong> &mdash; confirm current availability with your rep before quoting it.</div>
+
+<h3>What arrives, and what does not</h3>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">What arrives from the gallery</div>
+    <p>A working agent pattern. Tested logic for a recognisable business problem. A demo you can put in front of a customer this week, and POC scaffolding behind it. Someone else&rsquo;s solved version of the hard design questions.</p>
+    <p><strong>This is real value and it compresses weeks.</strong> A partner who dismisses it is competing on labour against someone who is not.</p>
+  </div>
+  <div class="compare-col wrong">
+    <div class="cc-label">What the partner must still do</div>
+    <p><strong>Everything tenant-specific.</strong> None of it transfers, because none of it is about the agent &mdash; it is about the customer.</p>
+    <p>And every item on that list is a section of this guide, which is the point: the last mile is not an afterthought to the build. It is the engagement.</p>
+  </div>
+</div>
+
+<h3>The last mile, itemised</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>What the gallery cannot know</th><th>Where it is handled</th></tr></thead>
+  <tbody>
+    <tr><td>The customer&rsquo;s SharePoint permissions state, and which twenty-five sites the agent should ground in</td><td><a href="#section-4">&sect;4</a>, <a href="#section-7">&sect;7</a></td></tr>
+    <tr><td>Sensitivity labels that make knowledge silently unreadable, and password-protected files that index as Ready</td><td><a href="#section-7">&sect;7</a></td></tr>
+    <tr><td>Which harness it targets, and therefore when billing starts</td><td><a href="#section-5">&sect;5</a>, <a href="#section-8">&sect;8</a></td></tr>
+    <tr><td>Capacity, rate limits, and whether the pilot environment can carry launch-day traffic</td><td><a href="#section-7">&sect;7</a></td></tr>
+    <tr><td>Credit run rate, per-agent caps, and who is watching for the 125% event</td><td><a href="#section-8">&sect;8</a></td></tr>
+    <tr><td>The baseline, and who configures the measurement constants</td><td><a href="#section-9">&sect;9</a></td></tr>
+    <tr><td>Existing ungoverned agents already in the tenant</td><td><a href="#section-6">&sect;6</a></td></tr>
+    <tr><td>The process the agent encodes, and who owns it when the business changes it</td><td><a href="#section-10">&sect;10</a></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout dark">
+  <div class="callout-title">The line</div>
+  <div class="callout-body"><p>The gallery gets you a working demo. <strong>The last mile is what makes it survive contact with the customer&rsquo;s tenant, and what keeps it alive afterwards.</strong></p><p>Or compressed, for the room: <strong>80% of the way there is 80% of the build, not 80% of the engagement.</strong></p></div>
+</div>
+
+<h3>Why the commoditisation is the argument, not the threat</h3>
+
+<p>A productised 80% collapses build labour as a revenue line. You cannot bill hours for work a gallery already did, and pretending otherwise loses to whoever stops pretending first. <strong>That is not a threat to a partner practice built on this guide's arc &mdash; it is the strongest argument for it.</strong> What is left to charge for is the assessment ahead of the build, the last mile through it, and the operations after it, which is phases 1, 2, 3, 4 and 6 of <a href="#section-1">&sect;1</a>. The gallery compresses phase 5, and phase 5 was always the most competitive part.</p>
+
+<p>What to charge for the build itself is settled in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">the revenue runway</a>, and how this positions against other vendors is <a class="docref" href="cpb.html#12-the-competitive-battle-card-and-the-monetization-gap">the competitive battle card's</a> job. Neither is restated here.</p>
+
+<h3>Two cautions</h3>
+
+<div class="callout warn">
+  <div class="callout-title">A prebuilt agent inherits drift on day one</div>
+  <div class="callout-body"><p>It was built against someone else's data, someone else's process and someone else's permissions model. <strong>All six ageing sources in <a href="#section-10">&sect;10</a> start running the moment it lands</strong> &mdash; and one question has no published answer: <em>when the vendor updates a gallery template, what happens to an instance already deployed in a customer tenant?</em> That is the versioning question the entire never-done thesis turns on, and it should be asked of any prebuilt-agent vendor before the first deployment, not after.</p></div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Speed cuts both ways</div>
+  <div class="callout-body"><p>A proof of concept in days wins the room. It becomes a trap the moment it turns into the production agent without being regrounded in the customer's real data &mdash; and this is Microsoft's own warning, not an opinion: proof-of-concept ideation on synthetic data <em>&ldquo;increases the risk of agents not performing as expected in production environments.&rdquo;</em></p><p>Use the gallery to win the room. Reground it before it goes live.</p></div>
+</div>
+
+<p>One note on where other vendors sit, because they are often presented as alternatives when they are not. <strong>AvePoint AgentPulse serves readiness and steady state &mdash; discovery, inventory, policy enforcement, cost insight, and backup and recovery for Copilot Studio agents &mdash; where a gallery accelerates the build. They compose; they do not compete.</strong></p>
+
+<h3>The five questions to put to any prebuilt-agent vendor</h3>
+
+<ol>
+  <li><strong>Which harness do the packaged agents target?</strong> This determines the billing model and whether build burn reaches the customer &mdash; <a href="#section-5">&sect;5</a>, <a href="#section-8">&sect;8</a>.</li>
+  <li><strong>How are they delivered</strong> &mdash; solution import, template, or managed deployment? Does the <a href="#section-7">&sect;7</a> ALM gap apply, meaning knowledge sources have to be reconfigured per environment?</li>
+  <li><strong>When you update a template, what happens to a deployed instance?</strong> The versioning question above.</li>
+  <li><strong>Does the agent arrive instrumented?</strong> Is there a baseline and a measurement surface, or does the partner add that &mdash; <a href="#section-9">&sect;9</a>?</li>
+  <li><strong>What is the commercial shape for partners</strong> &mdash; per POC, subscription, or bundled with an assessment?</li>
+</ol>
+
+<p>None of the five have publicly documented answers for any vendor reviewed here. Asking them is a five-minute call that changes what a partner can safely commit to.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 13 — THE TOOLCHAIN REGISTER -->
+<!-- Part B · B-13 · .reslist-group / .reslist-item -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-13">13. The Toolchain Register</h2>
+
+<p><strong>This section exists so a partner does not have to search the internet for this.</strong> Everything below already exists, most of it is free, and almost all of it is published by Microsoft. Every entry says why it matters, because a bare link list is not worth the page it is on.</p>
+
+<p>This is <em>tools a partner uses</em>. <a href="#section-15">&sect;15</a> is <em>sources this guide cites</em>. They overlap and they are not the same list.</p>
+
+<h3>Microsoft official &mdash; start here</h3>
+
+<div class="reslist-group">
+  <div class="rg-head">If you bookmark one link, make it the first one</div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://microsoft.github.io/agent-resources/" target="_blank" rel="noopener">Microsoft Agent Resources hub</a></div>
+    <div class="d">Microsoft&rsquo;s own curated resource centre for agentic transformation, from the Copilot Acceleration Team. Five hubs &mdash; Microsoft 365 Copilot, Copilot Studio, Foundry, agent development and Agent 365 &mdash; plus an Agent Platform Advisor for choosing between them. <strong>This is the index the rest of this register is drawn from.</strong></div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/agents/architecture/deployment-lifecycle" target="_blank" rel="noopener">Agent development lifecycle</a></div>
+    <div class="d">Five phases ending in operational steady state. <strong>Why it matters:</strong> it is the vendor citation for &ldquo;there is no complete phase&rdquo; &mdash; <a href="#section-10">&sect;10</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/agents/adoption-maturity-model/maturity-model-security-governance" target="_blank" rel="noopener">Agentic AI maturity model &mdash; AI governance and security</a></div>
+    <div class="d">Five levels, with named anti-patterns at each. <strong>Why it matters:</strong> the zoned environment model (safe / supported / IT managed) at level 300 is a sellable deliverable, and the universal anti-patterns are a ready-made gap assessment.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/harnesses-overview" target="_blank" rel="noopener">Harnesses in Copilot Studio</a></div>
+    <div class="d">The three harnesses and how they differ. <strong>Why it matters:</strong> this is the scoping decision that sets the billing model &mdash; <a href="#section-5">&sect;5</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-quotas" target="_blank" rel="noopener">Quotas and limits</a></div>
+    <div class="d">Rate limits per Dataverse environment, knowledge source limits, and the sensitivity-label and ALM notes. <strong>Why it matters:</strong> the 10 RPM developer-environment trap and the silent knowledge failures both live here &mdash; <a href="#section-7">&sect;7</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/plan-agent-throughput-rate-limits" target="_blank" rel="noopener">Plan agent deployments for throughput and rate limits</a></div>
+    <div class="d">Estimating peak traffic, how throttling affects users, designing to reduce throughput pressure, and requesting a limit increase. <strong>Why it matters:</strong> it is the pre-launch capacity conversation, already written.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/alm" target="_blank" rel="noopener">Establish an ALM strategy</a></div>
+    <div class="d">Environment and solution lifecycle for Copilot Studio. <strong>Why it matters:</strong> read it alongside the ALM knowledge gap in <a href="#section-7">&sect;7</a>, which it does not solve.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://www.microsoft.com/en-us/security/blog/2026/02/12/copilot-studio-agent-security-top-10-risks-detect-prevent/" target="_blank" rel="noopener">Detecting and mitigating common agent misconfigurations</a></div>
+    <div class="d">Microsoft Security Blog, 12 February 2026 &mdash; the ten agent misconfigurations. <strong>Why it matters:</strong> it is the phase 1 assessment checklist and you did not have to write it &mdash; <a href="#section-6">&sect;6</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Measure the impact of your agents</a></div>
+    <div class="d">Four value drivers with pricing formulas, the Agent Assisted Hours formula and its sourced constants, and the three measurement failure patterns. <strong>Why it matters:</strong> it is the ROI model you no longer have to defend &mdash; <a href="#section-9">&sect;9</a>.</div>
+  </div>
+</div>
+
+<h3>Free accelerators</h3>
+
+<div class="reslist-group">
+  <div class="rg-head">The AgentOps console, at zero licence cost</div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://github.com/microsoft/Power-CAT-Copilot-Studio-Kit" target="_blank" rel="noopener">Copilot Agent Kit (Power CAT Copilot Studio Kit)</a></div>
+    <div class="d"><strong>The single most valuable link in this register after the hub.</strong> An official Power CAT solution containing <em>Agent Inventory</em> (tenant-wide registry), <em>Compliance Hub</em> (policies, thresholds, SLA timers, quarantine), <em>Agent Insights Hub</em> (telemetry), <em>Agent Debugger</em> (step-by-step conversation inspection with timing and token usage), <em>Agent Review Tool</em> (anti-pattern scan), <em>Agent Change Tracker</em>, <em>Power Shield</em> (approval-based DLP workflow), <em>Conversation Analyzer</em>, <em>Rubrics Refinement</em>, <em>Prompt Advisor</em>, <em>Conversation KPI</em>, <em>Agent Library</em> and batch testing.<br><strong>Why it matters:</strong> it fills almost every column of the overlap map in <a href="#section-11">&sect;11</a> for free, which is what makes &ldquo;Agent 365 is the escalation&rdquo; true. <strong>Note its prerequisites</strong> &mdash; Dataverse, a system administrator role, and Power Platform licensing including premium connectors. Free is not the same as zero-dependency.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://github.com/microsoft/CopilotStudioSamples" target="_blank" rel="noopener">microsoft/CopilotStudioSamples</a></div>
+    <div class="d">Samples and artefacts from Microsoft. <strong>Why it matters:</strong> starting points that shorten phase 5 without the commercial commitment of a gallery.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/security-scan" target="_blank" rel="noopener">Automatic security scan</a></div>
+    <div class="d">Built in, free, and runs at publish. <strong>Why it matters:</strong> it warns; it does not block. Knowing exactly what it warns about is how you audit a tenant for the three settings in <a href="#section-6">&sect;6</a>.</div>
+  </div>
+</div>
+
+<h3>Calculators and cost tooling</h3>
+
+<div class="reslist-group">
+  <div class="rg-head">Phase 4 runs on these</div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Copilot Studio agent usage estimator</a></div>
+    <div class="d">Microsoft&rsquo;s official estimator, linked from the billing documentation. Inputs are agent type, traffic, orchestration, knowledge and tools. <strong>Why it matters:</strong> it is the artefact the phase 4 forecast is built on &mdash; and the gap between its output and the invoice is the reconciliation retainer in <a href="#section-8">&sect;8</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Billing rates and management</a></div>
+    <div class="d">The rate card, the reasoning-model double meter, and the full overage enforcement policy. <strong>Why it matters:</strong> check it before every quote. It carries an ms.date and a 180-day update cycle, and the channel commentary about it is frequently wrong.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/billing-credit-overview" target="_blank" rel="noopener">Usage-based billing (GitHub Copilot harness)</a></div>
+    <div class="d">The separate billing model for the newest harness. <strong>Why it matters:</strong> this is the page that says billing starts when you start building. It is the source of the SOW clause in <a href="#section-8">&sect;8</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t">Power Platform admin center &mdash; Licensing &rarr; Copilot Studio</div>
+    <div class="d"><strong>Environments</strong> for actual consumption per environment; <strong>Manage Agents</strong> for per-agent monthly caps. <strong>Why it matters:</strong> the caps are the day-one control most partners never set, and the consumption grid is where the true-up happens.</div>
+  </div>
+</div>
+
+<h3>Labs and training</h3>
+
+<div class="reslist-group">
+  <div class="rg-head">For getting a team to competence</div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://microsoft.github.io/mcs-labs/" target="_blank" rel="noopener">Microsoft Copilot Agents Labs</a></div>
+    <div class="d">Hands-on lab modules and instructor-led bootcamp material, beginner through advanced. <strong>Why it matters:</strong> it is the cheapest way to get a delivery team from &ldquo;we have seen a demo&rdquo; to &ldquo;we can build this,&rdquo; and it is free.</div>
+  </div>
+</div>
+
+<h3>Detection and governance</h3>
+
+<div class="reslist-group">
+  <div class="rg-head">Read the licence line before you plan around these</div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/defender-xdr/security-for-ai/transition-agent-security-to-agent-365" target="_blank" rel="noopener">Transition agent security capabilities to Microsoft Agent 365</a></div>
+    <div class="d">What moved behind an Agent 365 licence on 1 July 2026, and the migration steps. <strong>Why it matters:</strong> &#9888; <strong>the Advanced Hunting community queries in the AI Agents folder &mdash; the detection method the February security blog recommends &mdash; now require Agent 365.</strong> Check a tenant&rsquo;s licence before promising this capability. <a href="#section-11">&sect;11</a>.</div>
+  </div>
+  <div class="reslist-item">
+    <div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-agent-365/overview" target="_blank" rel="noopener">Microsoft Agent 365 overview</a></div>
+    <div class="d">Observe, govern, secure; availability and prerequisites. <strong>Why it matters:</strong> it is also the page that hedges on E5 as a prerequisite, which is why TT-7 in <a href="#section-15">&sect;15</a> is still open.</div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 14 — THE ROOM -->
+<!-- Part B · B-14 · .stop / id="stop-N" · figures are extracts of Part C -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-14">14. The Room</h2>
+
+<p>A sixty-minute working session for a partner team. It is not a customer pitch &mdash; it is the session that decides which phase of the arc your practice is currently giving away, and which tenant test you run first.</p>
+
+<p><strong>Every visual in this run of show already exists elsewhere on this page.</strong> Each stop points at the section that carries its figure; nothing is authored twice, and nothing needs a separate deck. Run it from the page.</p>
+
+<div class="stops">
+
+  <div class="stop" id="stop-1">
+    <div class="stop-rail"><div class="dot">1</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>What good looks like</h3><div class="stop-time">0&ndash;10 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;Before we talk about anything we build, here is a complete engagement from the first conversation to the retainer. Seven phases. I want to know which of these we currently do and which we give away.&rdquo;</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The arc &mdash; <a href="#section-1">&sect;1</a>. Walk the table across, not down. Spend the time on the <em>Paper</em> and <em>Licensing</em> columns; everyone in the room already understands the build.</div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body">Have each person privately mark the phases they have personally delivered and been paid for in the last year. Do not collect them yet.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt">&ldquo;Now let's see where the money actually was.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <div class="stop" id="stop-2">
+    <div class="stop-rail"><div class="dot">2</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The two phases ahead of the paper</h3><div class="stop-time">10&ndash;20 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;Phases 0 and 1 happen before the build worklist even starts, and both are billable. If our engagements begin at Discover, we have handed the assessment away and started at the most competitive part.&rdquo;</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The three blast-radius settings and Microsoft&rsquo;s ten misconfigurations &mdash; <a href="#section-6">&sect;6</a>. The point to land: <strong>maker-provided credentials is invisible to every Copilot readiness report we currently sell.</strong></div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body">Now collect the marks from stop 1. Count how many people have been paid for phase 1. In most rooms the answer is nobody.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt">&ldquo;The objection to selling that assessment is always licensing. Let's kill it.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <div class="stop act2" id="stop-3">
+    <div class="stop-rail"><div class="dot">3</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The seat you don&rsquo;t need, and the plumbing swap</h3><div class="stop-time">20&ndash;32 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;We have been gating the agent conversation behind a Copilot seat purchase. Microsoft&rsquo;s own documentation says we don&rsquo;t have to.&rdquo; Read the quotation in <a href="#section-3">&sect;3</a> aloud. It lands better verbatim than paraphrased.</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The two plumbings side by side &mdash; <a href="#section-4">&sect;4</a>. Then immediately show the limit: amplification shrinks, oversharing does not, and the whole argument inverts on one credential setting.</div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body">Name a real customer in the room who is on Business Premium with no Copilot seats. Ask what has been stopping the agent conversation with them. That is the test case.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt">&ldquo;So we can start. Which means we now own a bill we have never had to forecast.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <div class="stop act2" id="stop-4">
+    <div class="stop-rail"><div class="dot">4</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The meter, and the phase we skip</h3><div class="stop-time">32&ndash;44 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;We sell a flat monthly fee over a cost base that moves. That is the trap. Phase 4 is how we get out of it, and phase 4 is the one we skip.&rdquo;</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The rate card and the overage table &mdash; <a href="#section-8">&sect;8</a>. Land three things: an agent action is <strong>5</strong> credits and not the 25 the blogs say; a single prompt can bill on three meters; and at 125% <strong>the customer&rsquo;s users find out by the agent breaking.</strong></div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body">Open the Power Platform admin center on screen and navigate to <strong>Licensing &rarr; Copilot Studio &rarr; Manage Agents</strong>. Ask who in the room has ever set a per-agent cap. Then walk the four-step loop &mdash; estimate, cap, monitor, true-up &mdash; as the recurring deliverable.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt">&ldquo;That loop only makes sense if the work never ends. It doesn&rsquo;t &mdash; and Microsoft says so.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <div class="stop act3" id="stop-5">
+    <div class="stop-rail"><div class="dot">5</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The agent is never done</h3><div class="stop-time">44&ndash;54 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;This is not our recurring-revenue pitch. It is Microsoft&rsquo;s lifecycle, Microsoft&rsquo;s ninety-day rhythm, and Microsoft&rsquo;s security organisation naming two failures that cannot exist until time has passed.&rdquo;</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The six drifts and the failure register &mdash; <a href="#section-10">&sect;10</a>. Dwell on <strong>model drift</strong>: the one change that originates with Microsoft, and the one with no alert.</div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body">Take the failure register and fill in the fourth column for one live customer. If the room cannot name an accountable owner for each row, that gap is the retainer.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt">&ldquo;Last ten minutes. Two decisions, and they leave the room with names on them.&rdquo;</div></div>
+    </div>
+  </div>
+
+  <div class="stop act3" id="stop-6">
+    <div class="stop-rail"><div class="dot">6</div><div class="line"></div></div>
+    <div class="stop-content">
+      <div class="stop-head"><h3>The decision</h3><div class="stop-time">54&ndash;60 min</div></div>
+      <div class="beat say">
+        <div class="beat-label"><span class="ic"></span>Say</div>
+        <div class="beat-body">&ldquo;Two things get decided before we leave. Which phase we stop giving away, and which tenant test we run this month.&rdquo;</div>
+      </div>
+      <div class="beat tool">
+        <div class="beat-label"><span class="ic"></span>Do</div>
+        <div class="beat-body"><strong>Decision one:</strong> pick a single phase from <a href="#section-1">&sect;1</a> to productise first &mdash; phase 1 is the usual answer, because it needs no purchase from the customer. Name the owner and the first customer.<br><strong>Decision two:</strong> pick one open test from <a href="#section-15">&sect;15</a> and put a date on it. TT-1 validates whether we can start at all; TT-6 tells us whether phase 1 is a real wedge; TT-8 changes what we tell customers about Agent 365. All three are cheap.</div>
+      </div>
+      <div class="beat show">
+        <div class="beat-label"><span class="ic"></span>Show</div>
+        <div class="beat-body">The open register in <a href="#section-15">&sect;15</a>, on screen, while the date is agreed. Write it into the register the same day &mdash; an untested assumption that everybody has now heard is worse than one nobody has.</div>
+      </div>
+      <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Leave with:</strong> one phase named, one owner, one customer, one test, one date.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 15 — WHAT WE COULD NOT VERIFY, AND REFERENCES -->
+<!-- Part B · B-15 · SG-3 · .reflist + .provkey legend -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-15">15. What We Could Not Verify, and References</h2>
+
+<p>This is the page&rsquo;s honesty surface. Everything above is sourced to Microsoft where a Microsoft source exists, and where one does not, this section says so.</p>
+
+<h3>The open register &mdash; nine tenant tests</h3>
+
+<p>Every one of these is cheap. None of them has been run for this guide, and each section that depends on one carries a marker naming what is unknown and what would settle it. <strong>A section that rests on an open test ships with the uncertainty stated, or it does not ship &mdash; it never ships with a guess.</strong></p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>What is unknown</th><th>What it gates</th><th>What would settle it</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>TT-1</strong></td>
+      <td>Can you buy Copilot Credit capacity and publish a working agent to Copilot Chat in a Business Premium tenant with zero Copilot seats, without hitting an undocumented licensing wall?</td>
+      <td><a href="#section-3">&sect;3</a> &mdash; <strong>the page&rsquo;s central claim</strong></td>
+      <td>Run it once end to end and record every point a licence is requested</td>
+    </tr>
+    <tr>
+      <td><strong>TT-2</strong></td>
+      <td>How many credits does a trivial agent consume on the GitHub Copilot harness <em>before publish</em>?</td>
+      <td><a href="#section-8">&sect;8</a> &mdash; turns the build-burn clause from a warning into a number</td>
+      <td>Build one, preview and test normally, read the Monitor page before publishing</td>
+    </tr>
+    <tr>
+      <td><strong>TT-3</strong></td>
+      <td>When a Confidential-labelled document fails to index, does <em>any</em> signal reach the maker, the user, or the debugger?</td>
+      <td><a href="#section-7">&sect;7</a> &mdash; the trap list</td>
+      <td>Add one, wait for Ready, ask a question only it can answer, record all three surfaces</td>
+    </tr>
+    <tr>
+      <td><strong>TT-4</strong></td>
+      <td>Is the Copilot Studio agents report reachable in an SMB tenant, and is the default hourly rate editable there?</td>
+      <td><a href="#section-9">&sect;9</a> &mdash; the measurement argument</td>
+      <td>Open it in a Business Premium tenant; record the licence demanded and whether the calculator accepts a change</td>
+    </tr>
+    <tr>
+      <td><strong>TT-5</strong></td>
+      <td>Do Managed Environments &mdash; needed for sharing limits and pipelines &mdash; require premium per-user licensing across the tenant, and does a Copilot Studio standalone licence qualify?</td>
+      <td><a href="#section-7">&sect;7</a> layer 2 &mdash; <strong>the most likely wall on the no-seat path</strong></td>
+      <td>Current Power Platform Licensing Guide, read against a distributor quote, in writing</td>
+    </tr>
+    <tr>
+      <td><strong>TT-6</strong></td>
+      <td>How many agents already exist in a real SMB tenant, and how many use maker credentials, no authentication, or have no owner?</td>
+      <td><a href="#section-6">&sect;6</a> &mdash; whether the wedge is real or theoretical</td>
+      <td>Run Agent Inventory across three tenants; tabulate auth mode, credential mode, sharing scope, owner</td>
+    </tr>
+    <tr>
+      <td><strong>TT-7</strong></td>
+      <td>Is Agent 365 purchasable on Business Premium? Learn hedges with &ldquo;works best when using Microsoft E5 as a pre-requisite&rdquo;; aggregators claim an SMB path under 300 seats</td>
+      <td><a href="#section-11">&sect;11</a></td>
+      <td>CSP price list or distributor catalogue, for the specific tenant</td>
+    </tr>
+    <tr>
+      <td><strong>TT-8</strong></td>
+      <td>Who needs an Agent 365 licence &mdash; every user who interacts, every maker, or only governing admins? <strong>A twentyfold spread on the same deployment</strong></td>
+      <td><a href="#section-11">&sect;11</a> &mdash; the most important number to resolve before quoting</td>
+      <td>Distributor or Microsoft, in writing, for the specific deployment shape</td>
+    </tr>
+    <tr>
+      <td><strong>TT-9</strong></td>
+      <td>Does <em>one</em> Agent 365 licence enable tenant-wide observe and govern, given that Microsoft states at least one licensed user enables Agent 365?</td>
+      <td><a href="#section-11">&sect;11</a></td>
+      <td>Run the 25-seat trial and check what registry coverage a single assigned licence produces</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>TT-1, TT-7 and TT-8 are the three most likely to repeat a known failure.</strong> <a class="docref" href="copilot-readiness-engagement.html#section-9">the Copilot Readiness Engagement, section 9</a> documents what happens when one hedged Microsoft licensing page gets read two ways: two internally consistent conclusions, in opposite directions, both wrong to act on. The sections resting on these three carry the most explicit markers on this page for exactly that reason.</p>
+
+<h3>The case-study hole &mdash; stated plainly</h3>
+
+<div class="callout warn">
+  <div class="callout-title">There is no audited SMB Copilot Studio case study</div>
+  <div class="callout-body"><p>No verifiable, named SMB Copilot Studio case study with audited outcome numbers was located for this guide. What exists is a Microsoft enterprise self-reference, and a set of vivid SMB numbers circulating in the channel &mdash; a boutique retailer cutting tickets by two thirds, a solo practice recovering nine hours a week &mdash; which <strong>trace to marketing blogs with no named customer.</strong></p><p><strong>They are not used anywhere on this page.</strong> Laundering an unattributed number into a benchmark is precisely the &ldquo;time-savings trap&rdquo; Microsoft names in <a href="#section-9">&sect;9</a>, and it is the failure that <a class="docref" href="copilot-readiness-engagement.html#section-21">the Copilot Readiness Engagement, section 21</a> caught two vendors committing.</p></div>
+</div>
+
+<p>The honest version is more useful in front of a partner than a borrowed number would be:</p>
+
+<blockquote>There is no audited SMB case study yet. That is exactly why you instrument the baseline before you build &mdash; because you are going to be it.<span class="attr">The Customer Zero argument, and the reason <a href="#section-9">&sect;9</a> sits before the build sections</span></blockquote>
+
+<p>Two further evidentiary limits worth stating. <strong>No practitioner invoices were obtained</strong> &mdash; the community price shapes circulating for AI agent retainers come from agencies selling the model, not from delivered engagements, so this guide names no third-party price shapes at all. And <strong>the prebuilt-agent claims in <a href="#section-12">&sect;12</a> rest partly on the line card rather than on a public source</strong>, which is flagged in that section rather than here.</p>
+
+<h3>Provenance legend</h3>
+
+<p>This page carries <strong>one</strong> currency figure. Everything else about consumption is expressed in Copilot Credits, which are a unit of usage rather than money and need no provenance tag. Where a currency value does appear it carries one of these:</p>
+
+<div class="provkey">
+  <span class="pk"><span class="prov prov-ms">MS</span> Microsoft-published list price, documented entitlement, or a constant Microsoft publishes in its own formula</span>
+  <span class="pk"><span class="prov prov-range">Range</span> Corroborated only by resellers or aggregators</span>
+  <span class="pk"><span class="prov prov-survey">Survey</span> Named analyst or survey</span>
+  <span class="pk"><span class="prov prov-model">Model</span> Editorial model</span>
+</div>
+
+<h3>Reference library</h3>
+
+<p>Sources this guide cites. For tools a partner <em>uses</em>, see <a href="#section-13">&sect;13</a>.</p>
+
+<h4>Microsoft official</h4>
+<ul class="reflist">
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Billing rates and management &mdash; Microsoft Copilot Studio</a></div><div class="rf-d">ms.date 3 August 2026. Rate card, reasoning-model double meter, overage enforcement at 125%, agent flow enforcement, per-agent caps, and the exact end-user failure strings. Source for <a href="#section-8">&sect;8</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/billing-credit-overview" target="_blank" rel="noopener">Overview of usage-based billing (GitHub Copilot harness)</a></div><div class="rf-d">ms.date 18 August 2026. &ldquo;Billing starts when you start building.&rdquo; Source for the build-burn clause.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/harnesses-overview" target="_blank" rel="noopener">Harnesses in Copilot Studio</a></div><div class="rf-d">ms.date 28 July 2026. Definition of a harness and the three-way comparison. Source for <a href="#section-5">&sect;5</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/agent-essentials/agent-prerequisites" target="_blank" rel="noopener">Prerequisites &mdash; Microsoft Copilot agent governance</a></div><div class="rf-d">ms.date 17 June 2026. Copilot Chat at no additional cost; agents billed on metered consumption; admin roles and PIM guidance. Source for <a href="#section-3">&sect;3</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-quotas" target="_blank" rel="noopener">Quotas and limits &mdash; Microsoft Copilot Studio</a></div><div class="rf-d">ms.date 18 June 2026. Rate limits per Dataverse environment including the 10 RPM developer figure, structural limits, the sensitivity-label and ALM notes, and the four-to-six hour sync. Source for <a href="#section-7">&sect;7</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-copilot-studio" target="_blank" rel="noopener">Knowledge sources summary &mdash; Microsoft Copilot Studio</a></div><div class="rf-d">7 MB versus 200 MB grounding limits, tenant graph grounding with semantic search, and the 25 SharePoint site URL cap. Source for <a href="#section-4">&sect;4</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-add-unstructured-data" target="_blank" rel="noopener">Add unstructured data as a knowledge source</a></div><div class="rf-d">ms.date 11 June 2026. Labelled and password-protected documents show as ready and return nothing.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/security-scan" target="_blank" rel="noopener">Automatic security scan in Copilot Studio</a></div><div class="rf-d">The three settings, their secure defaults, and the warn-not-block behaviour. Source for <a href="#section-6">&sect;6</a>.</div></li>
+  <li><div class="rf-t"><a href="https://www.microsoft.com/en-us/security/blog/2026/02/12/copilot-studio-agent-security-top-10-risks-detect-prevent/" target="_blank" rel="noopener">Detecting and mitigating common agent misconfigurations</a></div><div class="rf-d">Microsoft Security Blog, 12 February 2026. The ten misconfigurations and the Advanced Hunting detection path &mdash; which subsequently moved behind an Agent 365 licence.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Measure the impact of your agents</a></div><div class="rf-d">ms.date 4 June 2026. Four value drivers with pricing formulas, the AAH formula and its sourced constants, the three measurement failure patterns, and the 90-day expansion rhythm. Source for <a href="#section-9">&sect;9</a> and <a href="#section-10">&sect;10</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/agents/architecture/deployment-lifecycle" target="_blank" rel="noopener">Agent development lifecycle</a></div><div class="rf-d">ms.date 6 July 2026. Five phases ending in operational steady state; drift and synthetic-data warnings.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/agents/adoption-maturity-model/maturity-model-security-governance" target="_blank" rel="noopener">Agentic AI maturity model &mdash; AI governance and security</a></div><div class="rf-d">ms.date 31 March 2026. Five levels, the zoned environment model at level 300, universal anti-patterns, and the Responsible AI one-time-review pitfall.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/defender-xdr/security-for-ai/transition-agent-security-to-agent-365" target="_blank" rel="noopener">Transition Copilot Studio and Foundry agent security capabilities to Microsoft Agent 365</a></div><div class="rf-d">ms.date 2 June 2026, updated 1 July 2026. What moved behind the licence, the Block-stops-blocking warning, and the Defender for Cloud Apps sentence this guide declines to reconcile. Source for <a href="#section-11">&sect;11</a>.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-agent-365/overview" target="_blank" rel="noopener">Microsoft Agent 365 overview</a></div><div class="rf-d">ms.date 19 August 2026. Observe, govern, secure; GA 1 May 2026; per-user licensing; the E5 hedge that leaves TT-7 open.</div></li>
+  <li><div class="rf-t"><a href="https://www.bls.gov/news.release/ecec.t04.htm" target="_blank" rel="noopener">US Bureau of Labor Statistics &mdash; Employer Costs for Employee Compensation</a></div><div class="rf-d">The source Microsoft cites for its default hourly rate. Registered here as fact F-154.</div></li>
+</ul>
+
+<h4>Analyst and research</h4>
+<ul class="reflist">
+  <li><div class="rf-t"><a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">Gartner &mdash; Over 40% of Agentic AI Projects Will Be Canceled by End of 2027</a></div><div class="rf-d">25 June 2025. Escalating costs, unclear business value, inadequate risk controls; &ldquo;agent washing&rdquo;; a January 2025 poll of 3,412 webinar attendees. <strong>A prediction and a poll, not a measurement.</strong> Source for <a href="#section-2">&sect;2</a>.</div></li>
+  <li><div class="rf-t"><a href="https://www.microsoft.com/worklab/work-trend-index/copilots-earliest-users-teach-us-about-generative-ai-at-work" target="_blank" rel="noopener">Microsoft Work Trend Index &mdash; research on information retrieval tasks</a></div><div class="rf-d">The source Microsoft cites for the six-minute default time savings multiplier in the AAH formula.</div></li>
+</ul>
+
+<h4>Community and trade</h4>
+<ul class="reflist">
+  <li class="unlinked"><div class="rf-t"><a href="https://www.channele2e.com/news/channel-brief-ai-native-is-the-new-pitch-msps-are-still-working-out-the-pricing" target="_blank" rel="noopener">ChannelE2E &mdash; &ldquo;AI-native is the new pitch. MSPs are still working out the pricing&rdquo;</a></div><div class="rf-d">Trade press, 2026. The flat-fee-over-metered-cost margin trap, stated by the channel about itself. Source for <a href="#section-2">&sect;2</a>. <strong>Not survey data.</strong></div></li>
+  <li class="unlinked"><div class="rf-t"><a href="https://marketplace.microsoft.com/en-us/product/saas/unify-cloud-llc.ca-aifactory?tab=overview" target="_blank" rel="noopener">CloudAtlas AI Factory &mdash; Microsoft Marketplace</a></div><div class="rf-d">Vendor listing. Gallery counts and category breakdown come from the product interface; <strong>line-card availability is asserted on the line card&rsquo;s authority, not a public source</strong> &mdash; see <a href="#section-12">&sect;12</a>.</div></li>
+  <li class="unlinked"><div class="rf-t">GitHub Copilot credit consumption &mdash; community discussion, mid-2026</div><div class="rf-d">Cited in <a href="#section-2">&sect;2</a> solely as evidence of how customers react to opaque metered AI billing. <strong>A different product and a different meter from Copilot Studio Copilot Credits</strong>, and flagged as such wherever it appears.</div></li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

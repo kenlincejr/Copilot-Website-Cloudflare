@@ -43,6 +43,7 @@ PAIRS = [
     ("specs/frontier.spec.md",    "frontier.html"),
     ("specs/starter-kit.spec.md", "customer-zero-starter-kit/index.html"),
     ("specs/copilot-adoption-audit-buildout.spec.md", "copilot-adoption-audit.html"),
+    ("specs/agent-never-done.spec.md", "agent-never-done.html"),
 ]
 
 BLOCK_RE = re.compile(r"```html (before|after):([A-Z]{1,3}-\d+)\n(.*?)```", re.S)
