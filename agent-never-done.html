@@ -257,6 +257,9 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 .unver p.u-settle { margin-top: 7px; padding-top: 7px; border-top: 1px solid #f5ddb0; font-size: .82rem; }
 .unver strong { color: #92400e; }
 
+/* SOURCE LINE — DESIGN.md §3 C8b, promoted to a class because this page carries ~40 of them. */
+.srcline { margin-top: 8px; font-size: .68rem; color: #9ca3af; font-style: italic; }
+
 /* TRAP — a silent failure. It reports success and returns nothing. */
 .trap { border: 1px solid var(--border); border-left: 4px solid #92400e; background: #fff; border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 16px 0; box-shadow: var(--shadow-sm); }
 .trap .t-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 6px; }
@@ -493,6 +496,50 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-2">2. The Engagement Partners Think They&rsquo;re Selling</h2>
 
+<p><a href="#section-1">&sect;1</a> is the standard. This section is what is actually being sold instead, and the three ways it breaks. Each break is resolved by a later section, and it is worth naming which one now, because the rest of this guide is the resolution.</p>
+
+<h3>The instinct is not stupid</h3>
+
+<p>Partners gravitate to building an agent because an agent is <em>project-shaped</em>. It has a scope, a demo, a delivery date and a number. It fits the way a partner already sells &mdash; a statement of work, a fixed fee, a handover. Nothing about that instinct is irrational, and that is exactly the problem: familiarity is doing the work that analysis should be doing. The engagement gets structured around the part that is easiest to quote rather than the part that carries the risk or the revenue.</p>
+
+<p>This guide does not re-argue how to price outcome-based work &mdash; the fixed base, the kicker, and the five gates are already written up in the <a class="docref" href="cpb.html#outcome-based-primer">outcome-based project work primer</a>. The argument here is narrower and comes earlier: <strong>the shape of the engagement is wrong before the pricing model is even chosen.</strong></p>
+
+<h3>Break 1 &mdash; a large share of these projects get cancelled</h3>
+
+<p>Gartner predicts that <strong>over 40% of agentic AI projects will be cancelled by the end of 2027</strong>, and names three causes: escalating costs, unclear business value, and inadequate risk controls. It also names <strong>&ldquo;agent washing&rdquo;</strong> &mdash; vendors rebranding assistants, RPA and chatbots as agentic &mdash; and estimates that only about <strong>130 of the thousands</strong> of agentic AI vendors are real. A January 2025 Gartner poll of 3,412 webinar attendees found 19% had made significant investments in agentic AI, 42% conservative, 8% none, and 31% waiting or unsure.</p>
+
+<p>Read the three cancellation causes against the arc in <a href="#section-1">&sect;1</a> and they are not abstract risks. <strong>Escalating cost is phase 4 skipped. Unclear business value is phase 2 skipped. Inadequate risk controls is phase 1 skipped.</strong> Gartner is describing, in aggregate, engagements that started at the build.</p>
+
+<div class="srcline">Source: Gartner press release, 25 June 2025 &mdash; <a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">Gartner Predicts Over 40% of Agentic AI Projects Will Be Canceled by End of 2027</a>. A prediction and a poll, not a measurement of completed projects &mdash; cite it as such.</div>
+
+<h3>Break 2 &mdash; the measurement stops at the pilot</h3>
+
+<p>This one is not an analyst's opinion. It is Microsoft describing its own customers, in the guidance page that also supplies the ROI formula:</p>
+
+<blockquote>Instrumentation is strong during the pilot, and then drifts as the agent moves to production.<span class="attr">Microsoft Learn &mdash; Measure the impact of your agents, &ldquo;Measurement that stops at pilot&rdquo;</span></blockquote>
+
+<p>A project-shaped engagement makes this almost inevitable. Instrumentation is scoped as part of the build, the build ends, and nobody owns the signal afterwards. <a href="#section-9">&sect;9</a> is the whole answer &mdash; including the two further failure patterns Microsoft names in the same breath, one of which retires the slide most of the channel is currently presenting.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact" target="_blank" rel="noopener">Microsoft Learn &mdash; Measure the impact of your agents</a> (ms.date 4 June 2026).</div>
+
+<h3>Break 3 &mdash; the margin trap, and this one is the spine</h3>
+
+<p>The third break is the reason this page exists. A partner sells a flat monthly fee. The cost of delivering it is not flat &mdash; it moves with prompts, with actions, with how long an agent runs in the background. The customer's invoice stays the same every month while the cost of honouring it does not. ChannelE2E put the state of the channel plainly in its own headline: <strong>AI-native is the new pitch; MSPs are still working out the pricing.</strong></p>
+
+<p><strong>A flat-fee managed service over a metered cost base is a margin trap, and it is the single most likely way for a partner to lose money on an agent that is working perfectly.</strong> <a href="#section-8">&sect;8</a> resolves it &mdash; not by avoiding metered billing, but by turning the meter into the recurring service. That is the argument this whole guide is built to land.</p>
+
+<div class="srcline">Source: <a href="https://www.channele2e.com/news/channel-brief-ai-native-is-the-new-pitch-msps-are-still-working-out-the-pricing" target="_blank" rel="noopener">ChannelE2E Channel Brief &mdash; &ldquo;AI-native is the new pitch. MSPs are still working out the pricing&rdquo;</a> (2026). Trade press, not survey data.</div>
+
+<div class="callout warn">
+  <div class="callout-title">Adjacent evidence &mdash; read it carefully, it is a different product</div>
+  <div class="callout-body"><p>Through mid-2026 a large, sustained community grievance ran about <strong>GitHub Copilot</strong> credit consumption: allocations exhausted in days, and a core complaint that there was <em>no cost preview before a task runs</em>. <strong>That is GitHub Copilot credits, not Copilot Studio Copilot Credits.</strong> They are different meters on different products and this guide does not conflate them.</p><p>It is admissible for exactly one thing, and it is worth having in mind before phase 4: <strong>it shows how customers react when metered AI billing surprises them.</strong> The reaction is not a renegotiation. It is a loss of trust in whoever sold it.</p></div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">The three breaks compose</div>
+  <div class="callout-body"><p>Gartner says these projects get cancelled on cost and unclear value. Microsoft says measurement drifts after the pilot and that time-savings claims undermine credibility. The channel's own trade press says the pricing model does not match the cost base.</p><p><strong>Every one of those is a gap between a project ending and an outcome being demonstrated.</strong> That gap is the partner's job, and it is where the recurring revenue is &mdash; which is the same claim as &ldquo;the agent is never done,&rdquo; approached from the commercial side rather than the technical one.</p></div>
+</div>
+
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
@@ -502,6 +549,65 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-3">3. The Seat You Don&rsquo;t Need</h2>
 
+<p>The prevailing channel sequence is <em>sell Copilot seats &rarr; prove adoption &rarr; then talk about agents</em>. That sequence gates the entire agent conversation behind a per-seat commitment the customer has not made, and for most SMB customers it is the reason the conversation never starts.</p>
+
+<p><strong>It is not a real prerequisite.</strong> Microsoft's own agent governance documentation says so directly:</p>
+
+<blockquote>Microsoft Copilot Chat is available at no additional cost for all Microsoft Entra account users with a Microsoft 365 or Office 365 subscription. &hellip; If your organization requires agents that incorporate your organization's data, you can provide access to agents that are billed based on metered consumption.<span class="attr">Microsoft Learn &mdash; Prerequisites, Microsoft Copilot agent governance</span></blockquote>
+
+<p>Read that as a partner rather than as an admin. An agent engagement can begin in a tenant with <strong>zero Microsoft 365 Copilot seats</strong>. The customer's existing Microsoft 365 or Office 365 subscription is the entitlement; the agent's usage is metered separately in Copilot Credits. The seat is a capability upgrade, not an entry gate &mdash; and it can be sold later, on evidence, instead of first, on faith.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/agent-essentials/agent-prerequisites" target="_blank" rel="noopener">Microsoft Learn &mdash; Prerequisites, Microsoft Copilot agent governance</a> (ms.date 17 June 2026). The same page sets the admin roles for phase 1: <strong>AI Admin</strong>, Global Admin, or Global Reader for view-only, with Microsoft explicitly recommending the least-privileged role.</div>
+
+<h3>The price of the unlock &mdash; because this is not free</h3>
+
+<p>Metered is not free, and narrower is not the same as cheaper. Three things get given up on the no-seat path, and a partner who presents the unlock without them will be corrected by the customer's first invoice or the agent's first bad week.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>What you give up</th><th>Detail</th><th>Consequence</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Free at the point of use</strong></td>
+      <td>Agent usage is billed in Copilot Credits. Employee-facing usage <em>is</em> included for users who hold a Microsoft 365 Copilot licence, so the meter runs precisely because nobody has one</td>
+      <td>The run rate is now a line item somebody has to forecast &mdash; <a href="#section-8">&sect;8</a></td>
+    </tr>
+    <tr>
+      <td><strong>Reach</strong></td>
+      <td>The Copilot chat harness publishes to <strong>internal teams only</strong>. Files, skills and memory are &ldquo;not a focus&rdquo;, and it does not retry or find alternative paths when a step fails</td>
+      <td>Scoping constraint, not a blocker &mdash; but it decides which harness you are on, which decides the bill. <a href="#section-5">&sect;5</a></td>
+    </tr>
+    <tr>
+      <td><strong>What the agent can read</strong></td>
+      <td>Without a Microsoft 365 Copilot licence in the same tenant, generative answers can only use <strong>SharePoint files under 7&nbsp;MB</strong>. With a licence, and tenant graph grounding with semantic search turned on, the limit is <strong>200&nbsp;MB</strong></td>
+      <td><strong>A licensing decision silently changes what the agent can read.</strong> Nothing errors. The agent simply does not know things</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>That third row deserves to be read twice. It is the first appearance of a pattern that runs through this entire guide and gets its own component in <a href="#section-7">&sect;7</a>: <strong>the failures that matter in Copilot Studio are usually silent.</strong> The agent reports healthy, answers confidently, and is simply missing the file that would have made the answer right.</p>
+
+<div class="srcline">Sources: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-copilot-studio" target="_blank" rel="noopener">Microsoft Learn &mdash; Knowledge sources summary</a> (7&nbsp;MB / 200&nbsp;MB limits and tenant graph grounding); <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/harnesses-overview" target="_blank" rel="noopener">Harnesses in Copilot Studio</a> (ms.date 28 July 2026) for the Copilot chat harness column; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Billing rates and management</a> (ms.date 3 August 2026) for the Microsoft 365 Copilot inclusion.</div>
+
+<h3>How the credits are actually bought</h3>
+
+<p>Two mechanisms, and the difference matters at phase 4 because only one of them protects the customer from being switched off:</p>
+
+<ul>
+  <li><strong>Prepaid capacity packs</strong> &mdash; a pooled tenant allocation, allocable per environment, managed in the Power Platform admin center. This is the default, and it is the one subject to overage enforcement.</li>
+  <li><strong>Pay-as-you-go</strong> &mdash; enabled by <strong>linking an Azure subscription billing plan to the environment</strong>. Overage is billed to the Azure subscription instead, so <strong>enforcement does not apply</strong>.</li>
+</ul>
+
+<p>That is a genuine architectural choice with a commercial consequence, and it belongs in the phase 4 conversation rather than being discovered later. <a href="#section-8">&sect;8</a> carries it.</p>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-1</span> Open tenant test &mdash; the no-seat path, end to end</div>
+  <p>The documentation supports every sentence above, and <strong>the full path has not been walked in a live tenant for this guide.</strong> What is untested: in a Microsoft 365 Business Premium tenant with zero Copilot seats, can you purchase Copilot Credit capacity, allocate it to an environment, and publish a working agent that users reach through Copilot Chat &mdash; without hitting a licensing wall that the docs do not mention?</p>
+  <p>One related claim circulating in the channel is <strong>not</strong> asserted here: that since April 2026 capacity packs can be bought with no Azure subscription at all. What Microsoft Learn does state is narrower and is what this section relies on &mdash; that prepaid credits are managed through the Power Platform admin center, and that it is <em>pay-as-you-go</em> which requires linking an Azure subscription billing plan.</p>
+  <p class="u-settle">What would settle it: run it once. A Business Premium tenant, no Copilot seats, buy the smallest capacity allocation, publish one agent to Copilot Chat, and record every point at which a licence was requested. This is the cheapest high-value test in the register and it validates the central claim of the page.</p>
+</div>
+
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
@@ -510,6 +616,48 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 <!-- Part B · B-03 · gap 12 · the B-02 → B-03 adjacency is fixed as §3 → §4 -->
 <!-- ═══════════════════════════════════════════════════════ -->
 <h2 id="section-4">4. Agent Plumbing Is Not Copilot Plumbing</h2>
+
+<p>This section exists to make <a href="#section-3">&sect;3</a> safe to say out loud. The obvious objection to &ldquo;you don't need a Copilot seat&rdquo; is that the readiness work still has to happen &mdash; and the readiness work is exactly what an SMB cannot afford or, as it turns out, cannot license. That objection is right about the work and wrong about which work.</p>
+
+<!-- FIGURE C-2 — the two plumbings. Authored in Part C. -->
+
+<h3>Two different problems that share a vocabulary</h3>
+
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">Copilot readiness &mdash; a tenant-wide data problem</div>
+    <p>Microsoft 365 Copilot grounds on the whole tenant graph. The moment a seat is assigned, <strong>every oversharing defect anywhere in the tenant becomes reachable</strong>. That is why the channel's readiness playbook is SharePoint Advanced Management, Data Access Governance reports and EEEU cleanup &mdash; the blast radius is the tenant, so the remediation has to be too.</p>
+    <p><strong>And that path does not execute in most SMB tenants.</strong> The licence wall is documented in <a class="docref" href="control-before-scale.html#section-6">section 6 of Control Before Scale</a>: the tooling the playbook depends on requires an E-SKU base, and Microsoft 365 Business Premium does not qualify.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">Agent readiness &mdash; a scoped configuration problem</div>
+    <p>An agent's blast radius is not the tenant graph. It is three much smaller things: <strong>what the maker explicitly pointed it at, who it acts as, and who can reach it.</strong> Those are Power Platform and Copilot Studio controls.</p>
+    <p><strong>None of them require an E-SKU base.</strong> Authentication mode, credentials, sharing scope, connector policy and environment strategy are all reachable in a Business Premium tenant, and all of them are configuration rather than remediation.</p>
+  </div>
+</div>
+
+<blockquote>The no-seat path does not remove the plumbing. It <strong>swaps</strong> it &mdash; trading a tenant-wide permissions remediation the SMB cannot license for a scoped agent-governance job it can.</blockquote>
+
+<h3>There is a structural reason the swap works</h3>
+
+<p>This is not a licensing coincidence that happens to be convenient. It follows from the same constraint that <a href="#section-3">&sect;3</a> listed as a cost.</p>
+
+<p>No Microsoft 365 Copilot licence in the tenant means <strong>tenant graph grounding is not on the table</strong>. The agent reads only the knowledge sources a maker explicitly attached &mdash; and under generative orchestration each agent is capped at <strong>25 SharePoint site URLs</strong>. The metered path is narrower than the licensed path, and <em>the narrowness is the safety property</em>. You assess twenty-five named sites, not the whole tenant.</p>
+
+<p>That is what makes the phase 1 assessment in <a href="#section-1">&sect;1</a> a fixed-fee, one-to-two-week engagement instead of an open-ended remediation programme. The scope is bounded by the product.</p>
+
+<div class="srcline">Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/knowledge-copilot-studio" target="_blank" rel="noopener">Microsoft Learn &mdash; Knowledge sources summary</a> (25 SharePoint site URLs per agent under generative orchestration; tenant graph grounding with semantic search requires a Microsoft 365 Copilot licence in the same tenant).</div>
+
+<h3>Where this argument stops &mdash; and it does stop</h3>
+
+<p>Overstating this would be the most damaging thing in the guide, so here is the limit, stated in the section rather than buried in a footnote.</p>
+
+<div class="callout warn">
+  <div class="callout-title">Reduced, not eliminated</div>
+  <div class="callout-body"><p>With <strong>end-user credentials</strong> &mdash; the secure default &mdash; the agent resolves the signed-in user's own permissions. So a genuinely overshared site <em>inside</em> those twenty-five remains reachable by exactly the people who could already reach it. The oversharing defect is not fixed by scoping the agent.</p><p>What shrinks is <strong>amplification</strong>: the problem of a machine surfacing something a user could technically open but would never have found. That shrinks from tenant-wide to twenty-five named sites, which is the difference between a programme and a task.</p><p>And it shrinks only while the credential setting holds. Flip it to <strong>maker-provided credentials</strong> and the whole argument inverts &mdash; every invoker inherits the maker's permissions, and the twenty-five-site boundary stops being a boundary at all. That setting is the first thing <a href="#section-6">&sect;6</a> audits, and it is the reason &sect;6 exists.</p></div>
+</div>
+
+<p>So the honest formulation, and the one to use in front of a customer: <strong>you still assess the sources you ground in &mdash; but you assess twenty-five sites, not the tenant, and you can do it on the licences they already own.</strong></p>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
