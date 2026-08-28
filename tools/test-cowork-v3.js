@@ -58,7 +58,7 @@ function assertCopyClean(r, m) {
   const r = E.compute(E.defaults());
   eq(Math.round(r.ctx.monthlyCredits), 755000, 'anchor: stock credits');
   eq(Math.round(r.ctx.monthlyCowork), 7550, 'anchor: stock monthly');
-  ['V-05','V-27','V-28','V-29'].forEach(function (id) {
+  ['V-05','V-27','V-28','V-29','V-30'].forEach(function (id) {
     ok(wids(r).indexOf(id) === -1, 'anchor: ' + id + ' silent on stock defaults');
   });
 }
@@ -311,6 +311,79 @@ function assertCopyClean(r, m) {
      'rate-card loader clamps effortStep to the slider range');
   ok(!/if \(state\.effort && E\.EFFORT_RETIRED\[state\.effort\.level\]\)/.test(src),
      'session loader no longer pre-rewrites retired effort levels');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   R2 — Calibration integrity (v2 §6.1 + finding #2)
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  // The constant exists and everything agrees on it
+  eq(E.CONST.TIER_DEFAULT.light, 125, 'TIER_DEFAULT.light');
+  eq(E.CONST.TIER_DEFAULT.medium, 500, 'TIER_DEFAULT.medium');
+  eq(E.CONST.TIER_DEFAULT.heavy, 1200, 'TIER_DEFAULT.heavy');
+  const d = E.defaults();
+  eq(d.tierCredits.light, 125, 'defaults() reads TIER_DEFAULT');
+  ok(d.tierCredits !== E.CONST.TIER_DEFAULT, 'defaults() copies TIER_DEFAULT, never aliases it');
+
+  // v2 §6.4.1 — the flag alone can never buy measured status, by any path
+  const forged = E.compute(st({ calibrated: true }));
+  eq(forged.ctx.calibrated, false, '{"calibrated":true} session stays uncalibrated');
+  eq(forged.ctx.band, E.CONST.BAND.modeled, 'forged flag keeps the ±30% band');
+  ok(wids(forged).indexOf('V-30') >= 0, 'forged flag raises V-30 naming the disagreement');
+  ['F10','F11','B1','B2'].forEach(function (id) {
+    eq(row(forged, id).prov, 'ms-modeled', 'forged flag: ' + id + ' stays ms-modeled');
+  });
+  ok(row(forged, 'F10').note != null, 'forged flag: F10 disclosure still present');
+
+  // strict boolean: a truthy non-boolean is not a calibration
+  const noStr = E.compute(st({ calibrated: 'no' }));
+  eq(noStr.ctx.calibrated, false, '{"calibrated":"no"} is uncalibrated (strict boolean)');
+  ok(wids(noStr).indexOf('V-30') === -1, 'V-30 silent when the flag is not strictly true');
+  eq(E.compute(st({ calibrated: 1 })).ctx.calibrated, false, 'calibrated:1 is uncalibrated');
+
+  // v2 §6.4.2 — genuine calibration flips band and provenance together
+  const genuine = E.compute(st({ calibrated: true, tierCredits: { light:130, medium:500, heavy:1200 } }));
+  eq(genuine.ctx.calibrated, true, 'a real tier edit + flag is calibrated');
+  eq(genuine.ctx.band, E.CONST.BAND.measured, 'genuine calibration tightens to ±15%');
+  ['F10','F11','B1','B2'].forEach(function (id) {
+    eq(row(genuine, id).prov, 'measured', 'genuine: ' + id + ' carries measured');
+  });
+  ok(wids(genuine).indexOf('V-30') === -1, 'V-30 silent on genuine calibration');
+
+  // finding #2 C3 — the F10 disclosure SWAPS, it never disappears
+  const note = row(genuine, 'F10').note;
+  ok(note != null && note.indexOf('/cost') >= 0 && note.indexOf('measured') >= 0,
+     'genuine calibration swaps the F10 note to the partner attribution');
+  ok(note.indexOf('not Microsoft') >= 0, 'swapped note says whose model it is not');
+  ok(aids(genuine).indexOf('F10') >= 0, 'F10 assumption entry survives calibration');
+  ok(aids(forged).indexOf('F10') >= 0, 'F10 assumption entry present uncalibrated');
+
+  // no third state: tiers differ but flag false stays modeled
+  const editedOnly = E.compute(st({ tierCredits: { light:130, medium:500, heavy:1200 } }));
+  eq(editedOnly.ctx.calibrated, false, 'a tier edit without the flag is not calibrated');
+  eq(editedOnly.ctx.band, E.CONST.BAND.modeled, 'edit-only keeps ±30%');
+  eq(row(editedOnly, 'F10').prov, 'ms-modeled', 'edit-only F10 stays ms-modeled');
+
+  // sell-mode precedence on F11 is untouched by calibration
+  const sellCal = E.compute(st({ calibrated: true,
+    tierCredits: { light:130, medium:500, heavy:1200 },
+    pricing: Object.assign(E.defaults().pricing, { mode:'sell', creditSellUsd: 0.02 }) }));
+  eq(row(sellCal, 'F11').prov, 'partner', 'F11 partner provenance outranks measured at a resold rate');
+
+  // zeroed tiers with the flag: measured (they differ), but the envelope warns
+  const zeroed = E.compute(st({ calibrated: true, tierCredits: { light:0, medium:0, heavy:0 } }));
+  ok(wids(zeroed).indexOf('V-08') >= 0, 'zeroed measured tiers cannot pass silently');
+}
+
+/* ── R2 · UI-side invariants, asserted against the raw source ───────────── */
+{
+  ok(src.indexOf('Nothing here has changed from the modelled defaults, so there is nothing to calibrate yet') >= 0,
+     'calApply refuses with the specced sentence');
+  ok(/state\.tierCredits = \{ light:E\.CONST\.TIER_DEFAULT\.light/.test(src),
+     'calReset reads CONST.TIER_DEFAULT instead of hardcoding');
+  ok(!/state\.tierCredits = \{ light:125/.test(src), 'no second hardcoded tier-default literal');
+  ok(/tierCredits: \{ light:CONST\.TIER_DEFAULT\.light/.test(src),
+     'defaults() reads CONST.TIER_DEFAULT');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

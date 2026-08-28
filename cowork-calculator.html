@@ -948,6 +948,9 @@ footer.pagefoot a { color:#6b7280; }
     BENCHMARK: { ratio: 2.6, anchorUsd: 30 },// editorial (TD SYNNEX) / ms-verified anchor F-090
     BAND: { modeled: 0.30, measured: 0.15 },// editorial: ±30% default, ±15% once calibrated
     SANITY: { ratioLo: 0.5, ratioHi: 6.0 },
+    // The modelled tier weights, single-sourced: defaults(), calReset and the
+    // calibration guard must all agree on what "unchanged" means.
+    TIER_DEFAULT: { light:125, medium:500, heavy:1200 },
     // Magnitude ceilings for every count and price the engine multiplies.
     // Values above these are typos or attacks, and both overflow the same way:
     // a finite input times a finite input reaching Infinity on a customer card.
@@ -1140,7 +1143,8 @@ footer.pagefoot a { color:#6b7280; }
       personas: PERSONA_DEFAULTS.map(function (p, i) {
         return { key:p.key, name:p.name, seats:[26,13,6,7][i], light:p.light, medium:p.medium, heavy:p.heavy };
       }),
-      tierCredits: { light:125, medium:500, heavy:1200 },
+      tierCredits: { light:CONST.TIER_DEFAULT.light, medium:CONST.TIER_DEFAULT.medium,
+                     heavy:CONST.TIER_DEFAULT.heavy },
       calibrated: false,
       effort: { level:'medium', step:EFFORT_STEP_DEFAULT },
       model: { selection:'auto', enabled:false, multiplier:1.00 },
@@ -1277,7 +1281,7 @@ footer.pagefoot a { color:#6b7280; }
       });
     if (s.activation.count != null) s.activation.count = clamp(n(s.activation.count, 0), 0, CONST.MAX.seats);
     ['light','medium','heavy'].forEach(function (t) {
-      s.tierCredits[t] = clamp(n(s.tierCredits[t], 0), 0, CONST.MAX.tierCredits);
+      s.tierCredits[t] = clamp(n(s.tierCredits[t], CONST.TIER_DEFAULT[t]), 0, CONST.MAX.tierCredits);
     });
     s.effort.step = clamp(n(s.effort.step, EFFORT_STEP_DEFAULT), 1, 3); // the slider's own range
     s.model.multiplier = clamp(n(s.model.multiplier, 1), 0, 100);
@@ -1395,6 +1399,20 @@ footer.pagefoot a { color:#6b7280; }
     var effortLabel = EFFORT_LABELS[state.effort.level] || EFFORT_LABELS.medium;
     var modelMult = state.model.enabled ? n(state.model.multiplier, 1) : 1;
 
+    /* The calibrated flag is asserted by the UI but never trusted — a loaded
+       session file can set it directly. Measured status requires the strict
+       boolean AND at least one tier weight that differs from the modelled
+       defaults. */
+    var tiersDiffer = n(TC.light, 0) !== CONST.TIER_DEFAULT.light ||
+                      n(TC.medium, 0) !== CONST.TIER_DEFAULT.medium ||
+                      n(TC.heavy, 0) !== CONST.TIER_DEFAULT.heavy;
+    var calibrated = state.calibrated === true && tiersDiffer;
+    if (state.calibrated === true && !tiersDiffer)
+      W('V-30','warn','This session is flagged as calibrated, but all three tier weights still equal the modelled ' +
+        'defaults of ' + CONST.TIER_DEFAULT.light + '/' + CONST.TIER_DEFAULT.medium + '/' + CONST.TIER_DEFAULT.heavy +
+        ' — there is no measured number behind the flag. The band stays at ±30% and every figure reads as modelled ' +
+        'until at least one measured tier weight differs from the defaults.', []);
+
     function creditsPerUser(p) {
       return (n(p.light) * n(TC.light) + n(p.medium) * n(TC.medium) + n(p.heavy) * n(TC.heavy));
     }
@@ -1475,17 +1493,23 @@ footer.pagefoot a { color:#6b7280; }
     }).join(' + ');
     T('F10','credits','Monthly Copilot Credits','Σ (persona seats × credits/user × effort)',
       creditDetail + (effortMult !== 1 ? ' (×' + effortMult.toFixed(3) + ' ' + effortLabel + ' effort)' : ''),
-      monthlyCredits,'credits', state.calibrated ? 'measured' : 'ms-modeled',
-      state.calibrated ? null : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
-        ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
+      monthlyCredits,'credits', calibrated ? 'measured' : 'ms-modeled',
+      // Genuine calibration swaps this disclosure; it never deletes it. The
+      // credit model stays somebody's model either way — the question a reader
+      // needs answered is whose.
+      calibrated
+        ? 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
+          ' are this partner’s measured /cost samples, not Microsoft’s model.'
+        : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
+          ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
 
     var monthlyCowork = monthlyCredits * CU;
     var rateLbl = '$' + (CU < 0.01 ? CU.toFixed(4) : CU.toFixed(CU === Math.round(CU * 100) / 100 ? 2 : 4));
     T('F11','cost','Monthly Cowork cost', 'credits × ' + rateLbl,
       monthlyCredits.toLocaleString() + ' × ' + rateLbl, monthlyCowork,'usd',
-      sellMode && CU !== CONST.CREDIT_USD ? 'partner' : (state.calibrated ? 'measured' : 'ms-modeled'));
+      sellMode && CU !== CONST.CREDIT_USD ? 'partner' : (calibrated ? 'measured' : 'ms-modeled'));
 
-    var band = state.calibrated ? CONST.BAND.measured : CONST.BAND.modeled;
+    var band = calibrated ? CONST.BAND.measured : CONST.BAND.modeled;
     var coworkLo = monthlyCowork * (1 - band), coworkHi = monthlyCowork * (1 + band);
 
     var perActive = effTotal > 0 ? monthlyCowork / effTotal : 0;
@@ -1731,8 +1755,8 @@ footer.pagefoot a { color:#6b7280; }
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
 
-    T('B1','billing','Annual Copilot Credits','monthly × 12','', annualCredits,'credits', state.calibrated?'measured':'ms-modeled');
-    T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', state.calibrated?'measured':'ms-modeled');
+    T('B1','billing','Annual Copilot Credits','monthly × 12','', annualCredits,'credits', calibrated?'measured':'ms-modeled');
+    T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', calibrated?'measured':'ms-modeled');
     T('B3','billing','P3 commit required','annual credits ÷ 100 credits per CCCU',
       Math.round(annualCredits).toLocaleString() + ' ÷ 100', cccuRequired,'cccu','ms-verified');
     T('B4','billing','P3 discount', disc.exact ? 'published tier' : 'interpolated between published anchors',
@@ -1774,7 +1798,7 @@ footer.pagefoot a { color:#6b7280; }
       perActiveMs: effTotal > 0 ? (monthlyCredits * CONST.CREDIT_USD) / effTotal : 0,
       effSeatsByPersona:effSeats, reconciled:reconciled,
       greenfield:greenfield, monthlyCredits:monthlyCredits, monthlyCowork:monthlyCowork,
-      coworkLo:coworkLo, coworkHi:coworkHi, band:band, perActive:perActive,
+      coworkLo:coworkLo, coworkHi:coworkHi, band:band, calibrated:calibrated, perActive:perActive,
       licenseMonthly:licenseMonthly, copilotSpend:copilotSpend, anchorSpend:anchorSpend,
       sellMode:sellMode, creditUsd:CU, creditRateLabel:rateLbl,
       governanceAsked: !!state.governanceAsked,
@@ -2626,12 +2650,21 @@ footer.pagefoot a { color:#6b7280; }
       }).join('') + '</div>' +
       '<div style="margin-top:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">' +
         '<button class="btn" id="calApply">Use my measured numbers</button>' +
-        (state.calibrated ? '<span class="pill measured">Calibrated &mdash; band tightened to &plusmn;15%</span><button class="linkbtn" id="calReset">Reset to modeled defaults</button>' : '<span style="font-size:.78rem;color:#9ca3af;">Currently modeled &mdash; band is &plusmn;30%</span>') +
+        (r.ctx.calibrated ? '<span class="pill measured">Calibrated &mdash; band tightened to &plusmn;15%</span><button class="linkbtn" id="calReset">Reset to modeled defaults</button>' : '<span style="font-size:.78rem;color:#9ca3af;">Currently modeled &mdash; band is &plusmn;30%</span>') +
       '</div>';
     Array.prototype.forEach.call($('calBlock').querySelectorAll('[data-cal]'), function (inp) {
       inp.addEventListener('input', function () { state.tierCredits[inp.getAttribute('data-cal')] = Math.max(0, Math.min(E.CONST.MAX.tierCredits, +inp.value || 0)); refresh(); });
     });
     $('calApply').addEventListener('click', function () {
+      /* Measured status has to be bought with a measurement. Unchanged
+         defaults calibrate nothing, and the engine would refuse the flag
+         anyway — this refusal just says so before the click lies. */
+      var TD = E.CONST.TIER_DEFAULT, tc = state.tierCredits;
+      if (+tc.light === TD.light && +tc.medium === TD.medium && +tc.heavy === TD.heavy) {
+        announce('Nothing here has changed from the modelled defaults, so there is nothing to calibrate yet. ' +
+                 'Run three real tasks through <b>/cost</b>, type the numbers into the three fields above, and press this again.');
+        return;
+      }
       var before = E.compute(state).ctx;
       state.calibrated = true;
       var after = E.compute(state).ctx;
@@ -2640,7 +2673,10 @@ footer.pagefoot a { color:#6b7280; }
                '. With your own measured numbers it is ' + usd(after.coworkLo) + '&ndash;' + usd(after.coworkHi) + '. Three tasks bought you that.');
     });
     if ($('calReset')) $('calReset').addEventListener('click', function () {
-      state.calibrated = false; state.tierCredits = { light:125, medium:500, heavy:1200 }; refresh();
+      state.calibrated = false;
+      state.tierCredits = { light:E.CONST.TIER_DEFAULT.light, medium:E.CONST.TIER_DEFAULT.medium,
+                            heavy:E.CONST.TIER_DEFAULT.heavy };
+      refresh();
     });
   }
   function patchAct(r) {
@@ -3153,13 +3189,13 @@ footer.pagefoot a { color:#6b7280; }
         ' a month</b> on Cowork credits, on top of <b>' + usd(c.licenseMonthly) + ' a month</b> in licenses. That\'s about <b>' + usd(c.perActive) + ' per active user</b>, and it\'s metered &mdash; you\'d see it daily in Cost Management, not as a surprise at the end of the month.';
 
     /* ribbon */
-    $('ribbonBand').innerHTML = (state.calibrated ? pill('measured','Measured &plusmn;15%') : pill('default','Modeled &plusmn;30%'));
+    $('ribbonBand').innerHTML = (c.calibrated ? pill('measured','Measured &plusmn;15%') : pill('default','Modeled &plusmn;30%'));
     var chips = [
       { id:'F1', v:num(c.employees), l:'employees', p:'asked', step:'step1' },
       { id:'F2', v:num(c.copilotLicensed), l:'Copilot licenses', p:'asked', step:'step2' },
       { id:'F6', v:num(c.active), l:'active in Cowork', p:state.activation.mode === 'benchmark' ? 'derived' : 'asked', step:'step3' },
       { id:'F7', v:state.personas.filter(function(p,i){return c.effSeatsByPersona[i]>0;}).length + ' groups', l:'persona mix', p:'default', step:'step4' },
-      { id:'F10', v:num(c.monthlyCredits), l:'credits/month', p:state.calibrated ? 'measured' : 'derived', step:'step5' },
+      { id:'F10', v:num(c.monthlyCredits), l:'credits/month', p:c.calibrated ? 'measured' : 'derived', step:'step5' },
       { id:'F11', v:usd(c.coworkLo) + '–' + usd(c.coworkHi), l:'Cowork/month', p:'derived', step:'step6' }
     ];
     $('ribbonChain').innerHTML = chips.map(function (ch, i) {
@@ -3181,7 +3217,7 @@ footer.pagefoot a { color:#6b7280; }
     var seatPct = c.allInMonthly > 0 ? (c.licenseMonthly / c.allInMonthly) * 100 : 50;
     $('numBody').innerHTML =
       '<div class="numgrid">' +
-        cell('numCowork', usd(c.monthlyCowork), 'Cowork credits / month', usd(c.coworkLo) + '–' + usd(c.coworkHi) + ' at ' + (state.calibrated ? '±15%' : '±30%'),
+        cell('numCowork', usd(c.monthlyCowork), 'Cowork credits / month', usd(c.coworkLo) + '–' + usd(c.coworkHi) + ' at ' + (c.calibrated ? '±15%' : '±30%'),
              num(c.monthlyCredits) + ' credits × ' + esc(c.creditRateLabel) + ' = ' + usd(c.monthlyCowork)) +
         cell('numLic', usd(c.licenseMonthly), 'Licenses / month',
              c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats + ' base seats &middot; ' +
@@ -3819,7 +3855,7 @@ footer.pagefoot a { color:#6b7280; }
     },
     step5: function (c) {
       return 'Volume &times; price. At <b>' + esc(c.effortLabel) + '</b> effort that is <b>' + usd(c.monthlyCowork) + ' a month</b> on the meter, which you should quote as <b>' +
-        usd(c.coworkLo) + '–' + usd(c.coworkHi) + '</b> — ' + (state.calibrated ? '±15%, because you measured it' : '±30%, because this is still modeled') + '.';
+        usd(c.coworkLo) + '–' + usd(c.coworkHi) + '</b> — ' + (c.calibrated ? '±15%, because you measured it' : '±30%, because this is still modeled') + '.';
     },
     step6: function (c) {
       var who = c.cspMotion === 'indirectReseller'
