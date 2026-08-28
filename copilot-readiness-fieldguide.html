@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Field guide to the Copilot Readiness Engagement &mdash; the decisions, gates, checklists, effort bands and prices a partner needs in the room, without the narrative." />
+<title>Copilot Readiness Engagement &mdash; Field Guide | Copilot Playbook</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — see DESIGN.md §1. No value here is new.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+h2 { color: var(--navy); margin: 2.8rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.docref { font-weight: 600; border-bottom: 1px dotted var(--ltblue); }
+
+/* TABLE OF CONTENTS */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+
+/* CALLOUTS */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout.dark strong { color: #fff; }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+.metric { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .78rem; margin-top: 5px; font-style: italic; }
+.metric.warn { border-top-color: #d97706; }
+.metric.warn .k { color: #92400e; }
+
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .88rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); }
+tr:nth-child(even) td { background: #fafbfc; }
+.tablewrap { overflow-x: auto; }
+table.dense { font-size: .8rem; min-width: 900px; }
+table.dense th, table.dense td { padding: 8px 10px; }
+
+/* HERO + DARK PANEL */
+.hero-statement { background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin: 24px 0; text-align: center; box-shadow: var(--shadow-md); }
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+.dark-panel { background: linear-gradient(135deg, #001f3d 0%, var(--navy) 45%, var(--teal) 130%); border-radius: var(--radius-lg); padding: 30px 34px; margin: 20px 0; box-shadow: var(--shadow-md); }
+.dark-panel .dp-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.dark-panel .dp-eyebrow .bar { width: 24px; height: 2px; background: var(--ltblue); border-radius: 1px; }
+.dark-panel .dp-eyebrow .lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.55); }
+.dark-panel .dp-eyebrow .rule { flex: 1; height: 1px; background: rgba(255,255,255,.12); }
+.dark-panel p { color: rgba(255,255,255,.9); font-size: .95rem; }
+.dark-panel h3 { color: #fff; margin-top: 0; }
+.dark-panel strong { color: #fff; }
+.dark-panel em { color: #a8ecf5; font-style: normal; }
+
+/* VERTICAL TIMELINE */
+.vtimeline { position: relative; margin: 20px 0 20px 8px; padding-left: 26px; border-left: 2px solid var(--border); }
+.vt-item { position: relative; padding-bottom: 26px; }
+.vt-item:last-child { padding-bottom: 0; }
+.vt-item::before { content: ""; position: absolute; left: -33px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); }
+.vt-when { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
+.vt-item h4 { margin: 3px 0 3px; }
+.vt-item p { font-size: .87rem; margin: 0; }
+
+/* WARNING BANNER */
+.smb-reality { border: 1px solid var(--border); border-left: 4px solid #d97706; border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 20px 0; background: var(--warn); box-shadow: var(--shadow-sm); }
+.smb-reality .sr-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #92400e; margin-bottom: 10px; }
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 6px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 16px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .88rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-desc { font-size: .88rem; color: var(--text); line-height: 1.6; margin: 0 0 8px; }
+.tier-card .tc-facts { display: flex; gap: 18px; flex-wrap: wrap; font-size: .78rem; color: #6b7280; border-top: 1px dashed var(--border); padding-top: 8px; }
+.tier-card .tc-facts strong { color: var(--navy); }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+
+/* TWO-COLUMN COMPARE */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+.compare-col p { font-size: .88rem; }
+
+/* INLINE TAG */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* RECAP HAIRLINE GRID */
+.recap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.recap-item { background: #fff; padding: 18px 20px; }
+.recap-item .rn { font-family: Consolas,Monaco,monospace; color: var(--teal-light); font-size: .72rem; font-weight: 700; }
+.recap-item h4 { margin: 6px 0 4px; }
+.recap-item p { margin: 0; font-size: .83rem; color: #374151; }
+
+/* ASSET INDEX */
+.asset-index { display: flex; flex-direction: column; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.asset-item { background: #fff; padding: 16px 20px; display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; }
+.asset-item .ai-num { font-size: 1.5rem; font-weight: 700; color: var(--ltblue); line-height: 1; font-family: Consolas,Monaco,monospace; }
+.asset-item h4 { margin: 0 0 4px; }
+.asset-item p { margin: 0 0 5px; font-size: .87rem; }
+.asset-item .ai-meta { font-size: .72rem; color: #9ca3af; font-family: Consolas,Monaco,monospace; text-transform: uppercase; letter-spacing: .04em; }
+@media (max-width: 600px) { .asset-item { grid-template-columns: 28px 1fr; } }
+
+/* REFERENCE LIST */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist li.unlinked { border-left-color: var(--ltblue); }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* ═══ NEW COMPONENTS FOR THIS PAGE ═══ */
+
+/* PROVENANCE CHIP — every currency figure carries one. See DESIGN.md §8.10. */
+.prov { display: inline-block; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; vertical-align: 2px; margin-left: 5px; white-space: nowrap; }
+.prov-ms     { background: var(--accent); color: var(--teal); }
+.prov-survey { background: #dcfce7; color: #166534; }
+.prov-range  { background: #fef3c7; color: #92400e; }
+.prov-model  { background: #ede9fe; color: #5b21b6; }
+.provkey { display: flex; flex-wrap: wrap; gap: 14px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin: 16px 0; font-size: .8rem; color: #374151; }
+.provkey span.pk { display: flex; align-items: baseline; gap: 6px; }
+
+/* GATE — a hard stop in the sequence */
+.gate { border: 1px solid #f5ddb0; border-left: 5px solid #d97706; background: var(--warn); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px; margin: 20px 0; box-shadow: var(--shadow-sm); }
+.gate .g-label { display: flex; align-items: center; gap: 10px; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #92400e; margin-bottom: 9px; }
+.gate .g-label .gnum { background: #d97706; color: #fff; border-radius: 4px; padding: 1px 7px; font-size: .6rem; }
+.gate h4 { margin: 0 0 6px; color: #92400e; font-size: 1rem; }
+.gate p { margin: .3rem 0; font-size: .9rem; color: #374151; }
+.gate strong { color: #92400e; }
+
+/* TRAP — a named failure mode */
+.trap { border: 1px solid var(--border); border-left: 4px solid #92400e; background: #fff; border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 16px 0; box-shadow: var(--shadow-sm); }
+.trap .t-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 6px; }
+.trap h4 { margin: 0 0 5px; }
+.trap p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+
+/* SAIDLINE — what the partner actually says */
+.saidline { border: 1px solid #c8e6eb; border-left: 4px solid var(--teal-light); background: #f3fbfc; border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 22px; margin: 18px 0; }
+.saidline .sl-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin-bottom: 8px; }
+.saidline p { margin: .35rem 0; font-size: .93rem; line-height: 1.7; color: #374151; font-style: italic; }
+.saidline p strong { color: var(--navy); font-style: normal; }
+
+/* FORK — a two-branch licensing decision */
+.fork { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 20px 0; box-shadow: var(--shadow-sm); }
+@media (max-width: 700px) { .fork { grid-template-columns: 1fr; } }
+.fork-branch { background: #fff; padding: 18px 20px; }
+.fork-branch .fb-head { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin-bottom: 8px; }
+.fork-branch.no .fb-head { color: #92400e; }
+.fork-branch h4 { margin: 0 0 7px; }
+.fork-branch p { margin: .25rem 0; font-size: .87rem; color: #374151; }
+.fork-branch ul { margin: .4rem 0 .2rem 1.1rem; font-size: .85rem; }
+.fork-branch li { margin: .2rem 0; }
+
+/* STOP — run-of-show segment */
+.stop { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); margin: 14px 0; overflow: hidden; }
+.stop .st-head { display: flex; align-items: baseline; gap: 12px; padding: 11px 20px; background: var(--muted); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.stop .st-num { font-family: Consolas,Monaco,monospace; font-size: .72rem; font-weight: 700; color: #fff; background: var(--teal); border-radius: 4px; padding: 2px 8px; flex: 0 0 auto; }
+.stop .st-time { font-family: Consolas,Monaco,monospace; font-size: .7rem; color: #6b7280; flex: 0 0 auto; }
+.stop .st-name { font-weight: 700; font-size: .95rem; color: var(--navy); flex: 1; }
+.stop .st-mode { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); }
+.stop .st-body { padding: 14px 20px; }
+.stop .st-body p { margin: .3rem 0; font-size: .88rem; }
+.stop .st-out { margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: .8rem; color: #6b7280; }
+.stop .st-out strong { color: var(--navy); }
+
+/* CLICKPATH — exact portal navigation */
+.clickpath { font-family: Consolas,Monaco,monospace; font-size: .78rem; background: var(--muted-2); border: 1px solid var(--border); border-radius: 6px; padding: 9px 14px; margin: 10px 0; color: #004B87; line-height: 1.6; }
+
+/* MASTHEAD — shared header system, DESIGN.md §3 C14 */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar-in { padding: 0 28px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -28px 20px; }
+  .masthead-inner { padding: 20px 28px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy); }
+  .masthead .sub { color: var(--text); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal); }
+  .mh-eyebrow .lbl { color: var(--teal); }
+}
+
+/* ═══ FIELD-GUIDE COMPONENTS ═══ */
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.phase { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); margin: 16px 0; overflow: hidden; }
+.phase .ph-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 20px; background: var(--muted); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.phase .ph-num { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: #fff; background: var(--teal); border-radius: 4px; padding: 2px 9px; flex: 0 0 auto; }
+.phase .ph-name { font-weight: 700; font-size: 1rem; color: var(--navy); flex: 1; }
+.phase .ph-meta { font-family: Consolas,Monaco,monospace; font-size: .7rem; color: #6b7280; flex: 0 0 auto; }
+.phase .ph-body { padding: 12px 20px 14px; }
+.phase .ph-row { display: grid; grid-template-columns: 104px 1fr; gap: 14px; padding: 9px 0; border-top: 1px dashed var(--border); }
+.phase .ph-row:first-child { border-top: none; padding-top: 2px; }
+.phase .ph-k { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--teal); padding-top: 3px; }
+.phase .ph-k.no { color: #92400e; }
+.phase .ph-v { font-size: .89rem; }
+.phase .ph-v p { margin: 0 0 .3rem; font-size: .89rem; }
+.phase .ph-v ul { margin: .1rem 0 .1rem 1.05rem; }
+.phase .ph-v li { margin: .18rem 0; font-size: .89rem; }
+@media (max-width: 600px) { .phase .ph-row { grid-template-columns: 1fr; gap: 3px; } }
+
+.checklist { list-style: none; margin: 14px 0; padding: 0; }
+.checklist li { position: relative; padding: 9px 0 9px 30px; border-bottom: 1px solid var(--border); font-size: .91rem; margin: 0; line-height: 1.6; }
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before { content: "\2610"; position: absolute; left: 2px; top: 6px; color: var(--teal); font-size: 1.1rem; }
+.checklist li strong { color: var(--navy); }
+
+.lede { font-size: .95rem; color: #374151; margin: .4rem 0 1rem; }
+.rule-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.rule-strip .rs { background: #fff; padding: 15px 18px; }
+.rule-strip .rs-k { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--teal); margin-bottom: 5px; }
+.rule-strip .rs-v { font-size: .88rem; color: #374151; margin: 0; }
+.rule-strip .rs-v strong { color: var(--navy); }
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><span class="cur">Readiness Engagement &middot; Field Guide</span></div>
+    <div class="mh-date">Updated August 28, 2026</div>
+  </div>
+</div>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Field Guide &middot; Working Document</div></div>
+    <h1>Copilot Readiness Engagement &mdash; Field Guide</h1>
+    <p class="sub">The decisions, gates, checklists, effort bands and prices, in the order you need them. For the narrative version and the evidence behind every figure, see <a href="copilot-readiness-engagement.html" style="color:#a8ecf5;">The Copilot Readiness Engagement</a>.</p>
+    <p class="mh-meta">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong></p>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">How to use this</div>
+  <div class="callout-body"><p>Sections 2 through 8 are the seven phases in delivery order &mdash; each one states what you do, what you do not do, how long it takes and what it produces. Sections 9 through 13 are the reference material you reach for mid-engagement: tooling, vendor, staffing, price, and the claims that will cost you credibility if you repeat them. Nothing here is argued; the argument lives in the <a href="copilot-readiness-engagement.html">full guide</a>, section by section.</p></div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Contents</p>
+    <ul>
+      <li><a href="#section-1">The Answer, On One Page</a></li>
+      <li><a href="#section-2">Phase 1 &middot; Qualify and Scope</a></li>
+      <li><a href="#section-3">Phase 2 &middot; The Licensing Decision</a></li>
+      <li><a href="#section-4">Phase 3 &middot; Assessment &mdash; The Three Gates</a></li>
+      <li><a href="#section-5">Phase 4 &middot; Permissions Remediation</a></li>
+      <li><a href="#section-6">Phase 5 &middot; Purview Stand-Up</a></li>
+      <li><a href="#section-7">Phase 6 &middot; Enable, Pilot, Un-Contain</a></li>
+      <li><a href="#section-8">Phase 7 &middot; Ongoing Governance</a></li>
+      <li><a href="#section-9">Tooling</a></li>
+      <li><a href="#section-10">AvePoint &mdash; What To Use, When</a></li>
+      <li><a href="#section-11">Staffing, Effort and Price</a></li>
+      <li><a href="#section-12">Language &mdash; Lines and Objections</a></li>
+      <li><a href="#section-13">Claims Discipline</a></li>
+      <li><a href="#section-14">Related Guides</a></li>
+    </ul>
+  </div>
+</nav>
+
+<hr>
+
+<!-- ═══════════════ 1 ═══════════════ -->
+<h2 id="section-1">1 &middot; The Answer, On One Page</h2>
+
+<p class="lede">Your customer is on Business Premium and is not buying E5. Everything below assumes that as the starting condition.</p>
+
+<div class="rule-strip">
+  <div class="rs">
+    <div class="rs-k">The data-protection half</div>
+    <p class="rs-v"><strong>Fully reachable on Business Premium.</strong> Labels, DLP, retention, insider risk, audit, and the control that keeps labeled content out of Copilot &mdash; all through the Purview Suite for Business Premium add-on at $10 per user per month.</p>
+  </div>
+  <div class="rs">
+    <div class="rs-k">The permissions half</div>
+    <p class="rs-v"><strong>One gap, and only one.</strong> SharePoint Advanced Management requires an Office 365 or Microsoft 365 E-SKU base. Business Premium and Business Standard are not on Microsoft's list, and buying Copilot does not change that.</p>
+  </div>
+  <div class="rs">
+    <div class="rs-k">The three routes across it</div>
+    <p class="rs-v"><strong>None of them is E5.</strong> Deliver natively on Business Premium at zero license cost; use a governance platform that does not depend on SharePoint Advanced Management; or move the base to an enterprise SKU. <a href="#section-5">Section 5</a>.</p>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric"><div class="k">$10</div><div class="l">Purview Suite for Business Premium, per user per month <span class="prov prov-ms">MS list</span></div><div class="s">300-seat cap &middot; half price alongside Copilot through 31 Dec 2026</div></div>
+  <div class="metric"><div class="k">3</div><div class="l">Gates that must be true before enablement</div><div class="s">Everything else on the list can follow</div></div>
+  <div class="metric"><div class="k">40&ndash;60</div><div class="l">Remediation hours at 50 seats over 30 days <span class="prov prov-range">Range</span></div><div class="s">Not the 200&ndash;400 the channel repeats</div></div>
+  <div class="metric"><div class="k">~7 wks</div><div class="l">Scan to live, governed pilot</div><div class="s">85&ndash;145 partner hours end to end <span class="prov prov-model">Model</span></div></div>
+</div>
+
+<h3>1.1 &middot; The two ways partners lose this deal</h3>
+
+<div class="compare-grid">
+  <div class="compare-col wrong">
+    <div class="cc-label">Failure one &mdash; sequence</div>
+    <p><strong>Opening with the governance work.</strong> The customer arrived with demand; you replaced it with an obligation before establishing that anything was wrong in their tenant. Establish the problem, then sell the fix.</p>
+  </div>
+  <div class="compare-col wrong">
+    <div class="cc-label">Failure two &mdash; conclusion</div>
+    <p><strong>Finding the SharePoint Advanced Management requirement and quoting E5.</strong> That conclusion is wrong. It is one of three routes and the one the customer is least likely to accept.</p>
+  </div>
+</div>
+
+<h3>1.2 &middot; The seven phases at a glance</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Phase</th><th>Elapsed</th><th>Partner hours</th><th>Tools</th><th>What the customer gets</th></tr></thead>
+  <tbody>
+    <tr><td><a href="#section-2">1 &middot; Qualify and scope</a></td><td>90 minutes</td><td>1.5</td><td>Automated tenant scan; free config baseline tooling</td><td>A site count, an exposure count, and a fixed-price proposal that is not a guess</td></tr>
+    <tr><td><a href="#section-3">2 &middot; Licensing decision</a></td><td>One meeting</td><td>2&ndash;3</td><td>M365 admin center; the decision table in 3.2</td><td>Purview Suite attached; a chosen route for the permissions half</td></tr>
+    <tr><td><a href="#section-4">3 &middot; Assessment</a></td><td>1&ndash;2 weeks</td><td>20&ndash;35</td><td>Native SharePoint reports and PowerShell, or a governance platform</td><td>Findings report, three gates identified, costed remediation plan, deferral list</td></tr>
+    <tr><td><a href="#section-5">4 &middot; Remediation</a></td><td>3&ndash;4 weeks</td><td>40&ndash;70</td><td>SharePoint admin center, PowerShell, platform bulk remediation</td><td>Permissions fixed against a named list of sites</td></tr>
+    <tr><td><a href="#section-6">5 &middot; Purview stand-up</a></td><td>Parallel</td><td>15&ndash;25</td><td>Microsoft Purview</td><td>Four labels published, DLP in audit mode, signed policy intent statements</td></tr>
+    <tr><td><a href="#section-7">6 &middot; Enable and pilot</a></td><td>1 week</td><td>6&ndash;10</td><td>M365 admin center; Copilot Dashboard</td><td>Copilot live for a pilot group, containment removed, adoption handoff</td></tr>
+    <tr><td><a href="#section-8">7 &middot; Ongoing governance</a></td><td>Ongoing</td><td>~5 / month</td><td>Governance platform or scripted re-runs</td><td>Monthly drift report, quarterly review, annual reassessment</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="provkey">
+  <span class="pk"><span class="prov prov-ms">MS list</span> published Microsoft price or documented entitlement</span>
+  <span class="pk"><span class="prov prov-survey">Survey</span> named survey with a stated sample</span>
+  <span class="pk"><span class="prov prov-range">Range</span> community-reported, multiple independent sources</span>
+  <span class="pk"><span class="prov prov-model">Model</span> composed from cited inputs &mdash; a construction, not a citation</span>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 2 ═══════════════ -->
+<h2 id="section-2">2 &middot; Phase 1 &middot; Qualify and Scope</h2>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">P1</span><span class="ph-name">Qualify and scope</span><span class="ph-meta">90 min &middot; 1.5 hrs &middot; $0</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Purpose</div><div class="ph-v">Produce the site count that scopes the quote. Not lead generation &mdash; scoping. Effort scales with sites, libraries and distinct permission structures, and seat count is the only number the buyer knows.</div></div>
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><ul><li>Run the automated tenant scan &mdash; 60&ndash;90 minutes of platform time, given away deliberately.</li><li>Run ScubaGear and Maester for the configuration baseline.</li><li>Ask the six questions below.</li></ul></div></div>
+    <div class="ph-row"><div class="ph-k no">Do not</div><div class="ph-v"><ul><li><strong>Fix anything.</strong> Remediating for free teaches the customer that remediation is free, and destroys your before-and-after evidence.</li><li><strong>Present findings.</strong> A raw scan handed over without judgment is a report anyone could run &mdash; and the thing most likely to walk to a cheaper competitor. The scan produces a scope; the assessment produces findings, and the assessment is billed.</li></ul></div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v">A site and library count &middot; a one-page exposure summary of counts, not detail &middot; a fixed-price assessment proposal, credited against remediation &middot; an honest go / no-go.</div></div>
+  </div>
+</div>
+
+<h3>2.1 &middot; The six qualifying questions</h3>
+
+<p>If the first three do not produce satisfying answers, this is an education conversation, not a deal. Treat it as one rather than writing a proposal.</p>
+
+<ol class="checklist">
+  <li><strong>&ldquo;When does your cyber insurance renew, and can I see last time's endorsements?&rdquo;</strong> The strongest lever in this market. Generative-AI exclusion endorsements &mdash; CG 40 47, CG 40 48, CG 35 08 &mdash; took effect 1 January 2026 and carriers are attaching them at renewal. The customer can verify all of it in ten minutes, which is what makes it work.</li>
+  <li><strong>&ldquo;Has anyone sent you a security questionnaire with AI questions on it?&rdquo;</strong> If yes: a deadline, and a sponsor who already cares. Highest-urgency, highest-margin entry point available.</li>
+  <li><strong>&ldquo;Who decides when a control blocks someone's work?&rdquo;</strong> If the honest answer is nobody, that is Gate 3 &mdash; a bigger finding than anything technical.</li>
+  <li><strong>&ldquo;Where did your SharePoint come from?&rdquo;</strong> A file-server migration predicts the shape of the exposure almost perfectly.</li>
+  <li><strong>&ldquo;Has anyone here bought AI tools on a personal card?&rdquo;</strong> Usually yes, and usually the person asking. See the <a href="shadowai.html">Shadow AI Assessment Guide</a>.</li>
+  <li><strong>&ldquo;What made you ask about Copilot now?&rdquo;</strong> Tells you whether you are selling to demand or manufacturing it.</li>
+</ol>
+
+<h3>2.2 &middot; What the scan is looking for</h3>
+
+<table>
+  <thead><tr><th>Signal</th><th>What it tells you</th></tr></thead>
+  <tbody>
+    <tr><td>Number of SharePoint sites and libraries</td><td>The scoping variable. Under ~30 sites is a small engagement; past 60 is a different quote.</td></tr>
+    <tr><td>Sites shared organization-wide</td><td>Gate 1 exposure. Usually concentrated in one or two sites that came off a file server.</td></tr>
+    <tr><td>Live anonymous links</td><td>Fast, visible, cheap to fix &mdash; the week-one credibility win.</td></tr>
+    <tr><td>Disabled accounts holding grants, stale guests</td><td>Gate 2. Cheapest finding in the engagement, and the one a regulator asks about first.</td></tr>
+    <tr><td>Whether Purview has ever been configured</td><td>Almost always no. Decides whether Phase 5 is a stand-up or a tune-up.</td></tr>
+    <tr><td>The license mix</td><td>Business Standard vs Business Premium vs anything else. Sets up Phase 2 entirely.</td></tr>
+  </tbody>
+</table>
+
+<div class="saidline">
+  <div class="sl-label">Closing Phase 1</div>
+  <p>&ldquo;You have 31 SharePoint sites, and four of them are shared with everybody in the company &mdash; including the one your old file server turned into. Nine anonymous links are still live, two of them older than the staff who created them.</p>
+  <p>I am not going to tell you what is in those sites yet, because I do not know and neither do you. That is the assessment. It is fixed price, it takes two weeks, and if you go ahead with the fixes afterward I credit the whole fee against them.&rdquo;</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 3 ═══════════════ -->
+<h2 id="section-3">3 &middot; Phase 2 &middot; The Licensing Decision</h2>
+
+<p class="lede">Decisions, not a feature matrix. The customer wants to know what to buy on Monday and whether you are about to double their bill.</p>
+
+<h3>3.1 &middot; The prices</h3>
+
+<table>
+  <thead><tr><th>Component</th><th>Price</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Microsoft 365 Business Premium (base)</td><td>$22 /user/mo <span class="prov prov-range">Range</span></td><td>Held at this price through the July 2026 adjustments. Reseller-corroborated.</td></tr>
+    <tr><td>Purview Suite for Business Premium</td><td>$10 /user/mo <span class="prov prov-ms">MS list</span></td><td>Microsoft's words: &ldquo;$10.00 user/month, paid yearly&rdquo;, &ldquo;Maximum of 300 seats&rdquo;, &ldquo;Requires a Microsoft 365 Business Premium subscription&rdquo;</td></tr>
+    <tr><td>Defender + Purview Suites combined</td><td>$15 /user/mo <span class="prov prov-range">Range</span></td><td>Widely and consistently reported; not read off a Microsoft page in this research.</td></tr>
+    <tr><td><strong>= the SMB governance stack</strong></td><td><strong>~$37 /user/mo</strong> <span class="prov prov-model">Model</span></td><td>Business Premium plus both suites</td></tr>
+    <tr><td>Microsoft 365 E5, for comparison</td><td>$60 /user/mo <span class="prov prov-range">Range</span></td><td>Rose from $57 on 1 July 2026</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">Microsoft is funding this motion, and it expires</div>
+  <div class="callout-body"><p><strong>50% off Purview Suite for Business Premium when purchased with Microsoft 365 Copilot</strong>, 1 December 2025 through 31 December 2026 <span class="prov prov-ms">MS list</span>. Distribution is running first-year promotions alongside it, several expiring on the same date. <strong>Verify current terms with your TD SYNNEX rep before quoting.</strong></p></div>
+</div>
+
+<h3>3.2 &middot; The decision table</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>If the customer needs&hellip;</th><th>Buy</th><th>Because</th></tr></thead>
+  <tbody>
+    <tr><td>Labels, DLP, insider risk, Copilot interaction controls, audit retention</td><td>Business Premium + Purview Suite</td><td>$10/user/mo, 300-seat cap, half price alongside Copilot through 31 Dec 2026</td></tr>
+    <tr><td>Shadow AI discovery and full CASB</td><td>+ Defender Suite (combined $15)</td><td>Business Premium has no CASB. Verify the suite carries full Defender for Cloud Apps before promising discovery.</td></tr>
+    <tr><td>DAG reports, EEEU insights, Restricted Content Discovery, site access reviews</td><td>An E-SKU base &mdash; or a third-party platform</td><td>The wall in <a href="#section-5">section 5</a>. No Business Premium add-on reaches SharePoint Advanced Management.</td></tr>
+    <tr><td>Auto-labeling of files and emails</td><td>E5 family <span class="prov prov-range">Verify</span></td><td>Microsoft states the symptom for &ldquo;E3 or Business Premium&rdquo; explicitly. Whether the Purview Suite lifts it is unconfirmed &mdash; test before scoping.</td></tr>
+    <tr><td>Copilot itself, under 300 seats</td><td>Copilot Business SKUs</td><td><strong>Sequencing trap:</strong> you cannot upgrade to an Enterprise plan from Business Standard or Premium with Copilot Business until commitment end. A growing customer can be stuck for up to a year. Decide before attaching.</td></tr>
+    <tr><td>Security Copilot</td><td>Do not sell it here</td><td>Provisioned capacity is priced per hour; the included-capacity model is E5/E7 only. Not an SMB motion.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>3.3 &middot; What each combination gets you</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Capability</th><th>Business Premium alone</th><th>BP + Purview Suite</th><th>Microsoft 365 E3</th><th>What decides it</th></tr></thead>
+  <tbody>
+    <tr><td>Sensitivity labels, published and applied manually</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Included broadly</td></tr>
+    <tr><td>DLP for email and documents</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Base entitlement</td></tr>
+    <tr><td>DLP extended to Teams chat and endpoints</td><td>No</td><td>Yes</td><td>No</td><td>Purview Suite</td></tr>
+    <tr><td><strong>Keep labeled content out of Copilot</strong></td><td>No</td><td>Yes</td><td>No</td><td>The mis-sale in 3.4. E3 does not carry this.</td></tr>
+    <tr><td>Insider risk, communication compliance, Audit Premium</td><td>No</td><td>Yes</td><td>No</td><td>Purview Suite</td></tr>
+    <tr><td>Auto-labeling of files and emails</td><td>No</td><td>Confirm</td><td>No</td><td>Microsoft names E5-family; suite inclusion unconfirmed &mdash; <a href="#section-13">13.2 Q2</a></td></tr>
+    <tr><td>Conditional Access, guest and leaver cleanup</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Entra ID P1, in Business Premium</td></tr>
+    <tr><td>Shadow AI discovery (full CASB)</td><td>No</td><td>Confirm</td><td>No</td><td>Defender Suite &mdash; <a href="#section-13">13.2 Q3</a></td></tr>
+    <tr><td>Governance reports, EEEU insights, site access reviews</td><td>No</td><td>No</td><td>Yes*</td><td>SharePoint Advanced Management. Needs an E-SKU base plus one assigned Copilot license.</td></tr>
+    <tr><td>Restricted Content Discovery</td><td>No</td><td>No</td><td>Yes*</td><td>Same. The only capability with no substitute &mdash; see <a href="#section-5">5.3</a>.</td></tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:.8rem;color:#6b7280;">* Requires at least one Microsoft Copilot license assigned in the tenant, on top of the E-SKU base.</p>
+
+<h3>3.4 &middot; The two mis-sales</h3>
+
+<div class="fork">
+  <div class="fork-branch no">
+    <div class="fb-head">Mis-sale 1</div>
+    <h4>E3 as the compliance step-up</h4>
+    <p>Microsoft's DLP documentation marks &ldquo;restrict Copilot from processing files and emails&rdquo; as unavailable on Business Premium <em>and</em> unavailable on E3. Only the E5 family and the Purview Suite line carry it.</p>
+    <p>E3 clears the SharePoint Advanced Management base requirement &mdash; which may be the whole reason to do it &mdash; but it does not buy the ability to keep labeled content out of Copilot. Be explicit about which of the two problems it solves.</p>
+  </div>
+  <div class="fork-branch no">
+    <div class="fb-head">Mis-sale 2</div>
+    <h4>Label-based Copilot exclusion on bare Business Premium</h4>
+    <p>The capability is not on the base SKU. With the Purview Suite attached it is in scope &mdash; Microsoft lists &ldquo;policy-based controls for AI experiences and Copilot interactions&rdquo; among the suite's capabilities.</p>
+    <p>Promise it on base Business Premium and you will be discovered at configuration time, in front of the customer, by a support engineer.</p>
+  </div>
+</div>
+
+<h3>3.5 &middot; Put these in the engagement letter</h3>
+
+<ol class="checklist">
+  <li><strong>Content Explorer is not supported over GDAP.</strong> If your assessment method depends on it, your delegated access will not carry you.</li>
+  <li><strong>Purview audit access requires your engineer to be a guest user in the customer tenant.</strong> The customer must create, approve and later remove that account. Put creation in prerequisites and removal in the closeout.</li>
+  <li><strong>Assign the Purview roles before you start.</strong> Viewing file contents in simulation results needs Data Classification Content Viewer, which Global Admin does not hold by default. Turning a policy from ready to on needs Compliance Administrator or Compliance Data Administrator. Without them the button is greyed out with no explanation &mdash; a lost day each.</li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 4 ═══════════════ -->
+<h2 id="section-4">4 &middot; Phase 3 &middot; Assessment &mdash; The Three Gates</h2>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">P3</span><span class="ph-name">The assessment</span><span class="ph-meta">1&ndash;2 weeks &middot; 20&ndash;35 hrs</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Purpose</div><div class="ph-v">Separate the two or three things that must be true before Copilot is enabled from the much longer list that can safely follow it.</div></div>
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v">Enumerate exposure &middot; sort every finding against the three gates &middot; cost the remediation against a <strong>named list of sites</strong> &middot; readout to the owner &middot; write the deferral list down explicitly.</div></div>
+    <div class="ph-row"><div class="ph-k no">Do not</div><div class="ph-v">Scope anything in 4.2 as a prerequisite. That is what turns a four-week engagement into a stalled six-month program.</div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v">Findings report &middot; three gates identified &middot; costed remediation plan &middot; a written, agreed deferral list.</div></div>
+  </div>
+</div>
+
+<h3>4.1 &middot; The three gates, and nothing else</h3>
+
+<div class="gate">
+  <div class="g-label"><span class="gnum">Gate 1</span> Must be true before enablement</div>
+  <h4>Nothing sensitive is reachable by &ldquo;everyone&rdquo;</h4>
+  <p>No site or library holding regulated, financial, HR or client-confidential content is shared with an organization-wide group, an Everyone Except External Users grant, or a live anonymous link.</p>
+  <p><strong>Why it gates:</strong> Copilot inherits the permission model exactly. Every one of these becomes queryable in natural language on day one.</p>
+</div>
+
+<div class="gate">
+  <div class="g-label"><span class="gnum">Gate 2</span> Must be true before enablement</div>
+  <h4>Leavers and guests are actually gone</h4>
+  <p>Disabled accounts still holding grants, guest accounts from finished projects, shared mailboxes with lingering access.</p>
+  <p><strong>Why it gates:</strong> cheapest credibility you will ever buy, and regulators fine for this without AI in the picture.</p>
+</div>
+
+<div class="gate">
+  <div class="g-label"><span class="gnum">Gate 3</span> Must be true before enablement</div>
+  <h4>Somebody owns the exception path</h4>
+  <p>A named person <em>on the customer side</em> who decides what happens when a control blocks legitimate work. Not a policy document &mdash; a person, with a decision route and a response time.</p>
+  <p><strong>Why it gates:</strong> the one partners skip, and the one that kills engagements in month two. Without it the first false positive escalates to the managing partner and your controls get switched off by someone who outranks everybody who understands them.</p>
+</div>
+
+<h3>4.2 &middot; What is not a gate &mdash; defer these, in writing</h3>
+
+<table>
+  <thead><tr><th>Work</th><th>Timing</th><th>Why it can wait</th></tr></thead>
+  <tbody>
+    <tr><td>A complete sensitivity label taxonomy across the estate</td><td>After</td><td>Four labels and a default set is enough to start. Full coverage is a program, not a prerequisite.</td></tr>
+    <tr><td>Auto-labeling policies</td><td>After</td><td>Needs simulation cycles and, on most SMB SKUs, a license you have not sold.</td></tr>
+    <tr><td>DLP in enforcement mode</td><td>After</td><td>Microsoft's documented rollout is audit, then policy tips, then enforce.</td></tr>
+    <tr><td>Retention and records management</td><td>After</td><td>A lifecycle program with its own business case.</td></tr>
+    <tr><td>Custom sensitive information types and trainable classifiers</td><td>Much later, if ever</td><td>Almost always out of scope at 25&ndash;300 seats. Built-in types cover the realistic cases.</td></tr>
+    <tr><td>Insider risk and communication compliance</td><td>After</td><td>Real capabilities that need a mature customer and a reason. Selling them at gate stage sounds like inventing scope.</td></tr>
+    <tr><td>Cleaning up redundant and obsolete data</td><td>After</td><td>A follow-on project with its own economics. Sell it on storage cost, not risk.</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 &middot; Finding &rarr; control &rarr; gate</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>What the assessment finds</th><th>The control that answers it</th><th>Position</th><th>On Business Premium?</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>Site shared with Everyone Except External Users</td><td>Replace grant with a scoped group; break inheritance</td><td><span class="tag warn">Gate 1</span></td><td>Fixable &mdash; needs a route from <a href="#section-5">5.2</a></td><td>Usually the single largest share of high-priority remediation</td></tr>
+    <tr><td>Live anonymous sharing links</td><td>Expire links; tighten tenant default link type</td><td><span class="tag warn">Gate 1</span></td><td>Yes &mdash; native admin center</td><td>Fast, high-visibility win</td></tr>
+    <tr><td>Disabled accounts retaining grants</td><td>Offboarding cleanup; access review</td><td><span class="tag warn">Gate 2</span></td><td>Yes &mdash; Entra P1</td><td>Regulators fine for this without AI involved</td></tr>
+    <tr><td>Stale guest accounts</td><td>Guest expiry / removal</td><td><span class="tag warn">Gate 2</span></td><td>Yes &mdash; Entra P1</td><td>Included in Business Premium</td></tr>
+    <tr><td>No owner for blocked-work decisions</td><td>Named exception owner + route + response time</td><td><span class="tag warn">Gate 3</span></td><td>Yes &mdash; no license involved</td><td>Not a technical control. Still a gate.</td></tr>
+    <tr><td>Sites with sensitive content and no label</td><td>Publish four labels; manual labeling at container level</td><td><span class="tag">After</span></td><td>Yes &mdash; Purview Suite</td><td>Containers before files</td></tr>
+    <tr><td>Sensitive content leaving via chat or email</td><td>DLP, audit mode first</td><td><span class="tag">After</span></td><td>Yes &mdash; Purview Suite</td><td>Audit &rarr; policy tips &rarr; enforce</td></tr>
+    <tr><td>Automatic labeling at scale</td><td>Auto-labeling policies</td><td><span class="tag">After</span></td><td>Verify &mdash; gated above base SKU</td><td>Confirm before scoping &mdash; <a href="#section-13">13.2</a></td></tr>
+    <tr><td>Content Copilot should never ground on</td><td>Restricted Content Discovery</td><td><span class="tag alt">Interim only</span></td><td>Needs a route</td><td>Must be removed after remediation. Needs an eligible base SKU and an assigned Copilot license.</td></tr>
+    <tr><td><strong>Who can reach what, across the estate</strong></td><td>Permission and exposure reporting</td><td><span class="tag warn">Gate 1</span></td><td><strong>Needs a route &mdash; <a href="#section-5">5.2</a></strong></td><td>The one genuine gap. Route 1, 2 or 3.</td></tr>
+    <tr><td>Personal AI accounts in use</td><td>Sanctioned tenant AI + conditional access</td><td><span class="tag alt">Parallel</span></td><td>Yes</td><td>See the <a href="shadowai.html">Shadow AI Assessment Guide</a></td></tr>
+    <tr><td>Redundant and obsolete data degrading answers</td><td>Lifecycle and archival</td><td><span class="tag">Follow-on</span></td><td>Yes &mdash; Purview Suite</td><td>Sell on storage cost, not risk</td></tr>
+    <tr><td>Permissions drifting back after cleanup</td><td>Continuous drift monitoring</td><td><span class="tag ok">Recurring</span></td><td>Third party</td><td>This is the MRR. <a href="#section-8">Section 8</a>.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Read the fourth column before you scope</div>
+  <div class="callout-body"><p>Almost everything on that list is reachable on the licenses your customer already owns. <strong>One row is not</strong> &mdash; permission and exposure reporting across the estate &mdash; and it is the row Gate 1 depends on. Scoping without knowing which route the customer is on is how partners end up quoting an E5 upgrade they never needed to quote.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 5 ═══════════════ -->
+<h2 id="section-5">5 &middot; Phase 4 &middot; Permissions Remediation</h2>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">P4</span><span class="ph-name">Remediation</span><span class="ph-meta">3&ndash;4 weeks &middot; 40&ndash;70 hrs</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v">Replace organization-wide grants with scoped groups &middot; break inheritance where it should never have been inherited &middot; expire anonymous links &middot; remove leavers and stale guests.</div></div>
+    <div class="ph-row"><div class="ph-k">Expect</div><div class="ph-v">Concentration, not diffusion. In one documented engagement a single misconfigured &ldquo;Everyone Except External Users&rdquo; share accounted for roughly <strong>80% of all high-priority remediation</strong>. Finding the concentration is most of the job.</div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v">Permissions fixed against the named site list from Phase 3, with before-and-after evidence.</div></div>
+  </div>
+</div>
+
+<h3>5.1 &middot; The constraint, in Microsoft's own words</h3>
+
+<blockquote>
+  Microsoft 365 base subscription. Your organization must have one of the following base licenses: Office 365 E3, E5, or A5; Microsoft 365 E1, E3, E5, or A5; Microsoft 365 GCC, GCC-High, or DoD.
+  <span class="attr"><a class="docref" href="https://learn.microsoft.com/en-us/sharepoint/sharepoint-advanced-management-prerequisites">Microsoft Learn, Prerequisites for SharePoint Advanced Management</a> &mdash; page dated 30 June 2026, updated 18 August 2026, verified 28 August 2026</span>
+</blockquote>
+
+<div class="trap">
+  <div class="t-label">Read this twice</div>
+  <h4>Microsoft 365 Business Premium is not on that list. Neither is Business Standard.</h4>
+  <p>The Copilot unlock &mdash; one assigned Microsoft Copilot license anywhere in the tenant &mdash; is a <em>second, additional</em> condition, not a substitute for the base requirement. Both gates have to be cleared.</p>
+  <p><strong>The channel is currently wrong in both directions.</strong> Older material says &ldquo;you need E5 for oversharing tooling&rdquo; &mdash; out of date; one Copilot license does unlock the full SAM feature set. Newer material has over-corrected to &ldquo;SAM is included with Copilot, the E5 objection is dead&rdquo; &mdash; true only on an E-SKU base, and false at most SMB customers.</p>
+</div>
+
+<h3>5.2 &middot; The three routes across the gap</h3>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Deliver it natively on Business Premium</div></div>
+      <p class="tc-desc">SharePoint admin center for sharing settings, site permissions and sharing reports. SharePoint Online PowerShell to enumerate permissions across the estate. Free tooling covers the configuration baseline. <strong>This is where most partners should start.</strong></p>
+      <p class="tc-desc"><strong>What you give up:</strong> raw output rather than a client-ready report, no continuous monitoring, effort that grows with site count. Comfortable at 80 seats, painful at 300.</p>
+      <div class="tc-facts"><span>License cost <strong>$0</strong></span><span>Best for <strong>your first engagements</strong></span><span>Detail <strong><a href="#section-9">Section 9</a></strong></span></div>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">A governance platform that does not depend on SharePoint Advanced Management</div></div>
+      <p class="tc-desc">Some platforms read Microsoft's security and activity feeds rather than depending on SAM, so they run on a Business Premium tenant with no Microsoft license change. That is an architectural difference, not a loophole &mdash; and it is the only route that gives you continuous drift monitoring, which is what the recurring fee in <a href="#section-8">section 8</a> is actually for.</p>
+      <p class="tc-desc"><strong>What you give up:</strong> seat minimums can price out the smallest tenants, pricing is largely unpublished so you quote against a number you have to obtain, and label-enforcement features generally still inherit Microsoft's E5 requirement.</p>
+      <div class="tc-facts"><span>License change <strong>none</strong></span><span>Best for <strong>a book of customers</strong></span><span>Detail <strong><a href="#section-10">Section 10</a></strong></span></div>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Move the base to an enterprise SKU</div></div>
+      <p class="tc-desc">Microsoft's documented path, and the only route that delivers Restricted Content Discovery. On an eligible E-SKU base a single assigned Copilot license unlocks the full toolset.</p>
+      <p class="tc-desc"><strong>Before you quote it:</strong> get the entitlement confirmed in writing by Microsoft licensing or your distributor, including how it behaves in a mixed-SKU tenant. Microsoft states the requirement at organization level and publishes no partial-adoption guidance. It also does not solve the other half &mdash; E3 does not carry the control that keeps labeled content out of Copilot.</p>
+      <div class="tc-facts"><span>Cost <strong>highest per seat</strong></span><span>Best for <strong>customers who need RCD</strong></span><span>Detail <strong><a href="#section-3">Section 3</a></strong></span></div>
+    </div>
+  </div>
+  <div class="tier-card warn-t">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">&#10007;</div><div class="tc-name">The one to refuse &mdash; turn it on and deal with it later</div></div>
+      <p class="tc-desc">Tempting, and the owner will suggest it. It is also the one path where you carry the consequence: you enabled it, and the salary spreadsheet surfaces in week two.</p>
+      <p class="tc-desc"><strong>The counter is not a lecture</strong> &mdash; it is Gate 1 as a two-day job. Find the organization-wide grants, fix the worst handful, then enable. You are giving them a shorter path than they expected, not refusing them.</p>
+    </div>
+  </div>
+</div>
+
+<h3>5.3 &middot; Contain, remediate, un-contain</h3>
+
+<div class="recap-grid">
+  <div class="recap-item"><div class="rn">MOVE 1</div><h4>Contain</h4><p>Restricted Content Discovery on the worst sites, plus DLP scoped to keep labeled content out of Copilot processing. Both carry license prerequisites most SMB tenants do not meet.</p></div>
+  <div class="recap-item"><div class="rn">MOVE 2</div><h4>Remediate</h4><p>Actually fix the permissions. Break inheritance, replace organization-wide grants, expire links, remove leavers and guests.</p></div>
+  <div class="recap-item"><div class="rn">MOVE 3</div><h4>Un-contain</h4><p>Take the containment off so Copilot can see the content it legitimately should. <strong>Put this in the SOW as a dated, billable milestone.</strong></p></div>
+</div>
+
+<div class="trap">
+  <div class="t-label">The trap</div>
+  <h4>Move 3 never happens</h4>
+  <p>Partners contain, remediate, then leave the containment in place because nothing forces them to remove it and removing it feels like a risk. The customer is now paying full price for a Copilot that cannot see their own content, concludes the product is useless, and does not renew. This is the most common way a technically successful engagement produces a commercially failed one.</p>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">If you cannot use Restricted Content Discovery &mdash; scope the pilot instead</div>
+  <div class="callout-body"><p>RCD needs an assigned Copilot license and an eligible base subscription, so on Business Premium it is not on the table. The supported alternative reaches the same outcome by a different route: <strong>remediate first, then scope the pilot to what you have cleaned.</strong> Enable Copilot for a small pilot group whose work sits in already-remediated sites, rather than enabling the tenant and hiding the rest. Slower to reach everybody, completely defensible &mdash; and it removes the un-containment step entirely.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 6 ═══════════════ -->
+<h2 id="section-6">6 &middot; Phase 5 &middot; Purview Stand-Up</h2>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">P5</span><span class="ph-name">Purview from zero</span><span class="ph-meta">parallel to P4 &middot; 15&ndash;25 hrs</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v">Four labels published &middot; DLP in audit mode &middot; a signed page of policy intent statements.</div></div>
+    <div class="ph-row"><div class="ph-k">Sequence</div><div class="ph-v">Step 0 &rarr; classification workshop &rarr; publish four labels &rarr; DLP simulation &rarr; wait. The waits in 6.2 are calendar items, not slack.</div></div>
+  </div>
+</div>
+
+<h3>6.1 &middot; Step 0 &mdash; do this before anyone labels anything</h3>
+
+<div class="gate">
+  <div class="g-label"><span class="gnum">Step 0</span> There is no reason to ever do this second</div>
+  <h4>Enable sensitivity labels for Office files in SharePoint and OneDrive</h4>
+  <div class="clickpath">Set-SPOTenant -EnableAIPIntegration $true</div>
+  <p>Until this is on, SharePoint and OneDrive &ldquo;can't process encrypted files, which means that coauthoring, eDiscovery, data loss prevention, search, and other collaborative features won't work for these files.&rdquo;</p>
+  <p><strong>The trap:</strong> labels applied before the setting is enabled are never recognized. Microsoft's remedy is to &ldquo;download these files and then upload them to their original location.&rdquo; On any volume that is a punishment, not a remediation. Takes ~15 minutes to take effect. <a class="docref" href="https://learn.microsoft.com/en-us/purview/sensitivity-labels-sharepoint-onedrive-files">Microsoft Learn</a></p>
+</div>
+
+<h3>6.2 &middot; The calendar floor &mdash; put these in the plan by name</h3>
+
+<table>
+  <thead><tr><th>What you are waiting for</th><th>Documented wait</th></tr></thead>
+  <tbody>
+    <tr><td>Label and label policy changes to propagate</td><td>24 hours (24&ndash;48 where group membership is involved)</td></tr>
+    <tr><td>Editing an already-published label</td><td>Up to 24 hours</td></tr>
+    <tr><td>Microsoft's safe-publish pattern: pilot users &rarr; verify &rarr; widen</td><td>1 hour, then &ldquo;wait at least a day&rdquo; before widening</td></tr>
+    <tr><td>A newly created auto-labeling policy is locked</td><td>~24 hours greyed out while the backend provisions</td></tr>
+    <tr><td>Auto-labeling simulation run</td><td>Up to 12 hours &mdash; and you will run two or three</td></tr>
+    <tr><td>Co-authoring tenant setting replication</td><td>24 hours</td></tr>
+    <tr><td>Newly added policy location before first crawl</td><td>24 hours before troubleshooting missing labels</td></tr>
+    <tr><td>Reindexing after a bulk label change, 100+ sites</td><td>Up to several days</td></tr>
+    <tr><td>Container label deletion, SharePoint sites</td><td>48&ndash;72 hours, during which users may be unable to open previously protected content</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">The number that breaks project plans</div>
+  <div class="callout-body"><p>A minimal, clean, single-tenant stand-up &mdash; one auto-labeling policy, one DLP policy, nothing custom &mdash; carries a floor of roughly <strong>six to ten elapsed working days of pure waiting</strong>, before a single hour of consulting, workshop, tuning or user communication. This is the single most common reason a four-week engagement becomes a nine-week one, and the partner absorbs the difference.</p></div>
+</div>
+
+<h3>6.3 &middot; The classification workshop &mdash; 90 minutes, four people</h3>
+
+<div class="rule-strip">
+  <div class="rs"><div class="rs-k">Who is in the room</div><p class="rs-v">The owner or managing partner &middot; whoever owns finance &middot; whoever owns HR &middot; <strong>the person who actually knows where the files are</strong> &mdash; usually the part-time IT person who ran the migration, and the most important person present.</p></div>
+  <div class="rs"><div class="rs-k">How many labels</div><p class="rs-v"><strong>Four top-level labels.</strong> Sublabels only under Confidential. Start from Microsoft's default set &mdash; Personal, Public, General, Confidential, Highly Confidential &mdash; and cut down rather than build up. Microsoft: effectiveness drops noticeably past five main labels or five sublabels each.</p></div>
+  <div class="rs"><div class="rs-k">The question that does the work</div><p class="rs-v"><strong>&ldquo;What is this organization's tolerance for leakage?&rdquo;</strong> Microsoft names this one directly. Asking it stops the room treating classification as an IT decision, which is the entire purpose of holding the workshop.</p></div>
+  <div class="rs"><div class="rs-k">What it must produce</div><p class="rs-v">Not a label list &mdash; <strong>policy intent statements</strong>, signed. Microsoft: &ldquo;You should be able to summarize, in a single statement, the business intent for every policy you have.&rdquo; Every clause maps to a configuration decision, and the signed page is what makes the engagement defensible eighteen months later.</p></div>
+</div>
+
+<p>Follow Microsoft's naming guidance literally: use terms that make sense to your users, test names and tooltips with the people who have to apply them, and do not mix Confidential, Restricted and Internal &mdash; users cannot reliably distinguish them. A fifteen-label taxonomy does not produce careful classification; it produces users picking whatever is least likely to interrupt them.</p>
+
+<h3>6.4 &middot; The three decisions that cannot be undone</h3>
+
+<p>These are senior-consultant decisions. They should never be made by whoever happens to be in the portal.</p>
+
+<div class="trap">
+  <div class="t-label">Irreversible &mdash; 1</div>
+  <h4>Encryption on a label</h4>
+  <p>Deleting an encrypting label archives its protection template, and you can never create a new label with the same name. Deleted labels show as GUIDs in content and activity explorer. Deleting a label applied to a SharePoint document strips label and encryption on download &mdash; but the same document stored outside SharePoint stays encrypted forever.</p>
+  <p><strong>Rule:</strong> ship labels without encryption first. Add encryption as a separate, separately-communicated change. Microsoft's own blueprint hedges its default with &ldquo;encryption of labels can be implemented later&rdquo; and ships an <code>\Internal</code> exception sublabel for when encryption impacts daily operations.</p>
+</div>
+
+<div class="trap">
+  <div class="t-label">Irreversible &mdash; 2</div>
+  <h4>Co-authoring for files with sensitivity labels</h4>
+  <p>Microsoft: &ldquo;After you enable co-authoring&hellip; you can't disable this setting in the Microsoft Purview portal. This action is supported only by using PowerShell.&rdquo; It also changes where labeling metadata is stored; turn it back off and &ldquo;this labeling information for unencrypted Word, Excel, and PowerPoint files will be lost.&rdquo;</p>
+  <p><strong>Rule:</strong> inventory scripts, add-ins and mail flow rules that read or write labeling metadata <em>before</em> enabling. SMB tenants are precisely where undocumented scripts live. <a class="docref" href="https://learn.microsoft.com/en-us/purview/sensitivity-labels-coauthoring">Microsoft Learn</a></p>
+</div>
+
+<div class="trap">
+  <div class="t-label">Irreversible in effect &mdash; 3</div>
+  <h4>Label order and priority</h4>
+  <p>Order is semantic, not cosmetic. It defines what counts as downgrading, it resolves auto-labeling conflicts, and <strong>Copilot surfaces the highest-priority label</strong> &mdash; Copilot Chat displays it, and content generated from multiple sources inherits it.</p>
+  <p><strong>Rule:</strong> get the order right at publish. Reordering later means re-reasoning about every policy that depends on it.</p>
+</div>
+
+<h3>6.5 &middot; DLP &mdash; the only rollout pattern that works</h3>
+
+<div class="recap-grid">
+  <div class="recap-item"><div class="rn">STAGE 1</div><h4>Simulation, no policy tips</h4><p>Assess impact through the reports. Nobody is interrupted. Use this stage to test your own review and remediation workflow, not just the policy.</p></div>
+  <div class="recap-item"><div class="rn">STAGE 2</div><h4>Simulation with notifications and tips</h4><p>Begin teaching users. Link the customer's own policy page. Explicitly ask users to report false positives. Move here only once results match what the stakeholders had in mind.</p></div>
+  <div class="recap-item"><div class="rn">STAGE 3</div><h4>Full enforcement</h4><p>And keep monitoring. Most partners never arrive here &mdash; a permanent diagnostic state that looks like compliance and protects nothing.</p></div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Cite Fabrikam when a customer asks whether you are over-engineering</div>
+  <div class="callout-body"><p>Microsoft's DLP planning documentation carries a worked persona for an 18-person startup. The whole prescribed approach: <strong>use the default Teams DLP policy; make SharePoint restricted by default; block external sharing; deploy to Windows devices; block non-OneDrive cloud storage.</strong> Five moves, no custom classifiers, no taxonomy project. Being able to say &ldquo;this is Microsoft's own guidance for a company your size&rdquo; ends that objection faster than any argument of your own. <a class="docref" href="https://learn.microsoft.com/en-us/purview/dlp-overview-plan-for-dlp">Microsoft Learn</a></p></div>
+</div>
+
+<h3>6.6 &middot; Simulation gotchas &mdash; check these before your first run</h3>
+
+<ol class="checklist">
+  <li><strong>Simulation still generates activity alerts.</strong> Microsoft's advice is to temporarily scope or disable the alert policy for the simulation window. Do this before the run, not after you have mailed the customer's security contact four hundred alerts.</li>
+  <li><strong>Simulation shows one policy's result.</strong> Conflicts between multiple policies only resolve when all of them run, so a simulation can be honestly, confidently wrong.</li>
+  <li><strong>Exchange simulation is not reproducible</strong> &mdash; it evaluates mail sent and received during the run.</li>
+  <li><strong>Simulation matches more than activation acts on.</strong> On activation the service only re-evaluates files whose state recently changed. Forcing a full pass needs on-demand classification.</li>
+</ol>
+
+<div class="callout warn">
+  <div class="callout-title">Leave out at this size</div>
+  <div class="callout-body"><p>Custom sensitive information types and custom trainable classifiers are almost always out of scope at 25&ndash;300 seats. Microsoft Support will not help you write regular expressions &mdash; their documentation says so. Custom classifiers are English-only and cannot be retrained; you delete and start over. A new sensitive information type does not retroactively light up existing content without a recrawl. <strong>Price custom classification as its own opt-in workstream, or refuse it.</strong></p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 7 ═══════════════ -->
+<h2 id="section-7">7 &middot; Phase 6 &middot; Enable, Pilot, Un-Contain</h2>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">P6</span><span class="ph-name">Enable and pilot</span><span class="ph-meta">1 week &middot; 6&ndash;10 hrs</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do first</div><div class="ph-v"><strong>Remove the interim containment applied in Phase 4</strong>, and verify it. Dated, billable milestone &mdash; not a tidy-up.</div></div>
+    <div class="ph-row"><div class="ph-k">Then</div><div class="ph-v">Enable Copilot for five to ten people (7.1) &middot; watch the four signals in 7.2 &middot; run the exception path for real at least once &middot; have the adoption conversation.</div></div>
+    <div class="ph-row"><div class="ph-k">Exit</div><div class="ph-v">Containment removed and verified &middot; pilot live and in use &middot; exception path exercised &middot; first governance report dated and scheduled &middot; adoption support sold or <strong>explicitly declined in writing</strong>.</div></div>
+  </div>
+</div>
+
+<h3>7.1 &middot; The pilot group &mdash; five to ten people</h3>
+
+<table>
+  <thead><tr><th>Include</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>The person who asked for Copilot</td><td>Usually the owner. They funded this and they need to see it work first.</td></tr>
+    <tr><td>The heaviest existing AI user</td><td>Already using something on a personal account. Give them a sanctioned alternative and they become your loudest advocate; leave them out and they stay a shadow-AI problem.</td></tr>
+    <tr><td>Somebody from finance or HR</td><td>Works with the most sensitive content &mdash; the fastest way to find out whether labeling and DLP work in practice rather than in simulation.</td></tr>
+    <tr><td>The part-time IT person</td><td>They have to support this. They should not meet it for the first time when a user complains.</td></tr>
+    <tr><td>One skeptic</td><td>Deliberately. A pilot group of enthusiasts tells you nothing you can act on.</td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 &middot; What to watch in week one</h3>
+
+<ol class="checklist">
+  <li><strong>Anything surfacing that surprises someone.</strong> The single most valuable signal in the engagement. One &ldquo;wait, how did it find that?&rdquo; means Phase 4 missed something.</li>
+  <li><strong>DLP policy tips firing on legitimate work.</strong> Expected, and the reason DLP is still in audit mode. Route every one through the Gate 3 exception owner, so the path gets exercised while the stakes are low.</li>
+  <li><strong>Labels applied wrongly, or not at all.</strong> Usually a naming problem, not a training problem. If two labels are being confused, rename one.</li>
+  <li><strong>People quietly not using it.</strong> The quietest failure and the one that kills the renewal in month three. Ask directly &mdash; usage reports will not tell you why.</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">Hand off to adoption, and price it now</div>
+  <div class="callout-body"><p>Governance and adoption fail independently. A perfectly remediated tenant that nobody uses still loses the customer, and it will look like your fault because you were the one who was there. Price role-based enablement at <strong>$50&ndash;$100 per user</strong> <span class="prov prov-range">Range</span> &mdash; at 78 seats a natural second project of comparable size to the assessment. Then see the <a href="copilot-adoption-audit.html">Copilot Adoption Audit</a> for proving it worked.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 8 ═══════════════ -->
+<h2 id="section-8">8 &middot; Phase 7 &middot; Ongoing Governance</h2>
+
+<p class="lede">The only tier that compounds, and the only one nobody has published a price for.</p>
+
+<div class="metrics">
+  <div class="metric"><div class="k">48%</div><div class="l">of MSPs name AI as their clients' number-one need <span class="prov prov-survey">Survey</span></div><div class="s">Kaseya 2026 State of the MSP, n&gt;1,000</div></div>
+  <div class="metric warn"><div class="k">13%</div><div class="l">earn meaningful revenue from AI or automation services</div><div class="s">Same survey &mdash; a 35-point gap</div></div>
+  <div class="metric warn"><div class="k">8%</div><div class="l">have regulatory compliance and reporting in their top three revenue lines</div><div class="s">Security is already monetized. Governance is not.</div></div>
+</div>
+
+<h3>8.1 &middot; How to structure the fee</h3>
+
+<div class="callout dark">
+  <div class="callout-title">The shape</div>
+  <div class="callout-body"><p><strong>&ldquo;$X per user per month, minimum $Y per month.&rdquo;</strong> Per-tenant tooling minimums mean a 60-seat customer can cost the same to tool as a 100-seat one, so a pure per-user rate on a small tenant buys revenue at negative margin. This is the same structure your tool vendors use on you, and it is defensible when a customer asks why a 40-seat site costs nearly what a 70-seat one does.</p>
+  <p>Two independent derivations &mdash; a naive FTE scale-down and a vCISO advisory band &mdash; both land near <strong>$1,000 a month</strong> for a small tenant <span class="prov prov-model">Model</span>. Worth noting; not worth presenting as a benchmark. Nobody publishes a price for this, which means you set the reference rather than match one.</p></div>
+</div>
+
+<h3>8.2 &middot; Three answers to &ldquo;why am I still paying you?&rdquo;</h3>
+
+<div class="recap-grid">
+  <div class="recap-item"><div class="rn">01</div><h4>Drift is real and measurable</h4><p>New sites, links shared to get work done, a project Team with the wrong default. Platform tooling can alert or auto-revert as often as every two hours. You report what drifted and what you reverted. <em>That is the invoice.</em></p></div>
+  <div class="recap-item"><div class="rn">02</div><h4>The control plane changes underneath them</h4><p>In January 2026 Microsoft shipped a change (tracking ID CW1226324) that returned Copilot Chat summaries derived from Drafts and Sent Items, including content carrying confidentiality labels and covered by DLP policies configured to exclude it. Roughly four weeks; fix rollout began early February. Nobody &mdash; not Microsoft, not the customer &mdash; had independent visibility into whether the controls were working. <strong>The strongest argument you have.</strong></p></div>
+  <div class="recap-item"><div class="rn">03</div><h4>Somebody external keeps asking</h4><p>The cyber renewal is annual. The carrier questionnaire is annual. The enterprise client's security review is annual. Co-term the reassessment to those dates and the fee has a justification that is not you.</p></div>
+</div>
+
+<div class="trap">
+  <div class="t-label">Handle CW1226324 with precision</div>
+  <h4>It is a label-scope failure, not a permissions failure</h4>
+  <p>The NHS was named as affected and explicitly stated patient information was not exposed. Do not let it compress in retelling into &ldquo;Copilot leaked NHS patient data.&rdquo; If you overstate it and someone looks it up, you lose the argument and your credibility on everything after it. It is an argument for a <em>monitored, recurring</em> service &mdash; not for a one-time cleanup.</p>
+</div>
+
+<h3>8.3 &middot; What you report, monthly</h3>
+
+<table>
+  <thead><tr><th>Metric</th><th>Source</th><th>Why it belongs in the report</th></tr></thead>
+  <tbody>
+    <tr><td>Anonymous links, count over time</td><td>Governance platform, or SPO PowerShell</td><td>Trends down after remediation and creeps back up. The clearest proof drift is real.</td></tr>
+    <tr><td>External user access, count over time</td><td>Same</td><td>Guest sprawl is continuous and invisible without reporting</td></tr>
+    <tr><td>Shadow users &mdash; access via nested groups</td><td>Same</td><td>The finding customers find most surprising, every time</td></tr>
+    <tr><td>Organization-wide grants introduced this period</td><td>Same</td><td>Directly maps to Gate 1</td></tr>
+    <tr><td>Leavers and stale guests removed</td><td>Entra access reviews</td><td>Gate 2. Cheap, visible, and the item a regulator would ask about</td></tr>
+    <tr><td>Label coverage on sites holding sensitive content</td><td>Purview</td><td>Progress on the work that is not a gate but does compound</td></tr>
+    <tr><td>DLP matches, and false positives reported by users</td><td>Purview</td><td>Report the false positives. It proves you are tuning rather than accumulating noise.</td></tr>
+    <tr><td>Secure Score delta</td><td>Microsoft 365</td><td>Imperfect, but the customer's board understands a number that goes up</td></tr>
+    <tr><td>Copilot license utilization</td><td>Admin center</td><td>Ties governance to the spend it protects, and surfaces reclaimable seats</td></tr>
+  </tbody>
+</table>
+
+<div class="trap">
+  <div class="t-label">The reporting trap</div>
+  <h4>A green dashboard every month reads as &ldquo;nothing is happening&rdquo;</h4>
+  <p>If your report only ever says everything is fine, you are teaching the customer they do not need you. Report what changed, what you fixed, and <strong>what you decided not to fix and why.</strong> Three items of judgment beat forty green checkmarks.</p>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">Anchor it to something external</div>
+  <div class="callout-body"><p>The cyber insurance questionnaire is universal, annual, and already on their desk &mdash; use it. Where a customer genuinely wants a framework, use ISO/IEC 42001's <em>shape</em>: an AI system inventory, a risk register, named use-case owners, an incident protocol. Do not default to selling the certification; audit and implementation costs put it out of reach for most businesses this size, and offering the structure without the certificate is cheaper for them and more honest. Microsoft's own practice is a useful precedent: it re-attests its own containers on a six-monthly cycle.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 9 ═══════════════ -->
+<h2 id="section-9">9 &middot; Tooling</h2>
+
+<p class="lede">Your first assessment has to cost near zero to deliver, because you are running it to win the work. A credible baseline is free.</p>
+
+<h3>9.1 &middot; The free toolkit</h3>
+
+<table>
+  <thead><tr><th>Tool</th><th>What it does in this engagement</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ScubaGear</strong> (CISA)</td><td>Secure-configuration baseline for M365. HTML, JSON and CSV output that is close to client-presentable as-is. <strong>Start here.</strong></td></tr>
+    <tr><td><strong>Maester</strong></td><td>Repeatable security-as-code tests. Turns a one-time assessment into something you re-run monthly &mdash; the mechanical basis of the recurring service.</td></tr>
+    <tr><td><strong>Monkey365</strong></td><td>CIS and Entra misconfiguration review</td></tr>
+    <tr><td><strong>Microsoft365DSC</strong></td><td>Configuration baseline capture and drift detection</td></tr>
+    <tr><td><strong>SharePoint Online PowerShell</strong></td><td>Permission enumeration. On a Business Premium tenant with no SharePoint Advanced Management, this is your Gate 1 evidence. Raw output; you supply the report.</td></tr>
+    <tr><td><strong>Microsoft 365 Lighthouse</strong></td><td>The multi-tenant floor, free with CSP. Entra ID P1 is in Business Premium, so most customers qualify.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <div class="callout-title">The honest limitation</div>
+  <div class="callout-body"><p>These cover configuration baseline extremely well and permission exposure only adequately. <strong>Nothing free gives you a ranked, click-to-remediate view of who can reach what across the estate.</strong> You assemble that from PowerShell output and your own judgment &mdash; which is exactly the labor a platform is sold to remove.</p></div>
+</div>
+
+<h3>9.2 &middot; The build-versus-buy line</h3>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <div class="cc-label">At one or two customers</div>
+    <p><strong>Scripts win.</strong> The license cost of any platform exceeds the consultant hours it saves.</p>
+  </div>
+  <div class="compare-col">
+    <div class="cc-label">At roughly ten or more</div>
+    <p><strong>A platform wins</strong> &mdash; not because it finds more, but because it makes findings comparable across tenants and turns your report into a product rather than a document. That is also the point at which the recurring service becomes deliverable at a margin.</p>
+  </div>
+</div>
+
+<p><strong>Match the pricing unit to the shape of your book, not to the feature list.</strong> If your customers average 60 seats, a per-tenant price beats a per-user price with a 100-seat floor every time. Published seat minimums across the category: Syskit and Rencore 100, Nudge Security a flat monthly fee, Orchestry Starter and ManageEngine none. Syskit Point bills a minimum of 100 users even on a 60-user tenant, on annual terms &mdash; at its governance tier roughly $300 a month of cost <span class="prov prov-range">Range</span> for one small customer before you have earned anything.</p>
+
+<h3>9.3 &middot; The comparison</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Tool</th><th>Role in this motion</th><th>Multi-tenant</th><th>Pricing model</th><th>Realistic under 100 seats?</th></tr></thead>
+  <tbody>
+    <tr><td>Free stack (ScubaGear, Maester, Monkey365, DSC, PowerShell)</td><td>Configuration baseline, drift, permission enumeration</td><td>Scripted</td><td>Free</td><td>Yes &mdash; and where nearly everyone should start</td></tr>
+    <tr><td><strong>AvePoint Insights + Policies</strong></td><td>Exposure discovery, bulk remediation, continuous drift enforcement. No Microsoft E-SKU dependency.</td><td>Yes (Elements, separately)</td><td>Per user; published list carries a 500-user minimum</td><td>Get a written quote at your seat count &mdash; <a href="#section-10">section 10</a></td></tr>
+    <tr><td>Syskit Point</td><td>Governance reporting and access review</td><td>Not marketed for MSP</td><td>Per user per year, published; 100-user billing minimum</td><td>Marginal &mdash; the minimum is the problem</td></tr>
+    <tr><td>ShareGate Protect</td><td>Governance risk assessment, tenant-wide visibility</td><td>Limited</td><td>Single per-user price, no minimums; partner pricing unpublished</td><td>Yes</td></tr>
+    <tr><td>Orchestry</td><td>Workspace lifecycle and provisioning governance</td><td>Yes</td><td>Flat per tenant, unlimited users at Starter</td><td>Yes &mdash; the pricing unit fits this market best</td></tr>
+    <tr><td>ManageEngine M365 Manager Plus</td><td>Reporting and auditing</td><td>Partial</td><td>Per tenant, banded</td><td>Yes &mdash; cheapest commercial reporting by a wide margin</td></tr>
+    <tr><td>CoreView</td><td>Multi-tenant governance and delegation</td><td>Yes</td><td>Unpublished; access reviews, SharePoint control, auditing and delegation are paid add-ons</td><td>No &mdash; enterprise-shaped</td></tr>
+    <tr><td>Varonis</td><td>Deep data security posture; publishes a free Copilot readiness assessment</td><td>No MSP console</td><td>Unpublished, enterprise</td><td>No &mdash; but the free assessment is a legitimate door-opener</td></tr>
+    <tr><td>Rencore</td><td>Governance console explicitly built for multi-tenant MSP delivery</td><td>Yes, explicitly</td><td>Unpublished; 100-user minimum</td><td>Get a quote</td></tr>
+    <tr><td>Nudge Security</td><td>SaaS and shadow AI discovery</td><td>Yes</td><td>Flat monthly</td><td>Yes at the low end</td></tr>
+    <tr><td>Compliance Scorecard</td><td>The GRC half &mdash; policy, attestation, AI governance module</td><td>MSP-native</td><td>Flat monthly, MSP-priced</td><td>Yes</td></tr>
+    <tr><td>CIPP</td><td>Multi-tenant delivery chassis</td><td>Yes</td><td>Low monthly, self-hosted or hosted</td><td>Yes &mdash; but it holds delegated admin into every tenant. Document that risk deliberately.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 10 ═══════════════ -->
+<h2 id="section-10">10 &middot; AvePoint &mdash; What To Use, When</h2>
+
+<p class="lede">AvePoint gets its own section for a technical reason: <strong>Insights does not inherit the base-SKU wall from <a href="#section-5">section 5</a>.</strong> On a Business Premium tenant that is not a feature advantage &mdash; it is an availability advantage, and it is the strongest reason in this market to look outside the Microsoft stack.</p>
+
+<h3>10.1 &middot; Name translation, before you quote</h3>
+
+<p>Website, price lists and marketplace listings use different names for the same product. Work from the right-hand column.</p>
+
+<table>
+  <thead><tr><th>Marketing name (website)</th><th>SKU name (price lists, docs, quotes)</th></tr></thead>
+  <tbody>
+    <tr><td>Data &amp; Security Insights</td><td>Insights for Microsoft 365</td></tr>
+    <tr><td>Policy Enforcement &amp; Drift Control</td><td>Policies for Microsoft 365</td></tr>
+    <tr><td>Records &amp; Information Lifecycle Management</td><td>AvePoint Opus (classification engine: Maestro)</td></tr>
+    <tr><td>Access &amp; Power Platform Governance</td><td>AvePoint EnPower</td></tr>
+    <tr><td>Adoption &amp; Usage Analytics</td><td>AvePoint tyGraph</td></tr>
+    <tr><td>License &amp; Cost Management</td><td>AvePoint Cense</td></tr>
+    <tr><td>Data Owner Engagement</td><td>AvePoint MyHub</td></tr>
+    <tr><td>Agentic AI Governance</td><td>AgentPulse Command Center</td></tr>
+    <tr><td>MSP multi-tenant platform</td><td>AvePoint Elements</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">The minimum viable stack, and three dependencies that change a quote</div>
+  <div class="callout-body">
+  <p><strong>Insights + Policies</strong> for a Copilot readiness engagement. Add <strong>MyHub</strong> when you want the customer's own site owners doing attestation rather than your engineer guessing. Everything else in the portfolio is a separate business case.</p>
+  <p>Policies needs <strong>Cense</strong> for its two license-reclamation rules &middot; Policies needs <strong>Insights</strong> for Intelligent Remediation, the loop that makes either worth buying &middot; Opus tiers stack: Analysis &rarr; Action &rarr; Archive.</p></div>
+</div>
+
+<h3>10.2 &middot; Engagement stage &rarr; product &rarr; the specific feature</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Stage</th><th>Product</th><th>The specific feature</th><th>What you actually get</th></tr></thead>
+  <tbody>
+    <tr><td>Pre-sales &mdash; the door-opener</td><td>Insights (30-day trial)</td><td>Risk Assessment Report</td><td>An out-of-the-box, exportable PDF. AvePoint designs it explicitly as &ldquo;a benchmark to track progress over time&rdquo; &mdash; which is why the second run is your recurring hook, not just your first deliverable.</td></tr>
+    <tr><td>Pre-sales &mdash; the AI angle</td><td>AgentPulse</td><td>Automated agent discovery and inventory</td><td>&ldquo;You have 41 agents nobody inventoried.&rdquo; Only lands where Copilot is already on.</td></tr>
+    <tr><td>Discovery &mdash; permissions baseline</td><td>Insights</td><td>Risk Analysis &rarr; Workspaces Reports, then Detailed Records Reports</td><td>Workspace-level then item-level exposure. A full inventory, not a 28-day delta.</td></tr>
+    <tr><td>Discovery &mdash; &ldquo;who can see this?&rdquo;</td><td>Insights</td><td>Search Center &mdash; object-based or user-based search</td><td>&ldquo;Show me everything this one user can reach.&rdquo; The most demo-able screen in the platform. <strong>Run this one live.</strong></td></tr>
+    <tr><td>Discovery &mdash; broad-access exposure</td><td>Insights</td><td>Exposure Report, configured in Risk Definition Administration</td><td>External sharing and broad access groups. You tune what counts as exposure &mdash; confirm where EEEU surfaces (10.5).</td></tr>
+    <tr><td>Discovery &mdash; hidden access paths</td><td>Insights</td><td>Shadow Users and Groups Access Report</td><td>Access granted through nested groups or direct grants the site owner cannot see. Consistently one of the most surprising findings for a customer.</td></tr>
+    <tr><td>Discovery &mdash; links</td><td>Insights</td><td>Shared Links report</td><td>Anonymous, company-wide and specific-people links, with full history rather than a 28-day window</td></tr>
+    <tr><td>Discovery &mdash; data quality</td><td>Opus</td><td>Discovery &amp; Analysis as Power BI reports; File Share Discovery for on-premises</td><td>Redundant and obsolete data. Improves Copilot answer quality rather than security &mdash; sell on storage cost.</td></tr>
+    <tr><td>Findings readout</td><td>Insights</td><td>Risk Assessment Report + dashboard</td><td>The readout deck largely writes itself. Opus data exports to SharePoint for Power BI so you can brand it rather than screenshot a vendor UI.</td></tr>
+    <tr><td>Remediation &mdash; bulk</td><td>Insights</td><td>Risk Remediation, in-report bulk actions</td><td>Expire, remove or edit permissions for external users, shadow users and anonymous links. <strong>Expiry is what native tooling handles worst.</strong></td></tr>
+    <tr><td>Remediation &mdash; the upsell bridge</td><td>Insights &rarr; Policies</td><td>Intelligent Remediation</td><td>Proposes the rule that would have prevented the finding. This is the moment the customer understands why one-time cleanup is not enough.</td></tr>
+    <tr><td>Remediation &mdash; owner-led</td><td>MyHub</td><td>Recertification and attestation, including OneDrive cleanup</td><td>Pushes the decision to the site owner. Substitutes for SAM site access reviews, which a Business Premium tenant cannot have.</td></tr>
+    <tr><td><strong>Ongoing &mdash; drift</strong></td><td>Policies</td><td>Violations Report; Remove Shadow Users, External Sharing Settings, Direct Sharing Prevention</td><td>Alert or auto-revert as often as every two hours. <strong>There is no Microsoft equivalent at any SKU. This is the mechanical basis of your recurring fee.</strong></td></tr>
+    <tr><td>Ongoing &mdash; tenant hygiene</td><td>Policies</td><td>Ghost User Detection, Remove Inactive Guest Users</td><td>The two the customer notices immediately, and both map to Gate 2.</td></tr>
+    <tr><td>Copilot enablement &mdash; licensing</td><td>Cense</td><td>License allocation and budget reporting</td><td>&ldquo;Which twelve people should get a Copilot license&rdquo;, and who is burning pay-as-you-go AI credits.</td></tr>
+    <tr><td>Post-deployment &mdash; the QBR</td><td>Insights</td><td>Time-based dashboards for anonymous links, external user access and shadow users; risk score over time</td><td>Those three metrics are your quarterly scorecard. Lift them directly into the report in <a href="#section-8">8.3</a>.</td></tr>
+    <tr><td>Post-deployment &mdash; agent sprawl</td><td>Insights</td><td>Agent Reports under Risk Analysis</td><td>High-risk, inactive or ownerless agents &mdash; a cheaper path to basic agent hygiene than buying AgentPulse.</td></tr>
+    <tr><td>Multi-tenant delivery</td><td>Elements</td><td>Permission Simulation; CIS Level 2 baselines; sensitivity label management</td><td>The portfolio layer. As of the June 2026 release it does not carry AI or Copilot governance &mdash; confirm the current roadmap (10.5).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>10.3 &middot; What it covers, and what still needs a Microsoft license</h3>
+
+<div class="fork">
+  <div class="fork-branch">
+    <div class="fb-head">Covered on Business Premium</div>
+    <h4>Discovery and drift, with no Microsoft license change</h4>
+    <p>Insights consumes Microsoft's security, activity and compliance feeds rather than crawling content, so it runs on Business Premium unchanged. For the discovery half of Gate 1 it substitutes for SharePoint Advanced Management &mdash; with deeper history than SAM's 28-day sharing-activity window.</p>
+    <p>Policies adds continuous drift enforcement that Microsoft does not offer at any SKU. Together they cover the one genuine gap in the map at <a href="#section-4">4.3</a>.</p>
+  </div>
+  <div class="fork-branch no">
+    <div class="fb-head">Scope around these</div>
+    <h4>Three Policies rules require Microsoft 365 E5</h4>
+    <p>From AvePoint's own documentation: Content Sensitivity Label Enforcement, Site Sensitivity Label Enforcement, and Content Creation and Upload Restriction all require E5. Inactive Guest User Detection requires Entra ID P1 &mdash; which Business Premium includes, so that rule works.</p>
+    <p>All three E5 rules are label-enforcement rules. That is Microsoft's licensing wall, not a vendor gap; no platform in this category has routed around it. Scope label enforcement to Purview, and use Policies for the permission and drift work it does reach.</p>
+  </div>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">One capability with no equivalent anywhere</div>
+  <div class="callout-body"><p>There is no AvePoint equivalent to Restricted Content Discovery. AvePoint's position is that you should fix the permission rather than hide the content from search &mdash; arguably the better engineering answer, and definitely the slower one. If you need interim containment while remediation runs, that is an enterprise-SKU conversation, or more practically at this size a reason to scope the pilot to remediated sites. See <a href="#section-5">5.3</a>.</p></div>
+</div>
+
+<h3>10.4 &middot; The land motion, and the commercials</h3>
+
+<div class="rule-strip">
+  <div class="rs"><div class="rs-k">The land motion</div><p class="rs-v">A genuine self-serve <strong>30-day free trial</strong>, whose deliverable is the Risk Assessment Report &mdash; your assessment engine and your readout in one artifact. Pair it with free ScubaGear and Maester output for the configuration-baseline half Insights does not touch, and you have a complete first engagement at near-zero license cost.</p></div>
+  <div class="rs"><div class="rs-k">The commercial question to settle</div><p class="rs-v">AvePoint's published price list carries a <strong>500-user minimum</strong> on nearly every SKU with a 12-month minimum term, and no US pricing is published for Insights, Policies or Elements. Distribution pricing sits behind partner authentication. <strong>Get a written quote at your actual seat count through TD SYNNEX before you design an offer around it.</strong></p></div>
+  <div class="rs"><div class="rs-k">The ask that makes it work at SMB</div><p class="rs-v"><strong>Portfolio aggregation</strong> &mdash; committing 500+ seats across many small tenants rather than one. AvePoint's 2025 partner program explicitly rewards smaller but highly committed partners, and partner-generated revenue reached 58% of its recurring business in early 2026, so the conversation is a reasonable one to have. Put it to your rep and get the answer in writing.</p></div>
+</div>
+
+<h3>10.5 &middot; Five questions to settle before you build an offer</h3>
+
+<p>AvePoint will be in the room at these workshops. These are scoping questions, in the order that changes your quote.</p>
+
+<ol class="checklist">
+  <li><strong>Does buying through distribution change the 500-user minimum on Insights and Policies &mdash; and can we aggregate seats across a portfolio of small tenants to meet it?</strong> Get this in writing. It decides whether AvePoint appears in an SMB practice at all.</li>
+  <li><strong>What is the per-seat price at 75, 150 and 300 seats, in our currency, at our tier?</strong> And what is Elements priced at, on what unit, with what minimum &mdash; and is there an NFR tier?</li>
+  <li><strong>Does Insights run at full fidelity on a Business Premium tenant?</strong> Specifically: are Microsoft sensitive information types, sensitivity labels and the activity feed available at that SKU, or is the risk-prioritization signal degraded? The claim in 10.3 rests on this.</li>
+  <li><strong>In the Exposure Report, where does &ldquo;Everyone Except External Users&rdquo; surface?</strong> As a first-class named exposure type, or through the broad-access-groups definition? Ask them to show you the screen &mdash; this is the single most common oversharing pattern and you need to know exactly where it appears. While you are there: is there a sensitivity-label coverage report (&ldquo;percentage of sites labeled&rdquo;), or is label data only a prioritization input?</li>
+  <li><strong>When does agent governance reach the Elements console, can Elements surface Insights and Policies findings across tenants, and can the Elements Graph API feed our QBR reporting?</strong> This determines whether the motion scales across a book of customers. And ask for <strong>AvePoint Learn documentation logins for your engineers</strong> &mdash; the cheapest, highest-value ask in the room.</li>
+</ol>
+
+<div class="callout">
+  <div class="callout-title">Where AvePoint is genuinely strongest in this market</div>
+  <div class="callout-body"><p><strong>License reach</strong> &mdash; Insights works on Business Premium; SAM does not, and in this market that is decisive. <strong>History depth</strong> &mdash; continuous inventory versus a 28-day sharing-activity window. <strong>Continuous enforcement</strong> &mdash; alert-or-revert every two hours, with no Microsoft equivalent at any SKU. <strong>Archival granularity</strong> &mdash; site, document, list and library level. <strong>Breadth</strong> &mdash; backup, migration, records, licensing, analytics and agent governance from one vendor, across Google, Salesforce, AWS and Box as well as Microsoft.</p>
+  <p>Make the argument on license reach. It is true, it is verifiable, and it is sufficient on its own &mdash; you do not need a comparison table to win it, and a room that has read Microsoft's SharePoint Advanced Management documentation will hold you to the detail.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 11 ═══════════════ -->
+<h2 id="section-11">11 &middot; Staffing, Effort and Price</h2>
+
+<h3>11.1 &middot; Who delivers it</h3>
+
+<table>
+  <thead><tr><th>Configuration</th><th>Works?</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>One generalist M365 admin</td><td><span class="cross">&#10007;</span> No</td><td>Will build a taxonomy nobody agreed to and discover the problem in week six.</td></tr>
+    <tr><td>One genuine senior who does both halves</td><td>Yes, with a ceiling</td><td>Works to about 75 seats. Needs someone who can chair a room of business owners <em>and</em> write a DLP rule. Does not scale past ~two concurrent engagements.</td></tr>
+    <tr><td><strong>One senior plus one technician</strong></td><td><span class="check">&#10003;</span> Yes</td><td><strong>This is the answer.</strong> It is also the shape that lets you charge properly for the senior's time instead of averaging it away.</td></tr>
+    <tr><td>Plus fractional adoption and communications</td><td>Yes</td><td>The only shape that survives a mandatory-labeling rollout. The comms person can be borrowed rather than hired.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout dark">
+  <div class="callout-title">The split is decisions versus execution, not hard versus easy</div>
+  <div class="callout-body"><p><strong>The junior may touch anything reversible. The senior signs anything that changes what a file is.</strong></p>
+  <p>Senior: encryption on a label, the co-authoring switch, label order, and the move from DLP audit mode to enforcement. Junior: building labels to an agreed taxonomy, running simulations, triaging false positives, capturing evidence. It maps exactly to the irreversible decisions in <a href="#section-6">6.4</a>, and it is defensible to a customer asking why two people are on the call.</p></div>
+</div>
+
+<div class="trap">
+  <div class="t-label">The most common staffing failure</div>
+  <h4>Putting the M365 architect in the vCISO's chair</h4>
+  <p>The classification workshop gets run as a configuration session. The engineer asks which folders are sensitive, writes down the answers, and builds a taxonomy nobody in the business agreed to. Six weeks later Finance cannot email the auditor, nobody knows who decides, and the labels come off. <strong>The workshop is a facilitation job that ends in configuration, not a configuration job with people watching.</strong></p>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">Stop telling people to get SC-400</div>
+  <div class="callout-body"><p>SC-400 retired on 30 May 2025 &mdash; the certification and its renewal assessment. The replacement is <a class="docref" href="https://learn.microsoft.com/en-us/credentials/certifications/information-security-administrator/">SC-401 Information Security Administrator</a>, refreshed 28 July 2026, which now carries an explicit &ldquo;Protect data used by AI services&rdquo; objective covering exactly this work. Supporting: SC-200 for the shadow-AI discovery half, SC-300 for Gate 2 identity work, SC-100 as the closest thing to a vCISO credential. <strong>Applied Skills APL-5003</strong> is a hands-on lab &mdash; cheaper and faster proof of capability than a certification, with a 72-hour cooldown between attempts. MS-102 retires 30 November 2026 and no longer earns Copilot specialization credit; do not start a junior on it.</p></div>
+</div>
+
+<h3>11.2 &middot; Effort by seat band</h3>
+
+<div class="callout subtle">
+  <div class="callout-title">Read this table with the caveat attached</div>
+  <div class="callout-body"><p>The 50-seat row is published, hour-level, against a stated seat count. Everything else is extrapolated from it plus a practitioner convention of scoping governance reviews to 10&ndash;25 high-risk or inactive sites. Use it as a planning heuristic and replace it with your own delivery data after three engagements.</p></div>
+</div>
+
+<table>
+  <thead><tr><th>Seats</th><th>Typical sites</th><th>Assessment hours</th><th>Remediation hours</th><th>Elapsed, total</th></tr></thead>
+  <tbody>
+    <tr><td>25&ndash;50</td><td>10&ndash;30</td><td>15&ndash;25</td><td>30&ndash;50</td><td>3&ndash;4 weeks</td></tr>
+    <tr><td>50&ndash;100</td><td>25&ndash;60</td><td>20&ndash;35</td><td>40&ndash;70</td><td>4&ndash;6 weeks</td></tr>
+    <tr><td>100&ndash;300</td><td>60&ndash;150</td><td>30&ndash;50</td><td>80&ndash;160</td><td>6&ndash;10 weeks</td></tr>
+  </tbody>
+</table>
+<p style="font-size:.8rem;color:#6b7280;"><span class="prov prov-model">Model</span> &mdash; rows 1 and 3 are constructions from the sourced 50-seat figures.</p>
+
+<div class="callout warn">
+  <div class="callout-title">The number that loses deals</div>
+  <div class="callout-body"><p>The 200&ndash;400 hour figure circulating in the channel is explicitly framed around &ldquo;permission inheritance across 200+ sites.&rdquo; A 50-seat firm does not have 200 sites &mdash; a typical one has around 30, and well over half the content usually sits in one of them. <strong>At 50 seats this is 40 to 60 hours over 30 calendar days.</strong> A partner who scopes SMB work from enterprise literature prices themselves out of every deal they quote.</p>
+  <p><strong>Quote from a site inventory, not from a headcount.</strong> And do not forget the waiting &mdash; the six to ten elapsed days in <a href="#section-6">6.2</a> are not the same as the hours above and do not overlap neatly. Put them in the plan as named calendar items; a customer who understands on day one why week three is quiet does not lose confidence in week three.</p></div>
+</div>
+
+<h3>11.3 &middot; What it costs you to deliver</h3>
+
+<table>
+  <thead><tr><th>Input</th><th>Figure</th><th>What it actually is</th></tr></thead>
+  <tbody>
+    <tr><td>M365 consultant salary, 75th percentile</td><td>$130,000 /yr <span class="prov prov-range">Range</span></td><td>Aggregated job-postings data. A salary, not a bill rate.</td></tr>
+    <tr><td>&rarr; base hourly</td><td>~$65 /hr <span class="prov prov-model">Model</span></td><td>Arithmetic</td></tr>
+    <tr><td>&rarr; fully loaded at 1.3&ndash;1.4&times; burden</td><td>~$85&ndash;$91 /hr <span class="prov prov-model">Model</span></td><td>Conventional burden multiplier</td></tr>
+    <tr><td>&rarr; recoverable cost at 65% utilization</td><td><strong>~$130&ndash;$140 /hr</strong> <span class="prov prov-model">Model</span></td><td>The number that matters</td></tr>
+    <tr><td>Cost to rent a cybersecurity engineer</td><td>$130&ndash;$195 /hr <span class="prov prov-range">Range</span></td><td>Staffing agency bill rate. A hard floor &mdash; you cannot bill less than you buy.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>A partner billing under roughly $150 an hour for senior Purview work is not making money on it.</strong> The channel band sits somewhere around $150&ndash;$275 <span class="prov prov-model">Model</span>, but no published source isolates this work &mdash; treat that as a bounded inference, not a benchmark. Do not quote a day rate; nothing credible is published, and everything shaped like one on the open web is a lead magnet.</p>
+
+<div class="callout">
+  <div class="callout-title">What you can and cannot subcontract</div>
+  <div class="callout-body"><p>Distributor-funded deployment offers price a baseline Purview stand-up &mdash; data lifecycle review, labeling policies, baseline classification, DLP aligned to Microsoft best practice &mdash; at around <strong>$3,000</strong> <span class="prov prov-range">Range</span>. Sit with that number: the configuration layer of this work has a public price, and it is a few thousand dollars. If your quote is $30,000 you need a clear story about the other $27,000.</p>
+  <p><strong>You can outsource the build and the tooling. You cannot outsource the taxonomy decision, the exception path, or the quarterly review</strong> &mdash; and those three are where the margin and the recurring revenue live.</p></div>
+</div>
+
+<h3>11.4 &middot; The tier ladder and what to charge</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Tier</th><th>What it is</th><th>Price</th><th>Elapsed</th></tr></thead>
+  <tbody>
+    <tr><td>0 &middot; Scan</td><td>Automated tenant scan, findings list, no judgment applied</td><td><strong>$0</strong> &mdash; give it away deliberately</td><td>60&ndash;90 min</td></tr>
+    <tr><td>1 &middot; Light assessment</td><td>Scorecard, 3&ndash;5 stakeholder interviews, debrief, prioritized findings. No costed remediation plan.</td><td>$1,500&ndash;$3,000 <span class="prov prov-range">Range</span></td><td>1&ndash;2 weeks</td></tr>
+    <tr><td>2 &middot; Full assessment</td><td>Oversharing report, costed remediation plan, pilot design, draft policy, roadmap. <strong>The tier that converts.</strong></td><td>$3,000&ndash;$15,000 <span class="prov prov-range">Range</span> &middot; anchor $100/seat</td><td>2&ndash;4 weeks</td></tr>
+    <tr><td>3 &middot; Remediation project</td><td>Break inheritance, replace grants, expire links, remove leavers, publish labels, DLP in audit mode</td><td>$6,000&ndash;$15,000 at 50 seats <span class="prov prov-model">Model</span></td><td>40&ndash;60 hrs / 30 days</td></tr>
+    <tr><td>4 &middot; Ongoing governance</td><td>Drift monitoring, reassessment, quarterly review, attestation reporting. <strong>The only tier that compounds.</strong></td><td>Floor-priced &mdash; <a href="#section-8">section 8</a></td><td>Monthly + quarterly</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>The scan is not defensible as a revenue line.</strong> Distribution packages funded readiness assessments on a per-tenant, per-month basis, and TD SYNNEX packages an AvePoint-powered readiness assessment as a partner-deliverable service with turnaround inside five weeks and a co-investment model that may be partly or fully funded depending on partner status. You will lose tier 0 on price every time. The judgment, the roadmap and the remediation are what is defensible.</p>
+
+<h3>11.5 &middot; A worked engagement at 78 seats</h3>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th>Stage</th><th>Price</th><th>Structure</th></tr></thead>
+  <tbody>
+    <tr><td>Scan</td><td>$0</td><td>90 minutes. Produces the site count that scopes everything below.</td></tr>
+    <tr><td>Full assessment</td><td>$7,800 <span class="prov prov-model">Model</span></td><td>Fixed fee at $100/seat. Credited in full against remediation if they proceed within 60 days.</td></tr>
+    <tr><td>Remediation</td><td>$14,000 <span class="prov prov-model">Model</span></td><td>Fixed fee, scoped to a named list of sites. Roughly 2&times; the assessment &mdash; a ratio you can say in a room without a spreadsheet.</td></tr>
+    <tr><td>Ongoing governance</td><td>$1,400 /mo <span class="prov prov-model">Model</span></td><td>Floor-priced, not pure per-user.</td></tr>
+    <tr><td><strong>Year one</strong></td><td><strong>~$30,600</strong> <span class="prov prov-model">Model</span></td><td>Assessment credited, so $14,000 project plus 12 months recurring</td></tr>
+    <tr><td><strong>Recurring thereafter</strong></td><td><strong>$16,800 /yr</strong> <span class="prov prov-model">Model</span></td><td>The number that matters</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Every figure there is a model, not a quote &mdash; composed from the sourced inputs above and shown so you can rebuild it against your own cost base rather than copy it. The evidence and its weaknesses are set out in <a href="copilot-readiness-engagement.html#section-18">section 18 of the full guide</a>.</p>
+
+<div class="callout">
+  <div class="callout-title">Credit the assessment. Always.</div>
+  <div class="callout-body"><p><strong>It qualifies the buyer</strong> &mdash; someone who will not pay for an assessment will not pay for remediation; charging filters, and the credit removes the reason to object. <strong>It stops the report walking</strong> &mdash; a free report goes to a cheaper remediator; a credited report is money already committed to you. <strong>It keeps the scopes separate</strong> &mdash; review billed separately from remediation, with the customer's decisions documented before any cleanup begins. That boundary is what stops an assessment quietly becoming an unpaid Purview deployment.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 12 ═══════════════ -->
+<h2 id="section-12">12 &middot; Language &mdash; Lines and Objections</h2>
+
+<h3>12.1 &middot; The whole licensing conversation, in six sentences</h3>
+
+<div class="saidline">
+  <div class="sl-label">Say this early</div>
+  <p>&ldquo;You are on Business Premium, and that was the right call &mdash; it is a genuinely good security stack and it did the job you bought it for. Copilot adds one requirement nobody was scoping for when you bought it, which is knowing who can see what across your SharePoint.</p>
+  <p>The good news is that the data protection side is a ten-dollar add-on, and Microsoft is running it at half price alongside Copilot until the end of the year. <strong>Nobody is asking you to move to E5.</strong></p>
+  <p>The permissions side needs one extra piece, and there are three ways to get it &mdash; one of which costs about as much as three licenses. Let me find out which one applies to you before either of us assumes it is expensive.&rdquo;</p>
+</div>
+
+<h3>12.2 &middot; The argument that actually wins</h3>
+
+<div class="saidline">
+  <div class="sl-label">Use this instead of a scary statistic</div>
+  <p>&ldquo;I am not going to tell you Copilot is dangerous, because mostly it isn't. What I will tell you is that when Forrester looked at the companies who got the returns Microsoft advertises, <strong>seven in ten had done a data security project first.</strong> That is the difference between the deployments that worked and the ones that quietly stalled. I would rather put you in the first group, and it is cheaper to do that now than to unpick it later.&rdquo;</p>
+</div>
+
+<p>That reframing converts governance from a tax into a success factor, and it survives being checked. The source is Forrester's commissioned Total Economic Impact study &mdash; sixteen decision-makers across twelve organizations plus 367 surveyed users. Use the 70% finding; <strong>do not</strong> use the headline ROI figures, which are an enterprise composite.</p>
+
+<h3>12.3 &middot; The three objections that actually end deals</h3>
+
+<table>
+  <thead><tr><th>Objection</th><th>The answer</th></tr></thead>
+  <tbody>
+    <tr><td>&ldquo;Our last MSP reviewed us and said we were fine.&rdquo;</td><td><strong>Attack the date, never the predecessor.</strong> Permissions drift, and the AI control plane did not exist when that review was written.</td></tr>
+    <tr><td>&ldquo;Why am I paying monthly for a one-time cleanup?&rdquo;</td><td>Drift, and the control plane changing underneath them. The three answers in <a href="#section-8">8.2</a>, in that order.</td></tr>
+    <tr><td>&ldquo;Microsoft says Copilot respects permissions, so we're covered.&rdquo;</td><td>The statement is accurate and it is about <em>access control</em> &mdash; whether a user is permitted to open a file. It says nothing about <em>exposure</em> &mdash; whether they will ever find it. Nobody browses to /Company/Shared/Old HR/2019; natural language search removed that friction entirely. <strong>The proof the distinction is real: Restricted Content Discovery exists.</strong> Microsoft built a feature whose entire purpose is to stop Copilot surfacing content users are already permitted to open.</td></tr>
+    <tr><td>&ldquo;You are just selling us more stuff.&rdquo;</td><td>&ldquo;Fair. Assessments at your size routinely find <strong>10 to 30% of license spend</strong> <span class="prov prov-range">Range</span> going to the wrong place &mdash; wrong SKUs, seats assigned to leavers, duplicated add-ons. I would rather find that first and put it against the cost of this work than ask you to fund it out of fear of something that might not happen.&rdquo; Checkable, and it reframes you as reducing their spend.</td></tr>
+  </tbody>
+</table>
+
+<h3>12.4 &middot; The timing levers, ranked</h3>
+
+<table>
+  <thead><tr><th>Trigger</th><th>Who it covers</th><th>Why it forces the conversation</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Cyber insurance renewal</strong></td><td>Everyone</td><td>Annual, sector-agnostic, headcount-agnostic, hard date, named signer. Nothing else has all five. Generative-AI exclusion endorsements took effect 1 January 2026 and carriers are adding AI sublimits. <strong>Limit:</strong> there is no published, adjudicated claim denial attributable to AI use &mdash; argue the underwriting shift, not a denial.</td></tr>
+    <tr><td><strong>An enterprise client's security questionnaire</strong></td><td>Anyone with an enterprise customer</td><td>Arrives without warning, blocks a contract renewal, and needs answering this week. Highest urgency and margin available. Build the response artifact once.</td></tr>
+    <tr><td>FTC Safeguards Rule</td><td>Accountants, tax preparers, auto dealers arranging finance, mortgage and insurance brokers under GLBA</td><td>Written risk assessment and a designated qualified individual. <strong>Trap:</strong> the fewer-than-5,000-consumers exemption removes exactly the assessment you were planning to sell. Check the count first.</td></tr>
+    <tr><td>CMMC Phase 1</td><td>Defense contractors and subcontractors</td><td>In force since 10 November 2025; self-assessment gates contract award. Sharpest deadline available, narrow slice of the channel.</td></tr>
+    <tr><td>ABA Formal Opinion 512 and 35+ state bars</td><td>Law firms of any size</td><td>Issued 29 July 2024. For a small firm this is the partner's license, which concentrates attention.</td></tr>
+    <tr><td>Illinois HB 3773</td><td>Any employer with Illinois staff</td><td>Effective 1 January 2026. Reaches employers who have never thought of themselves as regulated.</td></tr>
+    <tr><td>HIPAA's existing risk-analysis duty</td><td>Covered entities and business associates</td><td>Already in force. Benefits administration drags ordinary companies into business-associate status more often than they realize.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Narrowing the claim wins you the deal</div>
+  <div class="callout-body"><p>Most partner marketing overstates regulatory applicability to small business, and sophisticated buyers know it. <strong>EU AI Act:</strong> enforcement provisions apply from 2 August 2026, but high-risk obligations moved to December 2027 and August 2028, and an SMB using Copilot is a <em>deployer</em>, not a provider. <strong>Colorado:</strong> SB 24-205 was repealed and replaced; the replacement takes effect 1 January 2027. <strong>California ADMT:</strong> 1 January 2027, gated behind CCPA thresholds most sub-100-seat businesses do not meet. When a customer says &ldquo;I read the EU AI Act is going to hit us,&rdquo; the winning answer is &ldquo;probably not, and here is why.&rdquo;</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 13 ═══════════════ -->
+<h2 id="section-13">13 &middot; Claims Discipline</h2>
+
+<h3>13.1 &middot; Do not repeat these</h3>
+
+<table>
+  <thead><tr><th>Claim in circulation</th><th>The problem</th></tr></thead>
+  <tbody>
+    <tr><td>&ldquo;802,000 at-risk files per organization&rdquo;</td><td>Presented as current; traces to a 2022 report. Date it or drop it.</td></tr>
+    <tr><td>&ldquo;150&ndash;300 overshared SharePoint sites per tenant&rdquo;</td><td>No published methodology, and it describes enterprise tenants. Actively misleading in an SMB room.</td></tr>
+    <tr><td>&ldquo;99% of organizations have sensitive data exposed to AI&rdquo;</td><td>Real vendor research, but too high to be believed. <strong>Use the 1-in-10-had-any-labeled-files figure instead</strong> &mdash; modest, checkable, and the customer recognizes it as true about themselves before you finish the sentence.</td></tr>
+    <tr><td>The Gartner pilot-progression percentage</td><td>Two sample sizes and two percentages circulate for one finding, and a competing survey reports the opposite. Cite the governance-delay pairing &mdash; roughly two-thirds of IT leaders reported governance and security consumed significant time &mdash; not the decimal.</td></tr>
+    <tr><td>&ldquo;Get your team SC-400&rdquo;</td><td>Retired 30 May 2025. The replacement is SC-401.</td></tr>
+    <tr><td>&ldquo;Enable Restricted SharePoint Search while we review permissions&rdquo;</td><td>New enablement was blocked on 31 July 2026. Microsoft directs you to Restricted Content Discovery. Any playbook opening with this step is unexecutable.</td></tr>
+    <tr><td>&ldquo;SAM is included with Copilot, so the E5 objection is dead&rdquo;</td><td>True only on an E-SKU base. This over-correction is now as common as the error it replaced. <a href="#section-5">Section 5.1</a>.</td></tr>
+    <tr><td>&ldquo;The EU AI Act will hit your business next year&rdquo;</td><td>High-risk obligations moved to 2027&ndash;2028, and an SMB using Copilot is a deployer, not a provider.</td></tr>
+    <tr><td>&ldquo;Colorado's AI Act takes effect in February 2026&rdquo;</td><td>Repealed and replaced. The replacement takes effect 1 January 2027.</td></tr>
+    <tr><td>Any FY27 Microsoft incentive rate</td><td>All sit behind partner sign-in. Name mechanisms; get rates from Partner Center yourself.</td></tr>
+    <tr><td>&ldquo;MaestroBridge&rdquo; as an AvePoint product</td><td>No such product exists. Maestro is the classification engine inside Opus.</td></tr>
+    <tr><td>A published SANS AI acceptable use policy template</td><td>Could not be found. Do not cite one.</td></tr>
+    <tr><td>Any claim that a company was fined or sanctioned for AI oversharing</td><td>There is no enforcement action anywhere &mdash; no GDPR fine, no FTC action, no ICO reprimand. Inventing regulatory risk is how you lose a customer's lawyer. There is also no published, named-company case study of Copilot surfacing HR or salary data to the wrong employee. <strong>Argue from mechanism.</strong></td></tr>
+  </tbody>
+</table>
+
+<h3>13.2 &middot; Confirm these before you quote</h3>
+
+<p>Three claims this guide deliberately does not make, because no primary source settles them. Each is a question for a licensing desk or a distributor &mdash; get the answer in writing and it stops being a risk. <strong>Do not settle them by buying a seat and watching the portal:</strong> portal behavior is not an entitlement, it changes without notice, and an audited customer is measured against licensing terms rather than against what worked in your tenant last quarter.</p>
+
+<div class="recap-grid">
+  <div class="recap-item"><div class="rn">Q1</div><h4>How does SharePoint Advanced Management's base requirement apply in a mixed-SKU tenant?</h4><p>Microsoft states it at organization level and publishes no guidance for tenants holding a mix. <em>Ask: Microsoft licensing desk or TD SYNNEX &middot; affects route 3 in <a href="#section-5">5.2</a>.</em></p></div>
+  <div class="recap-item"><div class="rn">Q2</div><h4>Does the Purview Suite for Business Premium include auto-labeling and the DSPM for AI surface?</h4><p>Microsoft's page says &ldquo;policy-based controls for AI experiences&rdquo; and never uses the term DSPM; the Purview service description has no DSPM section. <strong>Highest risk of a confident wrong claim in the whole motion</strong> &mdash; describe the capability, confirm the product surface in configuration. <em>Ask: Microsoft licensing desk.</em></p></div>
+  <div class="recap-item"><div class="rn">Q3</div><h4>Does the Defender Suite for Business Premium carry full Defender for Cloud Apps?</h4><p>Corroborated by community and reseller sources, not by a Microsoft page. If it does, $15 per user per month is the price of shadow AI discovery for an SMB. <em>Ask: Microsoft licensing desk or TD SYNNEX.</em></p></div>
+  <div class="recap-item"><div class="rn">Q4</div><h4>Does AvePoint Insights run at full fidelity on Business Premium?</h4><p>Its risk prioritization draws on Microsoft sensitive information types and the activity feed. <em>Ask: AvePoint &middot; question 3 in <a href="#section-10">10.5</a>.</em></p></div>
+</div>
+
+<h3>13.3 &middot; Be fair, or lose the room</h3>
+
+<div class="rule-strip">
+  <div class="rs"><div class="rs-k">Say this before someone else does</div><p class="rs-v"><strong>Most deployments proceed without an incident.</strong> If Copilot were routinely producing HR disasters across tens of thousands of tenants, some would have surfaced through employment tribunals or trade press. The dominant observed customer-side outcome is delay and friction, not breach.</p></div>
+  <div class="rs"><div class="rs-k">What you can safely cite</div><p class="rs-v">Vendor-side product failures like CW1226324, and security research disclosed and patched before exploitation. EchoLeak (CVE-2025-32711) and CoSnitch (CVE-2026-24301) belong in a technical conversation and nowhere near a business owner. <strong>Cite them for mechanism; never imply harm occurred.</strong></p></div>
+  <div class="rs"><div class="rs-k">The mechanism argument for a non-technical owner</div><p class="rs-v"><strong>The index remembers what you revoked.</strong> Lasso Security found 20,580 repositories across 16,290 organizations still reachable through Copilot after being made private, because a search cache retained them. The principle transfers directly to Microsoft 365 &mdash; and it is precisely why Restricted Content Discovery requires a reindex rather than taking effect instantly.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════ 14 ═══════════════ -->
+<h2 id="section-14">14 &middot; Related Guides</h2>
+
+<h3>14.1 &middot; Run it on yourself first</h3>
+
+<div class="callout dark">
+  <div class="callout-title">The one non-negotiable</div>
+  <div class="callout-body"><p><strong>Before you quote this work, complete it in your own tenant.</strong> Publish four labels. Watch the 24-hour propagation actually take 24 hours. Run an auto-labeling simulation and discover it fired 300 activity alerts because you did not scope the alert policy first. Break something with an encrypting label and find out what it costs to unbreak.</p>
+  <p>Every hour of that is an hour you will not lose in front of a customer, and it converts the numbers in <a href="#section-11">section 11</a> from something you read into something you know. Beyond that the floor is low: one person holding SC-401, one person who can chair a room of business owners, and a written decision about who signs the irreversible changes in <a href="#section-6">6.4</a>.</p></div>
+</div>
+
+<h3>14.2 &middot; Where this sits</h3>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="copilot-readiness-engagement.html">The Copilot Readiness Engagement</a></div><div class="rf-d">The full guide. Every figure on this page has a sourced section behind it there, along with the evidence discussion, the practice-building material and the workshop run of show.</div></li>
+  <li><div class="rf-t"><a href="shadowai.html">The Shadow AI Assessment Guide</a></div><div class="rf-d">Upstream. How to open with discovery rather than product, what SMBs actually have running, and the softer objections.</div></li>
+  <li><div class="rf-t"><a href="copilot-adoption-audit.html">The Copilot Adoption Audit</a></div><div class="rf-d">Downstream. Once Copilot is live, how to prove from the usage data whether it is working.</div></li>
+  <li><div class="rf-t"><a href="frontier.html">The Path to Frontier Partner</a></div><div class="rf-d">Partner tier ladder, capability score mechanics and certification roadmap.</div></li>
+  <li><div class="rf-t"><a href="customer-zero-starter-kit/index.html">Customer Zero Starter Kit</a></div><div class="rf-d">Become Customer Zero first, then sell the motion. The home of the non-negotiable above.</div></li>
+  <li><div class="rf-t"><a href="cpb.html">The Copilot Practice Playbook</a></div><div class="rf-d">The primary practice asset &mdash; strategy, economics and delivery mechanics across the whole motion.</div></li>
+</ul>
+
+<div class="hero-statement">
+  <p>The customer does not need to be frightened into this. <em>Seven in ten of the organizations that got the returns Microsoft advertises did the data security work first.</em></p>
+  <div class="hero-sub">You are selling the precondition that separated the deployments that worked from the ones that quietly stalled &mdash; to a business that is going to buy Copilot either way.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+</body>
+</html>
