@@ -1228,8 +1228,13 @@ function talkFor(st) {
   return { r, text: build(r).join('\n') };
 }
 const partnerNote = makeUiFn('partnerNote', '\n  function renderNext', { E });
-const ratioBlockUi = makeUiFn('ratioBlock', '\n  function renderBillOut',
-  { E, usd, num, provPill: () => '' });
+/* The lifted slice carries ratioBlock plus the flywheel helpers that follow
+   it, and those read `state` — so this is a per-state factory. */
+function ratioBlockFor(st) {
+  return makeUiFn('ratioBlock', '\n  function renderBillOut',
+    { E, usd, num, state: st, provPill: () => '' });
+}
+function ratioBlockUi(c, st) { return ratioBlockFor(st || E.defaults())(c); }
 function nextFor(st) { const r = E.compute(st); return E.nextStep(st, r.ctx); }
 function nextText(pick) {
   return [pick.eyebrow, pick.name, pick.price, pick.opener, (pick.why || []).join(' '), pick.then || ''].join(' ');
@@ -1459,7 +1464,7 @@ function nextText(pick) {
   let over = 0, rendered = 0, suppressed = 0;
   fuzz.forEach(f => {
     const c = E.compute(f).ctx;
-    const html = ratioBlockUi(c);
+    const html = ratioBlockUi(c, f);
     if (!html) return;
     rendered++;
     const pcts = (html.match(/>(\d+)%/g) || []).map(x => +x.replace(/[>%]/g, ''));
@@ -1473,7 +1478,7 @@ function nextText(pick) {
   // when V-10 fires, the reassurance becomes an input check
   ok(rH.ctx.monthlyCowork > 0 && rH.warnings.some(w => w.id === 'V-10'),
      'the V-10 state renders a ratio block (precondition for the checks below)');
-  const v10Html = ratioBlockUi(rH.ctx);
+  const v10Html = ratioBlockUi(rH.ctx, s);
   ok(!/isn't wrong and neither are you/.test(v10Html),
      'V-10 present: the reassurance does not argue with the warning above it');
   ok(/check the two entries most likely to be behind it/.test(v10Html),
@@ -1538,6 +1543,250 @@ function nextText(pick) {
      'the vCISO rung keeps its 50-employee floor');
   ok(/regulated && ctx\.employees >= 50 && ctx\.employees <= 1000/.test(src),
      'the rung rule’s headcount guard is unchanged in source');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   R8 — Distributor handoff export and the benchmark flywheel
+   (ideas 2 and 4 — v3 spec §R8 a–b)
+
+   Both surfaces are lifted out of the page and run, same as R7. The export
+   depends on R5: the ask must be the ramped year-one figure, never the
+   steady-state over-commit.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* The export's helpers (P3_FINALITY, todayIso) sit above it in the page, so
+   the lift starts at the constant rather than at the function. */
+function quoteSource() {
+  const start = src.indexOf('  var P3_FINALITY');
+  const end = src.indexOf('\n  /* What a commit actually commits', start);
+  if (start < 0 || end < 0) throw new Error('could not lift quoteRequestText out of the page');
+  return src.slice(start, end);
+}
+function quoteFor(st) {
+  const c = E.compute(st).ctx;
+  const fn = new Function('E', 'usd', 'num', 'state',
+    quoteSource() + '\nreturn quoteRequestText;')(E, usd, num, st);
+  return { c, text: fn(c) };
+}
+const FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, the term is twelve months, ' +
+  'and it auto-renews by default.';
+
+/* ── R8.1 · The export carries the year-one figure, the band and finality ── */
+{
+  const q = quoteFor(E.defaults());
+  ok(q.c.rampApplies, 'stock defaults ramp (precondition — the ask must be year one)');
+  ok(/Ask \(year one\): 78,839 CCCU/.test(q.text), 'the ask is the ramped year-one CCCU figure');
+  ok(/Reference only \(steady state\): 90,600 CCCU/.test(q.text),
+     'the steady-state figure rides along, labelled as reference');
+  ok(/Do not order this figure/.test(q.text), 'the reference figure says it is not the order');
+  ok(q.text.indexOf(FINALITY) >= 0, 'the export carries the finality sentence verbatim');
+  ok(/re-size at renewal on measured usage/.test(q.text), 'the export says to re-size at renewal');
+  ok(/Band: the volume behind these figures is modeled at ±30% — \$5,285 to \$9,815 a month/.test(q.text),
+     'the export carries the ±band and the range it implies');
+  ok(/PayGo fallback: \$78,839 across year one/.test(q.text), 'the PayGo year-one fallback is present');
+  ok(/\$90,600 a year at full adoption/.test(q.text), 'the steady-state PayGo figure is named as such');
+  ok(/^Account: Unnamed account$/m.test(q.text), 'an unnamed account is labelled, not blank');
+  ok(/^Date: \d{4}-\d{2}-\d{2}$/m.test(q.text), 'the date is stamped (UI layer — compute stays pure)');
+  ok(!/Date\.now\(\)/.test(uiSource('compute', 'root.CoworkEngine')) ||
+     src.indexOf('function compute(rawState)') > 0, 'engine purity is unchanged by the export');
+  // a named account comes through
+  const named = E.defaults(); named.meta.accountName = '  Riverside Dental ';
+  ok(/^Account: Riverside Dental$/m.test(quoteFor(named).text), 'a named account is trimmed and used');
+  // formatted like the page
+  ok(!/78839|90600/.test(q.text), 'figures are thousands-separated like the rest of the page');
+  // and it carries no partner economics
+  const sell = E.defaults();
+  sell.channel = { motion:'direct', providerCreditUsd:null };
+  sell.pricing = Object.assign(E.defaults().pricing,
+    { mode:'sell', creditSellUsd:0.025, pec:{ status:'yes', pct:15 } });
+  sell.pricing.sell = { bprem_cop:45, cop_biz:25, bstd:15 };
+  sell.pricing.cost = { bprem_cop:28, cop_biz:15, bstd:10 };
+  const qSell = quoteFor(sell);
+  ok(qSell.c.pecKnown, 'the sell config reaches PEC internally (precondition)');
+  ['margin','uplift','partner-earned','PEC','cost basis','your cost'].forEach(w => {
+    ok(qSell.text.toLowerCase().indexOf(w.toLowerCase()) === -1,
+       'the export never names ' + w);
+  });
+}
+
+/* ── R8.2 · Addressed per motion, including the notCsp no-ask variant ───── */
+{
+  const cases = {
+    direct:           /^To: TD SYNNEX \/ your distributor\. You hold the billing account/m,
+    indirectProvider: /^To: TD SYNNEX \/ your distributor\. You hold the billing account/m,
+    indirectReseller: /^To: your indirect provider\./m,
+    notCsp:           /^To: your distributor — for reference, not as an order\./m,
+    unsure:           /^To: TD SYNNEX \/ your distributor\. The CSP motion has not been set/m
+  };
+  Object.keys(cases).forEach(m => {
+    const s = E.defaults(); s.channel.motion = m;
+    const q = quoteFor(s);
+    ok(cases[m].test(q.text), m + ': the export is addressed correctly');
+    // the band and the finality note are never stripped, whatever the motion
+    ok(/^Band: /m.test(q.text), m + ': the band survives');
+    ok(q.text.indexOf(FINALITY) >= 0, m + ': the finality sentence survives');
+    if (m === 'indirectReseller') {
+      ok(/your provider places it/.test(q.text), 'indirect reseller: the provider places the order');
+      ok(/Partner of Record is inherited/.test(q.text), 'indirect reseller: PoR is settled before the order');
+      ok(/becomes or assigns PoR/.test(q.text), 'indirect reseller: who becomes or assigns PoR is named');
+    }
+    if (m === 'notCsp') {
+      ok(/there is no CCCU ask below/.test(q.text), 'notCsp: the export says there is no ask');
+      ok(/^No CCCU ask\./m.test(q.text), 'notCsp: the ask line is replaced, not filled in');
+      ok(!/^Ask/m.test(q.text), 'notCsp: no Ask line at all');
+      ok(!/^Reference only/m.test(q.text), 'notCsp: no steady-state reference either');
+      ok(/A CSP-channel Azure plan would have to exist before/.test(q.text),
+         'notCsp: the prerequisite is explained');
+      ok(/Terms, if a commit is ever placed through the channel/.test(q.text),
+         'notCsp: the finality note is framed conditionally rather than dropped');
+    } else {
+      ok(!/there is no CCCU ask/.test(q.text), m + ': an in-channel motion still carries an ask');
+    }
+  });
+
+  // ramp off → the steady figure IS the ask, and the reference line drops
+  const flat = E.defaults(); flat.ramp = { mode:'none', pilotSeats:25, months:6 };
+  const qF = quoteFor(flat);
+  ok(!qF.c.rampApplies, 'ramp mode none turns the ramp off (precondition)');
+  ok(/^Ask: 90,600 CCCU/m.test(qF.text), 'with no ramp the ask is the steady-state figure');
+  ok(!/Reference only/.test(qF.text), 'with no ramp the reference line drops');
+  ok(!/Ask \(year one\)/.test(qF.text), 'with no ramp there is no year-one label');
+  ok(/PayGo fallback: \$90,600 a year/.test(qF.text), 'with no ramp the PayGo fallback is the flat year');
+  ok(qF.text.indexOf(FINALITY) >= 0, 'with no ramp the finality sentence still ships');
+
+  // months: 1 is the other flat path
+  const one = E.defaults(); one.ramp = { mode:'linear', pilotSeats:25, months:1 };
+  ok(/^Ask: 90,600 CCCU/m.test(quoteFor(one).text), 'a one-month ramp is a flat year and asks the steady figure');
+}
+
+/* ── R8.3 · The button follows the btnCopyTalk pattern ──────────────────── */
+{
+  ok(/<button class="copybtn no-print" id="btnCopyQuote">Copy quote request<\/button>/.test(src),
+     'the export button sits in the billing card head, same class as btnCopyTalk');
+  const head = src.match(/id="cardBilling">[\s\S]{0,300}?<\/div>/);
+  ok(head && /btnCopyQuote/.test(head[0]), 'the button is inside #cardBilling');
+  ok(/\$\('btnCopyQuote'\)\.addEventListener\('click'/.test(src), 'the button is wired');
+  ok(/copyText\(quoteRequestText\(r\.ctx\), \$\('btnCopyQuote'\), 'Copy quote request'\)/.test(src),
+     'the click rebuilds the text from the live ctx');
+  // the shared clipboard path, including the manual-select fallback
+  const copyTextSrc = uiSource('copyText', '\n  function copyFrom');
+  ok(/navigator\.clipboard\.writeText/.test(copyTextSrc), 'copyText uses the async clipboard first');
+  ok(/catch\(function \(\) \{ fallback\(text\); done\(\); \}\)/.test(copyTextSrc),
+     'a clipboard rejection falls back to the manual-select textarea');
+  ok(/else \{ fallback\(text\); done\(\); \}/.test(copyTextSrc), 'no clipboard API also falls back');
+  ok(/document\.execCommand\('copy'\)/.test(src), 'the manual-select fallback is still the execCommand path');
+  ok(/function copyFrom\(sel, btn\) \{\s*copyText\(/.test(src), 'btnCopyTalk now shares the same path');
+}
+
+/* ── R8.4 · The benchmark flywheel mailto (idea 4) ──────────────────────── */
+function hrefOf(html) { const m = html.match(/href="(mailto:[^"]*)"/); return m ? m[1] : null; }
+function decodeMailto(href) {
+  const q = href.slice(href.indexOf('?') + 1);
+  const out = {};
+  q.split('&').forEach(p => { const i = p.indexOf('='); out[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); });
+  out.to = href.slice('mailto:'.length, href.indexOf('?'));
+  return out;
+}
+{
+  const s = E.defaults();
+  s.meta.accountName = 'Riverside Dental';
+  s.org.vertical = 'legal';
+  const html = ratioBlockUi(E.compute(s).ctx, s);
+  const href = hrefOf(html);
+  ok(href, 'the ratio whybox carries a mailto link');
+  const m = decodeMailto(href);
+  eq(m.to, 'ken.lince@gmail.com', 'the collection address is the site owner’s');
+  eq(m.subject, 'Cowork ratio datapoint', 'the subject is fixed');
+  // the four fields, and only the four fields
+  ok(/^Ratio: 3\.15$/m.test(m.body), 'the body carries the ratio to two decimal places');
+  ok(/^Seat bucket: 25-100$/m.test(m.body), 'the body carries the seat bucket, not the count');
+  ok(/^Vertical: legal$/m.test(m.body), 'the body carries the vertical');
+  ok(/^Activation mode: rate$/m.test(m.body), 'the body carries the activation mode');
+  eq(m.body.trim().split('\n').length, 4, 'the body is exactly four lines');
+  // and nothing else
+  ok(m.body.indexOf('Riverside') === -1 && href.indexOf('Riverside') === -1,
+     'no account name in the body or the href');
+  ok(href.indexOf('$') === -1 && m.body.indexOf('$') === -1, 'no dollar figure anywhere in the mailto');
+  ok(!/\b80\b/.test(m.body), 'no exact seat count in the body');
+  ok(!/7,?550|755,?000/.test(m.body), 'no meter or credit figure in the body');
+  // properly encoded: the raw href carries no literal newline or space
+  ok(!/\n/.test(href) && href.indexOf(' ') === -1, 'the body is URL-encoded, not pasted raw');
+  ok(/%0A/.test(href), 'newlines are percent-encoded');
+
+  // the buckets
+  const BUCKETS = [[10,'<25'], [24,'<25'], [25,'25-100'], [100,'25-100'],
+                   [101,'100-300'], [300,'100-300'], [301,'300+'], [4000,'300+']];
+  BUCKETS.forEach(([seats, want]) => {
+    const b = E.defaults();
+    b.licenseInventory = [{ skuId:'bprem_cop', seats: seats }];
+    b.activation = { mode:'rate', rate:0.65, count:null };
+    const c = E.compute(b).ctx;
+    eq(c.copilotLicensed, seats, 'bucket probe: ' + seats + ' licensed');
+    const got = decodeMailto(hrefOf(ratioBlockUi(c, b))).body.match(/^Seat bucket: (.+)$/m)[1];
+    eq(got, want, seats + ' Copilot licenses falls in bucket ' + want);
+  });
+
+  // an unset vertical still sends something readable
+  const none = E.defaults();
+  ok(/^Vertical: none$/m.test(decodeMailto(hrefOf(ratioBlockUi(E.compute(none).ctx, none))).body),
+     'the default vertical is sent as its own answer');
+  const blank = E.defaults(); blank.org.vertical = '';
+  ok(/^Vertical: unspecified$/m.test(decodeMailto(hrefOf(ratioBlockUi(E.compute(blank).ctx, blank))).body),
+     'an empty vertical falls back to unspecified');
+  // activation modes
+  ['count','benchmark'].forEach(mode => {
+    const a = E.defaults(); a.activation = { mode: mode, rate:0.65, count: 40 };
+    const c = E.compute(a).ctx;
+    if (c.ratioBench > 0)
+      ok(new RegExp('^Activation mode: ' + mode + '$', 'm').test(decodeMailto(hrefOf(ratioBlockUi(c, a))).body),
+         mode + ' activation mode is carried');
+  });
+
+  // the sentence beside the link keeps the privacy footer true
+  ok(/The page itself still transmits nothing\./.test(html), 'the line says the page transmits nothing');
+  ok(/email from your own mail client/.test(html), 'the line says the send is the partner’s own');
+  ok(!/localStorage|sessionStorage|fetch\(|XMLHttpRequest|navigator\.sendBeacon/.test(src),
+     'the page still has no storage and no network call of any kind');
+}
+
+/* ── R8.5 · Neither feature reaches a customer surface ──────────────────── */
+{
+  const cv = stripSet('customer-view'), pc = stripSet('print-customer');
+  ok(cv && pc && cv.join('|') === pc.join('|'), 'the strip lists are still identical after R8');
+  // the export button and its text live inside #cardBilling, which is stripped
+  ok(cv.indexOf('#cardBilling') >= 0, 'the export button’s container is in the strip set');
+  const billIdx = src.indexOf('id="cardBilling"');
+  const quoteIdx = src.indexOf('id="btnCopyQuote"');
+  const nextCard = src.indexOf('id="cardLic"');
+  ok(quoteIdx > billIdx && quoteIdx < nextCard, 'the button markup is inside #cardBilling, not loose on the page');
+  // the export text is never written into the DOM at all — it goes to the clipboard
+  ok(!/innerHTML[^;]*quoteRequestText/.test(src), 'the export text is never rendered into the page');
+  // the flywheel line lives in the ratio whybox, which carries no cust-ok
+  ok(/<div class="whybox"><div class="wb-h">The 2\.6&times; benchmark, honestly/.test(src),
+     'the ratio whybox still carries no cust-ok class');
+  ok(cv.indexOf('.whybox:not(.cust-ok)') >= 0, 'plain whyboxes are stripped on both customer surfaces');
+  // the flywheel markup emits no cust-ok of its own
+  const fly = uiSource('flywheelLine', '\n  function renderBillOut');
+  ok(!/cust-ok/.test(fly), 'the flywheel line does not opt itself into the customer surface');
+  ok(!/partner-only/.test(fly), 'it does not need partner-only either — the whybox already strips');
+  // and neither string appears in the reconstructed customer surface
+  const rC = E.compute(E.defaults());
+  const surface = customerSurface(rC, rC.licensing);
+  ok(surface.indexOf('quote request') === -1, 'the customer surface carries no quote request');
+  ok(surface.indexOf('mailto:') === -1 && surface.indexOf('Contribute your anonymized ratio') === -1,
+     'the customer surface carries no flywheel link');
+}
+
+/* ── R8.6 · FACTS.md registers the address and the methodology caveat ───── */
+{
+  let facts = '';
+  try { facts = fs.readFileSync(path.join(__dirname, '..', 'FACTS.md'), 'utf8'); } catch (e) {}
+  ok(facts.length > 0, 'FACTS.md is readable');
+  ok(facts.indexOf('ken.lince@gmail.com') >= 0, 'FACTS.md registers the collection address');
+  ok(/self-selected/.test(facts) && /unverified/.test(facts),
+     'FACTS.md records that contributed ratios are self-selected and unverified');
+  ok(/\bnever\b.{0,24}ms-verified/i.test(facts),
+     'FACTS.md records that contributions can never reach ms-verified');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

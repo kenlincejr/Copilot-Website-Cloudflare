@@ -909,7 +909,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       </div>
 
       <div class="rescard" id="cardBilling">
-        <div class="rc-head"><span>PayGo vs pre-purchase</span></div>
+        <div class="rc-head"><span>PayGo vs pre-purchase</span><button class="copybtn no-print" id="btnCopyQuote">Copy quote request</button></div>
         <div class="rc-body" id="billOut"></div>
       </div>
 
@@ -3837,7 +3837,40 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       '<p style="font-size:.8rem;color:#6b7280;">Against what this customer actually pays for Copilot (' + usd(c.copilotSpend) + '/mo), the ratio is <b>' + c.ratioActual.toFixed(2) + '&times;</b>. ' +
       'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the license is wrong. The same usage measured against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Copilot Business promo reads <b>' +
       (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b>, and against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on <b>' + (c.perActiveMs / E.SKU_BY_ID['cop_ent'].usd).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p>' +
-      '</div>';
+      flywheelLine(c) + '</div>';
+  }
+
+  /* \u2550\u2550\u2550 Benchmark flywheel (R8b, idea 4) \u2550\u2550\u2550
+     The 2.6\u00d7 is the most-quoted and weakest-sourced number on the site:
+     TD SYNNEX editorial, sample unknown. Contributed ratios can move that to
+     "partner-sourced, n = X" \u2014 never to ms-verified, because they are
+     self-selected and unverified, and FACTS.md says so.
+     Decisions, documented:
+       \u00b7 mailto only. The page transmits nothing; the partner's own mail
+         client sends, and they see the whole body before it goes. The
+         sentence beside the link says that rather than assuming it is
+         obvious \u2014 the privacy footer has to stay literally true.
+       \u00b7 Four fields and no fifth: ratio, seat BUCKET, vertical, activation
+         mode. No account name, no dollar figure, no exact seat count. A
+         bucket is enough to segment a benchmark and not enough to identify
+         a customer.
+       \u00b7 Internal surface only. The ratio whybox carries no cust-ok class, so
+         it is already stripped from customer view and customer print; this
+         line inherits that and adds nothing customer-facing. */
+  var FLYWHEEL_TO = 'ken.lince@gmail.com';
+  function seatBucket(n) { return n < 25 ? '<25' : n <= 100 ? '25-100' : n <= 300 ? '100-300' : '300+'; }
+  function flywheelLine(c) {
+    if (!(c.ratioBench > 0)) return '';
+    var body = 'Ratio: ' + c.ratioBench.toFixed(2) + '\n' +
+               'Seat bucket: ' + seatBucket(c.copilotLicensed) + '\n' +
+               'Vertical: ' + (state.org.vertical || 'unspecified') + '\n' +
+               'Activation mode: ' + state.activation.mode + '\n';
+    var href = 'mailto:' + FLYWHEEL_TO +
+               '?subject=' + encodeURIComponent('Cowork ratio datapoint') +
+               '&body=' + encodeURIComponent(body);
+    return '<p class="srcline"><a class="docref" href="' + href + '">Contribute your anonymized ratio &rarr;</a> ' +
+      'Sending is an email from your own mail client, and it carries four fields: the ratio, a seat band, the vertical ' +
+      'and the activation mode \u2014 no account name, no figures, no seat count. The page itself still transmits nothing.</p>';
   }
 
   function renderBillOut(r) {
@@ -3905,6 +3938,83 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         : '') +
       p3RiskBlock(c) + partnerCostBlock(c) +
       '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';
+  }
+
+  /* ═══ Distributor handoff export (R8a, idea 2) ═══
+     The last manual step before a PO: a plain-text quote request the partner
+     pastes into the mail to whoever is actually allowed to place the order.
+     Decisions, documented:
+       · The ask is the RAMPED year-one figure. Shipped before R5 this export
+         would have carried the steady-state over-commit out of the tool with
+         the tool's name on it (finding #5). The steady figure rides along as
+         a reference and is labelled as one.
+       · The band and the finality sentence are not optional. Everything else
+         in the file states them; an export that dropped them would be the
+         one artifact that leaves the building without them.
+       · Motion decides the addressee, because "take it to your TD SYNNEX
+         rep" is right for most readers and wrong for the rest. Outside CSP
+         there is no CCCU ask at all — the prerequisite is a CSP-channel
+         Azure plan that does not exist, and saying so is the useful output.
+       · No margin, PEC, cost basis or sell-vs-list delta: this text is
+         partner-to-distributor, and the customer's own economics are not the
+         distributor's business either.
+     The date is stamped here, in the UI layer — compute() stays pure. */
+  var P3_FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, the term is twelve months, ' +
+    'and it auto-renews by default.';
+  function todayIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function quoteRequestText(c) {
+    var L = [];
+    L.push('Cowork / Copilot Credits — quote request');
+    L.push('Account: ' + ((state.meta.accountName || '').trim() || 'Unnamed account'));
+    L.push('Date: ' + todayIso());
+    L.push('');
+    L.push(c.cspMotion === 'indirectReseller'
+        ? 'To: your indirect provider. As an indirect reseller you cannot place this order — your provider places it, ' +
+          'and Partner of Record is inherited from the subscription they select, so settle who becomes or assigns PoR before it goes in.'
+      : c.cspMotion === 'notCsp'
+        ? 'To: your distributor — for reference, not as an order. This customer is outside CSP: the Azure plan and the ' +
+          'Microsoft Customer Agreement are theirs, and Copilot Credit consumption lands on their own Azure invoice. ' +
+          'A CSP-channel Azure plan would have to exist before anything could be committed through the channel, so there ' +
+          'is no CCCU ask below.'
+      : c.holdsBillingAccount
+        ? 'To: TD SYNNEX / your distributor. You hold the billing account for this customer, so this order is yours to ' +
+          'place in Partner Center — this is the figure to confirm before you do.'
+        : 'To: TD SYNNEX / your distributor. The CSP motion has not been set on the pricing screen, and who may place ' +
+          'this order depends on it — confirm the motion before this is treated as an order.');
+    L.push('');
+    L.push('Basis: ' + num(c.copilotLicensed) + ' Copilot licenses, ' + num(c.basisSeats) + ' modeled active users, ' +
+           num(c.monthlyCredits) + ' credits a month at the modeled mix.');
+    if (c.cspMotion !== 'notCsp') {
+      if (c.rampApplies) {
+        L.push('Ask (year one): ' + num(Math.round(c.cccuYear1)) + ' CCCU — sized to a ' + Math.round(c.rampMonths) +
+               '-month ramp from ' + num(Math.round(c.rampPilot)) + ' users to ' + num(c.basisSeats) + '.');
+        L.push('Reference only (steady state): ' + num(Math.round(c.cccuRequired)) +
+               ' CCCU at full adoption. Do not order this figure — it is what year two looks like if adoption lands.');
+        L.push('PayGo fallback: ' + usd(c.year1PaygoAnnual) + ' across year one at $0.01 a credit, no commitment (' +
+               usd(c.paygoAnnual) + ' a year at full adoption).');
+      } else {
+        L.push('Ask: ' + num(Math.round(c.cccuRequired)) + ' CCCU — adoption is modeled flat from month one, so year ' +
+               'one and the steady-state year are the same figure.');
+        L.push('PayGo fallback: ' + usd(c.paygoAnnual) + ' a year at $0.01 a credit, no commitment.');
+      }
+    } else {
+      L.push('No CCCU ask. On the customer\'s own subscription the meter runs at $0.01 a credit — ' +
+             (c.rampApplies
+               ? usd(c.year1PaygoAnnual) + ' across year one on the modeled ramp, ' + usd(c.paygoAnnual) + ' a year at full adoption.'
+               : usd(c.paygoAnnual) + ' a year.'));
+    }
+    L.push('Band: the volume behind these figures is modeled at ±' + Math.round(c.band * 100) + '% — ' +
+           usd(c.coworkLo) + ' to ' + usd(c.coworkHi) + ' a month on the meter. Quote the range, not the midpoint.');
+    L.push(c.cspMotion === 'notCsp'
+      ? 'Terms, if a commit is ever placed through the channel: ' + P3_FINALITY +
+        ' Size it to year one and re-size at renewal on measured usage.'
+      : 'Terms: ' + P3_FINALITY + ' The ask above is sized to year one — re-size at renewal on measured usage.');
+    L.push('');
+    L.push('Generated by the Cowork Cost & Conversation Simulator. Every figure here is modeled, not measured.');
+    return L.join('\n');
   }
 
   /* What a commit actually commits you to. Microsoft's terms are unusually
@@ -4589,11 +4699,13 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     Array.prototype.forEach.call($('mathToggle').querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); });
   });
 
-  function copyFrom(sel, btn) {
-    var text = Array.prototype.map.call(document.querySelectorAll(sel), function (p) { return p.textContent; }).join('\n\n');
-    var done = function () { btn.textContent = 'Copied ✓'; btn.classList.add('done'); setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 1600); };
+  function copyText(text, btn, label) {
+    var done = function () { btn.textContent = 'Copied ✓'; btn.classList.add('done'); setTimeout(function () { btn.textContent = label; btn.classList.remove('done'); }, 1600); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text); done(); });
     else { fallback(text); done(); }
+  }
+  function copyFrom(sel, btn) {
+    copyText(Array.prototype.map.call(document.querySelectorAll(sel), function (p) { return p.textContent; }).join('\n\n'), btn, 'Copy');
   }
   function fallback(text) {
     var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -4601,6 +4713,13 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   }
   $('btnCopySay').addEventListener('click', function () { copyFrom('#sayLine', $('btnCopySay')); });
   $('btnCopyTalk').addEventListener('click', function () { copyFrom('#talkBody p', $('btnCopyTalk')); });
+  /* The handoff export (R8a). Same clipboard path and manual-select fallback
+     as the talk track; the text is rebuilt from the live ctx at click time so
+     it can never lag the card it sits on. */
+  $('btnCopyQuote').addEventListener('click', function () {
+    var r = E.compute(state);
+    copyText(quoteRequestText(r.ctx), $('btnCopyQuote'), 'Copy quote request');
+  });
 
   /* ═══ Customer view (R6h, idea 5) ═══
      body.customer-view applies, ON SCREEN, exactly the customer-print strip

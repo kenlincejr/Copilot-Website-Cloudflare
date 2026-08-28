@@ -210,3 +210,15 @@ The generator is not committed to the repo (it is scaffolding, not a deliverable
 7. groups by `(kind, value)` and emits `data/facts.json`.
 
 Phase 6's `check-facts` script is step 6 run in reverse: for every occurrence, assert the anchor still appears exactly once in the live file and still contains the registered value. That check is what catches a missed occurrence in the cascade set.
+
+---
+
+## 12. The 2.6× Cowork multiplier — collection and methodology
+
+*Added 2026-08-28 alongside the benchmark flywheel (v3 remediation spec §R8b, idea 4). Registers a collection channel, not a verified fact.*
+
+The **2.6× Cowork-to-license ratio** quoted throughout `cowork-calculator.html` is **TD SYNNEX editorial observation across partner accounts, sample size unknown**. It is not a Microsoft-published figure and the calculator now says so on every surface that quotes it (`provPill('editorial')` on the ratio whybox and the step-3 chip group, plus an assumptions entry naming TD SYNNEX). §2's sweep note is correct that the figure was net-new content at the time of the refresh; this section is its ledger entry.
+
+**Collection address:** `ken.lince@gmail.com`, subject `Cowork ratio datapoint`. The calculator's ratio whybox carries a `mailto:` link that prefills four fields and nothing else: the computed ratio to two decimal places, a seat **band** (`<25` / `25-100` / `100-300` / `300+`), the vertical, and the activation mode. No account name, no dollar figure, no exact seat count. The page transmits nothing — the partner's own mail client sends, and the sentence beside the link says so, because the site's no-storage/no-transmission copy has to stay literally true.
+
+**Methodology caveat, binding on any future re-statement of this figure.** Contributed ratios are **self-selected and unverified**. Nobody audits the inputs behind a submitted number, and the partners who bother to send one are not a random sample of partners. Accumulated contributions can move the provenance from *"editorial, sample unknown"* to *"partner-sourced, n = X"* — a real improvement, and the honest ceiling. They can **never** reach `ms-verified`, or any `ms-` prefixed tag: no volume of partner submissions makes a figure a Microsoft one. Any restatement of the multiplier must carry the n and the self-selection caveat together; an n without the caveat overstates the evidence more than the bare editorial tag did.
