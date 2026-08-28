@@ -1651,7 +1651,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       // needs answered is whose.
       calibrated
         ? 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
-          ' are this partner’s measured /cost samples, not Microsoft’s model.'
+          ' were measured with /cost in Cowork chat, not taken from Microsoft’s model.'
         : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
           ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
 
@@ -1952,15 +1952,27 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
        rules together mean a Partner of Record mistake on this order is
        permanent for the full twelve-month term, and nothing on the purchase
        screen says so. */
-    if (cspMotion === 'indirectReseller' && chosenIsP3 && p3Exposure > 0)
+    if (cspMotion === 'indirectReseller' && chosenIsP3 && p3Exposure > 0) {
+      // The reseller relays this number verbatim to the provider, so it must
+      // be the ask \u2014 year one on a ramp \u2014 never the steady-state reference
+      // the quote export says not to order.
+      var relayCccu = rampApplies ? cccuYear1 : commitCccu;
+      var relayUsd = rampApplies
+        ? packUsd + cccuYear1 * CONST.CCCU.usdPer *
+            (1 - (manualPct != null ? disc.pct : p3Discount(cccuYear1).pct) / 100)
+        : p3Exposure;
       W('V-24','warn','You cannot place this order yourself. Buying reservations on behalf of a customer is a ' +
         'direct-bill and indirect-provider motion \u2014 as an indirect reseller you hand the ' +
-        Math.round(commitCccu).toLocaleString() + ' CCCU figure to your provider and they place it. Settle two ' +
+        Math.round(relayCccu).toLocaleString() + ' CCCU' + (rampApplies ? ' year-one' : '') +
+        ' figure to your provider and they place it' +
+        (rampApplies ? ' \u2014 the ' + Math.round(commitCccu).toLocaleString() +
+          ' CCCU steady-state number is reference, not the order' : '') + '. Settle two ' +
         'things before they do. Partner of Record is inherited from the subscription they select and cannot be ' +
         'changed after purchase; the documented fix is to cancel and re-buy, and a Copilot Credit P3 cannot be ' +
         'cancelled \u2014 so a Partner of Record mistake here is yours for twelve months. And the $' +
-        Math.round(p3Exposure).toLocaleString() + ' lands on their paper before it lands on yours, which changes ' +
+        Math.round(relayUsd).toLocaleString() + ' lands on their paper before it lands on yours, which changes ' +
         'who you are actually asking to carry it.', []);
+    }
     if (state.billing.model === 'p3' && cccuRequired < P3_ANCHORS[0].cccu)
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
@@ -2282,7 +2294,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         // how a tool invents a saving the customer would never actually see.
         var delta = (winner.perUserAllIn - cheapestFeasible.perUserAllIn);
         if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label + ' even though it is $' +
-          delta.toFixed(2) + '/user/month cheaper all-in — $' + (delta * needed).toFixed(0) +
+          delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(delta * needed).toLocaleString() +
           '/month across ' + needed + ' seats' +
           (cheapestFeasible.addOn && cheapestFeasible.baseSeats > 0
             ? ', and that already counts the ' + cheapestFeasible.baseName + ' base it needs underneath it'
@@ -3675,7 +3687,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
              num(c.monthlyCredits) + ' credits × ' + esc(c.creditRateLabel) + ' = ' + usd(c.monthlyCowork)) +
         cell('numLic', usd(c.licenseMonthly), 'Licenses / month',
              c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats + ' base seats &middot; ' +
-             (c.sellMode ? 'your sell prices' : 'Microsoft list'),
+             (c.sellMode ? 'partner rates' : 'Microsoft list'),
              licDeriv(c), 'alt') +
       '</div>' +
       '<div style="margin-top:18px;">' +
@@ -4949,7 +4961,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     var payload = Object.assign({}, state, { __type:'cowork-session', savedAt: todayIso() });
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
-    var nm = (state.meta.accountName || 'cowork-session').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cowork-session';
+    var nm = ((state.meta.accountName || 'cowork-session').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cowork-session').slice(0, 40);
     a.href = url; a.download = nm + '-' + todayIso() + '.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);

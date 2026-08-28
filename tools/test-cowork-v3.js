@@ -354,7 +354,7 @@ function assertCopyClean(r, m) {
   const note = row(genuine, 'F10').note;
   ok(note != null && note.indexOf('/cost') >= 0 && note.indexOf('measured') >= 0,
      'genuine calibration swaps the F10 note to the partner attribution');
-  ok(note.indexOf('not Microsoft') >= 0, 'swapped note says whose model it is not');
+  ok(note.indexOf('not taken from Microsoft') >= 0, 'swapped note says whose model it is not');
   ok(aids(genuine).indexOf('F10') >= 0, 'F10 assumption entry survives calibration');
   ok(aids(forged).indexOf('F10') >= 0, 'F10 assumption entry present uncalibrated');
 
@@ -2065,6 +2065,52 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   const r9 = E.compute(E.defaults());
   eq(Math.round(r9.ctx.monthlyCredits), 755000, 'anchor after R9: stock credits');
   eq(Math.round(r9.ctx.monthlyCowork), 7550, 'anchor after R9: stock monthly');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V-24 relay figure — release-verifier blocker, 2026-08-28
+   The indirect reseller relays V-24's number verbatim to the provider, so it
+   must quote the ask (year one on a ramp), never the steady-state reference
+   the quote export says not to order.
+   ═══════════════════════════════════════════════════════════════════════════ */
+{
+  function v24For(over) {
+    const s = E.defaults();
+    s.channel = { motion: 'indirectReseller', providerCreditUsd: null };
+    s.org.azureCspPlan = 'yes'; s.org.usageBillingEnabled = 'yes';
+    s.billing.model = 'p3';
+    if (over) Object.assign(s, over);
+    const w = E.compute(s).warnings.filter(function (x) { return x.id === 'V-24'; });
+    return w.length ? w[0].message : null;
+  }
+  // Stock ramp (linear, 25 pilot, 6 months): the relay figure is year one.
+  const ramped = v24For();
+  ok(ramped, 'V-24 fires for the reseller P3 path at stock');
+  ok(/78,839 CCCU year-one figure/.test(ramped), 'V-24 relays the year-one ask, not steady state');
+  ok(/90,600 CCCU steady-state number is reference, not the order/.test(ramped),
+     'V-24 labels the steady figure as reference');
+  ok(!/hand the 90,600 CCCU figure/.test(ramped), 'V-24 never hands the provider the steady figure');
+  // The dollar in the message is the year-one order, not the steady prepay.
+  const stockCtx = (function () {
+    const s = E.defaults();
+    s.channel = { motion: 'indirectReseller', providerCreditUsd: null };
+    s.org.azureCspPlan = 'yes'; s.org.usageBillingEnabled = 'yes';
+    s.billing.model = 'p3';
+    return E.compute(s).ctx;
+  })();
+  const wantUsd = Math.round(stockCtx.cccuYear1 * E.CONST.CCCU.usdPer *
+    (1 - E.p3Discount(stockCtx.cccuYear1).pct / 100));
+  const usdM = ramped.match(/\$([\d,]+) lands on their paper/);
+  ok(usdM && Number(usdM[1].replace(/,/g, '')) === wantUsd,
+     'V-24 dollar is the year-one order $' + wantUsd + ' (got ' + (usdM && usdM[1]) + ')');
+  ok(wantUsd < Math.round(stockCtx.p3Exposure),
+     'the year-one order is below the steady prepay it replaces');
+  // No ramp: the configured commit is the order, and the message says so plainly.
+  const flat = v24For({ ramp: { mode: 'none', pilotSeats: 25, months: 6 } });
+  ok(flat && /hand the 90,600 CCCU figure/.test(flat) && !/year-one/.test(flat),
+     'V-24 without a ramp relays the configured commit with no year-one framing');
+  // The relay figure agrees with the quote export's ask in both modes.
+  ok(/78,839/.test(ramped) && /90,600/.test(flat), 'V-24 and the quote export agree on the ask basis');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
