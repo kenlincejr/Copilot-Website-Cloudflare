@@ -19,7 +19,7 @@ Both artefacts look like graphic design. They are not. They are **a table of num
 
 **Do not use an image generator for either of these.** Copilot's image generation — Designer, "create an image of…", anything DALL·E-shaped — will produce something that reads as an infographic from six feet away and contains invented numbers, unreadable axis labels, and dots placed for composition rather than for data. It cannot read your CSV. This is the single most common way this goes wrong, and the output is unusable in front of a customer because every figure on it is fiction.
 
-**The artefact is HTML. The image is a screenshot of it.** Every prompt below emits one self-contained HTML file that you open in a browser and either screenshot or print to PDF. That is how both originals were made, and it is what survives an admin in the room, because every number traces back to a row in the export.
+**The artefact is HTML. The image is a screenshot of it.** Every prompt below emits one self-contained HTML file that you open in a browser and either screenshot or print to PDF. It is what survives an admin in the room, because every number on the page traces back to a row in the export.
 
 ### Which tool, in order of preference
 
@@ -27,7 +27,7 @@ Both artefacts look like graphic design. They are not. They are **a table of num
 | --- | --- | --- | --- | --- |
 | **1** | **Analyst agent** — Microsoft 365 Copilot › Copilot Chat › **Agents** › **Analyst** | Yes. It writes and runs Python over the attached file and will show you the code | Partly. It returns the HTML as text in the chat and you save it yourself | **The default for partners.** It runs inside the customer's tenant, so the file never leaves their boundary, and it shows its working — which is what makes the numbers defensible |
 | **2** | A model that returns files, with the CSV attached — Claude, or Cowork | Yes | Yes. Hands you the `.html` file directly | You have written permission to take the file out of the tenant, or you are running it on your own tenant first |
-| **2=** | **Copilot Chat with the model switched** — Think Deeper, or a Claude model where your tenant has them enabled | Weakly — pair it with rank 1 for the numbers | Yes, as a code block you save yourself | **This is how the two graphics on the audit page were built.** The default fast model writes noticeably worse HTML; switching the model is the single highest-leverage change to output quality on the render stage |
+| **2=** | **Copilot Chat with the model switched** — Think Deeper, or a Claude model where your tenant has them enabled | Weakly — pair it with rank 1 for the numbers | Yes, as a code block you save yourself | **The combination these one-pagers were originally drafted with.** The default fast model writes noticeably worse HTML; switching the model is the single highest-leverage change to output quality on the render stage |
 | **3** | **Copilot in Excel**, on the customer's open export | Yes, in cells — the most defensible form there is, because the customer can re-run it | No | The numbers need to live in cells the customer owns. Pair it with rank 1 or 2 for the artefact |
 | **4** | **Copilot Chat in work mode**, file attached, no agent | Weakly. It reasons over the file rather than computing across it | Partly | Last resort. Verify every median by hand before anyone sees it |
 | — | **Copilot Studio · Designer · image generation** | No | No | Never, for this |
