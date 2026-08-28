@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Agent Is Never Done | Copilot Playbook</title>
+<meta name="description" content="What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners &mdash; the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain." />
+<link rel="canonical" href="https://copilotplaybook.com/agent-never-done.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The Agent Is Never Done" />
+<meta property="og:description" content="The Copilot seat you don't need, the harness you have to choose, the credit meter that decides your margin, and the six ways an agent ages after go-live." />
+<meta property="og:url" content="https://copilotplaybook.com/agent-never-done.html" />
+<meta property="og:site_name" content="Copilot Playbook" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="The Agent Is Never Done" />
+<meta name="twitter:description" content="Practice guidance for partners building on Copilot Studio &mdash; what must be true before you build, and where the recurring revenue lives after." />
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — matches copilotplaybook.com system of record
+   DESIGN.md §1. No value below is new.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1160px; margin: 0 auto;
+  padding: 32px 28px; line-height: 1.7; background: #fff;
+}
+h2 { color: var(--navy); margin: 3.2rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.section-eyebrow { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin: 3.2rem 0 -1.4rem; }
+h2:first-of-type, .section-eyebrow + h2 { margin-top: .4rem; }
+
+/* CROSS-REFERENCE LINK — DESIGN.md §8b.2. Every named document or section is one of these. */
+a.docref { font-weight: 600; border-bottom: 1px dotted var(--ltblue); }
+
+/* TOC */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS — DESIGN.md §3 C1 */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; border-left-color: var(--teal); }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: .4rem 0 0 1.1rem; }
+
+/* BLOCKQUOTE */
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES — DESIGN.md §3 C9. Never restyle a table inline. */
+.tablewrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: .89rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); white-space: nowrap; }
+tr:nth-child(even) td { background: #fafbfc; }
+td:first-child { font-weight: 600; color: var(--text); }
+table.dense th, table.dense td { font-size: .78rem; padding: 8px 10px; }
+table.dense td:first-child { font-weight: 400; color: #6b7280; }
+
+/* STAT RIBBON */
+.stat-ribbon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin: 20px 0; box-shadow: var(--shadow-md); }
+.stat-ribbon-item { padding: 20px 18px; background: #fff; border-right: 1px solid var(--border); border-top: 3px solid var(--teal); display: flex; flex-direction: column; gap: 4px; }
+.stat-ribbon-item:last-child { border-right: none; }
+.stat-ribbon-item:nth-child(even) { background: var(--muted); }
+.sr-k { font-size: 1.5rem; font-weight: 700; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.sr-l { font-size: .82rem; color: #374151; line-height: 1.4; margin-top: 4px; flex: 1; }
+.sr-s { font-size: .72rem; color: #9ca3af; margin-top: 2px; letter-spacing: .01em; }
+@media (max-width: 800px) { .stat-ribbon { grid-template-columns: repeat(2, 1fr); } .stat-ribbon-item:nth-child(2) { border-right: none; } }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-tag { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.alt .tc-tag { color: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.sec .tc-tag { color: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+.tier-card.warn-t .tc-tag { color: #92400e; }
+
+/* COMPARE GRID */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.compare-col.wrong { border-top-color: #d97706; }
+.compare-col .cc-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); margin-bottom: 8px; }
+.compare-col.wrong .cc-label { color: #92400e; }
+.compare-col p { font-size: .9rem; }
+
+/* CARDS / GRID — DESIGN.md §3 C5 */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.card-h { font-weight: 700; color: var(--navy); font-size: .95rem; margin-bottom: 6px; }
+.card-b { font-size: .88rem; color: #374151; margin: 0; }
+
+/* TAG */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* CHECK / CROSS — DESIGN.md §3 C12 */
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.dodont { list-style: none; margin: .6rem 0 1rem; padding: 0; }
+.dodont li { padding-left: 1.6rem; position: relative; margin: .5rem 0; font-size: .93rem; }
+.dodont .check, .dodont .cross { position: absolute; left: 0; top: 1px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: .6rem 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.checklist li { padding-left: 1.7rem; position: relative; font-size: .93rem; color: #374151; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 3px; width: 15px; height: 15px; border: 1.5px solid var(--teal); border-radius: 3px; background: #fff; }
+.checklist li strong { color: var(--navy); }
+
+/* ═══ FLOW MAP — the wrapper every Part C figure ships inside ═══ */
+.flowmap { margin: 22px 0 10px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fbfdfd; box-shadow: var(--shadow-md); padding: 22px 18px 10px; }
+.flowmap svg { width: 100%; height: auto; display: block; }
+.flowmap-cap { font-size: .8rem; color: #6b7280; padding: 10px 8px 4px; font-style: italic; }
+
+/* ═══ CONVERSATION STOPS — section 14, the run of show ═══ */
+.stops { margin: 24px 0 10px; }
+.stop { display: flex; gap: 20px; position: relative; margin-bottom: 6px; }
+.stop-rail { flex: 0 0 48px; position: relative; display: flex; flex-direction: column; align-items: center; }
+.stop-rail .dot { width: 48px; height: 48px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.05rem; box-shadow: var(--shadow-sm); border: 3px solid #fff; outline: 1px solid var(--border); flex: 0 0 auto; }
+.stop-rail .line { flex: 1; width: 2px; background: var(--border); margin: 4px 0; min-height: 24px; }
+.stop:last-child .stop-rail .line { display: none; }
+.stop.act2 .dot { background: #0f766e; }
+.stop.act3 .dot { background: #6d28d9; }
+.stop-content { flex: 1; min-width: 0; padding-bottom: 32px; }
+.stop-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.stop-head h3 { margin: 0; font-size: 1.15rem; color: var(--navy); }
+.stop-time { font-family: 'Consolas','Monaco',monospace; font-size: .82rem; font-weight: 700; color: #fff; background: var(--teal); padding: 5px 12px; border-radius: 20px; letter-spacing: .01em; white-space: nowrap; }
+.stop.act2 .stop-time { background: #0f766e; }
+.stop.act3 .stop-time { background: #6d28d9; }
+.beat { margin: 12px 0; }
+.beat-label { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.beat-label .ic { display:inline-flex; width:16px; height:16px; border-radius:3px; background:var(--teal); }
+.beat.say .beat-label .ic { background: var(--teal); }
+.beat.show .beat-label .ic { background: #6d28d9; }
+.beat.tool .beat-label .ic { background: #0f766e; }
+.beat-body { font-size: .93rem; color: var(--text); }
+.segue { margin: 16px 0 4px; background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%); color: #fff; border-radius: var(--radius); padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); }
+.segue .arrow { font-size: 1.1rem; flex: 0 0 auto; color: #a8ecf5; }
+.segue .txt { font-size: .87rem; line-height: 1.5; }
+.segue .txt strong { color: #a8ecf5; }
+
+/* ═══ RUNGS — section 4, the conversation staircase ═══ */
+.rungs { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.rung { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; background: #fff; box-shadow: var(--shadow-sm); }
+.rung .rn { width: 32px; height: 32px; border-radius: 50%; background: var(--muted-2); color: var(--teal); font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--teal); }
+.rung .rname { font-weight: 700; color: var(--navy); font-size: .95rem; }
+.rung .rdesc { font-size: .84rem; color: #6b7280; font-weight: 400; margin-top: 2px; }
+.rung .rlink { font-size: .85rem; font-weight: 700; color: var(--teal); white-space: nowrap; }
+.rung.recur { background: #f3fbfc; border-color: #c8e6eb; }
+.rung.hinge { background: linear-gradient(135deg, #004a55 0%, var(--teal) 100%); border-color: var(--teal); }
+.rung.hinge .rn { background: #fff; }
+.rung.hinge .rname, .rung.hinge .rlink { color: #fff; }
+.rung.hinge .rdesc { color: rgba(255,255,255,.85); }
+@media (max-width: 640px) { .rung { grid-template-columns: 32px 1fr; } .rung .rlink { grid-column: 2; } }
+
+/* RESOURCE LIST — section 13, the toolchain register */
+.reslist-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 14px 0; }
+.reslist-group .rg-head { background: var(--muted-2); padding: 8px 16px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy); }
+.reslist-item { padding: 12px 16px; border-top: 1px solid var(--border); background: #fff; }
+.reslist-item .t { font-weight: 700; font-size: .9rem; }
+.reslist-item .d { font-size: .82rem; color: #6b7280; margin-top: 2px; }
+
+/* REFERENCE LIST — section 15, the sources this page cites */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist li.unlinked { border-left-color: var(--ltblue); }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* ═══ NEW COMPONENTS FOR THIS PAGE ═══ */
+
+/* PROVENANCE CHIP — every currency figure carries one. DESIGN.md §8.10, spec PART D. */
+.prov { display: inline-block; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; vertical-align: 2px; margin-left: 5px; white-space: nowrap; }
+.prov-ms     { background: var(--accent); color: var(--teal); }
+.prov-survey { background: #dcfce7; color: #166534; }
+.prov-range  { background: #fef3c7; color: #92400e; }
+.prov-model  { background: #ede9fe; color: #5b21b6; }
+.provkey { display: flex; flex-wrap: wrap; gap: 14px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin: 16px 0; font-size: .8rem; color: #374151; }
+.provkey span.pk { display: flex; align-items: baseline; gap: 6px; }
+
+/* UNVER — an open tenant test. Names what is unknown and what would settle it. */
+.unver { border: 1px solid #f5ddb0; border-left: 4px solid #d97706; background: var(--warn); border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 18px 0; box-shadow: var(--shadow-sm); }
+.unver .u-label { display: flex; align-items: center; gap: 9px; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 7px; }
+.unver .u-label .tt { background: #d97706; color: #fff; border-radius: 4px; padding: 1px 7px; font-size: .6rem; letter-spacing: .06em; }
+.unver p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+.unver p.u-settle { margin-top: 7px; padding-top: 7px; border-top: 1px solid #f5ddb0; font-size: .82rem; }
+.unver strong { color: #92400e; }
+
+/* TRAP — a silent failure. It reports success and returns nothing. */
+.trap { border: 1px solid var(--border); border-left: 4px solid #92400e; background: #fff; border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 16px 0; box-shadow: var(--shadow-sm); }
+.trap .t-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 6px; }
+.trap h4 { margin: 0 0 5px; }
+.trap p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+
+@media (max-width: 720px) { body { padding: 20px 14px; } .stop { gap: 12px; } .stop-rail { flex-basis: 36px; } .stop-rail .dot { width: 36px; height: 36px; font-size: .85rem; } }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { max-width: 1320px; padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -20px -14px 0; }
+  .mh-bar-in { padding: 0 14px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -14px 20px; }
+  .masthead-inner { padding: 20px 14px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="index.html">Copilot Playbook</a><span class="sep">/</span><span class="cur">The Agent Is Never Done</span></div>
+    <div class="mh-date">Updated August 28, 2026</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Partner Field Guide &middot; Copilot Studio</div></div>
+    <h1>The Agent Is Never Done</h1>
+    <p class="sub">What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished.</p>
+    <p class="mh-meta">For <strong>partners building and running Copilot Studio agents</strong> &middot; Practice guidance &mdash; not a statement of work, and not a pricing model</p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#section-1">The Engagement You Think You&rsquo;re Selling</a></li>
+      <li><a href="#section-2">The Seat You Don&rsquo;t Need</a></li>
+      <li><a href="#section-3">Agent Plumbing Is Not Copilot Plumbing</a></li>
+      <li><a href="#section-4">The Rungs of the Conversation</a></li>
+      <li><a href="#section-5">Choose the Harness</a></li>
+      <li><a href="#section-6">The Agent Governance Baseline</a></li>
+      <li><a href="#section-7">What Must Be True Before You Build</a></li>
+      <li><a href="#section-8">The Consumption Model</a></li>
+      <li><a href="#section-9">Measuring It</a></li>
+      <li><a href="#section-10">The Agent Is Never Done</a></li>
+      <li><a href="#section-11">Agent 365 &mdash; the Escalation</a></li>
+      <li><a href="#section-12">Buying the First 80%</a></li>
+      <li><a href="#section-13">The Toolchain Register</a></li>
+      <li><a href="#section-14">The Room</a></li>
+      <li><a href="#section-15">What We Could Not Verify</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 1 — THE ENGAGEMENT PARTNERS THINK THEY'RE SELLING -->
+<!-- Part B · B-01 · gap 1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-1">1. The Engagement Partners Think They&rsquo;re Selling</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 2 — THE SEAT YOU DON'T NEED -->
+<!-- Part B · B-02 · gap 6 · depends on TT-1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-2">2. The Seat You Don&rsquo;t Need</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — AGENT PLUMBING IS NOT COPILOT PLUMBING -->
+<!-- Part B · B-03 · gap 12 · the B-02 → B-03 adjacency is fixed -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-3">3. Agent Plumbing Is Not Copilot Plumbing</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 4 — THE RUNGS OF THE CONVERSATION -->
+<!-- Part B · B-04 · gap 12 · depends on TT-6 · figure C-1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-4">4. The Rungs of the Conversation</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 5 — CHOOSE THE HARNESS -->
+<!-- Part B · B-05 · gap 1 · figure C-3 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-5">5. Choose the Harness</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 6 — THE AGENT GOVERNANCE BASELINE -->
+<!-- Part B · B-06 · gap 12 · depends on TT-6 · figure C-6 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-6">6. The Agent Governance Baseline</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 7 — WHAT MUST BE TRUE BEFORE YOU BUILD -->
+<!-- Part B · B-07 · gaps 5, 7 · depends on TT-3, TT-5 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-7">7. What Must Be True Before You Build</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 8 — THE CONSUMPTION MODEL, AND HOW YOU MANAGE IT -->
+<!-- Part B · B-08 · gaps 2, 3, 4 · depends on TT-2 · figure C-4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-8">8. The Consumption Model, and How You Manage It</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 9 — MEASURING IT -->
+<!-- Part B · B-09 · gap 8 · depends on TT-4 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-9">9. Measuring It</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 10 — THE AGENT IS NEVER DONE -->
+<!-- Part B · B-10 · gaps 9, 10 · figure C-5 · the title section -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-10">10. The Agent Is Never Done</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 11 — AGENT 365 -->
+<!-- Part B · B-11 · gap 13 · depends on TT-7, TT-8, TT-9 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-11">11. Agent 365 &mdash; the Escalation, Not the Entry Ticket</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 12 — BUYING THE FIRST 80% -->
+<!-- Part B · B-12 · gap 11 · SG-2 closed -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-12">12. Buying the First 80% &mdash; a Prebuilt Agent, and the Last Mile</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 13 — THE TOOLCHAIN REGISTER -->
+<!-- Part B · B-13 · .reslist-group / .reslist-item -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-13">13. The Toolchain Register</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 14 — THE ROOM -->
+<!-- Part B · B-14 · .stop / id="stop-N" · figures are extracts of Part C -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-14">14. The Room</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 15 — WHAT WE COULD NOT VERIFY, AND REFERENCES -->
+<!-- Part B · B-15 · SG-3 · .reflist + .provkey legend -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-15">15. What We Could Not Verify, and References</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
