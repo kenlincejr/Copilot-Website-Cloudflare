@@ -333,10 +333,10 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
   <div class="toc">
     <p class="toc-head">Table of Contents</p>
     <ul>
-      <li><a href="#section-1">The Engagement You Think You&rsquo;re Selling</a></li>
-      <li><a href="#section-2">The Seat You Don&rsquo;t Need</a></li>
-      <li><a href="#section-3">Agent Plumbing Is Not Copilot Plumbing</a></li>
-      <li><a href="#section-4">The Rungs of the Conversation</a></li>
+      <li><a href="#section-1">What Good Looks Like &mdash; End to End</a></li>
+      <li><a href="#section-2">The Engagement You Think You&rsquo;re Selling</a></li>
+      <li><a href="#section-3">The Seat You Don&rsquo;t Need</a></li>
+      <li><a href="#section-4">Agent Plumbing Is Not Copilot Plumbing</a></li>
       <li><a href="#section-5">Choose the Harness</a></li>
       <li><a href="#section-6">The Agent Governance Baseline</a></li>
       <li><a href="#section-7">What Must Be True Before You Build</a></li>
@@ -353,37 +353,163 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 </nav>
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!-- SECTION 1 — THE ENGAGEMENT PARTNERS THINK THEY'RE SELLING -->
-<!-- Part B · B-01 · gap 1 -->
+<!-- SECTION 1 — WHAT GOOD LOOKS LIKE -->
+<!-- Part B · B-00 · absorbs B-04 · depends on TT-6 · figure C-1 -->
+<!-- The page's map and its scope-firewall device. -->
 <!-- ═══════════════════════════════════════════════════════ -->
-<h2 id="section-1">1. The Engagement Partners Think They&rsquo;re Selling</h2>
+<h2 id="section-1">1. What Good Looks Like &mdash; the Engagement End to End</h2>
+
+<p>This section is the whole engagement on one page: the first conversation, the assessment that pays for itself, the build, and the thing that is still generating revenue two years later. Everything after it is detail. A partner who reads only this section should be able to describe a complete, well-run Copilot Studio engagement to a customer &mdash; what happens, in what order, how long it takes, who does it, what gets signed, and what has to be true in the tenant at each step. Every phase below links down to the section that does the work.</p>
+
+<p><strong>Two other staircases exist on this site, and this is neither of them.</strong> The six-stage ladder in <a class="docref" href="cpb.html#9-the-agent-maturity-model-a-staircase-to-frontier-partner">section 9 of the Frontier Partner Playbook</a> measures <em>your practice</em> as it matures across many customers. The five-phase worklist in <a class="docref" href="cpbops.html#s4">section 4 of the Ops Companion</a> is your <em>internal delivery instrument</em> &mdash; Discover, Design, Build &amp; Test, Deploy &amp; Train, AgentOps &mdash; and it is the right document to hand a delivery lead on day one of a build. This arc is <em>one customer's engagement, end to end</em>, and it is wider than the worklist at both ends. It adds two billable phases ahead of Discover, and it carries a credit-management layer after go-live that the worklist has no concept of because it predates metered agents.</p>
+
+<div class="stat-ribbon">
+  <div class="stat-ribbon-item">
+    <div class="sr-k">7</div>
+    <div class="sr-l">Phases, first conversation to ongoing managed AgentOps</div>
+    <div class="sr-s">Three of them recur</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">2</div>
+    <div class="sr-l">Phases that happen before anyone signs a build SOW</div>
+    <div class="sr-s">Both are billable. Most partners give them away</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">4</div>
+    <div class="sr-l">The phase partners skip &mdash; economics, priced before the build is quoted</div>
+    <div class="sr-s">Skip it and the customer meets the run rate on a Microsoft invoice</div>
+  </div>
+  <div class="stat-ribbon-item">
+    <div class="sr-k">90</div>
+    <div class="sr-l">Days between sponsor reviews once the agent is live</div>
+    <div class="sr-s">Microsoft&rsquo;s published rhythm &mdash; measure, review, scale or retire</div>
+  </div>
+</div>
+
+<!-- FIGURE C-1 — the engagement arc. Authored in Part C. -->
+
+<h3>The arc</h3>
+
+<p>Read the table across, not down. The <strong>Paper</strong> column names the shape of the commercial instrument, never a rate &mdash; the rates live in <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a>, and this page does not restate them. <strong>Who delivers</strong> names the organisation, not the job title; for roles, the minimum viable team and what you can safely subcontract, see <a class="docref" href="control-before-scale.html#section-12">section 12 of Control Before Scale</a>.</p>
+
+<div class="tablewrap">
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Duration</th>
+      <th>Who delivers</th>
+      <th>Paper</th>
+      <th>Licensing &mdash; what must be true</th>
+      <th>Detail in</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>0 &middot; Standing and visibility</strong><br><span class="tag">no paper</span> The conversation you are already entitled to have</td>
+      <td>One conversation, 30&ndash;60 minutes. Longer if a discovery scan runs first</td>
+      <td>Partner &mdash; the existing account relationship</td>
+      <td>None. If you are writing paper here you have mistimed it</td>
+      <td>Any Microsoft&nbsp;365 or Office&nbsp;365 subscription. <strong>No Copilot seat.</strong> Copilot Chat is included and can consume custom agents on a metered basis</td>
+      <td><a href="#section-2">&sect;2</a>, <a href="#section-3">&sect;3</a>, and <a class="docref" href="shadowai.html">the Shadow AI Assessment Guide</a> for the discovery-led opening</td>
+    </tr>
+    <tr>
+      <td><strong>1 &middot; The agent governance baseline</strong><br><span class="tag">assessment</span> What is already running, and how far it can reach</td>
+      <td>1&ndash;2 weeks</td>
+      <td>Partner. No vendor purchase required first</td>
+      <td>Fixed-fee assessment. Short-form &mdash; this is not the build SOW</td>
+      <td>Power Platform administrator access, plus <strong>AI Administrator</strong> or Global Reader. Microsoft recommends least privilege over Global Admin. Nothing needs buying</td>
+      <td><a href="#section-6">&sect;6</a> &mdash; and <a class="docref" href="control-before-scale.html#section-6">section 6 of Control Before Scale</a> for why the Copilot equivalent of this phase stalls in an SMB tenant</td>
+    </tr>
+    <tr>
+      <td><strong>2 &middot; Candidate and baseline</strong><br><span class="tag">assessment</span> One named workflow, and the number you will be judged against</td>
+      <td>1&ndash;2 weeks &mdash; Weeks&nbsp;1&ndash;2 of the build-side clock</td>
+      <td>Partner, with the customer&rsquo;s named process owner. The owner is not optional</td>
+      <td>Assessment, or the first phase of the SOW</td>
+      <td>None new. The constraint here is organisational, not licensing &mdash; somebody has to own the process</td>
+      <td><a href="#section-9">&sect;9</a></td>
+    </tr>
+    <tr>
+      <td><strong>3 &middot; Prerequisites and harness</strong><br><span class="tag">sow</span> The environment, the boundary, and which runtime you are building on</td>
+      <td>2 weeks &mdash; Weeks&nbsp;2&ndash;4</td>
+      <td>Partner, with the customer&rsquo;s Power Platform admin. Distributor for the licensing conversation</td>
+      <td>SOW</td>
+      <td>A Power Platform environment with <strong>Dataverse</strong>, production or sandbox &mdash; trial and developer environments are not eligible for pay-as-you-go. A <strong>DLP policy</strong> separating Business from Non-Business connectors. Managed Environments if you need sharing limits or pipelines &mdash; see the open question at <a href="#section-7">&sect;7</a></td>
+      <td><a href="#section-5">&sect;5</a>, <a href="#section-7">&sect;7</a></td>
+    </tr>
+    <tr>
+      <td><strong>4 &middot; Economics</strong><br><span class="tag warn">the skipped one</span> What it costs to run, and who pays for the build burn</td>
+      <td>2&ndash;3 days, inside phase 3&rsquo;s window. <strong>It gates the quote</strong></td>
+      <td>Partner. Distributor for capacity packs</td>
+      <td>None of its own &mdash; its output is the number the build SOW is written around</td>
+      <td>Copilot Credit capacity packs. Since April 2026 these can be bought <strong>without an Azure subscription</strong>. Per-agent monthly caps configured before launch, not after</td>
+      <td><a href="#section-8">&sect;8</a></td>
+    </tr>
+    <tr>
+      <td><strong>5 &middot; Build and deploy</strong><br><span class="tag">sow</span> The part that looks like the project</td>
+      <td>Weeks&nbsp;4&ndash;8 simple, 4&ndash;14 complex; live by Weeks&nbsp;8&ndash;10</td>
+      <td>Partner &mdash; or a prebuilt-agent vendor for the first 80%, with the partner carrying the last mile</td>
+      <td>SOW. The retainer is signed here, not later</td>
+      <td>Capacity packs live. <strong>The harness decides when billing starts</strong> &mdash; on one of them your own development and QA consume the customer&rsquo;s credits before anything is published</td>
+      <td><a href="#section-5">&sect;5</a>, <a href="#section-12">&sect;12</a></td>
+    </tr>
+    <tr>
+      <td><strong>6 &middot; Managed AgentOps</strong><br><span class="tag ok">recurring</span> Where it stops being a project</td>
+      <td>Indefinite. 90-day measurement cycle, then a sponsor review that scales it or retires it</td>
+      <td>Partner. Microsoft operates the platform beneath you and changes it without asking</td>
+      <td>Retainer &mdash; a managed services agreement, not a renewal of the build</td>
+      <td>Capacity packs and caps under active management. <strong>Agent 365 only when a trigger fires</strong>, not as an entry ticket</td>
+      <td><a href="#section-10">&sect;10</a>, <a href="#section-11">&sect;11</a>, and <a class="docref" href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">section 10 of the Frontier Partner Playbook</a> for what to charge</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div style="margin-top:8px;font-size:.68rem;color:#9ca3af;font-style:italic;">Week ranges for phases 2&ndash;5 are the build-side clock published in <a class="docref" href="cpbops.html#s4">section 4 of the Ops Companion</a>, restated here so the two documents stay consistent. Phases 0, 1 and 6 have no equivalent there.</div>
+
+<h3>Phase 4 is the one partners skip</h3>
+
+<p>Every other phase in this arc has an obvious owner and an obvious moment. Economics does not. It sits between the design work and the quote, it produces no deliverable the customer asked for, and it is the easiest thing in the engagement to defer. So partners defer it &mdash; they quote build labour, sign the SOW, ship the agent, and let the customer discover the monthly run rate on a Microsoft invoice they were never shown a forecast for.</p>
+
+<p>That is the single most relationship-damaging move in this motion, and it is entirely avoidable. The estimate takes days, the tooling is free and published by Microsoft, and the per-agent cap that prevents the worst outcome is a setting nobody has to buy. <a href="#section-8">&sect;8</a> is the whole method &mdash; estimate, cap, monitor, true-up &mdash; and it is also where the recurring revenue in this arc actually comes from.</p>
+
+<div class="callout">
+  <div class="callout-title">The two phases ahead of the paper</div>
+  <div class="callout-body"><p>Phases 0 and 1 sit entirely before the point where <a class="docref" href="cpbops.html#s4">the build worklist</a> begins, and <strong>both are billable</strong>. A partner whose engagement starts at Discover has given away the assessment that qualifies the customer, the finding that justifies the SOW, and the only work in the arc that can be sold into a tenant which has bought nothing yet. Phase 1 is the wedge &mdash; <a href="#section-6">&sect;6</a> is why it works where the Copilot readiness assessment does not.</p></div>
+</div>
+
+<div class="unver">
+  <div class="u-label"><span class="tt">TT-6</span> Open tenant test &mdash; phase 1&rsquo;s finding volume</div>
+  <p>Agent Inventory has not yet been run against a real SMB tenant for this guide. <strong>How many agents already exist in a typical Business Premium tenant &mdash; and how many use maker credentials, no authentication, or have no named owner &mdash; is unknown.</strong> Phase 1&rsquo;s duration is scoped on the work the assessment requires, not on a measured finding count, and a tenant with dozens of undocumented agents would push it past two weeks.</p>
+  <p class="u-settle">What would settle it: run Agent Inventory from the Copilot Agent Kit against three real SMB tenants and record agent count, authentication mode, credential mode and ownership state for each. The tool is free and the run is non-invasive.</p>
+</div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!-- SECTION 2 — THE SEAT YOU DON'T NEED -->
+<!-- SECTION 2 — THE ENGAGEMENT PARTNERS THINK THEY'RE SELLING -->
+<!-- Part B · B-01 · gap 1 · reads against the standard set in §1 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2 id="section-2">2. The Engagement Partners Think They&rsquo;re Selling</h2>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SECTION 3 — THE SEAT YOU DON'T NEED -->
 <!-- Part B · B-02 · gap 6 · depends on TT-1 -->
 <!-- ═══════════════════════════════════════════════════════ -->
-<h2 id="section-2">2. The Seat You Don&rsquo;t Need</h2>
+<h2 id="section-3">3. The Seat You Don&rsquo;t Need</h2>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!-- SECTION 3 — AGENT PLUMBING IS NOT COPILOT PLUMBING -->
-<!-- Part B · B-03 · gap 12 · the B-02 → B-03 adjacency is fixed -->
+<!-- SECTION 4 — AGENT PLUMBING IS NOT COPILOT PLUMBING -->
+<!-- Part B · B-03 · gap 12 · the B-02 → B-03 adjacency is fixed as §3 → §4 -->
 <!-- ═══════════════════════════════════════════════════════ -->
-<h2 id="section-3">3. Agent Plumbing Is Not Copilot Plumbing</h2>
-
-<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
-<hr>
-
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- SECTION 4 — THE RUNGS OF THE CONVERSATION -->
-<!-- Part B · B-04 · gap 12 · depends on TT-6 · figure C-1 -->
-<!-- ═══════════════════════════════════════════════════════ -->
-<h2 id="section-4">4. The Rungs of the Conversation</h2>
+<h2 id="section-4">4. Agent Plumbing Is Not Copilot Plumbing</h2>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 <hr>
