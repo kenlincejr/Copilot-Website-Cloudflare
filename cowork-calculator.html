@@ -1170,6 +1170,15 @@ footer.pagefoot a { color:#6b7280; }
       // motion and the tool refuses to assume an answer.
       billing: { model:'paygo', capacityPacksCccu:0, commitCoveragePct:1.0, manualP3Pct:null,
                  p3Holder:'unasked' },
+      // A rollout is a curve, not a step. Only the active population ramps —
+      // credits per active user are a property of the person, not the
+      // calendar — and licenses deliberately do not ramp (v2 §1.4): the
+      // customer pays for the seats they hold whether or not those people
+      // have turned Cowork on. months === 1 means full adoption in month one
+      // and is identical to mode 'none'. Pilot 25 matches the Copilot in 30
+      // trial the tool already recommends; the pilot re-clamps to basisSeats
+      // inside compute(), where basisSeats is actually known.
+      ramp: { mode:'linear', pilotSeats:25, months:6 },
       governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
                     namedCostOwner:'unsure', insuranceRenewal:'unsure' },
       governanceAsked: false,   // false until the partner actually puts the question
@@ -1306,6 +1315,12 @@ footer.pagefoot a { color:#6b7280; }
     s.effort.step = clamp(n(s.effort.step, EFFORT_STEP_DEFAULT), 1, 3); // the slider's own range
     s.model.multiplier = clamp(n(s.model.multiplier, 1), 0, 100);
     s.billing.capacityPacksCccu = Math.max(0, n(s.billing.capacityPacksCccu, 0));
+    // The ramp: mode is a two-value enum and everything else lands inside the
+    // engine's own ranges. The pilot's basisSeats ceiling is applied inside
+    // compute() — basisSeats is not known until the funnel has run.
+    s.ramp.mode = s.ramp.mode === 'none' ? 'none' : 'linear';
+    s.ramp.pilotSeats = clamp(n(s.ramp.pilotSeats, 25), 0, CONST.MAX.seats);
+    s.ramp.months = clamp(n(s.ramp.months, 6), 1, 24);
     ['retainerLo','retainerHi','trainLo','trainHi'].forEach(function (k) {
       s.partnerServices[k] = clamp(n(s.partnerServices[k], 0), 0, CONST.MAX.usd);
     });
@@ -1669,6 +1684,45 @@ footer.pagefoot a { color:#6b7280; }
     var annualCredits = monthlyCredits * 12;
     var paygoAnnual = annualCredits * CONST.CREDIT_USD;
     var cccuRequired = annualCredits / CONST.CCCU.creditsPer;
+
+    /* F1 · the adoption ramp (v2 §1). A rollout is a curve, not a step: the
+       active population climbs from a pilot toward full adoption while
+       credits per active user stay a property of the person, not the
+       calendar — so scaling the steady-state year by seat-months is exact,
+       not an approximation. Only the meter ramps. Licenses do not (v2 §1.4):
+       the customer pays for held seats whether or not those people have
+       turned Cowork on, which is the whole point of the idle-license line in
+       step 3. annualCredits/paygoAnnual/cccuRequired above stay untouched as
+       the steady-state figures; the year1* set below is the ramped year. */
+    var rampCfg = state.ramp || {};
+    var rampMode = rampCfg.mode === 'none' ? 'none' : 'linear';
+    var rampMonths = clamp(n(rampCfg.months, 6), 1, 24);
+    var rampPilot = clamp(n(rampCfg.pilotSeats, 25), 0, Math.max(0, effTotal));
+    // The three flat shapes — mode 'none', months 1, pilot already at the
+    // full population — take the exact-1 path so the steady-state figures
+    // reproduce to the last cent, not to within float noise.
+    var rampFlat = rampMode === 'none' || rampMonths <= 1 || rampPilot >= effTotal || effTotal <= 0;
+    var rampSeats = [];
+    for (var rmm = 1; rmm <= 12; rmm++)
+      rampSeats.push(rampFlat ? effTotal
+        : Math.min(effTotal, rampPilot + (effTotal - rampPilot) * (rmm - 1) / (rampMonths - 1)));
+    var rampFactor = rampFlat ? 1
+      : Math.min(1, rampSeats.reduce(function (a, v) { return a + v; }, 0) / (effTotal * 12));
+    var rampApplies = rampFactor < 0.999;
+    var year1Credits = Math.min(annualCredits, Math.round(annualCredits * rampFactor));
+    var year1Cowork = year1Credits * CU;
+    var year1PaygoAnnual = year1Credits * CONST.CREDIT_USD;
+    var cccuYear1 = year1Credits / CONST.CCCU.creditsPer;
+
+    if (rampApplies)
+      assume.push({ id:'ramp', label:'The adoption ramp',
+        note:'Year one is sized on a ramp from ' + Math.round(rampPilot) + ' users to ' + Math.round(effTotal) +
+             ' over ' + Math.round(rampMonths) + ' months — ' + Math.round(year1Credits).toLocaleString() +
+             ' credits against ' + Math.round(annualCredits).toLocaleString() + ' at full adoption. The pilot size ' +
+             'and the ramp length are this partner’s inputs; the linear shape is editorial — no rollout data ' +
+             'sits behind it. Year one is a projection on that curve; the steady-state year is the model at full ' +
+             'adoption, and it is the number renewals after year one should be sized against.',
+        prov:'editorial' });
     var packCredits = n(state.billing.capacityPacksCccu,0) * CONST.CCCU.creditsPer;
     var afterPacks = Math.max(0, annualCredits - packCredits);
     var commitCredits = afterPacks * clamp(n(state.billing.commitCoveragePct,1), 0, 1.5);
@@ -1897,6 +1951,13 @@ footer.pagefoot a { color:#6b7280; }
       coworkAtMsRate: monthlyCredits * CONST.CREDIT_USD,
       ratioActual:ratioActual, ratioBench:ratioBench, reconciliation:reconciliation,
       annualCredits:annualCredits, paygoAnnual:paygoAnnual, cccuRequired:cccuRequired,
+      // The steady-state figures above keep their names; the ramped year-one
+      // set rides alongside (v2 §1.3). year1AllIn ramps the meter only —
+      // licenses do not ramp (v2 §1.4).
+      rampMode:rampMode, rampPilot:rampPilot, rampMonths:rampMonths,
+      rampFactor:rampFactor, rampSeats:rampSeats, rampApplies:rampApplies,
+      year1Credits:year1Credits, year1Cowork:year1Cowork, year1PaygoAnnual:year1PaygoAnnual,
+      year1AllIn:year1Cowork + licenseMonthly * 12, cccuYear1:cccuYear1,
       commitCccu:commitCccu, discount:disc, p3Annual:p3Annual, p3Saving:p3Saving, breakeven:breakeven,
       cspMotion:cspMotion, motionLabel:MOTIONS[cspMotion].label, motionShort:MOTIONS[cspMotion].short,
       holdsBillingAccount:holdsBillingAccount, inCsp:inCsp,
@@ -2886,6 +2947,27 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   /* ═══ STEP 6 · billing ═══ */
+  /* The 12-cell seat strip is rendered from ctx.rampSeats — engine numbers,
+     never re-derived in the render layer. A plain inline strip by design
+     (v3 spec R5 pre-authorizes it over a sparkline). */
+  function rampStrip(c) {
+    var max = Math.max(1, c.basisSeats);
+    return c.rampSeats.map(function (v, i) {
+      return '<span style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0;">' +
+        '<span data-rseat="' + i + '" style="font-size:.68rem;font-weight:700;color:var(--navy);">' + Math.round(v) + '</span>' +
+        '<span data-rbar="' + i + '" style="display:block;width:100%;height:' + Math.max(4, Math.round((v / max) * 34)) + 'px;background:' + (v >= c.basisSeats ? 'var(--navy)' : 'var(--teal)') + ';border-radius:2px 2px 0 0;"></span>' +
+        '<span style="font-size:.6rem;color:#6b7280;">M' + (i + 1) + '</span></span>';
+    }).join('');
+  }
+  function rampLine(c) {
+    return c.rampApplies
+      ? 'Year one on this ramp needs <b>' + num(c.year1Credits) + ' credits</b> (' + num(Math.round(c.cccuYear1)) +
+        ' CCCU) against <b>' + num(c.annualCredits) + '</b> (' + num(Math.round(c.cccuRequired)) +
+        ' CCCU) at full adoption. The linear shape is editorial; the pilot size and length are yours. ' +
+        'Licenses do not ramp — the customer pays for held seats from day one.'
+      : 'Full adoption from month one — year one and the steady-state year are the same ' +
+        num(c.annualCredits) + ' credits. Set months above 1 to model a pilot ramping up.';
+  }
   function renderBill(r) {
     var c = r.ctx;
     $('billBlock').innerHTML =
@@ -2896,6 +2978,15 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
         '<div class="field"><label>Commit coverage of annual volume</label><input type="number" min="0" max="150" id="billCov" value="' + Math.round(state.billing.commitCoveragePct * 100) + '"></div>' +
         '<div class="field"><label>Known discount % (from your distributor)</label><input type="number" min="0" max="30" id="billPct" placeholder="leave blank to model" value="' + (state.billing.manualP3Pct == null ? '' : state.billing.manualP3Pct) + '"></div>' +
+      '</div>' +
+      '<div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">' +
+        '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:6px;">The adoption ramp &mdash; who is actually on in month one</div>' +
+        '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
+          '<div class="field"><label>Pilot size (active users, month one)</label><input type="number" min="0" id="rampPilot" value="' + Math.round(state.ramp.pilotSeats) + '"></div>' +
+          '<div class="field"><label>Months to full adoption</label><input type="number" min="1" max="24" id="rampMonths" value="' + Math.round(state.ramp.months) + '"></div>' +
+        '</div>' +
+        '<div id="rampStrip" style="display:flex;gap:3px;align-items:flex-end;margin:6px 0 4px;">' + rampStrip(c) + '</div>' +
+        '<p class="srcline"><span data-rline>' + rampLine(c) + '</span></p>' +
       '</div>' +
       (state.billing.model === 'p3'
         ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap;">' +
@@ -2919,6 +3010,33 @@ footer.pagefoot a { color:#6b7280; }
       });
     $('billCov').addEventListener('input', function (e) { state.billing.commitCoveragePct = Math.max(0, Math.min(1.5, (+e.target.value || 0) / 100)); refresh(); });
     $('billPct').addEventListener('input', function (e) { state.billing.manualP3Pct = e.target.value === '' ? null : Math.max(0, Math.min(30, +e.target.value || 0)); refresh(); });
+    $('rampPilot').addEventListener('input', function (e) {
+      state.ramp.pilotSeats = Math.max(0, Math.min(E.CONST.MAX.seats, +e.target.value || 0)); refresh();
+    });
+    $('rampMonths').addEventListener('input', function (e) {
+      state.ramp.months = Math.max(1, Math.min(24, +e.target.value || 1)); refresh();
+    });
+  }
+
+  /* The seat strip and the year-one line are derived read-outs inside the
+     block the partner is typing into. refresh() used to skip renderBill
+     entirely while focused — fine when the block had nothing derived to
+     show; not once the strip is in it (v2 §1.5d). Same in-place pattern as
+     patchPersonas. */
+  function patchBill(r) {
+    var el = $('billBlock'); if (!el) return;
+    var c = r.ctx, max = Math.max(1, c.basisSeats);
+    c.rampSeats.forEach(function (v, i) {
+      var s = el.querySelector('[data-rseat="' + i + '"]');
+      var b = el.querySelector('[data-rbar="' + i + '"]');
+      if (s) s.textContent = Math.round(v);
+      if (b) {
+        b.style.height = Math.max(4, Math.round((v / max) * 34)) + 'px';
+        b.style.background = v >= c.basisSeats ? 'var(--navy)' : 'var(--teal)';
+      }
+    });
+    var l = el.querySelector('[data-rline]');
+    if (l) l.innerHTML = rampLine(c);
   }
 
   /* ═══ STEP 7 · governance ═══ */
@@ -3409,8 +3527,20 @@ footer.pagefoot a { color:#6b7280; }
         '<div class="splitlegend"><span><i style="background:var(--navy);"></i>Licenses ' + usd(c.licenseMonthly) + '</span><span><i style="background:var(--teal);"></i>Cowork meter ' + usd(c.monthlyCowork) + '</span></div>' +
       '</div>' +
       '<div class="numgrid" style="margin-top:18px;">' +
-        cell('numAnnual', usd(c.allInAnnual), 'All-in / year', 'licenses + Cowork × 12', usd(c.allInMonthly) + ' × 12') +
-        cell('numThree', usd(c.allInThreeYear), 'All-in / 3 years', 'at today\'s volumes and prices', usd(c.allInMonthly) + ' × 36') +
+        /* Year one is the ramped year (v2 §1.5b): the meter scales by
+           seat-months while the license half does not ramp (§1.4). With the
+           ramp off, these cells render exactly the pre-ramp figures and
+           labels. */
+        (c.rampApplies
+          ? cell('numAnnual', usd(c.year1AllIn), 'All-in / year one',
+                 'ramping ' + num(Math.round(c.rampPilot)) + '&rarr;' + num(c.basisSeats) + ' users over ' +
+                 Math.round(c.rampMonths) + ' months &middot; steady-state year ' + usd(c.allInAnnual),
+                 usd(c.year1Cowork) + ' Cowork on the ramp + ' + usd(c.licenseMonthly) + ' × 12 licenses (licenses do not ramp)') +
+            cell('numThree', usd(c.year1AllIn + 2 * c.allInAnnual), 'All-in / 3 years',
+                 'year one ramped, years two and three steady',
+                 usd(c.year1AllIn) + ' + 2 × ' + usd(c.allInAnnual))
+          : cell('numAnnual', usd(c.allInAnnual), 'All-in / year', 'licenses + Cowork × 12', usd(c.allInMonthly) + ' × 12') +
+            cell('numThree', usd(c.allInThreeYear), 'All-in / 3 years', 'at today\'s volumes and prices', usd(c.allInMonthly) + ' × 36')) +
       '</div>' +
       (c.sellMode ? '<div class="whybox partner-only" style="border-left-color:#0f766e;"><div class="wb-h">Your position on this deal &mdash; internal only</div>' +
         '<p>Licenses bill at <b>' + usd(c.licenseSell) + '/month</b> against a Microsoft list of ' + usd(c.licenseList) +
@@ -3550,7 +3680,23 @@ footer.pagefoot a { color:#6b7280; }
           'role. It is their money and their auto-renewal either way.'
         : 'Who is allowed to place that order depends on which CSP motion you are in, and nobody has said. Set it at ' +
           'the top of the pricing screen \u2014 an indirect reseller cannot place it at all.';
-    var certain = '<p><b>What you can say with certainty:</b> this account needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit for a year of Cowork at these volumes.</p>' +
+    /* The old paragraph here presented the steady-state commit as a
+       certainty. What is certain is the arithmetic, not the adoption curve —
+       and a P3 is non-cancellable, so sizing it to a full-adoption year the
+       ramp says will not happen was an over-commit with no refund path
+       (finding #5, v2 §1.5a). Size to year one; re-size at renewal. */
+    var sizing = (c.rampApplies
+      ? '<p><b>Size the commit to year one, not to steady state.</b> At full adoption this account runs <b>' +
+        num(Math.round(c.cccuRequired)) + ' CCCU</b> a year. It will not be at full adoption for the first ' +
+        Math.round(c.rampMonths) + ' months — ramping from ' + num(Math.round(c.rampPilot)) + ' users to ' +
+        num(c.basisSeats) + ', year one needs about <b>' + num(Math.round(c.cccuYear1)) + ' CCCU</b>. Buy the ' +
+        'steady-state number and you have pre-paid <b>' + num(Math.round(c.cccuRequired - c.cccuYear1)) +
+        ' CCCU</b> you cannot get back, on a plan that auto-renews. The arithmetic here is exact; the adoption ' +
+        'curve is a projection — take the year-one figure into the order below and re-size at renewal, when ' +
+        'you will have real numbers.</p>'
+      : '<p>A year of Cowork at these volumes needs a <b>' + num(Math.round(c.cccuRequired)) + ' CCCU</b> commit, ' +
+        'with adoption flat from month one — year one and the steady-state year are the same number. The ' +
+        'arithmetic is exact; flat-from-month-one adoption is an assumption, not a measurement.</p>') +
       '<p>' + buyPath + '</p>';
     var discLine = d.exact
       ? '<p>At that volume the published tier is <b>' + d.pct + '%</b>.</p>'
@@ -3564,7 +3710,7 @@ footer.pagefoot a { color:#6b7280; }
         cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
         cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year', (d.exact ? d.pct : d.pct.toFixed(1)) + '% modeled · saves ' + usd(Math.max(0, c.p3Saving)), num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')', 'alt') +
       '</div>' +
-      '<div class="whybox">' + discLine + certain + verdict +
+      '<div class="whybox">' + discLine + sizing + verdict +
       '<p style="font-size:.8rem;color:#6b7280;">The discount does not stack with other discounts. Consumption order is capacity packs, then P3, then PayGo.</p></div>' +
       p3RiskBlock(c) + partnerCostBlock(c) +
       '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';
@@ -3584,10 +3730,14 @@ footer.pagefoot a { color:#6b7280; }
       'A Copilot Credit P3 is a pre-purchase plan: <b>cancellations and exchanges are not supported</b>, the term ' +
       'is twelve months, and <b>it auto-renews by default</b> \u2014 the same amount commits again next year unless ' +
       'someone deliberately turns that off.</p>';
+    /* The shortfall is sized on the ramped year \u2014 year1Cowork against the
+       ramped low band \u2014 not on steady-state \u00d7 12 (v2 \u00a70.6, \u00a71.5c). With the
+       ramp off, year1Cowork IS the steady year and nothing moves. */
     if (who === 'partner')
       body += '<p>You are holding that position, not the customer. The commit is sized on a modeled ' +
-        usd(c.monthlyCowork) + '/month. If real usage lands at the bottom of your own band \u2014 ' +
-        usd(c.coworkLo) + '/month \u2014 that is <b>' + usd((c.monthlyCowork - c.coworkLo) * 12) +
+        usd(c.monthlyCowork) + '/month at full adoption' +
+        (c.rampApplies ? ' \u2014 ' + usd(c.year1Cowork) + ' across the ramped year one' : '') +
+        '. If real usage lands at the bottom of your own band, that is <b>' + usd(c.year1Cowork * c.band) +
         '</b> of credit you paid for and nobody burns, and there is no refund window to recover it in. ' +
         'That is a financing service you are providing: price it as one, or move the commitment into the ' +
         'customer\u2019s name.</p>';
@@ -3598,6 +3748,15 @@ footer.pagefoot a { color:#6b7280; }
     else
       body += '<p>The tool will not assume this one. Set it on the billing step \u2014 it changes who carries ' +
         usd(c.p3Exposure) + ' of non-refundable risk, and that is not a detail to discover at renewal.</p>';
+    /* The exposure figure follows the commit as configured on this step \u2014
+       but when that commit exceeds what the ramped year needs, the gap is
+       named in dollars rather than left implicit (v2 \u00a71.5c). */
+    if (c.rampApplies && c.commitCccu > c.cccuYear1)
+      body += '<p>And the commit as configured is <b>' + num(Math.round(c.commitCccu)) + ' CCCU</b> against a ' +
+        'year-one need of about ' + num(Math.round(c.cccuYear1)) + ' \u2014 <b>' +
+        usd((c.commitCccu - c.cccuYear1) * E.CONST.CCCU.usdPer * (1 - c.discount.pct / 100)) +
+        '</b> of pre-paid credit the ramp says nobody burns in year one. Size the order to the year-one ' +
+        'figure, or carry that gap knowingly.</p>';
     return '<div class="whybox partner-only" style="border-left-color:#b45309;">' +
       '<div class="wb-h">' + head + '</div>' + body +
       '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
@@ -4044,8 +4203,12 @@ footer.pagefoot a { color:#6b7280; }
         : c.cspMotion === 'notCsp'
           ? 'the number the customer orders against on their own subscription'
           : 'the number someone orders against \u2014 and which someone depends on a CSP motion nobody has set yet';
-      return 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
-        num(Math.round(c.cccuRequired)) + ' CCCU</b> \u2014 that is ' + who + '.';
+      return c.rampApplies
+        ? 'Pay-as-you-go runs <b>' + usd(c.year1PaygoAnnual) + '</b> in year one on this ramp, against ' +
+          usd(c.paygoAnnual) + ' at full adoption. A P3 commit sized to year one needs <b>' +
+          num(Math.round(c.cccuYear1)) + ' CCCU</b> \u2014 that is ' + who + '.'
+        : 'Pay-as-you-go runs <b>' + usd(c.paygoAnnual) + ' a year</b>. A P3 commit at this volume would need <b>' +
+          num(Math.round(c.cccuRequired)) + ' CCCU</b> \u2014 that is ' + who + '.';
     },
     step7: function (c) {
       if (!c.governanceAsked)
@@ -4117,7 +4280,7 @@ footer.pagefoot a { color:#6b7280; }
       patchLic();
       if (focusIn('actBlock')) patchAct(r); else renderAct(r);
       if (focusIn('effortBlock') || focusIn('calBlock')) patchEffort(r); else renderEffort(r);
-      if (!focusIn('billBlock'))    renderBill(r);
+      if (focusIn('billBlock')) patchBill(r); else renderBill(r);
       if (focusIn('personaBlock')) patchPersonas(r); else renderPersonas(r);
       renderCapNote(r);
       renderBasisBar(r);

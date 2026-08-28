@@ -677,7 +677,221 @@ function assertCopyClean(r, m) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   (R5–R8 sections append here)
+   R5 — F1, the adoption ramp (v2 §1, finding #5)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── R5.0 · Stock ramp: exact year-one arithmetic, computed by hand ─────── */
+{
+  const r = E.compute(E.defaults());
+  const c = r.ctx;
+  eq(c.rampMode, 'linear', 'stock ramp mode is linear (v2 §10.1 stands)');
+  eq(c.rampPilot, 25, 'stock pilot 25');
+  eq(c.rampMonths, 6, 'stock months 6');
+  // Hand-built: seats(m) = min(52, 25 + 27·(m−1)/5)
+  const expect = [25, 30.4, 35.8, 41.2, 46.6, 52, 52, 52, 52, 52, 52, 52];
+  eq(c.rampSeats.length, 12, 'rampSeats has 12 elements');
+  expect.forEach(function (v, i) {
+    ok(Math.abs(c.rampSeats[i] - v) < 1e-9, 'stock rampSeats[' + i + '] = ' + v + ' (got ' + c.rampSeats[i] + ')');
+  });
+  // 543 seat-months against 624 steady
+  ok(Math.abs(c.rampFactor - 543 / 624) < 1e-12, 'stock rampFactor = 543/624');
+  eq(c.annualCredits, 9060000, 'stock annual credits 9,060,000');
+  // round(9,060,000 × 543 ÷ 624) = round(7,883,942.3077) = 7,883,942 exactly
+  eq(c.year1Credits, 7883942, 'stock year-one credits = 7,883,942');
+  ok(Math.abs(c.cccuYear1 - 78839.42) < 1e-9, 'stock year-one CCCU = 78,839.42');
+  eq(c.cccuRequired, 90600, 'steady CCCU still 90,600');
+  ok(Math.abs(c.year1Cowork - 78839.42) < 1e-6, 'year1Cowork = year-one credits at $0.01');
+  ok(Math.abs(c.year1PaygoAnnual - 78839.42) < 1e-6, 'year1PaygoAnnual at Microsoft rate');
+  ok(Math.abs(c.year1AllIn - (c.year1Cowork + c.licenseMonthly * 12)) < 1e-9,
+     'year1AllIn = ramped Cowork + licenses × 12 — licenses do not ramp (v2 §1.4)');
+  eq(c.rampApplies, true, 'stock ramp applies');
+  ok(aids(r).indexOf('ramp') >= 0, 'ramp assumption pushed when the ramp applies');
+  const a = r.assumptions.filter(x => x.id === 'ramp')[0];
+  eq(a.prov, 'editorial', 'ramp assumption carries editorial provenance');
+  ok(a.note.indexOf('editorial') >= 0, 'the note says the shape is editorial');
+  ok(a.note.indexOf('partner') >= 0, 'the note says pilot and length are the partner’s inputs');
+  ok(a.note.indexOf('projection') >= 0, 'the note says year one is a projection');
+}
+
+/* ── R5.1 · Invariants 1–3: the flat shapes are exact, not approximate ──── */
+{
+  function withRamp(mode, pilot, months) {
+    const s = E.defaults();
+    s.ramp = { mode: mode, pilotSeats: pilot, months: months };
+    return s;
+  }
+  const rNone = E.compute(withRamp('none', 25, 6));
+  const none = rNone.ctx;
+  eq(none.rampFactor, 1, 'invariant 1: mode none ⟹ rampFactor === 1 exactly');
+  eq(none.year1Credits, none.annualCredits, 'invariant 1: year1Credits === annualCredits exactly');
+  eq(none.rampApplies, false, 'mode none gates the ramp copy off');
+  ok(aids(rNone).indexOf('ramp') === -1, 'mode none pushes no ramp assumption');
+  none.rampSeats.forEach(function (v, i) { eq(v, none.basisSeats, 'mode none rampSeats[' + i + '] = basisSeats'); });
+
+  const m1 = E.compute(withRamp('linear', 25, 1)).ctx;
+  eq(m1.rampFactor, 1, 'invariant 2: months 1 ⟹ factor exactly 1');
+  ['rampFactor','year1Credits','year1Cowork','year1PaygoAnnual','year1AllIn','cccuYear1','rampApplies']
+    .forEach(function (k) { eq(m1[k], none[k], 'invariant 2: months 1 identical to mode none on ' + k); });
+
+  const big = E.compute(withRamp('linear', 500, 6)).ctx;
+  eq(big.rampFactor, 1, 'invariant 3: pilot ≥ basisSeats ⟹ factor 1');
+  eq(big.rampApplies, false, 'pilot ≥ basisSeats shows no ramp copy');
+  eq(big.rampPilot, big.basisSeats, 'pilot clamps to basisSeats at compute time');
+  const exact = E.compute(withRamp('linear', 52, 6)).ctx;
+  eq(exact.rampFactor, 1, 'invariant 3: pilot === basisSeats ⟹ factor 1');
+}
+
+/* ── R5.2 · Invariant 4: 0 < factor ≤ 1 under garbage, incl. basis 0 ────── */
+{
+  const shapes = [
+    { mode:'linear', pilotSeats:-10, months:6 },
+    { mode:'linear', pilotSeats:0, months:0 },
+    { mode:'linear', pilotSeats:0, months:24.5 },
+    { mode:'linear', pilotSeats:'abc', months:'abc' },
+    { mode:'garbage', pilotSeats:null, months:{} },
+    { mode:'linear', pilotSeats:1e308, months:-5 },
+    { mode:'linear', pilotSeats:0, months:24 },
+    5, null, 'x', [], true
+  ];
+  shapes.forEach(function (ramp, i) {
+    const s = E.defaults(); s.ramp = ramp;
+    let r;
+    try { r = E.compute(s); }
+    catch (e) { fail++; console.log('FAIL: ramp garbage ' + i + ' threw: ' + e.message); return; }
+    const c = r.ctx;
+    ok(c.rampFactor > 0 && c.rampFactor <= 1, 'garbage ramp ' + i + ' factor in (0,1] (got ' + c.rampFactor + ')');
+    ok(c.year1Credits <= c.annualCredits, 'garbage ramp ' + i + ' year1 ≤ annual (invariant 5)');
+    ok(c.cccuYear1 <= c.cccuRequired, 'garbage ramp ' + i + ' cccuYear1 ≤ cccuRequired (invariant 6)');
+    eq(c.rampSeats.length, 12, 'garbage ramp ' + i + ' keeps the 12-element vector');
+    assertCtxSane(c, 'garbage ramp ' + i);
+    assertCopyClean(r, 'garbage ramp ' + i);
+  });
+  // basisSeats === 0 by zero activation
+  const z = E.defaults(); z.activation = { mode:'count', count: 0 };
+  const zc = E.compute(z).ctx;
+  eq(zc.rampFactor, 1, 'basisSeats 0 (zero active) ⟹ factor 1, no division blow-up');
+  eq(zc.year1Credits, 0, 'basisSeats 0 year-one credits 0');
+}
+
+/* ── R5.3 · Invariants 4–8: 520-state adversarial ramp fuzz ─────────────── */
+{
+  // Deterministic LCG so a failure reproduces.
+  let seed = 20260828;
+  function rand() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+  function pick(a) { return a[Math.floor(rand() * a.length)]; }
+  const GARBAGE = [0, 1, -1, 0.5, 24, 25, 1e308, -1e308, NaN, Infinity, -Infinity, 'abc', null, undefined, {}, [], true];
+  for (let i = 0; i < 520; i++) {
+    const s = E.defaults();
+    s.ramp = rand() < 0.1 ? pick(GARBAGE)
+      : { mode: pick(['linear','none','x', null, 7]),
+          pilotSeats: rand() < 0.3 ? pick(GARBAGE) : Math.floor(rand() * 200) - 20,
+          months: rand() < 0.3 ? pick(GARBAGE) : rand() * 30 - 2 };
+    if (rand() < 0.4) s.licenseInventory = [{ skuId: pick(['bprem_cop','cop_biz','e3','zzz','toString']),
+                                              seats: pick([0, 1, 60, 400, 1e308, -5, 'x']) }];
+    if (rand() < 0.4) s.activation = { mode: pick(['rate','count','benchmark']), rate: rand() * 2,
+                                       count: pick([0, 5, 1e308, -3, 'x', null]) };
+    if (rand() < 0.3) s.personas.forEach(function (p) { p.seats = pick([0, 10, 1e308, -1, 'x']); });
+    if (rand() < 0.3) s.billing = { model: pick(['p3','paygo']), capacityPacksCccu: pick([0, 500, -100, 'x']),
+                                    commitCoveragePct: pick([0, 1, 1.5, 'x']), manualP3Pct: pick([null, 10, 500, 'x']),
+                                    p3Holder: pick(['partner','customer','unasked']) };
+    let r;
+    try { r = E.compute(s); }
+    catch (e) { fail++; console.log('FAIL: ramp fuzz ' + i + ' threw: ' + e.message); continue; }
+    const c = r.ctx;
+    ok(c.rampFactor > 0 && c.rampFactor <= 1, 'fuzz ' + i + ' factor in (0,1] (got ' + c.rampFactor + ')');
+    ok(c.year1Credits <= c.annualCredits, 'fuzz ' + i + ' year1Credits ≤ annualCredits');
+    ok(c.cccuYear1 <= c.cccuRequired, 'fuzz ' + i + ' cccuYear1 ≤ cccuRequired');
+    eq(c.rampSeats.length, 12, 'fuzz ' + i + ' rampSeats length 12');
+    let mono = true, capped = true, finite = true;
+    for (let m = 0; m < 12; m++) {
+      if (!isFinite(c.rampSeats[m])) finite = false;
+      if (m && c.rampSeats[m] < c.rampSeats[m - 1] - 1e-9) mono = false;
+      if (c.rampSeats[m] > c.basisSeats + 1e-9) capped = false;
+    }
+    ok(finite, 'fuzz ' + i + ' rampSeats all finite');
+    ok(mono, 'fuzz ' + i + ' rampSeats non-decreasing');
+    ok(capped, 'fuzz ' + i + ' rampSeats ≤ basisSeats');
+    ['rampFactor','year1Credits','year1Cowork','year1PaygoAnnual','year1AllIn','cccuYear1']
+      .forEach(function (k) { ok(isFinite(c[k]) && c[k] >= 0, 'fuzz ' + i + ' ' + k + ' finite ≥ 0'); });
+    assertCopyClean(r, 'fuzz ' + i);
+    // Rebuild the year-one strings the way the render layer formats them and
+    // sweep for NaN/undefined (invariant 8 for the surfaces node can reach).
+    const built = [Math.round(c.rampMonths), Math.round(c.rampPilot), c.basisSeats,
+      Math.round(c.cccuYear1).toLocaleString(), Math.round(c.cccuRequired).toLocaleString(),
+      Math.round(c.cccuRequired - c.cccuYear1).toLocaleString(),
+      c.year1AllIn.toLocaleString(), (c.year1AllIn + 2 * c.allInAnnual).toLocaleString(),
+      c.year1PaygoAnnual.toLocaleString(), (c.year1Cowork * c.band).toLocaleString()].join(' ');
+    ok(!/NaN|undefined|Infinity/.test(built), 'fuzz ' + i + ' no NaN/undefined in the year-one strings');
+  }
+}
+
+/* ── R5.4 · Invariant 9: greenfield stays $0 with no ramp copy ──────────── */
+{
+  const r = E.compute(st({ licenseInventory: [{ skuId:'bstd', seats:40 }] }));
+  eq(r.ctx.greenfield, true, 'greenfield shape recognized');
+  eq(r.ctx.monthlyCowork, 0, 'greenfield meter $0');
+  eq(r.ctx.year1Credits, 0, 'greenfield year-one credits 0');
+  eq(r.ctx.rampFactor, 1, 'greenfield factor 1');
+  eq(r.ctx.year1AllIn, r.ctx.allInAnnual, 'greenfield year1AllIn equals the steady year');
+  eq(r.ctx.rampApplies, false, 'greenfield shows no ramp copy');
+  ok(aids(r).indexOf('ramp') === -1, 'greenfield pushes no ramp assumption');
+}
+
+/* ── R5.5 · normalize() repairs a hostile ramp branch ───────────────────── */
+{
+  eq(E.normalize({ ramp: { mode:'evil', pilotSeats:-10, months:99 } }).ramp.mode, 'linear',
+     'unknown mode lands on linear');
+  eq(E.normalize({ ramp: { pilotSeats:-10 } }).ramp.pilotSeats, 0, 'negative pilot clamps to 0');
+  eq(E.normalize({ ramp: { pilotSeats: 1e308 } }).ramp.pilotSeats, 1e6, 'pilot clamps to MAX.seats');
+  eq(E.normalize({ ramp: { months: 99 } }).ramp.months, 24, 'months clamps to 24');
+  eq(E.normalize({ ramp: { months: 0 } }).ramp.months, 1, 'months clamps to 1');
+  eq(E.normalize({ ramp: { months: 'abc' } }).ramp.months, 6, 'garbage months lands on the default');
+  eq(E.normalize({ ramp: 5 }).ramp.months, 6, 'non-object ramp branch rebuilt from defaults');
+  eq(E.normalize({}).ramp.mode, 'linear', 'absent ramp branch lands on defaults');
+  eq(E.normalize({ ramp: { mode:'none' } }).ramp.mode, 'none', 'a real none survives normalize');
+}
+
+/* ── R5.6 · Steady figures untouched; mode 'none' reproduces pre-R5 ─────── */
+{
+  const d = E.defaults(); d.ramp.mode = 'none';
+  const r = E.compute(d);
+  const c = r.ctx;
+  eq(c.annualCredits, 9060000, 'none: annual credits 9,060,000 (pre-R5 figure)');
+  eq(c.cccuRequired, 90600, 'none: steady CCCU 90,600 (pre-R5 figure)');
+  ok(Math.abs(c.paygoAnnual - 90600) < 1e-6, 'none: PayGo/year $90,600 (pre-R5 figure)');
+  eq(c.year1Credits, 9060000, 'none: year1Credits === annualCredits exactly');
+  ok(Math.abs(c.year1AllIn - c.allInAnnual) < 1e-6, 'none: year1AllIn reproduces allInAnnual');
+  ok(Math.abs((c.year1AllIn + 2 * c.allInAnnual) - c.allInThreeYear) < 1e-6,
+     'none: the 3-year total reproduces × 36');
+  eq(Math.round(c.monthlyCredits), 755000, 'none: the 755,000 anchor stands');
+  eq(Math.round(c.monthlyCowork), 7550, 'none: the $7,550 anchor stands');
+}
+
+/* ── R5 · UI-side invariants, asserted against the raw source ───────────── */
+{
+  ok(src.indexOf('with certainty') === -1, 'the string "with certainty" occurs nowhere in the file');
+  ok(!/\(c\.monthlyCowork - c\.coworkLo\) \* 12/.test(src),
+     'the inline ×12 annualization in p3RiskBlock is gone (v2 §0.6)');
+  ok(/if \(focusIn\('billBlock'\)\) patchBill\(r\); else renderBill\(r\);/.test(src),
+     'refresh() patches the billing block in place while focused');
+  ok(/function patchBill\(/.test(src), 'patchBill exists');
+  ok(/id="rampPilot"/.test(src) && /id="rampMonths"/.test(src), 'step 6 carries the two ramp inputs');
+  ok(/state\.ramp\.months = Math\.max\(1, Math\.min\(24,/.test(src), 'months input clamps to [1, 24]');
+  ok(/state\.ramp\.pilotSeats = Math\.max\(0, Math\.min\(E\.CONST\.MAX\.seats,/.test(src),
+     'pilot input clamps to [0, MAX.seats]');
+  ok(/data-rseat/.test(src) && /data-rbar/.test(src), 'the 12-cell seat strip renders rampSeats');
+  ok(/All-in \/ year one/.test(src), 'numAnnual wears the year-one label when the ramp applies');
+  ok(/year one ramped, years two and three steady/.test(src), 'numThree names the mixed basis');
+  ok(/steady-state year ' \+ usd\(c\.allInAnnual\)/.test(src), 'numAnnual sub-line gives the steady-state year');
+  ok(/year1AllIn \+ 2 \* c\.allInAnnual/.test(src), 'numThree computes year one + 2 × steady');
+  ok(/Size the commit to year one, not to steady state/.test(src),
+     'billOut carries the year-one sizing paragraph');
+  ok(/in year one on this ramp/.test(src), 'ECHO.step6 says year one');
+  ok(/usd\(c\.year1Cowork \* c\.band\)/.test(src), 'the risk-block shortfall is the ramped year vs the ramped low band');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   (R6–R8 sections append here)
    ══════════════════════════════════════════════════════════════════════════ */
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
