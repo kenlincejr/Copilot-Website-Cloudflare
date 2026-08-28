@@ -387,7 +387,174 @@ function assertCopyClean(r, m) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   (R3–R8 sections append here)
+   R3 — Provenance honesty (findings #9, #10, #11, #24)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── R3.0 · The anchor does not move: '' preset, same seats, same number ── */
+{
+  const d = E.defaults();
+  eq(d.personaPreset, '', 'defaults ship no persona preset (finding #10)');
+  eq(d.personaTasksTouched, false, 'defaults ship personaTasksTouched false');
+  eq(d.personas.map(p => p.seats).join(','), '26,13,6,7', 'stock seats stay 26/13/6/7');
+  const r = E.compute(d);
+  eq(Math.round(r.ctx.monthlyCredits), 755000, 'R3 anchor: stock credits unchanged');
+  eq(Math.round(r.ctx.monthlyCowork), 7550, 'R3 anchor: stock monthly unchanged');
+  ok(aids(r).indexOf('preset') === -1, 'no preset assumption for the shipped default');
+  eq(row(r, 'F6').prov, 'partner', 'stock F6 stays partner-asked');
+  eq(row(r, 'F10').prov, 'ms-modeled', 'stock F10 stays ms-modeled');
+  eq(row(r, 'R1').prov, 'ms-modeled', 'stock R1 computes to ms-modeled from its inputs');
+}
+
+/* ── R3.1 · weakest() is live and no longer seed-poisoned ───────────────── */
+{
+  eq(E.weakest([]), 'ms-verified', 'weakest of nothing is ms-verified');
+  eq(E.weakest(['measured']), 'measured', 'weakest([measured]) is measured — the old seed made this unreachable');
+  eq(E.weakest(['measured','ms-verified']), 'measured', 'rank-4 tie keeps the first-listed tag');
+  eq(E.weakest(['ms-modeled','ms-verified']), 'ms-modeled', 'modeled beats verified downward');
+  eq(E.weakest(['ms-verified','editorial','partner']), 'editorial', 'editorial is the floor');
+  eq(E.weakest([null,'partner',undefined]), 'partner', 'falsy entries are ignored');
+}
+
+/* ── R3.2 · Benchmark mode stops laundering the 2.6× (finding #9) ───────── */
+{
+  const s = E.defaults(); s.activation.mode = 'benchmark';
+  const r = E.compute(s);
+  eq(row(r, 'F6').prov, 'editorial', 'benchmark-mode F6 is editorial via weakest()');
+  ok(aids(r).indexOf('F6') >= 0, 'benchmark mode pushes an F6 assumption');
+  const note = r.assumptions.filter(a => a.id === 'F6')[0].note;
+  ok(note.indexOf('TD SYNNEX') >= 0, 'the F6 assumption names TD SYNNEX');
+  ok(note.indexOf('not Microsoft') >= 0, 'the F6 assumption says whose data it is not');
+  // and the provenance change moved no numbers
+  eq(r.ctx.active, 43, 'benchmark-mode active count unchanged (43)');
+  eq(r.ctx.monthlyCredits, 623475, 'benchmark-mode credits unchanged (623,475)');
+  // non-benchmark modes carry no F6 assumption
+  ok(aids(E.compute(E.defaults())).indexOf('F6') === -1, 'rate mode pushes no F6 assumption');
+}
+
+/* ── R3.3 · The R2 ratio row wears the benchmark's provenance in all modes ─ */
+{
+  ['rate','count','benchmark'].forEach(function (m) {
+    const s = E.defaults(); s.activation.mode = m;
+    if (m === 'count') s.activation.count = 52;
+    const r = E.compute(s);
+    eq(row(r, 'R2').prov, 'editorial', 'R2 row is editorial in ' + m + ' mode');
+    ok(aids(r).indexOf('R2') >= 0, 'R2 assumption present in ' + m + ' mode');
+    ok(r.assumptions.filter(a => a.id === 'R2')[0].note.indexOf('TD SYNNEX') >= 0,
+       'R2 assumption names TD SYNNEX in ' + m + ' mode');
+  });
+}
+
+/* ── R3.4 · R2 calibration semantics survive the weakest() rewire ────────── */
+{
+  // (the R2 section above already re-proves F10/F11/B1/B2; this pins the two
+  //  new interactions)
+  const calTouched = E.compute(st({ calibrated: true, personaTasksTouched: true,
+    tierCredits: { light:130, medium:500, heavy:1200 } }));
+  eq(row(calTouched, 'F10').prov, 'partner',
+     'edited counts under a genuine calibration read partner — every input is the partner’s');
+  const touchedOnly = E.compute(st({ personaTasksTouched: true }));
+  eq(row(touchedOnly, 'F10').prov, 'ms-modeled',
+     'edited counts under the modeled tiers stay ms-modeled — the model is still the weakest link');
+}
+
+/* ── R3.5 · personaTasksTouched: state, attribution, assumptions (#11) ───── */
+{
+  // strict boolean through the loader pipeline
+  eq(E.normalize({ personaTasksTouched: 'yes' }).personaTasksTouched, false,
+     'a truthy string is not an edit trail (strict boolean)');
+  eq(E.normalize({ personaTasksTouched: true }).personaTasksTouched, true,
+     'the real flag survives normalize');
+  eq(E.normalize({}).personaTasksTouched, false, 'absent flag lands false');
+
+  // the flag survives a session save/load round-trip
+  const saved = E.defaults(); saved.personas[2].heavy = 60; saved.personaTasksTouched = true;
+  eq(E.normalize(JSON.parse(JSON.stringify(saved))).personaTasksTouched, true,
+     'flag survives JSON round-trip');
+
+  // edited counts push a partner-attributed assumption
+  const r = E.compute(saved);
+  ok(aids(r).indexOf('persona-tasks') >= 0, 'edited counts push the persona-tasks assumption');
+  const a = r.assumptions.filter(x => x.id === 'persona-tasks')[0];
+  eq(a.prov, 'partner', 'persona-tasks assumption is partner provenance');
+  ok(a.note.indexOf('not Microsoft') >= 0, 'the note says the counts are not Microsoft’s');
+
+  // no engine-rendered string attributes edited counts to Microsoft
+  const claims = r.assumptions.map(x => x.note).join(' ');
+  ok(claims.indexOf('task mix inside each persona is Microsoft') === -1,
+     'no assumption claims Microsoft authorship of edited counts');
+
+  // a preset loaded alongside edited counts discloses both
+  const both = E.defaults(); both.personaPreset = 'prof';
+  both.personas[0].light = 99; both.personaTasksTouched = true;
+  const rb = E.compute(both);
+  const pn = rb.assumptions.filter(x => x.id === 'preset')[0];
+  ok(pn && pn.note.indexOf('edited by hand') >= 0,
+     'preset note discloses the hand-edited counts');
+  // untouched preset keeps the Microsoft sentence
+  const clean = E.applyPreset(Object.assign(E.defaults(), { personaPreset:'prof' }), 'prof');
+  const rc = E.compute(clean);
+  const pc = rc.assumptions.filter(x => x.id === 'preset')[0];
+  ok(pc && pc.note.indexOf('task mix inside each persona is Microsoft') >= 0,
+     'untouched preset still credits Microsoft for the counts');
+}
+
+/* ── R3.6 · Preset click restores Microsoft's counts and clears the flag ── */
+{
+  const s = E.defaults();
+  s.personas.forEach(function (p) { p.light = 999; p.medium = 999; p.heavy = 999; });
+  s.personaTasksTouched = true; s.personaPreset = '';
+  E.applyPreset(s, 'prof');
+  s.personas.forEach(function (p, i) {
+    const d = E.PERSONA_DEFAULTS[i];
+    eq(p.light, d.light, 'preset restores light for ' + d.key);
+    eq(p.medium, d.medium, 'preset restores medium for ' + d.key);
+    eq(p.heavy, d.heavy, 'preset restores heavy for ' + d.key);
+  });
+  eq(s.personaTasksTouched, false, 'preset click clears personaTasksTouched');
+  // and the restored state carries no partner-counts assumption
+  s.personaPreset = 'prof';
+  ok(aids(E.compute(s)).indexOf('persona-tasks') === -1,
+     'restored counts drop the persona-tasks assumption');
+}
+
+/* ── R3.7 · Computed literals and the wrong retail sentence (#24, #22) ───── */
+{
+  eq(E.PRESETS.retail.w.join(','), '0.35,0.2,0.1,0.35', 'retail weights untouched');
+  ok(E.PRESETS.retail.why.indexOf('shorter, more frequent') === -1,
+     'the false retail frequency claim is gone');
+  ok(E.PRESETS.retail.why.indexOf('lightest task mix') >= 0,
+     'retail rationale now states what the data supports');
+  // the divisors are catalog reads, so this stays true if the price moves
+  eq(E.SKU_BY_ID['cop_biz'].usd, 18, 'cop_biz catalog price (ratio-explainer divisor)');
+  eq(E.SKU_BY_ID['cop_ent'].usd, 30, 'cop_ent catalog price (ratio-explainer divisor)');
+}
+
+/* ── R3 · UI-side invariants, asserted against the raw source ───────────── */
+{
+  ok(!/personaPreset: 'even'/.test(src), 'defaults() no longer claims the even preset');
+  ok(!/You have edited the split by hand, so no preset applies/.test(src),
+     'the false custom-mix copy is gone');
+  ok(/perActiveMs \/ E\.SKU_BY_ID\['cop_biz'\]\.usd/.test(src),
+     'ratio explainer divides by the cop_biz catalog price');
+  ok(/perActiveMs \/ E\.SKU_BY_ID\['cop_ent'\]\.usd/.test(src),
+     'ratio explainer divides by the cop_ent catalog price');
+  ok(!/perActiveMs \/ 18/.test(src) && !/perActiveMs \/ 30/.test(src),
+     'no bare price literal left in the ratio-explainer math');
+  ok(/implied by this E7 a-la-carte arithmetic, not read from a price list/.test(src),
+     'the E5 srcline matches its ms-modeled tag');
+  ok(/The 2\.6&times; benchmark, honestly ' \+ provPill\('editorial'\)/.test(src),
+     'ratio whybox header carries the editorial pill');
+  ok(/TD SYNNEX editorial observation<\/b>/.test(src),
+     'step 3 chip group carries a TD SYNNEX srcline');
+  ok(/data-psrc/.test(src), 'persona srcline is patchable in place');
+  ok(/Task counts were reset<\/b>/.test(src), 'preset click announces the count reset');
+  ok(/edited by hand<\/b>/.test(src), 'srcline has a partner-attribution branch');
+  ok(/if \(pf !== 'seats'\) state\.personaTasksTouched = true;/.test(src),
+     'task-cell edits set the flag; seat edits do not');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   (R4–R8 sections append here)
    ══════════════════════════════════════════════════════════════════════════ */
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

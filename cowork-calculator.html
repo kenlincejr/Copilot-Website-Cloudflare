@@ -935,8 +935,14 @@ footer.pagefoot a { color:#6b7280; }
 
   /* ── Provenance ───────────────────────────────────────────────────────── */
   var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'editorial': 1 };
+  /* Weakest-link tag for a derived value. Ties keep the FIRST-listed tag, so
+     callers put the headline input first — the old 'ms-verified' seed won
+     every rank-4 tie, which made 'measured' literally unreachable through
+     this function and is part of why nothing called it. */
   function weakest(tags) {
-    return tags.filter(Boolean).reduce(function (a, b) { return RANK[a] <= RANK[b] ? a : b; }, 'ms-verified');
+    var t = tags.filter(Boolean);
+    if (!t.length) return 'ms-verified';
+    return t.reduce(function (a, b) { return RANK[a] <= RANK[b] ? a : b; });
   }
 
   /* ── Constants ────────────────────────────────────────────────────────── */
@@ -1029,7 +1035,7 @@ footer.pagefoot a { color:#6b7280; }
                why:'The floor is unlicensed. The licensed population is planning, purchasing, quality, customer service and a real engineering group \u2014 which is why Technical is heavier here than in any other non-IT shape.' },
     retail:  { label:'Retail &amp; hospitality', w:[0.35,0.20,0.10,0.35],
                eg:'Multi-site retail, restaurant groups, hotels, franchises',
-               why:'Store and venue staff are frontline, not licensed. Licenses concentrate at head office and in multi-site management, so the manager share runs unusually high \u2014 which pushes the mix toward shorter, more frequent tasks.' },
+               why:'Store and venue staff are frontline, not licensed. Licenses concentrate at head office and in multi-site management, so the manager share runs unusually high \u2014 and because the Manager persona carries the lightest task mix in the model, that split pulls the per-user figure down, not up.' },
     realest: { label:'Real estate &amp; property', w:[0.30,0.45,0.05,0.20],
                eg:'Brokerages, leasing, commercial and residential property management',
                why:'Agents, leasing staff and property managers are customer-facing by definition. Transaction coordination and accounting carry the knowledge-worker load. This is the most customer-facing shape on the list.' },
@@ -1138,7 +1144,18 @@ footer.pagefoot a { color:#6b7280; }
       channel: { motion:'unsure', providerCreditUsd:null },
       licenseInventory: [ { skuId:'bprem_cop', seats:60 }, { skuId:'cop_biz', seats:20 }, { skuId:'bstd', seats:40 } ],
       licenseTouched: false,      // once the partner edits a license line we stop rescaling it
-      personaPreset: 'even',
+      // '' on purpose: the stock seats below are 26/13/6/7 — an illustrative
+      // split that matches no preset. Shipping 'even' here highlighted the
+      // "Even split" chip over a shape it did not produce (finding #10); no
+      // chip may claim the default. The seats themselves do not move — the
+      // 755,000-credit anchor stays.
+      personaPreset: '',
+      // Set the moment any task-count cell in step 4 is edited by hand. From
+      // then on the counts are the partner's estimates, not Microsoft's
+      // Frontier-observed defaults, and every attribution string says so
+      // (finding #11). Cleared only by applyPreset(), which restores
+      // Microsoft's counts. Lives in state so it survives session save/load.
+      personaTasksTouched: false,
       activation: { mode:'rate', rate:0.65, count:null },
       personas: PERSONA_DEFAULTS.map(function (p, i) {
         return { key:p.key, name:p.name, seats:[26,13,6,7][i], light:p.light, medium:p.medium, heavy:p.heavy };
@@ -1283,6 +1300,9 @@ footer.pagefoot a { color:#6b7280; }
     ['light','medium','heavy'].forEach(function (t) {
       s.tierCredits[t] = clamp(n(s.tierCredits[t], CONST.TIER_DEFAULT[t]), 0, CONST.MAX.tierCredits);
     });
+    // Strict boolean, same discipline as the calibrated flag: a loaded file
+    // saying "yes" is not an edit trail.
+    s.personaTasksTouched = s.personaTasksTouched === true;
     s.effort.step = clamp(n(s.effort.step, EFFORT_STEP_DEFAULT), 1, 3); // the slider's own range
     s.model.multiplier = clamp(n(s.model.multiplier, 1), 0, 100);
     s.billing.capacityPacksCccu = Math.max(0, n(s.billing.capacityPacksCccu, 0));
@@ -1437,11 +1457,22 @@ footer.pagefoot a { color:#6b7280; }
         copilotLicensed + '. If more people need it, that is a license conversation — add seats in Step 2.',
         [{ label:'Add ' + (requestedActive - copilotLicensed) + ' more licenses', action:'addLicenses' }]);
     }
+    /* Benchmark mode derives the seat count from the 2.6× ratio, and the
+       ratio is TD SYNNEX editorial — an ms- prefixed tag here was laundering
+       it up two ranks (finding #9). weakest() over the actual inputs: the
+       editorial ratio, and this site's modeled per-user figure. The note
+       makes the assumptions card finally name the source. */
     T('F6','funnel','Active in Cowork',
       state.activation.mode === 'benchmark' ? 'back-solved from the 2.6× benchmark'
         : state.activation.mode === 'count' ? 'entered directly'
         : copilotLicensed + ' licensed × ' + Math.round(n(state.activation.rate,0)*100) + '%',
-      '', active,'users', state.activation.mode === 'benchmark' ? 'ms-modeled' : 'partner');
+      '', active,'users',
+      state.activation.mode === 'benchmark' ? weakest(['editorial','ms-modeled']) : 'partner',
+      state.activation.mode === 'benchmark'
+        ? 'Active users were back-solved from the 2.6× spend-to-license ratio. That ratio is TD SYNNEX ' +
+          'editorial observation — what partners typically see — not Microsoft data, and the seat count ' +
+          'it implies inherits that provenance. Nobody counted these users.'
+        : undefined);
 
     var greenfield = copilotLicensed === 0;
     if (greenfield)
@@ -1471,11 +1502,24 @@ footer.pagefoot a { color:#6b7280; }
          { label:'Set active users to ' + personaSeats, action:'setActive' }]);
     }
     var effTotal = effSeats.reduce(function (a, b) { return a + b; }, 0);
-    if (state.personaPreset && state.personaPreset !== 'even' && PRESETS[state.personaPreset])
+    /* Every chosen preset is disclosed \u2014 including 'even', which used to be
+       exempt only because it was the (falsely labeled) default. The default
+       is now '': no preset, no claim, no entry (finding #10). */
+    if (state.personaPreset && PRESETS[state.personaPreset])
       assume.push({ id:'preset', label:'Persona mix shape',
         note:'The split across the four personas came from the \u201c' +
-             PRESETS[state.personaPreset].label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. The task mix inside each persona is Microsoft\u2019s; only this split is ours.',
+             PRESETS[state.personaPreset].label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. ' +
+             (state.personaTasksTouched
+               ? 'The task counts inside each persona have been edited by hand as well \u2014 both the split and the counts are this partner\u2019s, not Microsoft\u2019s.'
+               : 'The task mix inside each persona is Microsoft\u2019s; only this split is ours.'),
         prov:'editorial' });
+    /* Partner-edited task counts stop wearing Microsoft's name (finding #11). */
+    if (state.personaTasksTouched)
+      assume.push({ id:'persona-tasks', label:'Persona task counts',
+        note:'The per-persona task counts in step 4 were edited by hand, so they are this partner\u2019s ' +
+             'estimates \u2014 not Microsoft\u2019s Frontier-observed defaults. Clicking any preset chip in ' +
+             'step 4 restores Microsoft\u2019s counts and says so.',
+        prov:'partner' });
 
     T('F7','funnel','Persona allocation', 'Σ persona seats, capped at active users',
       personas.map(function (p, i) { return effSeats[i] + ' ' + p.name; }).join(' · '),
@@ -1491,9 +1535,18 @@ footer.pagefoot a { color:#6b7280; }
       var idx = personas.indexOf(p);
       return effSeats[idx] + '×' + Math.round(effectiveCredits(p)).toLocaleString();
     }).join(' + ');
+    /* F10's tag is computed from its two real inputs instead of hardcoded.
+       Task counts: Microsoft-published Frontier data until the partner edits
+       a cell, then they are the partner's own numbers (finding #11). Tier
+       weights: this site's model until genuinely calibrated. weakest() keeps
+       the ranks honest — an edited count under a calibrated model reads
+       'partner', because at that point every input is the partner's. */
+    var taskProv = state.personaTasksTouched ? 'partner' : 'ms-verified';
+    var tierProv = calibrated ? 'measured' : 'ms-modeled';
+    var f10Prov  = weakest([tierProv, taskProv]);
     T('F10','credits','Monthly Copilot Credits','Σ (persona seats × credits/user × effort)',
       creditDetail + (effortMult !== 1 ? ' (×' + effortMult.toFixed(3) + ' ' + effortLabel + ' effort)' : ''),
-      monthlyCredits,'credits', calibrated ? 'measured' : 'ms-modeled',
+      monthlyCredits,'credits', f10Prov,
       // Genuine calibration swaps this disclosure; it never deletes it. The
       // credit model stays somebody's model either way — the question a reader
       // needs answered is whose.
@@ -1505,9 +1558,12 @@ footer.pagefoot a { color:#6b7280; }
 
     var monthlyCowork = monthlyCredits * CU;
     var rateLbl = '$' + (CU < 0.01 ? CU.toFixed(4) : CU.toFixed(CU === Math.round(CU * 100) / 100 ? 2 : 4));
+    /* A resold rate deliberately outranks weakest(): the dollar figure is the
+       partner's number whatever the model underneath says. Otherwise F11 is
+       F10 times a Microsoft-verified rate. */
+    var f11Prov = (sellMode && CU !== CONST.CREDIT_USD) ? 'partner' : weakest([f10Prov, 'ms-verified']);
     T('F11','cost','Monthly Cowork cost', 'credits × ' + rateLbl,
-      monthlyCredits.toLocaleString() + ' × ' + rateLbl, monthlyCowork,'usd',
-      sellMode && CU !== CONST.CREDIT_USD ? 'partner' : (calibrated ? 'measured' : 'ms-modeled'));
+      monthlyCredits.toLocaleString() + ' × ' + rateLbl, monthlyCowork,'usd', f11Prov);
 
     var band = calibrated ? CONST.BAND.measured : CONST.BAND.modeled;
     var coworkLo = monthlyCowork * (1 - band), coworkHi = monthlyCowork * (1 + band);
@@ -1566,10 +1622,21 @@ footer.pagefoot a { color:#6b7280; }
     /* Ratios — two, because there are two questions */
     var ratioActual = copilotSpend > 0 ? monthlyCowork / copilotSpend : 0;
     var ratioBench  = anchorSpend  > 0 ? monthlyCowork / anchorSpend  : 0;
+    /* Both ratio rows compute their tag from their inputs (finding #9).
+       R1 divides the modeled meter by what this customer actually pays —
+       partner-entered seats at verified prices. R2 exists to be read against
+       the 2.6× benchmark, and that comparison basis is TD SYNNEX editorial;
+       the row wears the weakest link in the sentence it will be used in, and
+       its note puts the source on the assumptions card in every mode. */
     T('R1','ratio','Ratio vs actual Copilot spend','Cowork ÷ Copilot component of the licenses',
-      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + copilotSpend.toFixed(0), ratioActual,'x','ms-modeled');
+      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + copilotSpend.toFixed(0), ratioActual,'x',
+      weakest([f11Prov, 'partner', 'ms-verified']));
     T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork ÷ (licensed × $30)',
-      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x','ms-modeled');
+      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x',
+      weakest([f11Prov, 'ms-verified', 'editorial']),
+      'This ratio is built to be read against the 2.6× benchmark, and that benchmark is TD SYNNEX ' +
+      'editorial observation across partner accounts — not a Microsoft-published figure. The $30 anchor ' +
+      'under it is Microsoft’s list price for the enterprise add-on; the 2.6× itself is not Microsoft’s.');
 
     if (ratioBench > 0 && (ratioBench < CONST.SANITY.ratioLo || ratioBench > CONST.SANITY.ratioHi)) {
       var heavyTotal = personas.reduce(function (a,p) { return a + n(p.heavy,0); }, 0);
@@ -1755,8 +1822,8 @@ footer.pagefoot a { color:#6b7280; }
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
 
-    T('B1','billing','Annual Copilot Credits','monthly × 12','', annualCredits,'credits', calibrated?'measured':'ms-modeled');
-    T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', calibrated?'measured':'ms-modeled');
+    T('B1','billing','Annual Copilot Credits','monthly × 12','', annualCredits,'credits', weakest([f10Prov,'ms-verified']));
+    T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', weakest([f10Prov,'ms-verified']));
     T('B3','billing','P3 commit required','annual credits ÷ 100 credits per CCCU',
       Math.round(annualCredits).toLocaleString() + ' ÷ 100', cccuRequired,'cccu','ms-verified');
     T('B4','billing','P3 discount', disc.exact ? 'published tier' : 'interpolated between published anchors',
@@ -2244,7 +2311,17 @@ footer.pagefoot a { color:#6b7280; }
   function applyPreset(state, key) {
     var p = PRESETS[key] || PRESETS.even;
     var alloc = largestRemainder(computeActiveTarget(state), p.w);
-    state.personas.forEach(function (per, i) { per.seats = alloc[i]; });
+    /* A preset is a whole claim: this split, with Microsoft's task counts
+       inside it. Reallocating seats while hand-edited counts silently
+       survived let those edits wear a restored Microsoft attribution
+       (finding #11) — so the counts are restored too, the touched flag is
+       cleared, and the UI tells the partner their edits did not survive. */
+    state.personas.forEach(function (per, i) {
+      per.seats = alloc[i];
+      var d = PERSONA_DEFAULTS[i];
+      if (d) { per.light = d.light; per.medium = d.medium; per.heavy = d.heavy; }
+    });
+    state.personaTasksTouched = false;
     return state;
   }
   function computeActiveTarget(state) {
@@ -2428,7 +2505,8 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="ribbon-deriv" id="actDeriv">' + esc(r.ctx.copilotLicensed) + ' licensed' +
         (m === 'benchmark' ? ' → back-solved from the 2.6× benchmark' : m === 'count' ? ' → entered directly' : ' × ' + Math.round(rate * 100) + '%') +
         ' = ' + r.ctx.active + ' active in Cowork\n' +
-        Math.max(0, r.ctx.copilotLicensed - r.ctx.active) + ' licensed users would carry a license cost and no credit cost.</div>';
+        Math.max(0, r.ctx.copilotLicensed - r.ctx.active) + ' licensed users would carry a license cost and no credit cost.</div>' +
+      '<p class="srcline">The last chip back-solves the active count from the 2.6&times; spend-to-license ratio. That ratio is <b>TD SYNNEX editorial observation</b> &mdash; what partners typically see, not Microsoft data &mdash; so a seat count produced that way is an estimate, and the output tags it as one.</p>';
 
     Array.prototype.forEach.call($('actBlock').querySelectorAll('[data-act-rate]'), function (b) {
       b.addEventListener('click', function () {
@@ -2454,7 +2532,20 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   /* ═══ STEP 4 · personas ═══ */
-  function renderPersonas(r) {
+  /* One string, two render paths: the attribution has to flip the moment a
+     task cell is edited, and the caret-preserving patch path renders it too. */
+  function personaSrcline() {
+    return '<b>These four columns are counts, not costs.</b> The Credits/user column applies the prices set on the next screen &mdash; currently ' +
+      num(state.tierCredits.light) + ' / ' + num(state.tierCredits.medium) + ' / ' + num(state.tierCredits.heavy) +
+      ' credits for a light / medium / heavy task, at $0.01 a credit. ' +
+      (state.personaTasksTouched
+        ? 'The task counts below have been <b>edited by hand</b> — they are your estimates now, not Microsoft’s Frontier-observed defaults. Click any preset chip to restore Microsoft’s counts.'
+        : 'Role mixes are Microsoft\'s Frontier-observed defaults (Customer Cowork Estimator, 27 May 2026) &mdash; every cell is editable.');
+  }
+  /* The chip row and its shape note, separately re-renderable: a task-cell
+     edit must retire a stale Microsoft attribution without touching the
+     table the caret is sitting in. */
+  function renderPresetHead() {
     $('presetChips').innerHTML = Object.keys(E.PRESETS).map(function (k) {
       return '<button class="chipbtn' + (state.personaPreset === k ? ' on' : '') + '" data-preset="' + k + '">' +
         E.PRESETS[k].label + '</button>';
@@ -2463,15 +2554,35 @@ footer.pagefoot a { color:#6b7280; }
     var sel = E.PRESETS[state.personaPreset];
     $('presetDesc').innerHTML = sel
       ? '<div class="shapenote"><div class="sn-eg">' + sel.eg + '</div><p>' + sel.why + '</p>' +
-        '<p class="sn-prov">Modeled staffing shape &mdash; ours, not Microsoft\'s. The task counts inside each persona stay Microsoft\'s Frontier-observed defaults. Every cell below is editable, and editing one drops you to a custom mix.</p></div>'
-      : '<div class="shapenote custom"><div class="sn-eg">Custom mix</div><p>You have edited the split by hand, so no preset applies. That is usually the right answer \u2014 the customer just told you their real shape.</p></div>';
+        '<p class="sn-prov">Modeled staffing shape &mdash; ours, not Microsoft\'s. ' +
+        (state.personaTasksTouched
+          ? 'The task counts inside each persona have been edited by hand \u2014 they are yours now, not Microsoft\u2019s.'
+          : 'The task counts inside each persona stay Microsoft\'s Frontier-observed defaults.') +
+        ' Every cell below is editable, and editing one drops you to a custom mix.</p></div>'
+      /* No preset is also the shipped default: the stock 26/13/6/7 seats are
+         an illustrative split that matches no preset, so no chip may claim
+         them (finding #10). This copy has to be true at first load and after
+         a hand edit alike. */
+      : '<div class="shapenote custom"><div class="sn-eg">No preset applied</div><p>The split below is whatever the seat cells say \u2014 this tool\u2019s illustrative starting split until you change it, and yours once you do. Pick a chip to apply a modeled staffing shape, or type the customer\u2019s real numbers straight in.</p>' +
+        (state.personaTasksTouched
+          ? '<p class="sn-prov">The task counts have been edited by hand \u2014 they are your estimates, not Microsoft\u2019s Frontier-observed defaults. Click any preset chip to restore Microsoft\u2019s counts.</p>'
+          : '') +
+        '</div>';
     Array.prototype.forEach.call($('presetChips').querySelectorAll('[data-preset]'), function (b) {
       b.addEventListener('click', function () {
+        var hadEdits = state.personaTasksTouched === true;
         state.personaPreset = b.getAttribute('data-preset');
         E.applyPreset(state, state.personaPreset);
         renderPersonas(E.compute(state)); refresh();
+        /* applyPreset restored Microsoft's counts \u2014 say so, or the partner
+           discovers the reset in the totals and trusts neither number. */
+        if (hadEdits) $('presetDesc').insertAdjacentHTML('beforeend',
+          '<div class="callout" style="margin-top:10px;"><div class="callout-body"><b>Task counts were reset</b> to Microsoft\u2019s Frontier-observed defaults along with the seat split \u2014 your hand-edited counts did not survive the preset.</div></div>');
       });
     });
+  }
+  function renderPersonas(r) {
+    renderPresetHead();
 
     var total = r.ctx.monthlyCredits || 1;
     var rows = state.personas.map(function (p, i) {
@@ -2496,16 +2607,21 @@ footer.pagefoot a { color:#6b7280; }
       '<tfoot><tr><td>Allocated</td><td data-pseats>' + r.ctx.personaSeats + '</td><td colspan="3" style="font-weight:400;color:#6b7280;font-size:.8rem;" data-pnote>' +
         (r.ctx.personaSeats === r.ctx.active ? 'Matches your ' + r.ctx.active + ' active users.' : 'Active users: ' + r.ctx.active) +
       '</td><td class="num" data-ptotal>' + num(r.ctx.monthlyCredits) + '</td><td class="num" style="text-align:left;">100%</td></tr></tfoot></table></div>' +
-      '<p class="srcline"><b>These four columns are counts, not costs.</b> The Credits/user column applies the prices set on the next screen &mdash; currently ' +
-        num(state.tierCredits.light) + ' / ' + num(state.tierCredits.medium) + ' / ' + num(state.tierCredits.heavy) +
-        ' credits for a light / medium / heavy task, at $0.01 a credit. Role mixes are Microsoft\'s Frontier-observed defaults (Customer Cowork Estimator, 27 May 2026) &mdash; every cell is editable.</p>';
+      '<p class="srcline" data-psrc>' + personaSrcline() + '</p>';
 
     Array.prototype.forEach.call($('personaBlock').querySelectorAll('[data-p]'), function (inp) {
       inp.addEventListener('input', function () {
         var pf = inp.getAttribute('data-f');
         state.personas[+inp.getAttribute('data-p')][pf] =
           Math.max(0, Math.min(pf === 'seats' ? E.CONST.MAX.seats : E.CONST.MAX.tasksPerMonth, +inp.value || 0));
+        /* A task-cell edit makes the counts the partner's, and the chip row's
+           Microsoft attribution above the table has to retire in the same
+           keystroke — it lives outside personaBlock, so re-rendering it does
+           not disturb the caret. Seat edits only clear the preset, as before. */
+        var headStale = state.personaPreset !== '' || (pf !== 'seats' && !state.personaTasksTouched);
+        if (pf !== 'seats') state.personaTasksTouched = true;
         state.personaPreset = '';
+        if (headStale) renderPresetHead();
         refresh();
       });
     });
@@ -2530,6 +2646,10 @@ footer.pagefoot a { color:#6b7280; }
     if (f2) f2.textContent = r.ctx.personaSeats === r.ctx.active
       ? 'Matches your ' + r.ctx.active + ' active users.' : 'Active users: ' + r.ctx.active;
     if (f3) f3.textContent = num(r.ctx.monthlyCredits);
+    /* The attribution line flips with personaTasksTouched, and this patch
+       path is exactly the one that runs while the partner is typing the edit. */
+    var f4 = el.querySelector('[data-psrc]');
+    if (f4) f4.innerHTML = personaSrcline();
   }
 
   /* ═══ STEP 5 · the bridge from volume to price ═══ */
@@ -3339,14 +3459,14 @@ footer.pagefoot a { color:#6b7280; }
   function ratioBlock(c) {
     if (c.greenfield || c.monthlyCowork === 0) return '';
     var rec = c.reconciliation;
-    return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly</div>' +
+    return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly ' + provPill('editorial') + '</div>' +
       '<p>Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>, which is <b>' + rec.fullyActive.toFixed(2) + '&times;</b> the $30 Copilot license. ' +
       'The 2.6&times; benchmark implies roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b> at this mix. You modeled <b>' + Math.round(rec.actualActivation * 100) + '%</b>, ' +
       'which is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. The benchmark isn\'t wrong and neither are you &mdash; you\'re assuming a ' +
       (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark\'s.</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Against what this customer actually pays for Copilot (' + usd(c.copilotSpend) + '/mo), the ratio is <b>' + c.ratioActual.toFixed(2) + '&times;</b>. ' +
-      'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the license is wrong. The same usage measured against the $18 Copilot Business promo reads <b>' +
-      (c.perActiveMs / 18).toFixed(2) + '&times;</b>, and against the $30 enterprise add-on <b>' + (c.perActiveMs / 30).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p></div>';
+      'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the license is wrong. The same usage measured against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Copilot Business promo reads <b>' +
+      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b>, and against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on <b>' + (c.perActiveMs / E.SKU_BY_ID['cop_ent'].usd).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p></div>';
   }
 
   function renderBillOut(r) {
@@ -3566,7 +3686,7 @@ footer.pagefoot a { color:#6b7280; }
               (L.baseSeatsNeeded === 1 ? '' : 's') + ' this tenant\u2019s existing base licenses do not already cover.</p>'
             : '') +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
+          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60 &mdash; a price implied by this E7 a-la-carte arithmetic, not read from a price list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
             ? 'saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%)'
             : 'costs ' + usd(-L.e7.delta) + '/user/mo more than its own components at the price you entered') + '. That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting, and read it beside <a class="docref" href="coworksession40.html#section-6" target="_blank" rel="noopener">section 6, the Licensing Snapshot</a>.</p>' +
         '</div>' +
