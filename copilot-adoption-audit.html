@@ -20,7 +20,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Copilot Adoption Audit | Copilot Playbook</title>
-<meta name="description" content="For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't &mdash; plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the fourteen prompts that do the analysis." />
+<meta name="description" content="For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't &mdash; plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers." />
 <link rel="canonical" href="https://copilotplaybook.com/copilot-adoption-audit.html" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="The Copilot Adoption Audit" />
@@ -326,13 +326,6 @@ table.dense th, table.dense td { padding: 8px 10px; }
 @media (max-width: 800px) { .pipeline { flex-direction: column; gap: 22px; } .pipeline::before { display: none; } }
 
 /* VERTICAL TIMELINE */
-.vtimeline { position: relative; margin: 20px 0 20px 8px; padding-left: 26px; border-left: 2px solid var(--border); }
-.vt-item { position: relative; padding-bottom: 26px; }
-.vt-item:last-child { padding-bottom: 0; }
-.vt-item::before { content: ""; position: absolute; left: -33px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); }
-.vt-when { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
-.vt-item h4 { margin: 3px 0 3px; }
-.vt-item p { font-size: .87rem; margin: 0; }
 
 /* PARTNER STORY / NAMED QUOTE */
 .partner-story {
@@ -554,6 +547,20 @@ pre.code b { color: #004B87; font-weight: 700; }
 .pcard-check .ck { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; display: block; margin-bottom: 3px; }
 .pcard-check .good .ck { color: #0f766e; }
 .pcard-check .bad .ck { color: #dc2626; }
+.promptbox { margin: 10px 0 12px; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; background: var(--muted-2); }
+.promptbox > summary { list-style: none; cursor: pointer; padding: 9px 14px; display: flex; align-items: center; gap: 9px; font-family: 'Segoe UI','Inter',Georgia,sans-serif; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--teal); user-select: none; }
+.promptbox > summary::-webkit-details-marker { display: none; }
+.promptbox > summary::marker { content: ''; }
+.promptbox > summary:hover { color: #004B87; }
+.promptbox .pb-caret { display: inline-block; font-size: .62rem; transition: transform .15s ease; }
+.promptbox[open] .pb-caret { transform: rotate(90deg); }
+.promptbox .pb-hide { display: none; }
+.promptbox[open] .pb-show { display: none; }
+.promptbox[open] .pb-hide { display: inline; }
+.promptbox .pb-meta { margin-left: auto; font-weight: 600; text-transform: none; letter-spacing: 0; color: #9ca3af; }
+.promptbox > pre.code { margin: 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; background: #fff; }
+.pcard-b .promptbox > pre.code { margin: 0; }
+@media print { .promptbox > pre.code { display: block !important; } }
 
 /* ═══ GROUP RULE ═══ */
 .grouprule { display: flex; align-items: center; gap: 12px; margin: 30px 0 6px; }
@@ -611,8 +618,8 @@ pre.code b { color: #004B87; font-weight: 700; }
     <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">Whether there is a service line here and what it is worth. Whether it works at thirty seats. What Microsoft switches off for your smaller customers. How to run it across the whole book instead of one tenant at a time. And the risk you personally carry the moment you start reading employee activity data. <strong>If you only have five minutes, read Section&nbsp;1.</strong></p>
   </div>
   <div class="compare-col">
-    <div class="cc-label">Sections 7&ndash;13 &middot; You deliver the work &middot; about thirty-five minutes</div>
-    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">The exact export path and who can pull it. Ten places the columns do not mean what they say. The build, for large tenants and small. Fourteen copy-paste AI prompts. The segment plays, the meeting script and the objection handling. Hand this half to whoever delivers.</p>
+    <div class="cc-label">Sections 7&ndash;12 &middot; You deliver the work &middot; about thirty-five minutes</div>
+    <p style="margin:0;font-size:.88rem;line-height:1.65;color:#374151;">The exact export path and who can pull it, and the other four reports worth knowing about. Ten places the columns do not mean what they say. Nineteen copy-paste AI prompts, including the five that rebuild both one-pagers on a customer&rsquo;s own tenant. The segment plays, the meeting script and the objection handling. Hand this half to whoever delivers.</p>
   </div>
 </div>
 
@@ -629,10 +636,9 @@ pre.code b { color: #004B87; font-weight: 700; }
       <li><a href="#section-7">The two columns you already have</a></li>
       <li><a href="#section-8">Pull the export &mdash; the exact path</a></li>
       <li><a href="#section-9">Ten traps in this data</a></li>
-      <li><a href="#section-10">Build it &mdash; large tenants and small</a></li>
-      <li><a href="#section-11">The prompt library &mdash; fourteen prompts</a></li>
-      <li><a href="#section-12">Four segments, four conversations</a></li>
-      <li><a href="#section-13">Run it on yourself first, and sources</a></li>
+      <li><a href="#section-10">The prompt library &mdash; nineteen prompts</a></li>
+      <li><a href="#section-11">Four segments, four conversations</a></li>
+      <li><a href="#section-12">Run it on yourself first, and sources</a></li>
     </ul>
   </div>
 </nav>
@@ -652,7 +658,7 @@ pre.code b { color: #004B87; font-weight: 700; }
   <div class="recap-item">
     <div class="rn">02</div>
     <h4>You get a reason to be in the room that is not a licence</h4>
-    <p>Every play in Section&nbsp;12 is a service, not a SKU. Three of the four are recurring. None of them requires the customer to buy anything from Microsoft first, which means this works on the customers who have already stopped buying.</p>
+    <p>Every play in Section&nbsp;10 is a service, not a SKU. Three of the four are recurring. None of them requires the customer to buy anything from Microsoft first, which means this works on the customers who have already stopped buying.</p>
   </div>
   <div class="recap-item">
     <div class="rn">03</div>
@@ -669,9 +675,9 @@ pre.code b { color: #004B87; font-weight: 700; }
   <thead><tr><th style="width:24%;">Question</th><th>The honest answer</th></tr></thead>
   <tbody>
     <tr><td><strong>Who runs it?</strong></td><td>Whoever on your team is comfortable in Excel. A service desk lead or a senior engineer, not a data analyst and not you. The analysis is two columns and a nested IF; the judgement is in the conversation afterwards, which is where your senior people belong.</td></tr>
-    <tr><td><strong>What do we build?</strong></td><td>One workbook, once. Helper columns, a segment table, a chart, wired to two threshold cells. Section&nbsp;10 is the build. The first tenant takes an afternoon because you are learning the column definitions; the second takes four minutes.</td></tr>
+    <tr><td><strong>What do we build?</strong></td><td>Nothing. No tool, no licence, no data engineer. Section&nbsp;8 is the export path and Section&nbsp;10 is the prompt library that does the analysis. The first tenant takes an afternoon because you are learning the column definitions; the second takes minutes.</td></tr>
     <tr><td><strong>What access do we need?</strong></td><td>A read-only role in the customer&rsquo;s tenant &mdash; <strong>Reports Reader</strong>. Not Global Administrator. That distinction is worth rehearsing, because &ldquo;we would need global admin&rdquo; is the single most common reason this conversation dies before it starts.</td></tr>
-    <tr><td><strong>Do we need a tool?</strong></td><td>No. Excel and an AI assistant you already pay for. Section&nbsp;11 is the prompt library that does the analysis for you; Section&nbsp;5 covers doing it across many tenants without building anything.</td></tr>
+    <tr><td><strong>Do we need a tool?</strong></td><td>No. Excel and an AI assistant you already pay for. Section&nbsp;10 is the prompt library that does the analysis for you; Section&nbsp;5 covers doing it across many tenants without building anything.</td></tr>
     <tr><td><strong>What is the first deliverable?</strong></td><td>A one-page read of the customer&rsquo;s own population with four sized segments and a recommended next engagement per segment. It is a leave-behind, it is defensible, and it is built entirely from their data rather than from a vendor benchmark.</td></tr>
   </tbody>
 </table>
@@ -950,7 +956,7 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <h3>5.2 &nbsp;The artefact: your book, ranked</h3>
 
-<p>One row per Copilot customer. Every column below comes straight out of the export or out of the segment table you already built &mdash; nothing here requires new analysis, only that you keep the results in one place instead of one workbook per customer.</p>
+<p>One row per Copilot customer. Every column below comes straight out of the export or out of the segment table you already built &mdash; nothing here requires new analysis, only that you keep the results in one place instead of one loose file per customer.</p>
 
 <div class="tablewrap">
 <table class="dense">
@@ -963,7 +969,7 @@ pre.code b { color: #004B87; font-weight: 700; }
     <tr><td><strong>Champions without agent access</strong></td><td>Embedded band, cross-referenced to the agents report</td><td>The fastest agentic win in the account, and the one that does not need anything built. Usually the highest-value cell in the table.</td></tr>
     <tr><td><strong>Web-only share</strong></td><td>Grounding ratio above 90 percent</td><td>Your security-led opening. Frequently the largest engagement on the row, and it has nothing to do with Copilot licences.</td></tr>
     <tr><td><strong>Months to renewal</strong></td><td>Your own systems, not the export</td><td>The column that turns the rest of the row into a sequencing decision.</td></tr>
-    <tr><td><strong>Next play</strong></td><td>Section&nbsp;12</td><td>One of four. Assign an owner and a date, or the whole exercise stays interesting and never becomes revenue.</td></tr>
+    <tr><td><strong>Next play</strong></td><td>Section&nbsp;10</td><td>One of four. Assign an owner and a date, or the whole exercise stays interesting and never becomes revenue.</td></tr>
   </tbody>
 </table>
 </div>
@@ -1123,7 +1129,7 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <div class="callout">
   <div class="callout-title">The number that ends the &ldquo;we need Copilot Studio&rdquo; argument</div>
-  <div class="callout-body"><p>In our tenant the single largest agentic opportunity was not a group that needed agents built. It was the champions &mdash; the most engaged, most capable, highest-volume users in the company &mdash; who had never used an agent at all. If that holds in your customer&rsquo;s tenant, and it usually does, then the first agentic engagement is an <strong>enablement and discoverability</strong> project measured in days, not a development project measured in months. Check it before anyone writes a Copilot Studio line into a proposal. Prompt&nbsp;10 in Section&nbsp;11 tests it directly.</p></div>
+  <div class="callout-body"><p>In our tenant the single largest agentic opportunity was not a group that needed agents built. It was the champions &mdash; the most engaged, most capable, highest-volume users in the company &mdash; who had never used an agent at all. If that holds in your customer&rsquo;s tenant, and it usually does, then the first agentic engagement is an <strong>enablement and discoverability</strong> project measured in days, not a development project measured in months. Check it before anyone writes a Copilot Studio line into a proposal. Prompt&nbsp;10 in Section&nbsp;10 tests it directly.</p></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
@@ -1205,7 +1211,23 @@ pre.code b { color: #004B87; font-weight: 700; }
 </table>
 </div>
 
-<h3>8.4 &nbsp;If you would rather script it than click it</h3>
+<h3>8.4 &nbsp;The other four reports, and when you actually need one</h3>
+
+<p>Everything above is the one export the whole method runs on. Four prompts in the library need a second file, and <strong>each of these covers a different window from your usage export</strong> &mdash; a mismatch you declare out loud every time the two appear near each other, because a customer&rsquo;s admin will catch it if you do not.</p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:20%;">Report</th><th style="width:30%;">Path</th><th style="width:16%;">Window</th><th>Why you would pull it</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Copilot agents</strong><br><span style="font-size:.75rem;color:#6b7280;">Preview</span></td><td>Reports &rsaquo; Usage &rsaquo; Microsoft Copilot &rsaquo; <strong>Agents</strong></td><td><strong>7 or 30 days only.</strong> Not 28, not 180</td><td><strong>P09.</strong> Whether your most capable users have agent access at all. Note that SharePoint agents used in Teams, and Cowork, are excluded from it entirely &mdash; so it undercounts</td></tr>
+    <tr><td><strong>Copilot readiness</strong></td><td>The same report page as the usage export, the <strong>Readiness</strong> tab</td><td>28 days</td><td>Turns a licence <em>reclamation</em> conversation into a <em>reassignment</em> one, which is far easier to have. It flags the top quarter of unlicensed users by app engagement</td></tr>
+    <tr><td><strong>Copilot Chat usage</strong></td><td>Reports &rsaquo; Usage &rsaquo; Microsoft Copilot &rsaquo; <strong>Copilot Chat</strong></td><td>7 &middot; 28 &middot; 90 &middot; 180</td><td>It covers <strong>only unlicensed users</strong> &mdash; the in-tenant view of people already using Copilot Chat with nobody paying for them. It is also the report most often pulled by mistake in place of the one you want</td></tr>
+    <tr><td><strong>Cowork usage</strong></td><td>Admin center &rsaquo; <strong>Copilot</strong> &rsaquo; Cowork &rsaquo; Usage. Not under Reports</td><td>Date range, user detail from 1&nbsp;April&nbsp;2026</td><td>The scheduled-versus-user-initiated split &mdash; the only place in the reporting surface where you can see work running without a person present. <strong>Its user column is an email address, not a hash</strong>, so this file is not anonymised like the others</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.5 &nbsp;If you would rather script it than click it</h3>
 
 <p>The same data is available through Microsoft Graph, which is the right answer if you are running this across a portfolio of tenants rather than one account. <strong>There is a version trap here that will cost you an afternoon if you miss it.</strong></p>
 
@@ -1219,7 +1241,7 @@ pre.code b { color: #004B87; font-weight: 700; }
   <p><strong>Version&nbsp;1 &mdash; which is the default if you omit the parameter &mdash; does not contain prompt counts or active days.</strong> It returns refresh date, principal name, display name and a set of per-app last-activity dates, and nothing else. Both axes of this entire method are missing. <strong>You must pass <code>version='v2'</code></strong> to get <em>Prompts submitted for all apps</em>, <em>Active Usage Days for all apps</em>, the work/web chat prompt split, and <em>Copilot Agent Last Activity Date</em>. Also note the period values differ by version: v1 accepts <code>D7 D30 D90 D180 ALL</code>, v2 accepts <code>D7 D28 D90 D180 ALL</code>.</p>
 </div>
 
-<h3>8.5 &nbsp;About the anonymization &mdash; do not turn it off reflexively</h3>
+<h3>8.6 &nbsp;About the anonymization &mdash; do not turn it off reflexively</h3>
 
 <figure class="figure">
   <img src="assets/copilot-adoption-audit/concealed-user-list.png" alt="A Microsoft 365 usage report user list with concealed identifiers, showing hashed values in place of user names" loading="lazy" />
@@ -1319,133 +1341,53 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 
-<h2 id="section-10">10 &middot; Build it &mdash; large tenants and small</h2>
+<h2 id="section-10">10 &middot; The prompt library &mdash; nineteen prompts</h2>
+
+<p>Section&nbsp;6 gets you the chart. This section gets you everything else &mdash; the segment profiles, the cohort tests, the account plan and the meeting scripts &mdash; by handing the export to an AI tool and asking the right nineteen questions. Group&nbsp;E at the end rebuilds both of the one-pagers at the top of this page against your customer&rsquo;s own tenant, in a partner version and a customer version. Each prompt below is written to be pasted verbatim, and each one is deliberately constrained: it tells the model what to compute, what format to answer in, and what to do when it cannot answer. That third instruction is the one that matters, and it is the one everybody leaves out. <strong>On a small tenant, P02 and P03 carry the fixed-threshold option and the five-person suppression rule from Section&nbsp;3</strong> &mdash; they are not optional, and the model will not apply them unless you leave them in.</p>
 
 <div class="callout">
-  <div class="callout-title">Download the workbook</div>
+  <div class="callout-title">Which tool, and which model</div>
   <div class="callout-body">
-    <p><a href="copilot-adoption-audit-workbook.xlsx"><strong>copilot-adoption-audit-workbook.xlsx</strong></a> &mdash; no BI tool, no Power&nbsp;BI licence, no data engineer. It detects its own columns by header text, so it does not matter which columns the admin switched on or what order they came out in, and it applies the five-person suppression rule for you.</p>
-    <p><strong>How to populate it with your data:</strong></p>
-    <ol>
-      <li>Pull the export as described in Section&nbsp;8 &mdash; Copilot usage report &rsaquo; the <strong>Usage</strong> tab &rsaquo; the user-level table &rsaquo; <strong>Export</strong>, with every column switched on first.</li>
-      <li>Open the workbook and go to the <strong>Paste Export</strong> tab. Delete the three yellow example rows, then paste your CSV starting at cell&nbsp;A1, headers included.</li>
-      <li>Go to <strong>Setup</strong> and fill in the customer name, report period and refresh date. Every detected field should read <strong>FOUND</strong>; if one reads NOT FOUND, re-check that column was switched on in the export.</li>
-      <li>Read the answer off <strong>Segments</strong> and <strong>Chart</strong>. Any band under five people is suppressed automatically &mdash; report the count, not a percentage.</li>
-    </ol>
+    <p>These prompts are long and deliberately constrained, and that makes them sensitive to what you run them in. Two different jobs are going on: <strong>computing over the file</strong>, and <strong>writing the artefact</strong>. Pick for the job in front of you.</p>
+    <p><strong>For the analysis prompts &mdash; P01 to P14 &mdash; use a tool that actually computes across the file rather than reasoning about it.</strong> The <strong>Analyst agent</strong> in Microsoft&nbsp;365 Copilot (Copilot Chat &rsaquo; Agents &rsaquo; Analyst) is the right default for a partner: it writes and runs code over the attached export, it will show you that code, and it runs inside the customer&rsquo;s own tenant so the file never crosses a boundary. Copilot in Excel is the other good answer when the numbers need to stay in cells the customer can re-run. Plain chat with a file attached is a last resort &mdash; it samples rows rather than computing over all of them, and you will get a different median on the second run.</p>
+    <p><strong>For the two one-pagers &mdash; P16 to P19 &mdash; you need a model that writes code well.</strong> In Copilot Chat, switch the model: <strong>Think Deeper</strong>, or one of the <strong>Claude</strong> models where your tenant has them enabled, produces markedly better HTML than the default fast model. The graphics at the top of this page were built exactly that way. Whatever you use, it must return the code; a model that can only describe a chart cannot make one.</p>
+    <p class="pb-note"><strong>Substitute your own details.</strong> Every prompt is written with placeholders rather than a company name. Replace <code>&lt;CUSTOMER_NAME&gt;</code> with the customer this is about, and put <em>your own</em> logo, colours and footer on the artefact prompts &mdash; the hex values in P16 and P18 are a starting palette, not a requirement. The page you hand over should look like it came from you.</p>
   </div>
 </div>
 
-<p>The rest of this section is what the workbook is doing, written out. Read it if you would rather build your own, if you need to explain a number to a customer&rsquo;s admin, or if you simply do not want to trust a spreadsheet you did not write. The formulas assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2, and are written with column letters spelled out in a legend so substitution is mechanical.</p>
+<h3>Which report each prompt needs</h3>
 
-<pre class="code"><b>Legend &mdash; replace with your actual column letters</b>
-  E  =  Prompts submitted (any app)          &#8592; your depth axis
-  F  =  Active Days                          &#8592; your frequency axis
-  G  =  Copilot Chat (web) prompts submitted
-  H  =  quadrant label      (new helper column you will add)
-  I  =  prompts per day     (new helper column you will add)
-  J  =  plot depth          (new helper column you will add)
-  Assume data runs to row 5000 &mdash; extend to your row count.</pre>
+<p>Most of these run on one file: the <strong>Copilot usage report user-detail export</strong> from Section&nbsp;8. A handful need a second source, and where they do, <strong>the two files almost always cover different windows</strong> &mdash; the agents report offers only 7 or 30 days, Cowork has its own range, readiness is 28. Every prompt that spans two sources is written to declare both windows in its answer, and you should never let a figure from one sit in the same sentence as a figure from the other.</p>
 
-<div class="vtimeline">
-  <div class="vt-item">
-    <div class="vt-when">Minute 0&ndash;2 &middot; Set the thresholds</div>
-    <h4>Two cells, and the only judgement call in the exercise</h4>
-    <p>Put these somewhere out of the way &mdash; say M1 and M2 &mdash; and label them. Everything downstream points at these two cells, so changing a threshold re-sorts the whole population instantly, which is exactly what you want when the customer asks &ldquo;what if we drew the line somewhere else?&rdquo;</p>
-    <pre class="code">M1:  =MEDIAN(F2:F5000)          <b>frequency threshold &#8212; median active days</b>
-M2:  =MEDIAN(E2:E5000)          <b>depth threshold &#8212; median prompts</b></pre>
-  </div>
-  <div class="vt-item">
-    <div class="vt-when">Minute 2&ndash;4 &middot; Label every user</div>
-    <h4>One nested IF, filled down</h4>
-    <p>This is the whole segmentation. Put it in H2 and fill down.</p>
-    <pre class="code">H2:  =IF(F2&gt;=$M$1,
-       IF(E2&gt;=$M$2,"D Champions","C Habitual shallow"),
-       IF(E2&gt;=$M$2,"B Bursty","A Drifting"))</pre>
-    <p>Then the two derived columns &mdash; the rate that exposes Reversal&nbsp;2 and&nbsp;7, and a plot-safe depth value that survives a log axis.</p>
-    <pre class="code">I2:  =IFERROR(E2/F2,0)          <b>prompts per active day</b>
-J2:  =MAX(E2,1)                 <b>plot depth &#8212; log axis cannot render 0</b></pre>
-  </div>
-  <div class="vt-item">
-    <div class="vt-when">Minute 4&ndash;7 &middot; Size the four segments</div>
-    <h4>Population share, activity share, and the rate</h4>
-    <p>Build this little block anywhere. It is the table you will actually put in front of the customer &mdash; the chart is the hook, but this is the argument.</p>
-    <pre class="code">count       =COUNTIF($H$2:$H$5000,"D Champions")
-% of people =COUNTIF($H$2:$H$5000,"D Champions")/COUNTA($H$2:$H$5000)
-% of all
-  activity  =SUMIF($H$2:$H$5000,"D Champions",$E$2:$E$5000)/SUM($E$2:$E$5000)
-median rate =MEDIAN(IF($H$2:$H$5000="D Champions",$I$2:$I$5000))
-              <b>array formula &#8212; Ctrl+Shift+Enter on older Excel;</b>
-              <b>there is no MEDIANIFS.</b></pre>
-    <p>Repeat for the other three labels. <strong>The gap between &ldquo;% of people&rdquo; and &ldquo;% of all activity&rdquo; is the finding.</strong> When one segment is a minority of headcount and a large majority of activity, you have just told the customer where their entire return is concentrated &mdash; and how thin it is.</p>
-  </div>
-  <div class="vt-item">
-    <div class="vt-when">Minute 7&ndash;9 &middot; Draw it</div>
-    <h4>Scatter, log axis, two threshold lines</h4>
-    <p>Select column F and column J together, then <strong>Insert &rsaquo; Charts &rsaquo; Scatter</strong>. Right-click the vertical axis, choose <strong>Format Axis</strong>, tick <strong>Logarithmic scale</strong> and set the minimum to 1. Shrink the markers and drop their opacity &mdash; at a few thousand points the default marker size produces a solid blob and hides the structure you are trying to show.</p>
-    <p>For the two threshold lines, add two small helper series of two points each &mdash; one vertical, one horizontal &mdash; and format them as dashed lines with no markers:</p>
-    <pre class="code">vertical line    x: =M1, =M1        y: 1, =MAX(J2:J5000)
-horizontal line  x: 0, =MAX(F2:F5000)   y: =M2, =M2</pre>
-  </div>
-  <div class="vt-item">
-    <div class="vt-when">Minute 9&ndash;10 &middot; Label it honestly</div>
-    <h4>The four things that must be on the chart</h4>
-    <p>The report refresh date. The window length. The row count, and the count of any rows you excluded. And one line stating that the relationships shown are correlational. Those four annotations are what separate a chart the customer&rsquo;s admin trusts from one they spend the meeting attacking.</p>
-  </div>
-</div>
-
-<h3>Three more columns worth ninety seconds each</h3>
-
-<table>
-  <thead><tr><th style="width:26%;">Measure</th><th style="width:38%;">Formula</th><th>What it exposes</th></tr></thead>
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:20%;">Prompt</th><th style="width:44%;">What you attach</th><th>Where it comes from</th></tr></thead>
   <tbody>
-    <tr><td><strong>Grounding ratio</strong></td><td><code>=IFERROR(G2/E2,"")</code></td><td>Web-chat share of the user&rsquo;s total prompts. Sort descending and the ungrounded-only population appears at the top &mdash; Reversal&nbsp;6, and the opening for the governance engagement.</td></tr>
-    <tr><td><strong>Surfaces touched</strong></td><td><code>=SUMPRODUCT(--(L2:S2&lt;&gt;""))</code><br /><span style="font-size:.78rem;color:#6b7280;">over your per-app last-activity columns</span></td><td>How many different Copilot surfaces this person has ever opened. High surfaces with low depth is the exposure-without-relevance signature behind Reversal&nbsp;1.</td></tr>
-    <tr><td><strong>Realistic ceiling</strong></td><td><code>=PERCENTILE.INC($I$2:$I$5000,0.5)</code><br /><code>=PERCENTILE.INC($I$2:$I$5000,0.75)</code><br /><code>=PERCENTILE.INC($I$2:$I$5000,0.95)</code></td><td>The median, upper-quartile and extreme prompts-per-day rates in <em>this</em> tenant. This is the evidence you use to replace an invented target with a defensible one &mdash; Reversal&nbsp;7.</td></tr>
+    <tr><td><strong>P01 &ndash; P05</strong><br><span style="font-size:.75rem;color:#6b7280;">Prepare, and reversals 1&ndash;2</span></td><td>The <strong>Copilot usage report</strong> user-detail export. One file, nothing else.</td><td>Section&nbsp;8. Take 180 days, and switch every column on under Choose columns</td></tr>
+    <tr><td><strong>P06</strong><br><span style="font-size:.75rem;color:#6b7280;">The falling-prompt test</span></td><td><strong>Two</strong> usage-report exports of the same tenant, pulled at different dates.</td><td>The same export path, run twice. If you have only ever pulled one, this prompt cannot run &mdash; pull one now and diarise the second</td></tr>
+    <tr><td><strong>P07, P08</strong><br><span style="font-size:.75rem;color:#6b7280;">Grounding, and the ceiling</span></td><td>The usage-report export. P07 needs the work/web prompt split, so it fails on the Chat report.</td><td>Section&nbsp;8</td></tr>
+    <tr><td><strong>P09</strong><br><span style="font-size:.75rem;color:#6b7280;">The agent gap</span></td><td>The usage-report export <strong>and</strong> the <strong>Copilot agents usage report</strong> user-detail export.</td><td>Reports &rsaquo; Usage &rsaquo; Microsoft Copilot &rsaquo; <strong>Agents</strong>. <strong>7 or 30 days only</strong> &mdash; the window mismatch against a 180-day usage file is unavoidable and must be stated every time</td></tr>
+    <tr><td><strong>P10</strong><br><span style="font-size:.75rem;color:#6b7280;">Idle licences</span></td><td>The usage-report export. Then reconcile the output by hand against the current licence list.</td><td>Billing &rsaquo; Licenses, which no export gives you. The file covers everyone who held a licence <em>at any point</em> in the window</td></tr>
+    <tr><td><strong>P11 &ndash; P15</strong><br><span style="font-size:.75rem;color:#6b7280;">Write-up, guards, and the freeze</span></td><td><strong>Nothing new.</strong> These run on the answers already in the conversation.</td><td>Keep them in the same session as P01&ndash;P10, or paste the earlier output back in</td></tr>
+    <tr><td><strong>P16 &ndash; P19</strong><br><span style="font-size:.75rem;color:#6b7280;">The two one-pagers</span></td><td><strong>Nothing new.</strong> They consume the object P15 produced and are forbidden from computing anything themselves.</td><td>That constraint is the point: it is what makes the partner page and the customer page provably the same analysis</td></tr>
+    <tr><td><strong>Optional, any prompt</strong></td><td>A <strong>department or job-family column</strong>, added by the customer&rsquo;s admin before they send the file.</td><td>Costs nothing, succeeds far more often than asking for concealment to be turned off, and turns a tenant-wide percentage into a per-department conversation</td></tr>
   </tbody>
 </table>
-
-<div class="callout">
-  <div class="callout-title">The template ships &mdash; build it once only if you want your own</div>
-  <div class="callout-body"><p>Every formula above points at named threshold cells and generic column letters. Build the workbook once, with the helper columns, the segment table and the chart already wired, and each new engagement becomes: paste the export, fix the column references, read the answer. <strong>The second tenant takes four minutes.</strong> That is the difference between an interesting exercise and a repeatable service &mdash; and a repeatable service is the thing you can put a price on.</p></div>
 </div>
-
-<h3>The small-tenant build &mdash; fixed bands, no chart</h3>
-
-<p>Everything above assumes enough people that a median is stable and a scatter is readable. Under roughly sixty licensed users it is not, and Section&nbsp;3 explains why. The small-tenant build is shorter, because you are not drawing anything.</p>
-
-<p>Pull a <strong>90-day</strong> window rather than 180 &mdash; it lines up better with the twelve-week frame Microsoft&rsquo;s own definitions use. Then replace the two median cells with two fixed constants and change one formula:</p>
-
-<pre class="code">M1:  9                          <b>frequency line &mdash; active days, fixed</b>
-M2:  195                        <b>depth line &mdash; prompts over 90 days</b>
-                                <b>(15 per week &times; 13 weeks)</b>
-
-H2:  =IF(F2&gt;=$M$1,
-       IF(E2&gt;=$M$2,"Embedded","Loyal but shallow"),
-       IF(E2&gt;=$M$2,"Project-driven","Drifting"))
-
-K2:  =IF(H2="Drifting",
-       IF(SUMPRODUCT(--(L2:S2&lt;&gt;""))&gt;=3,"tried and stopped","never started"),"")</pre>
-
-<p>That last column is the one that earns its place at small scale. It splits the drifting band into people who explored Copilot across several surfaces and gave up &mdash; recoverable with a role-based session &mdash; and people who never opened it at all, who may simply be holding a licence that should be reassigned. Those two groups get opposite recommendations, and at forty seats the difference between them is usually three or four people you can name.</p>
-
-<p>Then sort by band, then by prompts descending, and print it. That table <em>is</em> the deliverable. No chart, no quadrant diagram, no percentages on any band with fewer than five people in it.</p>
-
-<div class="callout subtle">
-  <div class="callout-title">Keep both branches in one workbook</div>
-  <div class="callout-body"><p>Do not maintain two templates. Put the median formulas and the fixed constants in adjacent cells with a switch, so the same workbook serves a six-hundred-seat customer and a thirty-seat one and you are never guessing which version you are looking at. Label the sheet with which mode produced the numbers &mdash; it will be the first question anyone asks six months later, and Section&nbsp;5&rsquo;s book ranking depends on knowing that the rows are comparable.</p></div>
-</div>
-
-<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
-
-<h2 id="section-11">11 &middot; The prompt library &mdash; fourteen prompts</h2>
-
-<p>Section&nbsp;6 gets you the chart. This section gets you everything else &mdash; the segment profiles, the cohort tests, the account plan and the meeting scripts &mdash; by handing the export to an AI tool and asking the right fourteen questions. Each prompt below is written to be pasted verbatim, and each one is deliberately constrained: it tells the model what to compute, what format to answer in, and what to do when it cannot answer. That third instruction is the one that matters, and it is the one everybody leaves out. <strong>On a small tenant, P02 and P03 carry the fixed-threshold option and the five-person suppression rule from Section&nbsp;3</strong> &mdash; they are not optional, and the model will not apply them unless you leave them in.</p>
 
 <div class="smb-reality">
   <div class="sr-label">Before you paste a customer&rsquo;s file into anything</div>
   <p><strong>Get written permission, and pick the tool deliberately.</strong> The best option by a wide margin is to run these <em>inside the customer&rsquo;s own tenant</em> &mdash; Copilot in Excel on the open workbook, or Copilot Chat in work mode with the file attached &mdash; so the data never leaves their boundary and the whole exercise sits under their existing agreement. Failing that, use a business-tier AI account with data-training disabled, never a consumer one.</p>
+  <p><strong>Never ask a model to reshape the file.</strong> Do not paste the CSV in as text and ask for it to be cleaned, transposed or reformatted. The numbers become unverifiable because nobody can audit a model retyping a thousand integers, you get a different answer on the second run, and none of it survives an admin in the room. Attach the file and let the tool read it. If it cannot read the file, that is a tooling problem and you need a different tool, not a better prompt.</p>
   <p><strong>One genuine advantage you have here:</strong> the export is anonymized by default, so unless someone has turned concealment off, the file contains hashes rather than names. If you did de-anonymize for a role join, <strong>strip the name and principal-name columns before the file goes anywhere</strong> &mdash; the analysis below never needs them.</p>
 </div>
+
+
+<h3>Small tenants &mdash; what changes</h3>
+
+<p>Under roughly sixty licensed users a median stops being stable, and Section&nbsp;3 explains why. Two things change and neither needs a different tool. <strong>Pull a 90-day window rather than 180</strong> &mdash; it lines up with the twelve-week frame Microsoft&rsquo;s own user categories use. And take <strong>Option&nbsp;C in P02</strong>, which hands the model fixed thresholds instead of asking it to derive unstable ones from thirty rows.</p>
+
+<p>The deliverable changes too. At forty seats there is no scatter worth drawing &mdash; the chart is a hook for a room that cannot see the individuals in it, and at this size everybody can. What you produce instead is the ranked table from P03, sorted by segment and then by prompts, with <strong>no percentage attached to any group of fewer than five people</strong>. The split inside the drifting group is the part that earns its place at small scale: people who tried Copilot across several surfaces and gave up are recoverable with a role-based session, and people who never opened it at all may simply be holding a licence that should be reassigned. Those two get opposite recommendations, and at forty seats the difference between them is three or four people the customer can name.</p>
 
 <div class="grouprule"><div class="lbl">Group A &middot; Prepare the file</div><div class="rule"></div></div>
 
@@ -1453,7 +1395,9 @@ K2:  =IF(H2="Drifting",
   <div class="pcard-h"><div class="pcard-n">P01</div><h4>Schema and hygiene check</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Run this first, always. It catches the wrong export version, the wrong window, and the licence-removed rows from Trap&nbsp;03 before any of them contaminate a number you say out loud.</p>
-    <pre class="code ptext">You are a data analyst. Attached is a Microsoft 365 Copilot usage report user-detail export.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">12 lines</span></summary>
+      <pre class="code ptext">You are a data analyst. Attached is a Microsoft 365 Copilot usage report user-detail export.
 
 Do not analyse behaviour yet. First, audit the file and report only:
 1. The exact column headers present, in order.
@@ -1465,6 +1409,7 @@ Do not analyse behaviour yet. First, audit the file and report only:
 7. Any row that looks like a data artefact: a blank last-activity date combined with a non-zero prompt count.
 
 Present this as a plain table. Do not infer, estimate, or fill in anything that is not in the file. If a value cannot be computed, write "not available" rather than guessing.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>A table of column names that match Section&nbsp;8.3, a row count you can reconcile against assigned licences, and an explicit never-active count.</div>
       <div class="bad"><span class="ck">How it fails</span>If it starts describing adoption in this answer, it has ignored the instruction and you should distrust the rest of the session. Start again.</div>
@@ -1476,7 +1421,9 @@ Present this as a plain table. Do not infer, estimate, or fill in anything that 
   <div class="pcard-h"><div class="pcard-n">P02</div><h4>Derive this tenant&rsquo;s own thresholds</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Stops the model &mdash; and you &mdash; importing a threshold from a deck. The output of this prompt is the only pair of numbers the rest of the analysis is allowed to use. <strong>On a tenant under about sixty licensed users, take Option&nbsp;C</strong> &mdash; a median computed on thirty rows moves when one person takes annual leave. See Section&nbsp;3.</p>
-    <pre class="code ptext">Using only this file, propose the two threshold values that will split this population into four usage quadrants.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">20 lines</span></summary>
+      <pre class="code ptext">Using only this file, propose the two threshold values that will split this population into four usage quadrants.
 
 Give me two options and the numbers for each:
 
@@ -1496,6 +1443,7 @@ These approximate Microsoft's own published Copilot user categories - 15 or more
 Report the row count of the file first. If it is under about 60 rows, recommend OPTION C and say plainly that a median-based threshold is unstable at this sample size.
 
 Then tell me which option produces the more balanced segmentation for this specific tenant, and why. Do not use thresholds from any other organisation or from your training data. If I ask you to use a number I supply, say so explicitly in your answer so it is on the record.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Two concrete number pairs, four non-empty groups under each, and a recommendation with a reason.</div>
       <div class="bad"><span class="ck">How it fails</span>Round numbers that look suspiciously like benchmarks under Option&nbsp;A or&nbsp;B. If it proposes exactly 60 days or exactly 375 prompts as a <em>derived</em> value, it has borrowed them &mdash; ask where they came from. Option&nbsp;C is supposed to be fixed; that is the point of it.</div>
@@ -1507,7 +1455,9 @@ Then tell me which option produces the more balanced segmentation for this speci
   <div class="pcard-h"><div class="pcard-n">P03</div><h4>Build and size the four segments</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">The core table. Note the demand for share-of-activity as well as share-of-population &mdash; the gap between those two columns is the entire argument.</p>
-    <pre class="code ptext">Using the thresholds you derived in the previous answer - state which pair you are using at the top of your response - assign every row to exactly one of four segments:
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">21 lines</span></summary>
+      <pre class="code ptext">Using the thresholds you derived in the previous answer - state which pair you are using at the top of your response - assign every row to exactly one of four segments:
 
 A DRIFTING           low frequency, low depth
 B BURSTY             low frequency, high depth
@@ -1528,6 +1478,7 @@ Then, in no more than four sentences, state the single most commercially signifi
 Show the count for every segment even if it is zero. If any segment is empty, say so explicitly rather than omitting the row.
 
 Suppression rule, apply it without being asked: for any segment containing fewer than five users, report the count only. Do not report percentages, medians or comparisons for that segment - write "n < 5, not reported" in those cells instead. Small groups are identifiable even when the names are hashed.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Percentages that sum to 100 in both share columns, and a &ldquo;most significant fact&rdquo; that is usually the population/activity gap.</div>
       <div class="bad"><span class="ck">How it fails</span>Shares that do not sum to 100, or a missing empty segment. Both mean rows were silently dropped &mdash; run&nbsp;P13. On a small tenant, any percentage attached to a segment of fewer than five people means the suppression rule was ignored.</div>
@@ -1541,7 +1492,9 @@ Suppression rule, apply it without being asked: for any segment containing fewer
   <div class="pcard-h"><div class="pcard-n">P04</div><h4>Reversal 1 &mdash; is it exposure or relevance?</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">The prompt that decides whether the customer should buy more training or stop buying training. Worth running before any proposal is written.</p>
-    <pre class="code ptext">Test one specific hypothesis against this file, and tell me whether it holds here.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">14 lines</span></summary>
+      <pre class="code ptext">Test one specific hypothesis against this file, and tell me whether it holds here.
 
 HYPOTHESIS: the low-usage population is not short of exposure to Copilot. They have already tried it across multiple applications and stopped, which would make their low usage a relevance problem rather than a training problem.
 
@@ -1555,6 +1508,7 @@ To test it:
 Then state plainly: does the hypothesis hold in this tenant, partially hold, or fail? Give the specific numbers that drive your verdict.
 
 Important: if a meaningful share of the drifting group has touched zero surfaces, the hypothesis fails for them and they are a genuine activation problem rather than a relevance problem. Say so, and size that sub-group separately.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>A clear verdict, and a split of the drifting group into &ldquo;tried it and stopped&rdquo; versus &ldquo;never started&rdquo;. Those are two different engagements.</div>
       <div class="bad"><span class="ck">How it fails</span>A verdict with no numbers attached, or one that skips step&nbsp;5. The zero-surface sub-group is the part people forget.</div>
@@ -1566,7 +1520,9 @@ Important: if a meaningful share of the drifting group has touched zero surfaces
   <div class="pcard-h"><div class="pcard-n">P05</div><h4>Reversal 2 &mdash; find the loyal, stuck users</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Produces the highest-conversion target list in the tenant &mdash; the people every frequency dashboard is currently scoring as a success.</p>
-    <pre class="code ptext">Identify the users in this file who are frequently active but shallow: active on more days than the tenant median, while running a below-median number of prompts per active day.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">10 lines</span></summary>
+      <pre class="code ptext">Identify the users in this file who are frequently active but shallow: active on more days than the tenant median, while running a below-median number of prompts per active day.
 
 Report:
 1. How many users this is, and what share of the licensed population.
@@ -1576,6 +1532,7 @@ Report:
 5. Their median surfaces touched.
 
 Then answer this in plain language: is this group behaving like people who do not trust the tool, or like people who trust it completely and only know one thing to do with it? Give the evidence from the numbers above that supports your reading, and name the strongest counter-reading of the same numbers.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>A small segment with the lowest per-day rate in the file, and a stated counter-reading. The counter-reading is not optional &mdash; it is how you avoid selling into a misread.</div>
       <div class="bad"><span class="ck">How it fails</span>A confident narrative with no counter-reading. Push back and ask for one.</div>
@@ -1587,7 +1544,9 @@ Then answer this in plain language: is this group behaving like people who do no
   <div class="pcard-h"><div class="pcard-n">P06</div><h4>Reversal 5 &mdash; the falling-prompt test</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Needs two exports from different dates. It is the most valuable prompt on this page, because it is the one that stops a customer writing prompt growth into a contract.</p>
-    <pre class="code ptext">I am attaching two exports of the same tenant's Copilot usage report, taken at different dates. Match users across both files using the anonymised principal-name column.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">11 lines</span></summary>
+      <pre class="code ptext">I am attaching two exports of the same tenant's Copilot usage report, taken at different dates. Match users across both files using the anonymised principal-name column.
 
 For the population present in both files:
 1. Report the change in median prompts per user, and in median active days per user.
@@ -1598,6 +1557,7 @@ For the population present in both files:
 The question I am actually asking: is there a group here whose prompt volume FELL while their frequency and breadth HELD OR ROSE?
 
 If there is, size it and describe it, because that group is maturing rather than declining and any success metric based on prompt growth will misclassify them as a failure. If there is no such group, say so plainly - do not manufacture the finding because I clearly want it.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>An explicit yes or no on the falling-but-maturing group, with its size. A no is a perfectly good answer.</div>
       <div class="bad"><span class="ck">How it fails</span>The model finding the pattern because you signalled you wanted it. The last sentence of the prompt exists to make that harder; verify with&nbsp;P13.</div>
@@ -1609,7 +1569,9 @@ If there is, size it and describe it, because that group is maturing rather than
   <div class="pcard-h"><div class="pcard-n">P07</div><h4>Reversal 6 &mdash; the grounding split</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Turns a Copilot adoption meeting into a security and information-architecture meeting, which is usually the larger engagement.</p>
-    <pre class="code ptext">Using the Copilot Chat (work) and Copilot Chat (web) prompt columns, analyse where this population actually works.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">11 lines</span></summary>
+      <pre class="code ptext">Using the Copilot Chat (work) and Copilot Chat (web) prompt columns, analyse where this population actually works.
 
 1. Report the median web-chat share of total chat prompts across all active users.
 2. Report the full distribution: what share of users are work-only, web-only, and genuinely mixed. Define "web-only" as a web share above 90 percent and state the threshold you used.
@@ -1620,6 +1582,7 @@ If there is, size it and describe it, because that group is maturing rather than
 Then interpret it under this specific framing, and tell me whether the framing fits or not: heavy work-mode use indicates that internal content is findable; heavy web-only use indicates that people are going outside because the answer is not findable inside, which is a search and permissions problem rather than a policy problem.
 
 Name at least two alternative explanations for a high web-only share that have nothing to do with the data estate - for example role type, or the user simply not having been shown work mode.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Three sized groups, a named strongest group, and at least two alternative explanations you have to rule out before selling anything.</div>
       <div class="bad"><span class="ck">How it fails</span>Jumping straight to &ldquo;you have a shadow AI problem&rdquo;. That may be true, but this data cannot establish it on its own.</div>
@@ -1631,7 +1594,9 @@ Name at least two alternative explanations for a high web-only share that have n
   <div class="pcard-h"><div class="pcard-n">P08</div><h4>Reversal 7 &mdash; the realistic ceiling</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Produces the number that goes in the statement of work instead of the number someone invented in a kickoff meeting.</p>
-    <pre class="code ptext">I need a defensible adoption target for this tenant, derived from its own data rather than from a benchmark.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">9 lines</span></summary>
+      <pre class="code ptext">I need a defensible adoption target for this tenant, derived from its own data rather than from a benchmark.
 
 1. Restricting to genuinely engaged users - active on more days than the tenant median - report the distribution of prompts per active day: 25th percentile, median, 75th, 90th, 95th, and maximum.
 2. Report what share of ALL licensed users ever exceed 10 prompts per active day, and what share exceed 20.
@@ -1640,6 +1605,7 @@ Name at least two alternative explanations for a high web-only share that have n
 Then propose three targets for the next two quarters, each expressed as a movement in this tenant's own distribution rather than as an absolute number - for example "raise the median prompts per active day from X to Y" or "increase the share of users above the frequency threshold from X percent to Y percent".
 
 For each proposed target, state what would have to be true for it to be achievable, and state the risk that it is measuring effort rather than outcome.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Three movement-based targets and a percentile position for any round number the customer is attached to. That percentile is the slide that ends the argument.</div>
       <div class="bad"><span class="ck">How it fails</span>Proposing absolute targets. Re-run it and insist on movements in their own distribution.</div>
@@ -1651,7 +1617,9 @@ For each proposed target, state what would have to be true for it to be achievab
   <div class="pcard-h"><div class="pcard-n">P09</div><h4>The agent gap &mdash; access, not authorship</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">The prompt that decides whether the customer&rsquo;s first agentic engagement is a two-week enablement project or a six-month build. Needs the agents usage report as well.</p>
-    <pre class="code ptext">I am attaching two files: the Copilot usage report user-detail export, and the Copilot agents usage report user-detail export.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">15 lines</span></summary>
+      <pre class="code ptext">I am attaching two files: the Copilot usage report user-detail export, and the Copilot agents usage report user-detail export.
 
 Before analysing, state clearly at the top of your answer:
  - the window length of each file, and that they differ
@@ -1666,6 +1634,7 @@ Then, matching users across the two files where possible:
 Then answer one question directly: is the constraint in this tenant that there are no agents to use, or that the people most capable of using them have not been given access to the ones that already exist?
 
 Do not compare the two files' percentages as if they covered the same period. State the window mismatch every time you put two numbers side by side.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>The window mismatch stated up front, and a direct access-versus-authorship verdict. In most tenants the answer is access.</div>
       <div class="bad"><span class="ck">How it fails</span>Silently comparing a 30-day agent figure with a 180-day usage figure. If it does that once, it will do it throughout.</div>
@@ -1679,7 +1648,9 @@ Do not compare the two files' percentages as if they covered the same period. St
   <div class="pcard-h"><div class="pcard-n">P10</div><h4>Idle-licence exposure and the reclamation list</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">The finance conversation. Deliberately written so the model never invents a price &mdash; you supply the rate, or it reports units only.</p>
-    <pre class="code ptext">Quantify the unrealised licence spend in this tenant. Report in units, not currency, unless I give you a per-user rate - if I have not given you one, do not estimate it, do not use a public list price, and do not guess.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">10 lines</span></summary>
+      <pre class="code ptext">Quantify the unrealised licence spend in this tenant. Report in units, not currency, unless I give you a per-user rate - if I have not given you one, do not estimate it, do not use a public list price, and do not guess.
 
 1. Count users with zero prompts and zero active days across the whole window. Express as a count and as a share of the file.
 2. Count users whose last activity date is more than 90 days before the report refresh date. Express as a count and a share.
@@ -1689,6 +1660,7 @@ Do not compare the two files' percentages as if they covered the same period. St
 Present these as four separate numbers. Do not merge them.
 
 Then, for each of the four, state the correct action in one sentence: reclaim, reassign, re-engage with a role-based use case, or investigate as a data artefact. Be explicit that reclamation candidates must be confirmed against current licence assignment before anyone acts, because this export includes users who held a licence at any point in the window.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Four separate unit counts and four different actions. &ldquo;Never started&rdquo; and &ldquo;tried and stopped&rdquo; must not be merged &mdash; they have opposite remedies.</div>
       <div class="bad"><span class="ck">How it fails</span>Any dollar figure appearing that you did not supply. That number is invented; delete it.</div>
@@ -1700,7 +1672,9 @@ Then, for each of the four, state the correct action in one sentence: reclaim, r
   <div class="pcard-h"><div class="pcard-n">P11</div><h4>Write the success criteria for the statement of work</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">This is the deliverable that protects you eighteen months later, when the deployment has matured and prompt volume has fallen.</p>
-    <pre class="code ptext">Draft the measurement section of a statement of work for an adoption engagement with this customer, using only measures that can be produced from the Microsoft 365 Copilot usage report and the agents usage report.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">10 lines</span></summary>
+      <pre class="code ptext">Draft the measurement section of a statement of work for an adoption engagement with this customer, using only measures that can be produced from the Microsoft 365 Copilot usage report and the agents usage report.
 
 Requirements:
  - Every criterion must be expressed as a movement in THIS tenant's baseline, with the current baseline value stated next to it.
@@ -1710,6 +1684,7 @@ Requirements:
  - Include a re-baselining trigger: what change in licensing, headcount or product capability would invalidate the baseline and require it to be reset.
 
 Write it as contract prose, not as bullet points for a slide. Do not include pricing, effort estimates or commercial terms of any kind.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>Contract-ready prose with baselines inline, an explicit exclusions clause, and at least one metric immune to falling prompt volume.</div>
       <div class="bad"><span class="ck">How it fails</span>Generic adoption boilerplate with no baseline numbers in it. If the customer&rsquo;s own figures are not in the text, it is not a baseline.</div>
@@ -1721,7 +1696,9 @@ Write it as contract prose, not as bullet points for a slide. Do not include pri
   <div class="pcard-h"><div class="pcard-n">P12</div><h4>Write the four conversations</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Turns the segmentation into something the account team can actually execute on Monday. Run it last, once the numbers are verified.</p>
-    <pre class="code ptext">Using the segment sizes and profiles you produced earlier, write four short engagement briefs - one per segment - for the partner account team.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">13 lines</span></summary>
+      <pre class="code ptext">Using the segment sizes and profiles you produced earlier, write four short engagement briefs - one per segment - for the partner account team.
 
 Each brief must contain, and nothing else:
  - The segment name, its size as a count and a percentage, and its share of total activity.
@@ -1734,8 +1711,9 @@ Each brief must contain, and nothing else:
 Constraints: no pricing. No claims about business outcome or time saved. Do not recommend building a custom agent for any segment unless the agent data shows that existing agents are already widely used and insufficient - if it does not show that, say so and recommend access and discoverability instead.
 
 Keep each brief under 150 words.</pre>
+    </details>
     <div class="pcard-check">
-      <div class="good"><span class="ck">Good output looks like</span>Four briefs with different interventions, each carrying a &ldquo;do not do this&rdquo; line. Section&nbsp;12 is the worked version to compare against.</div>
+      <div class="good"><span class="ck">Good output looks like</span>Four briefs with different interventions, each carrying a &ldquo;do not do this&rdquo; line. Section&nbsp;10 is the worked version to compare against.</div>
       <div class="bad"><span class="ck">How it fails</span>Four briefs that all recommend training. That means the segmentation was not carried through &mdash; feed it P03&rsquo;s table again.</div>
     </div>
   </div>
@@ -1747,7 +1725,9 @@ Keep each brief under 150 words.</pre>
   <div class="pcard-h"><div class="pcard-n">P13</div><h4>The verification pass &mdash; make it show its work</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Run this before any number leaves your laptop. It is the single most important prompt on the page, and the one nobody runs.</p>
-    <pre class="code ptext">Stop analysing. I am going to put the numbers you have produced in front of a customer, so audit them now.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">16 lines</span></summary>
+      <pre class="code ptext">Stop analysing. I am going to put the numbers you have produced in front of a customer, so audit them now.
 
 For every figure you have stated in this conversation, produce one row containing:
  - the figure
@@ -1763,6 +1743,7 @@ Then, separately and explicitly, list:
  - every comparison you made between two different time windows
 
 Do not re-state your conclusions. Do not defend them. If a number cannot be traced to this file, say "cannot be traced" and leave it at that. I would rather delete five findings than present one I cannot source.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>A traceability table, plus a short list of untraceable figures. There is almost always at least one. Delete it.</div>
       <div class="bad"><span class="ck">How it fails</span>&ldquo;All figures are derived from the attached file.&rdquo; That is not an audit. Ask again, one figure at a time.</div>
@@ -1774,7 +1755,9 @@ Do not re-state your conclusions. Do not defend them. If a number cannot be trac
   <div class="pcard-h"><div class="pcard-n">P14</div><h4>Devil&rsquo;s advocate &mdash; argue the opposite</h4><button class="copybtn" type="button">Copy</button></div>
   <div class="pcard-b">
     <p class="why">Every finding here is correlational, and the customer&rsquo;s smartest person will say so. Better that you say it first, with the counter-argument already prepared.</p>
-    <pre class="code ptext">Take the position of a sceptical analyst inside the customer's organisation who thinks this whole exercise is over-reading a usage log.
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">10 lines</span></summary>
+      <pre class="code ptext">Take the position of a sceptical analyst inside the customer's organisation who thinks this whole exercise is over-reading a usage log.
 
 For each of the main findings you produced:
 1. State the strongest alternative explanation that does not involve any adoption problem - for example role mix, licence assignment timing, seasonality, a product change during the window, or a reporting definition rather than a behaviour.
@@ -1784,6 +1767,7 @@ For each of the main findings you produced:
 Then list every finding you would drop entirely before presenting to a sceptical audience, and say why.
 
 Finally: name the one confound that applies to this whole analysis regardless of which finding we are discussing, and write the single sentence I should say out loud in the meeting to acknowledge it before anyone else raises it.</pre>
+    </details>
     <div class="pcard-check">
       <div class="good"><span class="ck">Good output looks like</span>A ratings list with at least one finding marked fragile, and a single acknowledgement sentence you can actually say in the room.</div>
       <div class="bad"><span class="ck">How it fails</span>Rating everything robust. That is flattery, not analysis. Tell it to try harder and name a fragile one.</div>
@@ -1791,14 +1775,322 @@ Finally: name the one confound that applies to this whole analysis regardless of
   </div>
 </div>
 
+
+<div class="grouprule"><div class="lbl">Group E &middot; The two one-pagers &mdash; partner version and customer version</div><div class="rule"></div></div>
+
+<p>The two graphics at the top of this page &mdash; the quadrant X-ray and the seven reversals &mdash; were not designed by hand and they were not generated as images. They are HTML files built from an audited table of numbers, opened in a browser and screenshotted. These five prompts rebuild both of them against your customer&rsquo;s tenant, and then rebuild each one a second time for a different reader. <strong>Do not skip the second version.</strong> The partner page names a commercial motion against every segment; the customer page names an owner and an observable change instead. The same chart, the same figures, two different rooms.</p>
+
+<div class="smb-reality">
+  <div class="sr-label">Do not ask an image generator for these</div>
+  <p><strong>These are a table of numbers with a layout wrapped around them, not a piece of design.</strong> Copilot&rsquo;s image generation &mdash; Designer, &ldquo;create an image of&hellip;&rdquo;, anything of that shape &mdash; cannot read your CSV. It will return something that reads as an infographic from six feet away and contains invented figures, unreadable axis labels and dots placed for composition rather than for data. It is the most common way this goes wrong and the output is unusable in front of a customer, because every number on it is fiction.</p>
+  <p><strong>The artefact is an HTML file; the image is a capture of it.</strong> Open it in Edge or Chrome, then either <strong>Ctrl+P &rarr; Save as PDF &rarr; Landscape &rarr; Margins None &rarr; Background graphics ON</strong> (that last switch is why quadrant tints and dark panels come out white), or take a full-page screenshot &mdash; Edge <strong>Ctrl+Shift+S</strong>, or Chrome <strong>F12 &rarr; Ctrl+Shift+P &rarr; <em>Capture full size screenshot</em></strong>. Widen the window first: these pages are designed at 1600px and stack badly at laptop width.</p>
+</div>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr><th style="width:22%;">Tool</th><th style="width:19%;">Computes the numbers</th><th style="width:19%;">Returns the artefact</th><th>Use it when</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Analyst agent</strong><br /><span style="font-size:.75rem;color:#6b7280;">Copilot Chat &rsaquo; Agents &rsaquo; Analyst</span></td>
+      <td><strong>Yes</strong> &mdash; writes and runs Python over the attached file, and will show you the code</td>
+      <td>Partly &mdash; returns the HTML as text in the chat and you save it yourself</td>
+      <td><strong>The default recommendation.</strong> It runs inside the customer&rsquo;s own tenant, so the file never leaves their boundary, and it shows its working &mdash; which is what makes the numbers survive an admin in the room. Needs a Copilot licence and available agent capacity; check both before you promise a live session</td>
+    </tr>
+    <tr>
+      <td><strong>A model that returns files</strong><br /><span style="font-size:.75rem;color:#6b7280;">with the CSV attached</span></td>
+      <td>Yes</td>
+      <td><strong>Yes</strong> &mdash; hands you the <code>.html</code> directly</td>
+      <td>You have written permission to take the file outside the tenant, or you are running it on your own tenant first. Fewest steps, but the file has moved &mdash; make that an explicit decision, not an accident. <strong>In Copilot Chat, switch the model to Think Deeper or Claude for these four</strong> &mdash; the default fast model writes noticeably worse HTML</td>
+    </tr>
+    <tr>
+      <td><strong>Copilot in Excel</strong><br /><span style="font-size:.75rem;color:#6b7280;">on the open workbook</span></td>
+      <td>Yes, in cells &mdash; the most defensible form there is, because the customer can re-run it</td>
+      <td>No</td>
+      <td>The numbers need to live in cells the customer owns and can re-run. It edits the workbook in front of you; pair it with one of the two above for the artefact</td>
+    </tr>
+    <tr>
+      <td><strong>Copilot Chat, work mode</strong><br /><span style="font-size:.75rem;color:#6b7280;">file attached, no agent</span></td>
+      <td>Weakly &mdash; it reasons over the file rather than computing across it</td>
+      <td>Partly</td>
+      <td>Last resort. Verify every median by hand before anyone sees it</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>If your tool returns text rather than files, the last line of each build prompt below already handles it &mdash; you get one code block, which you paste into Notepad and save with <strong>Save as type: All Files</strong>, <strong>Encoding: UTF-8</strong>, and a filename ending <code>.html</code>. If it opens as text rather than rendering, the extension is still <code>.txt</code>. That is the only thing that ever goes wrong at this step.</p>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P15</div><h4>Freeze the numbers before anything is drawn</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The hinge of the whole group. It turns everything P01&ndash;P13 produced into one object that the four build prompts consume, so that <strong>the build prompts contain no arithmetic at all</strong> &mdash; which is what lets the partner page and the customer page be provably the same analysis in two framings. Run P13 before this, not after.</p>
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">39 lines</span></summary>
+      <pre class="code ptext">Do not design anything yet. Produce one JSON object called FINDINGS and nothing else, using only values you have already computed from the attached file. This object is the only source of numbers for the page I am about to ask you to build.
+
+{
+  "customer_name":        "&lt;the name I gave you&gt;",
+  "source_report":        "Microsoft 365 admin center Copilot usage report, user detail export",
+  "refresh_date":         "&lt;report refresh date from the file&gt;",
+  "window_days":          &lt;report period length from the file&gt;,
+  "licensed_users":       &lt;in-scope row count, excluding header and excluding blank-metric rows&gt;,
+  "total_prompts":        &lt;sum of total prompts across in-scope rows&gt;,
+  "threshold_frequency":  &lt;the active-days line agreed in P02&gt;,
+  "threshold_depth":      &lt;the prompts line agreed in P02&gt;,
+  "threshold_basis":      "&lt;Option A, B or C, and one clause saying why&gt;",
+  "zero_prompt_users":    &lt;count of in-scope users with zero prompts - these plot at 1 on a log axis&gt;,
+  "segments": [
+    { "key":"A", "name":"Drifting",
+      "users":&lt;n&gt;, "share_users":&lt;pct&gt;, "share_activity":&lt;pct&gt;,
+      "median_prompts":&lt;n&gt;, "median_active_days":&lt;n&gt;, "median_prompts_per_active_day":&lt;n&gt;,
+      "median_surfaces":&lt;n&gt;, "suppressed":&lt;true if users &lt; 5 else false&gt; },
+    { "key":"B", "name":"Bursty",               ... same fields ... },
+    { "key":"C", "name":"Habitual but shallow", ... same fields ... },
+    { "key":"D", "name":"Champions",            ... same fields ... }
+  ],
+  "reversals": [
+    { "id":1, "held":&lt;true|false&gt;,
+      "assumption":"&lt;the belief, one sentence, stated fairly&gt;",
+      "evidence":"&lt;what this tenant showed, with the specific figures&gt;",
+      "figures":[&lt;every number quoted in evidence, as raw values&gt;],
+      "windows":["&lt;the window of each report the figures came from&gt;"] }
+    ... one entry per reversal tested, whether or not it held ...
+  ],
+  "not_computed": [ "&lt;name every field above you could not fill from the file&gt;" ]
+}
+
+RULES
+ - Every number must be computed from the attached file. If you cannot compute one, put null in the field and name it in not_computed. Do not estimate, and do not carry a number over from any other organisation or from your training data.
+ - share_users and share_activity must each sum to 100 across the four segments. If they do not, find the missing rows rather than rounding it away.
+ - For any segment with fewer than five users, set suppressed to true and set every field except users to null. Small groups are identifiable even when names are hashed.
+ - Set held to false for any reversal that did not hold here. Do not soften a failed test into a qualified one. A false is a useful answer and I want to see it.
+ - Output the JSON only. No commentary before or after it.</pre>
+    </details>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A JSON block with <code>not_computed</code> either empty or honestly populated, and at least one reversal marked <code>&quot;held&quot;: false</code>.</div>
+      <div class="bad"><span class="ck">How it fails</span>Every reversal true and <code>not_computed</code> empty on the first attempt. That is a model completing a template rather than reading a file. Ask which figures it computed and which it inferred, then re-run.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P16</div><h4>The tenant X-ray &mdash; partner version</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Rebuilds the quadrant one-pager from Section&nbsp;7 against your customer&rsquo;s tenant. <strong>Build this one first, every time.</strong> It is the version that tells you whether the analysis actually holds, because it has to name a commercial action against every segment &mdash; and if you cannot write the THE PLAY line for a segment, you do not yet understand that segment.</p>
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">53 lines</span></summary>
+      <pre class="code ptext">Using only the FINDINGS object you just produced, generate ONE self-contained HTML file - all CSS inline, no external requests, no CDN links, no web fonts - rendering as a single landscape page 1600px wide or more, suitable for screenshotting or printing. Return the complete file. If you cannot return a file, return the entire HTML in one code block.
+
+AUDIENCE AND TONE
+Partner-facing. The reader is a solution provider deciding what to sell into this account. It is commercial: it names the motion, the audience and the deliverable for each group. It is never shown to the customer.
+
+LAYOUT
+ - Top left: a small teal eyebrow, uppercase, wide letter-spacing: "&lt;CUSTOMER_NAME&gt; - THE TENANT X-RAY".
+ - Two-line headline, heavy sans, tight leading, line one navy, line two teal:
+     "Two columns you already have."
+     "Four conversations you don't."
+ - Top right: two large figures - licensed_users and window_days - each with a small grey caption beneath: "licensed users plotted" and "day report period".
+ - A standfirst under the headline, 60 words maximum: every Copilot usage export contains the same two numbers, how OFTEN someone shows up and how DEEP they go; plot them against each other and an install base sorts itself into four groups, each a different problem, a different offer and a different invoice. Close with one sentence naming the customer and stating that every dot is one real licensed user.
+
+ - Main body, two columns, left about 55%, right about 45%.
+
+   LEFT - a bordered white panel containing the scatter plot as INLINE SVG:
+     - Panel title "&lt;CUSTOMER_NAME&gt; - every licensed user, frequency against depth", with source and refresh date in small grey type right-aligned on the same line.
+     - One dot per user, radius about 2px, opacity about 0.55 so density reads.
+     - X axis linear, 0 to window_days, titled "ACTIVE DAYS OUT OF &lt;window_days&gt; -&gt; FREQUENCY".
+     - Y axis logarithmic base 10, floored at 1, titled "PROMPTS SUBMITTED -&gt; DEPTH". Users with zero prompts plot at 1.
+     - A dashed vertical line at threshold_frequency and a dashed horizontal line at threshold_depth, each labelled in small type WITH ITS VALUE AND ITS MEANING - for example "60 days - every third working day", "375 prompts - power-user line". An unlabelled threshold line is the most common defect in this chart.
+     - Tint each quadrant faintly in its segment colour; colour each dot by its segment.
+     - Inside each quadrant, in its own corner: the letter, the segment name in small caps, and beneath it "&lt;users&gt; users - &lt;share_users&gt;%".
+
+   RIGHT - a small uppercase label "WHAT EACH QUADRANT BUYS", then four cards, A to D, each with a 4px left border in its segment colour:
+     - A lettered square badge, the segment name in bold, and at the right the share_activity figure large and coloured with "of all activity" beneath in small grey type.
+     - Two sentences of profile built ONLY from that segment's medians, figures in bold.
+     - A divider, then a line labelled "THE PLAY" in the segment colour: the commercial intervention - the motion, who it is sold to, and what the deliverable is. Be specific and be commercial. This line is the whole reason the page exists.
+
+ - Footer in small type, full width, above a 4px multi-colour gradient rule: "How to read it" - what each axis is, what each line means, that the depth axis is logarithmic, and that every point is one licensed user from the named export at its refresh date. Then in bold "Relationships shown are correlational." Then "How to use it" - run the same two columns on any customer tenant, plot it, and the four conversations name themselves.
+
+COLOURS - THESE ARE A STARTING PALETTE, NOT A REQUIREMENT
+  Replace all of them with my own brand colours if I have given you any, and put my
+  logo and footer on the page rather than anyone else's. Keep the ROLES the same: one
+  dark colour for headline and structure, one accent, one muted grey for the absence
+  band, one warm colour for the alert segment.
+  navy #003057 - teal #005F6B - teal light #007B8A - amber #D97706 - grey #9CA3AF
+  ice #E4F0F3 - page #F7F8FA - rule #DDE1E7
+  Segment colours, used identically in the dots, the quadrant tints, the quadrant labels and the card borders:
+    A Drifting             #9CA3AF   (grey on purpose - it is the absence band, and a loud
+                                      colour on 40% of the points makes the chart unreadable)
+    B Bursty               #4DA8B8
+    C Habitual but shallow #D97706
+    D Champions            #005F6B
+
+CONSTRAINTS - these override the design
+ - Every number on the page comes from FINDINGS. Invent nothing. Round nothing to a tidier figure than it is. Add no benchmark and no industry comparison.
+ - No currency figures anywhere on the page.
+ - Any segment with suppressed true shows its user count and the words "n &lt; 5, not reported" in place of every other figure, on both the quadrant label and the card.
+ - Any null field renders as a visible "NOT COMPUTED" placeholder in amber. Do not fill the gap and do not silently drop the element.
+ - No individual is identifiable anywhere on the page: no names, no principal names, no dot annotated with a person.
+
+If you cannot return a file, return the complete HTML in a single code block with no commentary before or after it. I am copying it directly into a file, so anything outside the code block will break it.</pre>
+    </details>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>A page you could put on a screen without editing it, every figure reconcilable against P15&rsquo;s object, and four THE PLAY lines that each name a motion rather than a sentiment.</div>
+      <div class="bad"><span class="ck">How it fails</span>Unlabelled threshold lines; a linear y axis, which collapses the whole population into a stripe along the bottom; or points stacked at x&nbsp;=&nbsp;1,&nbsp;2,&nbsp;3, which means it plotted row index instead of active days.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P17</div><h4>The tenant X-ray &mdash; customer version</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The same chart and the same numbers, retuned for the people whose usage it describes. Segment names move from describing the person to describing the situation, THE PLAY becomes WHAT HELPS, and the employee-data line from Section&nbsp;6 goes on the page in bold rather than in a footnote. This is the one you leave behind.</p>
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">31 lines</span></summary>
+      <pre class="code ptext">Now produce a SECOND version of that page, from the same FINDINGS object and with the same chart, retuned for a different audience. Return it as a separate complete self-contained HTML file. Change only what is listed below - keep the layout, the colours, the chart construction, the axes and the footer mechanics identical.
+
+AUDIENCE AND TONE
+This version is shown TO THE CUSTOMER, by their own leadership as much as by us. It describes what is happening in their organisation and what their people do next. It sells nothing. It never characterises their staff as a failure, and it never implies that any individual is being watched.
+
+CHANGES
+
+1. Eyebrow: "&lt;CUSTOMER_NAME&gt; - HOW COPILOT IS ACTUALLY BEING USED".
+
+2. Headline, navy then teal:
+     "Two numbers you already have."
+     "Four groups they describe."
+
+3. Rewrite the standfirst in the customer's frame: this is your own usage export, no new tooling and no monitoring was introduced to produce it, and it sorts your licensed users into four groups that each need something different from you. Add one sentence stating that the analysis is distributional and that no individual is named or assessed anywhere in it.
+
+4. Rename the segments to describe the SITUATION, never the person. Use exactly:
+     A  "Tried it, hasn't stuck"      (was Drifting)
+     B  "Uses it in bursts"           (was Bursty)
+     C  "One habit, one use case"     (was Habitual but shallow)
+     D  "Fully embedded"              (was Champions)
+   Keep the letters, the colours and the quadrant positions unchanged, so that this page and the partner version are visibly the same analysis.
+
+5. The right-hand label becomes "WHAT EACH GROUP NEEDS FROM YOU", and each card's action line is labelled "WHAT HELPS" rather than "THE PLAY". Rewrite each action as something the CUSTOMER's own team does: who owns it internally, what changes for those users, and what they would expect to see move. Remove every reference to an engagement, a workshop that is sold, a retainer, a statement of work, a proposal, a licence decision, or anything with a price attached.
+
+6. Replace the "How to use it" footer sentence with "How this was produced": the report name, the window, the refresh date, and the fact that it uses two columns of an export the customer already owns.
+
+7. Add one line, in bold, immediately above the footer rule:
+   "This is a measure of a tool's fit with the work, not a measure of the people using it. No individual is identified in this analysis and it is not suitable for performance management."
+   That line is not optional, must not be softened, and must not be moved into small type.
+
+Every CONSTRAINT from the previous prompt still applies, unchanged.</pre>
+    </details>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>Two pages the customer could see side by side and recognise as the same chart, where only the framing moved.</div>
+      <div class="bad"><span class="ck">How it fails</span>An offer that survived the rewrite. Search the customer version for <em>workshop</em>, <em>engagement</em>, <em>retainer</em>, <em>SOW</em>, <em>licence</em> and <em>we recommend</em>. Any hit means the model retitled the partner page instead of rewriting it.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P18</div><h4>The reversals brief &mdash; partner version</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">Rebuilds the seven-reversals one-pager. Run it only after the Group&nbsp;B tests and P13, because the rule that matters here is the count: <strong>one card per reversal that actually held in this tenant.</strong> If four held, it is a four-card page with a four in the headline.</p>
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">39 lines</span></summary>
+      <pre class="code ptext">Using only the FINDINGS object, and only the reversals entries where held is true, generate ONE self-contained HTML file - inline CSS, no external requests, no web fonts - rendering as a single landscape page 1600px wide or more. Return the complete file, or the entire HTML in one code block if you cannot return a file.
+
+AUDIENCE
+Partner-facing. The reader sells into this account and is deciding what to propose.
+
+STRUCTURE
+ - Teal eyebrow: "&lt;CUSTOMER_NAME&gt; - WHAT THE DATA CONTRADICTED".
+ - Two-line headline, line one navy, line two amber. Substitute the REAL count of reversals that held - if five held, the headline says five, not seven:
+     "&lt;N&gt; things the channel believes."
+     "&lt;N&gt; the data doesn't."
+ - Top right, under a small grey uppercase label "MEASURED, NOT MODELLED": three right-aligned figures with small captions - licensed_users "licensed users", window_days "day report period", total_prompts "prompts analysed".
+ - A grid of numbered cards, four across, one per reversal that held. Each card is white with a hairline border, a coloured number badge, a bold title of at most eight words, then exactly four parts under these exact small-caps headings:
+     THE ASSUMPTION             the belief, italic, one sentence, stated fairly enough
+                                that someone who holds it would recognise it
+     WHAT OUR TENANT SHOWED     the numbers, every figure in bold, taken verbatim from the
+                                evidence and figures fields
+     WHY THAT CHANGES THINGS    the mechanism, two or three sentences, on a tinted band
+     DO THIS WITH THE CUSTOMER  the action - the motion, the audience and the deliverable,
+                                with the commercial noun in colour
+ - The final grid cell is a dark navy-to-teal panel titled "THE THROUGH-LINE": a two-line thesis in large type, then a numbered four-step method the reader could run tomorrow, each step opening with a bold imperative verb.
+ - At the bottom of that panel, in amber, one line beginning "One guardrail." naming the single thing most likely to be got wrong.
+ - Footer, full width: every data source used, EACH WITH ITS OWN WINDOW LENGTH STATED SEPARATELY, the refresh dates, any cohort sizes, and in bold "All relationships shown are correlational, not causal."
+
+RULES THAT OVERRIDE THE DESIGN
+ - One card per reversal that HELD. If four held, produce four cards and change the headline to four. Do not manufacture a reversal to fill the grid. Do not restate a failed test as a qualified one.
+ - Where two figures come from reports with different windows, name both windows on the card itself. Never place them in one sentence as though they were comparable.
+ - No currency. No time-saved claim. No business-outcome claim. No causal verb: write "is associated with", never "drives", "causes" or "leads to".
+ - Apply n &lt; 5 suppression. Any null renders as a visible NOT COMPUTED placeholder.
+ - Every bold figure must appear in the figures array of its reversal entry. I will check them one by one.
+
+COLOURS - THESE ARE A STARTING PALETTE, NOT A REQUIREMENT
+  Replace all of them with my own brand colours if I have given you any, and put my
+  logo and footer on the page rather than anyone else's. Keep the ROLES the same: one
+  dark colour for headline and structure, one accent, one muted grey for the absence
+  band, one warm colour for the alert segment.
+  navy #003057 - teal #005F6B - amber #D97706 - grey #9CA3AF - page #F7F8FA
+  Give each card a different accent from that palette, cycling in order.
+
+If you cannot return a file, return the complete HTML in a single code block with no commentary before or after it.</pre>
+    </details>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>As many cards as tests that held, and every card ending in an action with an audience attached to it.</div>
+      <div class="bad"><span class="ck">How it fails</span>Seven cards when four tests passed. That is the model filling a template. Ask it to name the file evidence behind each card and delete the ones it cannot produce.</div>
+    </div>
+  </div>
+</div>
+
+<div class="pcard">
+  <div class="pcard-h"><div class="pcard-n">P19</div><h4>The reversals brief &mdash; customer version</h4><button class="copybtn" type="button">Copy</button></div>
+  <div class="pcard-b">
+    <p class="why">The hardest of the four to get right, because the partner version is written about a market and this one is written about the reader. Every finding has to keep its figures and change its subject: the tool, the rollout, the task fit or the data estate &mdash; never the user&rsquo;s effort or ability.</p>
+    <details class="promptbox">
+      <summary><span class="pb-caret">&#9654;</span><span class="pb-show">Show the prompt</span><span class="pb-hide">Hide the prompt</span><span class="pb-meta">31 lines</span></summary>
+      <pre class="code ptext">Produce a SECOND version of that page for the customer's own leadership. Separate complete self-contained HTML file. Keep the grid, the colours, the four-part card structure and the footer mechanics. Change the following.
+
+AUDIENCE AND TONE
+Shown to the customer. The subject is no longer what the channel believes - it is what this organisation assumed about its own rollout. Nothing here is sold, and nothing here characterises staff.
+
+CHANGES
+
+1. Eyebrow: "&lt;CUSTOMER_NAME&gt; - WHAT WE EXPECTED, AND WHAT THE DATA SHOWS".
+
+2. Headline, navy then amber:
+     "&lt;N&gt; things we assumed."
+     "&lt;N&gt; the data corrects."
+
+3. Card headings become:
+     WHAT WE ASSUMED      the belief, italic, one sentence - unchanged in substance
+     WHAT THE DATA SHOWS  the same figures, unchanged. Do not re-round them
+     WHY IT MATTERS       the mechanism, in the customer's own operational terms
+     WHAT WE DO NEXT      an action the customer's team owns, with an internal owner role
+                          named and the observable change stated. Never an engagement, a
+                          purchase, a licence decision or a price
+
+4. Rewrite every finding so that no group of employees is described as a failure. The subject of each sentence is the tool, the rollout, the task fit or the data estate - never the user's effort or ability. "The tool has not yet found a fit with this role's weekly work" is right. "These users did not engage" is wrong.
+
+5. Retitle the dark panel "WHAT THIS MEANS FOR THE NEXT SIX MONTHS", carrying the same two-line thesis rewritten in the first person plural, and a numbered four-step plan with an internal owner role against each step.
+
+6. In the guardrail position, in amber:
+   "This analysis is distributional. It names no individual, it is not derived from message content, and it is not suitable for performance management."
+
+7. The footer gains one sentence naming the report and the window, and stating that no data left the tenant - IF that is true of how you ran it. If it is not true, omit the sentence rather than writing something inaccurate.
+
+All RULES THAT OVERRIDE THE DESIGN from the previous prompt still apply, unchanged.</pre>
+    </details>
+    <div class="pcard-check">
+      <div class="good"><span class="ck">Good output looks like</span>The same figures, the same number of cards, and not one sentence whose subject is an employee.</div>
+      <div class="bad"><span class="ck">How it fails</span>A &ldquo;WHAT WE DO NEXT&rdquo; line that is a purchase. That is the partner version leaking through the rewrite &mdash; rewrite that card by hand rather than asking again.</div>
+    </div>
+  </div>
+</div>
+
 <div class="callout">
   <div class="callout-title">The order matters more than the prompts do</div>
-  <div class="callout-body"><p>P01 before anything. P02 before any segmentation, so the thresholds are on the record as the tenant&rsquo;s own. P13 before any number is spoken aloud. P14 before the meeting, not after it. Everything in the middle is optional and can be run in whatever order the account needs. <strong>The two guard prompts are the ones people skip and the ones that determine whether this exercise makes you look rigorous or makes you look like someone who pasted a spreadsheet into a chatbot.</strong></p></div>
+  <div class="callout-body"><p>P01 before anything. P02 before any segmentation, so the thresholds are on the record as the tenant&rsquo;s own. P13 before any number is spoken aloud, and before P15 freezes those numbers into the two one-pagers. P14 before the meeting, not after it. Everything in the middle is optional and can be run in whatever order the account needs. <strong>The two guard prompts are the ones people skip and the ones that determine whether this exercise makes you look rigorous or makes you look like someone who pasted a spreadsheet into a chatbot.</strong></p></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 
-<h2 id="section-12">12 &middot; Four segments, four conversations</h2>
+<h2 id="section-11">11 &middot; Four segments, four conversations</h2>
 
 <p>The chart is a hook. This is the part that turns it into pipeline. Each segment has a different cause, a different intervention, a different person who has to be in the room, and a different way of proving it worked. Selling one engagement to all four &mdash; which is what a generic adoption workshop does &mdash; is why so many of them fail to renew.</p>
 
@@ -1863,7 +2155,7 @@ Finally: name the one confound that applies to this whole analysis regardless of
     <div class="pl-circle filled">2</div>
     <div class="pl-title">Plot</div>
     <div class="pl-tag">Ten minutes</div>
-    <div class="pl-tools">Two columns, log axis, two threshold lines. Four groups appear without you doing anything clever. Section&nbsp;10.</div>
+    <div class="pl-tools">Two columns, log axis, two threshold lines. Four groups appear without you doing anything clever. Section&nbsp;7.</div>
   </div>
   <div class="pl-step">
     <div class="pl-circle filled">3</div>
@@ -1875,7 +2167,7 @@ Finally: name the one confound that applies to this whole analysis regardless of
     <div class="pl-circle">4</div>
     <div class="pl-title">Script</div>
     <div class="pl-tag">In the room</div>
-    <div class="pl-tools">Four conversations, four owners, four success signals. Section&nbsp;12.</div>
+    <div class="pl-tools">Four conversations, four owners, four success signals. Section&nbsp;10.</div>
   </div>
 </div>
 
@@ -1915,7 +2207,7 @@ Finally: name the one confound that applies to this whole analysis regardless of
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
 
-<h2 id="section-13">13 &middot; Run it on yourself first, and sources</h2>
+<h2 id="section-12">12 &middot; Run it on yourself first, and sources</h2>
 
 <p>Everything on this page came out of running it on our own tenant before running it on anyone else&rsquo;s, and that is not a rhetorical flourish &mdash; it is the reason the seven reversals exist. We did not discover them by being clever about the data. We discovered them because we were wrong about our own organisation and the export said so, in a meeting where nobody had to be diplomatic about a customer.</p>
 

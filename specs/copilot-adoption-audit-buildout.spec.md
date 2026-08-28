@@ -1,7 +1,7 @@
 # specs/copilot-adoption-audit-buildout.spec.md
 
 **Target file:** `copilot-adoption-audit.html` (172 KB, 13 sections)
-**Also produces:** `copilot-adoption-audit-workbook.xlsx` · `tools/build-audit-workbook.py` · `assets/copilot-adoption-audit/*.png`
+**Also produces:** `prompts/copilot-onepager-prompts.md` · `assets/copilot-adoption-audit/*.png`
 **Branch:** `feature/audit-buildout`
 **Authored:** 2026-08-27
 **Depends on:** [`DESIGN.md`](../DESIGN.md) §1–§4, §8, §8b · the live page at [copilotplaybook.com/copilot-adoption-audit.html](https://copilotplaybook.com/copilot-adoption-audit.html)
@@ -48,92 +48,21 @@ Add this spec to `PAIRS` in `tools/speccheck.py` so `--all` covers it.
 ---
 ---
 
-# PART A · Ship the workbook
+# PART A · Ship the workbook — RETIRED
 
-**Deliverables:** `copilot-adoption-audit-workbook.xlsx` at the repo root, and `tools/build-audit-workbook.py` that regenerates it. The builder is committed so the workbook is reproducible rather than an unmaintainable binary — same convention as `tools/speccheck.py`.
+**Withdrawn 27 August 2026.** The workbook, its generator and its Section 10 instructions
+were removed from the site. The audit is now: pull the right export (Section 10), then run
+the prompt library (Section 11). Rationale — the alias-chain column mapper existed to
+survive Microsoft renaming CSV headers, which it did, but it made a nine-tab binary the
+single largest maintenance liability on the site for a job the prompts do without it. The
+prompts carry the same guards (blank-versus-zero, n < 5 suppression, fixed thresholds under
+sixty rows, log-axis zero handling) as written instructions instead of formulas.
 
-## A.1 · The one design decision that matters
+The retired toolchain — the builder rewrite, `tools/recalc-excel.py`,
+`tools/verify-audit-workbook.py` and `specs/copilot-adoption-audit-workbook.prompt.md` —
+is preserved in a git stash rather than deleted.
 
-**The workbook detects its own columns by header text.** The export's column order varies with which columns the admin switched on, so hand-mapping letters is the single most likely point of failure — and it is what the page currently asks for.
-
-Use `MATCH(header_text, 'Paste Export'!$A$1:$BZ$1, 0)` on `Setup`, and `INDEX('Paste Export'!$A$2:$BZ$1001, row, col_index)` everywhere else. The partner pastes and reads; they map nothing.
-
-## A.2 · Toolchain constraints — not optional
-
-| Constraint | Why |
-|---|---|
-| `openpyxl` to write, then **`python scripts/recalc.py <file> 120`** from the `xlsx` skill | openpyxl writes formulas with no cached values; until recalculated every formula reads as `None` to pandas and to `data_only=True`. **Never ship while recalc reports `errors_found`.** |
-| **Never** `XLOOKUP`, `XMATCH`, `SORT`, `FILTER`, `UNIQUE`, `SEQUENCE` | The verifying LibreOffice cannot evaluate them under any prefix, and openpyxl-written spilling functions have no spill metadata — only the top-left cell gets a value and recalc still reports zero errors. Silent wrong answers. |
-| `PERCENTILE`, not `PERCENTILE.INC` | The legacy name evaluates in both. |
-| `MEDIAN` over a helper column, **never** `MEDIAN(IF(...))` | Array formulas need a flag openpyxl does not write. Hence the hidden `Calc` sheet. |
-| Arial throughout; formulas never Python-computed constants | Skill requirement, and the sheet must recalculate when the pasted data changes — which is the entire point. |
-
-## A.3 · Sheets
-
-Nine, in this order. `Calc` is hidden.
-
-**1 · `Start Here`** — gridlines off, columns B=30 C=96. Label/value rows covering: where the data comes from (report, portal, navigation, role, period, the Choose-columns step, and the warning that the ellipsis Export on each *chart* is the wrong one); how to use the workbook in five steps, pasting at `A1` including headers; the two modes; the three rules the workbook enforces (n<5 suppression, zero-guarding, correlational-only); and a legend — yellow fill = cells you edit, blue text = typed value, capacity 1,000 rows and how to extend.
-
-**2 · `Paste Export`** — row 1 is the eighteen exact Microsoft header strings, white bold on `003057`, frozen. Rows 2–4 are three example rows in blue-on-yellow showing realistic shapes — one heavy, one middling, one drifting — with a note that they are examples only, and a cell comment on `A1` stating that column order does not matter.
-
-```
-User name · Display name · Prompts submitted (any app) · Copilot Chat (work) prompts submitted ·
-Copilot Chat (web) prompts submitted · Active Days · Last activity date (UTC) ·
-Last activity date of Teams Copilot (UTC) · … Word … Excel … PowerPoint … Outlook … OneNote … Loop … ·
-Last activity date of Copilot Chat (work) (UTC) · … (web) (UTC) ·
-Last activity date of Microsoft 365 App (UTC) · Last activity date of Microsoft Edge (UTC)
-```
-
-**3 · `Setup`** — inputs in yellow: customer name, report period in days (default 90), refresh date, mode override. Detected: `=COUNTA('Paste Export'!A2:A1001)`; auto mode `=IF(rows>=60,"LARGE","SMALL")`; mode in use `=IF(override="",auto,UPPER(override))`. A column-detection block, one row per field, each `=IFERROR(MATCH($E{row},'Paste Export'!$A$1:$BZ$1,0),0)` with a `FOUND`/`NOT FOUND` status — five core fields plus the eight per-application last-activity columns. A red roll-up warning naming the likeliest cause: *"check you exported the user table with all columns switched on, and that this is a v2 report. Version 1 has no prompt or active-day columns at all."*
-
-```
-Frequency line  =IF(mode="SMALL", 9,   MEDIAN(INDEX('Paste Export'!$A$2:$BZ$1001,0,activedays_col)))
-Depth line      =IF(mode="SMALL", ROUND(15*(period_days/7),0),
-                                  MEDIAN(INDEX('Paste Export'!$A$2:$BZ$1001,0,prompts_col)))
-```
-
-`INDEX(range, 0, n)` returning a whole column is what avoids a circular reference back through `Analysis`. Deriving the SMALL depth line from the period input makes it self-documenting: 90 days → 195 prompts → 15 per week. Finish with two disclosure counters the presenter is told to say out loud: never-active users, and users excluded from the chart for having zero prompts.
-
-**4 · `Analysis`** — rows 2–1001, every cell guarded `=IF($A{r}>Setup!rows,"",…)` so trailing rows stay blank rather than showing zeros.
-
-| Col | Header | Formula shape |
-|---|---|---|
-| A | # | `=ROW()-1` |
-| B | User | `INDEX(paste, $A{r}, Setup!user_col)` |
-| C | Active days | `N(INDEX(…))` |
-| D | Prompts | `N(INDEX(…))` |
-| E | Web prompts | `N(INDEX(…))` |
-| F | Prompts / active day | `=IFERROR($D{r}/$C{r},0)` |
-| G | Web share of prompts | `=IFERROR($E{r}/$D{r},"")`, format `0.0%` |
-| H | Surfaces touched | sum of eight `(--(INDEX(paste,$A{r},Setup!surf_col_n)<>""))` terms |
-| I | Band | nested `IF` on the two thresholds |
-| J | Drifting split | `=IF($I{r}="Drifting",IF($H{r}>=3,"tried and stopped","never started"),"")` |
-| K | Plot depth | `=MAX($D{r},1)` — a log axis cannot render zero |
-| L | Never active | `=IF(AND($C{r}=0,$D{r}=0),1,0)` |
-
-Band mapping, stated so it cannot be got backwards: high frequency + high depth = **Embedded** · high frequency + low depth = **Loyal but shallow** · low frequency + high depth = **Project-driven** · low + low = **Drifting**.
-
-**5 · `Calc` (hidden)** — twelve helper columns, three metrics × four bands, each `=IF(Analysis!$I{r}="","",IF(Analysis!$I{r}="{band}",Analysis!${col}{r},""))`. `MEDIAN` ignores the blanks.
-
-**6 · `Segments`** — the deliverable. A subtitle concatenating customer, user count, period, refresh date and mode, and a standing red line: *"Relationships shown are correlational. This measures where the tool has not been made useful yet — not effort, contribution or value."* Four band rows × Users · % of users · % of all prompts · Median prompts · Median active days · Median prompts/active day · Median surfaces · What it means. **Every derived cell wraps in** `=IF($C{r}<5,"n<5 not reported", …)`; only the raw count escapes it. Then three blocks: the finding (share-of-people vs share-of-prompts, degrading gracefully when Embedded is under five); licence exposure as four never-merged numbers with the reconcile-against-assigned-licences warning; and the realistic ceiling (median, 75th, 95th percentile of prompts per active day) with a note that fires under 60 users telling the reader to quote the median and maximum only.
-
-**7 · `Chart`** — `ScatterChart`, x = `Analysis!C`, y = `Analysis!K`, `y_axis.scaling.logBase = 10`, circle markers size 4, no connecting line. Above it a red formula line reading **"SMALL MODE — do not use this chart. Read the ranked list on Analysis instead."** when mode is SMALL, and a caption stating the excluded zero-prompt count, refresh date, period, and that relationships are correlational.
-
-**8 · `Book Ranking`** — one row per Copilot customer, columns matching §5.2 of the page: Customer · Licensed users · Never active · Never active % · Drifting % · Embedded % · Embedded with no agent use · Web-only users · Months to renewal · Next play · Owner · Date agreed. Row 5 links live to this workbook's own result in green; rows 6+ are yellow input.
-
-**9 · `Reference`** — the five reports with portal, navigation and periods; the concealment setting and its path; the Graph call with the `version='v2'` warning; the ten traps in one line each; source URLs. The offline twin of the page's Sections 8, 9 and 13.
-
-## A.4 · Verification for Part A
-
-1. `python scripts/recalc.py copilot-adoption-audit-workbook.xlsx 120` → `status: success`, `total_errors: 0`.
-2. Reload `data_only=True` and check the three shipped example rows band as `Embedded`, `Loyal but shallow`, `Drifting` / `tried and stopped` at 90-day SMALL thresholds. **Check two or three formulas by hand before building the grid** — a green recalc proves formulas evaluate, not that ranges are right.
-3. Delete the example rows: every `Analysis` row blanks, `Segments` shows zeros not `#DIV/0!`.
-4. Paste 200 synthetic rows: mode flips to LARGE, thresholds become medians.
-5. Force a band to four members: every derived cell in that row reads `n<5 not reported`.
-6. `Calc` is hidden; no sheet holds a hardcoded result where a formula belongs.
-
----
----
+See `prompts/copilot-onepager-prompts.md` for the replacement artefact prompts.
 
 # PART B · Name the report, in place, every time
 
@@ -264,29 +193,12 @@ explicitly, every time.</p>
     </div>
 ```
 
-## AB-06 · Section 10 — lead with the workbook, not with column letters
+## AB-06, AB-07 · Section 10 workbook anchors — RETIRED
 
-**Depends on Part A being merged.** Do not apply before the workbook exists.
-
-```html before:AB-06
-<p>No BI tool, no Power&nbsp;BI licence, no data engineer. Excel, the CSV you just exported, and about ten minutes. The formulas below assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2. <strong>Column letters vary depending on which columns you switched on</strong>, so the first job is to find yours and substitute them &mdash; every formula here is written with the letters spelled out in a legend so the substitution is mechanical.</p>
-```
-
-```html after:AB-06
-<p>No BI tool, no Power&nbsp;BI licence, no data engineer. <strong><a href="copilot-adoption-audit-workbook.xlsx">Download the workbook</a></strong>, paste your export into the first tab, and read the answer off the third. It detects its own columns by header text &mdash; so it does not matter which columns the admin switched on or what order they came out in &mdash; picks large-tenant or small-tenant thresholds from the row count, applies the five-person suppression rule for you, and draws the chart.</p>
-
-<p>The rest of this section is what the workbook is doing, written out. Read it if you would rather build your own, if you need to explain a number to a customer&rsquo;s admin, or if you simply do not want to trust a spreadsheet you did not write. The formulas assume your export is open with headers in row&nbsp;1 and data starting in row&nbsp;2, and are written with column letters spelled out in a legend so substitution is mechanical.</p>
-```
-
-## AB-07 · Section 10 — the template now ships
-
-```html before:AB-07
-<div class="callout-title">Do this once as a template, not once per customer</div>
-```
-
-```html after:AB-07
-<div class="callout-title">The template ships &mdash; build it once only if you want your own</div>
-```
+Both applied to the workbook lede and the “template now ships” callout in Section 10.
+Section 10 was rewritten on 27 August 2026 as the export path only — which report, which
+tab, which table, which columns to switch on — with the analysis moved wholly into the
+Section 11 prompt library. Neither anchor has a target any more. See PART A above.
 
 ---
 ---
@@ -467,3 +379,6 @@ python tools/check-facts.py
 **Render check.** Every screenshot loads and none scrolls horizontally; every report card renders its label column; the workbook link downloads; all fourteen prompt copy-buttons still fire (`document.querySelectorAll('.copybtn').length === 14`).
 
 **The reader test, and it is the one that matters.** Open the page at Section 3.2 having read nothing before it. Without scrolling anywhere else you must be able to say **which report, which portal, which menu path, which period, and which role**. If you cannot, Part B has failed regardless of what the greps say.
+
+---
+---
