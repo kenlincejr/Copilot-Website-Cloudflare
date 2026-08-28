@@ -947,7 +947,11 @@ footer.pagefoot a { color:#6b7280; }
     CCCU: { creditsPer: 100, usdPer: 1.00 },// ms-verified: 1 CCCU = $1 retail = 100 credits
     BENCHMARK: { ratio: 2.6, anchorUsd: 30 },// editorial (TD SYNNEX) / ms-verified anchor F-090
     BAND: { modeled: 0.30, measured: 0.15 },// editorial: ±30% default, ±15% once calibrated
-    SANITY: { ratioLo: 0.5, ratioHi: 6.0 }
+    SANITY: { ratioLo: 0.5, ratioHi: 6.0 },
+    // Magnitude ceilings for every count and price the engine multiplies.
+    // Values above these are typos or attacks, and both overflow the same way:
+    // a finite input times a finite input reaching Infinity on a customer card.
+    MAX: { employees: 1e6, seats: 1e6, tasksPerMonth: 1e4, tierCredits: 1e7, usd: 1e5 }
   };
 
   /* ── SKU catalog ──────────────────────────────────────────────────────── */
@@ -980,7 +984,9 @@ footer.pagefoot a { color:#6b7280; }
     { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-modeled',
       note:'Implied by the E7 a-la-carte arithmetic ($60+$30+$12+$15=$117).' }
   ];
-  var SKU_BY_ID = {};
+  // Null prototype: a lookup keyed by user-supplied text must not resolve
+  // 'toString' to a function and price a license off Object.prototype.
+  var SKU_BY_ID = Object.create(null);
   SKUS.forEach(function (s) { SKU_BY_ID[s.id] = s; });
 
   /* Governance add-ons — resolved this session */
@@ -1105,11 +1111,10 @@ footer.pagefoot a { color:#6b7280; }
     notCsp:           { label:'Outside CSP',             short:'outside CSP',       billing:false, csp:false },
     unsure:           { label:'Not established',         short:'not established',   billing:false, csp:true }
   };
-  /* The picker offers only the motions a reader of this tool is actually in.
-     'indirectProvider' stays in MOTIONS — it behaves identically to direct bill
-     and any rate card that already carries it still resolves — but a
-     distributor is not the audience, so it is not on the card row. */
-  var MOTION_ORDER = ['direct','indirectReseller','notCsp'];
+  /* The picker offers every motion a reader can actually be in. A distributor
+     reading their own economics is rare, but filing them under direct bill
+     printed the wrong motion label on every output surface. */
+  var MOTION_ORDER = ['direct','indirectProvider','indirectReseller','notCsp'];
   function motionOf(state) {
     var m = state.channel && state.channel.motion;
     return MOTIONS[m] ? m : 'unsure';
@@ -1211,7 +1216,8 @@ footer.pagefoot a { color:#6b7280; }
   function creditUsd(state) {
     if (state.pricing && state.pricing.mode === 'sell') {
       var v = num_(state.pricing.creditSellUsd);
-      if (v != null) return v;
+      // A rate at or below zero is not a price; fall back like an unset one.
+      if (v != null && v > 0) return v;
     }
     return CONST.CREDIT_USD;
   }
@@ -1248,9 +1254,57 @@ footer.pagefoot a { color:#6b7280; }
     return s;
   }
 
+  /* Deep repair on top of hydrate(): every count and rate the engine
+     multiplies is forced finite and inside CONST.MAX, because two finite
+     inputs are enough to put Infinity on a customer card. Exposed as
+     E.normalize so the loaders assign exactly what compute() is about to see —
+     a shallow assign there is how the screen and the number end up
+     disagreeing. Retired effort levels pass through untouched so V-19 fires. */
+  function normalize(input) {
+    var s = hydrate(input ? JSON.parse(JSON.stringify(input)) : null);
+    s.org.totalEmployees = clamp(n(s.org.totalEmployees, 0), 0, CONST.MAX.employees);
+    s.licenseInventory = (Array.isArray(s.licenseInventory) ? s.licenseInventory : [])
+      .filter(function (l) { return l != null && typeof l === 'object'; })
+      .map(function (l) { l.seats = clamp(n(l.seats, 0), 0, CONST.MAX.seats); return l; });
+    s.personas = (Array.isArray(s.personas) ? s.personas : [])
+      .filter(function (p) { return p != null && typeof p === 'object'; })
+      .map(function (p, i) {
+        if (typeof p.name !== 'string')
+          p.name = PERSONA_DEFAULTS[i] ? PERSONA_DEFAULTS[i].name : 'Persona ' + (i + 1);
+        p.seats = clamp(n(p.seats, 0), 0, CONST.MAX.seats);
+        ['light','medium','heavy'].forEach(function (t) { p[t] = clamp(n(p[t], 0), 0, CONST.MAX.tasksPerMonth); });
+        return p;
+      });
+    if (s.activation.count != null) s.activation.count = clamp(n(s.activation.count, 0), 0, CONST.MAX.seats);
+    ['light','medium','heavy'].forEach(function (t) {
+      s.tierCredits[t] = clamp(n(s.tierCredits[t], 0), 0, CONST.MAX.tierCredits);
+    });
+    s.effort.step = clamp(n(s.effort.step, EFFORT_STEP_DEFAULT), 1, 3); // the slider's own range
+    s.model.multiplier = clamp(n(s.model.multiplier, 1), 0, 100);
+    s.billing.capacityPacksCccu = Math.max(0, n(s.billing.capacityPacksCccu, 0));
+    ['retainerLo','retainerHi','trainLo','trainHi'].forEach(function (k) {
+      s.partnerServices[k] = clamp(n(s.partnerServices[k], 0), 0, CONST.MAX.usd);
+    });
+    // Price maps: a non-numeric entry is unset, a huge one is capped.
+    [s.priceOverrides, s.pricing.sell, s.pricing.cost].forEach(function (map) {
+      if (map == null || typeof map !== 'object') return;
+      Object.keys(map).forEach(function (id) {
+        var v = num_(map[id]);
+        if (v == null) delete map[id]; else map[id] = clamp(v, 0, CONST.MAX.usd);
+      });
+    });
+    var sellRate = num_(s.pricing.creditSellUsd);
+    s.pricing.creditSellUsd = sellRate != null ? clamp(sellRate, 0, CONST.MAX.usd) : s.pricing.creditSellUsd;
+    var provRate = num_(s.channel.providerCreditUsd);
+    s.channel.providerCreditUsd = provRate != null ? clamp(provRate, 0, CONST.MAX.usd) : null;
+    if (s.pricing.uplift && typeof s.pricing.uplift === 'object')
+      s.pricing.uplift.value = clamp(n(s.pricing.uplift.value, 0), 0, CONST.MAX.usd);
+    return s;
+  }
+
   /* ── compute ──────────────────────────────────────────────────────────── */
   function compute(rawState) {
-    var state = hydrate(rawState ? JSON.parse(JSON.stringify(rawState)) : null);
+    var state = normalize(rawState);
     var trace = [], warn = [], assume = [];
     function T(id, group, label, expression, detail, value, unit, prov, note) {
       trace.push({ id:id, group:group, label:label, expression:expression, detail:detail,
@@ -1267,11 +1321,23 @@ footer.pagefoot a { color:#6b7280; }
     var employees = Math.max(0, n(state.org.totalEmployees, 0));
     T('F1','funnel','Total employees','asked','', employees,'people','partner');
 
-    var inv = (state.licenseInventory || []).filter(function (l) { return SKU_BY_ID[l.skuId]; });
+    /* Unknown ids are dropped and named, never priced: this lookup once
+       resolved prototype keys and threw three lines later. */
+    var unknownSkuIds = [];
+    var inv = (state.licenseInventory || []).filter(function (l) {
+      if (SKU_BY_ID[l.skuId]) return true;
+      if (l.skuId != null) unknownSkuIds.push(String(l.skuId));
+      return false;
+    });
+    if (unknownSkuIds.length)
+      W('V-27','warn','The license inventory names ' + (unknownSkuIds.length === 1 ? 'an id' : 'ids') +
+        ' this build does not recognize: ' + unknownSkuIds.join(', ') +
+        '. Those lines are dropped rather than priced blind — re-pick the SKU in Step 2.', []);
     var copilotLicensed = 0, nonCopilotSeats = 0, licenseMonthly = 0, copilotSpend = 0;
     var licenseList = 0, licenseSell = 0, licenseCost = 0, anyCost = false, anySellSet = false;
     var costMissing = false;   // at least one seat-bearing line has no cost price
     var invDetail = [];
+    var seatsBySku = Object.create(null);
     inv.forEach(function (l) {
       var s = SKU_BY_ID[l.skuId], seats = Math.max(0, n(l.seats, 0)), price = skuPrice(state, l.skuId);
       licenseMonthly += seats * price;
@@ -1284,12 +1350,18 @@ footer.pagefoot a { color:#6b7280; }
       if (s.copilot) { copilotLicensed += seats; copilotSpend += seats * copilotComponent(state, l.skuId); }
       else if (!s.addOn) { nonCopilotSeats += seats; }
       if (seats > 0) invDetail.push(seats + '×' + s.name + ' @$' + price.toFixed(2));
-      if (s.cap && seats > s.cap)
-        W('V-05','warn', s.name + ' caps at ' + s.cap + ' licenses; you entered ' + seats +
-          '. Above the cap the enterprise M365 Copilot add-on at $30 is the available path.',
-          [{ label:'Switch to the $30 enterprise add-on', action:'switchToEnterprise' }]);
+      seatsBySku[l.skuId] = (seatsBySku[l.skuId] || 0) + seats;
       if (s.promoEnds) assume.push({ id:'promo-'+s.id, label:s.name,
         note:'This price reflects a promotion that ends ' + s.promoEnds + '. Re-verify before quoting.', prov:'ms-verified' });
+    });
+    /* Cap check on the summed estate, not the line: two 200-seat lines of a
+       capped SKU are exactly as un-invoiceable as one 400-seat line. */
+    Object.keys(seatsBySku).forEach(function (id) {
+      var s = SKU_BY_ID[id];
+      if (s.cap && seatsBySku[id] > s.cap)
+        W('V-05','warn', s.name + ' caps at ' + s.cap + ' licenses; you entered ' + seatsBySku[id] +
+          '. Above the cap the enterprise M365 Copilot add-on at $30 is the available path.',
+          [{ label:'Switch to the $30 enterprise add-on', action:'switchToEnterprise' }]);
     });
 
     T('F2','funnel','Copilot-licensed users','Σ seats where the SKU includes Copilot', invDetail.join(' + '),
@@ -1319,6 +1391,8 @@ footer.pagefoot a { color:#6b7280; }
       state.effort.level = EFFORT_RETIRED[state.effort.level];
     }
     var effortMult = EM[state.effort.level] != null ? EM[state.effort.level] : 1;
+    // An unknown level multiplies at Medium, so it is labeled as Medium.
+    var effortLabel = EFFORT_LABELS[state.effort.level] || EFFORT_LABELS.medium;
     var modelMult = state.model.enabled ? n(state.model.multiplier, 1) : 1;
 
     function creditsPerUser(p) {
@@ -1400,7 +1474,7 @@ footer.pagefoot a { color:#6b7280; }
       return effSeats[idx] + '×' + Math.round(effectiveCredits(p)).toLocaleString();
     }).join(' + ');
     T('F10','credits','Monthly Copilot Credits','Σ (persona seats × credits/user × effort)',
-      creditDetail + (effortMult !== 1 ? ' (×' + effortMult.toFixed(3) + ' ' + EFFORT_LABELS[state.effort.level] + ' effort)' : ''),
+      creditDetail + (effortMult !== 1 ? ' (×' + effortMult.toFixed(3) + ' ' + effortLabel + ' effort)' : ''),
       monthlyCredits,'credits', state.calibrated ? 'measured' : 'ms-modeled',
       state.calibrated ? null : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
         ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
@@ -1427,7 +1501,7 @@ footer.pagefoot a { color:#6b7280; }
     ['light','medium','heavy'].forEach(function (t) {
       var usd = n(TC[t]) * CONST.CREDIT_USD * effortMult;
       if (usd < CONST.TASK_ENVELOPE.lo || usd > CONST.TASK_ENVELOPE.hi)
-        W('V-08','warn','A ' + t + ' task at ' + EFFORT_LABELS[state.effort.level] + ' effort models at $' +
+        W('V-08','warn','A ' + t + ' task at ' + effortLabel + ' effort models at $' +
           usd.toFixed(2) + ', outside Microsoft’s published typical range of $0.70–$15.', []);
     });
 
@@ -1499,9 +1573,15 @@ footer.pagefoot a { color:#6b7280; }
     var commitCredits = afterPacks * clamp(n(state.billing.commitCoveragePct,1), 0, 1.5);
     var overageCredits = Math.max(0, afterPacks - commitCredits);
     var commitCccu = commitCredits / CONST.CCCU.creditsPer;
-    var disc = state.billing.manualP3Pct != null
-      ? { pct:clamp(n(state.billing.manualP3Pct,0), 0, 100), prov:'partner', exact:true, tier:'manual' }
+    // The manual field caps at the input's own 30, and the engine agrees:
+    // nothing survives to the arithmetic that could quote a free year.
+    var manualPct = num_(state.billing.manualP3Pct);
+    var disc = manualPct != null
+      ? { pct:clamp(manualPct, 0, 30), prov:'partner', exact:true, tier:'manual' }
       : p3Discount(commitCccu);
+    if (manualPct != null && disc.pct > P3_ANCHORS[P3_ANCHORS.length - 1].pct)
+      W('V-28','warn','A manual discount of ' + disc.pct.toFixed(1) + '% is above Microsoft’s top published P3 ' +
+        'anchor of ' + P3_ANCHORS[P3_ANCHORS.length - 1].pct + '%. Confirm it with your distributor before you quote it.', []);
     var p3Prepay = commitCccu * CONST.CCCU.usdPer * (1 - disc.pct / 100);
     // Capacity packs are consumed first, but they are bought, not free. Netting
     // them out of the commit without charging for them invents a saving.
@@ -1531,15 +1611,19 @@ footer.pagefoot a { color:#6b7280; }
        sitting on the rate card is not merely unanswered \u2014 it does not apply,
        and it must not be allowed to leak through into a margin figure. */
     var pecApplies = holdsBillingAccount;
-    var pecKnown = pecApplies && (pecCfg.status === 'yes' || pecCfg.status === 'no');
-    var pecPct   = (pecApplies && pecCfg.status === 'yes') ? clamp(n(pecCfg.pct, 15), 0, 15) : 0;
+    // 'yes' with no usable rate is not an answer: withhold rather than assume
+    // the 15% maximum on the partner's behalf.
+    var pecRate  = num_(pecCfg.pct);
+    var pecKnown = pecApplies && (pecCfg.status === 'no' || (pecCfg.status === 'yes' && pecRate != null));
+    var pecPct   = (pecApplies && pecCfg.status === 'yes' && pecRate != null) ? clamp(pecRate, 0, 15) : 0;
 
     /* An indirect reseller does not buy the meter from Microsoft. They buy it
        from their indirect provider at whatever rate that provider sets, and
        that rate is the only cost basis they have. Null until they say. */
     var providerCreditUsd = (cspMotion === 'indirectReseller')
       ? num_(state.channel && state.channel.providerCreditUsd) : null;
-    if (providerCreditUsd != null && !(providerCreditUsd >= 0)) providerCreditUsd = null;
+    // Zero is not a cost basis — it is the question unanswered.
+    if (providerCreditUsd != null && !(providerCreditUsd > 0)) providerCreditUsd = null;
     var providerKnown = providerCreditUsd != null;
 
     var chosenIsP3 = state.billing.model === 'p3';
@@ -1556,6 +1640,15 @@ footer.pagefoot a { color:#6b7280; }
     // What the customer is billed for the meter, at the partner's credit rate.
     var meterBilledAnnual = annualCredits * CU;
     var meterMarginAnnual = costBasisKnown ? (meterBilledAnnual - partnerCostAnnual) : null;
+
+    // An inverted meter margin on either cost basis. Selling below cost may
+    // even be deliberate — but it must never be discovered on the invoice.
+    if (meterMarginAnnual != null && meterMarginAnnual < 0)
+      W('V-29','warn','You are billing this meter at ' + rateLbl + ' a credit and it costs you more than that: $' +
+        Math.round(meterBilledAnnual).toLocaleString() + ' billed against $' +
+        Math.round(partnerCostAnnual).toLocaleString() + ' of cost is $' +
+        Math.round(-meterMarginAnnual).toLocaleString() + ' a year against you. Reprice the credit or renegotiate ' +
+        'your rate before you quote it.', []);
 
     if (cspMotion === 'unsure')
       assume.push({ id:'motion-unknown', label:'Which CSP motion you are in',
@@ -1712,7 +1805,7 @@ footer.pagefoot a { color:#6b7280; }
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
-      effortMult:effortMult, effortLabel:EFFORT_LABELS[state.effort.level]
+      effortMult:effortMult, effortLabel:effortLabel
     };
 
     var licensing = solveLicensing(state, ctx);
@@ -1870,7 +1963,7 @@ footer.pagefoot a { color:#6b7280; }
                baseName:c.baseId ? SKU_BY_ID[c.baseId].name : null, basePer:basePer,
                // The figure every comparison runs on: what this path actually
                // bills per Copilot user once its prerequisite is paid for.
-               perUserAllIn: needed > 0 ? monthly / needed : c.per + (c.addOn ? baseFloor : 0),
+               perUserAllIn: needed > 0 ? monthly / needed : c.per + (c.addOn ? basePer : 0),
                monthly:monthly,
                closes:closes, gaps:gaps, violations:violations, feasible:violations.length === 0 };
     });
@@ -2078,7 +2171,7 @@ footer.pagefoot a { color:#6b7280; }
       { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActive > 200,
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
-        why:['At ' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
+        why:['At $' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
              'Investigate before you cap \u2014 concentrated usage is usually where the value is concentrating too.'],
         opener:'"Your AUP is only a document until something enforces it." Monthly Cost Management review, spending-policy tuning, and a concentration check on a bill this size.',
         then:'Training underneath it, so the heavy users learn the cheaper prompt patterns.' },
@@ -2153,7 +2246,7 @@ footer.pagefoot a { color:#6b7280; }
     EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
     P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
     MOTIONS:MOTIONS, MOTION_ORDER:MOTION_ORDER, motionOf:motionOf,
-    defaults:defaults, compute:compute, applyPreset:applyPreset, largestRemainder:largestRemainder,
+    defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
     skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
@@ -2221,7 +2314,7 @@ footer.pagefoot a { color:#6b7280; }
     Array.prototype.forEach.call(el.querySelectorAll('[data-lic]'), function (inp) {
       inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', function () {
         var i = +inp.getAttribute('data-lic'), f = inp.getAttribute('data-f');
-        state.licenseInventory[i][f] = f === 'seats' ? Math.max(0, +inp.value || 0) : inp.value;
+        state.licenseInventory[i][f] = f === 'seats' ? Math.max(0, Math.min(E.CONST.MAX.seats, +inp.value || 0)) : inp.value;
         state.licenseTouched = true;
         if (f === 'skuId') renderLic();
         refresh();
@@ -2327,7 +2420,7 @@ footer.pagefoot a { color:#6b7280; }
       });
     });
     if ($('actCount')) $('actCount').addEventListener('input', function (e) {
-      state.activation.count = Math.max(0, +e.target.value || 0); rebalanceToActive(); refresh();
+      state.activation.count = Math.max(0, Math.min(E.CONST.MAX.seats, +e.target.value || 0)); rebalanceToActive(); refresh();
     });
   }
   function rebalanceToActive() {
@@ -2385,7 +2478,9 @@ footer.pagefoot a { color:#6b7280; }
 
     Array.prototype.forEach.call($('personaBlock').querySelectorAll('[data-p]'), function (inp) {
       inp.addEventListener('input', function () {
-        state.personas[+inp.getAttribute('data-p')][inp.getAttribute('data-f')] = Math.max(0, +inp.value || 0);
+        var pf = inp.getAttribute('data-f');
+        state.personas[+inp.getAttribute('data-p')][pf] =
+          Math.max(0, Math.min(pf === 'seats' ? E.CONST.MAX.seats : E.CONST.MAX.tasksPerMonth, +inp.value || 0));
         state.personaPreset = '';
         refresh();
       });
@@ -2501,16 +2596,24 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   /* ═══ STEP 5 · effort + calibration ═══ */
+  /* A loaded session may carry a retired or unknown effort level. The engine
+     reprices it (V-19 says so on the flags card) and the control shows the
+     level actually billed; state keeps the loaded value so the notice stands
+     until the partner touches the control. */
+  function effLevelShown() {
+    return E.EFFORT_RETIRED[state.effort.level] ||
+           (E.EFFORT_LABELS[state.effort.level] ? state.effort.level : 'medium');
+  }
   function renderEffort(r) {
     var mults = E.effortMultipliers(state.effort.step);
-    var order = E.EFFORT_ORDER;
+    var order = E.EFFORT_ORDER, shown = effLevelShown();
     var base = r.ctx.monthlyCowork / (r.ctx.effortMult || 1);
     $('effortBlock').innerHTML =
       '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px;">Effort level &mdash; a real control in Cowork</div>' +
       '<div class="seg" id="effortSeg">' + order.map(function (k) {
-        return '<button data-eff="' + k + '"' + (state.effort.level === k ? ' class="on"' : '') + '>' + E.EFFORT_LABELS[k] + '</button>';
+        return '<button data-eff="' + k + '"' + (shown === k ? ' class="on"' : '') + '>' + E.EFFORT_LABELS[k] + '</button>';
       }).join('') + '</div>' +
-      '<div class="ribbon-deriv" id="effDeriv" style="margin-top:12px;">' + effortCopy(state.effort.level, mults, base) + '</div>' +
+      '<div class="ribbon-deriv" id="effDeriv" style="margin-top:12px;">' + effortCopy(shown, mults, base) + '</div>' +
       '<p class="srcline">Microsoft publishes the levels and that Medium is the default, but <b>no numeric multiplier</b>. These are modeled from Microsoft\'s published $0.70&ndash;$15 per-task range and are editable in the advanced panel.</p>';
     Array.prototype.forEach.call($('effortSeg').querySelectorAll('[data-eff]'), function (b) {
       b.addEventListener('click', function () { state.effort.level = b.getAttribute('data-eff'); refresh(); });
@@ -2526,7 +2629,7 @@ footer.pagefoot a { color:#6b7280; }
         (state.calibrated ? '<span class="pill measured">Calibrated &mdash; band tightened to &plusmn;15%</span><button class="linkbtn" id="calReset">Reset to modeled defaults</button>' : '<span style="font-size:.78rem;color:#9ca3af;">Currently modeled &mdash; band is &plusmn;30%</span>') +
       '</div>';
     Array.prototype.forEach.call($('calBlock').querySelectorAll('[data-cal]'), function (inp) {
-      inp.addEventListener('input', function () { state.tierCredits[inp.getAttribute('data-cal')] = Math.max(0, +inp.value || 0); refresh(); });
+      inp.addEventListener('input', function () { state.tierCredits[inp.getAttribute('data-cal')] = Math.max(0, Math.min(E.CONST.MAX.tierCredits, +inp.value || 0)); refresh(); });
     });
     $('calApply').addEventListener('click', function () {
       var before = E.compute(state).ctx;
@@ -2552,7 +2655,7 @@ footer.pagefoot a { color:#6b7280; }
   }
   function patchEffort(r) {
     var el = $('effDeriv'); if (!el) return;
-    el.textContent = effortCopy(state.effort.level, E.effortMultipliers(state.effort.step),
+    el.textContent = effortCopy(effLevelShown(), E.effortMultipliers(state.effort.step),
                                 r.ctx.monthlyCowork / (r.ctx.effortMult || 1));
   }
   function effortCopy(level, mults, base) {
@@ -2600,7 +2703,7 @@ footer.pagefoot a { color:#6b7280; }
         b.addEventListener('click', function () { state.billing.p3Holder = b.getAttribute('data-hold'); refresh(); });
       });
     $('billCov').addEventListener('input', function (e) { state.billing.commitCoveragePct = Math.max(0, Math.min(1.5, (+e.target.value || 0) / 100)); refresh(); });
-    $('billPct').addEventListener('input', function (e) { state.billing.manualP3Pct = e.target.value === '' ? null : Math.max(0, +e.target.value || 0); refresh(); });
+    $('billPct').addEventListener('input', function (e) { state.billing.manualP3Pct = e.target.value === '' ? null : Math.max(0, Math.min(30, +e.target.value || 0)); refresh(); });
   }
 
   /* ═══ STEP 7 · governance ═══ */
@@ -2734,6 +2837,9 @@ footer.pagefoot a { color:#6b7280; }
     var MOTION_COPY = {
       direct: { t:'Direct-bill CSP partner', tag:'You bill Microsoft direct',
         d:'You hold the billing relationship with Microsoft. You create the Azure plan, Microsoft invoices you, and you place a Copilot Credit pre-purchase order yourself.',
+        me:'You pay Microsoft <b>$0.01</b> a credit, less the PEC you earn.' },
+      indirectProvider: { t:'Indirect provider', tag:'You are the distributor',
+        d:'You hold the Azure plan and the Microsoft invoice; your resellers own the customer relationship underneath you.',
         me:'You pay Microsoft <b>$0.01</b> a credit, less the PEC you earn.' },
       indirectReseller: { t:'Indirect reseller', tag:'Most TD SYNNEX partners',
         d:'You buy through TD SYNNEX or another distributor. They hold the Azure plan and the Microsoft invoice; you own the customer and set what they pay.',
@@ -2880,7 +2986,7 @@ footer.pagefoot a { color:#6b7280; }
     });
     if ($('pProv')) $('pProv').addEventListener('input', function (e) {
       var v = e.target.value;
-      state.channel.providerCreditUsd = (v === '') ? null : Math.max(0, +v || 0);
+      state.channel.providerCreditUsd = (v === '') ? null : Math.max(0, Math.min(E.CONST.MAX.usd, +v || 0));
       refresh();
     });
     Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-pmode]'), function (b) {
@@ -2897,15 +3003,16 @@ footer.pagefoot a { color:#6b7280; }
         });
       });
     }
-    bindPrice('data-plist', function (id, v) { state.priceOverrides[id] = Math.max(0, +v || 0); });
-    bindPrice('data-pcost', function (id, v) { if (v === '') delete state.pricing.cost[id]; else state.pricing.cost[id] = Math.max(0, +v || 0); });
-    bindPrice('data-psell', function (id, v) { if (v === '') delete state.pricing.sell[id]; else state.pricing.sell[id] = Math.max(0, +v || 0); });
+    function usdIn(v) { return Math.max(0, Math.min(E.CONST.MAX.usd, +v || 0)); }
+    bindPrice('data-plist', function (id, v) { state.priceOverrides[id] = usdIn(v); });
+    bindPrice('data-pcost', function (id, v) { if (v === '') delete state.pricing.cost[id]; else state.pricing.cost[id] = usdIn(v); });
+    bindPrice('data-psell', function (id, v) { if (v === '') delete state.pricing.sell[id]; else state.pricing.sell[id] = usdIn(v); });
 
     if ($('upliftType')) {
       Array.prototype.forEach.call($('upliftType').querySelectorAll('[data-ut]'), function (b) {
         b.addEventListener('click', function () { state.pricing.uplift.type = b.getAttribute('data-ut'); renderPricing(); });
       });
-      $('upliftVal').addEventListener('input', function (e) { state.pricing.uplift.value = Math.max(0, +e.target.value || 0); });
+      $('upliftVal').addEventListener('input', function (e) { state.pricing.uplift.value = usdIn(e.target.value); });
       $('upliftApply').addEventListener('click', function () {
         var u = state.pricing.uplift;
         E.SKUS.forEach(function (k) {
@@ -2920,7 +3027,7 @@ footer.pagefoot a { color:#6b7280; }
       });
     }
     if ($('pCredit')) $('pCredit').addEventListener('input', function (e) {
-      state.pricing.creditSellUsd = Math.max(0, +e.target.value || 0); refresh();
+      state.pricing.creditSellUsd = usdIn(e.target.value); refresh();
     });
     $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
     if ($('pecSeg')) Array.prototype.forEach.call($('pecSeg').querySelectorAll('[data-pec]'), function (b) {
@@ -2935,7 +3042,7 @@ footer.pagefoot a { color:#6b7280; }
     });
     Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-svc]'), function (inp) {
       inp.addEventListener('input', function () {
-        state.partnerServices[inp.getAttribute('data-svc')] = Math.max(0, +inp.value || 0); refresh();
+        state.partnerServices[inp.getAttribute('data-svc')] = usdIn(inp.value); refresh();
       });
     });
     $('btnRateDown').addEventListener('click', downloadRateCard);
@@ -2981,10 +3088,15 @@ footer.pagefoot a { color:#6b7280; }
       try {
         var c = JSON.parse(ev.target.result);
         if (!c || c.__type !== 'cowork-rate-card') throw new Error('shape');
+        // A meter rate at or below zero is not a price. Refuse the card whole
+        // rather than quietly repricing a shared file a colleague will reuse.
+        if (c.pricing && c.pricing.creditSellUsd != null &&
+            !(isFinite(c.pricing.creditSellUsd) && c.pricing.creditSellUsd > 0)) throw new Error('rate');
         if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, c.pricing);
         if (c.priceOverrides) state.priceOverrides = c.priceOverrides;
         if (c.partnerServices) state.partnerServices = c.partnerServices;
-        if (c.effortStep) state.effort.step = c.effortStep;
+        // The slider's own range, applied to the file the slider never saw.
+        if (c.effortStep != null) state.effort.step = Math.max(1, Math.min(3, +c.effortStep || 1));
         // A card saved before the PEC question existed carries no answer.
         // Leave it 'unsure' rather than inheriting a cost basis nobody set.
         if (c.pec) state.pricing.pec = { status:c.pec.status || 'unsure',
@@ -2995,8 +3107,15 @@ footer.pagefoot a { color:#6b7280; }
           motion: E.MOTIONS[c.channel.motion] ? c.channel.motion : 'unsure',
           providerCreditUsd: (c.channel.providerCreditUsd != null && isFinite(c.channel.providerCreditUsd))
             ? Math.max(0, c.channel.providerCreditUsd) : null };
+        // The same deep repair the session loader runs: magnitudes capped,
+        // numerics forced finite, nothing shallow-assigned past the engine.
+        state = E.normalize(state);
         renderPricing(); refresh();
-      } catch (err) { alert('That file does not look like a rate card exported from this tool.'); }
+      } catch (err) {
+        alert(err && err.message === 'rate'
+          ? 'That rate card carries a per-credit rate that is not a positive number. Nothing was loaded \u2014 fix the rate and export the card again.'
+          : 'That file does not look like a rate card exported from this tool.');
+      }
     };
     rd.readAsText(f); e.target.value = '';
   }
@@ -3170,7 +3289,7 @@ footer.pagefoot a { color:#6b7280; }
            '<div class="ns">' + s + '</div><div class="deriv">' + deriv + '</div></div>';
   }
   function licDeriv(c) {
-    var lines = state.licenseInventory.filter(function (l) { return l.seats > 0; }).map(function (l) {
+    var lines = state.licenseInventory.filter(function (l) { return l.seats > 0 && E.SKU_BY_ID[l.skuId]; }).map(function (l) {
       var s = E.SKU_BY_ID[l.skuId]; return l.seats + ' × ' + s.name + ' @ ' + usd(E.skuPrice(state, l.skuId), 2);
     }).join('\n') || 'no licenses entered';
     if (c && c.sellMode) {
@@ -3504,9 +3623,16 @@ footer.pagefoot a { color:#6b7280; }
       if (line) line.seats += Math.max(0, need); else state.licenseInventory.push({ skuId:'bprem_cop', seats:Math.max(1, need) });
       renderLic();
     } else if (action === 'switchToEnterprise') {
+      // Summed per SKU, matching the V-05 check that offered this fix — a cap
+      // broken across two lines must move both of them.
+      var overBySku = {};
       state.licenseInventory.forEach(function (l) {
         var s = E.SKU_BY_ID[l.skuId];
-        if (s && s.copilot && s.cap && l.seats > s.cap) l.skuId = 'cop_ent';
+        if (s && s.copilot && s.cap) overBySku[l.skuId] = (+overBySku[l.skuId] || 0) + Math.max(0, +l.seats || 0);
+      });
+      state.licenseInventory.forEach(function (l) {
+        var s = E.SKU_BY_ID[l.skuId];
+        if (s && s.copilot && s.cap && overBySku[l.skuId] > s.cap) l.skuId = 'cop_ent';
       });
       renderLic();
     }
@@ -3764,23 +3890,44 @@ footer.pagefoot a { color:#6b7280; }
   }
 
   /* ═══ refresh ═══ */
+  /* The whole pipeline is wrapped: a render that throws must not leave every
+     subsequent keystroke re-throwing on a dead page. The loaders validate
+     before assigning state — this is the second belt, not the first. */
   function refresh() {
-    var r = E.compute(state);
-    renderResults(r);
-    renderStepper(r.ctx);
-    renderNavs();
-    patchLic();
-    if (focusIn('actBlock')) patchAct(r); else renderAct(r);
-    if (focusIn('effortBlock') || focusIn('calBlock')) patchEffort(r); else renderEffort(r);
-    if (!focusIn('billBlock'))    renderBill(r);
-    if (focusIn('personaBlock')) patchPersonas(r); else renderPersonas(r);
-    renderCapNote(r);
-    renderBasisBar(r);
-    renderBridge(r);
-    renderEchoes(r.ctx);
-    renderRecap(r);
-    flash(r);
-    return r;
+    try {
+      var r = E.compute(state);
+      renderResults(r);
+      renderStepper(r.ctx);
+      renderNavs();
+      patchLic();
+      if (focusIn('actBlock')) patchAct(r); else renderAct(r);
+      if (focusIn('effortBlock') || focusIn('calBlock')) patchEffort(r); else renderEffort(r);
+      if (!focusIn('billBlock'))    renderBill(r);
+      if (focusIn('personaBlock')) patchPersonas(r); else renderPersonas(r);
+      renderCapNote(r);
+      renderBasisBar(r);
+      renderBridge(r);
+      renderEchoes(r.ctx);
+      renderRecap(r);
+      flash(r);
+      var strip = $('errStrip');
+      if (strip) strip.parentNode.removeChild(strip);
+      return r;
+    } catch (err) {
+      var el = $('errStrip');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'errStrip';
+        el.setAttribute('role', 'alert');
+        el.style.cssText = 'margin:14px auto;max-width:860px;padding:12px 16px;border:1px solid #fca5a5;' +
+                           'border-radius:8px;background:#fef2f2;color:#7f1d1d;font-size:.86rem;line-height:1.5;';
+        var host = $('stage') || document.body;
+        host.insertBefore(el, host.firstChild);
+      }
+      el.textContent = 'Something in the current inputs could not be rendered (' + (err && err.message) +
+        '). The rest of the page is showing its last good numbers — undo the most recent change, or reload the page to start clean.';
+      return null;
+    }
   }
   function renderCapNote(r) {
     var c = r.ctx;
@@ -3792,7 +3939,7 @@ footer.pagefoot a { color:#6b7280; }
   /* ═══ wiring ═══ */
   $('fName').addEventListener('input', function (e) { state.meta.accountName = e.target.value; refresh(); });
   $('fEmp').addEventListener('input',  function (e) {
-    var v = Math.max(0, +e.target.value || 0);
+    var v = Math.max(0, Math.min(E.CONST.MAX.employees, +e.target.value || 0));
     state.org.totalEmployees = v;
     if (!state.licenseTouched) { scaleLicensesTo(v); renderLic(); }
     refresh();
@@ -3847,12 +3994,14 @@ footer.pagefoot a { color:#6b7280; }
       try {
         var loaded = JSON.parse(ev.target.result);
         if (!loaded || typeof loaded !== 'object') throw new Error('shape');
-        state = Object.assign(E.defaults(), loaded);
-        // A session saved on the old five-step ladder would leave the effort
-        // segment with nothing selected. Land it on High here too, so the
-        // control matches the number the engine is about to compute.
-        if (state.effort && E.EFFORT_RETIRED[state.effort.level])
-          state.effort.level = E.EFFORT_RETIRED[state.effort.level];
+        /* Deep-normalize, then test-compute the candidate BEFORE assigning:
+           compute() is pure, so a file that would break the page is rejected
+           here and the live state never changes. Retired effort levels pass
+           through untouched so the V-19 repricing notice fires on the flags
+           card instead of the session silently repricing. */
+        var candidate = E.normalize(loaded);
+        E.compute(candidate);
+        state = candidate;
         hydrateInputs(); renderLic(); renderGov(); renderPricing();
         goTo(cur);
       } catch (err) { alert('That file doesn’t look like a session exported from this tool.'); }
