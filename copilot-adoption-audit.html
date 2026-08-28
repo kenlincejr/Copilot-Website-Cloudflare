@@ -1486,16 +1486,23 @@ pre.code b { color: #004B87; font-weight: 700; }
 
 <h2 id="section-10">10 &middot; The prompt library &mdash; nineteen prompts</h2>
 
-<p>Section&nbsp;6 gets you the chart. This section gets you everything else &mdash; the segment profiles, the cohort tests, the account plan and the meeting scripts &mdash; by handing the export to an AI tool and asking the right nineteen questions. Group&nbsp;E at the end builds the two one-pagers &mdash; the tenant X-ray specimen shown in Section&nbsp;7 and its reversals counterpart &mdash; against your customer&rsquo;s own tenant, each in a partner version and a customer version. Each prompt below is written to be pasted verbatim, and each one is deliberately constrained: it tells the model what to compute, what format to answer in, and what to do when it cannot answer. That third instruction is the one that matters, and it is the one everybody leaves out. <strong>On a small tenant, P02 and P03 carry the fixed-threshold option and the five-person suppression rule from Section&nbsp;3</strong> &mdash; they are not optional, and the model will not apply them unless you leave them in.</p>
+<p>Section&nbsp;7 gets you the chart. This section gets you everything else &mdash; the segment profiles, the cohort tests, the account plan and the meeting scripts &mdash; by handing the export to an AI tool and asking the right nineteen questions. Group&nbsp;E at the end builds the two one-pagers &mdash; the tenant X-ray specimen shown in Section&nbsp;7 and its reversals counterpart &mdash; against your customer&rsquo;s own tenant, each in a partner version and a customer version. Each prompt below is written to be pasted verbatim, and each one is deliberately constrained: it tells the model what to compute, what format to answer in, and what to do when it cannot answer. That third instruction is the one that matters, and it is the one everybody leaves out. <strong>On a small tenant, P02 and P03 carry the fixed-threshold option and the five-person suppression rule from Section&nbsp;3</strong> &mdash; they are not optional, and the model will not apply them unless you leave them in.</p>
 
 <div class="callout">
-  <div class="callout-title">Which tool, and which model</div>
+  <div class="callout-title">Start here &mdash; run these in Copilot Chat, and change the model</div>
   <div class="callout-body">
-    <p>These prompts are long and deliberately constrained, and that makes them sensitive to what you run them in. Two different jobs are going on: <strong>computing over the file</strong>, and <strong>writing the artefact</strong>. Pick for the job in front of you.</p>
-    <p><strong>For the analysis prompts &mdash; P01 to P14 &mdash; use a tool that actually computes across the file rather than reasoning about it.</strong> The <strong>Analyst agent</strong> in Microsoft&nbsp;365 Copilot (Copilot Chat &rsaquo; Agents &rsaquo; Analyst) is the right default for a partner: it writes and runs code over the attached export, it will show you that code, and it runs inside the customer&rsquo;s own tenant so the file never crosses a boundary. Copilot in Excel is the other good answer when the numbers need to stay in cells the customer can re-run. Plain chat with a file attached is a last resort &mdash; it samples rows rather than computing over all of them, and you will get a different median on the second run.</p>
-    <p><strong>For the two one-pagers &mdash; P16 to P19 &mdash; you need a model that writes code well.</strong> In Copilot Chat, switch the model: <strong>Think Deeper</strong>, or one of the <strong>Claude</strong> models where your tenant has them enabled, produces markedly better HTML than the default fast model. Whatever you use, it must return the code; a model that can only describe a chart cannot make one.</p>
-    <p class="pb-note"><strong>Substitute your own details.</strong> Every prompt is written with placeholders rather than a company name. Replace <code>&lt;CUSTOMER_NAME&gt;</code> with the customer this is about, and put <em>your own</em> logo, colours and footer on the artefact prompts &mdash; the hex values in P16 and P18 are a starting palette, not a requirement. The page you hand over should look like it came from you.</p>
+    <p><strong>Copilot Chat is the right home for this, and it costs you nothing you are not already paying.</strong> Every prompt below has been run there against a real tenant. There is no extra licence, no add-on and no separate subscription &mdash; if the customer holds a Microsoft&nbsp;365 Copilot seat, the whole library runs inside their own tenant, which also means the export never crosses a boundary.</p>
+    <p><strong>The one thing you must change is the model.</strong> Copilot Chat&rsquo;s default fast model is the wrong tool for these prompts &mdash; they are long, heavily constrained, and they ask for code. Open the model picker and choose <strong>Think Deeper</strong> or <strong>Claude Opus</strong>. The difference is not subtle, and it is largest on P16&ndash;P19, where the output is an HTML file rather than a paragraph. If you run the artefact prompts on the default model and the page comes back thin or malformed, that is almost always the reason.</p>
+    <p><strong>Two other tools work.</strong> The <strong>Analyst agent</strong> (Copilot Chat &rsaquo; Agents &rsaquo; Analyst) is the strongest option for the analysis prompts specifically, because it writes and runs code over the attached file rather than reasoning about it &mdash; and it will show you that code, which is what makes a median defensible in front of an admin. <strong>Cowork</strong> should give you comparable results and can hand back the finished file directly. Copilot in Excel is the answer when the numbers need to live in cells the customer can re-run.</p>
+    <p class="pb-note"><strong>Substitute your own details.</strong> Every prompt uses placeholders rather than a company name. Replace <code>&lt;CUSTOMER_NAME&gt;</code> with the customer this is about, and put <em>your own</em> logo, colours and footer on the artefact prompts &mdash; the hex values in P16 and P18 are a starting palette, not a requirement. What you hand over should look like it came from you.</p>
   </div>
+</div>
+
+<div class="smb-reality">
+  <div class="sr-label">The one-pagers are not images &mdash; do not ask for one</div>
+  <p><strong>P16 to P19 produce a table of numbers with a layout wrapped around it, not a piece of design.</strong> Copilot&rsquo;s image generation &mdash; Designer, &ldquo;create an image of&hellip;&rdquo;, anything of that shape &mdash; cannot read your CSV. It will return something that reads as an infographic from six feet away and contains invented figures, unreadable axis labels and dots placed for composition rather than for data. It is the most common way this goes wrong, and the output is unusable in front of a customer because every number on it is fiction.</p>
+  <p><strong>What you get instead is an HTML file, and the image is a capture of it.</strong> Open it in Edge or Chrome, then either <strong>Ctrl+P &rarr; Save as PDF &rarr; Landscape &rarr; Margins None &rarr; Background graphics ON</strong> (that last switch is why quadrant tints and dark panels come out white), or take a full-page screenshot &mdash; Edge <strong>Ctrl+Shift+S</strong>, or Chrome <strong>F12 &rarr; Ctrl+Shift+P &rarr; <em>Capture full size screenshot</em></strong>. Widen the window first; these pages are designed at 1600px and stack badly at laptop width.</p>
+  <p>If your tool hands back text rather than a file, the last line of each build prompt already deals with it &mdash; you get one code block, which you paste into Notepad and save with <strong>Save as type: All Files</strong>, <strong>Encoding: UTF-8</strong>, and a filename ending <code>.html</code>. If it opens as text instead of rendering, the extension is still <code>.txt</code>. That is the only thing that ever goes wrong at this step.</p>
 </div>
 
 <h3>Which report each prompt needs</h3>
@@ -1920,48 +1927,7 @@ Finally: name the one confound that applies to this whole analysis regardless of
 
 
 <div class="grouprule"><div class="lbl">Group E &middot; The two one-pagers &mdash; partner version and customer version</div><div class="rule"></div></div>
-
-<p>These five prompts produce two one-pagers &mdash; the tenant X-ray, whose structure is shown as a specimen at the end of <a href="#section-7">Section&nbsp;7</a>, and a companion brief that puts the reversals from <a href="#section-2">Section&nbsp;2</a> on a single page. Neither is designed by hand and neither is generated as an image: each is an HTML file built from an audited table of numbers, opened in a browser and screenshotted. Each is then built a second time for a different reader. <strong>Do not skip the second version.</strong> The partner page names a commercial motion against every segment; the customer page names an owner and an observable change instead. The same chart, the same figures, two different rooms.</p>
-
-<div class="smb-reality">
-  <div class="sr-label">Do not ask an image generator for these</div>
-  <p><strong>These are a table of numbers with a layout wrapped around them, not a piece of design.</strong> Copilot&rsquo;s image generation &mdash; Designer, &ldquo;create an image of&hellip;&rdquo;, anything of that shape &mdash; cannot read your CSV. It will return something that reads as an infographic from six feet away and contains invented figures, unreadable axis labels and dots placed for composition rather than for data. It is the most common way this goes wrong and the output is unusable in front of a customer, because every number on it is fiction.</p>
-  <p><strong>The artefact is an HTML file; the image is a capture of it.</strong> Open it in Edge or Chrome, then either <strong>Ctrl+P &rarr; Save as PDF &rarr; Landscape &rarr; Margins None &rarr; Background graphics ON</strong> (that last switch is why quadrant tints and dark panels come out white), or take a full-page screenshot &mdash; Edge <strong>Ctrl+Shift+S</strong>, or Chrome <strong>F12 &rarr; Ctrl+Shift+P &rarr; <em>Capture full size screenshot</em></strong>. Widen the window first: these pages are designed at 1600px and stack badly at laptop width.</p>
-</div>
-
-<div class="tablewrap">
-<table class="dense">
-  <thead><tr><th style="width:22%;">Tool</th><th style="width:19%;">Computes the numbers</th><th style="width:19%;">Returns the artefact</th><th>Use it when</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><strong>Analyst agent</strong><br /><span style="font-size:.75rem;color:#6b7280;">Copilot Chat &rsaquo; Agents &rsaquo; Analyst</span></td>
-      <td><strong>Yes</strong> &mdash; writes and runs Python over the attached file, and will show you the code</td>
-      <td>Partly &mdash; returns the HTML as text in the chat and you save it yourself</td>
-      <td><strong>The default recommendation.</strong> It runs inside the customer&rsquo;s own tenant, so the file never leaves their boundary, and it shows its working &mdash; which is what makes the numbers survive an admin in the room. Needs a Copilot licence and available agent capacity; check both before you promise a live session</td>
-    </tr>
-    <tr>
-      <td><strong>A model that returns files</strong><br /><span style="font-size:.75rem;color:#6b7280;">with the CSV attached</span></td>
-      <td>Yes</td>
-      <td><strong>Yes</strong> &mdash; hands you the <code>.html</code> directly</td>
-      <td>You have written permission to take the file outside the tenant, or you are running it on your own tenant first. Fewest steps, but the file has moved &mdash; make that an explicit decision, not an accident. <strong>In Copilot Chat, switch the model to Think Deeper or Claude for these four</strong> &mdash; the default fast model writes noticeably worse HTML</td>
-    </tr>
-    <tr>
-      <td><strong>Copilot in Excel</strong><br /><span style="font-size:.75rem;color:#6b7280;">on the open workbook</span></td>
-      <td>Yes, in cells &mdash; the most defensible form there is, because the customer can re-run it</td>
-      <td>No</td>
-      <td>The numbers need to live in cells the customer owns and can re-run. It edits the workbook in front of you; pair it with one of the two above for the artefact</td>
-    </tr>
-    <tr>
-      <td><strong>Copilot Chat, work mode</strong><br /><span style="font-size:.75rem;color:#6b7280;">file attached, no agent</span></td>
-      <td>Weakly &mdash; it reasons over the file rather than computing across it</td>
-      <td>Partly</td>
-      <td>Last resort. Verify every median by hand before anyone sees it</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<p>If your tool returns text rather than files, the last line of each build prompt below already handles it &mdash; you get one code block, which you paste into Notepad and save with <strong>Save as type: All Files</strong>, <strong>Encoding: UTF-8</strong>, and a filename ending <code>.html</code>. If it opens as text rather than rendering, the extension is still <code>.txt</code>. That is the only thing that ever goes wrong at this step.</p>
+<p>These five prompts produce the two one-pagers: the tenant X-ray, whose structure is shown as a specimen at the end of <a href="#section-7">Section&nbsp;7</a>, and a companion brief putting the reversals from <a href="#section-2">Section&nbsp;2</a> on one page. Each is then built a second time for a different reader. <strong>Do not skip the second version.</strong> The partner page names a commercial motion against every segment; the customer page names an owner and an observable change instead. The same chart, the same figures, two different rooms. <strong>Run these in Copilot Chat with Think Deeper or Claude Opus selected</strong> &mdash; see the top of this section.</p>
 
 <div class="pcard">
   <div class="pcard-h"><div class="pcard-n">P15</div><h4>Freeze the numbers before anything is drawn</h4><button class="copybtn" type="button">Copy</button></div>

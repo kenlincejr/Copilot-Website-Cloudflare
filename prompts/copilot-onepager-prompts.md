@@ -23,6 +23,9 @@ Both artefacts look like graphic design. They are not. They are **a table of num
 
 ### Which tool, in order of preference
 
+**Run these in Copilot Chat, and change the model.** It costs nothing beyond the Microsoft 365 Copilot seat the customer already holds — no add-on, no separate subscription — and it runs inside their tenant, so the export never crosses a boundary. The one thing you must change is the model: the default fast model is the wrong tool for prompts this long and this constrained, and it is markedly worse at the ones that return code. Open the model picker and choose **Think Deeper** or **Claude Opus**. If an artefact prompt comes back thin or malformed, that is almost always why.
+
+
 | Rank | Tool | Stage 1 · compute | Stage 2 · render | Use it when |
 | --- | --- | --- | --- | --- |
 | **1** | **Analyst agent** — Microsoft 365 Copilot › Copilot Chat › **Agents** › **Analyst** | Yes. It writes and runs Python over the attached file and will show you the code | Partly. It returns the HTML as text in the chat and you save it yourself | **The default for partners.** It runs inside the customer's tenant, so the file never leaves their boundary, and it shows its working — which is what makes the numbers defensible |
