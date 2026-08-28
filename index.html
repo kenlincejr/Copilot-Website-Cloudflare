@@ -340,6 +340,38 @@ a:hover { text-decoration: underline; }
   max-width: 880px;
   margin-inline: auto;
 }
+/* Two-card sections: without this the pair inherits --cols:4 and renders as two
+   quarter-width columns stranded in the middle of the row. */
+.card-grid.center-two {
+  --cols: 2;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+/* ── Path strip: shows which asset covers which stretch of the program ladder ── */
+.pathstrip {
+  max-width: 880px;
+  margin: 0 auto 20px;
+  padding: 18px 20px 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+.pathstrip svg { width: 100%; min-width: 660px; height: auto; display: block; }
+.pathstrip text { font-family: 'Segoe UI', 'Inter', Georgia, sans-serif; }
+.ps-stage  { fill: var(--navy); font-size: 12px; font-weight: 700; }
+.ps-sub    { fill: #6b7280; font-size: 10px; }
+.ps-node   { fill: #fff; stroke: var(--line); stroke-width: 1.5; }
+.ps-node-t { fill: #fff; stroke: var(--teal); stroke-width: 2; }
+.ps-node-p { fill: #fff; stroke: var(--purple); stroke-width: 2; }
+.ps-arrow  { stroke: #b6bcc5; fill: none; stroke-width: 1.6; }
+.ps-brace-t { stroke: var(--teal); fill: none; stroke-width: 1.5; }
+.ps-brace-p { stroke: var(--purple); fill: none; stroke-width: 1.5; }
+.ps-lbl-t  { fill: var(--teal); font-size: 10.5px; font-weight: 700; }
+.ps-lbl-p  { fill: var(--purple); font-size: 10.5px; font-weight: 700; }
+@media (max-width: 640px) { .pathstrip { padding: 14px; } }
 .resource-card {
   display: flex;
   min-height: 100%;
@@ -884,6 +916,44 @@ a:hover { text-decoration: underline; }
         <div class="resource-cta-wrap"><a class="resource-cta" href="https://copilotplaybook.com/cpbops.html">Open Ops Guide <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
       </article>
 
+    </div>
+    <div class="fit-bar"><strong>Recommended order:</strong> read the playbook, model the business, learn the operating motion, then run Customer Zero in your own tenant so the offer is grounded in work your team has actually done - and then read your customers' usage data to find out which accounts to take it to first.</div>
+  </section>
+
+  <section aria-labelledby="program-path-heading">
+    <div class="section-label" id="program-path-heading">Navigate The Program - Designations, Specializations, And The Frontier Badge</div>
+    <p class="section-note">Two questions every partner eventually asks: which rung am I on, and is the next one worth climbing? These two assets split the ladder between them.</p>
+
+    <div class="pathstrip">
+      <svg viewBox="0 0 880 168" role="img" aria-label="The program ladder: a Solutions Partner designation leads to the Microsoft 365 Copilot specialization, then to further specializations, then to the Frontier badge. The Frontier Partner Playbook covers the destination; the Designation to Specialization navigator covers the first two rungs.">
+        <line x1="86" y1="52" x2="794" y2="52" class="ps-arrow"/>
+        <path d="M786,47 L796,52 L786,57 z" fill="#b6bcc5"/>
+
+        <circle cx="86"  cy="52" r="9" class="ps-node-t"/>
+        <circle cx="322" cy="52" r="9" class="ps-node-t"/>
+        <circle cx="558" cy="52" r="9" class="ps-node"/>
+        <circle cx="762" cy="52" r="9" class="ps-node-p"/>
+
+        <text class="ps-stage" x="86"  y="30" text-anchor="middle">Designation</text>
+        <text class="ps-sub"   x="86"  y="44" text-anchor="middle">any one of three</text>
+        <text class="ps-stage" x="322" y="30" text-anchor="middle">Copilot specialization</text>
+        <text class="ps-sub"   x="322" y="44" text-anchor="middle">1,000 MAU + audit</text>
+        <text class="ps-stage" x="558" y="30" text-anchor="middle">More specializations</text>
+        <text class="ps-sub"   x="558" y="44" text-anchor="middle">Data Security, IAM</text>
+        <text class="ps-stage" x="762" y="30" text-anchor="middle">Frontier</text>
+        <text class="ps-sub"   x="762" y="44" text-anchor="middle">the badge</text>
+
+        <path d="M86,86 L86,100 L322,100 L322,86" class="ps-brace-t"/>
+        <text class="ps-lbl-t" x="204" y="120" text-anchor="middle">Designation to Specialization</text>
+        <text class="ps-sub"   x="204" y="136" text-anchor="middle">where you stand, and what the next rung costs</text>
+
+        <path d="M558,86 L558,100 L762,100 L762,86" class="ps-brace-p"/>
+        <text class="ps-lbl-p" x="660" y="120" text-anchor="middle">Frontier Partner Playbook</text>
+        <text class="ps-sub"   x="660" y="136" text-anchor="middle">where the ladder ends, and who it is for</text>
+      </svg>
+    </div>
+
+    <div class="card-grid center-two">
       <article class="resource-card accent-purple">
         <div class="resource-head">
           <div class="resource-badge">
@@ -900,8 +970,25 @@ a:hover { text-decoration: underline; }
         </div>
         <div class="resource-cta-wrap"><a class="resource-cta" href="https://copilotplaybook.com/frontier.html">Open Frontier <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
       </article>
+
+      <article class="resource-card accent-teal">
+        <div class="resource-head">
+          <div class="resource-badge">
+            <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8z"/><path d="M12 17v5"/></svg></span>
+            <span class="resource-kicker">Program Navigator</span>
+          </div>
+          <h2 class="resource-title">Designation to Specialization</h2>
+          <p class="resource-format">HTML - Program guide with live readiness check</p>
+          <p class="resource-updated">Last updated August 28, 2026</p>
+        </div>
+        <div class="resource-body">
+          <p class="resource-field"><strong>What it is</strong>The Microsoft 365 Copilot specialization from the designation up - any one of three designations unlocks it. Real thresholds verified against Partner Center, a readiness check that costs your gap in customers and dollars, what the third-party audit examines, and the people you need behind it.</p>
+          <p class="resource-field"><strong>When to use it</strong>Use it when a partner asks whether the Copilot specialization is worth pursuing, or to answer "how close are we, and what is stopping us" in one sitting.</p>
+        </div>
+        <div class="resource-cta-wrap"><a class="resource-cta" href="https://copilotplaybook.com/copilot-specialization.html">Open the Navigator <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+      </article>
     </div>
-    <div class="fit-bar"><strong>Recommended order:</strong> read the playbook, model the business, learn the operating motion, then run Customer Zero in your own tenant so the offer is grounded in work your team has actually done - and then read your customers' usage data to find out which accounts to take it to first.</div>
+    <div class="fit-bar"><strong>Where they meet:</strong> the Frontier Playbook sets the destination and tells you whether the badge is worth chasing at your size - the Navigator starts from the designation you already hold and prices the very next rung in customers, certifications and cash.</div>
   </section>
 
   <section aria-labelledby="customer-zero-heading">

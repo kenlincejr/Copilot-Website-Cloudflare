@@ -489,9 +489,9 @@ Both files remain recoverable from git history.
 
 ---
 
-## 8b. Two rules that keep getting broken
+## 8b. Four rules that keep getting broken
 
-Both of these have been caught in review on more than one file. They are not
+All of these have been caught in review on more than one file. They are not
 preferences; treat them as prohibitions with the same weight as the colour and
 type rules above.
 
@@ -544,6 +544,102 @@ them hunt for a named section is a real cost.
 ```bash
 # candidate references that may not be linked
 grep -noE '(Stop [0-9]|[Ss]ection [0-9]+|40-Minute Cowork Session|Licensing Snapshot)' <file>
+```
+
+### 8b.3 Never strand a single card on the last row of a grid
+
+**Prohibition:** do not ship an auto-fit card grid whose item count leaves **one
+card alone on the final row**. Four cards in a three-up grid renders 3 + 1, and a
+lone card beside two card-widths of white space reads as a broken layout, not a
+design choice. Reported on `copilot-specialization.html` §3 and §5 on first review.
+
+The trap is that the CSS looks correct in isolation:
+`grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))` is the house
+`.whengrid` rule and is right for 2, 3 and 6 items. **4 and 5 are the dangerous
+counts** at the standard `.stage` width of 1000px.
+
+Fix in this order -- the first option is nearly always the right one:
+
+1. **Ask whether the odd item belongs in the set at all.** An orphan is usually a
+   content signal, not a layout problem. If three cards are confirmed benefits and
+   the fourth is a hedge, a caveat, or a different *kind* of claim, it was never a
+   peer -- promote it out of the grid into a `.callout`, `.coach` or `.nextstep`.
+   The grid then holds three, and the page says something truer than it did before.
+2. **If the items really are peers, force an even layout.** Four peers become an
+   explicit `repeat(2, 1fr)` at desktop, never auto-fit. Five peers almost always
+   means one of them is doing a different job -- go back to step 1.
+3. **If the items are a sequence rather than a set, do not use a grid at all.**
+   Ordered steps belong in `.pathlist` / `.pathrow`, which numbers them and reads
+   in one direction. A grid destroys the ordering information a sequence carries;
+   readers scan grids as unordered peers.
+
+The same rule governs `.numgrid` and any results grid built from `.numcell`: pin
+the column count so it can only be 4-up or 2x2, never 3 + 1.
+
+**Two layouts already solve this and are the reference implementations.** Neither
+is a violation, and the lint must not flag them:
+
+- **`.card-grid` in `index.html`** -- centred flex (`justify-content: center`)
+  with `--cols`, so a short final row centres under the ones above instead of
+  stranding a card at the left margin. It also carries an explicit `.cols-3`
+  variant whose comment reads *"Five-card sections: break 3 + 2 rather than
+  4 + 1."* This is the house answer for a wrapping set of unknown length.
+- **A pinned grid** -- `grid-template-columns: repeat(4, 1fr)` with a
+  `repeat(2, 1fr)` breakpoint. Use when the count is fixed and known.
+
+Only `repeat(auto-fit, ...)` / `repeat(auto-fill, ...)` grids can strand a card,
+so the lint targets those specifically. A naive child-count check produces false
+positives on both patterns above.
+
+```bash
+# 1. find classes that use an auto-fit/auto-fill grid
+grep -nE '\.[a-z-]+\s*\{[^}]*repeat\((auto-fit|auto-fill)' <file>
+
+# 2. count children of those classes; 4 or 5 is an orphan risk at .stage width
+python - <<'PY'
+import re,glob
+CHILD=r'class="(?:whencard|numcell|promise|modecard|resource-card)\b'
+for f in sorted(glob.glob('*.html')):
+    s=open(f,encoding='utf-8').read()
+    auto={m.group(1) for m in re.finditer(r'\.([a-z-]+)\s*\{[^}]*repeat\(auto-(?:fit|fill)',s)}
+    for cls in auto:
+        for m in re.finditer(r'class="'+cls+r'"',s):
+            n=len(re.findall(CHILD,s[m.end():m.end()+9000]))
+            if n in (4,5):
+                print(f'{f}: .{cls} has {n} children -- orphan risk')
+PY
+```
+
+### 8b.4 A numeric cell class holds numbers, and a comparison column is left-aligned
+
+**Prohibition:** do not put prose in `.dtable td.n`, and do not mix aligned and
+unaligned cells inside the same column.
+
+`td.n` right-aligns and monospaces its content. That is correct for a genuine
+figure (`1,000`, `5+`, `$2,700`, a control count) and wrong for anything else.
+Put `2 Copilot Studio deployments` or `5 people, one group` in it and the column
+rags -- some rows flush right in mono, others flush left in body text -- which
+reads as a broken table. Reported on `copilot-specialization.html` §6.
+
+Two rules follow:
+
+1. **`.n` is for numbers only.** A label such as `CPOR / CSP T1 / T2` is not a
+   number, even when it sits in a column called "Threshold" next to real ones.
+   Set it as ordinary left-aligned body text and bold the part that matters.
+2. **A side-by-side comparison is not a data table.** When two options are
+   compared attribute by attribute, every option cell is **left-aligned**, both
+   option columns are the **same width**, and the differentiator is carried by
+   emphasis, not alignment. Use the `.dtable.cmp` variant: 20% label column, two
+   40% option columns, and `td.lighter` (tinted with an inset teal rule) marking
+   the easier option in each row so the reader can scan one column and see which
+   path costs less. Follow the table with a one-line key explaining the shading --
+   an unexplained highlight is decoration.
+
+```bash
+# prose parked in a numeric cell -- any hit with a letter run is a finding
+grep -noE '<td class="n">[^<]*[A-Za-z]{4,}[^<]*' <file>
+# comparison tables that never mark a winner (shading present but no key, or vice versa)
+grep -c 'dtable cmp' <file>; grep -c 'cmp-key' <file>
 ```
 
 ---
