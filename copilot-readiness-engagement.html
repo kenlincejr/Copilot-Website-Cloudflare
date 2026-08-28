@@ -454,41 +454,43 @@ table.dense th, table.dense td { padding: 8px 10px; }
   </div>
 </div>
 
-<h3>2.3 &middot; Three ways to cover the gap. None of them is E5.</h3>
+<h3>2.3 &middot; Three supported ways to cover it. None of them is E5.</h3>
+
+<p>Every option below is documented, buyable today, and produces a defensible engagement. They differ in cost, in effort, and in what they leave you unable to do &mdash; so the risks are stated with each one rather than buried.</p>
 
 <div class="tier-ladder">
   <div class="tier-card sec">
     <div class="tc-bar"></div>
     <div class="tc-body">
-      <div class="tc-header"><div class="tc-num">A</div><div class="tc-name">A handful of E-SKU seats &mdash; try this first</div><span class="tag warn">Unproven</span></div>
-      <p class="tc-desc">Microsoft words the requirement <strong>organization-wide</strong> &mdash; <em>&ldquo;Your organization must have one of the following base licenses&rdquo;</em> &mdash; not per user. If that reads the way it is written, a few Microsoft 365 E3 seats in an otherwise Business Premium tenant would satisfy it, and the whole toolkit unlocks for the price of three or four licenses.</p>
-      <p class="tc-desc"><strong>This is untested, and this guide will not tell you it works until somebody proves it.</strong> It is the first item in <a class="docref" href="#section-21">section 21.2</a> and it is the single most valuable hour you can spend in your own tenant this month. If it holds, it is the cheapest answer by an order of magnitude.</p>
-      <div class="tc-facts"><span>Cost <strong>3&ndash;5 E3 seats</strong></span><span>Effort <strong>one afternoon to verify</strong></span><span>Status <strong>verify before you quote it</strong></span></div>
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">Deliver it natively on Business Premium</div></div>
+      <p class="tc-desc">The SharePoint admin center exposes sharing settings, site permissions and sharing reports. The SharePoint Online PowerShell module enumerates permissions across the estate. Free tooling covers the configuration baseline. <strong>This is a complete, legitimate delivery path</strong> and it is where most partners should start.</p>
+      <p class="tc-desc"><strong>Risk:</strong> the output is raw rather than client-ready, so you supply the judgment and the report. There is no continuous monitoring, so you are re-running work rather than watching for drift. Effort grows with site count, and past roughly 100 seats or a handful of customers the consultant hours stop being cheaper than a tool.</p>
+      <div class="tc-facts"><span>License cost <strong>$0</strong></span><span>Best for <strong>your first engagements</strong></span><span>Detail <a class="docref" href="#section-13">Section 13</a></span></div>
     </div>
   </div>
   <div class="tier-card">
     <div class="tc-bar"></div>
     <div class="tc-body">
-      <div class="tc-header"><div class="tc-num">B</div><div class="tc-name">A third-party governance platform</div></div>
-      <p class="tc-desc">Some platforms consume Microsoft's security and activity feeds rather than depending on SharePoint Advanced Management, so they run on Business Premium with no Microsoft license change at all. <strong>This is an architectural answer, not a workaround</strong>, and it works today. It is also the only route that gives you continuous drift monitoring, which is what the recurring fee in <a class="docref" href="#section-12">section 12</a> is actually for.</p>
-      <p class="tc-desc">The honest caveat: label-enforcement features generally inherit the same Microsoft E5 requirement, and seat minimums can price out the smallest tenants. <a class="docref" href="#section-14">Section 14</a> is the full assessment.</p>
-      <div class="tc-facts"><span>Works <strong>today, no license change</strong></span><span>Watch <strong>seat minimums</strong></span></div>
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">A third-party governance platform</div></div>
+      <p class="tc-desc">Some platforms read Microsoft's security and activity feeds rather than depending on SharePoint Advanced Management, so they run on a Business Premium tenant <strong>with no Microsoft license change at all.</strong> That is an architectural difference, not a loophole. It is also the only option here that gives you continuous drift monitoring, which is what the recurring fee in <a class="docref" href="#section-12">section 12</a> is actually for.</p>
+      <p class="tc-desc"><strong>Risk:</strong> seat minimums can price out your smallest tenants, and pricing in this category is largely unpublished, so you are quoting against a number you have to go and get. Label-enforcement features generally still inherit Microsoft's E5 requirement, and no platform replaces Restricted Content Discovery.</p>
+      <div class="tc-facts"><span>License change <strong>none</strong></span><span>Best for <strong>a book of customers</strong></span><span>Detail <a class="docref" href="#section-14">Section 14</a></span></div>
     </div>
   </div>
-  <div class="tier-card warn-t">
+  <div class="tier-card alt">
     <div class="tc-bar"></div>
     <div class="tc-body">
-      <div class="tc-header"><div class="tc-num">C</div><div class="tc-name">Native reports and PowerShell &mdash; the free floor</div></div>
-      <p class="tc-desc">The SharePoint admin center still exposes sharing settings and site permissions, and the SharePoint Online PowerShell module will enumerate them. Free tooling covers the configuration baseline. <strong>Entirely workable at 78 seats</strong>, painful above roughly 100, and it produces raw output rather than a client-ready report.</p>
-      <p class="tc-desc">Start here on your first engagement regardless. You are trading license cost for consultant hours, and at one or two customers that trade is correct. <a class="docref" href="#section-13">Section 13</a> lists the tools.</p>
-      <div class="tc-facts"><span>Cost <strong>$0</strong></span><span>Ceiling <strong>~100 seats</strong></span></div>
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">Move the base to an enterprise SKU</div></div>
+      <p class="tc-desc">Microsoft's own documented path. On an Office 365 or Microsoft 365 E-SKU base, <strong>a single assigned Copilot license unlocks the whole SharePoint Advanced Management toolset</strong> &mdash; the governance reports, Restricted Content Discovery, site access reviews. If the customer is heading to E3 anyway, or genuinely needs Restricted Content Discovery, this is the right answer and not a defeat.</p>
+      <p class="tc-desc"><strong>Risk:</strong> it is the most expensive option per seat, and it does <em>not</em> solve the other half &mdash; E3 does not carry the control that keeps labeled content out of Copilot, which still needs the Purview Suite family. <strong>Confirm the exact entitlement in writing with Microsoft licensing or your distributor before you quote it</strong>, including how it applies in a mixed-SKU tenant. Microsoft states the requirement at organization level and does not publish a partial-adoption scenario, so this is a question to ask, not one to assume.</p>
+      <div class="tc-facts"><span>Highest per-seat cost</span><span>Best for <strong>customers who need RCD</strong></span><span>Detail <a class="docref" href="#section-7">Section 7</a></span></div>
     </div>
   </div>
 </div>
 
 <div class="callout">
-  <div class="callout-title">The recommended sequence</div>
-  <div class="callout-body"><p><strong>Prove Route A in your own tenant. If it works, it is the answer and it costs almost nothing.</strong> If it does not, Route B for any customer you intend to hold a recurring governance contract with, and Route C for the first engagement while you are still learning the delivery.</p><p>Recommending the cheapest Microsoft-native option before any third-party product is not just good economics. It is what makes you credible when you do eventually recommend a platform.</p></div>
+  <div class="callout-title">The recommendation</div>
+  <div class="callout-body"><p><strong>Start with option 1.</strong> It costs nothing, it proves you can deliver the engagement, and the findings are the same findings. <strong>Move to option 2</strong> once you have enough customers that re-running manual work is the bottleneck &mdash; roughly ten, per <a class="docref" href="#section-13">section 13</a>. <strong>Reach for option 3</strong> when the customer specifically needs Restricted Content Discovery, or is moving to an enterprise SKU for reasons that have nothing to do with you.</p><p>What you should <em>not</em> do is present an enterprise upgrade as the only way through. It is one of three, and it is the one your customer is least likely to accept.</p></div>
 </div>
 
 <h3>2.4 &middot; What Microsoft itself recommends</h3>
@@ -775,7 +777,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="vt-item">
     <div class="vt-when">Week 1 &mdash; Phase 2</div>
     <h4>The licensing decision &middot; one meeting</h4>
-    <p>Purview Suite attached at <strong>$10 per user per month</strong> <span class="prov prov-ms">MS list</span>, half price alongside Copilot, which covers the entire data-protection half. Then the one real decision: which of three routes covers the permissions half. <strong>No E5 in the conversation at any point.</strong> <a class="docref" href="#section-7">Phase 2 in detail</a>.</p>
+    <p>Purview Suite attached at <strong>$10 per user per month</strong> <span class="prov prov-ms">MS list</span>, half price alongside Copilot, which covers the entire data-protection half. Then the one real decision: which of three supported options covers the permissions half. <strong>No E5 in the conversation at any point.</strong> <a class="docref" href="#section-7">Phase 2 in detail</a>.</p>
   </div>
   <div class="vt-item">
     <div class="vt-when">Weeks 1&ndash;2 &mdash; Phase 3</div>
@@ -1023,7 +1025,42 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="callout-body"><p><strong>Microsoft's page does not use the term &ldquo;DSPM for AI&rdquo; anywhere.</strong> Third-party summaries say it is included; Microsoft's own phrasing is &ldquo;policy-based controls for AI experiences.&rdquo; The Purview service description has no DSPM section at all, and DSPM for AI has itself been superseded by a newer unified experience.</p><p><strong>Do not tell a customer DSPM for AI is included in the Business Premium Purview Suite until you have seen it in their tenant.</strong> Describe the capability, confirm the product surface in configuration. This is the single most likely place to make a confident wrong claim.</p></div>
 </div>
 
-<h3>7.4 &middot; The decision table</h3>
+<h3>7.4 &middot; What each combination actually gets you</h3>
+
+<p>This is the table to have open when a customer asks what they need to buy. Read it as: <strong>everything green is reachable on what most SMBs already own.</strong></p>
+
+<div class="tablewrap">
+<table class="dense">
+  <thead><tr>
+    <th style="width:30%">Capability</th>
+    <th style="width:14%">Business<br>Premium alone</th>
+    <th style="width:14%">BP +<br>Purview Suite</th>
+    <th style="width:14%">Microsoft&nbsp;365<br>E3</th>
+    <th>What decides it</th>
+  </tr></thead>
+  <tbody>
+    <tr><td>Sensitivity labels, published and applied manually</td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td>Included broadly</td></tr>
+    <tr><td>DLP for email and documents</td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td>Base entitlement</td></tr>
+    <tr><td>DLP extended to Teams chat and endpoints</td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag warn">No</span></td><td>Purview Suite</td></tr>
+    <tr><td><strong>Keep labeled content out of Copilot</strong></td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag warn">No</span></td><td><strong>The mis-sale in 7.2. E3 does not carry this.</strong></td></tr>
+    <tr><td>Insider risk, communication compliance, Audit Premium</td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag warn">No</span></td><td>Purview Suite</td></tr>
+    <tr><td>Auto-labeling of files and emails</td><td><span class="tag warn">No</span></td><td><span class="tag alt">Confirm</span></td><td><span class="tag warn">No</span></td><td>Microsoft names E5-family; suite inclusion unconfirmed &mdash; <a class="docref" href="#section-21">Q2</a></td></tr>
+    <tr><td>Conditional Access, guest and leaver cleanup</td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td><span class="tag ok">Yes</span></td><td>Entra ID P1, in Business Premium</td></tr>
+    <tr><td>Shadow AI discovery (full CASB)</td><td><span class="tag warn">No</span></td><td><span class="tag alt">Confirm</span></td><td><span class="tag warn">No</span></td><td>Defender Suite &mdash; <a class="docref" href="#section-21">Q3</a></td></tr>
+    <tr><td><strong>Governance reports, EEEU insights, site access reviews</strong></td><td><span class="tag warn">No</span></td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span>*</td><td><strong>SharePoint Advanced Management. Needs an E-SKU base plus one assigned Copilot license.</strong></td></tr>
+    <tr><td><strong>Restricted Content Discovery</strong></td><td><span class="tag warn">No</span></td><td><span class="tag warn">No</span></td><td><span class="tag ok">Yes</span>*</td><td>Same. The only capability with no substitute &mdash; see <a class="docref" href="#section-9">9.5</a> for the alternative approach.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p style="font-size:.82rem;color:#6b7280;">* Requires at least one Microsoft Copilot license assigned in the tenant, on top of the E-SKU base.</p>
+
+<div class="callout">
+  <div class="callout-title">The two-line summary</div>
+  <div class="callout-body"><p><strong>Business Premium plus the Purview Suite covers everything in the data-protection column.</strong> That is most of Copilot readiness, and it is a $10 add-on.</p><p><strong>The last two rows are the only genuine gap</strong>, they are both SharePoint Advanced Management, and <a class="docref" href="#section-2">section 2.3</a> gives you three supported ways to cover them &mdash; two of which require no license change at all.</p></div>
+</div>
+
+<h3>7.5 &middot; The decision table</h3>
 
 <div class="tablewrap">
 <table class="dense">
@@ -1039,7 +1076,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 </table>
 </div>
 
-<h3>7.5 &middot; Two things that belong in the engagement letter</h3>
+<h3>7.6 &middot; Two things that belong in the engagement letter</h3>
 
 <p>These are delegated-administration constraints, and they will surprise you mid-engagement rather than at scoping.</p>
 
@@ -1146,7 +1183,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
     <tr><td>Sensitive content leaving via chat or email</td><td>DLP, audit mode first</td><td>After</td><td><span class="tag ok">Yes</span> Purview Suite</td><td>Audit &rarr; policy tips &rarr; enforce</td></tr>
     <tr><td>Automatic labeling at scale</td><td>Auto-labeling policies</td><td>After</td><td><span class="tag warn">Verify</span> gated above base SKU</td><td>Confirm before scoping &mdash; <a class="docref" href="#section-21">&sect;21.2</a></td></tr>
     <tr><td>Content Copilot should never ground on</td><td>Restricted Content Discovery</td><td>Interim only</td><td><span class="tag warn">Needs a route</span></td><td><strong>Must be removed after remediation.</strong> Needs a Copilot license assigned and an eligible base SKU.</td></tr>
-    <tr><td>Who can reach what, across the estate</td><td>Permission and exposure reporting</td><td><strong>Gate 1</strong></td><td><span class="tag warn">Needs a route</span> &mdash; <a class="docref" href="#section-2">&sect;2.3</a></td><td><strong>The one genuine gap.</strong> Route A, B or C.</td></tr>
+    <tr><td>Who can reach what, across the estate</td><td>Permission and exposure reporting</td><td><strong>Gate 1</strong></td><td><span class="tag warn">Needs a route</span> &mdash; <a class="docref" href="#section-2">&sect;2.3</a></td><td><strong>The one genuine gap.</strong> Option 1, 2 or 3.</td></tr>
     <tr><td>Personal AI accounts in use</td><td>Sanctioned tenant AI + conditional access</td><td>Parallel track</td><td><span class="tag ok">Yes</span></td><td>See the <a class="docref" href="shadowai.html">Shadow AI Assessment Guide</a></td></tr>
     <tr><td>Redundant and obsolete data degrading answers</td><td>Lifecycle and archival</td><td>Follow-on</td><td><span class="tag ok">Yes</span> Purview Suite</td><td>Sell on storage cost, not risk</td></tr>
     <tr><td>Permissions drifting back after cleanup</td><td>Continuous drift monitoring</td><td><strong>Recurring</strong></td><td><span class="tag alt">Third party</span></td><td>This is the MRR. See <a class="docref" href="#section-12">section 12</a>.</td></tr>
@@ -1156,7 +1193,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 <div class="callout">
   <div class="callout-title">Read the fourth column before you scope</div>
-  <div class="callout-body"><p><strong>Almost everything on this list is reachable on the licenses your customer already owns.</strong> One row is not &mdash; permission and exposure reporting across the estate &mdash; and it is the row Gate 1 depends on. That single row is what <a class="docref" href="#section-2">section 2.3</a>'s three routes exist to solve, and what <a class="docref" href="#section-9">section 9</a> documents.</p><p>Scoping an engagement without knowing which route the customer is on is how partners end up quoting an E5 upgrade they never needed to quote.</p></div>
+  <div class="callout-body"><p><strong>Almost everything on this list is reachable on the licenses your customer already owns.</strong> One row is not &mdash; permission and exposure reporting across the estate &mdash; and it is the row Gate 1 depends on. That single row is what <a class="docref" href="#section-2">section 2.3</a>'s three options exist to solve, and what <a class="docref" href="#section-9">section 9</a> documents.</p><p>Scoping an engagement without knowing which route the customer is on is how partners end up quoting an E5 upgrade they never needed to quote.</p></div>
 </div>
 
 <div class="callout dark">
@@ -1232,7 +1269,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="g-label"><span class="gnum">The point</span> Read this twice</div>
   <h4>Microsoft 365 Business Premium is not on that list. Neither is Business Standard.</h4>
   <p>The Copilot unlock &mdash; one assigned Microsoft Copilot license anywhere in the tenant &mdash; is a <strong>second, additional</strong> condition. It is not a substitute for the base requirement. Microsoft's page presents them as two sequential gates and both have to be cleared.</p>
-  <p><strong>A tenant running a mix of Business Premium and Business Standard clears neither today.</strong> Three routes fix that, and the first costs about as much as three licenses.</p>
+  <p><strong>A tenant running a mix of Business Premium and Business Standard clears neither today.</strong> Three supported options fix that, and the cheapest one costs nothing beyond your own time.</p>
 </div>
 
 <h3>9.4 &middot; What it changes about the standard playbook</h3>
@@ -1250,50 +1287,58 @@ table.dense th, table.dense td { padding: 8px 10px; }
   </div>
 </div>
 
-<h3>9.5 &middot; The three ways through, in the order to try them</h3>
+<h3>9.5 &middot; The three supported ways through</h3>
 
-<p>None of these is an E5 upgrade, and the first one may cost almost nothing.</p>
+<p>These are the same three options as <a class="docref" href="#section-2">section 2.3</a>, with the delivery detail attached. All three are documented and buyable. <strong>None of them is an E5 upgrade, and none of them depends on a licensing behavior this guide has not verified.</strong></p>
 
 <div class="fork">
   <div class="fork-branch">
-    <div class="fb-head">Route A &mdash; try this first</div>
-    <h4>A handful of Microsoft 365 E3 seats</h4>
-    <p><strong>The open question worth real money:</strong> Microsoft words the requirement organization-wide &mdash; <em>&ldquo;Your organization must have one of the following base licenses&rdquo;</em> &mdash; not per user. That phrasing suggests a mixed tenant carrying a small number of E3 seats would satisfy it, which makes &ldquo;buy three E3 seats&rdquo; dramatically cheaper than any other route.</p>
-    <p>Note what it does and does not buy: it clears the base requirement for the oversharing toolkit. It does <em>not</em> make E3 the compliance step-up customers assume &mdash; see <a class="docref" href="#section-7">section 7.2</a>.</p>
-    <p><span class="tag warn">Untested</span> <strong>Prove it in your own tenant before you quote it.</strong> It is the highest-value test in this guide and it is exactly what your own tenant is for.</p>
-  </div>
-  <div class="fork-branch no">
-    <div class="fb-head">Route C &mdash; the free floor</div>
+    <div class="fb-head">Option 1 &mdash; start here</div>
     <h4>Native reports, PowerShell, and free tooling</h4>
-    <p>The SharePoint admin center still exposes sharing settings and site-level permissions. The SharePoint Online PowerShell module will enumerate permissions. Free tools cover the configuration baseline &mdash; see <a class="docref" href="#section-13">section 13</a>.</p>
-    <p><strong>Honest assessment:</strong> workable at 78 seats, painful at 300, and it produces raw output rather than a client-ready report. You are trading license cost for consultant hours, and at some portfolio size that trade stops making sense.</p>
+    <p>The SharePoint admin center exposes sharing settings, site-level permissions and sharing reports. The SharePoint Online PowerShell module enumerates permissions. Free tools cover the configuration baseline &mdash; see <a class="docref" href="#section-13">section 13</a>.</p>
+    <p><strong>What you give up:</strong> raw output rather than a client-ready report, no continuous monitoring, and effort that grows with site count. Workable comfortably at 80 seats, painful at 300.</p>
+  </div>
+  <div class="fork-branch">
+    <div class="fb-head">Option 2 &mdash; at portfolio scale</div>
+    <h4>A platform that does not depend on SharePoint Advanced Management</h4>
+    <p>Some governance platforms read Microsoft's security and activity feeds directly, so they work on a Business Premium tenant unchanged. That is the strongest reason for a partner in this market to look outside the Microsoft stack, and it is what makes the recurring service in <a class="docref" href="#section-12">section 12</a> deliverable at a margin.</p>
+    <p><strong>What you give up:</strong> seat minimums at the small end, pricing you have to go and obtain, and label-enforcement features that still inherit Microsoft's E5 requirement. <a class="docref" href="#section-14">Section 14</a> is the full assessment.</p>
   </div>
 </div>
 
 <div class="fork">
   <div class="fork-branch">
-    <div class="fb-head">Route B &mdash; if Route A does not hold</div>
-    <h4>A third-party platform that does not inherit the base-SKU requirement</h4>
-    <p>Some governance platforms consume Microsoft's security and activity feeds rather than depending on SharePoint Advanced Management, so they work on a Business Premium tenant unchanged. <strong>This is a genuine architectural answer, not a workaround</strong> &mdash; and it is the single strongest reason for a partner in this market to look outside the Microsoft stack.</p>
-    <p>It is also the only route that gives you continuous drift monitoring, which is what the recurring fee in <a class="docref" href="#section-12">section 12</a> is actually for. Detail, including which capabilities still inherit an E5 requirement, is in <a class="docref" href="#section-14">section 14</a>.</p>
+    <div class="fb-head">Option 3 &mdash; when the customer needs it</div>
+    <h4>Move the base to an enterprise SKU</h4>
+    <p>Microsoft's documented path, and the only one that delivers Restricted Content Discovery. On an eligible E-SKU base a single assigned Copilot license unlocks the full toolset.</p>
+    <p><strong>Before you quote it:</strong> get the entitlement confirmed in writing by Microsoft licensing or your distributor, including how it behaves in a mixed-SKU tenant. Microsoft states the requirement at organization level and publishes no partial-adoption guidance, so treat it as a question for the licensing desk rather than an assumption to build a proposal on.</p>
   </div>
   <div class="fork-branch no">
-    <div class="fb-head">Route D &mdash; the one to refuse</div>
+    <div class="fb-head">The one to refuse</div>
     <h4>Turn Copilot on and deal with it later</h4>
-    <p>Tempting because it is fast, and because the owner will suggest it. It is also the one route where you carry the consequence: you enabled it, and the salary spreadsheet surfaces in week two.</p>
-    <p><strong>The counter is not a lecture.</strong> It is Gate 1 as a two-day job. Find the EEEU grants, fix the worst handful, then enable. You are not refusing him; you are giving him a shorter path than he expected.</p>
+    <p>Tempting because it is fast, and because the owner will suggest it. It is also the one path where you carry the consequence: you enabled it, and the salary spreadsheet surfaces in week two.</p>
+    <p><strong>The counter is not a lecture.</strong> It is Gate 1 as a two-day job. Find the organization-wide grants, fix the worst handful, then enable. You are not refusing him; you are giving him a shorter path than he expected.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">If you cannot use Restricted Content Discovery, scope the pilot instead</div>
+  <div class="callout-body">
+    <p>Restricted Content Discovery is Microsoft's interim containment &mdash; it hides high-risk sites from Copilot while you fix the permissions underneath. It needs an assigned Copilot license <em>and</em> an eligible base subscription, so on Business Premium it is simply not on the table.</p>
+    <p><strong>The supported alternative gets you the same outcome by a different route: remediate first, then scope the pilot to what you have cleaned.</strong> Enable Copilot for a small pilot group whose work sits in sites you have already remediated, rather than enabling the tenant and hiding the rest. It is slower to reach everybody and it is completely defensible, which the alternative is not.</p>
+    <p>It also removes the un-containment step in <a class="docref" href="#section-11">section 11.1</a> entirely &mdash; the step partners most often forget.</p>
   </div>
 </div>
 
 <div class="saidline">
   <div class="sl-label">Explaining the constraint without sounding like an upsell</div>
   <p>&ldquo;Microsoft built a proper set of tools for exactly this problem. There is one catch, and I would rather you hear it from me than find it in a support ticket: <strong>on your current plan those particular tools are not switched on</strong>, and buying Copilot does not switch them on either.</p>
-  <p>Before you brace for a big number &mdash; <strong>this is not an E5 conversation.</strong> There are three ways to solve it. One of them costs about the same as three licenses, one of them is a small monthly tool, and one of them is free and just costs me more time. Let me find out which applies to you.&rdquo;</p>
+  <p>Before you brace for a big number &mdash; <strong>this is not an E5 conversation.</strong> There are three ways to solve it. One of them costs you nothing and costs me more time, one is a small monthly tool, and one is a licensing change you would only make if you wanted it anyway. I will tell you which I would pick for you and why.&rdquo;</p>
 </div>
 
 <div class="callout">
   <div class="callout-title">Where this lands</div>
-  <div class="callout-body"><p><strong>The data protection half of Copilot readiness is fully reachable on the licenses your customer already owns</strong>, through a $10 add-on that is half price alongside Copilot until the end of 2026. The permissions half needs one of the three routes above. <strong>Neither half requires E5</strong>, and a partner who tells a Business Premium customer otherwise has cost them money and cost themselves the deal.</p></div>
+  <div class="callout-body"><p><strong>The data protection half of Copilot readiness is fully reachable on the licenses your customer already owns</strong>, through a $10 add-on that is half price alongside Copilot until the end of 2026. The permissions half is deliverable by any of the three options above. <strong>Neither half requires E5</strong>, and a partner who tells a Business Premium customer otherwise has cost them money and cost themselves the deal.</p></div>
 </div>
 
 <div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
@@ -1716,7 +1761,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <thead><tr><th style="width:16%">Tool</th><th style="width:26%">Role in this motion</th><th style="width:12%">Multi-tenant</th><th style="width:20%">Pricing model</th><th>Realistic under 100 seats?</th></tr></thead>
   <tbody>
     <tr><td>Free stack (ScubaGear, Maester, Monkey365, DSC, PowerShell)</td><td>Configuration baseline, drift, permission enumeration</td><td>Scripted</td><td>Free</td><td><strong>Yes</strong> &mdash; and it is where nearly everyone should start</td></tr>
-    <tr><td><strong>AvePoint</strong> Insights + Policies</td><td>Exposure discovery, bulk remediation, continuous drift enforcement. <strong>No Microsoft E-SKU dependency.</strong></td><td>Yes (Elements, separately)</td><td>Per user; published list carries a 500-user minimum, reseller listings do not state one</td><td><strong>Unproven</strong> &mdash; see <a class="docref" href="#section-14">section 14</a></td></tr>
+    <tr><td><strong>AvePoint</strong> Insights + Policies</td><td>Exposure discovery, bulk remediation, continuous drift enforcement. <strong>No Microsoft E-SKU dependency.</strong></td><td>Yes (Elements, separately)</td><td>Per user; published list carries a 500-user minimum</td><td><strong>Get a written quote</strong> at your seat count &mdash; see <a class="docref" href="#section-14">section 14</a></td></tr>
     <tr><td>Syskit Point</td><td>Governance reporting and access review</td><td>Not marketed for MSP</td><td>Per user per year, published; <strong>100-user billing minimum</strong></td><td>Marginal &mdash; the minimum is the problem</td></tr>
     <tr><td>ShareGate Protect</td><td>Governance risk assessment, tenant-wide visibility</td><td>Limited</td><td>Single per-user price, no minimums; partner pricing exists but is unpublished</td><td>Yes</td></tr>
     <tr><td>Orchestry</td><td>Workspace lifecycle and provisioning governance</td><td>Yes</td><td><strong>Flat per tenant, unlimited users</strong> at the Starter tier</td><td><strong>Yes</strong> &mdash; the pricing unit fits this market best</td></tr>
@@ -1830,7 +1875,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 <div class="callout warn">
   <div class="callout-title">And one thing it does not replace at all</div>
-  <div class="callout-body"><p><strong>There is no AvePoint equivalent to Restricted Content Discovery.</strong> AvePoint's position is that you should fix the permission rather than hide the content from search &mdash; arguably the better engineering answer, and definitely the slower one. If you need an interim containment <em>this week</em> while remediation runs, that is a Route A conversation, not a Route B one.</p></div>
+  <div class="callout-body"><p><strong>There is no AvePoint equivalent to Restricted Content Discovery.</strong> AvePoint's position is that you should fix the permission rather than hide the content from search &mdash; arguably the better engineering answer, and definitely the slower one. If you need interim containment while remediation runs, that is an enterprise-SKU conversation &mdash; or, more practically at this size, a reason to scope the pilot to remediated sites instead. See <a class="docref" href="#section-9">section 9.5</a>.</p></div>
 </div>
 
 <h3>14.5 &middot; The license story, both halves</h3>
@@ -1890,7 +1935,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 
 <div class="smb-reality">
   <div class="sr-label">The position to take until somebody gets a written quote</div>
-  <p><strong>Treat AvePoint as unproven below 100 seats and confirmed viable above 500.</strong></p>
+  <p><strong>Treat AvePoint as unconfirmed below 100 seats and demonstrably viable above 500</strong> &mdash; a commercial question to settle with a written quote, not a technical one.</p>
   <p>The arguments that the minimum is negotiable are real but circumstantial: AvePoint's 2025 partner program explicitly rewards <em>&ldquo;smaller but highly committed partners&rdquo;</em>, and partner-generated revenue reached 58% of its recurring business in early 2026. A 500-seat floor sits awkwardly against both.</p>
   <p>But <strong>no public source confirms that buying through distribution removes it</strong>, and AvePoint's own flagship readiness engagement is scoped around scan envelopes no 78-seat customer will ever approach. <strong>The ask is portfolio aggregation</strong> &mdash; committing 500+ seats across many small tenants rather than one. Put it to your TD SYNNEX rep and get the answer in writing.</p>
 </div>
@@ -2399,7 +2444,32 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <p>Graph grounding is the one that touches tenant content, which means any agent built on the data estate you just cleaned up will hit it constantly. <strong>Budget 10&ndash;20% headroom, 30% for chained agent calls, and put consumption in the customer's name rather than absorbing it into a fixed fee.</strong></p>
 </div>
 
-<h3>19.4 &middot; How this ties to the Microsoft partner program</h3>
+<h3>19.4 &middot; Where to see what the channel is actually doing</h3>
+
+<p>Everything in this guide is dated, and some of it will be wrong within two quarters &mdash; Microsoft moved SharePoint Advanced Management's entitlement, retired a certification and blocked a containment feature inside eighteen months. <strong>The correction usually shows up in the community weeks before it shows up in a partner deck.</strong></p>
+
+<p>These are the places that were load-bearing in researching this guide, and they are worth a standing half-hour a week.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th style="width:26%">Where</th><th>What it is good for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Microsoft Learn release notes and <code>ms.date</code> stamps</strong></td><td>The single most reliable signal in this whole field. Every Learn page carries a date; when a page you depend on moves, something changed. Bookmark the SharePoint Advanced Management prerequisites page and the Purview sensitivity-label page specifically &mdash; both moved during this research.</td></tr>
+    <tr><td><strong>Microsoft Tech Community</strong> &mdash; Purview, SharePoint and Copilot blogs</td><td>Where feature changes and deprecations get announced before they reach documentation, and where the comment threads tell you what broke for other people.</td></tr>
+    <tr><td><strong>The Purview and information-protection MVPs</strong></td><td>A small, identifiable group publishes almost all of the useful field detail in this space &mdash; label taxonomy design, oversharing remediation at real scale, what the deployment blueprints leave out. Their write-ups are consistently months ahead of channel material.</td></tr>
+    <tr><td><strong>The SMB and MSP practitioner community</strong></td><td>The most candid source on what this work actually costs to deliver and what customers actually pay. It is also where the delivery post-mortems live &mdash; the engagements that went wrong, which nobody publishes as a case study.</td></tr>
+    <tr><td><strong>Practitioner blogs from working consultants</strong></td><td>Where you find hour-level effort breakdowns against stated seat counts, which is the number this guide had the hardest time sourcing. <a class="docref" href="#section-17">Section 17</a> rests on exactly one such source.</td></tr>
+    <tr><td><strong>Vendor release notes</strong> &mdash; including AvePoint's</td><td>Read them for capability changes rather than marketing. The gap between what a platform claimed last year and what it ships this quarter is where your assessment either gains or loses a feature.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout dark">
+  <div class="callout-title">Bring something back</div>
+  <div class="callout-body"><p>The honest gap in this guide, stated in <a class="docref" href="#section-21">section 21.3</a>, is that <strong>no independent dataset exists for what this work costs or what it finds in a 25&ndash;300 seat tenant.</strong> Every prevalence statistic in circulation comes from a vendor selling remediation, sampled from enterprise tenants.</p><p>Ten engagements in, with your own anonymized findings written down &mdash; sites per seat, share of exposure concentrated in one site, hours per remediation &mdash; <strong>you will own the only real dataset in the channel.</strong> That is worth more than any benchmark you could borrow, and it is the thing worth contributing back.</p></div>
+</div>
+
+<h3>19.5 &middot; How this ties to the Microsoft partner program</h3>
 
 <p>The tier ladder, the partner capability score and the certification roadmap are covered in <a class="docref" href="frontier.html">The Path to Frontier Partner</a>. What follows is only what is specific to <em>this</em> motion.</p>
 
@@ -2478,7 +2548,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
   <div class="st-head"><span class="st-num">03</span><span class="st-time">30&ndash;45 min</span><span class="st-name">The bridge &mdash; and the constraint</span><span class="st-mode">Facilitator &middot; the spine</span></div>
   <div class="st-body">
     <p>Three gates and nothing else. Then what is <em>not</em> a gate, which is the part that changes how they scope. Then the containment pattern and the move-3 trap.</p>
-    <p>Close the segment on the licensing constraint: read Microsoft's base-SKU list aloud, let the room notice Business Premium is not on it &mdash; <strong>and then immediately give them the three routes.</strong> Do not leave them sitting in the problem. The room's takeaway must be <em>&ldquo;this is solvable for the price of three licenses,&rdquo;</em> not <em>&ldquo;my customers all need E5.&rdquo;</em></p>
+    <p>Close the segment on the licensing constraint: read Microsoft's base-SKU list aloud, let the room notice Business Premium is not on it &mdash; <strong>and then immediately give them the three options.</strong> Do not leave them sitting in the problem. The room's takeaway must be <em>&ldquo;this is solvable for the price of three licenses,&rdquo;</em> not <em>&ldquo;my customers all need E5.&rdquo;</em></p>
     <div class="st-out"><strong>They leave with:</strong> the one diagram they photograph. Source: <a class="docref" href="#section-8">&sect;8</a> and <a class="docref" href="#section-9">&sect;9</a></div>
   </div>
 </div>
@@ -2573,7 +2643,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <ul>
   <li><strong>Have personally run the assessment on your own tenant.</strong> Non-negotiable. Everything else is preparation.</li>
   <li>Know the base-SKU list in <a class="docref" href="#section-9">&sect;9.3</a> cold, because you will be challenged on it by someone who has read the newer, over-corrected partner guidance.</li>
-  <li>Have a recovery for &ldquo;that depends on their licensing&rdquo; &mdash; the decision table in <a class="docref" href="#section-7">&sect;7.4</a> is the recovery. Do not improvise licensing answers.</li>
+  <li>Have a recovery for &ldquo;that depends on their licensing&rdquo; &mdash; the combination table in <a class="docref" href="#section-7">&sect;7.4</a> is the recovery. Do not improvise licensing answers.</li>
   <li>Know which of the tenant tests in <a class="docref" href="#section-21">&sect;21.2</a> are still open, and say so when asked rather than guessing.</li>
   <li>Know when to hand to the vendor, and when the honest answer is &ldquo;free tooling covers that.&rdquo;</li>
 </ul>
@@ -2626,32 +2696,34 @@ table.dense th, table.dense td { padding: 8px 10px; }
 </table>
 </div>
 
-<h3>21.2 &middot; Open questions &mdash; test these in your own tenant</h3>
+<h3>21.2 &middot; Confirm these before you quote</h3>
 
-<p>Four claims this guide wanted to make and would not make without proof. <strong>Each is a Customer Zero task: run it, then write down what happened.</strong></p>
+<p>Three claims this guide deliberately does not make, because no primary source settles them. <strong>Each one is a question for a licensing desk, a distributor or a vendor &mdash; get the answer in writing and it stops being a risk.</strong></p>
+
+<div class="callout warn">
+  <div class="callout-title">Why these are questions and not experiments</div>
+  <div class="callout-body"><p>It is tempting to buy a seat, watch what lights up in the portal, and build a recommendation on the result. <strong>Do not.</strong> Portal behavior is not an entitlement, it changes without notice, and a customer who is audited will be measured against the licensing terms rather than against what worked in your tenant last quarter. Ask the people who can answer authoritatively, and quote from their answer.</p></div>
+</div>
 
 <div class="asset-index">
-  <div class="asset-item"><div class="ai-num">T1</div><div>
-    <h4>Does a mixed tenant with a few E3 seats satisfy SharePoint Advanced Management's base requirement?</h4>
-    <p>Microsoft words it organization-wide &mdash; <em>&ldquo;Your organization must have one of the following base licenses&rdquo;</em> &mdash; not per-user. If a handful of E3 seats clears it, <strong>&ldquo;buy three E3 seats&rdquo; becomes the most valuable recommendation in this guide.</strong></p>
-    <div class="ai-meta">Affects &sect;9.5 Route A &middot; highest commercial value</div>
+  <div class="asset-item"><div class="ai-num">Q1</div><div>
+    <h4>How does SharePoint Advanced Management's base-subscription requirement apply in a mixed-SKU tenant?</h4>
+    <p>Microsoft states it at organization level &mdash; <em>&ldquo;Your organization must have one of the following base licenses&rdquo;</em> &mdash; and publishes no guidance on tenants that hold a mix. <strong>Ask Microsoft licensing or your distributor how it is measured and licensed before you build a proposal on it.</strong></p>
+    <div class="ai-meta">Ask: Microsoft licensing desk or TD SYNNEX &middot; affects &sect;2.3 option 3</div>
   </div></div>
-  <div class="asset-item"><div class="ai-num">T2</div><div>
-    <h4>Does the Purview Suite for Business Premium lift the auto-labeling gate, and is DSPM for AI genuinely in it?</h4>
-    <p>Microsoft's add-on page says &ldquo;policy-based controls for AI experiences&rdquo; and never uses the term DSPM. The service description has no DSPM section.</p>
-    <div class="ai-meta">Affects &sect;7.3 and &sect;10 &middot; highest risk of a wrong claim</div>
+  <div class="asset-item"><div class="ai-num">Q2</div><div>
+    <h4>Does the Purview Suite for Business Premium include auto-labeling and the DSPM for AI surface?</h4>
+    <p>Microsoft's add-on page says &ldquo;policy-based controls for AI experiences&rdquo; and never uses the term DSPM; the Purview service description has no DSPM section. Both capabilities are described in general language rather than named.</p>
+    <div class="ai-meta">Ask: Microsoft licensing desk &middot; affects &sect;7.3 and &sect;10 &middot; highest risk of a wrong claim</div>
   </div></div>
-  <div class="asset-item"><div class="ai-num">T3</div><div>
+  <div class="asset-item"><div class="ai-num">Q3</div><div>
     <h4>Does the Defender Suite for Business Premium carry full Defender for Cloud Apps?</h4>
-    <p>If it does, $15 per user per month is the price of shadow AI discovery for an SMB, and that reshapes <a class="docref" href="#section-13">&sect;13</a>.</p>
-    <div class="ai-meta">Corroborated by community sources only</div>
-  </div></div>
-  <div class="asset-item"><div class="ai-num">T4</div><div>
-    <h4>Does AvePoint Insights work at full fidelity on Business Premium?</h4>
-    <p>Its risk prioritization leans on Microsoft sensitive information types and the activity feed, whose depth varies by SKU. No AvePoint statement exists either way. <a class="docref" href="#section-14">&sect;14.5</a>'s central claim rests on this.</p>
-    <div class="ai-meta">This is vendor question 2 in &sect;14.8</div>
+    <p>Corroborated by community and reseller sources, not by a Microsoft page read in this research. If it does, $15 per user per month is the price of shadow AI discovery for an SMB, which changes the recommendation in <a class="docref" href="#section-13">&sect;13</a>.</p>
+    <div class="ai-meta">Ask: Microsoft licensing desk or TD SYNNEX</div>
   </div></div>
 </div>
+
+<p>A fourth question belongs to a vendor rather than to Microsoft: <strong>whether AvePoint Insights runs at full fidelity on a Business Premium tenant</strong>, given its risk prioritization draws on Microsoft sensitive information types and the activity feed. No AvePoint statement exists either way, and <a class="docref" href="#section-14">&sect;14.5</a>'s central claim rests on it. It is question 2 on the list in <a class="docref" href="#section-14">&sect;14.9</a>.</p>
 
 <h3>21.3 &middot; What this guide could not research</h3>
 
@@ -2684,7 +2756,7 @@ table.dense th, table.dense td { padding: 8px 10px; }
 <ul class="reflist">
   <li class="unlinked"><div class="rf-t"><a href="shadowai.html">The Shadow AI Assessment Guide</a></div><div class="rf-d"><strong>Upstream of this one.</strong> How to open with discovery rather than product, what SMBs actually have running, the 30-app enterprise onboarding matrix, and the softer objections.</div></li>
   <li class="unlinked"><div class="rf-t"><a href="copilot-adoption-audit.html">The Copilot Adoption Audit</a></div><div class="rf-d"><strong>Downstream.</strong> Once Copilot is live, how to prove from the usage data whether it is working &mdash; and what the channel believes about adoption that the data does not support.</div></li>
-  <li class="unlinked"><div class="rf-t"><a href="frontier.html">The Path to Frontier Partner</a></div><div class="rf-d">The partner tier ladder, capability score mechanics and certification roadmap referenced in &sect;19.4.</div></li>
+  <li class="unlinked"><div class="rf-t"><a href="frontier.html">The Path to Frontier Partner</a></div><div class="rf-d">The partner tier ladder, capability score mechanics and certification roadmap referenced in &sect;19.5.</div></li>
   <li class="unlinked"><div class="rf-t"><a href="customer-zero-starter-kit/index.html">Customer Zero Starter Kit</a></div><div class="rf-d">Become Customer Zero first, then sell the motion. The frame this session sits inside, and the home of the &sect;19.1 non-negotiable.</div></li>
   <li class="unlinked"><div class="rf-t"><a href="cpb.html">The Copilot Practice Playbook</a></div><div class="rf-d">The primary practice asset. Strategy, economics and delivery mechanics across the whole motion.</div></li>
 </ul>
