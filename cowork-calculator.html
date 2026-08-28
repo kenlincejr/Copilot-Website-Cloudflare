@@ -1358,6 +1358,7 @@ footer.pagefoot a { color:#6b7280; }
         ' this build does not recognize: ' + unknownSkuIds.join(', ') +
         '. Those lines are dropped rather than priced blind — re-pick the SKU in Step 2.', []);
     var copilotLicensed = 0, nonCopilotSeats = 0, licenseMonthly = 0, copilotSpend = 0;
+    var copilotBaseSeats = 0;   // Copilot seats that are their own base (not addOn:true)
     var licenseList = 0, licenseSell = 0, licenseCost = 0, anyCost = false, anySellSet = false;
     var costMissing = false;   // at least one seat-bearing line has no cost price
     var invDetail = [];
@@ -1371,7 +1372,8 @@ footer.pagefoot a { color:#6b7280; }
       if (c != null && seats > 0) { anyCost = true; licenseCost += seats * c; }
       else { if (seats > 0) costMissing = true; licenseCost += seats * skuListPrice(state, l.skuId); }
       if (num_(state.pricing && state.pricing.sell && state.pricing.sell[l.skuId]) != null) anySellSet = true;
-      if (s.copilot) { copilotLicensed += seats; copilotSpend += seats * copilotComponent(state, l.skuId); }
+      if (s.copilot) { copilotLicensed += seats; copilotSpend += seats * copilotComponent(state, l.skuId);
+                       if (!s.addOn) copilotBaseSeats += seats; }
       else if (!s.addOn) { nonCopilotSeats += seats; }
       if (seats > 0) invDetail.push(seats + '×' + s.name + ' @$' + price.toFixed(2));
       seatsBySku[l.skuId] = (seatsBySku[l.skuId] || 0) + seats;
@@ -1392,9 +1394,17 @@ footer.pagefoot a { color:#6b7280; }
       copilotLicensed,'users','partner');
     T('F3','funnel','Non-Copilot seats','Σ seats on base SKUs without Copilot','', nonCopilotSeats,'users','partner');
 
-    var unlicensed = employees - (copilotLicensed + nonCopilotSeats);
+    /* Headcount reconciles PEOPLE, not SKUs. An addOn:true Copilot SKU
+       stacks on a base seat somebody already holds, so summing it against
+       the headcount double-counts the person — 250 employees with 250×E3
+       and 120×enterprise add-on is a perfectly ordinary estate, not "370
+       seats" (finding #8). Every Copilot seat is still a person, so an
+       add-on entered with no base underneath it does not vanish from the
+       count either. */
+    var seatHolders = Math.max(nonCopilotSeats + copilotBaseSeats, copilotLicensed);
+    var unlicensed = employees - seatHolders;
     if (unlicensed < 0)
-      W('V-01','warn','You have ' + (copilotLicensed + nonCopilotSeats) + ' licensed seats against ' + employees +
+      W('V-01','warn','You have ' + seatHolders + ' licensed seats against ' + employees +
         ' employees. Check the headcount in Step 1 or the seat counts in Step 2.', []);
 
     /* F6 · activation — only licensed users can burn credits */
@@ -1857,6 +1867,10 @@ footer.pagefoot a { color:#6b7280; }
 
     var ctx = {
       employees:employees, copilotLicensed:copilotLicensed, nonCopilotSeats:nonCopilotSeats,
+      // Per-SKU owned seats: the licensing solver needs to know WHICH bases
+      // are owned, not just how many — an E3 seat is not a base for the SMB
+      // Copilot Business add-on (finding #8).
+      seatsBySku:seatsBySku,
       unlicensed:unlicensed, active:active, requestedActive:Math.max(0, n(requestedActive, 0)),
       personaSeats:personaSeats, effectiveSeats:effTotal,
       // Every per-user and per-active figure on the page divides by this.
@@ -2022,8 +2036,23 @@ footer.pagefoot a { color:#6b7280; }
     // Copilot Business sits on an SMB base, the enterprise add-on requires E3
     // or better. Pricing the enterprise add-on on a $6 Business Basic base
     // would understate it by $30 a seat.
-    var basesOwned = Math.min(Math.max(0, ctx.nonCopilotSeats), needed);
-    var needBase   = Math.max(0, needed - basesOwned);
+    /* An owned base only qualifies for an add-on it can actually carry.
+       Counting every non-Copilot seat as a base let a 250-seat E3 estate
+       zero out Copilot Business's base requirement and win on a SKU that
+       cannot attach to E3 (finding #8). The families come from the catalog:
+       Copilot Business is the SMB product — Business-family bases only,
+       same 300-seat world as its own cap — while the $30 enterprise add-on
+       attaches to any M365 base in the catalog, Business SKUs included. */
+    var BASE_FAMILY = {
+      cop_biz: ['bbasic','bstd','bprem'],
+      cop_ent: ['bbasic','bstd','bprem','e3','e5']
+    };
+    var ownedBySku = ctx.seatsBySku || {};
+    function ownedBaseSeats(ids) {
+      return ids.reduce(function (a, id) { return a + Math.max(0, n(ownedBySku[id], 0)); }, 0);
+    }
+    var ownedSmbBases = ownedBaseSeats(['bbasic','bstd','bprem']);
+    var ownedEntBases = ownedBaseSeats(['e3','e5']);
     var BASE_FOR   = { cop_biz:'bbasic', cop_ent:'e3' };
 
     var candidates = [
@@ -2037,16 +2066,30 @@ footer.pagefoot a { color:#6b7280; }
       { id:'e7',         label:'Microsoft 365 E7', per:skuPrice(state,'e7'), cap:null }
     ];
 
+    var maxNeedBase = 0;
     var scored = candidates.map(function (c) {
       var violations = [];
       if (c.cap && needed > c.cap)
         violations.push(c.label + ' caps at ' + c.cap + ' licenses; this account needs ' + needed + '.');
+      /* An estate whose owned bases are all enterprise has no SMB path: the
+         SMB add-on cannot attach to E3/E5, and the SMB bundles would replace
+         the enterprise base rather than add Copilot to it. Recommending
+         either to a 250-seat E3 shop is the quote that gets torn apart in
+         the room (finding #8). */
+      if (c.cap && ownedEntBases > 0 && ownedSmbBases === 0)
+        violations.push(c.addOn
+          ? c.label + ' attaches only to a Business-family base, and every base this tenant owns is enterprise (E3/E5) — it cannot attach to them.'
+          : c.label + ' would replace this tenant’s enterprise (E3/E5) bases with a Business SKU rather than add Copilot to them.');
       if (state.org.dataResidency === 'gov_cloud')
         violations.push('Cowork is unavailable in GCC/GCC High/DoD and sovereign clouds — no licensing path changes this.');
       var closesIds = PATH_CLOSES[c.id] || [];
       var closes = req.filter(function (r) { return r.skuClosable !== false && closesIds.indexOf(r.id) > -1; });
       var gaps   = req.filter(function (r) { return closes.indexOf(r) === -1; });
       var basePer = c.baseId ? skuPrice(state, c.baseId) : 0;
+      /* Per-candidate base credit: only seats on SKUs this add-on can sit on. */
+      var basesOwned = c.addOn ? Math.min(ownedBaseSeats(BASE_FAMILY[c.id] || []), needed) : 0;
+      var needBase   = c.addOn ? Math.max(0, needed - basesOwned) : 0;
+      if (c.addOn) maxNeedBase = Math.max(maxNeedBase, needBase);
       var baseUsd = c.addOn ? basePer * needBase : 0;
       var monthly = c.per * needed + baseUsd;
       return { id:c.id, label:c.label, perUser:c.per,
@@ -2111,7 +2154,7 @@ footer.pagefoot a { color:#6b7280; }
 
     return { requirements:req, paths:scored, winner:winner, runnerUp:runnerUp,
              rejected:scored.filter(function (p) { return !p.feasible; }), why:why, e7:e7, needed:needed,
-             baseSeatsNeeded:needBase };
+             baseSeatsNeeded:maxNeedBase };
   }
 
   /* ── The ARR ladder ───────────────────────────────────────────────────
@@ -2463,26 +2506,42 @@ footer.pagefoot a { color:#6b7280; }
     if (t1) t1.textContent = num(seats);
     if (t2) t2.textContent = usd(money);
 
+    /* The reconciliation note counts PEOPLE, not SKUs \u2014 same rule as the
+       engine's V-01. An addOn:true Copilot seat stacks on a base seat
+       somebody already holds, so summing it double-counts the person and
+       alarms on perfectly ordinary enterprise estates (finding #8). Every
+       Copilot seat is still a person, so an add-on with no base under it
+       stays counted. The seat total in the table footer stays the raw sum \u2014
+       that one really is a count of seats. */
+    var baseSeats = 0, copSeats = 0;
+    (state.licenseInventory || []).forEach(function (l) {
+      var s = E.SKU_BY_ID[l.skuId], v = Math.max(0, +l.seats || 0);
+      if (!s) return;
+      if (!s.addOn) baseSeats += v;
+      if (s.copilot) copSeats += v;
+    });
+    var people = Math.max(baseSeats, copSeats);
+
     var note = $('licNote'); if (!note) return;
-    if (seats > emp) {
+    if (people > emp) {
       note.innerHTML = '<div class="callout warn" style="margin:0;"><div class="callout-body">' +
-        '<b>' + num(seats) + ' seats against ' + num(emp) + ' employees</b> \u2014 that is ' + num(seats - emp) +
+        '<b>' + num(people) + ' seats against ' + num(emp) + ' employees</b> \u2014 that is ' + num(people - emp) +
         ' more licenses than people. One of the two numbers is wrong, and you should not say either out loud until it is fixed.' +
         '<div style="margin-top:9px;display:flex;gap:16px;flex-wrap:wrap;">' +
         '<button class="linkbtn" data-licfix="scale">Scale these seats down to ' + num(emp) + '</button>' +
-        '<button class="linkbtn" data-licfix="emp">No \u2014 the headcount is ' + num(seats) + '</button>' +
+        '<button class="linkbtn" data-licfix="emp">No \u2014 the headcount is ' + num(people) + '</button>' +
         '</div></div></div>';
-    } else if (seats === emp) {
-      note.innerHTML = '<div class="ribbon-deriv">' + num(seats) + ' seats across ' + num(emp) +
+    } else if (people === emp) {
+      note.innerHTML = '<div class="ribbon-deriv">' + num(people) + ' seat-holders across ' + num(emp) +
         ' employees \u2014 everyone is accounted for.</div>';
     } else {
-      note.innerHTML = '<div class="ribbon-deriv">' + num(seats) + ' of ' + num(emp) + ' employees carry a license. The other ' +
-        num(emp - seats) + ' have none \u2014 they are simply out of scope for this number, and they cost nothing here.</div>';
+      note.innerHTML = '<div class="ribbon-deriv">' + num(people) + ' of ' + num(emp) + ' employees carry a license. The other ' +
+        num(emp - people) + ' have none \u2014 they are simply out of scope for this number, and they cost nothing here.</div>';
     }
     Array.prototype.forEach.call(note.querySelectorAll('[data-licfix]'), function (b) {
       b.addEventListener('click', function () {
         if (b.getAttribute('data-licfix') === 'scale') scaleLicensesTo(emp);
-        else { state.org.totalEmployees = seats; $('fEmp').value = seats; }
+        else { state.org.totalEmployees = people; $('fEmp').value = people; }
         state.licenseTouched = true;
         renderLic(); refresh();
       });

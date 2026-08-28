@@ -554,7 +554,130 @@ function assertCopyClean(r, m) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   (R4–R8 sections append here)
+   R4 — Licensing correctness (finding #8, both halves)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── R4.0 · SMB shapes unchanged: stock licensing output pinned ─────────── */
+{
+  // Captured from the pre-R4 engine under node (git 078cc35 lineage). The
+  // base-qualification rework must not move a single stock number: the 40
+  // owned Business Standard seats qualify for BOTH add-ons, exactly as the
+  // old aggregate count happened to credit them.
+  const L = E.compute(E.defaults()).licensing;
+  eq(L.winner.id, 'bprem_cop_suites', 'stock winner unchanged');
+  eq(L.needed, 80, 'stock needed unchanged');
+  eq(L.baseSeatsNeeded, 40, 'stock baseSeatsNeeded unchanged');
+  const EXPECT = {
+    bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    cop_biz:          { perUserAllIn: 21,   monthly: 1680, baseSeats: 40, baseUsd: 240,  feasible: true },
+    bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    bprem_cop:        { perUserAllIn: 32,   monthly: 2560, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    bprem_cop_suites: { perUserAllIn: 47,   monthly: 3760, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    cop_ent:          { perUserAllIn: 48,   monthly: 3840, baseSeats: 40, baseUsd: 1440, feasible: true },
+    e7:               { perUserAllIn: 99,   monthly: 7920, baseSeats: 0,  baseUsd: 0,    feasible: true }
+  };
+  L.paths.forEach(function (p) {
+    const x = EXPECT[p.id];
+    ok(x, 'stock path list unchanged: ' + p.id);
+    if (!x) return;
+    eq(+p.perUserAllIn.toFixed(4), x.perUserAllIn, 'stock ' + p.id + ' $/user unchanged');
+    eq(p.monthly, x.monthly, 'stock ' + p.id + ' monthly unchanged');
+    eq(p.baseSeats, x.baseSeats, 'stock ' + p.id + ' base seats unchanged');
+    eq(p.baseUsd, x.baseUsd, 'stock ' + p.id + ' base dollars unchanged');
+    eq(p.feasible, x.feasible, 'stock ' + p.id + ' feasibility unchanged');
+  });
+  eq(L.paths.length, 7, 'stock path count unchanged');
+}
+
+/* ── R4.1 · Repro (a): the 250-seat E3 estate resolves enterprise (#8) ──── */
+{
+  function e3Estate() {
+    const s = E.defaults();
+    s.org.totalEmployees = 250;
+    s.licenseInventory = [{ skuId:'e3', seats:250 }, { skuId:'cop_ent', seats:120 }];
+    s.governanceAsked = true;
+    Object.keys(s.governance).forEach(k => s.governance[k] = 'yes');
+    return s;
+  }
+  const r = E.compute(e3Estate());
+  const L = r.licensing;
+  eq(L.winner.id, 'cop_ent', 'E3 estate + governance confirmed resolves to the enterprise add-on');
+  ok(L.winner.id !== 'cop_biz', 'never cop_biz on an E3 estate');
+  const biz = L.paths.filter(p => p.id === 'cop_biz')[0];
+  eq(biz.feasible, false, 'cop_biz is infeasible against an all-enterprise base estate');
+  ok(biz.violations[0].indexOf('attach') >= 0, 'the cop_biz violation says why (cannot attach)');
+  // the SMB bundles cannot sneak in on price either — they would replace E3
+  ['bbasic_cop','bstd_cop','bprem_cop','bprem_cop_suites'].forEach(function (id) {
+    const p = L.paths.filter(x => x.id === id)[0];
+    eq(p.feasible, false, id + ' is not offered as a base replacement for an E3 estate');
+    ok(p.violations[0].indexOf('replace') >= 0, id + ' violation names the base replacement');
+  });
+  const ent = L.paths.filter(p => p.id === 'cop_ent')[0];
+  eq(ent.baseSeats, 0, 'the enterprise add-on credits the owned E3 bases');
+  eq(ent.monthly, 120 * 30, 'enterprise add-on priced with no invented base cost');
+}
+
+/* ── R4.2 · Repro (b): the same estate fires no headcount alarm (#8) ────── */
+{
+  const s = E.defaults();
+  s.org.totalEmployees = 250;
+  s.licenseInventory = [{ skuId:'e3', seats:250 }, { skuId:'cop_ent', seats:120 }];
+  const r = E.compute(s);
+  ok(wids(r).indexOf('V-01') === -1, '250 emp + 250×E3 + 120×cop_ent fires no V-01');
+  eq(r.ctx.unlicensed, 0, 'add-on seats do not count as extra people');
+
+  // the exclusion is only for add-ons — a genuinely over-licensed estate still alarms
+  const over = E.compute(st({ org: Object.assign(E.defaults().org, { totalEmployees: 40 }),
+    licenseInventory: [{ skuId:'bprem_cop', seats:60 }] }));
+  ok(wids(over).indexOf('V-01') >= 0, '60 bundle seats against 40 employees still fires V-01');
+
+  // an add-on with no base under it is still a person, not a blind spot
+  const bare = E.compute(st({ org: Object.assign(E.defaults().org, { totalEmployees: 40 }),
+    licenseInventory: [{ skuId:'cop_biz', seats:50 }] }));
+  ok(wids(bare).indexOf('V-01') >= 0, '50 baseless add-on seats against 40 employees still fires V-01');
+
+  // stacking shape that the old per-SKU sum falsely alarmed on
+  const stack = E.compute(st({ org: Object.assign(E.defaults().org, { totalEmployees: 100 }),
+    licenseInventory: [{ skuId:'bstd', seats:40 }, { skuId:'bprem_cop', seats:60 }, { skuId:'cop_biz', seats:20 }] }));
+  ok(wids(stack).indexOf('V-01') === -1, '100 people on 120 stacked seats fires no V-01');
+}
+
+/* ── R4.3 · Base qualification is per-family, mixed estates stay quiet ──── */
+{
+  const s = st({ org: Object.assign(E.defaults().org, { totalEmployees: 300 }),
+    licenseInventory: [{ skuId:'bstd', seats:30 }, { skuId:'e3', seats:100 }, { skuId:'bprem_cop', seats:50 }] });
+  const L = E.compute(s).licensing;
+  eq(L.needed, 50, 'mixed estate: 50 Copilot users to cover');
+  const biz = L.paths.filter(p => p.id === 'cop_biz')[0];
+  eq(biz.feasible, true, 'mixed estate: cop_biz stays on the table (SMB bases exist)');
+  eq(biz.baseSeats, 20, 'cop_biz credits only the 30 Business bases, not the 100 E3');
+  const ent = L.paths.filter(p => p.id === 'cop_ent')[0];
+  eq(ent.baseSeats, 0, 'cop_ent credits Business and E3 bases alike (130 owned ≥ 50 needed)');
+
+  // an enterprise-based greenfield gets the enterprise pilot, not a Business
+  // bundle (governance confirmed so gap-closure cannot steer the winner)
+  const gf = st({ org: Object.assign(E.defaults().org, { totalEmployees: 100 }),
+    licenseInventory: [{ skuId:'e3', seats:100 }],
+    governanceAsked: true,
+    governance: { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes',
+                  namedCostOwner:'yes', insuranceRenewal:'yes' } });
+  const GL = E.compute(gf).licensing;
+  eq(GL.needed, 25, 'enterprise greenfield sizes to the 25-user pilot');
+  eq(GL.winner.id, 'cop_ent', 'enterprise greenfield is pointed at the enterprise add-on');
+  eq(GL.winner.baseSeats, 0, 'pilot seats sit on owned E3 bases');
+}
+
+/* ── R4 · UI-side invariants, asserted against the raw source ───────────── */
+{
+  ok(/var people = Math\.max\(baseSeats, copSeats\);/.test(src),
+     'patchLic reconciles people, not summed SKUs');
+  ok(/if \(people > emp\)/.test(src), 'the licNote alarm runs on the people count');
+  ok(!/if \(seats > emp\)/.test(src), 'the raw seat-sum alarm is gone');
+  ok(/BASE_FAMILY = \{/.test(src), 'the solver carries the base-family map');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   (R5–R8 sections append here)
    ══════════════════════════════════════════════════════════════════════════ */
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
