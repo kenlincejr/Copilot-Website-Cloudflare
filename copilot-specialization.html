@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Designation to Specialization | Copilot Playbook</title>
+<meta name="description" content="The Microsoft 365 Copilot specialization from the designation up — the real thresholds, a readiness check that costs your gap in customers and dollars, the audit checklist, and the people you need behind it." />
+<link rel="canonical" href="https://copilotplaybook.com/copilot-specialization.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Designation to Specialization" />
+<meta property="og:description" content="Any one of three designations unlocks the Microsoft 365 Copilot specialization. Here is what it takes, what it is worth, and whether you can clear it." />
+<meta property="og:url" content="https://copilotplaybook.com/copilot-specialization.html" />
+<meta property="og:site_name" content="Copilot Playbook" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Designation to Specialization" />
+<meta name="twitter:description" content="The Copilot specialization from the designation up — thresholds, readiness check, audit checklist, and the team behind it." />
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — copilotplaybook.com system of record
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1680px; margin: 0 auto;
+  padding: 0 0 80px; line-height: 1.6; background: #fff;
+}
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h2 { color: var(--navy); font-size: 1.15rem; font-weight: 700; margin: 0 0 5px; }
+h3 { color: var(--teal); font-size: 1rem; font-weight: 700; margin: 22px 0 12px; }
+p  { margin: .6rem 0; }
+.mono  { font-family: 'Consolas','Monaco',monospace; }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see specs/header-system.spec.md ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; max-width: 1320px; margin: 0 auto; padding: 0 48px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); }
+.masthead-inner { max-width: 1320px; margin: 0 auto; padding: 22px 48px 26px; }
+.mh-eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.mh-eyebrow .bar { width:24px; height:2px; background:var(--ltblue); border-radius:1px; }
+.mh-eyebrow .lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.5); }
+.masthead h1 { font-size: 1.85rem; color:#fff; margin: 0 0 8px; letter-spacing:-.3px; font-weight:800; line-height:1.15; }
+.masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); line-height:1.6; margin:0 0 14px; max-width:70ch; }
+.mh-badges { display:flex; gap:12px; flex-wrap:wrap; }
+.mh-badge { font-size:.72rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 16px; }
+[id] { scroll-margin-top: 58px; }
+@media (max-width:720px){ .mh-bar-in { padding: 0 16px; } .mh-crumb, .mh-date { display:none; } .masthead-inner { padding:20px 20px 22px; } }
+
+/* ═══ LAYOUT ═══ */
+.wrap { padding: 24px 48px 0; }
+.stage { max-width: 1000px; margin: 0 auto; }
+@media (max-width:720px){ .wrap { padding: 18px 18px 0; } }
+
+/* ═══ TOC ═══ */
+.toc { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); padding:16px 20px; margin-bottom:22px; }
+.toc-h { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:10px; }
+.toc ol { margin:0; padding-left:0; list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:5px 18px; counter-reset:toc; }
+.toc li { counter-increment:toc; font-size:.85rem; }
+.toc li a { color:#374151; display:flex; gap:8px; padding:3px 0; }
+.toc li a:hover { color:var(--teal); text-decoration:none; }
+.toc li a::before { content:counter(toc,decimal-leading-zero); font-family:'Consolas','Monaco',monospace; font-size:.72rem; color:var(--teal); font-weight:700; flex:0 0 auto; padding-top:2px; }
+
+/* ═══ CARDS ═══ */
+.wcard { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:22px; }
+.wcard .wc-bar { height:4px; background:linear-gradient(to right,var(--teal),var(--ltblue),#a8ecf5); }
+.wcard .wc-body { padding:26px 32px 30px; }
+@media (max-width:720px){ .wcard .wc-body { padding:20px 18px 24px; } }
+.wc-head { display:flex; align-items:flex-start; gap:14px; margin-bottom:18px; }
+.wc-num { width:32px; height:32px; border-radius:8px; background:var(--teal); color:#fff; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.wc-title { flex:1; min-width:0; }
+.wc-title .wc-sub { font-size:.84rem; color:#6b7280; margin-top:3px; }
+
+/* ═══ CALLOUTS ═══ */
+.callout { background:var(--accent); border:1px solid #c5dde3; border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; margin:18px 0; }
+.callout.warn { background:var(--warn); border-color:#f5ddb0; border-left-color:#d97706; }
+.callout.stop { background:#fdf2f2; border-color:#f3d0d0; border-left-color:#b91c1c; }
+.callout-title { font-weight:700; color:#00474f; margin:0 0 6px; font-size:.85rem; letter-spacing:.3px; text-transform:uppercase; }
+.callout.warn .callout-title { color:#92400e; }
+.callout.stop .callout-title { color:#b91c1c; }
+.callout-body { margin:0; font-size:.9rem; line-height:1.65; }
+.callout-body p { margin:.5rem 0; }
+.callout-body p:first-child { margin-top:0; }
+.callout-body p:last-child { margin-bottom:0; }
+.coach { display:flex; gap:12px; align-items:flex-start; background:var(--accent); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:14px 18px; margin:18px 0; }
+.coach .co-ic { flex:0 0 auto; font-size:1.05rem; }
+.coach .co-txt { font-size:.88rem; color:#00474f; line-height:1.6; }
+.coach .co-txt b { color:var(--navy); }
+blockquote { margin:16px 0; padding:12px 0 12px 18px; border-left:3px solid var(--ltblue); font-size:.9rem; color:#374151; line-height:1.7; font-style:italic; }
+blockquote b { color:var(--navy); font-style:normal; }
+
+/* ═══ PILLS ═══ */
+.pill { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:2px 7px; border-radius:20px; vertical-align:1px; white-space:nowrap; }
+.pill.ms       { background:#f3fbfc; color:#0f766e; }
+.pill.press    { background:var(--warn); color:#92400e; }
+.pill.unv      { background:#fdf2f2; color:#b91c1c; }
+.pill.asked    { background:var(--accent);  color:var(--teal); }
+
+/* ═══ DIAGRAMS ═══ */
+.flowwrap { border:1px solid var(--border); border-radius:var(--radius); background:#fff; padding:18px 20px 14px; margin:18px 0; overflow-x:auto; }
+.flowdiag { width:100%; min-width:680px; height:auto; display:block; }
+.flowdiag text { font-family:'Segoe UI','Inter',Georgia,sans-serif; }
+.fd-lane   { fill:var(--teal); font-size:10px; font-weight:700; letter-spacing:1.3px; }
+.fd-node   { fill:#fff; stroke:var(--border); stroke-width:1; }
+.fd-node-a { fill:#fff; stroke:var(--teal); stroke-width:1.5; }
+.fd-final  { fill:var(--navy); }
+.fd-num    { fill:var(--teal); font-size:10.5px; font-weight:800; }
+.fd-t      { fill:var(--navy); font-size:12.5px; font-weight:700; }
+.fd-d      { fill:#6b7280; font-size:10.5px; }
+.fd-tw     { fill:#fff; font-size:12.5px; font-weight:700; }
+.fd-dw     { fill:#a8ecf5; font-size:10.5px; }
+.fd-lw     { fill:rgba(255,255,255,.55); font-size:9.5px; font-weight:700; letter-spacing:.09em; }
+.fd-arrow  { stroke:#b6bcc5; fill:none; stroke-width:1.6; }
+.fd-arrow-a{ stroke:var(--teal); fill:none; stroke-width:2; }
+.fd-cap    { fill:#6b7280; font-size:10.5px; }
+.fd-capb   { fill:var(--navy); font-size:11px; font-weight:700; }
+.fd-eq     { fill:var(--teal); font-size:11.5px; font-weight:700; }
+.fd-warn   { fill:#b91c1c; font-size:10.5px; font-weight:700; }
+.fd-base   { fill:var(--muted); stroke:var(--border); }
+.figcap { font-size:.78rem; color:#6b7280; line-height:1.65; margin-top:12px; padding-top:11px; border-top:1px solid var(--border); }
+.figcap b { color:var(--navy); }
+
+/* ═══ TABLES ═══ */
+.tablewrap { overflow-x:auto; margin:16px 0; }
+.dtable { width:100%; border-collapse:collapse; font-size:.88rem; }
+.dtable th { background:var(--muted-2); color:var(--navy); font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; padding:11px 12px; text-align:left; border-bottom:2px solid var(--teal); white-space:nowrap; }
+.dtable td { padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.55; }
+.dtable tr:last-child td { border-bottom:none; }
+/* .n is for genuine numbers only. Never put prose in it — it right-aligns and
+   monospaces, which rags a column against its neighbours. DESIGN.md 8b.4 */
+.dtable td.n { font-family:'Consolas','Monaco',monospace; text-align:right; white-space:nowrap; color:var(--navy); font-weight:700; }
+.dtable .sub { display:block; font-size:.78rem; color:#6b7280; margin-top:3px; font-weight:400; }
+
+/* ═══ SIDE-BY-SIDE COMPARISON — every cell left-aligned, one column marked ═══ */
+.dtable.cmp th:first-child, .dtable.cmp td:first-child { width:20%; min-width:130px; color:#6b7280; font-weight:600; }
+.dtable.cmp th:nth-child(n+2), .dtable.cmp td:nth-child(n+2) { width:40%; text-align:left; }
+.dtable.cmp td { color:#374151; }
+.dtable.cmp td b { color:var(--navy); }
+.dtable.cmp td.lighter { background:#f3fbfc; box-shadow:inset 3px 0 0 var(--teal); }
+.dtable.cmp td.lighter b { color:var(--teal); }
+.cmp-key { font-size:.76rem; color:#6b7280; margin-top:9px; display:flex; align-items:center; gap:7px; }
+.cmp-key i { display:inline-block; width:11px; height:11px; border-radius:3px; background:#f3fbfc; box-shadow:inset 3px 0 0 var(--teal); flex:0 0 auto; }
+
+/* ═══ READINESS ENGINE ═══ */
+.rq-group { border-top:1px solid var(--border); margin-top:20px; padding-top:16px; }
+.rq-group:first-of-type { border-top:none; margin-top:0; padding-top:0; }
+.rq-gh { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.rq-gl { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--teal); }
+.rq-gs { font-size:.8rem; color:#6b7280; }
+.rq-gh.opt .rq-gl { color:#6b7280; }
+.rq { margin-bottom:15px; }
+.rq-q { display:block; font-size:.88rem; font-weight:600; color:#374151; margin-bottom:7px; }
+.rq-q b { color:var(--navy); }
+.rq-q .rq-n { font-family:'Consolas','Monaco',monospace; font-size:.72rem; font-weight:700; color:var(--teal); margin-right:7px; }
+.seg { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; width:100%; flex-wrap:wrap; }
+.seg button { flex:1 1 0; min-width:96px; border:none; background:#fff; font-size:.82rem; font-weight:600; padding:11px 8px; cursor:pointer; color:#374151; border-right:1px solid var(--border); font-family:inherit; line-height:1.35; }
+.seg button:last-child { border-right:none; }
+.seg button:hover { background:var(--muted); }
+.seg button.on { background:var(--teal); color:#fff; font-weight:700; }
+.rq-foot { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-top:18px; padding-top:14px; border-top:1px solid var(--border); }
+.linkbtn { font-size:.82rem; font-weight:700; color:#6b7280; background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+.linkbtn:hover { text-decoration:underline; color:var(--teal); }
+.rq-prog { font-size:.78rem; color:#6b7280; }
+.rq-prog b { color:var(--navy); }
+
+/* results */
+#rzOut { margin-top:22px; }
+.rz-empty { background:var(--muted); border:1px dashed var(--border); border-radius:var(--radius); padding:22px 24px; text-align:center; font-size:.86rem; color:#6b7280; }
+.saystrip { background:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%); border-radius:var(--radius-lg); padding:22px 26px; color:#fff; box-shadow:var(--shadow-sm); margin-bottom:18px; }
+.saystrip .ss-lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#a8ecf5; margin-bottom:9px; }
+.saystrip .ss-v { font-size:1.35rem; font-weight:800; line-height:1.25; margin-bottom:9px; }
+.saystrip p { font-size:.92rem; line-height:1.7; color:rgba(255,255,255,.9); margin:0; }
+.gaterow { display:flex; gap:12px; align-items:flex-start; padding:11px 14px; border-radius:6px; background:var(--muted); margin-bottom:6px; }
+.gaterow.ok   { background:#f3fbfc; }
+.gaterow.part { background:var(--warn); }
+.gaterow.no   { background:#fdf2f2; }
+.gaterow .g-s { flex:0 0 auto; font-size:.58rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; padding:3px 8px; border-radius:20px; margin-top:1px; }
+.gaterow.ok   .g-s { background:#d3f0ee; color:#0f766e; }
+.gaterow.part .g-s { background:#f7e6c8; color:#92400e; }
+.gaterow.no   .g-s { background:#f7d9d9; color:#b91c1c; }
+.gaterow .g-t { font-size:.86rem; color:#374151; line-height:1.6; }
+.gaterow .g-t b { color:var(--navy); }
+/* DESIGN.md 8b.3 — pinned so this can only ever be 4-up or 2x2, never 3+1 */
+.numgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:18px 0; }
+@media (max-width:820px){ .numgrid { grid-template-columns:repeat(2,1fr); } }
+.numcell { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); padding:16px 18px; background:#fff; }
+.numcell.alt { border-top-color:var(--navy); }
+.numcell .nk { font-size:1.55rem; font-weight:800; color:#004B87; letter-spacing:-.5px; line-height:1.1; font-family:'Consolas','Monaco',monospace; }
+.numcell .nl { font-size:.79rem; color:#374151; margin-top:6px; line-height:1.45; }
+.nextstep { border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; background:var(--accent); margin-top:16px; }
+.nextstep .ns-e { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:6px; }
+.nextstep .ns-t { font-size:.9rem; color:#00474f; line-height:1.7; }
+.nextstep .ns-t b { color:var(--navy); }
+.risklist { margin:16px 0 0; }
+.risklist .rl-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#b91c1c; margin-bottom:8px; }
+.risklist ul { margin:0; padding-left:20px; font-size:.86rem; color:#374151; line-height:1.65; }
+.risklist li { margin:6px 0; }
+.risklist li b { color:var(--navy); }
+
+/* ═══ MISC ═══ */
+ul.tight { margin:.5rem 0 1rem; padding-left:20px; font-size:.9rem; line-height:1.7; }
+ul.tight li { margin:5px 0; }
+.whengrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:16px 0; }
+.whencard { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); padding:15px 17px; background:#fff; }
+.whencard .wn-w { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:6px; }
+.whencard .wn-t { font-size:.9rem; font-weight:700; color:var(--navy); margin-bottom:5px; line-height:1.35; }
+.whencard .wn-d { font-size:.83rem; color:#6b7280; line-height:1.55; }
+/* ═══ ORDERED SEQUENCE — DESIGN.md 8b.3: steps are a sequence, not a grid ═══ */
+.pathlist { border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin:18px 0; }
+.pathrow { display:flex; gap:15px; align-items:flex-start; padding:15px 18px; border-bottom:1px solid var(--border); background:#fff; }
+.pathrow:last-child { border-bottom:none; }
+.pathrow.final { background:var(--accent); }
+.pathrow .pn { flex:0 0 auto; width:26px; height:26px; border-radius:6px; background:var(--muted-2); color:var(--navy); font-size:.76rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.pathrow.final .pn { background:var(--teal); color:#fff; }
+.pathrow .pb { min-width:0; }
+.pathrow .pw { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); margin-bottom:3px; }
+.pathrow .pt { font-size:.92rem; font-weight:700; color:var(--navy); margin-bottom:4px; line-height:1.35; }
+.pathrow .pd { font-size:.87rem; color:#374151; line-height:1.6; }
+.pathrow .pd b { color:var(--navy); }
+.srcline { font-size:.72rem; color:#6b7280; font-style:italic; margin-top:14px; line-height:1.6; }
+a.docref { color:var(--teal); font-weight:600; border-bottom:1px solid #a8d3da; text-decoration:none; }
+a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text-decoration:none; }
+footer.pagefoot { max-width:1320px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#6b7280; line-height:1.7; }
+footer.pagefoot a { color:#6b7280; }
+@media (max-width:720px){ footer.pagefoot { padding:22px 18px 0; } }
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="frontier.html">The Path to Frontier Partner</a><span class="sep">/</span><span class="cur">Designation to Specialization</span></div>
+    <div class="mh-date">Last updated: August 28, 2026</div>
+  </div>
+</div>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Partner Program &middot; FY27 &middot; Indirect Channel</div></div>
+    <h1>Designation to Specialization</h1>
+    <p class="sub">The Microsoft 365 Copilot specialization sits on top of <em>any one</em> of three designations. This is what it takes to get there, what it is worth, what the audit actually examines, and whether you have the people to deliver behind it.</p>
+    <div class="mh-badges">
+      <span class="mh-badge">Requirements verified 3 Aug 2026</span>
+      <span class="mh-badge">Live readiness check</span>
+      <span class="mh-badge">Written for indirect resellers</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="stage">
+
+  <div class="toc">
+    <div class="toc-h">On this page</div>
+    <ol>
+      <li><a href="#s1">Start with the designation you have</a></li>
+      <li><a href="#s2">How close are you, actually?</a></li>
+      <li><a href="#s3">What attaining it is worth</a></li>
+      <li><a href="#s4">The requirements, precisely</a></li>
+      <li><a href="#s5">How you operationalize it</a></li>
+      <li><a href="#s6">The cheaper adjacent badge</a></li>
+      <li><a href="#s7">Dealing with the audit</a></li>
+      <li><a href="#s8">Minimum versus realistic capability</a></li>
+    </ol>
+  </div>
+
+<!-- ══════════════ 1 · THE STRUCTURE ══════════════ -->
+<div class="wcard" id="s1">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">1</div><div class="wc-title">
+      <h2>Start with the designation you already have</h2>
+      <div class="wc-sub">Three doors open the same room &mdash; and you only need one of them.</div></div></div>
+
+    <p>Most specializations are locked to a single solution area. The Microsoft 365 Copilot specialization is deliberately not. Because Copilot cuts across business environments, Microsoft treats it as a multi-pathway badge and accepts <b>any one of three</b> baseline designations. That single design choice is what makes it reachable at your size, and it is the first thing to check before planning anything else.</p>
+
+    <blockquote>&ldquo;<b>Eligibility</b>: Active Solutions Partner designation in any one of three solution areas: <b>Modern Work</b>, <b>Business Applications</b>, or <b>Security</b>.&rdquo; <span class="pill ms">MS-Official</span></blockquote>
+
+    <div class="flowwrap">
+      <svg class="flowdiag" viewBox="0 0 900 440" role="img" aria-label="Three Solutions Partner designations — Modern Work, Business Applications and Security — each independently unlocking the Microsoft 365 Copilot specialization, which requires 1000 MAU growth, five net customers at five or more monthly active users each, two groups of five certified people, and a third-party audit.">
+        <text class="fd-lane" x="14" y="16">HOLD ANY ONE OF THESE</text>
+
+        <!-- Modern Work -->
+        <rect class="fd-node-a" x="14" y="28" width="272" height="92" rx="8"/>
+        <text class="fd-t" x="150" y="52" text-anchor="middle">Modern Work</text>
+        <text class="fd-d" x="150" y="71" text-anchor="middle">SMB track: 10 net adds &middot; 2+1 certified</text>
+        <text class="fd-d" x="150" y="86" text-anchor="middle">500 MAU growth &middot; 5 deployments</text>
+        <text class="fd-eq" x="150" y="107" text-anchor="middle">also opens Agentic Business Solutions</text>
+
+        <!-- Business Applications -->
+        <rect class="fd-node-a" x="314" y="28" width="272" height="92" rx="8"/>
+        <text class="fd-t" x="450" y="52" text-anchor="middle">Business Applications</text>
+        <text class="fd-d" x="450" y="71" text-anchor="middle">Dynamics 365 and Power Platform</text>
+        <text class="fd-d" x="450" y="86" text-anchor="middle">practice required</text>
+        <text class="fd-cap" x="450" y="107" text-anchor="middle">rarely the SMB partner&rsquo;s first door</text>
+
+        <!-- Security -->
+        <rect class="fd-node-a" x="614" y="28" width="272" height="92" rx="8"/>
+        <text class="fd-t" x="750" y="52" text-anchor="middle">Security</text>
+        <text class="fd-d" x="750" y="71" text-anchor="middle">SMB track: 5 net adds</text>
+        <text class="fd-d" x="750" y="86" text-anchor="middle">3 certs across as few as 2 people</text>
+        <text class="fd-eq" x="750" y="107" text-anchor="middle">usually the fastest to earn</text>
+
+        <!-- OR markers -->
+        <text class="fd-capb" x="300" y="80" text-anchor="middle">OR</text>
+        <text class="fd-capb" x="600" y="80" text-anchor="middle">OR</text>
+
+        <!-- converging arrows -->
+        <path class="fd-arrow-a" d="M150,120 C150,158 300,160 372,196" marker-end="url(#ah)"/>
+        <path class="fd-arrow-a" d="M450,120 L450,196" marker-end="url(#ah)"/>
+        <path class="fd-arrow-a" d="M750,120 C750,158 600,160 528,196" marker-end="url(#ah)"/>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#005F6B"/>
+          </marker>
+        </defs>
+
+        <!-- The specialization -->
+        <rect class="fd-final" x="60" y="202" width="780" height="196" rx="10"/>
+        <text class="fd-lw" x="86" y="228">THE SPECIALIZATION</text>
+        <text class="fd-tw" x="86" y="252" style="font-size:15px">Microsoft 365 Copilot Specialization</text>
+        <line x1="86" y1="266" x2="814" y2="266" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+
+        <text class="fd-lw" x="86" y="290">PERFORMANCE &mdash; BOTH REQUIRED</text>
+        <text class="fd-tw" x="86" y="312" style="font-size:11.5px">1,000 MAU growth, trailing 12 months</text>
+        <text class="fd-tw" x="86" y="331" style="font-size:11.5px">5 net new customers, each &ge;5 MAU</text>
+        <text class="fd-dw" x="86" y="350">via CPOR &mdash; Microsoft&rsquo;s stated route</text>
+
+        <line x1="452" y1="278" x2="452" y2="382" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+
+        <text class="fd-lw" x="478" y="290">SKILLING &mdash; TWO GROUPS OF FIVE</text>
+        <text class="fd-tw" x="478" y="312" style="font-size:11.5px">5 people &middot; security credential</text>
+        <text class="fd-tw" x="478" y="331" style="font-size:11.5px">5 people &middot; agent-building credential</text>
+        <text class="fd-dw" x="478" y="350">10 credentials, 5 humans minimum</text>
+
+        <line x1="86" y1="362" x2="814" y2="362" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
+        <text class="fd-dw" x="86" y="382">EVIDENCE &nbsp;&middot;&nbsp; third-party audit, valid 2 years &nbsp;&middot;&nbsp; no marketplace listing required</text>
+
+        <text class="fd-warn" x="450" y="424" text-anchor="middle">The Schedule audit button stays greyed out until every requirement above is already met</text>
+      </svg>
+      <div class="figcap"><b>Three doors, one room.</b> Any single designation opens the Copilot specialization &mdash; you do not need all three, and the choice of which to earn first is yours. For an SMB partner Security is usually fastest, because its SMB skilling table lets three certifications sit on as few as two people. Modern Work is the more versatile door: it also opens Agentic Business Solutions, which needs no audit, and its benefit package grants the twenty internal Copilot seats the audit later asks for.</div>
+    </div>
+
+    <div class="coach"><div class="co-ic">&#9679;</div><div class="co-txt">If you already hold <b>any</b> designation, the prerequisite question is settled and your remaining work is entirely performance, skilling and audit. Partners routinely delay because they believe they need a specific designation first. They don&rsquo;t &mdash; and the one most SMB partners reach fastest, Security, is a perfectly valid door.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ 2 · READINESS ══════════════ -->
+<div class="wcard" id="s2">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">2</div><div class="wc-title">
+      <h2>How close are you, actually?</h2>
+      <div class="wc-sub">Nothing is saved. Every figure recalculates as you answer.</div></div></div>
+
+    <p>Most readiness checks stop at the published prerequisites &mdash; the half partners rarely fail. The audit is fifteen binary controls where <em>all</em> must pass. So this asks about both, then does the arithmetic on what closing the gap actually costs you in customers, certifications and cash.</p>
+
+    <div class="rq-group">
+      <div class="rq-gh"><span class="rq-gl">A &middot; Can you even apply?</span><span class="rq-gs">These gate the Schedule audit button. Until every one is green, it stays greyed out.</span></div>
+
+      <div class="rq" data-k="d">
+        <span class="rq-q"><span class="rq-n">A1</span>Which prerequisite designation do you hold?</span>
+        <div class="seg"><button type="button" data-v="0">None yet</button><button type="button" data-v="1">Modern Work or Business Apps</button><button type="button" data-v="2">Security only</button></div>
+      </div>
+      <div class="rq" data-k="m">
+        <span class="rq-q"><span class="rq-n">A2</span>Paid Copilot MAU growth across your customers, trailing 12 months?</span>
+        <div class="seg"><button type="button" data-v="0">Under 250</button><button type="button" data-v="1">250&ndash;749</button><button type="button" data-v="2">750&ndash;999</button><button type="button" data-v="3">1,000+</button></div>
+      </div>
+      <div class="rq" data-k="c">
+        <span class="rq-q"><span class="rq-n">A3</span>New Copilot customers with <b>at least 5 monthly active users</b> each?</span>
+        <div class="seg"><button type="button" data-v="0">0&ndash;1</button><button type="button" data-v="1">2&ndash;4</button><button type="button" data-v="2">5 or more</button></div>
+      </div>
+      <div class="rq" data-k="s1">
+        <span class="rq-q"><span class="rq-n">A4</span>People holding SC-401, Information Security Administrator Associate?</span>
+        <div class="seg"><button type="button" data-v="0">0&ndash;2</button><button type="button" data-v="1">3&ndash;4</button><button type="button" data-v="2">5 or more</button></div>
+      </div>
+      <div class="rq" data-k="s2">
+        <span class="rq-q"><span class="rq-n">A5</span>People holding AB-620, AB-100, or the Copilot Studio applied skill?</span>
+        <div class="seg"><button type="button" data-v="0">0&ndash;2</button><button type="button" data-v="1">3&ndash;4</button><button type="button" data-v="2">5 or more</button></div>
+      </div>
+      <div class="rq" data-k="seat">
+        <span class="rq-q"><span class="rq-n">A6</span>Copilot seats deployed <b>inside your own business</b>, active among practice and presales staff?</span>
+        <div class="seg"><button type="button" data-v="0">Under 20</button><button type="button" data-v="1">20+, usage patchy</button><button type="button" data-v="2">20+ at 60% active</button></div>
+      </div>
+      <div class="rq" data-k="train">
+        <span class="rq-q"><span class="rq-n">A7</span>Learners through the two required Skilling Hub trainings &mdash; Business Case Builder and Frontier Firm Productivity?</span>
+        <div class="seg"><button type="button" data-v="0">Neither / unaware</button><button type="button" data-v="1">One, or partial</button><button type="button" data-v="2">5 learners on both</button></div>
+      </div>
+    </div>
+
+    <div class="rq-group">
+      <div class="rq-gh opt"><span class="rq-gl">B &middot; Would you pass the audit?</span><span class="rq-gs">Optional. Fifteen binary controls, all must pass &mdash; this is where partners actually fail.</span></div>
+
+      <div class="rq" data-k="evi">
+        <span class="rq-q"><span class="rq-n">B1</span>Customers in the last 12 months where you did <b>both</b> a Copilot rollout <b>and</b> production agent work?</span>
+        <div class="seg"><button type="button" data-v="0">None</button><button type="button" data-v="1">One</button><button type="button" data-v="2">Two or more</button></div>
+      </div>
+      <div class="rq" data-k="offer">
+        <span class="rq-q"><span class="rq-n">B2</span>Do you sell a <b>standalone</b> advisory offer and a packaged agent offering, with a signed SOW to prove it?</span>
+        <div class="seg"><button type="button" data-v="0">Both bundled in managed services</button><button type="button" data-v="1">One is standalone</button><button type="button" data-v="2">Both, with a signed SOW</button></div>
+      </div>
+      <div class="rq" data-k="acm">
+        <span class="rq-q"><span class="rq-n">B3</span>Is a named change-management resource shown on your customer project structures?</span>
+        <div class="seg"><button type="button" data-v="0">No &mdash; engineers handle it</button><button type="button" data-v="1">Informally</button><button type="button" data-v="2">Named, with a role description</button></div>
+      </div>
+      <div class="rq" data-k="telem">
+        <span class="rq-q"><span class="rq-n">B4</span>Adoption telemetry across two measurement cycles, with a documented metric &rarr; action &rarr; re-measurement loop?</span>
+        <div class="seg"><button type="button" data-v="0">We report usage, that&rsquo;s all</button><button type="button" data-v="1">Telemetry, no closed loop</button><button type="button" data-v="2">Yes, documented</button></div>
+      </div>
+      <div class="rq" data-k="gov">
+        <span class="rq-q"><span class="rq-n">B5</span>Agent governance in customer production &mdash; drift detection, rollback, decommissioning <b>and cost tracking</b>?</span>
+        <div class="seg"><button type="button" data-v="0">Not yet</button><button type="button" data-v="1">Partial</button><button type="button" data-v="2">Documented and running</button></div>
+      </div>
+    </div>
+
+    <div class="rq-group">
+      <div class="rq-gh opt"><span class="rq-gl">C &middot; Your numbers</span><span class="rq-gs">Optional. Turns the gap into customers, months and dollars.</span></div>
+
+      <div class="rq" data-k="size">
+        <span class="rq-q"><span class="rq-n">C1</span>Average Copilot seats per customer deployment?</span>
+        <div class="seg"><button type="button" data-v="0">~10</button><button type="button" data-v="1">~25</button><button type="button" data-v="2">~50</button><button type="button" data-v="3">100+</button></div>
+      </div>
+      <div class="rq" data-k="head">
+        <span class="rq-q"><span class="rq-n">C2</span>How many people work at your firm?</span>
+        <div class="seg"><button type="button" data-v="0">Under 10</button><button type="button" data-v="1">10&ndash;29</button><button type="button" data-v="2">30&ndash;99</button><button type="button" data-v="3">100+</button></div>
+      </div>
+    </div>
+
+    <div class="rq-foot">
+      <div class="rq-prog" id="rzProg"><b>0</b> of 14 answered</div>
+      <button type="button" class="linkbtn" id="rzReset">Clear answers</button>
+    </div>
+
+    <div id="rzOut"><div class="rz-empty">Answer section A for an eligibility verdict. Add B and C for audit risk and a costed plan.</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ 3 · WHAT IT'S WORTH ══════════════ -->
+<div class="wcard" id="s3">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">3</div><div class="wc-title">
+      <h2>What attaining it is actually worth</h2>
+      <div class="wc-sub">A specialization is an economic gate and a procurement signal, not a trophy.</div></div></div>
+
+    <div class="whengrid">
+      <div class="whencard">
+        <div class="wn-w">The decisive one</div>
+        <div class="wn-t">It protects your Copilot funding past January 2027</div>
+        <div class="wn-d">From <b>1 January 2027, Copilot engagement incentives require this specialization</b>. Copilot Jumpstart &ldquo;Ready&rdquo; status &mdash; the alternative qualifying route &mdash; is honoured only through 31 December 2026. If Copilot engagement funding finances your delivery, this is continuity, not differentiation.</div>
+      </div>
+      <div class="whencard">
+        <div class="wn-w">Scarcity by design</div>
+        <div class="wn-t">The credential competitors can&rsquo;t fake</div>
+        <div class="wn-d">Customer references were replaced by a third-party capabilities audit in July 2026. That cuts both ways: it costs you money and effort, but the badge now certifies audited delivery capability rather than three well-written case studies. The audit is precisely why it stays scarce.</div>
+      </div>
+      <div class="whencard">
+        <div class="wn-w">Demand routing</div>
+        <div class="wn-t">It points Microsoft-sourced demand at you</div>
+        <div class="wn-d">Specializations drive marketplace placement for AI searches and feed the business profile Microsoft sellers search when routing services opportunities. For an SMB partner who will never get true co-sell, that visibility is the realistic substitute &mdash; and it is gated on credentials you hold, not customers Microsoft manages.</div>
+      </div>
+    </div>
+
+    <div class="coach"><div class="co-ic">&#63;</div><div class="co-txt"><b>And one that is possible rather than certain.</b> Microsoft states that &ldquo;for select workload types, you may be able to access <b>Cloud Accelerate Factory</b> through the Microsoft 365 Copilot specialization&rdquo; &mdash; zero-cost, Microsoft-led deployment labour. Treat it as a possibility to confirm rather than a benefit to bank: an FY27 channel briefing indicates the SMB path is excluded from Cloud Accelerate Factory, and the two sources conflict. Worth asking your partner development manager directly.</div></div>
+
+    <div class="callout warn">
+      <div class="callout-title">And the honest counter-case</div>
+      <div class="callout-body"><p>If Copilot is an occasional attach on a mostly-managed-services book, <b>this specialization is a bad trade</b>. Ten credentials across five people, a thousand MAU of growth, twenty internal seats and a partner-funded audit to protect funding you rarely claim does not pay back. The cheaper adjacent badge is <b>Agentic Business Solutions</b> &mdash; see section 6. Be honest about which kind of partner you are before you spend.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 4 · REQUIREMENTS ══════════════ -->
+<div class="wcard" id="s4">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">4</div><div class="wc-title">
+      <h2>The requirements, precisely</h2>
+      <div class="wc-sub">Verified against Partner Center documentation updated 3 August 2026.</div></div></div>
+
+    <h3>Performance &mdash; both conditions, not either</h3>
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Requirement</th><th>Threshold</th><th>The detail that catches people</th></tr></thead>
+        <tbody>
+          <tr><td>MAU growth</td><td class="n">1,000</td><td>Trailing twelve months, Microsoft 365 Copilot workload. MAU is calculated on a rolling 28-day basis &mdash; &ldquo;the unique number of users taking an intentional action.&rdquo;</td></tr>
+          <tr><td>Net customer growth</td><td class="n">5</td><td><b>Each eligible customer must have at least 5 MAU.</b> A two-seat pilot does not count toward the five.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><b>How it is measured.</b> Eligible association types are <b>CPOR</b>, CSP Tier 1 and CSP Tier 2 &mdash; and Microsoft states plainly which one it expects you to use: &ldquo;<b>Your company should achieve MAU through CPOR.</b>&rdquo;</p>
+
+    <p><b>Scale check.</b> A thousand MAU of growth at a 25-seat average SMB deployment is roughly <b>forty customers</b> going live inside twelve months. At fifty seats it is twenty. For most partners this &mdash; not the certifications &mdash; is the binding constraint, and it is why the CPOR discipline in section 5 matters more than the exam budget.</p>
+
+    <h3>Skilling &mdash; two groups of five, not five people</h3>
+    <p>This is the most commonly misread requirement in the program. It is not &ldquo;five certified individuals.&rdquo; It is two separate groups:</p>
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Group</th><th>How many</th><th>Any one of</th></tr></thead>
+        <tbody>
+          <tr><td><b>Security &amp; compliance</b></td><td class="n">5+</td><td>Information Security Administrator Associate (SC-401)<span class="sub">or Applied Skills: Prepare security and compliance to support M365 Copilot &mdash; retired 30 June 2026, valid one year if completed before</span></td></tr>
+          <tr><td><b>Agent building</b></td><td class="n">5+</td><td><b>AI Agent Builder Associate (AB-620)</b> &mdash; the practical route<span class="sub">or Agentic AI Business Solutions Architect (AB-100), which is Expert-level and requires you already hold one of fifteen qualifying associate certifications &mdash; not a viable path for five people. Or the Copilot Studio applied skill, retired 8 July 2026.</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Microsoft does not require the two groups to be different people, so the efficient shape is <b>five humans each holding two credentials &mdash; ten credentials in total</b>. Because both Applied Skills routes retired in mid-2026, a partner starting now is realistically buying <b>SC-401 &times;5 plus AB-620 &times;5</b>.</p>
+
+    <div class="callout">
+      <div class="callout-title">Confirm before you buy vouchers</div>
+      <div class="callout-body"><p>The requirements page does not state that the two groups must be distinct people, and the natural reading is that they may overlap &mdash; but that is inference, not a stated rule. The Data Security specialization page <em>does</em> carry an explicit &ldquo;you can have the same or different individuals&rdquo; sentence; the Copilot page does not. Five people versus ten is a different business. Verify in Partner Center before committing.</p></div>
+    </div>
+
+    <h3>Evidence</h3>
+    <p><b>Audit required. No marketplace listing required</b> &mdash; a real distinction from Agentic Business Solutions, which does demand a published consulting offer.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 5 · OPERATIONALIZE ══════════════ -->
+<div class="wcard" id="s5">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">5</div><div class="wc-title">
+      <h2>How you actually operationalize it</h2>
+      <div class="wc-sub">Four moves in order, because three of them have lead times measured in months.</div></div></div>
+
+    <div class="pathlist">
+      <div class="pathrow">
+        <div class="pn">1</div>
+        <div class="pb">
+          <div class="pw">Week one &middot; free</div>
+          <div class="pt">Claim CPOR on everything, immediately</div>
+          <div class="pd">Microsoft tells you outright to achieve MAU through CPOR. The mechanic that makes it urgent: <b>usage growth counts only from the date of association and is never retroactive</b>. A tenant you have managed for three years contributes nothing until you claim it. Claims take up to 30 days to process plus a 90-day customer-consent window &mdash; a four-month lead time before a claim is fully productive, which means CPOR filed today is barely inside a twelve-month qualification run.</div>
+        </div>
+      </div>
+      <div class="pathrow">
+        <div class="pn">2</div>
+        <div class="pb">
+          <div class="pw">Months 1&ndash;9</div>
+          <div class="pt">Engineer the customer count, not just the seat count</div>
+          <div class="pd">Two targets pull in different directions. <b>1,000 MAU</b> rewards concentration &mdash; a few large deployments get you there fastest. <b>5 customers at &ge;5 MAU each</b> rewards spread. Run Copilot in 30 trials across a wider set of accounts to manufacture the customer count while driving depth in the two or three accounts carrying the MAU number. A trial only counts once it converts to five genuinely active users.</div>
+        </div>
+      </div>
+      <div class="pathrow">
+        <div class="pn">3</div>
+        <div class="pb">
+          <div class="pw">Months 1&ndash;6</div>
+          <div class="pt">Route the certifications deliberately</div>
+          <div class="pd">Five people is a hard floor &mdash; for a firm under ten that is most of the technical team, so treat it as a scheduling problem. SC-401 for group one, and send everyone through <b>AB-620</b> for group two so study material and internal coaching are shared. Skilling points post roughly ten days after a certification completes, and the designation itself only needs its 70 points on a single day inside a rolling six-month window.</div>
+        </div>
+      </div>
+      <div class="pathrow final">
+        <div class="pn">4</div>
+        <div class="pb">
+          <div class="pw">Continuous &mdash; and the one that pays twice</div>
+          <div class="pt">Build the evidence pack while you deliver</div>
+          <div class="pd">The audit examines documented, repeatable delivery &mdash; not a deck assembled afterwards. Capture as you go: time-on-task, before and after states, decision logs explaining why a control was applied or an exception accepted, and anonymised proof. Build it once and it is simultaneously your audit artefact and your sellable deliverable.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">The audit is structurally last</div>
+      <div class="callout-body"><p>The <b>Schedule audit</b> button does not appear until every performance and skilling requirement is already green. There is no option to run the audit in parallel while you accumulate MAU, so sequence accordingly.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 6 · CHEAPER DOOR ══════════════ -->
+<div class="wcard" id="s6">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">6</div><div class="wc-title">
+      <h2>The cheaper adjacent badge</h2>
+      <div class="wc-sub">If the thousand-MAU gate is years away but you are building agents.</div></div></div>
+
+    <p>There is a second multi-pathway specialization most partners overlook &mdash; and <b>Modern Work unlocks it too</b>.</p>
+
+    <div class="tablewrap">
+      <table class="dtable cmp">
+        <thead><tr><th>Requirement</th><th>Microsoft 365 Copilot</th><th>Agentic Business Solutions</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Unlocked by</td>
+            <td>Modern Work &middot; Business Apps &middot; Security</td>
+            <td>Modern Work &middot; Business Apps &middot; Digital &amp; App Innovation</td>
+          </tr>
+          <tr>
+            <td>Performance</td>
+            <td><b>1,000 MAU growth</b> and 5 net customers, each at &ge;5 MAU</td>
+            <td class="lighter"><b>2 Copilot Studio deployments</b> at $10,000 trailing-12-month revenue each &mdash; no MAU threshold at all</td>
+          </tr>
+          <tr>
+            <td>Skilling</td>
+            <td><b>Two groups of five</b> &mdash; ten credentials across five people</td>
+            <td class="lighter"><b>Five people, one group</b> &mdash; half the certification spend</td>
+          </tr>
+          <tr>
+            <td>Audit</td>
+            <td><b>Required</b> &mdash; four hours, roughly $2,700, fifteen binary controls</td>
+            <td class="lighter"><b>Not required</b></td>
+          </tr>
+          <tr>
+            <td>Marketplace listing</td>
+            <td class="lighter"><b>Not required</b></td>
+            <td><b>Required</b> &mdash; one consulting offer with products tagged. Free, and needs only a PartnerID</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cmp-key"><i></i> Shaded cell marks the lighter requirement of the two.</div>
+
+    <div class="coach"><div class="co-ic">&#9679;</div><div class="co-txt">For a partner doing agent work rather than mass Copilot rollout, <b>Agentic Business Solutions is dramatically cheaper</b>: no MAU threshold, no audit, half the skilling, and two customer deployments instead of five. The cost is publishing a consulting offer to Microsoft Marketplace, which needs only a PartnerID and is otherwise free. If your Copilot work is deep rather than wide, take this door first.</div></div>
+
+    <h3>And the one that looks natural but isn&rsquo;t</h3>
+    <p><b>Data Security</b> is the intuitive second specialization for a Copilot governance practice, and on practice fit that instinct is right. On cost it is wrong on every axis: <b>2,500 Purview Information Protection MAU growth</b> against Copilot&rsquo;s 1,000, <b>six people</b> on SC-401 plus four on a Purview applied skill, and an audit that runs <b>eight hours at $4,000</b> the first time because it bundles a Module A foundation on top of the workload module.</p>
+    <p>The good news is that <b>Module A is tracked per solution area and reuses</b>. Pass it once and your next Security specialization drops to Module B only &mdash; four hours at $2,700. Sequence Copilot first; take Data Security once the bench genuinely supports six certified people.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 7 · THE AUDIT ══════════════ -->
+<div class="wcard" id="s7">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">7</div><div class="wc-title">
+      <h2>Dealing with the audit</h2>
+      <div class="wc-sub">Microsoft publishes the checklist. Read it before you plan anything.</div></div></div>
+
+    <p>The auditor is <b>Information Security Systems International (ISSI)</b>. The audit runs <b>four hours as a live evidence review</b>, costs <b>about $2,700</b> with a Gap Review included, and is structured as <b>six capabilities, fifteen controls, binary pass or fail on each</b>. You must pass every control.</p>
+
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Area</th><th>Controls</th><th>What it demands</th></tr></thead>
+        <tbody>
+          <tr><td><b>1 &middot; AI Advisory</b></td><td class="n">4</td><td>A documented, repeatable advisory methodology &mdash; &ldquo;<em>a general AI overview deck is not sufficient</em>&rdquo; &mdash; plus agentic process transformation, an ROI methodology with customer sign-off, and a <b>standalone commercial advisory offer</b>. Embedding advisory inside a managed-services engagement explicitly fails.</td></tr>
+          <tr><td><b>2 &middot; Deployment, Security, Governance</b></td><td class="n">3</td><td>Readiness assessment covering &ldquo;permission sprawl, data classification posture, and oversharing risk&rdquo;; five security artifacts applied in real deployments including a <b>Copilot incident response playbook</b>; and agent governance covering drift detection, rollback, decommissioning and <b>agent cost tracking in production</b>.</td></tr>
+          <tr><td><b>3 &middot; Adoption &amp; Change</b></td><td class="n">2</td><td>Methodology aligned to a named framework, <b>evidence of dedicated or formally assigned change-management resources</b>, and adoption telemetry across at least two measurement cycles showing a closed loop: metric, threshold, action, re-measurement.</td></tr>
+          <tr><td><b>4 &middot; Agentic Delivery</b></td><td class="n">3</td><td>A <b>team org chart naming staff dedicated to agent work</b> with their certifications; production-grade engineering practice &mdash; source control, automated testing, documented release process; and a commercial agent offering with <b>at least one signed SOW</b>.</td></tr>
+          <tr><td><b>5 &middot; Internal Deployment</b></td><td class="n">1</td><td>Under 300 employees: <b>minimum 20 Copilot seats at 60% monthly active</b>, assigned to practice and presales. &ldquo;Concentration solely in non-customer-facing roles does not satisfy this control.&rdquo;</td></tr>
+          <tr><td><b>6 &middot; Sales &amp; Technical Training</b></td><td class="n">2</td><td><b>5 learners</b> through Business Case Builder <em>and</em> <b>5 learners</b> through Building Frontier Firm Productivity &mdash; ten more completions on Skilling Hub, dated within 12 months.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout stop">
+      <div class="callout-title">Two blockers a small partner hits first</div>
+      <div class="callout-body">
+        <p><b>The 20-seat internal minimum has no lower carve-out.</b> If you have fewer than 20 people, control 5.1 appears unsatisfiable as written. Nothing in the checklist addresses partners below that size &mdash; raise it before you spend anything else. If you hold Modern Work or Business Applications, note that your designation benefit already grants twenty Copilot seats, so this becomes an assignment and usage problem rather than a purchase.</p>
+        <p><b>Area 6 is invisible in the published prerequisites.</b> The requirements page says only that &ldquo;additional Sales Ready and Project Ready trainings are required and will be verified through the audit.&rdquo; That is ten more training completions across five people, and partners discover it on audit day.</p>
+      </div>
+    </div>
+
+    <h3>The clocks</h3>
+    <div class="flowwrap">
+      <svg class="flowdiag" viewBox="0 0 900 220" role="img" aria-label="Audit timeline: schedule when prerequisites are green, auditor contact within two business days, audit within thirty calendar days, gap report within five business days, acknowledgement within two, gap review within fifteen calendar days, final report within seven business days.">
+        <text class="fd-lane" x="14" y="16">THE AUDIT CLOCKS</text>
+        <line x1="20" y1="96" x2="880" y2="96" stroke="#dde1e7" stroke-width="2"/>
+
+        <!-- nodes -->
+        <circle cx="70"  cy="96" r="7" fill="#005F6B"/>
+        <circle cx="215" cy="96" r="7" fill="#fff" stroke="#005F6B" stroke-width="2"/>
+        <circle cx="360" cy="96" r="7" fill="#fff" stroke="#005F6B" stroke-width="2"/>
+        <circle cx="505" cy="96" r="7" fill="#fff" stroke="#005F6B" stroke-width="2"/>
+        <circle cx="650" cy="96" r="7" fill="#fff" stroke="#b91c1c" stroke-width="2"/>
+        <circle cx="800" cy="96" r="7" fill="#003057"/>
+
+        <!-- labels above -->
+        <text class="fd-capb" x="70"  y="62" text-anchor="middle">Schedule</text>
+        <text class="fd-cap"  x="70"  y="78" text-anchor="middle">all gates green</text>
+        <text class="fd-capb" x="215" y="62" text-anchor="middle">Auditor calls</text>
+        <text class="fd-cap"  x="215" y="78" text-anchor="middle">2 business days</text>
+        <text class="fd-capb" x="360" y="62" text-anchor="middle">Audit held</text>
+        <text class="fd-cap"  x="360" y="78" text-anchor="middle">within 30 days</text>
+        <text class="fd-capb" x="505" y="62" text-anchor="middle">Gap report</text>
+        <text class="fd-cap"  x="505" y="78" text-anchor="middle">5 business days</text>
+        <text class="fd-capb" x="650" y="62" text-anchor="middle">Gap review</text>
+        <text class="fd-cap"  x="650" y="78" text-anchor="middle">within 15 days</text>
+        <text class="fd-capb" x="800" y="62" text-anchor="middle">Result</text>
+        <text class="fd-cap"  x="800" y="78" text-anchor="middle">7 business days</text>
+
+        <!-- notes below -->
+        <text class="fd-d" x="70"  y="126" text-anchor="middle">button greyed</text>
+        <text class="fd-d" x="70"  y="140" text-anchor="middle">until then</text>
+        <text class="fd-d" x="360" y="126" text-anchor="middle">live evidence review</text>
+        <text class="fd-d" x="360" y="140" text-anchor="middle">4 hours &middot; ~$2,700</text>
+        <text class="fd-warn" x="650" y="126" text-anchor="middle">miss this window</text>
+        <text class="fd-warn" x="650" y="140" text-anchor="middle">and it is a No Pass</text>
+
+        <rect class="fd-base" x="20" y="168" width="860" height="38" rx="6"/>
+        <text class="fd-eq" x="40" y="192">Clean pass: ~2&ndash;3 weeks from scheduling &nbsp;&middot;&nbsp; With a gap review: ~5&ndash;6 weeks &nbsp;&middot;&nbsp; Failed? Re-initiate after 7 days, no further cooldown</text>
+      </svg>
+      <div class="figcap"><b>Six windows, one trap.</b> Every stage after scheduling runs on a published clock. The one that bites is the Gap Review: if you do not schedule and hold that meeting within fifteen calendar days of the gap report, the audit is recorded as a <b>No Pass</b> regardless of how good the evidence was. Withdrawing also produces a result &mdash; partners receive a Pass or No Pass &ldquo;including if they withdraw.&rdquo;</div>
+    </div>
+
+    <h3>Where your audit evidence actually comes from</h3>
+    <p>The audit tests documented, repeatable delivery &mdash; which means <b>the evidence is a byproduct of how you run engagements, not a pack you assemble beforehand</b>. Every control maps to something you either already produce or should be producing anyway.</p>
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Audit area</th><th>What produces the evidence</th></tr></thead>
+        <tbody>
+          <tr><td><b>1 &middot; AI Advisory</b></td><td>Your documented assessment methodology plus two customer-facing deliverables. Practice-building paths give you the methodology skeleton; your engagement templates supply the rest. The ROI control needs a real customer business case with named data sources and sign-off.</td></tr>
+          <tr><td><b>2 &middot; Deployment &amp; Governance</b></td><td>Readiness-assessment output and remediation records. A tenant assessment produces exactly what control 2.1 asks for &mdash; permission sprawl, classification posture, oversharing risk &mdash; and your remediation runbook covers 2.2.</td></tr>
+          <tr><td><b>3 &middot; Adoption &amp; Change</b></td><td>Your change methodology, a named resource on the project structure, and adoption telemetry across two cycles from the Copilot Dashboard or Viva Insights.</td></tr>
+          <tr><td><b>4 &middot; Agentic Delivery</b></td><td>Your org chart, your source control and release process, and a signed SOW for a packaged agent offer. <b>This is the area subcontracted delivery cannot cover</b> &mdash; control 4.1 asks for <em>your</em> staff, by name, with their certifications.</td></tr>
+          <tr><td><b>5 &middot; Internal Deployment</b></td><td>Admin-centre licence and usage reports for your own tenant, three months back.</td></tr>
+          <tr><td><b>6 &middot; Sales &amp; Training</b></td><td>Skilling Hub completion records. Free, and the fastest gate on the list to close.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">Microsoft&rsquo;s own list of why partners fail</div>
+      <div class="callout-body">
+        <p>Verbatim from the checklist: &ldquo;<b>screenshots with no narrative, showing enablement but not enforcement (policies created but not assigned), no proof of operational cadence (no tuning/remediation history), unclear customer scope, and evidence that is too generic (templates not tied to an actual environment).</b>&rdquo;</p>
+        <p>And from the one partner who has publicly written up passing an audit first time with no gap report: &ldquo;<em>take the auditor to the docs, don&rsquo;t bring the docs to the auditor. We spent days on the PowerPoint deck that walked through each audit point and he didn&rsquo;t want to see it.</em>&rdquo;</p>
+      </div>
+    </div>
+
+    <p>Two more things worth knowing. <b>The badge lasts one year; the audit result lasts two</b> &mdash; qualification revalidates annually, the audit every other year. And you are audited &ldquo;against the checklist active on your <b>remote audit date</b>, not your application date,&rdquo; with the checklist refreshed every July and January. Because a failed audit re-runs after seven days, <b>book as soon as your prerequisites go green</b> rather than holding out for a perfect pack: a gap report tells you precisely where the evidence is thin.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 8 · CAPABILITY ══════════════ -->
+<div class="wcard" id="s8">
+  <div class="wc-bar"></div>
+  <div class="wc-body">
+    <div class="wc-head"><div class="wc-num">8</div><div class="wc-title">
+      <h2>Minimum versus realistic capability</h2>
+      <div class="wc-sub">The program minimum is a certification count. It is not the same as being able to deliver.</div></div></div>
+
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Team size</th><th>Program minimum</th><th>What you can realistically deliver</th></tr></thead>
+        <tbody>
+          <tr><td><b>2&ndash;3 people</b></td><td>Designation only &mdash; Security SMB is reachable with three certifications across two people</td><td>Readiness assessments and remediation on 25&ndash;100 seat tenants; one Copilot rollout at a time. Not the specialization: five certified people is more staff than you have technical, and the audit wants an org chart naming a <em>dedicated</em> agent team.</td></tr>
+          <tr><td><b>5 people</b></td><td>Arithmetically possible &mdash; every technical person carries two credentials. But <b>control 5.1 wants 20 internal seats</b>, four times your headcount.</td><td>Concurrent delivery across a handful of accounts. The certification programme consumes real delivery capacity for two quarters, and the audit&rsquo;s repeated demand for &ldquo;dedicated or formally assigned&rdquo; resources is hard to evidence when everyone does everything.</td></tr>
+          <tr><td><b>10+ people</b></td><td>Copilot comfortably; Data Security becomes reachable at 6 + 4; 20 internal seats is achievable</td><td>Genuinely separate roles emerge &mdash; an architect owning tenant design, engineers on Purview and Entra, an adoption lead owning MAU, a program manager assembling evidence. This is the size where the MAU gate becomes a go-to-market problem rather than a capability one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The four people-shapes the audit looks for</h3>
+    <p>Microsoft has never published headcount guidance, and neither has the channel press. But the audit controls read as a capability spec, and four distinct shapes fall out. Fewer than four and the role separation cannot be evidenced.</p>
+    <div class="tablewrap">
+      <table class="dtable">
+        <thead><tr><th>Shape</th><th>Level</th><th>Owns</th></tr></thead>
+        <tbody>
+          <tr><td><b>Purview / data-security engineer</b></td><td>SC-401, Associate</td><td>Labels, DLP, DSPM, SAM, RBAC assignment, oversharing remediation. Works across four admin portals and PowerShell. <b>Carries the longest-duration work.</b></td></tr>
+          <tr><td><b>Agent developer</b></td><td>AB-620 &mdash; <b>pro-dev</b></td><td>Power Fx, Dataverse, solutions and pipelines, Key Vault, MCP and A2A, evaluations. <b>Hardest to hire and the likeliest gap in an existing MSP.</b></td></tr>
+          <tr><td><b>Advisory / business-value lead</b></td><td>Senior, customer-facing</td><td>The standalone commercial advisory offer, the ROI methodology with customer sign-off, the Business Case Builder training. AB-100 sits naturally here.</td></tr>
+          <tr><td><b>Adoption &amp; change lead</b></td><td>Named, role-described</td><td>Appears on customer project structures; owns adoption telemetry across two measurement cycles.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Plus a fifth <em>function</em> that can be shared but not skipped: <b>AgentOps</b> &mdash; the only role Microsoft says owns &ldquo;pause, roll back, enhance, or retire,&rdquo; plus credit budgets, hard caps and monthly cost reconciliation across three separate billing surfaces. Copilot Studio credits burn at 1 for a scripted answer, 5 for an agent action, 10 for tenant graph grounding and <b>100 per ten responses on reasoning models</b>; five agents across departments runs $3,000&ndash;$6,000 a month before licences. That is not a spreadsheet job.</p>
+
+    <div class="callout stop">
+      <div class="callout-title">The cost nobody budgets: seniority</div>
+      <div class="callout-body"><p>The July 2026 change swapped <b>MS-102</b> &mdash; an M365 admin expert certification &mdash; for <b>AB-100</b> (Expert, with a prerequisite) and <b>AB-620</b> (which assumes a professional developer: Power Fx, Dataverse, RAG, MCP, REST integration patterns). That is a <b>material seniority uplift, not a list change</b>. A tier-2 engineer who could pass MS-102 will not casually pass AB-620. This is the single largest hidden cost in the 2026 requirements, and it is why headcount alone does not answer the question.</p></div>
+    </div>
+
+    <h3>The elapsed time you can&rsquo;t compress</h3>
+    <p>Oversharing remediation runs <b>4&ndash;6 weeks</b> where the security-group model is clean and ownership intact, <b>3&ndash;6 months</b> with distributed permissions and item-level sprawl, and <b>6+ months</b> with regulatory constraints or migrated legacy structures. Copilot deployment end to end is commonly <b>6&ndash;9 months</b>, and practitioners are blunt that compressing the timeline consistently extends it through remediation cycles. DLP wants 30 days in audit mode and a 30&ndash;60 day tuning cycle before a policy is operational.</p>
+    <p>Two practitioner rules worth adopting wholesale: <b>clean access first, classify second, enforce third, accelerate last</b>, and <b>three to four sensitivity labels, not more</b> &mdash; when staff face nine options, they choose none. And treat it as a service rather than a project, because sharing drift resumes the moment users create new sites and links.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">The role the certifications don&rsquo;t cover &mdash; and how to fill it cheaply</div>
+      <div class="callout-body">
+        <p>Every certification above is technical. The metric that gates the specialization &mdash; <b>monthly active usage</b> &mdash; is an adoption outcome, not an engineering one. A tenant can be perfectly configured and produce zero MAU, and adoption plateaus at 20&ndash;30% in the first quarter without deliberate change management.</p>
+        <p>Here the audit is more forgiving than it looks. Control 3.1 accepts a framework aligned to a named framework &ldquo;<b>or proprietary frameworks if fully documented</b>,&rdquo; and asks for resources that are &ldquo;<b>dedicated <em>or formally assigned</em></b>&rdquo; &mdash; evidenced by staffing plans, role descriptions or project team structures. Those are documents, not payroll records. <b>One named person can cover multiple engagements, and the role can be blended with delivery</b> provided the role description separates the duties and the project structure shows the assignment.</p>
+        <p><b>Think carefully before buying a vendor change-management certification.</b> The best-known one licenses to a single user for internal application only: it prohibits delivering workshops to third parties, distributing content to customers, and &mdash; decisively &mdash; &ldquo;creating derivative models or materials,&rdquo; which blocks the branded framework that would otherwise be your cheapest compliant artifact. At roughly $4,500 plus annual membership it buys a sales halo rather than audit compliance you could not get otherwise. A vendor-neutral credential such as CCMP runs about $1,000, licenses no intellectual property into your deliverables, and pairs well with a documented in-house methodology and the free Microsoft Service Adoption Specialist assessment.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<footer class="pagefoot">
+  <p>Requirements in sections 1, 4 and 6 are sourced verbatim from Microsoft Learn&rsquo;s Partner Center specialization documentation, updated 3 August 2026. The audit detail in section 7 comes from Microsoft&rsquo;s own <em>Microsoft 365 Copilot Specialization Program guide and audit checklist</em> (V1.0, active 9 July &ndash; 31 December 2026). Incentive and program mechanics are drawn from Partner Center announcements, June&ndash;August 2026.</p>
+  <p>Prices USD, US market. Program terms change quarterly and several load-bearing figures sit behind partner authentication &mdash; confirm in Partner Center before committing budget. Your answers to the readiness check are held in this browser tab only and are never saved or transmitted. Related: <a class="docref" href="frontier.html">The Path to Frontier Partner</a> &middot; <a class="docref" href="cowork-calculator.html">Cowork Cost &amp; Conversation Simulator</a>.</p>
+</footer>
+
+<script>
+(function(){
+  var A={d:null,m:null,c:null,s1:null,s2:null,seat:null,train:null,
+         evi:null,offer:null,acm:null,telem:null,gov:null,size:null,head:null};
+  var SEC_A=['d','m','c','s1','s2','seat','train'];
+  var SEC_B=['evi','offer','acm','telem','gov'];
+  var SEC_C=['size','head'];
+
+  function doneSet(keys){for(var i=0;i<keys.length;i++){if(A[keys[i]]===null)return false;}return true;}
+  function countDone(){var n=0;for(var k in A){if(A[k]!==null)n++;}return n;}
+
+  function gate(state,label,detail){
+    var cls=state===2?'ok':(state===1?'part':'no');
+    var tag=state===2?'Met':(state===1?'Part':'Gap');
+    return '<div class="gaterow '+cls+'"><span class="g-s">'+tag+'</span><span class="g-t"><b>'+label+'</b> &mdash; '+detail+'</span></div>';
+  }
+
+  function render(){
+    var el=document.getElementById('rzOut');
+    document.getElementById('rzProg').innerHTML='<b>'+countDone()+'</b> of 14 answered';
+
+    if(!doneSet(SEC_A)){
+      el.innerHTML='<div class="rz-empty">Answer section A for an eligibility verdict. Add B and C for audit risk and a costed plan.</div>';
+      return;
+    }
+
+    var gD=A.d===0?0:2,
+        gM=A.m===3?2:(A.m===0?0:1),
+        gC=A.c===2?2:(A.c===0?0:1),
+        g1=A.s1===2?2:(A.s1===0?0:1),
+        g2=A.s2===2?2:(A.s2===0?0:1),
+        gS=A.seat===2?2:(A.seat===0?0:1),
+        gT=A.train===2?2:(A.train===0?0:1);
+
+    var seatNote;
+    if(A.seat===2){ seatNote='Cleared &mdash; 20+ seats at 60% active.'; }
+    else if(A.d===1){ seatNote='Control 5.1 needs 20 seats at 60% active among practice and presales. <b>Your Modern Work or Business Applications designation already grants 20 Copilot seats</b> &mdash; the licences are free, so this is an assignment and usage problem, not a purchase.'; }
+    else { seatNote='Control 5.1 needs 20 seats at 60% active among practice and presales, with no carve-out for smaller firms. Security alone grants no Copilot seats &mdash; budget roughly $7,200 a year, or add Modern Work, which grants 20.'; }
+
+    var rows='';
+    rows+=gate(gD,'Prerequisite designation', gD===2?'Held &mdash; the door is open.':'None yet. Security&rsquo;s SMB track is usually the fastest door and opens Copilot just as well as Modern Work.');
+    rows+=gate(gM,'1,000 MAU growth', A.m===3?'Cleared.':(A.m===0?'Under 250 &mdash; the longest lead time on this page.':(A.m===1?'250&ndash;749. Roughly halfway.':'750&ndash;999. One solid deployment away.')));
+    rows+=gate(gC,'5 customers at &ge;5 MAU', A.c===2?'Cleared.':(A.c===0?'0&ndash;1. Widen the account base &mdash; Copilot in 30 trials are built for this.':'2&ndash;4. Two or three more conversions.'));
+    rows+=gate(g1,'5 &times; security credential', A.s1===2?'Cleared.':(A.s1===0?'0&ndash;2 people. Needs SC-401 across five.':'3&ndash;4 people. One or two more.'));
+    rows+=gate(g2,'5 &times; agent credential', A.s2===2?'Cleared.':(A.s2===0?'0&ndash;2 people. Route five through AB-620 &mdash; not AB-100, which is Expert with a prerequisite.':'3&ndash;4 people. One or two more.'));
+    rows+=gate(gS,'20 internal Copilot seats', seatNote);
+    rows+=gate(gT,'Skilling Hub trainings', A.train===2?'Cleared.':'Controls 6.1 and 6.2 need <b>5 learners on each</b> of two trainings. Invisible in the published prerequisites and a classic audit-day surprise.');
+
+    var met=[gD,gM,gC,g1,g2,gS,gT].filter(function(x){return x===2;}).length;
+
+    var verdict, binding;
+    if(gD===0){
+      verdict='Prerequisite first';
+      binding='You cannot pursue the specialization until a designation is active. Security&rsquo;s SMB track needs 5 net customer adds and three certifications that as few as two people can hold.';
+    } else if(met===7){
+      verdict='Eligible &mdash; the Schedule audit button is live';
+      binding='Every prerequisite is met. Book the audit. A failed audit can be re-initiated after seven days, so there is little value in delaying for a perfect evidence pack &mdash; but check section B first, because eligibility and passing are different tests.';
+    } else if(gM<2 && A.m<=1){
+      verdict='Performance is binding';
+      binding='MAU growth is your constraint and it has the longest lead time here. Claim CPOR on every managed tenant today &mdash; growth counts only from the association date, never retroactively, and claims take up to 30 days plus a 90-day consent window before they are productive.';
+    } else if(gT===0){
+      verdict='Quick win available';
+      binding='The two Skilling Hub trainings are the cheapest gate on this list &mdash; free, and five learners each. Close that now while the longer-lead gates run.';
+    } else if(gS===0){
+      verdict='Internal deployment is binding';
+      binding=(A.d===1)?'You need 20 Copilot seats live inside your own business at 60% monthly active among customer-facing staff. Your designation already grants 20 &mdash; assign them to practice and presales and drive real usage for three months before the audit.':'You need 20 Copilot seats live inside your own business at 60% monthly active. Security alone grants none, so this is a real cash line unless you add Modern Work.';
+    } else if(gC<2 && gM===2){
+      verdict='Customer count is binding';
+      binding='You have the seats but not the spread. Five separate customers must each reach at least five monthly active users &mdash; a two-seat pilot does not count.';
+    } else if(g1<2 || g2<2){
+      verdict='Skilling is binding';
+      binding='This is two groups of five, not five people total. Five people each carrying both credentials is the efficient shape &mdash; route everyone through the same path so study effort is shared.';
+    } else {
+      verdict=met+' of 7 prerequisites met';
+      binding='Close the remaining gate, then book. The Schedule audit button stays greyed out until all seven are green, so nothing can run in parallel.';
+    }
+
+    var out='<div class="saystrip"><div class="ss-lbl">Where you stand</div><div class="ss-v">'+verdict+'</div><p>'+met+' of 7 prerequisites met. The audit cannot be scheduled until all seven are green.</p></div>';
+    out+=rows;
+    out+='<div class="nextstep"><div class="ns-e">What to do next</div><div class="ns-t">'+binding+'</div></div>';
+
+    /* ---- Section B ---- */
+    if(doneSet(SEC_B)){
+      var risks=[];
+      if(A.evi<2) risks.push('<b>Customer evidence, 10 of 15 controls.</b> Nearly every control wants two unique customers from the last 12 months, and four want <em>agent</em> work specifically. You need two accounts where you did both the rollout and production agent work.');
+      if(A.offer<2) risks.push('<b>Commercial packaging, controls 1.4 and 4.3.</b> The advisory offer must be identifiable as standalone, and the agent offering needs a signed SOW or invoice.');
+      if(A.acm<2) risks.push('<b>Change management, control 3.1.</b> Needs a named or formally assigned resource visible on project structures. A blended person with a real role description passes; a dedicated hire with only a deck fails.');
+      if(A.telem<2) risks.push('<b>Adoption measurement, control 3.2.</b> Needs telemetry across two cycles plus a closed loop &mdash; metric, threshold, action taken, re-measurement.');
+      if(A.gov<2) risks.push('<b>Agent governance, control 2.3.</b> The hardest control: drift detection, rollback, decommissioning and <em>cost tracking</em> for agents in customer production.');
+      var bMet=[A.evi,A.offer,A.acm,A.telem,A.gov].filter(function(x){return x===2;}).length;
+      if(risks.length){
+        out+='<div class="risklist"><div class="rl-h">Likely audit findings &mdash; '+bMet+' of 5 evidence areas solid</div><ul><li>'+risks.join('</li><li>')+'</li></ul></div>';
+      } else {
+        out+='<div class="coach"><div class="co-ic">&#10003;</div><div class="co-txt"><b>Audit evidence looks solid.</b> All five evidence areas are in place. Remember the format rule: PowerPoints and excerpts are accepted for overviews but are not sufficient alone &mdash; source documents and live system access are required.</div></div>';
+      }
+    }
+
+    /* ---- Section C ---- */
+    if(doneSet(SEC_C)){
+      var mauMid=[125,500,875,1000][A.m];
+      var mauGap=Math.max(0,1000-mauMid);
+      var sizeVal=[10,25,50,100][A.size];
+      var custForMau=Math.ceil(mauGap/sizeVal);
+      var custGap=Math.max(0,5-[1,3,5][A.c]);
+      var custNeeded=Math.max(custForMau,custGap);
+      var needS1=Math.max(0,5-[1,3.5,5][A.s1]);
+      var needS2=Math.max(0,5-[1,3.5,5][A.s2]);
+      var exams=Math.ceil(needS1+needS2)*165;
+      var seatCost=(A.seat===2)?0:((A.d===1)?0:7200);
+      var total=exams+2700+seatCost;
+      var perMonth=(custNeeded/12).toFixed(1);
+
+      out+='<div class="numgrid">';
+      out+='<div class="numcell"><div class="nk">'+(mauGap>0?mauGap.toLocaleString():'0')+'</div><div class="nl">MAU still needed</div></div>';
+      out+='<div class="numcell"><div class="nk">'+custNeeded+'</div><div class="nl">New customers at ~'+sizeVal+' seats each</div></div>';
+      out+='<div class="numcell alt"><div class="nk">'+perMonth+'</div><div class="nl">New customers per month, for twelve months</div></div>';
+      out+='<div class="numcell alt"><div class="nk">$'+total.toLocaleString()+'</div><div class="nl">Cash to attain &mdash; exams, seats and audit</div></div>';
+      out+='</div>';
+
+      var note='';
+      if(custNeeded>20){ note='At this gap the honest read is that the specialization is a two-year goal unless deployment sizes grow. '; }
+      else if(custNeeded>0){ note='That is a reachable pipeline target if Copilot is a real motion for you. '; }
+      else { note='Performance is already there &mdash; your remaining work is skilling, internal deployment and evidence, all of which you control directly. '; }
+      note+='Cash breaks down as $'+exams.toLocaleString()+' in certifications, '+(seatCost===0?'no seat cost because your designation grants them':'$'+seatCost.toLocaleString()+' a year in internal Copilot seats')+', and roughly $2,700 for the audit.';
+      if(A.head===0){ note+=' <b>At under 10 people two controls fight you structurally:</b> five certified individuals is most of your technical bench, and 20 internal Copilot seats exceeds your headcount, with no published carve-out below 20.'; }
+      else if(A.head===1 && A.seat!==2){ note+=' At 10&ndash;29 people the 20-seat internal requirement is achievable but real &mdash; it is most of your customer-facing staff, needing 60% genuinely active across three months of reporting.'; }
+      out+='<div class="nextstep"><div class="ns-e">The arithmetic</div><div class="ns-t">'+note+'</div></div>';
+    }
+
+    el.innerHTML=out;
+  }
+
+  document.querySelectorAll('.rq').forEach(function(q){
+    var key=q.getAttribute('data-k');
+    q.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click',function(){
+        A[key]=parseInt(b.getAttribute('data-v'),10);
+        q.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
+        b.classList.add('on');
+        render();
+      });
+    });
+  });
+  document.getElementById('rzReset').addEventListener('click',function(){
+    for(var k in A){A[k]=null;}
+    document.querySelectorAll('.rq button').forEach(function(x){x.classList.remove('on');});
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
