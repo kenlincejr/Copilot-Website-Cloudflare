@@ -891,7 +891,315 @@ function assertCopyClean(r, m) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   (R6–R8 sections append here)
+   R6 — Print and audience integrity, and the customer-view toggle
+   (findings #1, #7, #15, #16, #21, #25, #26 — v3 spec §R6)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* The render layer's formatters, mirrored for surface reconstruction. */
+function usd(v, dp) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
+function num(v) { return Number(v || 0).toLocaleString(); }
+
+/* ── R6.1 · The two strip rule blocks are provably identical (#1, idea 5) ── */
+function stripSet(cls) {
+  const re = new RegExp('((?:body\\.' + cls + ' [^,{]+,\\s*)+body\\.' + cls + ' [^,{]+)\\{\\s*display:none !important;\\s*\\}');
+  const m = src.match(re);
+  if (!m) return null;
+  return m[1].split(',').map(s => s.trim()).filter(Boolean)
+    .map(s => s.replace('body.' + cls + ' ', ''));
+}
+{
+  const cv = stripSet('customer-view');
+  const pc = stripSet('print-customer');
+  ok(cv, 'customer-view strip block parses');
+  ok(pc, 'print-customer strip block parses');
+  if (cv && pc) {
+    eq(cv.length, pc.length, 'both strip lists have the same length');
+    eq(cv.join('|'), pc.join('|'), 'STRIP LISTS IDENTICAL, same order — a fork recreates finding #1');
+    // (ii) the flags card is in the strip set — every warning is partner coaching
+    ok(cv.indexOf('#cardFlags') >= 0, '#cardFlags is in the customer strip set (finding #1)');
+    // the rest of the mandatory members
+    ['.deriv','.ribbon-deriv','.pill','#cardTalk','#cardNext','#cardBilling','#cardRecap',
+     '.partner-only','#basisBar','.whybox:not(.cust-ok)','#assumeCard'].forEach(function (s) {
+      ok(cv.indexOf(s) >= 0, 'strip set carries ' + s);
+    });
+    eq(cv.length, 12, 'strip set is exactly the 12 decided selectors');
+  }
+  // exactly one print-customer block (the old fork inside @media print is gone)
+  eq((src.match(/body\.print-customer #assumeCard/g) || []).length, 1,
+     'only one print-customer strip block exists');
+  eq((src.match(/body\.customer-view #assumeCard/g) || []).length, 1,
+     'only one customer-view strip block exists');
+  // adjacency + the binding comment
+  const cvIdx = src.indexOf('body.customer-view .deriv');
+  const pcIdx = src.indexOf('body.print-customer .deriv');
+  ok(cvIdx > 0 && pcIdx > cvIdx && pcIdx - cvIdx < 900, 'the two blocks are adjacent');
+  ok(/must stay\s+identical/.test(src), 'the binding comment marks the pair');
+  // the print block sits inside a @media print context
+  const between = src.slice(cvIdx, pcIdx);
+  ok(/@media print \{\s*$/.test(between.slice(0, between.lastIndexOf('body.print-customer')) ) ||
+     /@media print \{/.test(between), 'print-customer block is inside @media print');
+  // the pill is not display:none'd by the strip set and the govLead renders
+  // only inside #cardFlags (verified by source: the only govLead sink is flagHtml)
+  ok(/flagHtml = govLead \+ flagHtml/.test(src), 'govLead renders only into the flags card');
+  ok(!/(\$\('(?!flagBody)\w+'\)[^;]*govLead)/.test(src), 'govLead reaches no other element');
+}
+
+/* ── R6.2 · Worst leak configs: the customer surface carries no partner
+       economics (#1, #7). The surviving fragments are rebuilt exactly the
+       way the render layer formats them (same precedent as R5.3), then
+       swept for the leaked figures and phrases of finding #1. ─────────── */
+function customerSurface(r, L) {
+  const c = r.ctx;
+  const parts = [];
+  // print header (rendered disclaimer, sell mode)
+  parts.push(c.sellMode
+    ? 'Estimate, not a quote. Figures reflect the inputs shown and are priced at your partner’s rates; Microsoft list prices where noted.'
+    : 'Estimate, not a quote. Figures reflect the inputs shown and Microsoft list prices current at the date above.');
+  // say line
+  parts.push('if ' + c.basisSeats + ' of your ' + c.copilotLicensed + ' Copilot users actively use Cowork at typical volumes, you\'d spend roughly ' +
+    usd(c.coworkLo) + ' to ' + usd(c.coworkHi) + ' a month on Cowork credits, on top of ' + usd(c.licenseMonthly) +
+    ' a month in licenses. That\'s about ' + usd(c.perActive) + ' per active user');
+  // ribbon chip values (pills stripped)
+  parts.push([num(c.employees), num(c.copilotLicensed), num(c.active), num(c.monthlyCredits),
+    usd(c.coworkLo) + '–' + usd(c.coworkHi)].join(' '));
+  // the number card
+  parts.push(usd(c.monthlyCowork) + ' Cowork credits / month ' + usd(c.coworkLo) + '–' + usd(c.coworkHi) + ' at ±30%');
+  parts.push(usd(c.licenseMonthly) + ' Licenses / month ' + c.copilotLicensed + ' Copilot + ' + c.nonCopilotSeats +
+    ' base seats · ' + (c.sellMode ? 'your sell prices' : 'Microsoft list'));
+  parts.push('Seat vs meter — ' + usd(c.allInMonthly) + '/month all in Licenses ' + usd(c.licenseMonthly) +
+    ' Cowork meter ' + usd(c.monthlyCowork));
+  if (c.rampApplies) {
+    parts.push(usd(c.year1AllIn) + ' All-in / year one ramping ' + num(Math.round(c.rampPilot)) + '→' + num(c.basisSeats) +
+      ' users over ' + Math.round(c.rampMonths) + ' months · steady-state year ' + usd(c.allInAnnual));
+    parts.push(usd(c.year1AllIn + 2 * c.allInAnnual) + ' All-in / 3 years year one ramped, years two and three steady');
+  } else {
+    parts.push(usd(c.allInAnnual) + ' All-in / year licenses + Cowork × 12');
+    parts.push(usd(c.allInThreeYear) + ' All-in / 3 years at today\'s volumes and prices');
+  }
+  parts.push('Includes promo pricing that ends 2026-12-31 — months after that date are still projected at the promo price. Re-verify before quoting.');
+  // scenarios + the cust-ok cost-controls whybox, minus its partner-only span
+  r.scenarios.forEach(function (s) { parts.push(s.label + ' +' + num(Math.round(s.credits)) + ' +' + usd(s.usd) + ' ' + usd(s.allIn)); });
+  parts.push('1 · A tenant-level monthly spending limit in Copilot → Cost Management, sized to the high end above.');
+  parts.push('2 · Per-user limits with email alerts at 50% and 80%, so nobody discovers a problem on the invoice.');
+  parts.push('3 · A monthly Cost Management review — concentration check, top-5 users, and a re-forecast.');
+  // licensing card: table, why (minus the operator line), requirements, term line
+  if (L && L.winner) {
+    L.paths.forEach(function (p) {
+      parts.push(p.label + ' ' + usd(p.perUserAllIn, 2) + ' ' + (p.feasible ? usd(p.monthly) : 'n/a ' + (p.violations[0] || '')));
+    });
+    L.why.forEach(function (w) {
+      if (w.indexOf('change your answers in the readiness step') === -1) parts.push(w);
+    });
+    L.requirements.forEach(function (q) { parts.push(q.label + ' — ' + q.why); });
+    parts.push('At Microsoft list, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60) ... ' + usd(L.e7.alacarte) + ' assembled separately');
+    parts.push('These are annual-term subscriptions: cancellation is limited to a short window at the start of the term, and seat counts cannot be reduced until renewal — plan the count as carefully as the price.');
+  }
+  return parts.join('\n');
+}
+{
+  // Config A — the finding-#1 worst case: direct motion, PEC yes 15%, P3
+  // with the partner holding it, sell mode with license and meter markup.
+  const A = E.defaults();
+  A.channel = { motion:'direct', providerCreditUsd:null };
+  A.pricing = Object.assign(E.defaults().pricing,
+    { mode:'sell', creditSellUsd:0.025, pec:{ status:'yes', pct:15 } });
+  A.pricing.sell = { bprem_cop:45, cop_biz:25, bstd:15 };
+  A.pricing.cost = { bprem_cop:28, cop_biz:15, bstd:10 };
+  A.billing = Object.assign(E.defaults().billing, { model:'p3', p3Holder:'partner' });
+  const rA = E.compute(A), cA = rA.ctx;
+  ok(cA.pecKnown && cA.pecPct === 15, 'config A reaches the PEC-15% economics internally');
+  ok(cA.meterMarginAnnual > 0 && cA.licenseUpliftMonthly > 0, 'config A carries a real margin and uplift');
+  const sA = customerSurface(rA, rA.licensing);
+  // none of the partner-economics figures may appear on the customer surface
+  [cA.meterMarginAnnual, cA.partnerCostAnnual, cA.paygoPartnerCost, cA.p3PartnerCost,
+   cA.coworkAtMsRate, cA.licenseUpliftMonthly, cA.licenseMarginMonthly, cA.licenseList,
+   cA.p3Exposure, cA.p3Annual, cA.paygoAnnual].forEach(function (v, i) {
+    ok(sA.indexOf(usd(v)) === -1, 'config A: partner/PEC figure ' + i + ' (' + usd(v) + ') absent from the customer surface');
+  });
+  // none of finding #1's leaked phrases
+  ['Set your rate card','your loss, not theirs','before you show this to a customer',
+   'partner-economics','discovery list','partner-earned','margin','uplift',
+   'costs you','Internal only','what the meter costs'].forEach(function (p) {
+    ok(sA.toLowerCase().indexOf(p.toLowerCase()) === -1, 'config A: phrase "' + p + '" absent from the customer surface');
+  });
+  ok(!/\bPEC\b/.test(sA), 'config A: the acronym PEC absent from the customer surface');
+  // (iv) the sell-mode disclaimer carries no unqualified Microsoft-list claim
+  ok(sA.indexOf('priced at your partner’s rates; Microsoft list prices where noted') >= 0,
+     'config A: sell-mode disclaimer states the partner-rate basis');
+  ok(sA.indexOf('Microsoft list prices current at the date above') === -1,
+     'config A: the old unqualified list-price sentence is gone from the sell surface');
+
+  // Config B — indirect reseller with a provider rate above the sell rate:
+  // the inverted margin (finding #12's shape) must never reach the customer.
+  const B = E.defaults();
+  B.channel = { motion:'indirectReseller', providerCreditUsd:0.02 };
+  B.pricing = Object.assign(E.defaults().pricing, { mode:'sell', creditSellUsd:0.005 });
+  const rB = E.compute(B), cB = rB.ctx;
+  ok(cB.meterMarginAnnual < 0, 'config B computes the inverted reseller margin internally');
+  const sB = customerSurface(rB, rB.licensing);
+  [Math.abs(cB.meterMarginAnnual), cB.partnerCostAnnual, cB.meterBilledAnnual].forEach(function (v, i) {
+    ok(sB.indexOf(usd(v)) === -1, 'config B: reseller figure ' + i + ' (' + usd(v) + ') absent from the customer surface');
+  });
+  ['provider','distributor','margin','TD SYNNEX'].forEach(function (p) {
+    ok(sB.toLowerCase().indexOf(p.toLowerCase()) === -1, 'config B: phrase "' + p + '" absent from the customer surface');
+  });
+  ok(!/\bPEC\b/.test(sB), 'config B: the acronym PEC absent from the customer surface');
+
+  // and the leaked phrases exist ONLY in engine warning strings or blocks the
+  // strip removes — never in a customer-surviving render site
+  ok(src.indexOf('Set your rate card before you show this to a customer') >= 0,
+     'the V-25 coaching still exists for the partner (it renders into the stripped #cardFlags)');
+}
+
+/* ── R6.3 · Promo cliff on the projection cells (#15) ───────────────────── */
+{
+  // engine: stock catalog, today inside the promo window → the cop_biz line
+  const today = new Date();
+  const iso = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  const stock12 = E.promoCliffs(E.defaults(), '2026-08-28', 12);
+  eq(stock12.length, 1, 'stock inventory: one promo line inside the ×12 window');
+  eq(stock12[0].id, 'cop_biz', 'the promo line is the cop_biz inventory line');
+  eq(stock12[0].promoEnds, '2026-12-31', 'the caveat names the catalog date');
+  eq(E.promoCliffs(E.defaults(), '2026-08-28', 36).length, 1, 'same line inside the ×36 window');
+  // TODAY (the render layer's actual call) still renders while the promo lives
+  if (iso <= '2026-12-31')
+    ok(E.promoCliffs(E.defaults(), iso, 12).length >= 1, 'with the stock catalog TODAY the caveat renders');
+  // a window that closes before the expiry does not
+  eq(E.promoCliffs(E.defaults(), '2026-08-28', 3).length, 0, 'a 3-month window before the expiry is silent');
+  // an inventory with no promo SKUs never fires
+  const noPromo = Object.assign(E.defaults(), { licenseInventory: [{ skuId:'bprem_cop', seats:60 }] });
+  eq(E.promoCliffs(noPromo, '2026-08-28', 36).length, 0, 'no promo SKUs → no caveat');
+  // an expired promo is a stale-price problem, not a cliff
+  eq(E.promoCliffs(E.defaults(), '2027-02-01', 12).length, 0, 'an already-expired promo does not fire the cliff');
+  // zero-seat promo lines do not fire
+  const zeroSeats = Object.assign(E.defaults(), { licenseInventory: [{ skuId:'cop_biz', seats:0 }] });
+  eq(E.promoCliffs(zeroSeats, '2026-08-28', 12).length, 0, 'zero-seat promo lines are not priced, so no caveat');
+  // total under garbage
+  [null, undefined, 'garbage', '2026-13-99', 123].forEach(function (t, i) {
+    let out;
+    try { out = E.promoCliffs(E.defaults(), t, 12); }
+    catch (e) { fail++; console.log('FAIL: promoCliffs threw on today ' + i + ': ' + e.message); return; }
+    eq(out.length, 0, 'garbage today ' + i + ' returns empty, never throws');
+  });
+  let hostileOut = null;
+  try { hostileOut = E.promoCliffs({ licenseInventory:'junk' }, '2026-08-28', 12); }
+  catch (e) { fail++; console.log('FAIL: promoCliffs threw on hostile inventory: ' + e.message); }
+  ok(hostileOut && hostileOut.length === 0, 'hostile inventory cannot crash promoCliffs and yields no caveat');
+  // UI wiring: both cells, both branches, customer-visible
+  ok(/E\.promoCliffs\(state, iso, months\)/.test(src), 'the render layer calls the pure engine helper');
+  eq((src.match(/\+ pc12/g) || []).length, 2, 'the ×12 caveat rides both numAnnual branches (ramp on and off)');
+  eq((src.match(/\+ pc36/g) || []).length, 2, 'the ×36 caveat rides both numThree branches');
+  ok(/Includes promo pricing that ends/.test(src), 'the caveat names the date on the cell');
+  ok(/still projected at the promo price/.test(src), 'the caveat says what the projection assumes');
+}
+
+/* ── R6.4 · NCE term line on the licensing card (#16) ───────────────────── */
+{
+  ok(/id="nceTermLine"/.test(src), 'the licensing card carries the term line');
+  ok(/annual-term subscriptions: cancellation is limited to a short window at the/.test(src),
+     'the term line states the annual term and the cancellation window');
+  ok(/seat counts cannot be reduced until renewal/.test(src), 'the term line states no mid-term seat reduction');
+  const nce = src.match(/id="nceTermLine"[\s\S]{0,600}?<\/p>/)[0];
+  ok(/azure-billing-setup\.html/.test(nce), 'the term line links to the setup guide');
+  ok(!/\b7[- ]day|\bseven[- ]day/i.test(nce), 'the term line does not hardcode an unverified 7-day window');
+  ok(!/\b7 days|\bseven days/i.test(src), 'no unverified "7 days" cancellation claim anywhere in the file');
+}
+
+/* ── R6.5 · MACC line at 300, absent at 299 (#26, v2 §5.6/§5.7.4) ───────── */
+{
+  ok(/id="maccLine"/.test(src), 'the billing card carries the MACC line');
+  const macc = src.match(/\(c\.copilotLicensed >= 300\s*\?[\s\S]{0,900}?: ''\)/);
+  ok(macc, 'the MACC line is gated on exactly copilotLicensed >= 300');
+  if (macc) {
+    ok(/Azure Consumption Commitment/.test(macc[0]), 'the line names the commitment');
+    ok(/billing account holding the commitment/.test(macc[0]), 'the line states the subscription condition');
+    ok(/<a class="docref"/.test(macc[0]), 'one line + a link, per v2 §5.6');
+    ok(!/<input|<select/.test(macc[0]), 'no inputs in the MACC line');
+    ok(/does not model the draw-down/.test(macc[0]), 'the line disclaims any draw-down modelling');
+  }
+  // the gate values themselves, engine-side
+  const at300 = E.compute(st({ licenseInventory: [{ skuId:'cop_ent', seats:300 }] })).ctx;
+  eq(at300.copilotLicensed, 300, 'at 300 seats the gate is true (line renders)');
+  const at299 = E.compute(st({ licenseInventory: [{ skuId:'cop_ent', seats:299 }] })).ctx;
+  eq(at299.copilotLicensed, 299, 'at 299 seats the gate is false (line absent)');
+}
+
+/* ── R6.6 · Whybox split is conservative (#21) ──────────────────────────── */
+{
+  eq((src.match(/class="whybox cust-ok"/g) || []).length, 2,
+     'exactly two whyboxes opt in: licensing "Why this one" and the cost-controls list');
+  ok(/<div class="whybox cust-ok"><div class="wb-h">Cost controls to put in place<\/div>/.test(src),
+     'the cost-controls whybox is the first opt-in');
+  ok(/<div class="whybox cust-ok" style="margin-top:0;"><div class="wb-h">Why this one<\/div>/.test(src),
+     'the licensing whybox is the second opt-in');
+  // the partner-flavored sentences were spanned off before opting in
+  ok(/re-forecast\.<span class="partner-only"> That review is the retainer/.test(src),
+     'the retainer sentence is partner-only inside the cost-controls block');
+  ok(/change your answers in the readiness step/.test(src) &&
+     /operator \? '<p class="partner-only">'/.test(src),
+     'the operator-coaching why line renders partner-only');
+  // the ratio whybox stays internal
+  ok(/<div class="whybox"><div class="wb-h">The 2\.6&times; benchmark, honestly/.test(src),
+     'the ratio whybox carries no cust-ok — voicing the benchmark stays the partner’s call');
+  // the sell-position and billing whyboxes keep their partner-only class
+  ok(/<div class="whybox partner-only" style="border-left-color:#0f766e;"><div class="wb-h">Your position on this deal/.test(src),
+     'the sell-position whybox stays partner-only');
+}
+
+/* ── R6.7 · Contrast and wizard semantics (#25) ─────────────────────────── */
+{
+  // (vii) the two failing hexes no longer appear as text colors
+  ok(src.indexOf('#9ca3af') === -1, '#9ca3af (2.54:1) is gone from the file');
+  const b6 = [];
+  let i = -1; while ((i = src.indexOf('#b6bcc5', i + 1)) >= 0) b6.push(src.slice(Math.max(0, i - 10), i));
+  ok(b6.length > 0 && b6.every(pre => /stroke:|fill="/.test(pre)),
+     '#b6bcc5 (1.91:1) survives only as decorative stroke/fill, never as a text color');
+  ok(src.indexOf('color:#b6bcc5') === -1 && src.indexOf('#aab0b9') === -1,
+     'no light-gray text tier remains (tb-note and st-eyebrow darkened)');
+  // wizard semantics
+  ok(/aria-current="step"/.test(src), 'the active stepper button carries aria-current="step"');
+  ok(/\(id === cur \? ' aria-current="step"' : ''\)/.test(src), 'aria-current follows the current step');
+  eq((src.match(/role="group" aria-label=/g) || []).length, 4,
+     'the four yes/no/unsure toggle rows are grouped with an accessible label (5 gov rows share one template)');
+}
+
+/* ── R6.8 · The customer-view toggle chrome (idea 5) ────────────────────── */
+{
+  ok(/id="btnCustView"/.test(src), 'the toggle button sits next to the print buttons');
+  const pill = src.match(/<div class="[^"]*" id="custViewPill"[\s\S]{0,400}?<\/div>/);
+  ok(pill, 'the state pill exists');
+  // (viii) the pill itself never prints
+  ok(pill && /class="cv-pill no-print"/.test(pill[0]), 'the pill carries no-print');
+  ok(pill && /Customer view (&mdash;|—) partner detail hidden/.test(pill[0]), 'the pill names the state');
+  ok(/id="custViewExit"/.test(src), 'the pill carries its own exit');
+  ok(/e\.key === 'Escape'/.test(src), 'Escape exits customer view');
+  ok(/setCustomerView\(false\)/.test(src), 'the exit paths clear the class');
+  // never persisted — the page still touches no storage of any kind
+  ok(!/localStorage|sessionStorage|indexedDB|document\.cookie/.test(src),
+     'customer view is never persisted (no browser storage anywhere in the file)');
+  // the empty-column patch is chrome, not a strip selector
+  ok(/body\.customer-view #cardScen \{ grid-column:1\/-1; \}/.test(src),
+     'the scenarios card spans the emptied row on screen');
+  // the pill sits outside #results so it survives navigation
+  const pillIdx = src.indexOf('id="custViewPill"');
+  const resultsEnd = src.indexOf('<footer class="pagefoot');
+  ok(pillIdx > src.indexOf('id="results"') && pillIdx < resultsEnd, 'pill markup sits at body level before the footer');
+}
+
+/* ── R6.9 · Basis-aware disclaimer is rendered, not static (#7) ─────────── */
+{
+  ok(/id="printDisc"><\/div>/.test(src), 'the print disclaimer element is empty in the markup (rendered)');
+  ok(!/class="print-disc">Estimate, not a quote/.test(src), 'the static disclaimer sentence is gone from the markup');
+  ok(/priced at your partner’s rates; Microsoft list prices where noted/.test(src),
+     'the sell-mode disclaimer names the partner-rate basis');
+  ok(/Microsoft list prices current at the date above/.test(src),
+     'list mode keeps today’s sentence');
+  const disc = src.match(/\$\('printDisc'\)\.textContent = c\.sellMode[\s\S]{0,400}?;/);
+  ok(disc, 'the disclaimer branches on c.sellMode at render time');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   (R7–R8 sections append here)
    ══════════════════════════════════════════════════════════════════════════ */
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
