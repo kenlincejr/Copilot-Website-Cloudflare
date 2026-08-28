@@ -1789,5 +1789,283 @@ function decodeMailto(href) {
      'FACTS.md records that contributions can never reach ms-verified');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   R9 — Diff mode: the file-based re-forecast compare (idea 1 — v3 spec §R9)
+
+   The compare loader and the delta card live in the UI layer, so this
+   section lifts them out of the page and runs them: applyCompareFile is the
+   exact parse→normalize→test-compute→assign pipeline, and deltaHtml is the
+   real card body, fuzzed over adversarial session pairs.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const deltaHtml = makeUiFn('deltaHtml', '\n  function renderDelta', { usd, num, esc: escUi });
+function deltaFor(prevSt, curSt, savedAt) {
+  const pn = E.normalize(prevSt), cn = E.normalize(curSt);
+  return deltaHtml(pn, E.compute(pn).ctx, cn, E.compute(cn).ctx, savedAt == null ? null : savedAt);
+}
+function deltaText(html) { return html.replace(/<[^>]*>/g, ' '); }
+function compareEnv() {
+  const body = uiSource('applyCompareFile', '\n\n  /* ═══ refresh');
+  return new Function('E', 'var compareState = null, compareSavedAt = null;\n' + body +
+    '\nreturn { apply: applyCompareFile, snap: function () { return { cs: compareState, at: compareSavedAt }; } };')(E);
+}
+const LEAK9 = ['Set your rate card','your loss, not theirs','before you show this to a customer',
+  'partner-economics','discovery list','partner-earned','margin','uplift','costs you',
+  'Internal only','what the meter costs','provider','distributor','TD SYNNEX','cost basis'];
+
+/* ── R9.1 · The export stamps savedAt, in the UI layer only ─────────────── */
+{
+  ok(/Object\.assign\(\{\}, state, \{ __type:'cowork-session', savedAt: todayIso\(\) \}\)/.test(src),
+     'the export stamps savedAt and __type on a copy, never on the live state');
+  ok(/a\.download = nm \+ '-' \+ todayIso\(\) \+ '\.json'/.test(src),
+     'the filename date now rides the same todayIso() as the stamp');
+  const dl = src.slice(src.indexOf("$('btnDownload')"), src.indexOf("$('btnCompare')"));
+  ok(dl.length > 0 && !/new Date\(/.test(dl), 'btnDownload no longer builds its own inline date');
+  // the engine never stamps a clock: savedAt appears nowhere in the engine IIFE
+  const engineEnd = src.indexOf('CALCULATION ENGINE');
+  const engineBlock = src.slice(engineEnd, src.indexOf('root.CoworkEngine'));
+  ok(!/savedAt|new Date\(\)\.toISOString/.test(engineBlock), 'compute() stays pure — no savedAt, no clock in the engine');
+  // hydrate keeps unknown top-level keys, so the stamp survives a round trip…
+  eq(E.normalize({ savedAt:'2026-07-28' }).savedAt, '2026-07-28', 'savedAt survives E.normalize (hydrate keeps unknown keys)');
+  eq(E.normalize({ __type:'cowork-session' }).__type, 'cowork-session', '__type survives E.normalize too');
+  // …and the stamped payload round-trips to the anchor
+  const payload = Object.assign({}, E.defaults(), { __type:'cowork-session', savedAt:'2026-08-28' });
+  const rt = E.compute(E.normalize(JSON.parse(JSON.stringify(payload))));
+  eq(Math.round(rt.ctx.monthlyCredits), 755000, 'a stamped export re-loads to the anchor');
+}
+
+/* ── R9.2 · The compare loader: exactly the R1 pipeline, display-only ───── */
+{
+  const applySrc = uiSource('applyCompareFile', '\n\n  /* ═══ refresh');
+  // the loader source cannot even NAME the live session or any render entry
+  ok(!/\bstate\b/.test(applySrc), 'applyCompareFile never names the live state');
+  ok(!/hydrateInputs|renderLic|renderGov|renderPricing|refresh\(/.test(applySrc),
+     'applyCompareFile touches no screen — it only fills compareState');
+  ok(/E\.normalize\(loaded\)/.test(applySrc) && /E\.compute\(candidate\)/.test(applySrc),
+     'the pipeline is normalize then test-compute, same as the session loader');
+  // the change handler: applyCompareFile or the session loader’s exact alert
+  const wire = src.match(/\$\('compareFile'\)\.addEventListener[\s\S]{0,700}?readAsText/);
+  ok(wire && /applyCompareFile\(ev\.target\.result\)/.test(wire[0]), 'the file input runs the lifted core');
+  ok(wire && wire[0].indexOf('That file doesn’t look like a session exported from this tool.') >= 0,
+     'a bad compare file gets the session loader’s exact alert');
+  eq((src.match(/That file doesn’t look like a session exported from this tool\./g) || []).length, 2,
+     'the compare alert is the same sentence the session loader uses');
+  // the control exists, next to the print/export buttons, no-print
+  ok(/<button class="btn" id="btnCompare">[^<]*Compare with a previous session<\/button>/.test(src),
+     'the compare control sits in the actions row');
+  ok(/<input type="file" id="compareFile" accept="application\/json" style="display:none;">/.test(src),
+     'the hidden file input exists');
+  const rowIdx = src.indexOf('class="actionsrow"');
+  ok(src.indexOf('id="btnCompare"') > rowIdx && src.indexOf('id="btnCompare"') < rowIdx + 2200,
+     'the control lives in the (no-print) actions row with the print buttons');
+  // never persisted, still: the page-wide no-storage assertion of R8.4 re-run
+  ok(!/localStorage|sessionStorage|indexedDB|document\.cookie/.test(engineOrPage()), 'nothing R9 added persists anywhere');
+  function engineOrPage() { return src; }
+
+  // behavior: a good file loads; snap carries the normalized state + the raw date
+  const env = compareEnv();
+  ok(env.apply(JSON.stringify(Object.assign({}, E.defaults(), { __type:'cowork-session', savedAt:'2026-07-28' }))),
+     'a stamped session file loads as a compare');
+  eq(env.snap().at, '2026-07-28', 'savedAt is read off the raw parse');
+  eq(Math.round(E.compute(env.snap().cs).ctx.monthlyCredits), 755000, 'the compare state computes to the anchor');
+  // a datetime stamp is trimmed to the date, never rendered raw
+  env.apply(JSON.stringify(Object.assign({}, E.defaults(), { savedAt:'2026-07-28T09:15:00.000Z' })));
+  eq(env.snap().at, '2026-07-28', 'a full ISO datetime trims to the date');
+  // old files without savedAt load and carry null (the render says "earlier session")
+  ok(env.apply(JSON.stringify(E.defaults())), 'an old file without savedAt still loads');
+  eq(env.snap().at, null, 'missing savedAt is null, never NaN or a bogus date');
+  [12345, 'garbage', {}, ['2026-07-28'], true].forEach(function (bad, i) {
+    env.apply(JSON.stringify(Object.assign({}, E.defaults(), { savedAt: bad })));
+    eq(env.snap().at, null, 'garbage savedAt type ' + i + ' lands on null');
+  });
+  // a rate-card file is not a session
+  const rate = { __type:'cowork-rate-card', version:1, mode:'sell' };
+  const before = env.snap();
+  ok(!env.apply(JSON.stringify(rate)), 'a rate-card file is rejected');
+  ok(env.snap().cs === before.cs && env.snap().at === before.at, 'a rejected file changes nothing');
+
+  // hostile files: never throw, and on failure nothing moves
+  const HOSTILE_TEXTS = [
+    '{"licenseInventory":[{"skuId":"__proto__","seats":60}],"__type":"cowork-session"}',
+    '{"licenseInventory":[{"skuId":"toString","seats":60}]}',
+    '{"org":{"totalEmployees":1e308},"tierCredits":{"light":1e308,"medium":-5,"heavy":"x"}}',
+    '{"personas":[null,5,"x",{"seats":"a","light":{},"name":7}]}',
+    '{"pricing":5,"channel":"x","billing":[]}',
+    '{"effort":{"level":"max","step":1e-320}}',
+    '{"activation":{"mode":"count","count":1e308}}',
+    '{"__proto__":{"polluted":true},"savedAt":"2026-01-01"}',
+    '{"org":{"totalEmployees":',           // truncated
+    'not json at all', '[]', '"x"', '5', 'null', 'true', ''
+  ];
+  const live = E.normalize(E.defaults());
+  const liveBefore = JSON.stringify(live);
+  HOSTILE_TEXTS.forEach(function (t, i) {
+    const pre = env.snap();
+    let out;
+    try { out = env.apply(t); }
+    catch (e) { fail++; console.log('FAIL: compare pipeline threw on hostile text ' + i + ': ' + e.message); return; }
+    if (out) {
+      let r2;
+      try { r2 = E.compute(env.snap().cs); } catch (e) { fail++; console.log('FAIL: accepted hostile ' + i + ' does not compute: ' + e.message); return; }
+      assertCtxSane(r2.ctx, 'accepted hostile compare ' + i);
+    } else {
+      ok(env.snap().cs === pre.cs, 'rejected hostile ' + i + ' leaves compareState untouched');
+    }
+  });
+  eq(JSON.stringify(live), liveBefore, 'no compare load, hostile or clean, reached the live state (deep-equal before/after)');
+  ok(!({}).polluted, 'no prototype pollution leaked out of the compare pipeline');
+}
+
+/* ── R9.3 · The delta card: content, degenerate cases, audience ─────────── */
+{
+  // identical sessions: the nothing-changed sentence, with provenance intact
+  const same = deltaFor(E.defaults(), E.defaults(), '2026-07-28');
+  ok(/Nothing has changed between the two sessions/.test(same), 'identical pair renders the nothing-changed sentence');
+  ok(/Compared against the session saved 2026-07-28\./.test(same), 'the provenance line names the compared file’s date');
+  ok(/prior run carries ±30%/.test(same) && /current run ±30%/.test(same),
+     'the provenance line carries the band of BOTH runs');
+  ok(/one modeled figure minus another/.test(same), 'the card says a delta between two models is itself modeled');
+  ok(/rung 3/.test(same), 'the retainer hook ties the card to rung 3');
+  ok(/<p class="partner-only"[^>]*>[^<]*rung 3/.test(same), 'the retainer hook line carries partner-only');
+  ok(!/actual sale|calendar/.test(same), 'the hook does not restate partnerNote()');
+  ok(!/That review is the retainer/.test(same), 'the hook does not restate the cost-controls span either');
+
+  // missing savedAt: "an earlier session", never NaN / Invalid Date
+  const old = deltaFor(E.defaults(), E.defaults(), null);
+  ok(/Compared against an earlier session/.test(old), 'a file without savedAt reads as "an earlier session"');
+  ok(!/NaN|Invalid Date|undefined|null/.test(deltaText(old)), 'no NaN/Invalid Date for a missing stamp');
+
+  // a real month-over-month pair: figures, direction signs, input list
+  const cur = E.defaults();
+  cur.org.totalEmployees = 200;
+  cur.licenseInventory = [ { skuId:'bprem_cop', seats:90 }, { skuId:'cop_biz', seats:30 }, { skuId:'bstd', seats:40 } ];
+  cur.personas[0].seats = 40;
+  cur.tierCredits.medium = 620;
+  cur.effort = { level:'high', step: E.defaults().effort.step };
+  cur.activation = { mode:'benchmark', rate:0.65, count:null };
+  const pairHtml = deltaFor(E.defaults(), cur, '2026-07-28');
+  ok(/755,000/.test(pairHtml), 'the prior monthly credits render');
+  ok(/\$7,550/.test(pairHtml), 'the prior meter figure renders');
+  ok(/[+−]/.test(deltaText(pairHtml)), 'deltas carry direction signs');
+  ok(/Employees: 120 → 200/.test(pairHtml), 'the input list names the employee change');
+  ok(/Copilot licenses: 80 → 120/.test(pairHtml), 'the input list names the license seat change');
+  ok(/Seats — Corporate Knowledge Worker: 26 → 40/.test(pairHtml), 'the input list names the persona seat change');
+  ok(/Medium-task credit weight: 500 → 620/.test(pairHtml), 'the input list names the tier change');
+  ok(/Effort level: Medium → High/.test(pairHtml), 'the input list names the effort change');
+  ok(/Activation basis: a set percentage → the 2\.6× benchmark/.test(pairHtml),
+     'the input list names the activation-mode change in plain language');
+  ok(!/NaN|undefined|Infinity|\$∞/.test(pairHtml), 'the changed pair renders clean');
+
+  // a figure that goes DOWN is arithmetic, not a win
+  const down = E.defaults(); down.activation = { mode:'rate', rate:0.3, count:null };
+  const downHtml = deltaFor(E.defaults(), down, null);
+  ok(/−/.test(deltaText(downHtml)), 'a decrease renders with a minus sign');
+  ok(!/\bsavings?\b|cheaper|improv|benefit|good news|great\b|\bwin\b|reduc(ed|tion)/i.test(deltaText(downHtml)),
+     'a decrease is never celebrated — arithmetic register only');
+  ok(!/\bsavings?\b|cheaper|improv|benefit|celebr|\bwin\b|good news/i.test(
+       uiSource('deltaHtml', '\n  function renderDelta')),
+     'the delta source itself carries no benefit-claim vocabulary');
+
+  // zero-active prior (greenfield → real numbers): dashes, not Infinity
+  const green = E.defaults(); green.licenseInventory = [];
+  const gHtml = deltaFor(green, E.defaults(), '2026-06-30');
+  ok(/—/.test(gHtml), 'a zero prior renders a dash where the division has no base');
+  ok(!/Infinity|NaN|\$∞/.test(gHtml), 'greenfield prior: no Infinity anywhere');
+  const gTxt = deltaText(gHtml);
+  ok(gTxt.indexOf('0') >= 0 && /Active users/.test(gTxt), 'the greenfield prior renders real zeros, not blanks');
+
+  // partner economics is never computed into the delta, whatever the files hold
+  function sellState() {
+    const s = E.defaults();
+    s.channel = { motion:'direct', providerCreditUsd:null };
+    s.pricing = Object.assign(E.defaults().pricing,
+      { mode:'sell', creditSellUsd:0.025, pec:{ status:'yes', pct:15 } });
+    s.pricing.sell = { bprem_cop:45, cop_biz:25, bstd:15 };
+    s.pricing.cost = { bprem_cop:28, cop_biz:15, bstd:10 };
+    s.billing = Object.assign(E.defaults().billing, { model:'p3', p3Holder:'partner' });
+    return s;
+  }
+  const sPrev = sellState();
+  const sCur = sellState(); sCur.org.totalEmployees = 200; sCur.licenseInventory[0].seats = 90;
+  const cPrev = E.compute(E.normalize(sPrev)).ctx, cCur = E.compute(E.normalize(sCur)).ctx;
+  const sHtml = deltaFor(sPrev, sCur, '2026-07-28');
+  const sTxt = deltaText(sHtml).toLowerCase();
+  const safeFigs = new Set();
+  [cPrev, cCur].forEach(cx => {
+    [cx.monthlyCowork, cx.licenseMonthly, cx.allInMonthly].forEach(v => safeFigs.add(usd(v)));
+    safeFigs.add(num(cx.monthlyCredits));
+  });
+  [cPrev, cCur].forEach((cx, side) => {
+    [cx.meterMarginAnnual, cx.partnerCostAnnual, cx.paygoPartnerCost, cx.p3PartnerCost,
+     cx.coworkAtMsRate, cx.licenseUpliftMonthly, cx.licenseMarginMonthly, cx.licenseList,
+     cx.p3Exposure].forEach((v, i) => {
+      if (v == null || !(v > 0)) return;
+      const t = usd(v);
+      if (safeFigs.has(t)) return; // a collision with a legitimately shown figure
+      ok(sHtml.indexOf(t) === -1, 'delta: partner/PEC figure ' + side + '.' + i + ' (' + t + ') never renders');
+    });
+  });
+  LEAK9.forEach(p => ok(sTxt.indexOf(p.toLowerCase()) === -1, 'delta: leak phrase "' + p + '" absent'));
+  ok(!/\bPEC\b/.test(deltaText(sHtml)), 'delta: the acronym PEC absent');
+
+  // fuzz: ≥200 adversarial pairs through the real render fn
+  const PICK = (a) => a[Math.floor(Math.random() * a.length)];
+  function fuzzState() {
+    const s = E.defaults();
+    s.org.totalEmployees = PICK([0, 1, 26, 120, 300, 1e6, 1e308, -5, NaN, 'x']);
+    if (Math.random() < 0.5) s.licenseInventory = PICK([
+      [], 'junk', [{ skuId:'toString', seats:60 }], [{ skuId:'bprem_cop', seats:PICK([0, 90, 1e308, 'x']) }],
+      [{ skuId:'cop_ent', seats:250 }, { skuId:'e3', seats:250 }]]);
+    s.personas[Math.floor(Math.random() * 4)].seats = PICK([0, 5, 40, 1e308, NaN, 'x']);
+    s.personas[Math.floor(Math.random() * 4)].light = PICK([0, 10, 44, 1e308, {}]);
+    s.tierCredits = PICK([s.tierCredits, { light:1e308, medium:-5, heavy:'x' }, { light:125, medium:620, heavy:1200 }]);
+    s.effort = PICK([s.effort, { level:'max', step:3 }, { level:'zz', step:1e308 }, { level:'high', step:2 }]);
+    s.activation = PICK([s.activation, { mode:'count', count:PICK([0, 40, 1e308]) },
+      { mode:'benchmark' }, { mode:'junk', rate:NaN, count:null }, { mode:'rate', rate:PICK([0.1, 0.65, 2, NaN]) }]);
+    s.meta.accountName = PICK(['', 'Riverside Dental', 'A & B <b>x</b>', 42]);
+    if (Math.random() < 0.4) { const t = sellState(); s.pricing = t.pricing; s.channel = t.channel; s.billing = t.billing; }
+    s.calibrated = PICK([false, true, 'yes']);
+    return s;
+  }
+  let fuzzBad = 0;
+  for (let i = 0; i < 220; i++) {
+    let html;
+    try { html = deltaFor(fuzzState(), fuzzState(), PICK(['2026-07-28', null])); }
+    catch (e) { fuzzBad++; console.log('FAIL: delta fuzz pair ' + i + ' threw: ' + e.message); continue; }
+    const txt = deltaText(html);
+    if (/NaN|undefined|Infinity|\$∞|Invalid Date/.test(txt)) { fuzzBad++; console.log('FAIL: fuzz pair ' + i + ' rendered a non-number'); continue; }
+    const hit = LEAK9.find(p => txt.toLowerCase().indexOf(p.toLowerCase()) >= 0) || (/\bPEC\b/.test(txt) ? 'PEC' : null);
+    if (hit) { fuzzBad++; console.log('FAIL: fuzz pair ' + i + ' leaked "' + hit + '"'); }
+  }
+  eq(fuzzBad, 0, '220 adversarial session pairs render clean through the real deltaHtml');
+}
+
+/* ── R9.4 · Audience, placement and lifecycle wiring ────────────────────── */
+{
+  // #cardDelta is customer-visible: NOT in the strip set, which is unchanged
+  const cv = stripSet('customer-view'), pc = stripSet('print-customer');
+  ok(cv && pc && cv.join('|') === pc.join('|'), 'the strip lists are still identical after R9');
+  ok(cv && cv.length === 12, 'the strip set is still exactly the 12 decided selectors');
+  ok(cv && cv.indexOf('#cardDelta') === -1, '#cardDelta is NOT stripped from customer view (it is the leave-behind)');
+  ok(pc && pc.indexOf('#cardDelta') === -1, '#cardDelta is NOT stripped from the customer print');
+  // placement: after the number card, before the scenarios card
+  const nIdx = src.indexOf('id="cardNumber"'), dIdx = src.indexOf('id="cardDelta"'), sIdx = src.indexOf('id="cardScen"');
+  ok(nIdx > 0 && dIdx > nIdx && sIdx > dIdx, '#cardDelta sits between #cardNumber and #cardScen');
+  ok(/id="cardDelta" style="display:none;"/.test(src), 'the card ships hidden until a compare is loaded');
+  // the clear control is visible on screen, never printed
+  ok(/<button class="copybtn no-print" id="btnCompareClear">Clear comparison<\/button>/.test(src),
+     'the clear control sits in the card head, no-print');
+  ok(/\$\('btnCompareClear'\)\.addEventListener\('click', function \(\) \{\s*compareState = null; compareSavedAt = null; refresh\(\);/.test(src),
+     'clear drops both compare variables and re-renders');
+  // renderDelta hides + empties when no compare is loaded, and refresh calls it
+  ok(/if \(!compareState\) \{ card\.style\.display = 'none'; \$\('deltaBody'\)\.innerHTML = ''; return; \}/.test(src),
+     'renderDelta removes the card entirely when no compare is loaded');
+  ok(/renderResults\(r\);\s*renderDelta\(r\);/.test(src), 'refresh renders the delta with every recompute');
+  // the anchor did not move
+  const r9 = E.compute(E.defaults());
+  eq(Math.round(r9.ctx.monthlyCredits), 755000, 'anchor after R9: stock credits');
+  eq(Math.round(r9.ctx.monthlyCowork), 7550, 'anchor after R9: stock monthly');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

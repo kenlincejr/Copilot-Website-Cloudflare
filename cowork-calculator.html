@@ -903,6 +903,20 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         <div class="rc-body" id="numBody"></div>
       </div>
 
+      <!-- R9 (idea 1): the re-forecast compare. Placed directly after
+           #cardNumber because the delta re-reads the same figures the number
+           card just stated. Customer-visible on BOTH customer surfaces (the
+           delta IS the monthly re-forecast leave-behind), so #cardDelta stays
+           OUT of the strip set; the one rung-3 line inside it carries
+           .partner-only instead. Rendered only while a compare is loaded.
+           The clear control is no-print: visible on screen (including
+           customer view — it is an operator control with a harmless label,
+           same posture as the print buttons), never on paper. -->
+      <div class="rescard span2" id="cardDelta" style="display:none;">
+        <div class="rc-head"><span>Since the last session</span><button class="copybtn no-print" id="btnCompareClear">Clear comparison</button></div>
+        <div class="rc-body" id="deltaBody"></div>
+      </div>
+
       <div class="rescard" id="cardScen">
         <div class="rc-head"><span>What if they use it more</span></div>
         <div class="rc-body" id="scenBody"></div>
@@ -954,6 +968,12 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
           <button class="btn" id="btnPrintInt">&#128203; Print internal working copy</button>
           <button class="btn" id="btnCustView">&#128065; Customer view</button>
           <button class="btn" id="btnDownload">&#11015; Download this session (.json)</button>
+          <!-- R9b: the compare control. Partner-operable; the card it renders
+               is customer-visible. It sits with the print/export buttons and
+               shares their audience decision: the whole actions row is
+               .no-print and stays visible in customer view. -->
+          <button class="btn" id="btnCompare">&#8645; Compare with a previous session</button>
+          <input type="file" id="compareFile" accept="application/json" style="display:none;">
           <div class="toggle-pill" id="mathToggle" style="align-self:center;">
             <button data-math="off" class="on">Numbers</button>
             <button data-math="on">Numbers + math</button>
@@ -4633,6 +4653,168 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     prevSnap = snap;
   }
 
+  /* ═══ R9 · Diff mode — the file-based re-forecast compare (idea 1) ═══
+     The monthly loop opens with "re-run monthly" and the tool has no memory;
+     this gives it one without touching the no-storage promise, because the
+     memory is the session file the partner already downloads. Decisions:
+       · compareState is display-only. It rides exactly the R1 loader
+         pipeline (parse → shape check → E.normalize → test-E.compute →
+         assign) into its own variable; applyCompareFile never names the
+         live session and the v3 suite asserts that at the source level.
+         Nothing here is persisted anywhere — it is a variable, gone on
+         reload, like everything else on this page.
+       · Only customer-safe figures are diffed. Margins, PEC and cost bases
+         have no prior/current/Δ rows at all, whatever the two files hold.
+       · Register is arithmetic. A figure that moved down is reported with
+         the same words as one that moved up: both are one modeled number
+         minus another, not an outcome, and the provenance line says the
+         difference inherits the band from both sides. */
+  var compareState = null;   // the prior session, normalized; display-only
+  var compareSavedAt = null; // its savedAt, read off the raw parse, or null
+
+  /* The card body, as a pure builder over two (state, ctx) pairs so the
+     suite can lift it and fuzz session pairs through the real markup.
+     Both states are expected normalized; every numeric read is re-guarded
+     anyway, because a dash is an answer and NaN never is. */
+  function deltaHtml(prevState, p, curState, c, savedAt) {
+    var DASH = '—';
+    function fin(v) { v = Number(v); return isFinite(v) ? v : 0; }
+    function fUsd(v) { return usd(v); }
+    function fNum(v) { return num(Math.round(v)); }
+    function fPct(v) { return Math.round(v * 100) + '%'; }
+    function fPts(v) { return Math.round(v * 100) + ' pts'; }
+    function fX(v)   { return v.toFixed(2) + '×'; }
+    function relPct(prev, curr) {
+      if (!(prev > 0)) return DASH;         // no prior base — the division stays unanswered
+      var d = curr - prev;
+      if (d === 0) return '0%';
+      var m = Math.abs(d / prev) * 100;
+      return (d > 0 ? '+' : '−') + (m >= 10 ? String(Math.round(m)) : String(Math.round(m * 10) / 10)) + '%';
+    }
+    var pAct = p.copilotLicensed > 0 ? p.basisSeats / p.copilotLicensed : null;
+    var cAct = c.copilotLicensed > 0 ? c.basisSeats / c.copilotLicensed : null;
+    /* [label, prior, current, value format, Δ format (defaults to value's)] */
+    var rows = [
+      ['Monthly credits',              p.monthlyCredits, c.monthlyCredits, fNum],
+      ['Cowork meter / month',         p.monthlyCowork,  c.monthlyCowork,  fUsd],
+      ['Licenses / month',             p.licenseMonthly, c.licenseMonthly, fUsd],
+      ['All-in / month',               p.allInMonthly,   c.allInMonthly,   fUsd],
+      ['Active users',                 p.basisSeats,     c.basisSeats,     fNum],
+      ['Activation',                   pAct,             cAct,             fPct, fPts],
+      ['Ratio vs the 2.6× basis', p.ratioBench > 0 ? p.ratioBench : null,
+                                       c.ratioBench > 0 ? c.ratioBench : null, fX]
+    ];
+    var moved = false;
+    var body = rows.map(function (r0) {
+      var pv = r0[1], cv = r0[2], fv = r0[3], fd = r0[4] || fv;
+      var both = pv != null && cv != null;
+      if ((pv == null) !== (cv == null) || (both && cv !== pv)) moved = true;
+      var abs = both ? (cv === pv ? '0' : (cv > pv ? '+' : '−') + fd(Math.abs(cv - pv))) : DASH;
+      return '<tr><td>' + r0[0] + '</td>' +
+        '<td class="num">' + (pv != null ? fv(pv) : DASH) + '</td>' +
+        '<td class="num">' + (cv != null ? fv(cv) : DASH) + '</td>' +
+        '<td class="num">' + abs + '</td>' +
+        '<td class="num">' + (both ? relPct(pv, cv) : DASH) + '</td></tr>';
+    }).join('');
+
+    /* What changed in the inputs — the four tracked levers, plus the label.
+       Plain language, prior → current, arithmetic register throughout. */
+    var changes = [];
+    function label0(s0) { var t = String(s0.meta && s0.meta.accountName || '').trim(); return t || 'unnamed'; }
+    if (label0(prevState) !== label0(curState))
+      changes.push('Account label: ' + esc(label0(prevState)) + ' → ' + esc(label0(curState)));
+    if (fin(prevState.org && prevState.org.totalEmployees) !== fin(curState.org && curState.org.totalEmployees))
+      changes.push('Employees: ' + num(fin(prevState.org.totalEmployees)) + ' → ' + num(fin(curState.org.totalEmployees)));
+    if (fin(p.copilotLicensed) !== fin(c.copilotLicensed))
+      changes.push('Copilot licenses: ' + num(fin(p.copilotLicensed)) + ' → ' + num(fin(c.copilotLicensed)));
+    var pp = Array.isArray(prevState.personas) ? prevState.personas : [];
+    var cp = Array.isArray(curState.personas) ? curState.personas : [];
+    for (var i = 0; i < Math.max(pp.length, cp.length); i++) {
+      var ps0 = pp[i] ? fin(pp[i].seats) : null, cs0 = cp[i] ? fin(cp[i].seats) : null;
+      if (ps0 !== cs0) {
+        var pn = (cp[i] && cp[i].name) || (pp[i] && pp[i].name) || ('Persona ' + (i + 1));
+        changes.push('Seats — ' + esc(pn) + ': ' + (ps0 == null ? DASH : num(ps0)) + ' → ' + (cs0 == null ? DASH : num(cs0)));
+      }
+    }
+    ['light','medium','heavy'].forEach(function (t) {
+      var a0 = fin(prevState.tierCredits && prevState.tierCredits[t]);
+      var b0 = fin(curState.tierCredits && curState.tierCredits[t]);
+      if (a0 !== b0)
+        changes.push(t.charAt(0).toUpperCase() + t.slice(1) + '-task credit weight: ' + num(a0) + ' → ' + num(b0));
+    });
+    if (p.effortLabel !== c.effortLabel)
+      changes.push('Effort level: ' + esc(p.effortLabel) + ' → ' + esc(c.effortLabel));
+    else if (fin(p.effortMult).toFixed(2) !== fin(c.effortMult).toFixed(2))
+      changes.push('Effort step multiplier: ' + fin(p.effortMult).toFixed(2) + '× → ' + fin(c.effortMult).toFixed(2) + '×');
+    var MODE_WORD = { rate:'a set percentage', count:'a named count', benchmark:'the 2.6× benchmark' };
+    var pm = prevState.activation && prevState.activation.mode, cm = curState.activation && curState.activation.mode;
+    if (pm !== cm)
+      changes.push('Activation basis: ' + (MODE_WORD[pm] || esc(String(pm))) + ' → ' + (MODE_WORD[cm] || esc(String(cm))));
+    else if (pm === 'rate' && fin(prevState.activation.rate) !== fin(curState.activation.rate))
+      changes.push('Activation rate: ' + Math.round(fin(prevState.activation.rate) * 100) + '% → ' + Math.round(fin(curState.activation.rate) * 100) + '%');
+    else if (pm === 'count' && fin(prevState.activation.count) !== fin(curState.activation.count))
+      changes.push('Active users entered: ' + num(fin(prevState.activation.count)) + ' → ' + num(fin(curState.activation.count)));
+
+    /* Provenance: name the compared file's date (or its absence — an old
+       file without savedAt is still a session, never a NaN date), and say
+       that a delta between two modeled figures is itself modeled. */
+    var provLine = (savedAt
+        ? 'Compared against the session saved ' + esc(savedAt) + '.'
+        : 'Compared against an earlier session — that file carries no save date.') +
+      ' Both columns are modeled, not measured: the prior run carries ±' + Math.round(fin(p.band) * 100) +
+      '% and the current run ±' + Math.round(fin(c.band) * 100) +
+      '%, so each difference above is one modeled figure minus another and inherits the band on both sides.';
+    /* R9d — the retainer hook. Copy only; nextStep() is untouched. */
+    var hook = '<p class="partner-only" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:.82rem;color:#374151;line-height:1.6;">' +
+      'This card is the rung 3 cadence: download a session file after each monthly Cost Management review, load the previous ' +
+      'one here the next month, and the delta above is the re-forecast that engagement delivers.</p>';
+
+    if (!moved && !changes.length)
+      return '<p style="margin:0 0 10px;">Nothing has changed between the two sessions — every figure and every tracked input reads the same in both.</p>' +
+        '<p class="srcline">' + provLine + '</p>' + hook;
+
+    return '<div class="tablewrap"><table class="dtable"><thead><tr><th>Figure</th>' +
+        '<th style="text-align:right;">Prior</th><th style="text-align:right;">Current</th>' +
+        '<th style="text-align:right;">Δ</th><th style="text-align:right;">Δ %</th></tr></thead>' +
+        '<tbody>' + body + '</tbody></table></div>' +
+      '<div style="margin-top:14px;"><div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:6px;">What changed in the inputs</div>' +
+        (changes.length
+          ? changes.map(function (x) { return '<p style="margin:0 0 4px;font-size:.86rem;line-height:1.6;">' + x + '</p>'; }).join('')
+          : '<p style="margin:0;font-size:.86rem;line-height:1.6;">None of the tracked inputs (seat counts, tier weights, effort, activation) moved — the movement above comes from settings outside that list, such as pricing or licensing lines.</p>') +
+      '</div>' +
+      '<p class="srcline">' + provLine + '</p>' + hook;
+  }
+
+  function renderDelta(r) {
+    var card = $('cardDelta'); if (!card) return;
+    if (!compareState) { card.style.display = 'none'; $('deltaBody').innerHTML = ''; return; }
+    var pr;
+    try { pr = E.compute(compareState); }
+    catch (err) { compareState = null; compareSavedAt = null; card.style.display = 'none'; $('deltaBody').innerHTML = ''; return; }
+    card.style.display = '';
+    $('deltaBody').innerHTML = deltaHtml(compareState, pr.ctx, state, r.ctx, compareSavedAt);
+  }
+
+  /* R9b — the compare loader core, one function so the suite can run the
+     exact code under node. Exactly the R1 pipeline, into its own variable:
+     parse, shape check, E.normalize, test-E.compute, and only then assign.
+     On any failure it returns false and NOTHING has changed — this function
+     deliberately cannot reach the live session. savedAt is read off the raw
+     parse, not the normalized copy. */
+  function applyCompareFile(text) {
+    try {
+      var loaded = JSON.parse(text);
+      if (!loaded || typeof loaded !== 'object' || Array.isArray(loaded)) throw new Error('shape');
+      if (loaded.__type != null && loaded.__type !== 'cowork-session') throw new Error('shape');
+      var candidate = E.normalize(loaded);
+      E.compute(candidate);
+      compareState = candidate;
+      compareSavedAt = (typeof loaded.savedAt === 'string' && /^\d{4}-\d{2}-\d{2}/.test(loaded.savedAt))
+        ? loaded.savedAt.slice(0, 10) : null;
+      return true;
+    } catch (err) { return false; }
+  }
+
   /* ═══ refresh ═══ */
   /* The whole pipeline is wrapped: a render that throws must not leave every
      subsequent keystroke re-throwing on a dead page. The loaders validate
@@ -4641,6 +4823,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     try {
       var r = E.compute(state);
       renderResults(r);
+      renderDelta(r);
       renderStepper(r.ctx);
       renderNavs();
       patchLic();
@@ -4757,13 +4940,34 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   });
 
   $('btnDownload').addEventListener('click', function () {
-    var blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+    /* R9a: the session file is the tool's only memory, so the export stamps
+       savedAt — here in the UI layer, on a copy (compute() stays pure and
+       the live state carries no clock). __type follows the rate card's
+       discipline. hydrate() keeps unknown top-level keys, so both survive a
+       round trip through E.normalize — but the compare loader still reads
+       savedAt off the raw parse, so no repair step can eat the date. */
+    var payload = Object.assign({}, state, { __type:'cowork-session', savedAt: todayIso() });
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
-    var d = new Date(), iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     var nm = (state.meta.accountName || 'cowork-session').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'cowork-session';
-    a.href = url; a.download = nm + '-' + iso + '.json';
+    a.href = url; a.download = nm + '-' + todayIso() + '.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+  /* R9b wiring. The file goes through applyCompareFile above; failure gets
+     the session loader's exact alert and changes nothing anywhere. */
+  $('btnCompare').addEventListener('click', function () { $('compareFile').click(); });
+  $('compareFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) {
+      if (applyCompareFile(ev.target.result)) refresh();
+      else alert('That file doesn’t look like a session exported from this tool.');
+    };
+    rd.readAsText(f); e.target.value = '';
+  });
+  $('btnCompareClear').addEventListener('click', function () {
+    compareState = null; compareSavedAt = null; refresh();
   });
   $('btnLoad').addEventListener('click', function () { $('loadFile').click(); });
   $('loadFile').addEventListener('change', function (e) {
