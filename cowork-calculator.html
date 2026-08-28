@@ -1084,7 +1084,11 @@ footer.pagefoot a { color:#6b7280; }
       calibrated: false,
       effort: { level:'medium', step:EFFORT_STEP_DEFAULT },
       model: { selection:'auto', enabled:false, multiplier:1.00 },
-      billing: { model:'paygo', capacityPacksCccu:0, commitCoveragePct:1.0, manualP3Pct:null },
+      // p3Holder: who signs for the commitment. A P3 is non-cancellable and
+      // auto-renewing, so this is the single largest financial exposure in the
+      // motion and the tool refuses to assume an answer.
+      billing: { model:'paygo', capacityPacksCccu:0, commitCoveragePct:1.0, manualP3Pct:null,
+                 p3Holder:'unasked' },
       governance: { purviewLabels:'unsure', dlpForAi:'unsure', defenderCloudApps:'unsure',
                     namedCostOwner:'unsure', insuranceRenewal:'unsure' },
       governanceAsked: false,   // false until the partner actually puts the question
@@ -1098,8 +1102,11 @@ footer.pagefoot a { color:#6b7280; }
       // The partner's rate card. mode drives every license figure in the model.
       //   list -> Microsoft list price (what Microsoft charges)
       //   sell -> what this partner bills the customer, license plus their margin
+      // pec is the partner's COST basis for the meter, not a customer price.
+      // status 'unsure' is the honest default and withholds every margin figure.
       pricing: { mode:'list', creditSellUsd:0.01, sell:{}, cost:{},
-                 uplift:{ type:'amount', value:0 } }
+                 uplift:{ type:'amount', value:0 },
+                 pec:{ status:'unsure', pct:15 } }
     };
   }
 
@@ -1447,6 +1454,65 @@ footer.pagefoot a { color:#6b7280; }
     var p3Annual = packUsd + p3Prepay + overageCredits * CONST.CREDIT_USD;
     var p3Saving = paygoAnnual - p3Annual;
     var breakeven = 1 - disc.pct / 100;
+
+    /* ── What the meter costs the PARTNER, which is not what it costs the
+       customer. Partner-earned credit is the only lever, and Microsoft does
+       not apply it evenly: PEC pays on eligible Azure plan consumption for a
+       partner holding managed-services access, but reservations and savings
+       plans are excluded — and a Copilot Credit P3 is bought through the
+       Reservations blade. So PAYG may earn PEC and a P3 almost certainly
+       earns none. That asymmetry can invert the whole PayGo-vs-P3 decision,
+       which is why it is modeled rather than assumed away.
+       'unsure' is the default and withholds every margin figure, because a
+       guessed cost basis is worse than no cost basis. */
+    var pecCfg   = state.pricing.pec || {};
+    var pecKnown = pecCfg.status === 'yes' || pecCfg.status === 'no';
+    var pecPct   = pecCfg.status === 'yes' ? clamp(n(pecCfg.pct, 15), 0, 15) : 0;
+    var paygoPartnerCost = pecKnown ? paygoAnnual * (1 - pecPct / 100) : null;
+    var p3PartnerCost    = pecKnown ? p3Annual : null;   // no PEC on a pre-purchase plan
+    var chosenIsP3       = state.billing.model === 'p3';
+    var partnerCostAnnual = pecKnown ? (chosenIsP3 ? p3PartnerCost : paygoPartnerCost) : null;
+    // What the customer is billed for the meter, at the partner's credit rate.
+    var meterBilledAnnual = annualCredits * CU;
+    var meterMarginAnnual = pecKnown ? (meterBilledAnnual - partnerCostAnnual) : null;
+
+    if (!pecKnown)
+      assume.push({ id:'pec-unknown', label:'Your cost basis for the meter',
+        note:'Nobody has confirmed whether Copilot Credit consumption earns partner-earned credit on your Azure plan ' +
+             'price sheet, so the tool cannot say what a credit costs you \u2014 only what it costs the customer. ' +
+             'Every margin figure on the meter is withheld rather than guessed. Check the Azure plan consumption ' +
+             'price list in Partner Center: PEC applies only to services on that list, and reservations are excluded.',
+        prov:'partner' });
+
+    // The inversion. A P3 discount smaller than the PEC it forfeits makes the
+    // "discounted" path the more expensive one — for the partner, not the
+    // customer, which is exactly why it goes unnoticed.
+    if (pecKnown && pecPct > 0 && p3PartnerCost != null && paygoPartnerCost < p3PartnerCost)
+      W('V-21','warn','Careful \u2014 P3 looks cheaper and is not, for you. At ' + disc.pct.toFixed(1) +
+        '% the commit saves ' + '$' + Math.round(p3Saving).toLocaleString() + ' off the customer-facing meter, but a ' +
+        'pre-purchase plan is a reservation and earns no partner-earned credit. Pay-as-you-go at ' + pecPct +
+        '% PEC costs you $' + Math.round(paygoPartnerCost).toLocaleString() + ' a year against $' +
+        Math.round(p3PartnerCost).toLocaleString() + ' on P3 \u2014 a difference of $' +
+        Math.round(p3PartnerCost - paygoPartnerCost).toLocaleString() + ' in the wrong direction. ' +
+        'A commit has to beat your PEC rate before it beats pay-as-you-go.', []);
+
+    /* The exposure a P3 actually creates. Purchases are final — no
+       cancellations, no exchanges — the term is a year, and it auto-renews by
+       default. Whoever signs owns all of that. */
+    var p3Exposure = packUsd + p3Prepay;
+    var p3Holder = state.billing.p3Holder || 'unasked';
+    if (chosenIsP3 && p3Exposure > 0) {
+      if (p3Holder === 'partner')
+        W('V-22','warn','You would be carrying $' + Math.round(p3Exposure).toLocaleString() +
+          ' of non-refundable commitment on this account. A P3 is a one-year, paid-up-front purchase: ' +
+          'cancellations and exchanges are not supported, and it auto-renews by default \u2014 so the same amount ' +
+          'commits again next year unless someone turns it off. If adoption stalls, that is your loss, not theirs. ' +
+          'Price the risk or put the commitment in the customer\u2019s name.', []);
+      else if (p3Holder === 'unasked')
+        W('V-23','info','Before you quote a commit, settle who signs for it. A P3 is $' +
+          Math.round(p3Exposure).toLocaleString() + ' paid up front for a year, non-cancellable, non-exchangeable ' +
+          'and auto-renewing. That is a real financial position and it belongs to whoever holds it.', []);
+    }
     if (state.billing.model === 'p3' && cccuRequired < P3_ANCHORS[0].cccu)
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
@@ -1498,6 +1564,11 @@ footer.pagefoot a { color:#6b7280; }
       ratioActual:ratioActual, ratioBench:ratioBench, reconciliation:reconciliation,
       annualCredits:annualCredits, paygoAnnual:paygoAnnual, cccuRequired:cccuRequired,
       commitCccu:commitCccu, discount:disc, p3Annual:p3Annual, p3Saving:p3Saving, breakeven:breakeven,
+      pecStatus:pecCfg.status || 'unsure', pecPct:pecPct, pecKnown:pecKnown,
+      paygoPartnerCost:paygoPartnerCost, p3PartnerCost:p3PartnerCost,
+      partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
+      meterMarginAnnual:meterMarginAnnual,
+      p3Exposure:p3Exposure, p3Holder:p3Holder, billingModel:state.billing.model,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -2315,10 +2386,27 @@ footer.pagefoot a { color:#6b7280; }
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">' +
         '<div class="field"><label>Commit coverage of annual volume</label><input type="number" min="0" max="150" id="billCov" value="' + Math.round(state.billing.commitCoveragePct * 100) + '"></div>' +
         '<div class="field"><label>Known discount % (from your distributor)</label><input type="number" min="0" max="30" id="billPct" placeholder="leave blank to model" value="' + (state.billing.manualP3Pct == null ? '' : state.billing.manualP3Pct) + '"></div>' +
-      '</div>';
+      '</div>' +
+      (state.billing.model === 'p3'
+        ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap;">' +
+            '<div style="flex:1;min-width:260px;font-size:.92rem;">Who signs for the commitment?' +
+              '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' +
+              'A P3 is paid up front for a year. Cancellations and exchanges are not supported and it auto-renews by default.</span>' +
+              '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">' +
+              'If it is you → the output prices the risk you are carrying.</span></div>' +
+            '<div class="seg" id="p3HolderSeg" style="width:280px;flex:0 0 auto;">' +
+              [['customer','The customer'],['partner','We do'],['unasked','Not settled']].map(function (o) {
+                var on = (state.billing.p3Holder || 'unasked') === o[0];
+                return '<button data-hold="' + o[0] + '"' + (on ? ' class="on' + (o[0] === 'partner' ? ' warnon' : '') + '"' : '') + '>' + o[1] + '</button>';
+              }).join('') + '</div></div>'
+        : '');
     Array.prototype.forEach.call($('billSeg').querySelectorAll('[data-bill]'), function (b) {
       b.addEventListener('click', function () { state.billing.model = b.getAttribute('data-bill'); refresh(); });
     });
+    if ($('p3HolderSeg'))
+      Array.prototype.forEach.call($('p3HolderSeg').querySelectorAll('[data-hold]'), function (b) {
+        b.addEventListener('click', function () { state.billing.p3Holder = b.getAttribute('data-hold'); refresh(); });
+      });
     $('billCov').addEventListener('input', function (e) { state.billing.commitCoveragePct = Math.max(0, Math.min(1.5, (+e.target.value || 0) / 100)); refresh(); });
     $('billPct').addEventListener('input', function (e) { state.billing.manualP3Pct = e.target.value === '' ? null : Math.max(0, +e.target.value || 0); refresh(); });
   }
@@ -2480,6 +2568,25 @@ footer.pagefoot a { color:#6b7280; }
           '<p class="srcline">Microsoft meters credits at <b>$0.01</b>. If you pass the meter through at cost, leave this at 0.01. The PayGo-versus-P3 comparison in the output deliberately stays on Microsoft\u2019s $0.01 whatever you put here \u2014 that is a purchase you make from Microsoft, not a price the customer pays.</p>'
         : '') +
 
+      '<div class="ratehead"><div class="rh-t">What the meter costs you ' + provPill('partner') + '</div></div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:4px 0 16px;flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:280px;font-size:.92rem;">Does Copilot Credit consumption earn partner-earned credit on your Azure plan?' +
+          '<span style="display:block;font-size:.78rem;color:#9ca3af;margin-top:3px;">' +
+          'Cowork bills to an Azure subscription under your CSP billing account, so PEC is the only thing that moves your cost basis.</span>' +
+          '<span style="display:block;font-size:.76rem;color:var(--teal);margin-top:4px;font-weight:600;">' +
+          'Unsure → every meter margin figure is withheld rather than guessed.</span></div>' +
+        '<div class="seg" id="pecSeg" style="width:250px;flex:0 0 auto;">' +
+          [['yes','Yes'],['no','No'],['unsure','Unsure']].map(function (o) {
+            var on = (pr.pec && pr.pec.status) === o[0];
+            return '<button data-pec="' + o[0] + '"' + (on ? ' class="on"' : '') + '>' + o[1] + '</button>';
+          }).join('') + '</div></div>' +
+      ((pr.pec && pr.pec.status) === 'yes'
+        ? '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-bottom:8px;">' +
+            '<div class="field"><label>Your PEC rate (%)</label><input type="number" step="0.5" min="0" max="15" id="pPec" value="' + (pr.pec.pct != null ? pr.pec.pct : 15) + '"></div>' +
+          '</div>'
+        : '') +
+      '<p class="srcline">Partner-earned credit pays up to <b>15%</b> on eligible Azure plan consumption when you hold managed-services access on the customer’s estate. It applies only to services on the Azure plan consumption price list in Partner Center &mdash; check yours. <b>Reservations and savings plans are excluded</b>, and a Copilot Credit P3 is purchased through the Reservations blade, so the tool models pay-as-you-go as PEC-eligible and a commit as not. That asymmetry can make the discounted path the more expensive one for you, and the output says so when it happens.</p>' +
+
       '<div class="ratehead"><div class="rh-t">Your two per-seat service rates ' + provPill('editorial') + '</div></div>' +
       '<div class="tablewrap"><table class="dtable"><thead><tr><th>Rung</th><th style="width:130px;text-align:right;">Low</th><th style="width:130px;text-align:right;">High</th><th style="width:150px;">Charged</th></tr></thead><tbody>' +
       [['3 &middot; Managed AI Governance','pRetLo','retainerLo','pRetHi','retainerHi','per seat, per month',0.5],
@@ -2547,6 +2654,16 @@ footer.pagefoot a { color:#6b7280; }
       state.pricing.creditSellUsd = Math.max(0, +e.target.value || 0); refresh();
     });
     $('pStep').addEventListener('input', function (e) { state.effort.step = Math.max(1, Math.min(3, +e.target.value || 1)); refresh(); });
+    Array.prototype.forEach.call($('pecSeg').querySelectorAll('[data-pec]'), function (b) {
+      b.addEventListener('click', function () {
+        state.pricing.pec = state.pricing.pec || { status:'unsure', pct:15 };
+        state.pricing.pec.status = b.getAttribute('data-pec');
+        renderPricing(); refresh();
+      });
+    });
+    if ($('pPec')) $('pPec').addEventListener('input', function (e) {
+      state.pricing.pec.pct = Math.max(0, Math.min(15, +e.target.value || 0)); refresh();
+    });
     Array.prototype.forEach.call($('pricingBlock').querySelectorAll('[data-svc]'), function (inp) {
       inp.addEventListener('input', function () {
         state.partnerServices[inp.getAttribute('data-svc')] = Math.max(0, +inp.value || 0); refresh();
@@ -2576,7 +2693,8 @@ footer.pagefoot a { color:#6b7280; }
   function downloadRateCard() {
     var card = { __type:'cowork-rate-card', version:1,
                  pricing:state.pricing, priceOverrides:state.priceOverrides,
-                 partnerServices:state.partnerServices, effortStep:state.effort.step };
+                 partnerServices:state.partnerServices, effortStep:state.effort.step,
+                 pec:state.pricing.pec };
     var blob = new Blob([JSON.stringify(card, null, 2)], { type:'application/json' });
     var url = URL.createObjectURL(blob), a = document.createElement('a');
     a.href = url; a.download = 'my-cowork-rate-card.json';
@@ -2595,6 +2713,10 @@ footer.pagefoot a { color:#6b7280; }
         if (c.priceOverrides) state.priceOverrides = c.priceOverrides;
         if (c.partnerServices) state.partnerServices = c.partnerServices;
         if (c.effortStep) state.effort.step = c.effortStep;
+        // A card saved before the PEC question existed carries no answer.
+        // Leave it 'unsure' rather than inheriting a cost basis nobody set.
+        if (c.pec) state.pricing.pec = { status:c.pec.status || 'unsure',
+                                         pct:(c.pec.pct != null ? c.pec.pct : 15) };
         renderPricing(); refresh();
       } catch (err) { alert('That file does not look like a rate card exported from this tool.'); }
     };
@@ -2802,7 +2924,7 @@ footer.pagefoot a { color:#6b7280; }
       : '<p>Microsoft does not publish P3 tier breakpoints. Your volume sits <b>between ' + d.bracket[0] + '% and ' + d.bracket[1] + '%</b>, modeled at <b>' + d.pct.toFixed(1) + '%</b>.</p>';
     var verdict = c.p3Saving > 0
       ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round(c.commitCccu * 100)) + '-credit commit.</p>' +
-        '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and P3 purchases are final &mdash; no refunds, and it auto-renews.</p>'
+        '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and a commit sized on a model is a commit sized on a guess.</p>'
       : '<p>At this volume PayGo is the right answer.</p>';
     $('billOut').innerHTML =
       '<div class="numgrid">' +
@@ -2810,8 +2932,79 @@ footer.pagefoot a { color:#6b7280; }
         cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year', (d.exact ? d.pct : d.pct.toFixed(1)) + '% modeled · saves ' + usd(Math.max(0, c.p3Saving)), num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')', 'alt') +
       '</div>' +
       '<div class="whybox">' + discLine + certain + verdict +
-      '<p style="font-size:.8rem;color:#6b7280;">P3 is a one-year, paid-up-front commitment. Purchases are final &mdash; no cancellations or exchanges &mdash; it auto-renews by default, and the discount does not stack with other discounts. Consumption order is capacity packs, then P3, then PayGo.</p></div>' +
+      '<p style="font-size:.8rem;color:#6b7280;">The discount does not stack with other discounts. Consumption order is capacity packs, then P3, then PayGo.</p></div>' +
+      p3RiskBlock(c) + partnerCostBlock(c) +
       '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';
+  }
+
+  /* What a commit actually commits you to. Microsoft's terms are unusually
+     hard — final sale, no exchange, auto-renew — so this is stated as an
+     exposure with a number on it, not as a footnote. */
+  function p3RiskBlock(c) {
+    if (c.billingModel !== 'p3' || c.p3Exposure <= 0) return '';
+    var who = c.p3Holder;
+    var head = who === 'partner' ? 'Your exposure on this commit'
+             : who === 'customer' ? 'The customer\u2019s exposure on this commit'
+             : 'Somebody has to sign for this commit';
+    var body =
+      '<p><b>' + usd(c.p3Exposure) + ' paid up front, for a year, and it does not come back.</b> ' +
+      'A Copilot Credit P3 is a pre-purchase plan: <b>cancellations and exchanges are not supported</b>, the term ' +
+      'is twelve months, and <b>it auto-renews by default</b> \u2014 the same amount commits again next year unless ' +
+      'someone deliberately turns that off.</p>';
+    if (who === 'partner')
+      body += '<p>You are holding that position, not the customer. The commit is sized on a modeled ' +
+        usd(c.monthlyCowork) + '/month. If real usage lands at the bottom of your own band \u2014 ' +
+        usd(c.coworkLo) + '/month \u2014 that is <b>' + usd((c.monthlyCowork - c.coworkLo) * 12) +
+        '</b> of credit you paid for and nobody burns, and there is no refund window to recover it in. ' +
+        'That is a financing service you are providing: price it as one, or move the commitment into the ' +
+        'customer\u2019s name.</p>';
+    else if (who === 'customer')
+      body += '<p>The customer holds it, which is the lower-risk shape for you \u2014 but it is still your ' +
+        'recommendation. Put the final-sale and auto-renew terms in writing before they sign, and diary the ' +
+        'renewal date now rather than meeting it by surprise.</p>';
+    else
+      body += '<p>The tool will not assume this one. Set it on the billing step \u2014 it changes who carries ' +
+        usd(c.p3Exposure) + ' of non-refundable risk, and that is not a detail to discover at renewal.</p>';
+    return '<div class="whybox partner-only" style="border-left-color:#b45309;">' +
+      '<div class="wb-h">' + head + '</div>' + body +
+      '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
+  }
+
+  /* The meter has two prices: what the customer is billed, and what it costs
+     you. They are different transactions and PEC only touches one of them. */
+  function partnerCostBlock(c) {
+    if (!c.sellMode && c.pecStatus === 'unsure') return '';
+    if (!c.pecKnown)
+      return '<div class="whybox partner-only"><div class="wb-h">What the meter costs you &mdash; not established</div>' +
+        '<p>You are billing the meter at ' + esc(c.creditRateLabel) + ' a credit, which is ' + usd(c.meterBilledAnnual) +
+        ' a year to this customer. What it <i>costs</i> you depends on whether Copilot Credit consumption earns ' +
+        'partner-earned credit on your Azure plan price sheet, and nobody has confirmed that here \u2014 so the margin ' +
+        'is withheld rather than guessed.</p>' +
+        '<p>Check the Azure plan consumption price list in Partner Center. PEC applies only to services on that list, ' +
+        'and reservations are excluded \u2014 which is why the answer can differ between pay-as-you-go and P3. ' +
+        'Set it on the pricing screen and this fills in.</p>' +
+        '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
+    var pathName = c.billingModel === 'p3' ? 'P3 pre-purchase' : 'pay-as-you-go';
+    return '<div class="whybox partner-only" style="border-left-color:#0f766e;">' +
+      '<div class="wb-h">What the meter costs you &mdash; internal only</div>' +
+      '<p>On ' + pathName + ', this account\u2019s meter costs you <b>' + usd(c.partnerCostAnnual) + ' a year</b>' +
+      (c.pecPct > 0
+        ? ' \u2014 ' + usd(c.billingModel === 'p3' ? c.p3Annual : c.paygoAnnual) + ' at Microsoft\u2019s rate' +
+          (c.billingModel === 'p3'
+            ? ', with no partner-earned credit, because a pre-purchase plan is a reservation and reservations are excluded'
+            : ', less ' + c.pecPct + '% partner-earned credit')
+        : ' \u2014 you told us this consumption earns no partner-earned credit') +
+      '. You are billing ' + usd(c.meterBilledAnnual) + ', so your position on the meter is <b>' +
+      usd(c.meterMarginAnnual) + ' a year</b>' +
+      (Math.abs(c.meterMarginAnnual) < 1 ? ' \u2014 you are passing it through at cost.' : '.') + '</p>' +
+      (c.pecKnown && c.pecPct > 0
+        ? '<p>Both paths priced against your cost: pay-as-you-go <b>' + usd(c.paygoPartnerCost) +
+          '</b>, P3 <b>' + usd(c.p3PartnerCost) + '</b>. ' +
+          (c.paygoPartnerCost < c.p3PartnerCost
+            ? 'Pay-as-you-go is the cheaper path <i>for you</i> despite P3\u2019s headline discount, because the commit forfeits PEC.'
+            : 'The commit clears your PEC rate, so P3 is genuinely the cheaper path for you as well as the customer.') + '</p>'
+        : '') +
+      '<p style="font-size:.8rem;color:#6b7280;">Internal only \u2014 stripped from the customer leave-behind.</p></div>';
   }
 
   function renderLicOut(r) {
