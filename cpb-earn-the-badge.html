@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google Analytics -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<!-- End Google Analytics -->
+<!-- cpb-v9 : Primer tightened; Tier block unified.
+       - Early gate references in Beats 1-5 scrubbed to natural language
+         (e.g., 'MRR conversion signed at close-out'), so the reader meets
+         the five-gate vocabulary only when the gate strip formally
+         introduces it.
+       - Four Non-Negotiables chip strip removed from the Primer.
+         Content (capture baseline / counterfactual / counter-metric /
+         kicker cap) migrated to workbook-updates.md.
+       - RACI merged card removed from the Primer. RACI is execution
+         mechanics, not a reading beat — it stalled the Primer narrative
+         arc. Content migrated to workbook-updates.md.
+       - Orientation table (formerly titled with Full Picture wording)
+         folded INTO the Tier Quick-Reference. The 5-column Tiers ×
+         Components table was removed; its content distilled into a
+         3-chip mini-glossary (Tiers / Components / Models) sitting
+         immediately above the three tier cards. The unified header now
+         reads 'Managed AgentOps - Three Tiers at a Glance'. -->
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Earn the Badge &mdash; The Frontier Partner Playbook</title>
+<!-- v2 (2026-04-19): Section 10 re-ordered. "Managed AgentOps: Tier Quick-Reference" moved to appear immediately after "Choose Your Monetization Model" and before the First Community Bank scenario, so the reader understands Tier 1/2/3 deliverables, margins, and qualification criteria before encountering them in scenario dollar lines. -->
+<!-- v3 (2026-04-19): Added (a) Tier 1 Value Menu + Hybrid Retainer recommendation, (b) standalone Outcome-Based Project Work primer section, (c) Where Outcome-Based Fits Tier-by-Tier block, (d) outcome-based callouts in all four stages of the First Community Bank scenario. -->
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Executive Register
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #6EC1E4;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADINGS
+   ═══════════════════════════════════════════════════════ */
+h2 {
+  color: var(--navy);
+  margin: 2.8rem 0 .75rem;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -.1px;
+}
+
+h3 {
+  color: var(--teal);
+  margin: 1.6rem 0 .4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .05px;
+}
+
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HERO (gradient)
+   ═══════════════════════════════════════════════════════ */
+.hero {
+  background: linear-gradient(135deg, #004d58, #005F6B);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 28px 32px 22px;
+  margin: 0 0 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: var(--shadow-md);
+}
+.hero h1 {
+  margin: 0 0 6px;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -.3px;
+}
+.hero .sub { opacity: .95; font-weight: 600; margin: 0 0 8px; }
+.hero .meta { opacity: .85; font-size: .9rem; }
+
+/* ═══════════════════════════════════════════════════════
+   HERO — header image variant
+   ═══════════════════════════════════════════════════════ */
+.hero.header-image {
+  background: #ffffff;
+  border: 2px solid var(--teal);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin: 0 0 20px;
+  display: flex;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+.hero.header-image img {
+  max-width: 100%;
+  width: 1000px;
+  height: auto;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLE OF CONTENTS — executive numbered list
+   ═══════════════════════════════════════════════════════ */
+.toc {
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 20px 24px 22px;
+  margin: 0 0 28px;
+}
+.toc-head {
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 14px;
+}
+.toc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+.toc-col-head {
+  font-weight: 800;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin: 0 0 12px;
+  padding: 0 0 8px;
+  border-bottom: 2px solid var(--teal);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.toc-col-head .toc-col-range {
+  font-weight: 600;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  color: rgba(0,48,87,.45);
+  margin-left: auto;
+}
+.toc-col-head.toc-col-head-refs {
+  color: #8a5a2b;
+  border-bottom-color: #F59E0B;
+}
+.toc ul.toc-list-refs {
+  counter-reset: toc-counter 14; /* first item renders as 15 */
+}
+.toc li {
+  break-inside: avoid;
+  margin: 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  counter-increment: toc-counter;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  line-height: 1.4;
+}
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--teal);
+  flex: 0 0 auto;
+  opacity: .7;
+}
+.toc a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 500;
+}
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+
+/* Featured TOC card — pinned foundational section, sits above the numbered list */
+.toc-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(90deg, rgba(168,236,245,.18) 0%, rgba(168,236,245,.03) 100%);
+  border-left: 3px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px;
+  margin: 0 0 14px;
+  text-decoration: none;
+  transition: background .15s ease;
+}
+.toc-feature:hover {
+  background: linear-gradient(90deg, rgba(168,236,245,.28) 0%, rgba(168,236,245,.06) 100%);
+  text-decoration: none;
+}
+.toc-feature-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--teal);
+  line-height: 1;
+  letter-spacing: -.02em;
+  flex: 0 0 auto;
+}
+.toc-feature-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.toc-feature-eyebrow {
+  font-size: .58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--teal);
+}
+.toc-feature-title {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: .94rem;
+  line-height: 1.35;
+}
+.toc-feature-arrow {
+  font-size: 1rem;
+  color: var(--teal);
+  opacity: .6;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 700px) {
+  .toc-grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   BACK TO TOC
+   ═══════════════════════════════════════════════════════ */
+.back-to-toc {
+  text-align: right;
+  margin: 12px 0 6px;
+  font-size: .82rem;
+}
+.back-to-toc a {
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════
+   CALLOUTS
+   ═══════════════════════════════════════════════════════ */
+.callout {
+  background: var(--accent);
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.subtle {
+  background: #f3fbfc;
+  border-color: #c8e6eb;
+  border-left-color: var(--teal);
+}
+.callout.warn {
+  background: var(--warn);
+  border-color: #f5ddb0;
+  border-left-color: #d97706;
+}
+.callout-title {
+  font-weight: 700;
+  color: #00474f;
+  margin: 0 0 6px;
+  font-size: .85rem;
+  letter-spacing: .3px;
+}
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .95rem; line-height: 1.65; }
+
+/* ═══════════════════════════════════════════════════════
+   METRIC CARDS
+   ═══════════════════════════════════════════════════════ */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.metric {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.metric .k {
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: #004B87;
+  line-height: 1;
+  letter-spacing: -.5px;
+}
+.metric .l {
+  font-size: .88rem;
+  color: #374151;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+.metric .s {
+  color: #6b7280;
+  font-size: .8rem;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GRID CARDS
+   ═══════════════════════════════════════════════════════ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.card-h {
+  font-weight: 600;
+  color: var(--navy);
+  margin: 0 0 6px;
+  font-size: .95rem;
+}
+.card-b { font-size: .9rem; color: #374151; margin: 0; line-height: 1.6; }
+
+/* ═══════════════════════════════════════════════════════
+   DO / DON'T
+   ═══════════════════════════════════════════════════════ */
+.do-dont {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.dd {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.dd-h { font-weight: 700; margin: 0 0 10px; font-size: .9rem; letter-spacing: .02em; }
+.dd.do   { border-top: 3px solid #0f766e; }
+.dd.dont { border-top: 3px solid #b45309; }
+.dd.do   .dd-h { color: #0f766e; }
+.dd.dont .dd-h { color: #b45309; }
+.dd ul { margin: 0; padding-left: 16px; }
+
+/* ═══════════════════════════════════════════════════════
+   STEP CARDS
+   ═══════════════════════════════════════════════════════ */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.step {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+  display: flex;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.step .n {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--teal);
+  color: #fff;
+  font-weight: 700;
+  font-size: .88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.step .t { font-weight: 600; color: var(--navy); margin: 0; font-size: .95rem; }
+.step .b { font-size: .88rem; color: #374151; margin: 4px 0 0; line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════════
+   STAT BAR
+   ═══════════════════════════════════════════════════════ */
+.statbar {
+  background: var(--teal);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin: 18px 0;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.statbar .big {
+  font-weight: 700;
+  font-size: 1.4rem;
+  white-space: nowrap;
+  letter-spacing: -.3px;
+}
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════════
+   PILLS
+   ═══════════════════════════════════════════════════════ */
+.pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.pill {
+  border: 1px solid #afd4db;
+  background: #f0f9fb;
+  color: var(--teal);
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIMELINE CARDS
+   ═══════════════════════════════════════════════════════ */
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.tl {
+  border: 1px solid var(--border);
+  border-left: 4px solid #004B87;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 18px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.tl .w { font-weight: 700; color: #004B87; font-size: .95rem; }
+.tl .d { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.55; }
+
+/* ═══════════════════════════════════════════════════════
+   BLOCKQUOTE
+   ═══════════════════════════════════════════════════════ */
+blockquote {
+  border-left: 4px solid var(--teal);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #f5fbfc;
+  font-style: italic;
+  color: #374151;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .9rem;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 11px 14px;
+  vertical-align: top;
+}
+th {
+  background: var(--muted-2);
+  text-align: left;
+  font-weight: 600;
+  color: var(--navy);
+  font-size: .85rem;
+  letter-spacing: .02em;
+  border-left: 3px solid var(--teal);
+}
+tr:nth-child(even) td { background: #fafbfc; }
+tr:hover td { background: #f4f9fb; }
+
+/* ═══════════════════════════════════════════════════════
+   MATURITY IMAGE
+   ═══════════════════════════════════════════════════════ */
+.maturity-image-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 18px;
+}
+.maturity-image-wrap img {
+  max-width: 100%;
+  width: 980px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+}
+
+/* ═══════════════════════════════════════════════════════
+   HERO BAR (logo row)
+   ═══════════════════════════════════════════════════════ */
+.hero-bar { display: flex; gap: 18px; align-items: center; }
+.hero-logo {
+  height: 48px;
+  max-width: 180px;
+  object-fit: contain;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+@media (max-width: 700px) {
+  .hero-bar { flex-direction: column; align-items: flex-start; }
+  .hero-logo { height: 40px; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SKU TIER CARDS
+   ═══════════════════════════════════════════════════════ */
+.sku-ladder { display: flex; flex-direction: column; gap: 0; margin: 18px 0; }
+.sku-card {
+  display: grid;
+  grid-template-columns: 5px 1fr;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.sku-card .sku-bar { width: 5px; min-height: 100%; }
+.sku-card .sku-body {
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.sku-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.sku-num {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .8rem; color: #fff; flex: 0 0 auto;
+}
+.sku-title { font-weight: 600; font-size: .95rem; color: var(--navy); flex: 1; }
+.sku-price { font-size: .76rem; font-weight: 600; padding: 3px 10px; border-radius: 4px; white-space: nowrap; }
+.sku-rows { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px; }
+@media(max-width: 640px){ .sku-rows { grid-template-columns: 1fr; } }
+.sku-row { border-radius: 6px; padding: 10px 12px; }
+.sku-row-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px; }
+.sku-row-text { font-size: .86rem; line-height: 1.45; color: var(--text); }
+
+/* SKU color palette — unchanged */
+.s1 .sku-bar,.s1 .sku-num{background:#94a3b8}
+.s1 .sku-price{background:#f1f5f9;color:#475569}
+.s1 .sku-row.demo{background:#f8fafc}.s1 .sku-row.demo .sku-row-label{color:#64748b}
+.s1 .sku-row.pivot{background:#f1f5f9}.s1 .sku-row.pivot .sku-row-label{color:#64748b}
+.s1 .sku-row.rev{background:#f1f5f9}.s1 .sku-row.rev .sku-row-label{color:#64748b}
+.s2 .sku-bar,.s2 .sku-num{background:#24B9D5}
+.s2 .sku-price{background:#e0f7fb;color:#007B8A}
+.s2 .sku-row.demo{background:#e6f3f5}.s2 .sku-row.demo .sku-row-label{color:#007B8A}
+.s2 .sku-row.pivot{background:#f0fbfc}.s2 .sku-row.pivot .sku-row-label{color:#007B8A}
+.s2 .sku-row.rev{background:#e6f3f5}.s2 .sku-row.rev .sku-row-label{color:#007B8A}
+.s25 .sku-bar,.s25 .sku-num{background:#0ea5e9}
+.s25 .sku-price{background:#e0f2fe;color:#0369a1}
+.s25 .sku-row.demo{background:#f0f9ff}.s25 .sku-row.demo .sku-row-label{color:#0369a1}
+.s25 .sku-row.pivot{background:#e0f2fe}.s25 .sku-row.pivot .sku-row-label{color:#0369a1}
+.s25 .sku-row.rev{background:#f0f9ff}.s25 .sku-row.rev .sku-row-label{color:#0369a1}
+.s3 .sku-bar,.s3 .sku-num{background:#007B8A}
+.s3 .sku-price{background:#cceff3;color:#005758}
+.s3 .sku-row.demo{background:#e6f3f5}.s3 .sku-row.demo .sku-row-label{color:#005758}
+.s3 .sku-row.pivot{background:#cceff3}.s3 .sku-row.pivot .sku-row-label{color:#005758}
+.s3 .sku-row.rev{background:#e6f3f5}.s3 .sku-row.rev .sku-row-label{color:#005758}
+.s35 .sku-bar,.s35 .sku-num{background:#7c3aed}
+.s35 .sku-price{background:#ede9fe;color:#5b21b6}
+.s35 .sku-row.demo{background:#f5f3ff}.s35 .sku-row.demo .sku-row-label{color:#5b21b6}
+.s35 .sku-row.pivot{background:#ede9fe}.s35 .sku-row.pivot .sku-row-label{color:#5b21b6}
+.s35 .sku-row.rev{background:#f5f3ff}.s35 .sku-row.rev .sku-row-label{color:#5b21b6}
+.s4 .sku-bar,.s4 .sku-num{background:#f59e0b}
+.s4 .sku-price{background:#fef3c7;color:#5a3a18}
+.s4 .sku-row.demo{background:#fffbeb}.s4 .sku-row.demo .sku-row-label{color:#5a3a18}
+.s4 .sku-row.pivot{background:#fef3c7}.s4 .sku-row.pivot .sku-row-label{color:#5a3a18}
+.s4 .sku-row.rev{background:#fffbeb}.s4 .sku-row.rev .sku-row-label{color:#5a3a18}
+.s56 .sku-bar,.s56 .sku-num{background:#005758}
+.s56 .sku-price{background:#cceff3;color:#003d3e}
+.s56 .sku-row.demo{background:#e6f3f5}.s56 .sku-row.demo .sku-row-label{color:#003d3e}
+.s56 .sku-row.pivot{background:#cceff3}.s56 .sku-row.pivot .sku-row-label{color:#003d3e}
+.s56 .sku-row.rev{background:#e6f3f5}.s56 .sku-row.rev .sku-row-label{color:#003d3e}
+.s7 .sku-bar,.s7 .sku-num{background:#3730a3}
+.s7 .sku-price{background:#e0e7ff;color:#3730a3}
+.s7 .sku-row.demo{background:#eef2ff}.s7 .sku-row.demo .sku-row-label{color:#3730a3}
+.s7 .sku-row.pivot{background:#e0e7ff}.s7 .sku-row.pivot .sku-row-label{color:#3730a3}
+.s7 .sku-row.rev{background:#eef2ff}.s7 .sku-row.rev .sku-row-label{color:#3730a3}
+.sagent .sku-bar,.sagent .sku-num{background:#b45309}
+.sagent .sku-price{background:#fef3c7;color:#5a3a18}
+.sagent .sku-row.demo{background:#fffbeb}.sagent .sku-row.demo .sku-row-label{color:#5a3a18}
+.sagent .sku-row.pivot{background:#fef3c7}.sagent .sku-row.pivot .sku-row-label{color:#5a3a18}
+.sagent .sku-row.rev{background:#fffbeb}.sagent .sku-row.rev .sku-row-label{color:#5a3a18}
+
+/* ═══════════════════════════════════════════════════════
+   OBJECTION / SHADOW IT CARDS
+   ═══════════════════════════════════════════════════════ */
+.obj-intro {
+  background: #f7fbfc;
+  border-left: 4px solid var(--teal-light);
+  padding: 16px 20px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: 22px;
+  font-size: .93rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+.obj-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 8px; }
+.obj-card {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+.obj-card .obj-top {
+  background: #fef3f3;
+  border-bottom: 1px solid #fecaca;
+  padding: 14px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.obj-badge {
+  background: #dc2626;
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+.obj-quote {
+  font-style: italic;
+  font-weight: 600;
+  color: #991b1b;
+  font-size: .92rem;
+  line-height: 1.5;
+}
+.obj-card .obj-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: none;
+}
+@media(max-width: 600px){ .obj-card .obj-bottom { grid-template-columns: 1fr; } }
+.obj-reframe { background: var(--accent); padding: 14px 16px; border-right: 1px solid var(--border); }
+.obj-demo-col { background: #f8fafc; padding: 14px 16px; }
+.obj-col-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px; }
+.obj-reframe .obj-col-label { color: var(--teal); }
+.obj-demo-col .obj-col-label { color: #374151; }
+.obj-col-text { font-size: .86rem; line-height: 1.55; color: var(--text); }
+.obj-demo-col em { color: var(--teal); font-style: italic; }
+
+/* ═══════════════════════════════════════════════════════
+   HERO STATEMENT (section banner)
+   ═══════════════════════════════════════════════════════ */
+.hero-statement {
+  background: linear-gradient(135deg, #0b4a52 0%, var(--teal) 60%, #1a9db5 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.hero-statement p {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.6;
+}
+.hero-statement p em {
+  color: #a8ecf5;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+.hero-statement .hero-sub {
+  font-size: .9rem;
+  font-weight: 400;
+  color: rgba(255,255,255,.82);
+  margin-top: 12px;
+  letter-spacing: .15px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ASCENT HERO (dark panel)
+   ═══════════════════════════════════════════════════════ */
+.ascent-hero {
+  background: #0b2535;
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  margin: 24px 0;
+  border-left: 4px solid #24B9D5;
+  box-shadow: var(--shadow-md);
+}
+.ascent-hero .ascent-lead {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: #24B9D5;
+  margin-bottom: 14px;
+}
+.ascent-hero .ascent-main {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+.ascent-hero .ascent-main em { color: #a8ecf5; font-style: normal; }
+.ascent-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.ascent-pill {
+  background: rgba(36,185,213,.12);
+  border: 1px solid rgba(36,185,213,.3);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #a8ecf5;
+  line-height: 1.3;
+}
+.ascent-pill strong { color: #fff; }
+
+/* ═══════════════════════════════════════════════════════
+   INSIGHT PANELS — replaces shift-banner
+   ═══════════════════════════════════════════════════════ */
+.insight-panel {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--navy);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 22px 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.insight-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  background: var(--navy);
+  color: #fff;
+}
+.insight-panel-header-icon {
+  font-size: .85rem;
+  opacity: .75;
+  flex-shrink: 0;
+}
+.insight-panel-header-text {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.insight-panel-body {
+  background: #fff;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.insight-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.insight-row-icon {
+  font-size: .95rem;
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 20px;
+  text-align: center;
+  opacity: .65;
+}
+.insight-row-text {
+  font-size: .93rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+.insight-row-text strong { color: var(--navy); }
+.insight-row-text em { color: var(--teal); font-style: italic; }
+.insight-panel.scenario {
+  border-left-color: var(--teal);
+}
+.insight-panel.scenario .insight-panel-header {
+  background: var(--teal);
+}
+.insight-panel.critical {
+  border-left-color: #92400e;
+}
+.insight-panel.critical .insight-panel-header {
+  background: #78350f;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMPETITIVE LANDSCAPE — vendor cards + battle tables
+   ═══════════════════════════════════════════════════════ */
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  margin: 20px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.comp-card {
+  border-right: 1px solid var(--border);
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+.comp-card:last-child { border-right: none; }
+.comp-card-header {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--navy);
+}
+.comp-card-vendor {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.6);
+}
+.comp-card-verdict {
+  font-size: .95rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+}
+.comp-card-body {
+  padding: 18px 22px;
+  background: #fff;
+  font-size: .88rem;
+  line-height: 1.68;
+  color: #374151;
+  border-top: 1px solid var(--border);
+}
+.comp-card-lesson {
+  padding: 12px 22px 14px;
+  font-size: .84rem;
+  line-height: 1.55;
+  border-top: 3px solid var(--teal);
+  background: #f3fbfc;
+  color: #374151;
+}
+.comp-card-lesson span {
+  font-weight: 700;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Battle table */
+.battle-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: .88rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.battle-table thead th {
+  padding: 11px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: .82rem;
+  letter-spacing: .02em;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,.12);
+}
+.battle-table thead th.col-ms {
+  background: var(--teal);
+  color: #fff;
+  border-right: 1px solid rgba(255,255,255,.15);
+}
+.battle-table tbody tr:nth-child(even) { background: #f7f8fa; }
+.battle-table tbody tr:hover { background: #eef5f6; }
+.battle-table td {
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  vertical-align: top;
+}
+.battle-table td:last-child { border-right: none; }
+.battle-table td:first-child {
+  font-weight: 600;
+  color: var(--navy);
+  background: #f2f5f8;
+  border-right: 2px solid var(--border);
+  white-space: nowrap;
+}
+.battle-table td.col-ms { background: #f0f9fb !important; }
+.check   { color: #0f766e; font-weight: 700; }
+.warn-ic { color: #b45309; font-weight: 700; }
+.cross   { color: #b91c1c; font-weight: 700; }
+
+/* Champion profile cards */
+.champion-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+}
+.champion-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+@media (max-width: 700px) {
+  .champion-card { grid-template-columns: 1fr; }
+}
+.champion-sidebar {
+  background: var(--navy);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.champion-num {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.5);
+}
+.champion-role {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+.champion-tag {
+  display: inline-block;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: rgba(255,255,255,.8);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+.champion-body {
+  background: #fff;
+  padding: 20px 24px;
+  border-left: 1px solid var(--border);
+}
+.champion-desc {
+  font-size: .91rem;
+  line-height: 1.7;
+  color: #374151;
+  margin: 0 0 12px;
+}
+.champion-demo {
+  background: #f3fbfc;
+  border-left: 3px solid var(--teal);
+  padding: 10px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: .85rem;
+  line-height: 1.6;
+  color: #374151;
+}
+.champion-demo-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.champion-stat {
+  display: inline-block;
+  background: #eef2f7;
+  border: 1px solid var(--border);
+  color: var(--navy);
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 4px;
+  margin: 0 4px 6px 0;
+}
+
+
+
+
+/* ── Cowork / Frenemy section styles ── */
+/* Cowork comparison styles */
+.cowork-hero {
+  background: linear-gradient(135deg, #0f2027 0%, #1a3a4a 60%, #0d3349 100%);
+  border-left: 5px solid #00b4d8;
+  border-radius: 6px;
+  padding: 28px 32px;
+  margin: 32px 0 24px 0;
+  color: #e8f4f8;
+}
+.cowork-hero .ch-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #00b4d8;
+  margin-bottom: 10px;
+}
+.cowork-hero .ch-headline {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.cowork-hero .ch-sub {
+  font-size: 0.97rem;
+  color: #b0cfe0;
+  line-height: 1.65;
+}
+.cowork-hero strong { color: #48cae4; }
+
+/* Side-by-side architecture cards */
+.cowork-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 24px 0;
+}
+.cowork-card {
+  border-radius: 6px;
+  padding: 22px 24px;
+  border-top: 4px solid transparent;
+}
+.cowork-card.claude {
+  background: #fdf6ec;
+  border-top-color: #e07b00;
+}
+.cowork-card.copilot {
+  background: #eef6ff;
+  border-top-color: #0078d4;
+}
+.cowork-card .cc-logo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.cowork-card.claude .cc-logo { color: #c96a00; }
+.cowork-card.copilot .cc-logo { color: #0063b1; }
+.cowork-card .cc-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+.cowork-card ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.cowork-card ul li {
+  font-size: 0.91rem;
+  color: #333;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.cowork-card .cc-verdict {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.cowork-card.claude .cc-verdict {
+  background: #fde8c8;
+  color: #7a3e00;
+}
+.cowork-card.copilot .cc-verdict {
+  background: #d6eaff;
+  color: #003d7a;
+}
+
+/* Frenemy integration banner */
+.frenemy-banner {
+  background: #1a1a2e;
+  border-radius: 6px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.frenemy-banner .fb-icon {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.frenemy-banner .fb-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7b68ee;
+  margin-bottom: 6px;
+}
+.frenemy-banner .fb-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+.frenemy-banner .fb-body {
+  font-size: 0.93rem;
+  color: #c5c5e8;
+  line-height: 1.65;
+}
+.frenemy-banner .fb-body strong { color: #a78bfa; }
+.frenemy-banner .fb-stat {
+  margin-top: 12px;
+  display: inline-block;
+  background: #2d2d5e;
+  border-left: 3px solid #7b68ee;
+  padding: 8px 14px;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.88rem;
+  color: #d4d4f8;
+  font-style: italic;
+}
+
+/* Partner monetization gap section */
+.partner-gap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 20px 0;
+}
+.pgc {
+  border-radius: 6px;
+  padding: 20px 22px;
+}
+.pgc.claude-side {
+  background: #fff8f0;
+  border: 1px solid #f0c080;
+}
+.pgc.copilot-side {
+  background: #f0f7ff;
+  border: 1px solid #90c0f0;
+}
+.pgc .pgc-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid;
+}
+.pgc.claude-side .pgc-header { color: #c96a00; border-color: #e8a050; }
+.pgc.copilot-side .pgc-header { color: #0063b1; border-color: #70a8e0; }
+.pgc p {
+  font-size: 0.91rem;
+  color: #333;
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+/* Partner opportunity steps */
+.cowork-steps {
+  margin: 20px 0;
+  counter-reset: step-counter;
+}
+.cowork-step {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  background: #f8fbff;
+  border-radius: 6px;
+  border-left: 4px solid #0078d4;
+}
+.cowork-step .step-num {
+  width: 36px;
+  height: 36px;
+  background: #0078d4;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.cowork-step .step-body strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #003d7a;
+  margin-bottom: 4px;
+}
+.cowork-step .step-body span {
+  font-size: 0.88rem;
+  color: #444;
+  line-height: 1.55;
+}
+
+/* Partner callout — teal variant with icon */
+.partner-insight {
+  background: #e6f7f5;
+  border-left: 5px solid #00897b;
+  border-radius: 0 6px 6px 0;
+  padding: 18px 22px;
+  margin: 20px 0;
+}
+.partner-insight .pi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00695c;
+  margin-bottom: 6px;
+}
+.partner-insight p {
+  font-size: 0.93rem;
+  color: #1a3a35;
+  line-height: 1.65;
+  margin: 0;
+}
+.partner-insight strong { color: #00695c; }
+
+/* Bottom lesson callout */
+.cowork-lesson {
+  background: linear-gradient(135deg, #1a2744 0%, #0d2235 100%);
+  border-radius: 6px;
+  padding: 24px 28px;
+  margin: 24px 0;
+  color: #e8f0f8;
+}
+.cowork-lesson .cl-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #48cae4;
+  margin-bottom: 8px;
+}
+.cowork-lesson p {
+  font-size: 0.97rem;
+  color: #c8ddf0;
+  line-height: 1.7;
+  margin: 0;
+}
+.cowork-lesson strong { color: #ffffff; }
+
+</style>
+<style>
+.stage-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 28px 0;
+  box-shadow: var(--shadow-md);
+}
+.stage-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 22px;
+  color: #fff;
+}
+.stage-num {
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem;
+  flex-shrink: 0;
+}
+.stage-title { font-weight: 700; font-size: 1.05rem; flex: 1; }
+.stage-timeline {
+  font-size: .78rem;
+  background: rgba(255,255,255,.15);
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.stage-body { background: #fff; }
+.stage-section {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.stage-section:last-child { border-bottom: none; }
+.stage-section-label {
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 10px;
+}
+.stage-section.context .stage-section-label  { color: var(--teal); }
+.stage-section.revenue .stage-section-label  { color: #004B87; }
+.stage-section.retainer .stage-section-label { color: #004B87; }
+.stage-section.agentops .stage-section-label { color: #92400e; }
+.stage-section.bridge .stage-section-label   { color: #003057; }
+.stage-section.context  { background: #fff; }
+.stage-section.revenue  { background: #fafbfd; }
+.stage-section.retainer { background: #fafbfd; }
+.stage-section.agentops { background: #fffbf4; }
+.stage-section.bridge   { background: #f2f5f8; }
+.stage-rev-table { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 4px; }
+.stage-rev-table th { background: var(--navy); color: #fff; padding: 7px 12px; text-align: left; font-weight: 600; font-size: .8rem; }
+.stage-rev-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+.stage-rev-table tr:last-child td { border-bottom: none; }
+.stage-rev-table tr:nth-child(even) td { background: #f4f7fa; }
+.stage-total {
+  margin-top: 10px;
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--navy);
+  background: #eef2f7;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -32px -28px 0; }
+  .mh-bar-in { padding: 0 28px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -28px 20px; }
+  .masthead-inner { padding: 20px 28px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+</style>
+
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="cpb.html">Copilot Practice Playbook</a><span class="sep">/</span><span class="cur">Earn the Badge</span></div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Journey Stage 4 of 4 &middot; Earn the Badge</div></div>
+    <h1>Earn the Badge</h1>
+    <p class="sub">The proof behind the playbook: where the numbers come from, what the Frontier Partner ecosystem rewards, how TD SYNNEX and Microsoft skilling accelerate you there, and the on-ramp to formal Frontier Partner recognition.</p>
+    <p class="mh-meta">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong></p>
+  </div>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">&#x1F44B; Welcome from Run the Engagement</div>
+  <div class="callout-body">You&rsquo;ve pitched, scoped, and delivered. This closing stage is about proof and credibility: where the numbers in this playbook come from, what the Frontier Partner ecosystem actually rewards, how TD SYNNEX and Microsoft skilling accelerate the climb, and the answers to the questions partners ask most before they commit.</div>
+</div>
+
+<nav id="toc" class="toc">
+  <div class="toc-head">Table of Contents</div>
+  <ul>
+    <li><a href="#11-showing-our-work">Showing Our Work: Where These Numbers Come From</a></li>
+    <li><a href="#1-what-is-a-frontier-firm">What Is a Frontier Firm?</a></li>
+    <li><a href="#2-the-frontier-partner-ecosystem">The Frontier Partner Ecosystem</a></li>
+    <li><a href="#3-td-synnex-a-frontier-distributor">TD SYNNEX: A Frontier Distributor</a></li>
+    <li><a href="#13-td-synnex-as-your-enablement-engine">TD SYNNEX as Your Enablement Engine</a></li>
+    <li><a href="#14-real-partners-real-results">Real Partners, Real Results</a></li>
+    <li><a href="#15-microsoft-skilling-and-enablement-at-scale">Microsoft Skilling and Enablement at Scale</a></li>
+    <li><a href="#16-i-knew-you-were-going-to-ask-this">&ldquo;I Knew You Were Going to Ask This&hellip;&rdquo;</a></li>
+    <li><a href="#17-key-resources">Key Resources</a></li>
+  </ul>
+</nav>
+<h2 id="11-showing-our-work">Showing Our Work: Where These Numbers Come From</h2>
+
+<p>The revenue benchmarks used throughout this playbook are not aspirational guesses. They are grounded in three independent, verifiable research streams: a <strong>Forrester Total Economic Impact™ (TEI)</strong> partner opportunity analysis covering FY2025, an <strong>IDC global partner economics study</strong> surveying 638 Microsoft partners worldwide, and real-world partner pricing visible in Microsoft's own commercial marketplace — validated against managed IT services industry benchmarks. Every major figure can be traced to at least one of these streams.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">&#x1F4CB; A Note on Conservatism</div>
+  <div class="callout-body">Where our benchmarks diverge from published research, we erred deliberately on the low side. The partner who under-promises and over-delivers earns the next engagement. These numbers are defensible in any customer or executive conversation — and the upside is real.<br><br>These figures are <strong>directional, not definitive.</strong> Every partner practice has different labor costs, tooling choices, customer mix, and market dynamics. The right approach is to treat this as a starting framework and substitute your own fully-loaded rates into the delivery cost formula in the labor model above. The pricing floors we have identified reflect a realistic 5-person US-based MSP team — adjust accordingly for your market.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HERO PARTNER INTRO -->
+<!-- ============================================================ -->
+
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin:20px 0;">
+  <div style="background:#f3f4f6;padding:12px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);">The Hero Partner: A Realistic SMB Baseline</div>
+    <div style="background:var(--teal);color:#fff;border-radius:3px;padding:2px 8px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Research-Backed</div>
+  </div>
+  <div style="padding:18px 22px;background:#fff;">
+    <p style="margin:0 0 12px;font-size:.9rem;line-height:1.7;color:#374151;">The partner we model throughout this playbook is intentionally not an outlier. This is a typical U.S.-based SMB Microsoft partner operating at approximately $2.4 million in annual revenue, serving the long tail of small and mid-sized businesses. This profile reflects what independent industry research consistently shows to be the most recognizable operating model at this stage of partner maturity.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:8px;">At a Glance</div>
+        <ul style="margin:0;padding-left:1.1rem;font-size:.84rem;line-height:1.8;color:#374151;">
+          <li>Supports <strong>50 active SMB customers</strong>, accumulated over years &mdash; not from a high-velocity sales engine</li>
+          <li>Manages approximately <strong>2,000 Microsoft 365 seats</strong></li>
+          <li>Employs <strong>9 people</strong>: 4 technical staff, 1 Account Exec, Managing Partner who also carries quota, 1 PT Ops/Admin</li>
+          <li>Derives <strong>~76% of revenue from services</strong>; 24% from license resale</li>
+          <li>Industry benchmarks show well-run SMB partners at <strong>~8&ndash;12% EBITDA</strong>. The models in this playbook land at <strong>~5&ndash;6%</strong> &mdash; intentionally lower to reflect conservative margin assumptions and active reinvestment during practice build-out</li>
+          <li>Has NOT yet built a packaged, priced Copilot practice</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin-bottom:8px;">This is NOT a broken business</div>
+        <p style="margin:0 0 10px;font-size:.84rem;line-height:1.7;color:#374151;">This partner has already made the hard transitions: from founder-led selling to a two-person sales motion, from license resale to a services-first model, from opportunistic projects to more repeatable delivery.</p>
+        <p style="margin:0;font-size:.84rem;line-height:1.7;color:#374151;">And yet <strong style="color:var(--navy);">growth is still hard</strong>. Every new hire compresses margin. Every new solution area requires new skills. Staying flat limits both momentum and relevance. This is the constraint Copilot solves &mdash; not by rescuing a failing business, but by unlocking leverage in a healthy one.</p>
+      </div>
+    </div>
+    <div style="background:var(--muted);border-radius:var(--radius);padding:11px 16px;font-size:.78rem;line-height:1.6;color:#6b7280;">
+      <strong style="color:var(--navy);">Research basis:</strong> This model is informed by IDC Microsoft Partner Ecosystem studies (62&ndash;70% services revenue share), the Partner Economics Profitability Study (services:software ratio ~2.0 for mid-cohort partners), Datto State of the MSP 2024 (majority of MSPs serve fewer than 100 customers with 25&ndash;50 employee businesses), Kaseya MSP Benchmark Survey 2024 (most MSPs operate with 6&ndash;15 total employees), Service Leadership Index Q4 2024 (avg EBITDA 11.1%, managed service GM 46.2%), and Bowman Williams MSP Salary Guide 2025&ndash;2026 (labor benchmarks). These numbers are conservative by design &mdash; not aspirational.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PARTNER P&L COMPARISON -->
+<!-- ============================================================ -->
+
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);margin:28px 0;">
+
+  <!-- Section header -->
+  <div style="background:linear-gradient(135deg,#001f3d 0%,#003057 55%,#005F6B 100%);padding:20px 26px;">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:5px;">Partner Business Economics</div>
+    <div style="font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:6px;">What the Numbers Actually Look Like: Two Partner P&amp;Ls</div>
+    <p style="margin:0;font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.6;">9 people growing to 10. Essentially the same 50&ndash;60 customers. One has a packaged Copilot practice. One doesn&rsquo;t. Here&rsquo;s what that difference looks like on the P&amp;L &mdash; modeled with conservative CSP margin assumptions (6% M365, 10% Azure) aligned with the CPB Practice Builder workbook &mdash; Service Leadership Index, Bowman Williams, and Worklyn Partners benchmark data.</p>
+  </div>
+
+  <!-- Profile labels strip -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#f3f4f6;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"></div>
+    <div style="background:#fafafa;padding:12px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#6b7280;margin-bottom:3px;">Profile 1 &mdash; Today</div>
+      <div style="font-size:.92rem;font-weight:700;color:#374151;">The Modern Work Partner</div>
+      <div style="font-size:.78rem;color:#6b7280;margin-top:2px;">50 customers &nbsp;&middot;&nbsp; 2,000 seats &nbsp;&middot;&nbsp; 9 staff &nbsp;&middot;&nbsp; Profitable, constrained &mdash; no packaged AI practice</div>
+    </div>
+    <div style="background:#eef6f8;padding:12px 18px;border-bottom:1px solid var(--border);">
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:3px;">Profile 2 &mdash; Frontier</div>
+      <div style="font-size:.92rem;font-weight:700;color:var(--navy);">The Copilot Practice Partner</div>
+      <div style="font-size:.78rem;color:#6b7280;margin-top:2px;">60 customers &nbsp;&middot;&nbsp; 2,400 seats &nbsp;&middot;&nbsp; 10 staff &nbsp;&middot;&nbsp; Real AgentOps practice (18&ndash;24 mo in)</div>
+    </div>
+  </div>
+
+  <!-- Revenue total row -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#f3f4f6;padding:10px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);">Revenue</div>
+    </div>
+    <div style="background:#fafafa;padding:10px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <div style="font-size:1.2rem;font-weight:700;color:#374151;line-height:1;">$2,384,000</div>
+      <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">~$2.4M annual revenue</div>
+    </div>
+    <div style="background:#eef6f8;padding:10px 18px;border-bottom:1px solid var(--border);">
+      <div style="font-size:1.2rem;font-weight:700;color:var(--navy);line-height:1;">$3,010,000</div>
+      <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">~$3.0M annual revenue</div>
+    </div>
+  </div>
+
+  <!-- Revenue breakdown rows -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#f8f9fa;padding:9px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.75rem;color:#6b7280;">M365 License</div></div>
+    <div style="background:#fff;padding:9px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$576,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">24%</span></div>
+    <div style="background:#f9fbfc;padding:9px 18px;border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$691,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">24%</span></div>
+
+    <div style="background:#f8f9fa;padding:9px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.75rem;color:#6b7280;">MW Services</div></div>
+    <div style="background:#fff;padding:9px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$1,100,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">46%</span></div>
+    <div style="background:#f9fbfc;padding:9px 18px;border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$1,140,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">38%</span></div>
+
+    <div style="background:#f8f9fa;padding:9px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.75rem;color:#6b7280;">Azure</div></div>
+    <div style="background:#fff;padding:9px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$616,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">26%</span></div>
+    <div style="background:#f9fbfc;padding:9px 18px;border-bottom:1px solid var(--border);"><span style="font-size:.86rem;font-weight:600;color:#374151;">$720,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">24%</span></div>
+
+    <div style="background:#f8f9fa;padding:9px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.75rem;color:#6b7280;">Copilot / AI</div></div>
+    <div style="background:#fff;padding:9px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <span style="font-size:.86rem;font-weight:600;color:#9ca3af;">$92,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">5%</span>
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:1px;">Ad hoc &mdash; not a practice</div>
+    </div>
+    <div style="background:#f9fbfc;padding:9px 18px;border-bottom:1px solid var(--border);">
+      <span style="font-size:.86rem;font-weight:600;color:var(--teal);">$459,000</span><span style="font-size:.72rem;color:#9ca3af;margin-left:6px;">15%</span>
+      <div style="font-size:.7rem;color:var(--teal);margin-top:1px;">20 T1 + 8 T2 retainers + builds + assessments</div>
+    </div>
+  </div>
+
+  <!-- Gross Profit row -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#e8eaf0;padding:10px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.72rem;font-weight:700;color:var(--navy);">Gross Profit</div></div>
+    <div style="background:#f3f4f6;padding:10px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="font-size:.9rem;font-weight:700;color:#374151;">$1,157,000</span><span style="font-size:.76rem;color:#6b7280;margin-left:6px;">48.5%</span></div>
+    <div style="background:#ddedf1;padding:10px 18px;border-bottom:1px solid var(--border);"><span style="font-size:.9rem;font-weight:700;color:var(--navy);">$1,356,000</span><span style="font-size:.76rem;color:#6b7280;margin-left:6px;">45.0%</span></div>
+  </div>
+
+  <!-- SG&A row -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#e8eaf0;padding:10px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;"><div style="font-size:.72rem;font-weight:700;color:var(--navy);">SG&amp;A</div></div>
+    <div style="background:#f3f4f6;padding:10px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="font-size:.9rem;font-weight:700;color:#374151;">$1,027,000</span><span style="font-size:.76rem;color:#6b7280;margin-left:6px;">9 staff + overhead ($223K)</span></div>
+    <div style="background:#ddedf1;padding:10px 18px;border-bottom:1px solid var(--border);"><span style="font-size:.9rem;font-weight:700;color:var(--navy);">$1,182,000</span><span style="font-size:.76rem;color:#6b7280;margin-left:6px;">10 staff + overhead (+AI Specialist)</span></div>
+  </div>
+
+  <!-- EBITDA row — the punchline -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#003057;padding:12px 16px;border-right:1px solid rgba(255,255,255,.1);display:flex;align-items:center;"><div style="font-size:.72rem;font-weight:700;color:#fff;">EBITDA</div></div>
+    <div style="background:#eef6f8;padding:12px 18px;border-right:1px solid var(--border);">
+      <div style="font-size:1.1rem;font-weight:700;color:#0f766e;line-height:1;">+$130,000</div>
+      <div style="font-size:.75rem;color:#0f766e;margin-top:2px;">+5.4% &nbsp;&middot;&nbsp; Profitable &mdash; but constrained</div>
+    </div>
+    <div style="background:#eef6f8;padding:12px 18px;">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--teal);line-height:1;">+$174,000</div>
+      <div style="font-size:.75rem;color:var(--teal);margin-top:2px;">+5.8% &nbsp;&middot;&nbsp; Growing and healthy</div>
+    </div>
+  </div>
+
+  <!-- Staff detail row -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#f8f9fa;padding:10px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <div style="font-size:.65rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;">Staff detail</div>
+    </div>
+    <div style="background:#fff;padding:10px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);">
+      <div style="display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:#374151;">
+        <div>Technical L1/L2 <span style="color:#9ca3af;">(2)</span></div>
+        <div>Technical L3 <span style="color:#9ca3af;">(1)</span></div>
+        <div style="color:#9ca3af;font-style:italic;">&mdash; AI Specialist (not yet hired)</div>
+        <div>Senior Eng / vCIO <span style="color:#9ca3af;">(1)</span></div>
+        <div>Sales / Account Exec <span style="color:#9ca3af;">(1)</span></div>
+        <div>Managing Partner <span style="color:#9ca3af;">(1)</span></div>
+        <div>Ops / Admin <span style="color:#9ca3af;">(1 PT)</span></div>
+      </div>
+    </div>
+    <div style="background:#f9fbfc;padding:10px 18px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:#374151;">
+        <div>Technical L1/L2 <span style="color:#9ca3af;">(2)</span></div>
+        <div>Technical L3 <span style="color:#9ca3af;">(1)</span></div>
+        <div style="color:var(--teal);font-weight:600;">+ AI / Cloud Specialist (1) &larr; the hire</div>
+        <div>Senior Eng / vCIO <span style="color:#9ca3af;">(1)</span></div>
+        <div>Sales / Account Exec <span style="color:#9ca3af;">(1)</span></div>
+        <div>Managing Partner <span style="color:#9ca3af;">(1)</span></div>
+        <div>Ops / Admin <span style="color:#9ca3af;">(1 PT)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key metrics row -->
+  <div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:0;background:var(--border);">
+    <div style="background:#f8f9fa;padding:10px 16px;border-right:1px solid var(--border);">
+      <div style="font-size:.65rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;">Key metrics</div>
+    </div>
+    <div style="background:#fff;padding:10px 18px;border-right:1px solid var(--border);">
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:#374151;">
+        <div>Rev / employee: <strong>$265,000</strong></div>
+        <div>Blended GM: <strong>48.5%</strong></div>
+        <div>License share: <strong>24%</strong></div>
+        <div>Services share: <strong>76%</strong></div>
+      </div>
+    </div>
+    <div style="background:#f9fbfc;padding:10px 18px;">
+      <div style="display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:#374151;">
+        <div>Rev / employee: <strong style="color:var(--teal);">$301,000</strong></div>
+        <div>Blended GM: <strong>45.0%</strong></div>
+        <div>License share: <strong>23%</strong></div>
+        <div>Services share: <strong>77%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copilot practice detail -->
+  <div style="border-top:1px solid var(--border);padding:16px 22px;background:#fff;">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:10px;">Frontier Profile &mdash; Copilot Practice Detail ($459,000)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div style="background:var(--muted);border-radius:5px;padding:10px 12px;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:4px;">T1 Retainers</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);">$180,000</div>
+        <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">25 customers &times; 50 users &times; $12/mo</div>
+      </div>
+      <div style="background:var(--muted);border-radius:5px;padding:10px 12px;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:4px;">T2 Retainers</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);">$120,000</div>
+        <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">10 customers &times; 50 users &times; $20/mo</div>
+      </div>
+      <div style="background:var(--muted);border-radius:5px;padding:10px 12px;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:4px;">Agent Builds</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);">$117,000</div>
+        <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">18 builds &times; $6,500 avg</div>
+      </div>
+      <div style="background:var(--muted);border-radius:5px;padding:10px 12px;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);margin-bottom:4px;">Assessments</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--navy);">$42,000</div>
+        <div style="font-size:.72rem;color:#6b7280;margin-top:2px;">Discovery workshops &amp; readiness assessments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The punchline -->
+  <div style="display:grid;grid-template-columns:3px 1fr;">
+    <div style="background:linear-gradient(to bottom,var(--teal),var(--navy));"></div>
+    <div style="padding:18px 24px;background:#fff;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:6px;">What Changed Between Profile 1 and Profile 2</div>
+          <p style="margin:0 0 10px;font-size:.88rem;line-height:1.7;color:#374151;">One strategic hire. Ten more customers. A packaged, priced Copilot practice. Gross margin compresses slightly &mdash; from 48.5% to 45.0% &mdash; because Copilot introduces real platform costs that traditional services (which are mostly labor) do not carry. But <strong style="color:var(--navy);">revenue grows by $626,000 on a nearly fixed cost base</strong>. Copilot makes the second business measurably more scalable: +26% revenue, +$44,000 in EBITDA, and a recurring revenue base that compounds year over year.</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:.82rem;line-height:1.6;color:#374151;padding:8px 12px;background:#f0f9fa;border-left:3px solid var(--teal);border-radius:0 4px 4px 0;"><strong style="color:var(--navy);">Why EBITDA holds flat:</strong> This model intentionally holds EBITDA growth flat to reflect reinvestment in specialization, enablement, and delivery maturity during the first 18&ndash;24 months of a Copilot practice. The return compounds in Year 2 and beyond as the retainer base scales without proportional cost growth.</div>
+            <div style="font-size:.82rem;line-height:1.6;color:#374151;padding:8px 12px;background:#fafafa;border-left:3px solid #9ca3af;border-radius:0 4px 4px 0;"><strong style="color:var(--navy);">This is not a top-quartile model.</strong> It represents a realistic, disciplined SMB partner &mdash; not a best-in-class outlier. Top-quartile MSPs (TruMethods &ldquo;world class&rdquo;) target 25&ndash;35% EBITDA. That ceiling is real and achievable &mdash; but it starts from exactly here.</div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;text-align:center;background:var(--navy);border-radius:var(--radius);padding:16px 22px;min-width:180px;">
+          <div style="font-size:2rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;">+$44K</div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.4;">EBITDA swing<br>+26% revenue, same profitability</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sources footer -->
+  <div style="padding:10px 22px;background:#f8f9fa;border-top:1px solid var(--border);">
+    <div style="font-size:.72rem;color:#9ca3af;line-height:1.6;">
+      <strong style="color:#6b7280;">Note on gross margin:</strong> The gross margin shown (48.5% / 45.0%) reflects a P&amp;L structure where <em>all labor</em> sits below the gross profit line in SG&amp;A. License COGS uses a conservative 6% CSP margin (versus the optimistic 12% often assumed); Azure COGS uses a 10% consumption margin. Both reflect realistic SMB partner economics as modeled in the CPB Practice Builder workbook. Service Leadership Index&rsquo;s 46.2% GM includes tech labor in COGS &mdash; our structure produces the same EBITDA through a different accounting convention. &nbsp;|&nbsp; <strong style="color:#6b7280;">Sources &amp; methodology:</strong>
+      Revenue mix &mdash; IDC Microsoft Partner Ecosystem Study; Service Leadership Index Q4 2024.
+      EBITDA benchmarks &mdash; Service Leadership avg 11.1% Q4 2024; MSP profitability analysis (MSP Success / ConnectWise 2024) avg 8&ndash;12% for non-PE-backed MSPs under $5M.
+      Gross margin &mdash; Service Leadership managed service GM avg 46.2% Q4 2024; M365 CSP margin 5&ndash;7% base (conservative 6% used); Azure consumption margin 10% (SMB CSP range 5&ndash;15%).
+      RPE benchmark &mdash; Worklyn Partners ($200K floor); TruMethods world-class ($400K+).
+      Labor &mdash; Bowman Williams MSP Salary Guide 2025&ndash;2026; fully-loaded rates per CPB labor model.
+      All figures are conservative illustrative estimates intended to represent a realistic, disciplined SMB partner &mdash; not a top-quartile outlier. Substitute your actual rates into the CPB Practice Builder workbook for a business-specific calculation.
+      <br><em>Note on COGS structure: Copilot practice revenue is primarily services-delivered. Delivery labor appears in SG&amp;A, not COGS. COGS growth reflects incremental platform tooling and license passthrough only &mdash; which is why COGS barely moves while revenue increases 26%.</em>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- EBITDA BENCHMARK CONTEXT -->
+<!-- ============================================================ -->
+
+<div style="border:1px solid #dde1e7;border-radius:8px;overflow:hidden;margin:24px 0;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#001f3d 0%,#003057 60%,#005F6B 100%);padding:16px 24px;">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:4px;">Context for Partner Owners</div>
+    <div style="font-size:1rem;font-weight:700;color:#fff;">Where This Model Intentionally Differs From Benchmarks</div>
+    <p style="margin:6px 0 0;font-size:.84rem;color:rgba(255,255,255,.6);line-height:1.55;">Three numbers in this playbook may look different from what you expect. Each deviation is intentional and explained below.</p>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:20px 24px;background:#fff;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+    <!-- Left: Why we land at 5-6% -->
+    <div>
+      <p style="margin:0 0 10px;font-size:.9rem;line-height:1.75;color:#374151;">Industry benchmarks often cite <strong>~8&ndash;12% EBITDA</strong> for well-run SMB Microsoft partners. That figure is real &mdash; but it represents a <em>steady-state operating model</em>, not a transition year.</p>
+      <p style="margin:0 0 12px;font-size:.9rem;line-height:1.75;color:#374151;">The P&amp;L examples in this playbook intentionally land lower, at approximately <strong>5&ndash;6% EBITDA</strong>, to reflect a more realistic moment in a partner&rsquo;s journey:</p>
+      <ul style="margin:0 0 12px;padding-left:1.2rem;font-size:.88rem;line-height:1.9;color:#374151;">
+        <li>A second seller has recently been added</li>
+        <li>A new Copilot practice is being built and productized</li>
+        <li>Specialized skills are being hired and enabled</li>
+        <li>Platform costs and delivery friction are real and present</li>
+        <li>The business is prioritizing sustainability over short-term margin maximization</li>
+      </ul>
+      <div style="background:#f0f9fa;border-left:3px solid #005F6B;padding:10px 14px;border-radius:0 4px 4px 0;font-size:.86rem;line-height:1.65;color:#374151;">
+        <strong style="color:#003057;">In other words:</strong> this is a growth and reinvestment phase, not an optimized end state.
+      </div>
+    </div>
+
+    <!-- Right: Path to benchmark + why we model lower -->
+    <div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#003057;margin-bottom:8px;">What Changes to Reach ~10% EBITDA</div>
+      <p style="margin:0 0 10px;font-size:.88rem;line-height:1.7;color:#374151;">Reaching benchmark EBITDA does not require a different customer base, higher license margins, or aggressive pricing. It comes from <strong>operational maturity</strong>:</p>
+      <ul style="margin:0 0 16px;padding-left:1.2rem;font-size:.88rem;line-height:1.9;color:#374151;">
+        <li><strong>Utilization normalization</strong> as delivery becomes repeatable</li>
+        <li><strong>SG&amp;A leverage</strong> as revenue grows faster than overhead</li>
+        <li><strong>Practice maturity</strong> shifting Copilot work from projects to retainers</li>
+        <li><strong>Reduced delivery friction</strong> and less pre-sales burden</li>
+      </ul>
+      <p style="margin:0 0 12px;font-size:.88rem;line-height:1.7;color:#374151;">These changes occur naturally over 12&ndash;24 months once a practice is established &mdash; particularly for packaged, recurring services.</p>
+      <div style="background:#f8f9fa;border:1px solid #dde1e7;border-radius:6px;padding:12px 16px;">
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#005F6B;margin-bottom:6px;">Why We Model the Lower Number</div>
+        <ul style="margin:0;padding-left:1.1rem;font-size:.84rem;line-height:1.8;color:#374151;">
+          <li>More <strong>honest</strong> for partners actively building new capabilities</li>
+          <li>More <strong>relatable</strong> to the majority of SMB firms</li>
+          <li>More <strong>useful</strong> as a planning baseline</li>
+        </ul>
+        <p style="margin:10px 0 0;font-size:.84rem;line-height:1.65;color:#6b7280;font-style:italic;">Benchmark EBITDA reflects where disciplined partners arrive. This model reflects where many partners are while getting there.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Third row: efficiency metrics note — full width -->
+  <div style="padding:14px 24px 18px;background:#f8f9fa;border-top:1px solid #dde1e7;">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#003057;margin-bottom:8px;">Why Efficiency Metrics Appear Above Industry Average</div>
+    <p style="margin:0;font-size:.87rem;line-height:1.7;color:#374151;">Revenue per employee (~$265K) and revenue per technician (~$340K) in this model appear higher than broad MSP industry averages. This reflects the model&rsquo;s specific profile: a <strong>lean, services-heavy SMB partner at the upper end of the $2&ndash;3M revenue range</strong>, where a deliberately small headcount generates high per-person output. High revenue efficiency and below-benchmark EBITDA are not contradictory &mdash; they are both characteristics of a partner in active growth mode, where revenue per head is strong but margin is being reinvested. As delivery matures and overhead is leveraged against a larger retainer base, both metrics move toward benchmark simultaneously.</p>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- ANCHOR STUDIES -->
+<!-- ============================================================ -->
+
+<h3>The Anchor Studies</h3>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:12px 0;">
+
+  <div class="card" style="border-left:4px solid #003057;">
+    <div class="card-h" style="font-size:1rem;margin-bottom:6px;">Forrester TEI: Impact of AI on Microsoft Modern Work Partner Revenue <span style="font-weight:400;color:#666;">(FY2025)</span></div>
+    <div class="card-b">
+      <p style="margin:0 0 8px;">The definitive partner economics study for the Microsoft Modern Work channel. Forrester interviewed 23 Modern Work partners and 9 Power Platform partners, building on more than 215 partner interviews, 200 buyer interviews, and multiple surveys conducted over 11 years. <a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">tei.forrester.com</a></p>
+      <ul style="margin:0;padding-left:16px;font-size:.92rem;">
+        <li>Expected partner revenue opportunity: <strong>$95.60/user/month</strong> across all Modern Work solution areas — up 13% YoY, with 60% of that growth attributable to AI <span style="font-size:.85em;color:#6b7280;">(enterprise/blended average across all partner types and sizes)</span></li>
+        <li>AI now accounts for <strong>14% of total expected partner revenue opportunity</strong></li>
+        <li>AI agents command a <strong>25%+ price premium</strong> over deterministic automation</li>
+        <li>"We grew 21% this past year, and it is all because of Copilot. We are selling more projects and bigger projects, including winning new logos."</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:4px solid #005F6B;">
+    <div class="card-h" style="font-size:1rem;margin-bottom:6px;">IDC: Microsoft Partners — Driving Economic Value and AI Maturity <span style="font-weight:400;color:#666;">(IDC #US52483124, September 2024)</span></div>
+    <div class="card-b">
+      <p style="margin:0 0 8px;">IDC surveyed 638 partners globally for this Microsoft-commissioned study — the largest partner economics dataset available. <em>(IDC #US52483124 — Microsoft Partner Portal)</em></p>
+      <ul style="margin:0;padding-left:16px;font-size:.92rem;">
+        <li>Services multiplier: <strong>$8.45</strong> — for every $1 of Microsoft revenue, service-focused partners generate $8.45 in their own services revenue</li>
+        <li><strong>81%</strong> of partners agree Microsoft AI will increase their revenue; <strong>71%</strong> agree it will increase their profit</li>
+        <li><strong>62%</strong> of total partner revenue comes from services — not license resale — and AI is elevating this further</li>
+        <li>Software development partners generate an even higher multiplier: <strong>$10.93</strong> per $1 of Microsoft revenue</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="callout subtle" style="margin:10px 0 16px;">
+  <div class="callout-title">&#x1F4C8; Forrester TEI SMB Baseline (July 2023)</div>
+  <div class="callout-body">A predecessor study established the SMB-specific baseline: expected SMB partner revenue opportunity of <strong>$45.30/user/month</strong>, growing 19% YoY — outpacing enterprise growth (16%) at that time. AI was nascent in this study; the SMB opportunity has expanded substantially since, as confirmed by the FY2025 update above. <a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner2024/" target="_blank" rel="noopener">Forrester TEI Modern Work Partner FY2024</a>. Note: This playbook's $91/user/month reference is drawn from a prior publication of the same Forrester study. The most current data shows $95.60 for the enterprise/blended figure. The CPB model's own SMB per-user revenue (including Azure) at the Frontier profile exceeds this at ~$104/user/month — validating that SMB partners who build the full Modern Work + Azure + AI stack are operating above the enterprise benchmark. Our $91 metric is deliberately conservative for planning purposes.</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- REVENUE BENCHMARK VALIDATION TABLE -->
+<!-- ============================================================ -->
+
+<h3>Revenue Benchmark Validation</h3>
+
+<p>The table below maps every major revenue figure in this playbook to its external validation source. Click any source link to verify independently.</p>
+
+<div style="overflow-x:auto;">
+<table>
+  <thead>
+    <tr style="background:#003057;color:#fff;">
+      <th style="background:inherit;color:inherit;padding:9px 10px;">Playbook Benchmark</th>
+      <th style="background:inherit;color:inherit;padding:9px 10px;">External Validation</th>
+      <th style="background:inherit;color:inherit;padding:9px 10px;">Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#f8fafc;">
+      <td style="padding:8px 10px;font-weight:600;">$3,000–$8,000<br><span style="font-weight:400;font-size:.88rem;">Copilot deployment &amp; training</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">Microsoft Commerce Incentives (CSP Deployment Accelerator) pays partners $4,000–$8,000 for small/medium Modern Work deployments in Market A countries — scoped to tenant configuration, security prerequisites, and adoption. The same work Stage 1 covers.</td>
+      <td style="padding:8px 10px;font-size:.88rem;"><a href="https://techcommunity.microsoft.com/blog/partnernews/enhance-security-for-business-premium-customers-with-csp-accelerator/4471863" target="_blank" rel="noopener">Microsoft TechCommunity — CSP Accelerator</a></td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600;">$3,500–$8,000<br><span style="font-weight:400;font-size:.88rem;">Per-agent build (Copilot Studio)</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">Forrester TEI FY2025 confirms AI agents cost roughly 25% more to build than deterministic automation. Covenant Technology Partners lists a Copilot Studio Vision &amp; Value Workshop as a 5–10 day engagement in the Microsoft Marketplace — at typical SMB consulting rates ($800–$1,200/day), that yields $4,000–$12,000.</td>
+      <td style="padding:8px 10px;font-size:.88rem;"><a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">Forrester TEI FY2025</a> · <a href="https://marketplace.microsoft.com" target="_blank" rel="noopener">MS Marketplace</a></td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:8px 10px;font-weight:600;">$5,000–$15,000<br><span style="font-weight:400;font-size:.88rem;">Security &amp; data readiness</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">The Forrester TEI framework explicitly lists data security and AI-readiness investment as prerequisite partner service categories. Microsoft's CSP Deployment Accelerator funds $4,000–$8,000 specifically for Copilot deployment prerequisites (SharePoint cleanup, Purview, RBAC). EPC Group lists fixed-fee Microsoft consulting accelerators starting at $15,000 for comprehensive assessments.</td>
+      <td style="padding:8px 10px;font-size:.88rem;"><a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">Forrester TEI FY2025</a> · <a href="https://epcgroup.net" target="_blank" rel="noopener">EPC Group</a></td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600;">$15,000–$50,000+<br><span style="font-weight:400;font-size:.88rem;">Power Platform / full agent build</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">A comprehensive Microsoft 365 Copilot Onboarding package — covering setup, Power Automate flows, SharePoint readiness, and adoption coaching — is listed at $30,000 in the Microsoft commercial marketplace by Covenant Technology Partners, placing it squarely in the center of this range.</td>
+      <td style="padding:8px 10px;font-size:.88rem;"><a href="https://marketplace.microsoft.com" target="_blank" rel="noopener">MS Marketplace</a> · <a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">Forrester TEI FY2025</a></td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:8px 10px;font-weight:600;">$10–$15/user/month<br><span style="font-weight:400;font-size:.88rem;">Tier 1 — AI Essentials</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">Full-stack managed IT services for SMBs typically run $75–$400/user/month (Cloudavize 2025) and $100–$250/user/month as a typical SMB range (Maven IT Solutions 2026). A $10–$15/user add-on for Copilot license management, adoption support, and basic monitoring represents roughly 10–15% of a typical full-service MSP fee — a lightweight entry tier that sits alongside existing IT management and is priced to generate a sustainable ~48% gross margin based on the blended L1/L2 labor the work actually requires.</td>
+      <td style="padding:8px 10px;font-size:.88rem;">Cloudavize 2025 · Maven IT Solutions 2026</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600;">$20–$25/user/month<br><span style="font-weight:400;font-size:.88rem;">Tier 2 — AI Operations</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">At $20/user for a 50-user customer, the Tier 2 retainer generates approximately $1,000/month in managed service MRR. Combined with license margin, this customer produces roughly $1,300–$1,800/month in total recurring revenue — consistent with the IDC finding that 62% of Microsoft partner revenue comes from services.</td>
+      <td style="padding:8px 10px;font-size:.88rem;">IDC #US52483124 <em>(Microsoft Partner Portal)</em></td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:8px 10px;font-weight:600;">$45–$55/user/month<br><span style="font-weight:400;font-size:.88rem;">Tier 3 — AI Transformation</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">At $50/user for a 75-user customer, the Tier 3 retainer generates approximately $3,750/month ($45,000 annualized). This positions the service well below standard full-service MSP rates ($100–$250/user) while delivering a specialized, high-value managed service encompassing full AI estate management, quarterly strategy reviews, and Power Platform integration support — making the value proposition straightforward for SMB customers already investing $21/user/month in Copilot licensing.</td>
+      <td style="padding:8px 10px;font-size:.88rem;">IDC #US52483124 <em>(Microsoft Partner Portal)</em> · MSP industry benchmarks</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 10px;font-weight:600;">132–353% ROI<br><span style="font-weight:400;font-size:.88rem;">Copilot SMB ROI (3-year)</span></td>
+      <td style="padding:8px 10px;font-size:.9rem;">Forrester TEI: The Projected Total Economic Impact of Microsoft 365 for Business (April 2025). Study based on 9 interviews and 145 survey respondents across SMBs with 25–300 employees. Quantifies time savings, productivity gains, and cost avoidance attributable to Copilot and M365 AI features.</td>
+      <td style="padding:8px 10px;font-size:.88rem;"><a href="https://tei.forrester.com/go/Microsoft/365Business/?lang=en-us" target="_blank" rel="noopener">Forrester TEI — M365 for Business (April 2025)</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<!-- CHART: PLAYBOOK BENCHMARKS vs IDC MULTIPLIER -->
+<!-- ============================================================ -->
+
+<h3>The Compounding Math: A Sanity Check</h3>
+
+<p>The IDC services multiplier provides a useful sanity check on cumulative engagement value. Consider a 50-user community bank at Stage 3:</p>
+
+<div class="callout subtle" style="margin:10px 0 16px;">
+  <div class="callout-title">&#x1F9EE; The IDC Multiplier Check — 50-User Bank at Stage 3</div>
+  <div class="callout-body">
+    <table style="width:100%;font-size:.9rem;border-collapse:collapse;margin-top:6px;">
+      <thead>
+        <tr style="background:#003057;color:#fff;">
+          <th style="padding:8px 10px;background:inherit;color:inherit;">Component</th>
+          <th style="padding:8px 10px;background:inherit;color:inherit;">Calculation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#f8fafc;"><td style="padding:7px 10px;">Annual Microsoft Copilot licensing</td><td style="padding:7px 10px;">50 users × $21/user/month × 12 = <strong>$12,600/year</strong></td></tr>
+        <tr><td style="padding:7px 10px;">Stage 3 Year-1 partner revenue (playbook estimate)</td><td style="padding:7px 10px;"><strong>$35,000–$55,000</strong></td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:7px 10px;">Partner services-to-license ratio (playbook)</td><td style="padding:7px 10px;">$32K/$12.6K = <strong>2.5:1</strong> (low) &nbsp;|&nbsp; $45K/$12.6K = <strong>3.6:1</strong> (high)</td></tr>
+        <tr><td style="padding:7px 10px;">IDC benchmark multiplier [IDC #US52483124 — <em>Microsoft Partner Portal</em>]</td><td style="padding:7px 10px;"><strong>$8.45:1</strong></td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:7px 10px;">Theoretical IDC max for this customer</td><td style="padding:7px 10px;">$12,600 × $8.45 = <strong>$106,470</strong></td></tr>
+        <tr><td style="padding:7px 10px;font-weight:700;color:#003057;">Playbook capture rate vs. IDC max</td><td style="padding:7px 10px;font-weight:700;color:#003057;">~30–42% — conservative SMB pricing, significant Stage 4 expansion room</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;font-size:.9rem;">The enterprise benchmark ($95.60) is useful for market-sizing, but SMB-focused partners should plan against a more conservative baseline. Applying the same 14% AI share to a <strong>$60/user/month SMB planning baseline</strong> (Forrester SMB TEI FY2024 of $45.30, adjusted for AI acceleration since) yields <strong>$8.40/user/month</strong> in direct AI services — or $420/month for a 50-user bank. Our Tier 2 retainer at $1,000/month for that same customer (50 users &times; $20/mo) is deliberately priced <em>above</em> this SMB benchmark because the retainer bundles ongoing agent management, security monitoring, and AI ROI reporting that the raw Forrester figure doesn't fully capture. The managed service layer — security, compliance, adoption — creates the services pull-through Forrester quantifies across adjacent solution areas. <strong>The numbers hold, and our pricing is defensible against the SMB-specific benchmark.</strong> <a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">[Forrester TEI FY2025]</a></p>
+  </div>
+</div>
+
+<!-- Chart.js: Playbook Benchmarks vs IDC Multiplier Context (Grouped) -->
+<p style="margin:0 0 10px;">The chart below answers a simple question: <em>are these numbers made up?</em> For each stage of the First Community Bank scenario, the dark and teal bars show the playbook's low and high revenue estimates. The gray bar shows what the IDC $8.45 multiplier says is theoretically achievable for that same customer at that same stage. In every case, the playbook estimates capture only 25–45% of the IDC ceiling — which means the numbers in this playbook are not optimistic projections. They are conservative starting points with significant upside built in.</p>
+
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0;">
+  <p style="margin:0 0 10px;font-weight:700;color:#003057;font-size:.95rem;">Playbook Revenue Estimates vs. IDC Theoretical Maximum — By Stage (50-User Bank)</p>
+  <div style="height:360px;"><canvas id="benchmarkChart"></canvas></div>
+  <p style="margin:8px 0 0;font-size:.8rem;color:#6b7280;text-align:right;">Sources: IDC #US52483124 (Sep 2024) · Forrester TEI FY2025 · Playbook estimates. IDC max = 50 users × $21/user/mo Copilot license × $8.45 multiplier × 12 months = $106,470.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  var ctx = document.getElementById('benchmarkChart');
+  if (!ctx) return;
+  // IDC theoretical max = 50 users x $21/mo x 12 x $8.45 = $106,470 — same ceiling at every stage
+  // Stage 1 playbook: $20K-$35K | Stage 2: $28K-$42K | Stage 3: $32K-$45K | Stage 4: $55K-$85K
+  var idcMax = 106470;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Stage 1', 'Stage 2', 'Stage 3', 'Stage 4'],
+      datasets: [
+        {
+          label: 'Playbook Estimate (Low)',
+          data: [20000, 28000, 32000, 55000],
+          backgroundColor: 'rgba(0, 48, 87, 0.8)',
+          borderColor: '#003057',
+          borderWidth: 1,
+          borderRadius: 4
+        },
+        {
+          label: 'Playbook Estimate (High)',
+          data: [35000, 42000, 45000, 85000],
+          backgroundColor: 'rgba(0, 124, 137, 0.8)',
+          borderColor: '#005F6B',
+          borderWidth: 1,
+          borderRadius: 4
+        },
+        {
+          label: 'IDC Theoretical Max (same customer)',
+          data: [idcMax, idcMax, idcMax, idcMax],
+          backgroundColor: 'rgba(245, 158, 11, 0.15)',
+          borderColor: '#f59e0b',
+          borderWidth: 2,
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(c) {
+              if (c.raw === null) return null;
+              var pct = c.datasetIndex < 2 ? ' (' + Math.round(c.raw / idcMax * 100) + '% of IDC max)' : '';
+              return c.dataset.label + ': $' + c.raw.toLocaleString() + pct;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 130000,
+          ticks: {
+            callback: function(val) { return '$' + (val/1000) + 'K'; }
+          },
+          title: { display: true, text: 'Annual Partner Revenue (50-User Bank)', font: { size: 11 } }
+        },
+        x: { ticks: { font: { size: 12 } } }
+      }
+    }
+  });
+})();
+</script>
+
+<!-- ============================================================ -->
+<!-- REFERENCES -->
+<!-- ============================================================ -->
+
+<div class="callout subtle" style="margin:16px 0;">
+  <div class="callout-title">&#x1F3E2; Applying These Benchmarks to Your SMB Practice</div>
+  <div class="callout-body">The $95.60/user/month figure is a blended average across <em>all</em> Microsoft Modern Work partners — including large enterprise systems integrators, national consultancies, and high-volume cloud resellers. SMB-focused partners working primarily with 10–300 seat customers should use <strong>$50–$65/user/month as a more conservative planning baseline</strong>, consistent with where this playbook's own revenue model lands when the full stack is priced at the recommended tier levels. The $95.60 figure is the ceiling that validates the market opportunity. Your planning number should reflect your customer profile.</div>
+</div>
+
+<h3>Sources Referenced</h3>
+
+<p>Every benchmark in this playbook falls within or below the ranges these independent sources establish.</p>
+
+<table>
+  <thead>
+    <tr style="background:#003057;color:#fff;">
+      <th style="background:inherit;color:inherit;padding:8px 10px;width:36px;">#</th>
+      <th style="background:inherit;color:inherit;padding:8px 10px;">Source</th>
+      <th style="background:inherit;color:inherit;padding:8px 10px;">Publisher</th>
+      <th style="background:inherit;color:inherit;padding:8px 10px;">Date</th>
+      <th style="background:inherit;color:inherit;padding:8px 10px;">Key Data Point</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">1</td>
+      <td style="padding:7px 10px;"><a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner/index.html" target="_blank" rel="noopener">The Impact of AI on Microsoft Modern Work Partner Revenue: Copilot and Agents — TEI Partner Opportunity Analysis</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Forrester Consulting (commissioned by Microsoft)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">FY2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">$95.60/user/month; 13% YoY growth; agents priced 25%+ above deterministic automation</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">2</td>
+      <td style="padding:7px 10px;">Microsoft Partners: Driving Economic Value and AI Maturity (IDC #US52483124) <em>— available via Microsoft Partner Portal</em></td>
+      <td style="padding:7px 10px;font-size:.88rem;">IDC (commissioned by Microsoft)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">September 2024</td>
+      <td style="padding:7px 10px;font-size:.88rem;">$8.45 services multiplier; 638 partners surveyed; 81% expect AI revenue increase</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">3</td>
+      <td style="padding:7px 10px;"><a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner2024/" target="_blank" rel="noopener">The Partner Opportunity for Microsoft Modern Work — TEI SMB Analysis (FY2024)</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Forrester Consulting (commissioned by Microsoft)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">July 2023</td>
+      <td style="padding:7px 10px;font-size:.88rem;">SMB partner opportunity: $45.30/user/month; 19% YoY growth</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">4</td>
+      <td style="padding:7px 10px;"><a href="https://marketplace.microsoft.com" target="_blank" rel="noopener">Microsoft 365 Copilot Onboarding listing — Covenant Technology Partners</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Microsoft Commercial Marketplace</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Current</td>
+      <td style="padding:7px 10px;font-size:.88rem;">$30,000 fixed-fee: setup, Power Automate, Bookings integration, adoption coaching</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">5</td>
+      <td style="padding:7px 10px;"><a href="https://tei.forrester.com/go/Microsoft/365Business/?lang=en-us" target="_blank" rel="noopener">The Projected Total Economic Impact of Microsoft 365 for Business</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Forrester Consulting (commissioned by Microsoft)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">April 2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">ROI analysis for SMBs with 25–300 employees; 9 interviews + 145 survey respondents</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">6</td>
+      <td style="padding:7px 10px;">Managed IT Services Pricing Surveys (Cloudavize, Maven IT Solutions)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Industry MSP publications</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2025–2026</td>
+      <td style="padding:7px 10px;font-size:.88rem;">SMB full-stack managed services: $75–$400/user/month; $100–$250 typical range</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">7</td>
+      <td style="padding:7px 10px;"><a href="https://techcommunity.microsoft.com/blog/partnernews/enhance-security-for-business-premium-customers-with-csp-accelerator/4471863" target="_blank" rel="noopener">Microsoft Commerce Incentives — CSP Deployment Accelerator</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Microsoft Partner Center</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Current program</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Partner payments by tenant size: $4,000–$8,000 (small, Market A)</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">8</td>
+      <td style="padding:7px 10px;"><a href="https://epcgroup.net" target="_blank" rel="noopener">Fixed-Fee Microsoft Consulting Accelerators — EPC Group</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">EPC Group</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Current listing</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Enterprise Microsoft consulting engagements from $15,000</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;color:#6b7280;font-size:.82rem;" colspan="5" style="padding:6px 10px;font-size:.82rem;font-weight:700;color:#374151;background:#eef1f4;">Labor &amp; Salary Sources — Cost Model Validation</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">9</td>
+      <td style="padding:7px 10px;"><a href="https://www.ziprecruiter.com/Salaries/Msp-Technician-Salary" target="_blank" rel="noopener">MSP Technician Salary — ZipRecruiter</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">ZipRecruiter</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Nov 2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">MSP Technician national avg: $57,186/yr ($27.49/hr); range $21–$32/hr</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">10</td>
+      <td style="padding:7px 10px;"><a href="https://www.ziprecruiter.com/Salaries/Systems-Administrator-Salary" target="_blank" rel="noopener">Systems Administrator Salary — ZipRecruiter</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">ZipRecruiter</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Systems Administrator national avg: $88,927/yr — basis for L3 rate; $78K falls below 25th percentile</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">11</td>
+      <td style="padding:7px 10px;"><a href="https://www.glassdoor.com/Salaries/msp-technician-salary-SRCH_KO0,14.htm" target="_blank" rel="noopener">MSP Technician Salary — Glassdoor</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">Glassdoor</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Mar 2026</td>
+      <td style="padding:7px 10px;font-size:.88rem;">MSP Technician median: $65,987/yr ($32/hr); range $52,925–$82,938</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">12</td>
+      <td style="padding:7px 10px;">AI Specialist Salary — Glassdoor</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Glassdoor</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">AI Specialist national avg: $111,418/yr. MSP-market discount of 10–15% applied; model uses $100,000–$105,000</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">13</td>
+      <td style="padding:7px 10px;"><a href="https://www.bls.gov/news.release/ecec.nr0.htm" target="_blank" rel="noopener">Employer Costs for Employee Compensation</a></td>
+      <td style="padding:7px 10px;font-size:.88rem;">U.S. Bureau of Labor Statistics</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2024</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Benefits average 31.9% of wages for private-sector workers — basis for 32% burden rate used throughout cost model</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">14</td>
+      <td style="padding:7px 10px;">MSP Salary Report — Bowman Williams</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Bowman Williams</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">MSP-market AI/Cloud roles run 10–15% below national AI role averages; used to calibrate AI Specialist salary assumption</td>
+    </tr>
+    <tr>
+      <td style="padding:7px 10px;font-weight:700;">15</td>
+      <td style="padding:7px 10px;">Technology Salary Guide — Robert Half</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Robert Half</td>
+      <td style="padding:7px 10px;font-size:.88rem;">2025</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Senior Engineer / vCIO compensation benchmarks; validates $130,000–$140,000 range for top-of-stack role</td>
+    </tr>
+    <tr style="background:#f8fafc;">
+      <td style="padding:7px 10px;font-weight:700;">16</td>
+      <td style="padding:7px 10px;">Microsoft Partner Gross Margin Data — IDC #US52483124</td>
+      <td style="padding:7px 10px;font-size:.88rem;">IDC (commissioned by Microsoft)</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Sep 2024</td>
+      <td style="padding:7px 10px;font-size:.88rem;">Microsoft partner industry average gross margin: 30.7% — benchmark used to contextualize playbook's 35–49% target margins</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="1-what-is-a-frontier-firm">What Is a Frontier Firm?</h2>
+
+<div class="hero-statement">
+  <p>Microsoft introduced the concept of the Frontier Firm to describe a new class of organization — defined not by size or industry, but by how deeply <em>AI is embedded into its operations and culture.</em></p>
+  <p class="hero-sub">Early data shows Frontier Firms already dramatically outperform peers: 71% thriving rates vs. 37% globally, more capacity for meaningful work, and greater optimism. The Frontier Firm isn't a size — it's a mindset.</p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-h">&#x26A1; Intelligence on-tap</div>
+    <div class="card-b">AI is treated like electricity — abundant, affordable, and always available. Every employee has access to AI tools as a natural part of their workflow, not as a special project.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">&#x1F91D; Human-agent teams</div>
+    <div class="card-b">Employees do not just use AI tools; they manage AI agents as part of their daily work. Microsoft describes this new role as the "agent boss" — directing and improving agents like team members.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">&#x1F3AF; Outcome-first structure</div>
+    <div class="card-b">Teams form around outcomes, not departments. The organizational structure is fluid, fast, and adaptive — built to respond to what the business needs to accomplish.</div>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="metric"><div class="k">71%</div><div class="l">Thriving rate<br><span class="s">vs. 37% globally (Work Trend Index)</span></div></div>
+  <div class="metric"><div class="k">95%</div><div class="l">Hiring for AI roles<br><span class="s">in next 12–18 months</span></div></div>
+  <div class="metric"><div class="k">82%</div><div class="l">Rethinking strategy<br><span class="s">say this is a pivotal year</span></div></div>
+  <div class="metric"><div class="k">81%</div><div class="l">Integrating agents<br><span class="s">moderately or extensively soon</span></div></div>
+</div>
+
+<p>Microsoft's 2025 Work Trend Index found that 82% of leaders say this is a pivotal year to rethink key aspects of strategy and operations, and 81% expect AI agents to be moderately or extensively integrated into their company's AI strategy within the next 12–18 months. Among Frontier Firms, 95% of leaders are considering AI-specific hires in the next 12–18 months (compared to 78% among all leaders).</p>
+
+<div class="callout subtle">
+  <div class="callout-title">&#x1F680; The SMB Advantage</div>
+  <div class="callout-body">Smaller organizations have a structural edge in this transition. They have fewer silos, faster decision cycles, and a natural bias for action. A 50-person team that deploys AI correctly can operate with the sophistication and output of a much larger operation. <strong>The Frontier Firm isn't a size — it's a mindset.</strong></div>
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="2-the-frontier-partner-ecosystem">The Frontier Partner Ecosystem</h2>
+
+<!-- Deliberately trimmed vs. frontier.html's full MAICPP/badge treatment — see DESIGN.md-adjacent split spec. Do not re-expand; link to frontier.html for depth instead. -->
+
+<p>Microsoft has built a tiered recognition structure within the Microsoft AI Cloud Partner Program (MAICPP) to recognize and reward partners leading the AI transformation of their customers — from baseline program membership up through the elite, cross-discipline Frontier Partner badge.</p>
+
+<div class="callout subtle">
+  <div class="callout-title">&#x1F4CB; Companion Guide: <a href="frontier.html">The Frontier Partner Playbook</a></div>
+  <div class="callout-body">For partners ready to map their specific path to the Frontier badge, the <a href="frontier.html">Frontier Partner Playbook</a> provides a step-by-step guide through every tier in the MAICPP hierarchy — including exact PCS requirements, certification roadmaps, what TD SYNNEX resources unlock at each level, a realistic SMB assessment of where most partners should aim, and a 90-day action plan to start climbing. It is the operational companion to this playbook.</div>
+</div>
+
+<h3>The Hierarchy of Recognition</h3>
+
+<div style="margin:20px 0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);">
+
+  <!-- Column header row -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;background:var(--navy);">
+    <div></div>
+    <div style="padding:9px 14px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);">Tier</div>
+    <div style="padding:9px 14px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);border-left:1px solid rgba(255,255,255,.1);">What It Signals</div>
+  </div>
+
+  <!-- Tier 1: MAICPP -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;border-bottom:1px solid var(--border);">
+    <div style="background:#dde1e7;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#6b7280;">1</div>
+    <div style="padding:13px 16px;background:#fff;">
+      <div style="font-weight:700;color:var(--text);font-size:.9rem;">MAICPP Membership</div>
+      <div style="margin-top:3px;"><span style="font-size:.73rem;font-weight:600;background:#f1f5f9;color:#6b7280;padding:2px 7px;border-radius:3px;">All Partners</span></div>
+    </div>
+    <div style="padding:13px 16px;background:#fafafa;border-left:1px solid var(--border);font-size:.85rem;color:#374151;line-height:1.6;">
+      Base membership replacing legacy MPN. Keeps the lights on — required to transact, but no funding leverage or differentiation.
+    </div>
+  </div>
+
+  <!-- Tier 2: Solutions Partner -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;border-bottom:1px solid var(--border);">
+    <div style="background:#9bbfc8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;">2</div>
+    <div style="padding:13px 16px;background:#f8fcfd;">
+      <div style="font-weight:700;color:var(--text);font-size:.9rem;">Solutions Partner</div>
+      <div style="margin-top:3px;"><span style="font-size:.73rem;font-weight:600;background:#e4f0f3;color:var(--teal);padding:2px 7px;border-radius:3px;">All Partners</span></div>
+    </div>
+    <div style="padding:13px 16px;background:#f8fcfd;border-left:1px solid #c5dde3;font-size:.85rem;color:#374151;line-height:1.6;">
+      Validated capability in Modern Work, Security, Azure, or Business Applications. <strong>First economically rational tier</strong> — Microsoft starts paying you to close early Copilot deals.
+    </div>
+  </div>
+
+  <!-- Tier 3: Advanced Specialization -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;border-bottom:1px solid var(--border);">
+    <div style="background:#5a9aaa;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;">3</div>
+    <div style="padding:13px 16px;background:#f3f9fb;">
+      <div style="font-weight:700;color:var(--text);font-size:.9rem;">Advanced Specialization</div>
+      <div style="margin-top:3px;"><span style="font-size:.73rem;font-weight:600;background:#d6eaee;color:#2d7a8a;padding:2px 7px;border-radius:3px;">Experienced Partners</span></div>
+    </div>
+    <div style="padding:13px 16px;background:#f3f9fb;border-left:1px solid #a8cdd5;font-size:.85rem;color:#374151;line-height:1.6;">
+      Deep, audited expertise — Microsoft Copilot, Data Security, AI Apps on Azure. <strong>Where services credibility replaces price pressure.</strong>
+    </div>
+  </div>
+
+  <!-- Tier 4: Frontier Partner Badge -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;border-bottom:1px solid var(--border);">
+    <div style="background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;">4</div>
+    <div style="padding:13px 16px;background:#eef6f8;">
+      <div style="font-weight:700;color:var(--teal);font-size:.9rem;">Frontier Partner Badge</div>
+      <div style="margin-top:3px;"><span style="font-size:.73rem;font-weight:600;background:#c8e4ea;color:var(--teal);padding:2px 7px;border-radius:3px;">Elite AI-First Partners</span></div>
+    </div>
+    <div style="padding:13px 16px;background:#eef6f8;border-left:1px solid #7ab0bc;font-size:.85rem;color:#374151;line-height:1.6;">
+      World-class, cross-discipline AI capabilities across cloud, Copilot, and security. <strong>Not about selling more licenses — it's about selling what comes after licenses.</strong>
+    </div>
+  </div>
+
+  <!-- Tier 5: Frontier Distributor -->
+  <div style="display:grid;grid-template-columns:36px 220px 1fr;gap:0;">
+    <div style="background:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;">5</div>
+    <div style="padding:13px 16px;background:#eef1f5;">
+      <div style="font-weight:700;color:var(--navy);font-size:.9rem;">Frontier Distributor</div>
+      <div style="margin-top:3px;"><span style="font-size:.73rem;font-weight:600;background:#c5cfe0;color:var(--navy);padding:2px 7px;border-radius:3px;">Distributors Only</span></div>
+    </div>
+    <div style="padding:13px 16px;background:#eef1f5;border-left:1px solid #8a9ab5;font-size:.85rem;color:#374151;line-height:1.6;">
+      World-class capabilities across cloud, AI, security, support, and partner enablement. TD SYNNEX's direct line to Microsoft field investment.
+    </div>
+  </div>
+
+</div>
+
+<!-- CFO Reality Check callout -->
+<div style="background:#f0f9fa;border:1px solid #a8cdd5;border-left:4px solid var(--teal);border-radius:var(--radius);padding:14px 18px;margin:4px 0 20px;">
+  <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:8px;">&#x1F50D; Operator Reality Check</div>
+  <p style="margin:0 0 8px;font-size:.9rem;line-height:1.7;color:#374151;"><strong>Most SMB-focused partners should not chase the Frontier badge immediately.</strong> The economically rational path is:</p>
+  <ul style="margin:0 0 10px;padding-left:1.2rem;font-size:.88rem;line-height:1.8;color:#374151;">
+    <li><strong>Solutions Partner &rarr; Advanced Specialization</strong> = fastest ROI. Microsoft pays you to close deals, your services credibility increases, and delivery friction drops.</li>
+    <li><strong>Frontier Partner</strong> = intentional bet on AI services, not licensing margin. Pursue it when you&rsquo;re ready to run Copilot Studio at scale and make AgentOps a revenue line.</li>
+  </ul>
+  <p style="margin:0;font-size:.88rem;line-height:1.65;color:#6b7280;font-style:italic;">The goal is not to reach the top &mdash; it&rsquo;s to be one tier ahead of every competitor in your market.</p>
+</div>
+
+<h3>The Frontier Partner Badge: What It Takes</h3>
+<p>The Frontier Partner badge is the capstone recognition for partners demonstrating advanced capabilities across multiple Microsoft disciplines. Earning it requires holding four things:</p>
+
+<div class="callout subtle">
+  <div class="callout-title">&#x1F3C6; Frontier Partner Requirements</div>
+  <div class="callout-body">
+    <ul style="margin:4px 0 0;padding-left:1.2rem;">
+      <li>Three Solutions Partner designations</li>
+      <li>The Microsoft 365 Copilot Advanced Specialization</li>
+      <li>The AI Apps on Microsoft Azure Specialization</li>
+      <li>The Data Security Advanced Specialization</li>
+    </ul>
+    <p style="margin:8px 0 0;font-size:.9rem;">This combination signals end-to-end AI transformation capabilities — from productivity and collaboration through to security, compliance, and custom AI development.</p>
+  </div>
+</div>
+
+<div class="callout subtle" style="border-left:4px solid #005F6B;margin-top:1rem;">
+  <div class="callout-title">&#x201C; Nicole Dezen, Chief Partner Officer, Microsoft</div>
+  <div class="callout-body"><em style="font-size:1.05rem;">"The partners who move fast, build skills, and lead with credibility are the ones who succeed."</em></div>
+</div>
+
+<div style="margin-top:1.2rem;padding:18px 22px;background:var(--navy);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+  <div>
+    <div style="font-weight:700;color:#fff;font-size:1rem;">Want the full MAICPP ladder and Badge application detail?</div>
+    <div style="color:rgba(255,255,255,.75);font-size:.88rem;margin-top:2px;">Exact PCS requirements, certification roadmaps, and a 90-day climb plan live in the companion document.</div>
+  </div>
+  <a href="frontier.html" style="flex-shrink:0;background:var(--teal);color:#fff;font-weight:700;font-size:.9rem;padding:11px 22px;border-radius:var(--radius);text-decoration:none;white-space:nowrap;">Open The Frontier Partner Playbook &rarr;</a>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="3-td-synnex-a-frontier-distributor">TD SYNNEX: A Frontier Distributor</h2>
+
+<div class="ascent-hero">
+  <div class="ascent-lead">What this means for you</div>
+  <div class="ascent-main">You're not just buying a transaction path — you're plugging into a <em>Microsoft-validated enablement engine</em> for platform, skilling, support, delivery, and AI services capacity.</div>
+  <div class="ascent-pills">
+    <div class="ascent-pill"><strong>GTM &amp; Sales</strong></div>
+    <div class="ascent-pill"><strong>Operational Readiness</strong></div>
+    <div class="ascent-pill"><strong>Platform</strong></div>
+    <div class="ascent-pill"><strong>Security</strong></div>
+    <div class="ascent-pill"><strong>Support</strong></div>
+    <div class="ascent-pill"><strong>Reseller Enablement</strong></div>
+  </div>
+</div>
+
+<p>In March 2026, TD SYNNEX achieved the Microsoft Frontier Distributor designation, becoming one of the first distributors globally to attain this status. This independently audited recognition required meeting quantitative metrics across six categories plus passing a comprehensive third-party qualitative assessment covering 83 capability control points. The designation positions TD SYNNEX among the most advanced Microsoft distributors worldwide across 100+ countries.</p>
+
+<h3>What the Frontier Distributor Designation Measures</h3>
+
+<div class="grid" style="grid-template-columns:repeat(3,1fr);">
+  <div class="card">
+    <div class="card-h">GTM/Sales Capabilities</div>
+    <div class="card-b">Reach (count of transacting resellers), frequency (avg. customers per reseller), yield (avg. revenue per customer), and gross customer adds.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">Operational Readiness</div>
+    <div class="card-b">New certifications per reseller (TTM), distributor technical certifications, reseller specialization attainment, and minimum 25 points on the Partner Capability Score.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">Platform</div>
+    <div class="card-b">Automated integration with Microsoft Marketplace and Partner Center; modern transaction, analytics, and enablement capabilities including API-driven architecture.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">Security</div>
+    <div class="card-b">Incident management lifecycle, ecosystem security strategy, data and AI security governance, and industry compliance status.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">Support</div>
+    <div class="card-b">CSAT scores and incident resolution rates; requires the Solutions Partner for Support Services designation.</div>
+  </div>
+  <div class="card">
+    <div class="card-h">Reseller Enablement</div>
+    <div class="card-b">Cloud Centers of Excellence, skilling programs, professional services, lifecycle management, and GTM execution.</div>
+  </div>
+</div>
+
+<div class="ascent-hero" style="margin-top:1.5rem;">
+  <div class="ascent-lead">&#x201C; Reza Honarmand, SVP Global Hybrid Cloud &amp; Transformation, TD SYNNEX</div>
+  <div class="ascent-main"><em>"Our value to the Microsoft ecosystem is rooted in helping remove friction across the customer lifecycle, accelerating solution adoption and enabling customers to monetize cloud, security and AI at scale."</em></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TD SYNNEX: WHAT THIS MEANS FOR PARTNERS
+     ═══════════════════════════════════════════ -->
+<div style="margin:20px 0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);">
+
+  <!-- Header with inline SVG wordmark -->
+  <div style="background:linear-gradient(135deg,#001f3d 0%,#003057 55%,#005F6B 100%);padding:24px 28px 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.45);margin-bottom:8px;">Microsoft Frontier Distributor</div>
+      <div style="font-size:1rem;font-weight:700;color:#fff;line-height:1.35;max-width:560px;">When you transact through TD SYNNEX, you access the infrastructure, enablement, and ecosystem of a Microsoft-validated Frontier Distributor.</div>
+    </div>
+    <!-- TD SYNNEX actual SVG logo, fills overridden white for dark bg -->
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      viewBox="0 0 920 178" width="180" height="35" aria-label="TD SYNNEX"
+      style="flex-shrink:0;opacity:.93;">
+      <path fill="rgba(255,255,255,0.95)" fill-rule="evenodd" clip-rule="evenodd" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z
+        M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z
+        M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5
+        c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5
+        C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1
+        c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0
+        c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7
+        s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1
+        c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2
+        c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/>
+      <path fill="rgba(255,255,255,0.95)" fill-rule="evenodd" clip-rule="evenodd" d="M455.1,45.7c12.6,0,22.9,3.8,30.7,10.8l-7.5,12c-6.6-6.6-15.6-9.6-24.5-9.6c-8.8,0-14.3,4.2-14.3,10.5
+        c0,6.6,8.6,8.8,18.6,11.3c0.6,0.1,1.1,0.3,1.7,0.4l0.9,0.2c0.3,0.1,0.6,0.1,0.9,0.2l0.9,0.2c12.9,3.5,26.3,8.6,26.3,25.2
+        c0,14.1-9.9,26.1-32.7,26.1c-15.2,0-26.3-5.2-33.8-12.8l7.7-12c5.8,6.2,15,11.7,26.8,11.7c12.2,0,17-6,17-11.5
+        c0-7.6-9-9.9-19.3-12.6l-0.4-0.1l-0.8-0.2c-0.1,0-0.3-0.1-0.4-0.1l-0.8-0.2c-0.7-0.2-1.4-0.4-2.1-0.5l-0.8-0.2
+        c-12.3-3.3-24.6-8.4-24.6-24C424.3,56.5,436.6,45.7,455.1,45.7L455.1,45.7z M289.6,47v13.1H264v71.5h-14.8V60.1h-25.6V47H289.6z
+        M332.1,47c26.4,0,44.3,17.5,44.3,42.4s-17.9,42.2-44.3,42.2h-31.5V47H332.1z M509.2,47l23.3,36.3L555.7,47h17L540,96.5v35.1h-14.8
+        V96.5l-33-49.5H509.2z M597.5,47l43.2,60V47h14.8v84.6h-14.3L597.1,70v61.6h-14.8V47H597.5z M689.8,47l43.2,60V47h14.8v84.6h-14.3
+        L689.4,70v61.6h-14.8V47H689.8z M824.8,47v13.1h-43.1V82h42.2v13.1h-42.2v23.5h43.1v13.1h-58V47H824.8z M856.4,47l21.8,31.1
+        L899.9,47h17.9l-29.7,41.1l31.6,43.5h-17.8l-23.7-33.1l-23.7,33.1h-17.8l31.7-43.4L838.6,47H856.4z M332.1,60.1h-16.6v58.5h16.6
+        c18.4,0,29-13.2,29-29.2C361.1,73,351,60.1,332.1,60.1z"/>
+    </svg>
+  </div>
+
+  <!-- Frontier badge strip -->
+  <div style="background:#eef6f8;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);"></div>
+      <span style="font-size:.75rem;font-weight:700;color:var(--teal);">Microsoft Frontier Distributor Designation</span>
+    </div>
+    <div style="height:14px;width:1px;background:var(--border);"></div>
+    <span style="font-size:.75rem;color:#6b7280;">Validated across all ten TD SYNNEX CSP regions globally</span>
+    <div style="height:14px;width:1px;background:var(--border);"></div>
+    <span style="font-size:.75rem;color:#6b7280;">83 capability control points audited</span>
+    <div style="height:14px;width:1px;background:var(--border);"></div>
+    <span style="font-size:.75rem;color:#6b7280;">100+ countries</span>
+  </div>
+
+  <!-- 7 capability cards — 3+3+1 grid -->
+  <div style="background:#fff;padding:20px 24px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:5px;">&#x2601;&#xFE0F; Marketplace</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">StreamOne® Cloud Platform</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">Fully transactable digital marketplace with automated billing, white-label storefront capabilities, and centralized SecOps for customer security posture visibility.</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:5px;">&#x1F393; Skilling</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">Channel Academy</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">Structured skilling platform delivering consistent Microsoft capability development — AI, Copilot readiness, security, and cloud. Step-by-step 30/60/90-day practice-building plans.</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:5px;">&#x1F4DE; Support</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">Designated Microsoft Support Provider</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">24/7 Microsoft-aligned technical support with structured onboarding, lifecycle support, and go-to-market execution. A critical backstop for partners without a deep technical bench.</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin-bottom:5px;">&#x1F916; White-Label AI</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">ServiceSolv™</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">Specialist AI consulting resource for white-labeled readiness assessments, Copilot deployment services, and Copilot Studio agent development. Sell now, build capability in parallel. Contact: <a href="mailto:ServiceBD@tdsynnex.com" style="color:var(--teal);font-weight:600;">ServiceBD@tdsynnex.com</a></div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin-bottom:5px;">&#x1F4B0; Benefits</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">Enhanced Benefits Package</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">Product licenses for up to <strong>200 users</strong> across <strong>42 Microsoft products</strong> for internal use, demos, and labs — plus <strong>$24,000 in Azure credits</strong> for development and proofs of concept.</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin-bottom:5px;">&#x1F504; Migration</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--navy);margin-bottom:4px;">EA-to-CSP &amp; Azure Accelerate</div>
+        <div style="font-size:.82rem;line-height:1.55;color:#374151;">EA-to-CSP transfer tool access with migration project funding, plus eligibility for the <strong>Azure Accelerate Partner Nominated</strong> Core Migrate and Modernize program.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Partner testimonial strip -->
+  <div style="border-top:1px solid var(--border);background:var(--muted);padding:16px 28px;display:flex;align-items:flex-start;gap:16px;">
+    <div style="width:3px;background:var(--teal);border-radius:2px;flex-shrink:0;align-self:stretch;"></div>
+    <div style="flex:1;">
+      <p style="margin:0 0 6px;font-size:.88rem;font-style:italic;color:#374151;line-height:1.65;">&ldquo;TD SYNNEX has been a true extension of our team as we expand our Microsoft practice by simplifying all engagements, from onboarding and enablement to selling and scaling solutions for our end customers. The Frontier Distributor designation is meaningful validation from Microsoft of TD SYNNEX&rsquo;s capabilities.&rdquo;</p>
+      <div style="font-size:.76rem;font-weight:700;color:#6b7280;">Matt Wren, VP Growth &amp; Procurement Services, Moser Consulting</div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="13-td-synnex-as-your-enablement-engine">TD SYNNEX as Your Enablement Engine</h2>
+
+<!-- Opening statement -->
+<div style="display:grid;grid-template-columns:3px 1fr;margin:0 0 24px;border-radius:0 var(--radius) var(--radius) 0;overflow:hidden;box-shadow:var(--shadow-sm);">
+  <div style="background:linear-gradient(to bottom,var(--teal),var(--navy));"></div>
+  <div style="padding:20px 24px;background:#fff;border:1px solid var(--border);border-left:none;">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:8px;">The Frontier Distributor Advantage</div>
+    <p style="margin:0 0 8px;font-size:1.05rem;font-weight:700;color:var(--navy);line-height:1.4;">TD SYNNEX&rsquo;s Frontier Distributor designation is not just a badge — it is a set of capabilities that partners can activate directly to accelerate their own AI practice.</p>
+    <p style="margin:0;font-size:.9rem;line-height:1.7;color:#374151;">Practice Builder equips partners globally with tailored support to strategize, differentiate, and develop go-to-market plans in AI, Cloud, Security, and Data — focusing on generating predictable, recurring revenue streams. Every resource below is available to you today.</p>
+  </div>
+</div>
+
+<!-- 6-capability card grid -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:6px;">Practice &amp; GTM</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">Destination AI&trade; &amp; AI Game Plan</div>
+    <p style="margin:0;font-size:.82rem;line-height:1.6;color:#374151;">End-to-end program supporting partners in creating and growing an AI practice. The AI Game Plan is a structured, partner-led workshop guiding customers through discovery, scoring, and activation — delivering a clear 30-day implementation roadmap.</p>
+  </div>
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:6px;">Technical Bench</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">Cloud Engineering &amp; Pre-Sales Team</div>
+    <p style="margin:0 0 8px;font-size:.82rem;line-height:1.6;color:#374151;">Dedicated Microsoft-focused Cloud Engineers and SMEs across Azure, Modern Work, and Dynamics — supporting partners from early discovery through solution design: BOMs, pricing estimates, environment reviews, and best-practice architecture.</p>
+    <a href="https://sway.cloud.microsoft/kzANPMbInAuiIBGQ" style="font-size:.78rem;font-weight:700;color:var(--teal);text-decoration:none;" target="_blank" rel="noopener">Cloud Engineering Hub &rarr;</a>
+  </div>
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--teal);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:6px;">Skilling</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">Cloud Enablement Services &amp; Training</div>
+    <p style="margin:0;font-size:.82rem;line-height:1.6;color:#374151;">Comprehensive technical training at no cost: 1-to-many walkthroughs, 1-to-1 workshops with lab environments, self-paced video series, and a weekly Cloud Technical Series. A dedicated Copilot Agents Webinar Series (Sales &amp; Technical tracks) follows a crawl&rarr;walk&rarr;run&rarr;scale methodology.</p>
+  </div>
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:6px;">Migration</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">Cloud Accelerators</div>
+    <p style="margin:0;font-size:.82rem;line-height:1.6;color:#374151;"><strong>Azure Move Service</strong> &mdash; end-to-end managed transfer of Azure direct subscriptions (EA, PAYG) into CSP with zero downtime. <strong>Cloud Accelerate Factory</strong> &mdash; a joint Microsoft initiative providing funded engineering resources to move workloads from on-premises or other clouds into Azure.</p>
+  </div>
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:6px;">Marketplace &amp; Skilling</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">StreamOne&reg; + Channel Academy</div>
+    <p style="margin:0;font-size:.82rem;line-height:1.6;color:#374151;"><strong>StreamOne&reg;</strong> &mdash; fully transactable marketplace with automated billing, white-label storefronts, and centralized SecOps visibility. <strong>Channel Academy</strong> paired with Destination AI Practice Builder delivers a 30/60/90-day plan to build a profitable AI practice and earn Copilot Specialization credentials.</p>
+  </div>
+
+  <div style="border:1px solid var(--border);border-top:3px solid var(--navy);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow-sm);">
+    <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:6px;">Support</div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--navy);margin-bottom:8px;">Microsoft Designated Support Provider</div>
+    <p style="margin:0;font-size:.82rem;line-height:1.6;color:#374151;">24/7 Microsoft-aligned technical support for partners and their customers. For SMB partners without a deep technical bench, this is a critical backstop &mdash; allowing you to take on more complex engagements without the delivery risk.</p>
+  </div>
+
+</div>
+
+<!-- ServiceSolv spotlight -->
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:6px;">
+  <div style="background:linear-gradient(135deg,#001f3d 0%,#003057 55%,#005F6B 100%);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+    <div>
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(255,255,255,.45);margin-bottom:5px;">White-Label AI Delivery</div>
+      <div style="font-size:1rem;font-weight:700;color:#fff;">TD SYNNEX ServiceSolv&trade;</div>
+    </div>
+    <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:6px 16px;">
+      <div style="font-size:.7rem;font-weight:700;color:#a8ecf5;">ServiceBD@tdsynnex.com</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+    <div style="padding:20px 22px;background:#fff;border-right:1px solid var(--border);">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal);margin-bottom:8px;">What ServiceSolv Delivers</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:#374151;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0;"></div>Copilot readiness assessments (white-labeled)</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:#374151;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0;"></div>Copilot deployment services</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:#374151;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0;"></div>Copilot Studio agent development</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:.84rem;color:#374151;"><div style="width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0;"></div>Broader AI transformation engagements</div>
+      </div>
+    </div>
+    <div style="padding:20px 22px;background:var(--muted);">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--navy);margin-bottom:8px;">Not Ready to Deliver This Yourself?</div>
+      <p style="margin:0 0 10px;font-size:.84rem;line-height:1.65;color:#374151;">No partner is expected to have a fully built AI managed services practice on day one. ServiceSolv exists precisely for the gap between &ldquo;I want to sell this&rdquo; and &ldquo;I can deliver this.&rdquo;</p>
+      <p style="margin:0;font-size:.84rem;line-height:1.65;color:#374151;">You close the engagement. ServiceSolv handles the technical delivery. <strong style="color:var(--navy);">You keep the customer relationship and the recurring revenue.</strong></p>
+    </div>
+  </div>
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="14-real-partners-real-results">Real Partners, Real Results</h2>
+
+<!-- Section intro -->
+<div style="display:grid;grid-template-columns:3px 1fr;margin:0 0 24px;border-radius:0 var(--radius) var(--radius) 0;overflow:hidden;box-shadow:var(--shadow-sm);">
+  <div style="background:linear-gradient(to bottom,var(--teal),var(--navy));"></div>
+  <div style="padding:18px 24px;background:#fff;border:1px solid var(--border);border-left:none;">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:8px;">Documented Case Studies</div>
+    <p style="margin:0;font-size:.95rem;line-height:1.65;color:#374151;">Real, publicly documented organizations that have deployed Microsoft 365 Copilot. These are not enterprise stories &mdash; they are the kinds of customers you are calling on every day. Notice the pattern: none of them waited for a perfect environment. None ran a six-month readiness assessment. They started with a real problem and let adoption grow from there.</p>
+  </div>
+</div>
+
+<!-- Four case study cards -->
+<div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px;">
+
+  <!-- Newman's Own -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="display:grid;grid-template-columns:200px 1fr;">
+      <div style="background:linear-gradient(135deg,#003057,#005F6B);padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">Food &amp; Consumer Goods</div>
+          <div style="font-size:.88rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;">Newman&rsquo;s Own</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">50 employees</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Competing vs. multinationals</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:4px;">Key win</div>
+          <div style="font-size:1.5rem;font-weight:700;color:#a8ecf5;line-height:1;">3&times;</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.65);">campaigns per month</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;background:#fff;">
+        <p style="margin:0 0 12px;font-size:.88rem;line-height:1.7;color:#374151;">With only 50 employees competing against multinational brands, Newman&rsquo;s Own adopted Copilot to run leaner. The marketing team now triples monthly campaign output. Campaign briefs that took three hours complete in 30&ndash;60 minutes. The logistics team cut daily publication review from a full morning to 30 minutes. The Chief Legal Officer uses Copilot as her &ldquo;junior associate&rdquo; for research, citations, and contract cleanup.</p>
+        <div style="background:#eef6f8;border-left:3px solid var(--teal);border-radius:0 5px 5px 0;padding:10px 14px;font-size:.84rem;color:#374151;font-style:italic;">&ldquo;I can do several campaigns in a month now because I have more time to come up with more ideas, which matters because we are getting more eyeballs on us.&rdquo;
+          <div style="font-style:normal;font-size:.76rem;color:#6b7280;margin-top:4px;font-weight:600;">Riley McCarthy, Social Media Manager &mdash; Newman&rsquo;s Own</div>
+        </div>
+        <div style="margin-top:8px;font-size:.68rem;color:#9ca3af;font-style:italic;">Source: Microsoft Customer Stories, customers.microsoft.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mike Morse Law Firm -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="display:grid;grid-template-columns:200px 1fr;">
+      <div style="background:linear-gradient(135deg,#004a58,var(--teal));padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">Legal Services</div>
+          <div style="font-size:.88rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;">Mike Morse Law Firm</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">~50 attorneys</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Michigan&rsquo;s largest personal injury practice</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:4px;">Key win</div>
+          <div style="font-size:.95rem;font-weight:700;color:#a8ecf5;line-height:1.2;">LMS built in-house</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.65);">without contracting an outside build</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;background:#fff;">
+        <p style="margin:0 0 12px;font-size:.88rem;line-height:1.7;color:#374151;">The firm uses Copilot across the entire practice: meeting summaries, document drafting, case law research, email correspondence, and Excel data analysis. Most notably, they used Copilot to help build a Learning Management System internally &mdash; generating slides, graphics, training scripts, and process documentation &mdash; without contracting an outside vendor for the build. A scalable internal training program unique in the legal industry.</p>
+        <div style="background:#eef6f8;border-left:3px solid var(--teal);border-radius:0 5px 5px 0;padding:10px 14px;font-size:.84rem;color:#374151;font-style:italic;">&ldquo;Digital transformation is getting the mundane out of the way of human work. It&rsquo;s in the tools we use every day, which is going to increase our productivity and efficiency.&rdquo;
+          <div style="font-style:normal;font-size:.76rem;color:#6b7280;margin-top:4px;font-weight:600;">John Georgatos, CIO &mdash; Mike Morse Law Firm</div>
+        </div>
+        <div style="margin-top:8px;font-size:.68rem;color:#9ca3af;font-style:italic;">Source: Microsoft Customer Stories, customers.microsoft.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Morula Health -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="display:grid;grid-template-columns:200px 1fr;">
+      <div style="background:linear-gradient(135deg,#005F6B,#1a8fa0);padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">Life Sciences / Health</div>
+          <div style="font-size:.88rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;">Morula Health</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Small UK agency</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Scientific &amp; regulatory content</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:4px;">Key win</div>
+          <div style="font-size:.95rem;font-weight:700;color:#a8ecf5;line-height:1.2;">Weeks &rarr; Days</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.65);">content creation time</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;background:#fff;">
+        <p style="margin:0;font-size:.88rem;line-height:1.7;color:#374151;">Morula Health produces scientific and regulatory content for the life sciences industry &mdash; work requiring stringent accuracy standards. They adopted Copilot in Word to summarize complex scientific data tables, a task that previously required days of manual review. Content creation time dropped from weeks to days while accuracy standards were maintained through human review. Employees now spend more time on analysis and quality review rather than formatting and summarization &mdash; a compelling proof point for any regulated SMB customer.</p>
+        <div style="margin-top:8px;font-size:.68rem;color:#9ca3af;font-style:italic;">Source: Microsoft Customer Stories, customers.microsoft.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supergood -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="display:grid;grid-template-columns:200px 1fr;">
+      <div style="background:linear-gradient(135deg,#007B8A,#2da8bc);padding:20px;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:4px;">Creative Services</div>
+          <div style="font-size:.88rem;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;">Supergood</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Small AI-first creative agency</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:3px;padding:3px 8px;font-size:.7rem;color:rgba(255,255,255,.75);">Formerly Supernatural</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:4px;">Key win</div>
+          <div style="font-size:.95rem;font-weight:700;color:#a8ecf5;line-height:1.2;">Flatter org</div>
+          <div style="font-size:.74rem;color:rgba(255,255,255,.65);">senior-level input on every brief</div>
+        </div>
+      </div>
+      <div style="padding:18px 22px;background:#fff;">
+        <p style="margin:0 0 12px;font-size:.88rem;line-height:1.7;color:#374151;">Supergood rebuilt its operating model around AI &mdash; not by hiring more senior strategists, but by building a platform that puts decades of strategic research at every employee&rsquo;s fingertips. Junior team members can now draw on institutional knowledge that previously required a senior strategist&rsquo;s direct involvement. The result: a flatter, faster organization where every brief gets senior-level strategic input without scaling headcount.</p>
+        <div style="background:#eef6f8;border-left:3px solid var(--teal);border-radius:0 5px 5px 0;padding:10px 14px;font-size:.84rem;color:#374151;font-style:italic;">&ldquo;We do not need a strategist on every brief &mdash; everyone at Supergood has access to that expertise via our platform.&rdquo;
+          <div style="font-style:normal;font-size:.76rem;color:#6b7280;margin-top:4px;font-weight:600;">Chief Strategy Officer &mdash; Supergood</div>
+        </div>
+        <div style="margin-top:8px;font-size:.68rem;color:#9ca3af;font-style:italic;">Source: Microsoft Customer Stories, customers.microsoft.com</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- The pattern -->
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+  <div style="display:grid;grid-template-columns:3px 1fr;">
+    <div style="background:linear-gradient(to bottom,var(--navy),var(--teal));"></div>
+    <div style="padding:20px 26px;background:#fff;">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:10px;">The Pattern Across All Four</div>
+      <p style="margin:0 0 10px;font-size:.95rem;font-weight:600;color:var(--navy);line-height:1.45;">A food company, a law firm, a health agency, and a creative shop. Four different industries. One story.</p>
+      <p style="margin:0;font-size:.88rem;line-height:1.7;color:#374151;">None of them waited for a perfect data environment. None ran a six-month readiness assessment. They started with a real problem, showed their team what Copilot could do, and let adoption grow from there. The partners winning in the SMB AI market are the ones helping customers take that first step &mdash; and then building the services practice around what comes next. <strong style="color:var(--navy);">That first step is always available. The question is whether you take it with them.</strong></p>
+    </div>
+  </div>
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="15-microsoft-skilling-and-enablement-at-scale">Microsoft Skilling and Enablement at Scale</h2>
+
+<!-- Opening statement -->
+<div style="display:grid;grid-template-columns:3px 1fr;margin:0 0 24px;border-radius:0 var(--radius) var(--radius) 0;overflow:hidden;box-shadow:var(--shadow-sm);">
+  <div style="background:linear-gradient(to bottom,var(--teal),var(--navy));"></div>
+  <div style="padding:18px 24px;background:#fff;border:1px solid var(--border);border-left:none;">
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);margin-bottom:8px;">FY2026 Partner Investment</div>
+    <p style="margin:0;font-size:.95rem;line-height:1.65;color:#374151;">Microsoft is investing at scale to make its partners the most capable AI practitioners in the market. The numbers are significant — and the programs are accessible today. Microsoft considers 10&ndash;20% of time devoted to upskilling a benchmark that Frontier Firms increasingly prioritize.</p>
+  </div>
+</div>
+
+<!-- Three headline stats -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:22px;">
+  <div style="padding:22px 20px;background:var(--navy);text-align:center;border-right:1px solid rgba(255,255,255,.1);">
+    <div style="font-size:2.6rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;margin-bottom:6px;">2.4M</div>
+    <div style="font-size:.84rem;font-weight:600;color:#fff;margin-bottom:3px;">Learners trained</div>
+    <div style="font-size:.74rem;color:rgba(255,255,255,.5);">across cloud solution areas in the past year</div>
+  </div>
+  <div style="padding:22px 20px;background:#001f3d;text-align:center;border-right:1px solid rgba(255,255,255,.1);">
+    <div style="font-size:2.6rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;margin-bottom:6px;">1.7M</div>
+    <div style="font-size:.84rem;font-weight:600;color:#fff;margin-bottom:3px;">AI-focused learners</div>
+    <div style="font-size:.74rem;color:rgba(255,255,255,.5);">engaged in AI-specific courses</div>
+  </div>
+  <div style="padding:22px 20px;background:var(--navy);text-align:center;">
+    <div style="font-size:2.6rem;font-weight:700;color:#a8ecf5;line-height:1;letter-spacing:-.03em;margin-bottom:6px;">+66%</div>
+    <div style="font-size:.84rem;font-weight:600;color:#fff;margin-bottom:3px;">AI curriculum growth</div>
+    <div style="font-size:.74rem;color:rgba(255,255,255,.5);">year-on-year, now 145 courses</div>
+  </div>
+</div>
+
+<!-- Two-column: Programs + CSP Enhancements -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+
+  <!-- Key FY2026 programs -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="background:var(--navy);padding:12px 18px;">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.6);">Key FY2026 Enablement Programs</div>
+    </div>
+    <div style="padding:16px 18px;background:#fff;display:flex;flex-direction:column;gap:10px;">
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:var(--teal);border-radius:2px;align-self:stretch;"></div>
+        <div><div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:2px;">Agentic AI &amp; Copilot Partner Skills Accelerator</div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;">Webcast series and hands-on workshops — building multi-agent solutions using Copilot Chat, Copilot Studio, and Azure AI Foundry.</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:var(--teal);border-radius:2px;align-self:stretch;"></div>
+        <div><div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:2px;">Partner Skilling Hub</div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;">Centralized platform consolidating live, virtual, and on-demand resources for presales, sales, and technical roles — locally adapted in 30+ markets.</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:var(--teal);border-radius:2px;align-self:stretch;"></div>
+        <div><div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:2px;">Hackathon-Based Training</div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;">Partners develop proprietary IP, earn certifications, and deliver revenue-generating AI engagements simultaneously.</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:var(--teal);border-radius:2px;align-self:stretch;"></div>
+        <div><div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:2px;">&ldquo;Skilling in a Box&rdquo; + CSP Certification Weeks</div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;">Distributor-scaled pre-sales and sales skilling to thousands of resellers, plus regional in-person AI roadshows.</div></div>
+      </div>
+
+      <div style="background:#eef6f8;border-radius:5px;padding:9px 12px;border-left:3px solid var(--teal);margin-top:2px;">
+        <div style="font-size:.8rem;color:#374151;"><strong style="color:var(--navy);">Nearly 9,000 partners</strong> have already taken advantage of Microsoft&rsquo;s streamlined SMB pathways for Solutions Partner designations in Security and Azure.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSP Enhancements -->
+  <div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+    <div style="background:var(--teal);padding:12px 18px;">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.7);">CSP Program Enhancements — FY2026</div>
+    </div>
+    <div style="padding:16px 18px;background:#fff;display:flex;flex-direction:column;gap:10px;">
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:#9ca3af;border-radius:2px;align-self:stretch;"></div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;"><strong style="color:var(--navy);">Raised standards</strong> — Eligibility and authorization standards for CSP partners raised effective October 2025. A rising floor lifts all credentialed partners.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:#9ca3af;border-radius:2px;align-self:stretch;"></div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;"><strong style="color:var(--navy);">3-year CSP term option</strong> &mdash; New contract term providing revenue predictability. As Nicole Dezen noted: customers already comfortable with 3-year EA commitments can now bring that cadence into CSP.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:3px 1fr;gap:10px;align-items:start;">
+        <div style="background:#9ca3af;border-radius:2px;align-self:stretch;"></div>
+        <div style="font-size:.8rem;line-height:1.55;color:#374151;"><strong style="color:var(--navy);">EA-to-CSP guided migration</strong> &mdash; New Partner Center UI for renewing expiring Enterprise Agreements into CSP. An AI assistant processes cancellation and credit support tickets for duplicate subscriptions.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Product & Procurement Innovations -->
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:14px;">
+  <div style="background:linear-gradient(135deg,#003057,#005F6B);padding:12px 20px;">
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.6);">New Product &amp; Procurement Innovations</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0;background:var(--border);">
+
+    <div style="background:#fff;padding:14px 18px;">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:5px;">Agent Factory</div>
+      <p style="margin:0;font-size:.82rem;line-height:1.55;color:#374151;">Introduces the Microsoft Agent Pre-Purchase Plan (P3) — access to 32 Microsoft services through a single pool of funds to simplify procurement across complex AI builds.</p>
+    </div>
+
+    <div style="background:#fff;padding:14px 18px;border-left:1px solid var(--border);">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:5px;">App Accelerate</div>
+      <p style="margin:0;font-size:.82rem;line-height:1.55;color:#374151;">Unified program covering incentives, benefits, and co-sell support for software development partners. Currently in preview with full availability expected in 2026.</p>
+    </div>
+
+    <div style="background:var(--muted);padding:14px 18px;border-top:1px solid var(--border);">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);margin-bottom:5px;">Digital Sovereignty Specialization</div>
+      <p style="margin:0;font-size:.82rem;line-height:1.55;color:#374151;">New specialization for partners implementing sovereign-cloud strategies across Azure, Microsoft 365, and Security — a growing requirement in regulated markets.</p>
+    </div>
+
+    <div style="background:var(--muted);padding:14px 18px;border-top:1px solid var(--border);border-left:1px solid var(--border);">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);margin-bottom:5px;">Support Services Designation</div>
+      <p style="margin:0;font-size:.82rem;line-height:1.55;color:#374151;">New designation for partners meeting strict customer satisfaction and service quality thresholds — a differentiator for partners building managed AI service practices.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Closing stat -->
+<div style="border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);">
+  <div style="display:grid;grid-template-columns:3px 1fr;">
+    <div style="background:linear-gradient(to bottom,var(--navy),var(--teal));"></div>
+    <div style="padding:16px 22px;background:#fff;display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+      <div style="flex-shrink:0;text-align:center;">
+        <div style="font-size:2rem;font-weight:700;color:var(--teal);line-height:1;letter-spacing:-.03em;">3&times;</div>
+        <div style="font-size:.68rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">faster</div>
+      </div>
+      <div style="flex:1;">
+        <p style="margin:0;font-size:.9rem;line-height:1.65;color:#374151;">Resellers who use Copilot internally accelerate <strong style="color:var(--navy);">3&times; faster</strong> on Copilot sales compared to those who don&rsquo;t, according to Microsoft&rsquo;s own internal data shared with partners. Every enablement resource listed above starts with your own team. Be Customer Zero first.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="16-i-knew-you-were-going-to-ask-this">&ldquo;I Knew You Were Going to Ask This&hellip;&rdquo;</h2>
+<p style="font-size:1.05rem;color:#555;margin-bottom:1.8rem;">Top 5 questions partners ask after reading this playbook &mdash; answered honestly.</p>
+
+<div style="display:flex;flex-direction:column;gap:1.2rem;margin-bottom:2rem;">
+
+  <!-- Q1 -->
+  <div style="border-left:4px solid #005F6B;background:#f3fbfc;border-radius:0 8px 8px 0;padding:1.4rem 1.6rem;border:1px solid #c5dde3;border-left:4px solid #005F6B;">
+    <div style="display:flex;align-items:flex-start;gap:1rem;">
+      <div style="min-width:30px;height:30px;background:#005F6B;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">Q1</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:#003057;margin-bottom:.5rem;">&ldquo;We&rsquo;re not AI experts. How are we supposed to deliver this?&rdquo;</div>
+        <div style="font-size:.9rem;line-height:1.65;color:#333;">You don&rsquo;t need to be. Most of the work described here builds on skills you already have &mdash; Microsoft 365, SharePoint, security, and governance. TD SYNNEX offers white-labeled services through <strong>ServiceSolv&trade;</strong> to help you deliver Copilot readiness assessments, agent builds, and managed services while your team ramps up. You can start selling now and build internal capability in parallel.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div style="border-left:4px solid #005F6B;background:#f3fbfc;border-radius:0 8px 8px 0;padding:1.4rem 1.6rem;border:1px solid #c5dde3;border-left:4px solid #005F6B;">
+    <div style="display:flex;align-items:flex-start;gap:1rem;">
+      <div style="min-width:30px;height:30px;background:#005F6B;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">Q2</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:#003057;margin-bottom:.5rem;">&ldquo;What if we don&rsquo;t have time to build all this from scratch?&rdquo;</div>
+        <div style="font-size:.9rem;line-height:1.65;color:#333;">You don&rsquo;t have to. TD SYNNEX provides prebuilt frameworks, demo environments, and GTM kits to help you accelerate. From Copilot campaign templates to agent build playbooks and pricing tier models, you can plug into proven assets instead of starting from zero. Ask your TD SYNNEX rep for access to the <strong>Copilot Campaign Framework</strong> and <strong>Cloud Labs</strong> to get hands-on fast.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div style="border-left:4px solid #005F6B;background:#f3fbfc;border-radius:0 8px 8px 0;padding:1.4rem 1.6rem;border:1px solid #c5dde3;border-left:4px solid #005F6B;">
+    <div style="display:flex;align-items:flex-start;gap:1rem;">
+      <div style="min-width:30px;height:30px;background:#005F6B;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">Q3</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:#003057;margin-bottom:.5rem;">&ldquo;How do we train our team without pulling them off billable work?&rdquo;</div>
+        <div style="font-size:.9rem;line-height:1.65;color:#333;">TD SYNNEX&rsquo;s <strong>Channel Academy</strong> offers structured, role-based learning paths for Copilot, AI governance, and Microsoft skilling &mdash; all on-demand. You can upskill your team in manageable chunks, with certifications that map directly to Microsoft&rsquo;s partner requirements. Live clinics and 1:1 coaching are also available if you want to go deeper.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div style="border-left:4px solid #005F6B;background:#f3fbfc;border-radius:0 8px 8px 0;padding:1.4rem 1.6rem;border:1px solid #c5dde3;border-left:4px solid #005F6B;">
+    <div style="display:flex;align-items:flex-start;gap:1rem;">
+      <div style="min-width:30px;height:30px;background:#005F6B;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">Q4</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:#003057;margin-bottom:.5rem;">&ldquo;How do we price this? We&rsquo;ve never sold a managed service like this before.&rdquo;</div>
+        <div style="font-size:.9rem;line-height:1.65;color:#333;">Start simple. TD SYNNEX provides tiered pricing models and sample service catalogs you can adapt to your customer base. You don&rsquo;t need to launch a full-blown practice on day one &mdash; just pick a basic tier, assign a price, and test it with one customer. Your TD SYNNEX team can walk you through how other partners are packaging and positioning these services.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div style="border-left:4px solid #8a5a2b;background:#f3e9d6;border-radius:0 8px 8px 0;padding:1.4rem 1.6rem;border:1px solid #f5ddb0;border-left:4px solid #8a5a2b;">
+    <div style="display:flex;align-items:flex-start;gap:1rem;">
+      <div style="min-width:30px;height:30px;background:#8a5a2b;color:#fff;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">Q5</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem;color:#003057;margin-bottom:.5rem;">&ldquo;How do we know this will actually generate revenue?&rdquo;</div>
+        <div style="font-size:.9rem;line-height:1.65;color:#333;">The revenue opportunity is backed by independent research &mdash; but more importantly, it&rsquo;s already happening. Partners who lead with Copilot demos and wrap them in readiness, security, and managed services are seeing real pull-through. If you want to validate the model, TD SYNNEX can connect you with partner case studies, revenue calculators, and help you model your first offer. <strong>The data is in the &ldquo;Showing Our Work&rdquo; section. The decision is yours.</strong></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<h2 id="17-key-resources">Key Resources</h2>
+<ul>
+<li><strong>Practice Builder (David Chao): Why A Cloud Practice Fails</strong>: <a href="CloudPracticeFails.pdf" download>CloudPracticeFails.pdf</a></li>
+<li><strong>Microsoft Partner Center:</strong> <a href="https://partner.microsoft.com">partner.microsoft.com</a></li>
+<li><strong>Microsoft AI Cloud Partner Program:</strong> <a href="https://partner.microsoft.com/partnership/solutions-partner">partner.microsoft.com/partnership/solutions-partner</a></li>
+<li><strong>Microsoft Copilot Specialization Requirements:</strong> <a href="https://partner.microsoft.com/partnership/specialization/microsoft-copilot">partner.microsoft.com/partnership/specialization/microsoft-copilot</a></li>
+<li><strong>Solutions Partner for Modern Work (Scoring Details):</strong> <a href="https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-modern-work">learn.microsoft.com/partner-center/membership/solutions-partner-modern-work</a></li>
+<li><strong>Microsoft CloudAscent (Propensity Data):</strong> <a href="https://cloudascent.microsoft.com">cloudascent.microsoft.com</a></li>
+<li><strong>M365 Copilot Automated Readiness Assessment:</strong> Available on GitHub via Microsoft Tech Community</li>
+<li><strong>FY26 AI Business Solutions Partner Playbook:</strong> Available in Partner Center</li>
+<li><strong>Microsoft Copilot (SMB) Campaign in a Box:</strong> <a href="https://partner.microsoft.com">partner.microsoft.com</a></li>
+<li><strong>TD SYNNEX Channel Academy:</strong> Contact your TD SYNNEX account team</li>
+<li><strong>TD SYNNEX StreamOne®:</strong> Contact your TD SYNNEX account team</li>
+<li><strong>TD SYNNEX ServiceSolv:</strong> Contact your TD SYNNEX representative</li>
+<li><strong>Microsoft Frontier Partner Badge Announcement:</strong> <a href="https://techcommunity.microsoft.com/blog/partnernews/stand-out-with-designations-specializations-and-badges-introduced-in-recent-mont/4504790">techcommunity.microsoft.com</a></li>
+<li><strong>TD SYNNEX Frontier Distributor Press Release:</strong> <a href="https://news.tdsynnex.com">news.tdsynnex.com</a></li>
+<li><strong>Forrester TEI: Impact of AI on Modern Work Partner Revenue (July 2025):</strong> <a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner">tei.forrester.com/go/Microsoft/ModernWorkPartner</a></li>
+<li><strong>Microsoft 2025 Work Trend Index:</strong> <a href="https://www.microsoft.com/en-us/worklab/work-trend-index">microsoft.com/worklab/work-trend-index</a></li>
+</ul>
+<div class="back-to-toc"><a href="#toc">&#8593; Back to Table of Contents</a></div>
+<hr />
+
+<div style="margin:1.4rem 0;padding:26px 30px;background:linear-gradient(135deg, #0b4a52 0%, var(--teal) 60%, #1a9db5 100%);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);text-align:center;">
+  <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.7);margin-bottom:8px;">Ready to Formalize?</div>
+  <div style="font-size:1.3rem;font-weight:700;color:#fff;line-height:1.4;margin-bottom:10px;">See the full Badge requirements and the complete MAICPP ladder.</div>
+  <div style="font-size:.92rem;color:rgba(255,255,255,.85);max-width:640px;margin:0 auto 18px;line-height:1.6;">This playbook proves the case; <a href="frontier.html" style="color:#a8ecf5;font-weight:700;">frontier.html</a> is the operational companion &mdash; exact PCS requirements, certification roadmaps, and a 90-day action plan to climb from where you stand today to a Frontier Partner badge.</div>
+  <a href="frontier.html" style="display:inline-block;background:#fff;color:var(--teal);font-weight:700;font-size:.95rem;padding:12px 26px;border-radius:var(--radius);text-decoration:none;">Open The Frontier Partner Playbook &rarr;</a>
+</div>
+
+<h2 style="margin-top:2.8rem;">The Four-Stage Journey</h2>
+<p>This playbook is built as a four-part journey. You are here, at the finish.</p>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+  <div class="card">
+    <div class="card-h">Stage 1 &middot; Build Belief</div>
+    <p class="card-b">Why the Frontier opportunity is real, and why now.</p>
+    <p style="margin-top:10px;"><a href="cpb-build-belief.html">Open Build Belief &rarr;</a></p>
+  </div>
+  <div class="card">
+    <div class="card-h">Stage 2 &middot; Model the Practice</div>
+    <p class="card-b">The maturity staircase and the revenue runway from first deployment to Managed AgentOps.</p>
+    <p style="margin-top:10px;"><a href="cpb-model-the-practice.html">Open Model the Practice &rarr;</a></p>
+  </div>
+  <div class="card">
+    <div class="card-h">Stage 3 &middot; Run the Engagement</div>
+    <p class="card-b">The competitive battle card, the monetization gap, and how to run a deal end to end.</p>
+    <p style="margin-top:10px;"><a href="cpb-run-the-engagement.html">Open Run the Engagement &rarr;</a></p>
+  </div>
+  <div class="card" style="border-left:4px solid var(--teal);background:var(--accent);">
+    <div class="card-h" style="color:var(--teal);">Stage 4 &middot; Earn the Badge <span style="font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--teal);">&mdash; you are here</span></div>
+    <p class="card-b">Proof, credibility, and the path to formal Frontier Partner recognition.</p>
+  </div>
+</div>
+
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
