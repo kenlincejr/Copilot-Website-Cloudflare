@@ -330,6 +330,7 @@ a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text
 .dtable td { padding:11px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
 .dtable input[type=number] { width:72px; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font-size:.86rem; text-align:right; font-family:inherit; }
 .dtable .num { text-align:right; white-space:nowrap; color:#6b7280; font-size:.84rem; }
+.dtable td.gaps { text-align:left; color:#6b7280; font-size:.84rem; max-width:220px; white-space:normal; word-break:normal; }
 .dtable tfoot td { background:var(--muted); font-weight:700; color:var(--navy); border-top:2px solid var(--teal); }
 .sharebar { display:inline-block; height:7px; background:var(--teal); border-radius:4px; vertical-align:middle; margin-right:6px; }
 
@@ -1189,15 +1190,14 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
      learn.microsoft.com/partner-center/customers/azure-reservations-buying */
   var MOTIONS = {
     direct:           { label:'Direct-bill CSP partner', short:'direct bill',       billing:true,  csp:true },
-    indirectProvider: { label:'Indirect provider',       short:'indirect provider', billing:true,  csp:true },
     indirectReseller: { label:'Indirect reseller',       short:'indirect reseller', billing:false, csp:true },
     notCsp:           { label:'Outside CSP',             short:'outside CSP',       billing:false, csp:false },
     unsure:           { label:'Not established',         short:'not established',   billing:false, csp:true }
   };
-  /* The picker offers every motion a reader can actually be in. A distributor
-     reading their own economics is rare, but filing them under direct bill
-     printed the wrong motion label on every output surface. */
-  var MOTION_ORDER = ['direct','indirectProvider','indirectReseller','notCsp'];
+  /* The picker offers every motion a reselling partner can actually be in.
+     Indirect provider (the distributor itself) is deliberately excluded —
+     this tool is for reselling partners, not for us. */
+  var MOTION_ORDER = ['direct','indirectReseller','notCsp'];
   function motionOf(state) {
     var m = state.channel && state.channel.motion;
     return MOTIONS[m] ? m : 'unsure';
@@ -3335,9 +3335,6 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       direct: { t:'Direct-bill CSP partner', tag:'You bill Microsoft direct',
         d:'You hold the billing relationship with Microsoft. You create the Azure plan, Microsoft invoices you, and you place a Copilot Credit pre-purchase order yourself.',
         me:'You pay Microsoft <b>$0.01</b> a credit, less the PEC you earn.' },
-      indirectProvider: { t:'Indirect provider', tag:'You are the distributor',
-        d:'You hold the Azure plan and the Microsoft invoice; your resellers own the customer relationship underneath you.',
-        me:'You pay Microsoft <b>$0.01</b> a credit, less the PEC you earn.' },
       indirectReseller: { t:'Indirect reseller', tag:'Most TD SYNNEX partners',
         d:'You buy through TD SYNNEX or another distributor. They hold the Azure plan and the Microsoft invoice; you own the customer and set what they pay.',
         me:'You pay <b>your provider\u2019s rate</b>. PEC lands on their invoice, not yours.' },
@@ -3363,7 +3360,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         }).join('') +
       '</div>' +
       '<p class="srcline">' + (mot === 'unsure'
-        ? '<b>Not set.</b> If you buy through a distributor you are almost certainly an indirect reseller for CSP purposes; Partner Center &rarr; <b>Settings &rarr; Account settings</b> lists your program type either way. The difference between the three is walked through in <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">section 3 of the Azure Billing Setup guide</a>.'
+        ? '<b>Not set.</b> If you buy through a distributor you are almost certainly an indirect reseller for CSP purposes; Partner Center &rarr; <b>Settings &rarr; Account settings</b> lists your program type either way. The difference between direct bill and indirect reseller is walked through in <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">section 3 of the Azure Billing Setup guide</a>.'
         : 'Set to <b>' + esc(E.MOTIONS[mot].label) + '</b>. <button class="linkbtn" id="motionClear" style="font-size:.78rem;">Clear this</button> \u2014 or read <a class="docref" href="azure-billing-setup.html#section-3" target="_blank" rel="noopener">section 3 of the Azure Billing Setup guide</a> if that no longer looks right.') + '</p>' +
 
       '<div class="callout"><div class="callout-title">Then: whose price are we showing?</div><div class="callout-body">' +
@@ -4218,7 +4215,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
           (win ? '<br>' + pill('verified','Recommended') : '') + '</td>' +
         '<td class="num">' + usd(p.perUserAllIn, 2) + '</td>' +
         '<td class="num">' + (p.feasible ? usd(p.monthly) : '<span style="color:#6b7280;">n/a</span>') + '</td>' +
-        '<td class="num" style="text-align:left;">' + (p.feasible
+        '<td class="gaps">' + (p.feasible
           ? (p.gaps.filter(function (g) { return g.skuClosable !== false; }).length === 0
               ? '<span class="check">&#10003;</span> closes all'
               : p.closes.length + ' of ' + reqClosable.length)
