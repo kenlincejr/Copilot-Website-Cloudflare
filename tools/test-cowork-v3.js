@@ -1228,8 +1228,7 @@ function talkFor(st) {
   return { r, text: build(r).join('\n') };
 }
 const partnerNote = makeUiFn('partnerNote', '\n  function renderNext', { E });
-/* The lifted slice carries ratioBlock plus the flywheel helpers that follow
-   it, and those read `state` — so this is a per-state factory. */
+/* ratioBlock reads `state`, so this is a per-state factory. */
 function ratioBlockFor(st) {
   return makeUiFn('ratioBlock', '\n  function renderBillOut',
     { E, usd, num, state: st, provPill: () => '' });
@@ -1546,12 +1545,11 @@ function nextText(pick) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   R8 — Distributor handoff export and the benchmark flywheel
-   (ideas 2 and 4 — v3 spec §R8 a–b)
+   R8 — Distributor handoff export
+   (idea 2 — v3 spec §R8a)
 
-   Both surfaces are lifted out of the page and run, same as R7. The export
-   depends on R5: the ask must be the ramped year-one figure, never the
-   steady-state over-commit.
+   Lifted out of the page and run, same as R7. The export depends on R5: the
+   ask must be the ramped year-one figure, never the steady-state over-commit.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* The export's helpers (P3_FINALITY, todayIso) sit above it in the page, so
@@ -1678,77 +1676,6 @@ const FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, t
   ok(/function copyFrom\(sel, btn\) \{\s*copyText\(/.test(src), 'btnCopyTalk now shares the same path');
 }
 
-/* ── R8.4 · The benchmark flywheel mailto (idea 4) ──────────────────────── */
-function hrefOf(html) { const m = html.match(/href="(mailto:[^"]*)"/); return m ? m[1] : null; }
-function decodeMailto(href) {
-  const q = href.slice(href.indexOf('?') + 1);
-  const out = {};
-  q.split('&').forEach(p => { const i = p.indexOf('='); out[p.slice(0, i)] = decodeURIComponent(p.slice(i + 1)); });
-  out.to = href.slice('mailto:'.length, href.indexOf('?'));
-  return out;
-}
-{
-  const s = E.defaults();
-  s.meta.accountName = 'Riverside Dental';
-  s.org.vertical = 'legal';
-  const html = ratioBlockUi(E.compute(s).ctx, s);
-  const href = hrefOf(html);
-  ok(href, 'the ratio whybox carries a mailto link');
-  const m = decodeMailto(href);
-  eq(m.to, 'ken.lince@gmail.com', 'the collection address is the site owner’s');
-  eq(m.subject, 'Cowork ratio datapoint', 'the subject is fixed');
-  // the four fields, and only the four fields
-  ok(/^Ratio: 3\.15$/m.test(m.body), 'the body carries the ratio to two decimal places');
-  ok(/^Seat bucket: 25-100$/m.test(m.body), 'the body carries the seat bucket, not the count');
-  ok(/^Vertical: legal$/m.test(m.body), 'the body carries the vertical');
-  ok(/^Activation mode: rate$/m.test(m.body), 'the body carries the activation mode');
-  eq(m.body.trim().split('\n').length, 4, 'the body is exactly four lines');
-  // and nothing else
-  ok(m.body.indexOf('Riverside') === -1 && href.indexOf('Riverside') === -1,
-     'no account name in the body or the href');
-  ok(href.indexOf('$') === -1 && m.body.indexOf('$') === -1, 'no dollar figure anywhere in the mailto');
-  ok(!/\b80\b/.test(m.body), 'no exact seat count in the body');
-  ok(!/7,?550|755,?000/.test(m.body), 'no meter or credit figure in the body');
-  // properly encoded: the raw href carries no literal newline or space
-  ok(!/\n/.test(href) && href.indexOf(' ') === -1, 'the body is URL-encoded, not pasted raw');
-  ok(/%0A/.test(href), 'newlines are percent-encoded');
-
-  // the buckets
-  const BUCKETS = [[10,'<25'], [24,'<25'], [25,'25-100'], [100,'25-100'],
-                   [101,'100-300'], [300,'100-300'], [301,'300+'], [4000,'300+']];
-  BUCKETS.forEach(([seats, want]) => {
-    const b = E.defaults();
-    b.licenseInventory = [{ skuId:'bprem_cop', seats: seats }];
-    b.activation = { mode:'rate', rate:0.65, count:null };
-    const c = E.compute(b).ctx;
-    eq(c.copilotLicensed, seats, 'bucket probe: ' + seats + ' licensed');
-    const got = decodeMailto(hrefOf(ratioBlockUi(c, b))).body.match(/^Seat bucket: (.+)$/m)[1];
-    eq(got, want, seats + ' Copilot licenses falls in bucket ' + want);
-  });
-
-  // an unset vertical still sends something readable
-  const none = E.defaults();
-  ok(/^Vertical: none$/m.test(decodeMailto(hrefOf(ratioBlockUi(E.compute(none).ctx, none))).body),
-     'the default vertical is sent as its own answer');
-  const blank = E.defaults(); blank.org.vertical = '';
-  ok(/^Vertical: unspecified$/m.test(decodeMailto(hrefOf(ratioBlockUi(E.compute(blank).ctx, blank))).body),
-     'an empty vertical falls back to unspecified');
-  // activation modes
-  ['count','benchmark'].forEach(mode => {
-    const a = E.defaults(); a.activation = { mode: mode, rate:0.65, count: 40 };
-    const c = E.compute(a).ctx;
-    if (c.ratioBench > 0)
-      ok(new RegExp('^Activation mode: ' + mode + '$', 'm').test(decodeMailto(hrefOf(ratioBlockUi(c, a))).body),
-         mode + ' activation mode is carried');
-  });
-
-  // the sentence beside the link keeps the privacy footer true
-  ok(/The page itself still transmits nothing\./.test(html), 'the line says the page transmits nothing');
-  ok(/email from your own mail client/.test(html), 'the line says the send is the partner’s own');
-  ok(!/localStorage|sessionStorage|fetch\(|XMLHttpRequest|navigator\.sendBeacon/.test(src),
-     'the page still has no storage and no network call of any kind');
-}
-
 /* ── R8.5 · Neither feature reaches a customer surface ──────────────────── */
 {
   const cv = stripSet('customer-view'), pc = stripSet('print-customer');
@@ -1761,32 +1688,14 @@ function decodeMailto(href) {
   ok(quoteIdx > billIdx && quoteIdx < nextCard, 'the button markup is inside #cardBilling, not loose on the page');
   // the export text is never written into the DOM at all — it goes to the clipboard
   ok(!/innerHTML[^;]*quoteRequestText/.test(src), 'the export text is never rendered into the page');
-  // the flywheel line lives in the ratio whybox, which carries no cust-ok
+  // the ratio whybox itself carries no cust-ok
   ok(/<div class="whybox"><div class="wb-h">The 2\.6&times; benchmark, honestly/.test(src),
      'the ratio whybox still carries no cust-ok class');
   ok(cv.indexOf('.whybox:not(.cust-ok)') >= 0, 'plain whyboxes are stripped on both customer surfaces');
-  // the flywheel markup emits no cust-ok of its own
-  const fly = uiSource('flywheelLine', '\n  function renderBillOut');
-  ok(!/cust-ok/.test(fly), 'the flywheel line does not opt itself into the customer surface');
-  ok(!/partner-only/.test(fly), 'it does not need partner-only either — the whybox already strips');
-  // and neither string appears in the reconstructed customer surface
+  // and the quote-request string never appears in the reconstructed customer surface
   const rC = E.compute(E.defaults());
   const surface = customerSurface(rC, rC.licensing);
   ok(surface.indexOf('quote request') === -1, 'the customer surface carries no quote request');
-  ok(surface.indexOf('mailto:') === -1 && surface.indexOf('Contribute your anonymized ratio') === -1,
-     'the customer surface carries no flywheel link');
-}
-
-/* ── R8.6 · FACTS.md registers the address and the methodology caveat ───── */
-{
-  let facts = '';
-  try { facts = fs.readFileSync(path.join(__dirname, '..', 'FACTS.md'), 'utf8'); } catch (e) {}
-  ok(facts.length > 0, 'FACTS.md is readable');
-  ok(facts.indexOf('ken.lince@gmail.com') >= 0, 'FACTS.md registers the collection address');
-  ok(/self-selected/.test(facts) && /unverified/.test(facts),
-     'FACTS.md records that contributed ratios are self-selected and unverified');
-  ok(/\bnever\b.{0,24}ms-verified/i.test(facts),
-     'FACTS.md records that contributions can never reach ms-verified');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

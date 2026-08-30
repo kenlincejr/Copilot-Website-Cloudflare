@@ -3864,40 +3864,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
       (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
-      flywheelLine(c) + '</div>';
-  }
-
-  /* \u2550\u2550\u2550 Benchmark flywheel (R8b, idea 4) \u2550\u2550\u2550
-     The 2.6\u00d7 is the most-quoted and weakest-sourced number on the site:
-     TD SYNNEX editorial, sample unknown. Contributed ratios can move that to
-     "partner-sourced, n = X" \u2014 never to ms-verified, because they are
-     self-selected and unverified, and FACTS.md says so.
-     Decisions, documented:
-       \u00b7 mailto only. The page transmits nothing; the partner's own mail
-         client sends, and they see the whole body before it goes. The
-         sentence beside the link says that rather than assuming it is
-         obvious \u2014 the privacy footer has to stay literally true.
-       \u00b7 Four fields and no fifth: ratio, seat BUCKET, vertical, activation
-         mode. No account name, no dollar figure, no exact seat count. A
-         bucket is enough to segment a benchmark and not enough to identify
-         a customer.
-       \u00b7 Internal surface only. The ratio whybox carries no cust-ok class, so
-         it is already stripped from customer view and customer print; this
-         line inherits that and adds nothing customer-facing. */
-  var FLYWHEEL_TO = 'ken.lince@gmail.com';
-  function seatBucket(n) { return n < 25 ? '<25' : n <= 100 ? '25-100' : n <= 300 ? '100-300' : '300+'; }
-  function flywheelLine(c) {
-    if (!(c.ratioBench > 0)) return '';
-    var body = 'Ratio: ' + c.ratioBench.toFixed(2) + '\n' +
-               'Seat bucket: ' + seatBucket(c.copilotLicensed) + '\n' +
-               'Vertical: ' + (state.org.vertical || 'unspecified') + '\n' +
-               'Activation mode: ' + state.activation.mode + '\n';
-    var href = 'mailto:' + FLYWHEEL_TO +
-               '?subject=' + encodeURIComponent('Cowork ratio datapoint') +
-               '&body=' + encodeURIComponent(body);
-    return '<p class="srcline"><a class="docref" href="' + href + '">Contribute your anonymized ratio &rarr;</a> ' +
-      'Sending is an email from your own mail client, and it carries four fields: the ratio, a seat band, the vertical ' +
-      'and the activation mode \u2014 no account name, no figures, no seat count. The page itself still transmits nothing.</p>';
+      '</div>';
   }
 
   function renderBillOut(r) {
