@@ -3854,18 +3854,16 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     var v10 = (c.warnings || []).some(function (w) { return w.id === 'V-10'; });
     var closing = v10
       ? 'Before you read anything into that gap, check the two entries most likely to be behind it: the heavy-task counts on step 4 and the active-user count on step 3. A ratio this far off the benchmark is usually an entry, not a finding.'
-      : 'The benchmark isn\'t wrong and neither are you &mdash; you\'re assuming a ' +
-        (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark\'s.';
+      : (impliedOk && actualOk)
+        ? 'TD SYNNEX\u2019s 2.6&times; is built on roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b>. You modeled <b>' + Math.round(rec.actualActivation * 100) + '%</b> &mdash; a ' +
+          (rec.actualActivation > rec.impliedActivation ? 'more' : 'less') + ' engaged population than the benchmark assumes, which is the whole gap between your ratio and theirs.'
+        : 'Your modeled activation falls outside the range the 2.6&times; benchmark was built on, so a direct comparison isn\u2019t meaningful here.';
     return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly ' + provPill('editorial') + '</div>' +
-      '<p>Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>, which is <b>' + rec.fullyActive.toFixed(2) + '&times;</b> the $30 Copilot license. ' +
-      (impliedOk ? 'The 2.6&times; benchmark implies roughly <b>' + Math.round(rec.impliedActivation * 100) + '% activation</b> at this mix. ' : '') +
-      (actualOk
-        ? 'You modeled <b>' + Math.round(rec.actualActivation * 100) + '%</b>, which is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. '
-        : 'That is why your ratio reads <b>' + c.ratioBench.toFixed(2) + '&times;</b> rather than 2.6&times;. ') +
+      '<p>This ratio only means something once you say which Copilot price it\u2019s measured against &mdash; by itself, &ldquo;2.6&times;&rdquo; isn\u2019t a Microsoft figure, it\u2019s a TD SYNNEX field observation priced against the $30 enterprise add-on. ' +
+      'Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>. Priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
       closing + '</p>' +
-      '<p style="font-size:.8rem;color:#6b7280;">Against what this customer actually pays for Copilot (' + usd(c.copilotSpend) + '/mo), the ratio is <b>' + c.ratioActual.toFixed(2) + '&times;</b>. ' +
-      'That difference is why quoting a bare &ldquo;2.6&times;&rdquo; without naming the license is wrong. The same usage measured against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Copilot Business promo reads <b>' +
-      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b>, and against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on <b>' + (c.perActiveMs / E.SKU_BY_ID['cop_ent'].usd).toFixed(2) + '&times;</b> \u2014 one usage pattern, two very different headline numbers.</p>' +
+      '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
+      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
       flywheelLine(c) + '</div>';
   }
 
