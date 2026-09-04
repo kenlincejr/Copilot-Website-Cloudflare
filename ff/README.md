@@ -57,6 +57,26 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## What the columns mean
+
+Every header carries a tooltip, and "what do the columns mean?" under the filters
+opens a glossary written **against the user's own board** rather than in the
+abstract — it names the actual replacement ranks and the actual next pick number,
+because VOR only becomes meaningful once you can see it is measured against RB31
+in a twelve-team league starting two backs and a flex. Collapsed by default,
+remembered once opened.
+
+The three that needed it:
+
+- **VOR** — points above a player you could have for nothing at that position.
+  It is what makes a tight end and a running back comparable at all; 250 points
+  means very different things at the two.
+- **Δ** — ADP minus the pick on the clock. Positive means he usually goes later
+  than now, so taking him here is early; negative means he is overdue and is the
+  bargain. Green is the arbitrage.
+- **→14** — the chance he is still there at your next pick, from his own ADP
+  standard deviation. The header carries whatever your next pick number is.
+
 ## Recording a pick
 
 Each row carries two buttons. The left one is the team on the clock's initials —

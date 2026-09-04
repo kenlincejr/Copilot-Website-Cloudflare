@@ -1343,6 +1343,8 @@ function renderFilters() {
   };
   $("#survHead").textContent = A.myNext && A.myNext > A.cur ? "→" + A.myNext : "Survives";
 
+  renderGlossary();
+
   var lg = $("#rowLegend");
   if (lg) {
     lg.innerHTML = A.cur > S.league.teams * S.league.rounds ? ""
@@ -1352,6 +1354,65 @@ function renderFilters() {
           " took him · <b>TO ME</b> = he goes on your roster instead";
   }
 }
+
+/**
+ * A glossary written against the user's own board rather than in the abstract:
+ * it names the actual replacement ranks and the actual next pick, because "VOR"
+ * only becomes meaningful once you can see it is measured against RB31 in a
+ * twelve-team league starting two backs and a flex.
+ */
+function renderGlossary() {
+  var el = $("#glossary");
+  if (!el || el.classList.contains("hidden")) return;
+
+  var repl = A.board.replacement || {};
+  var replText = ["QB", "RB", "WR", "TE", "K", "DEF"]
+    .filter(function (pos) { return repl[pos]; })
+    .map(function (pos) { return pos + String(repl[pos].rank); }).join(", ");
+
+  var next = A.myNext && A.myNext > A.cur ? A.myNext : (A.myAfter || null);
+  var rows = [
+    ["Pts", "Projected season points <b>in your league's scoring</b> — bonuses, return " +
+            "yards and your D/ST tiers included. Not a consensus ranking."],
+    ["Bye", "His bye week. Amber when another of your starters at that position is already " +
+            "out that week, red when the position would have nobody left."],
+    ["VOR", "<b>Value over replacement.</b> Points above the best player you could get for " +
+            "nothing at that position — the ones a full league would leave on the board. " +
+            "In yours that baseline is " + esc(replText) + ". It is what makes a tight end " +
+            "and a running back comparable at all: 250 points means very different things " +
+            "at the two positions."],
+    ["ADP", "Average draft position across roughly 7,800 mock drafts. Where the market " +
+            "takes him, not where you should."],
+    ["\u0394",  "ADP minus the pick on the clock. <b>+12</b> means he usually goes twelve " +
+            "picks from now, so taking him here is early; <b>\u221212</b> means he is " +
+            "already overdue and is the bargain. Green is the arbitrage."],
+    [next ? "\u2192" + next : "Survives",
+            next ? "Chance he is still there at <b>your next pick (" + next + ")</b>, from his " +
+                   "own ADP standard deviation. Above about 70% you can wait; under 35% it is " +
+                   "now or never."
+                 : "Chance he lasts until your next pick. No picks left, so nothing to show."]
+  ];
+
+  el.innerHTML = '<div class="gloss">' + rows.map(function (r) {
+    return '<div class="gl-row"><span class="gl-k">' + r[0] + "</span>" +
+           '<span class="gl-v">' + r[1] + "</span></div>";
+  }).join("") + "</div>";
+}
+
+$("#glossToggle").addEventListener("click", function () {
+  var el = $("#glossary"), hidden = el.classList.toggle("hidden");
+  $("#glossToggle").textContent = hidden ? "what do the columns mean?" : "hide";
+  try { localStorage.setItem("draftline.gloss", hidden ? "0" : "1"); } catch (e) {}
+  renderGlossary();
+});
+(function restoreGlossary() {
+  var open = false;
+  try { open = localStorage.getItem("draftline.gloss") === "1"; } catch (e) {}
+  if (open) {
+    $("#glossary").classList.remove("hidden");
+    $("#glossToggle").textContent = "hide";
+  }
+})();
 
 function matches(p) {
   if (view.pos === "FLEX") { if (["RB","WR","TE"].indexOf(p.pos) < 0) return false; }
