@@ -84,6 +84,32 @@ clock. Instead:
   to record it would leave the app permanently behind, which is the failure this
   exists to prevent.
 
+## The board keeps drafted players
+
+Picked players stay in the list, struck through and dimmed, in their original
+ranked position, with who took them and at which pick. The gaps in the ranking
+are themselves the information — a run is visible as a cluster of strikethroughs
+near the top of a position. Toggle with the `drafted` pill; the choice persists.
+
+The ticker under the status strip carries round, who is on the clock, who is on
+deck, your next pick, and the last five names off the board — the draft log in
+the right column is a record, the ticker is what you glance at.
+
+The pick clock is a stopwatch, not a mirror: nothing here talks to Yahoo. Enter
+your league's seconds-per-pick and it counts down from the last pick you
+recorded, answering "roughly how long until I'm up" rather than claiming to know
+the real timer.
+
+## iPad
+
+Landscape (1194) keeps all three columns. Portrait (834) drops to board plus
+recommendation with the roster full-width underneath, rather than collapsing to
+one column and burying the recommendation under 200 player rows. Under
+`hover: none` the row actions stop hiding behind a hover that never arrives and
+take a real column, rows grow to a 54px tap target, and every input is 16px so
+iOS does not zoom the layout on focus. The app bar, status strip and ticker
+scroll inside themselves — nothing makes the page itself scroll sideways.
+
 ## Cache busting
 
 GitHub Pages serves assets with `max-age=600`, so a push can take ten minutes to

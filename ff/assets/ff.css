@@ -31,6 +31,8 @@ body {
   background: var(--bg); color: var(--text);
   font: 14px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 a { color: var(--teal); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -160,11 +162,16 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 
 /* --------------------------------------------------------------- the app */
 
-.app { display: flex; flex-direction: column; height: 100vh; }
+.app { display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
 .appbar {
   display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 52px;
   border-bottom: 1px solid var(--line); background: var(--panel); flex: none;
+  /* On an iPad in portrait the controls are wider than the screen. Scroll them
+     inside the bar rather than letting the whole page scroll sideways. */
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
 }
+.appbar::-webkit-scrollbar { display: none; }
+.appbar > * { flex: none; }
 .appbar .spacer { flex: 1; }
 .clock {
   display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px;
@@ -180,6 +187,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
    whether it is your turn, and whether the app still matches the real draft. */
 .statusbar {
   flex: none; display: flex; align-items: center; gap: 12px;
+  overflow-x: auto; scrollbar-width: none;
   padding: 9px 16px; font-size: 13px; border-bottom: 1px solid var(--line);
 }
 .statusbar b { font-size: 15px; }
@@ -203,8 +211,19 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 }
 .col { background: var(--bg); overflow: auto; min-height: 0; }
 .col-pad { padding: 14px; }
-@media (max-width: 1180px) { .cols { grid-template-columns: 1fr 1fr; } .col-roster { grid-column: 1/-1; } }
-@media (max-width: 820px)  { .cols { grid-template-columns: 1fr; } }
+/* iPad landscape (1194 / 1180) keeps three columns; portrait (834 / 820) drops the
+   roster to a full-width row underneath rather than collapsing to one column,
+   which would bury the recommendation under 200 player rows. */
+@media (max-width: 1150px) {
+  .cols { grid-template-columns: minmax(360px, 1.25fr) minmax(300px, 1fr); }
+  .col-roster { grid-column: 1 / -1; max-height: 46vh; }
+  .col-roster .panel-head { margin-top: 10px; }
+}
+@media (max-width: 700px) {
+  .cols { grid-template-columns: 1fr; }
+  .col-board { max-height: 58vh; }
+}
+
 
 .sticky-head {
   position: sticky; top: 0; background: var(--bg); z-index: 5;
@@ -214,14 +233,56 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .searchrow input { font-size: 15px; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
+/* Draft ticker: round, who is up, who is on deck, and the last few picks. */
+.ticker {
+  flex: none; display: flex; align-items: center; gap: 14px; overflow-x: auto;
+  padding: 7px 16px; font-size: 12.5px; background: var(--panel);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.ticker .seg { display: flex; align-items: center; gap: 6px; flex: none; }
+.ticker .seg .k { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.ticker .seg .v { font-weight: 600; }
+.ticker .seg.me .v { color: var(--teal); }
+.ticker .sep { width: 1px; height: 18px; background: var(--line); flex: none; }
+.ticker .recent { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.ticker .recent .rp { color: var(--muted); flex: none; }
+.ticker .recent .rp .mono { color: var(--dim); font-size: 11px; }
+
 /* player rows */
 .plist { width: 100%; }
 .prow {
+  position: relative;
   display: grid; align-items: center; gap: 8px;
-  grid-template-columns: 22px 1fr 44px 34px 52px 46px 50px 58px;
+  grid-template-columns: 22px minmax(0, 1fr) 44px 34px 52px 46px 50px 58px;
   padding: 6px 14px; border-bottom: 1px solid var(--line-soft); cursor: pointer;
 }
 .prow:hover { background: var(--panel-2); }
+
+/* Drafted players stay in rank order, struck out — the ranking is easier to read
+   when the gaps are visible, and it doubles as a running record of the board. */
+.prow.taken { cursor: default; opacity: .42; }
+.prow.taken:hover { background: transparent; }
+.prow.taken .nm { text-decoration: line-through; text-decoration-thickness: 1px; }
+.prow.taken .num { text-decoration: line-through; }
+.prow.taken.by-me { opacity: .62; box-shadow: inset 2px 0 0 var(--teal-dim); }
+.prow.taken.by-me .nm { text-decoration-color: var(--teal); }
+
+/* Floated over the right edge rather than given a column of its own: at a 480px
+   board width a ninth track leaves the player's name about twenty pixels. */
+.rowacts {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  display: flex; gap: 4px; opacity: 0; pointer-events: none;
+  padding-left: 14px; background: var(--panel-2);
+  box-shadow: -12px 0 10px -4px var(--panel-2);
+}
+.prow:hover .rowacts, .prow.sel .rowacts { opacity: 1; pointer-events: auto; }
+.rowacts button {
+  border: 1px solid var(--line); background: var(--raised); color: var(--muted);
+  border-radius: 5px; font: inherit; font-size: 10px; font-weight: 700;
+  padding: 3px 6px; cursor: pointer; line-height: 1.2;
+}
+.rowacts button:hover { background: #2b3849; color: var(--text); }
+.rowacts button.mine { color: var(--teal); border-color: var(--teal-dim); }
 .prow.sel { background: rgba(45,212,191,.09); box-shadow: inset 2px 0 0 var(--teal); }
 .prow .rank { color: var(--dim); font-size: 11px; font-family: var(--mono); }
 .prow .nm { font-weight: 560; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -235,7 +296,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   padding: 8px 14px 3px; background: var(--bg);
 }
 .phead {
-  display: grid; gap: 8px; grid-template-columns: 22px 1fr 44px 34px 52px 46px 50px 58px;
+  display: grid; gap: 8px; grid-template-columns: 22px minmax(0,1fr) 44px 34px 52px 46px 50px 58px;
   padding: 6px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
   color: var(--dim); border-bottom: 1px solid var(--line); position: sticky; top: 0;
   background: var(--bg); z-index: 4;
@@ -320,3 +381,52 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .mt { margin-top: 14px; }
 .mb0 { margin-bottom: 0; }
 .stack > * + * { margin-top: 10px; }
+
+
+/* ===================================================================
+   Responsive rules live at the end so they win the cascade over the
+   base .prow / .phead templates defined above.
+   =================================================================== */
+
+/* A board column runs about 480px wide even on a big screen, so narrow layouts
+   drop the least load-bearing numbers rather than squeezing every column into an
+   unreadable smear. VOR goes first: it is derivable from points, and the
+   composite ranking already encodes it. */
+@media (max-width: 1250px) {
+  .prow, .phead { grid-template-columns: 20px minmax(0,1fr) 42px 30px 46px 46px 54px; }
+  .prow .c-vor, .phead .c-vor { display: none; }
+}
+@media (max-width: 1000px) {
+  .prow, .phead { grid-template-columns: minmax(0,1fr) 44px 46px 54px; }
+  .prow .rank, .phead .c-rank,
+  .prow .c-bye, .phead .c-bye,
+  .prow .c-vor, .phead .c-vor,
+  .prow .delta, .phead .c-delta { display: none; }
+}
+
+/* Touch. Apple's 44px minimum target, and row actions cannot wait for a hover
+   that never arrives — so on touch they take a real column instead of floating.
+   iOS also zooms any input under 16px on focus, which throws the layout out. */
+@media (hover: none) {
+  .prow { padding: 11px 14px; grid-template-columns: minmax(0,1fr) 46px 48px 56px 74px; }
+  .phead { grid-template-columns: minmax(0,1fr) 46px 48px 56px 74px; }
+  .prow .rank, .phead .c-rank,
+  .prow .c-bye, .phead .c-bye,
+  .prow .c-vor, .phead .c-vor,
+  .prow .delta, .phead .c-delta { display: none; }
+  .rowacts {
+    position: static; transform: none; opacity: 1; pointer-events: auto;
+    padding-left: 0; background: none; box-shadow: none; justify-content: flex-end;
+  }
+  .rowacts button { padding: 8px; font-size: 11px; min-height: 40px; }
+  .pill { padding: 8px 13px; font-size: 13px; }
+  .btn-sm { padding: 8px 12px; font-size: 12px; }
+  .slot { padding: 10px 8px; }
+  .srow { padding: 7px 0; }
+  .appbar { gap: 10px; }
+  .appbar .logo small { display: none; }
+  input[type=text], input[type=search], input[type=number], select, textarea { font-size: 16px; }
+}
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea { font-size: 16px; }
+}

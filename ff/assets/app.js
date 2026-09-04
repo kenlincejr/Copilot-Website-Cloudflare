@@ -4,7 +4,9 @@
 
 var E = DRAFTLINE_ENGINE, PRESETS = DRAFTLINE_PRESETS, DATA = DRAFTLINE_DATA, AUTH = DRAFTLINE_AUTH;
 var $  = function (s) { return document.querySelector(s); };
-var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+var $$ = function (s, root) {
+  return Array.prototype.slice.call((root || document).querySelectorAll(s));
+};
 var esc = function (s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -115,6 +117,7 @@ function record(name, mine, quiet) {
                  unknown: name === null });
   syncKeepers();
   bumpLivePick();
+  S.pickStartedAt = Date.now();
   save();
   if (!quiet) render();
 }
@@ -189,22 +192,33 @@ function analyse() {
     currentPick: cur, nextPick: myAfter || cur
   };
 
-  avail.forEach(function (p) {
+  // Score everyone, not just the pool. Drafted players stay in the list struck
+  // through, which is what makes the shape of a run visible — the gaps in the
+  // ranking are themselves the information.
+  var pickOf = {};
+  S.picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
+  board.players.forEach(function (p) {
     var c = E.composite(p, ctx);
     p.comp = c.score; p.compDetail = c;
     p.surv = myNext ? E.survival(p, myNext) : 1;
     p.survNext = myAfter ? E.survival(p, myAfter) : 1;
     p.adpDelta = (p.adp || 200) - cur;
+    p.takenBy = pickOf[p.name] || null;
   });
 
-  return { board: board, avail: avail, byName: byName, mine: mine, roster: roster,
+  return { board: board, avail: avail, all: board.players, byName: byName, mine: mine, roster: roster,
            need: need, ctx: ctx, cur: cur, myNext: myNext, myAfter: myAfter,
            onClock: onClock, runInfo: runInfo, upcoming: upcoming };
 }
 
 /* -------------------------------------------------------------- rendering */
 
-var view = { pos: "ALL", sort: "composite", q: "", selected: null };
+var view = {
+  pos: "ALL", sort: "composite", q: "", selected: null,
+  showTaken: (function () {
+    try { return localStorage.getItem("draftline.showTaken") !== "0"; } catch (e) { return true; }
+  })()
+};
 var A = null;   // latest analysis
 
 function render() {
@@ -225,7 +239,7 @@ function render() {
         ' <span class="dimtext">(' + (A.myAfter - A.myNext) + " picks)</span>" : "")
     : '<span class="dimtext">no picks left</span>';
 
-  renderStatus();
+  renderStatus(); renderTicker();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner();
   if (view.selected) renderDetail(view.selected);
@@ -298,9 +312,11 @@ function renderStatus() {
 
 $("#livePick").addEventListener("input", renderStatus);
 $("#btnStart").addEventListener("click", function () {
-  S.startedAt = Date.now(); save();
+  S.startedAt = Date.now();
+  S.pickStartedAt = Date.now();
+  save();
   $("#livePick").value = 1;
-  $("#search").focus(); render();
+  $("#search").focus(); render(); tickClock();
 });
 
 /* ------------------------------------------------------------- catch-up */
@@ -372,6 +388,89 @@ function banner(msg, isWarn) {
   setTimeout(function () { el.remove(); }, 9000);
 }
 
+/* ------------------------------------------------- ticker and pick clock */
+
+/**
+ * Round, who is on the clock, who is on deck, and the last few names off the
+ * board. The draft log in the right column is a record; this is the thing you
+ * glance at without moving your eyes far.
+ */
+function renderTicker() {
+  var el = $("#ticker"), total = S.league.teams * S.league.rounds;
+  if (A.cur > total) { el.className = ""; el.innerHTML = ""; return; }
+
+  var onDeckPick = A.cur + 1;
+  var onDeck = onDeckPick <= total ? ownerOfPick(onDeckPick).slot : null;
+  var recent = S.picks.slice(-5).reverse();
+
+  function seg(k, v, mine) {
+    return '<span class="seg' + (mine ? " me" : "") + '"><span class="k">' + k +
+           '</span><span class="v">' + v + "</span></span>";
+  }
+
+  el.className = "ticker";
+  el.innerHTML =
+    seg("round", A.onClock.round + " of " + S.league.rounds) +
+    '<span class="sep"></span>' +
+    seg("on the clock", A.onClock.slot === S.league.slot ? "you" : "team " + A.onClock.slot,
+        A.onClock.slot === S.league.slot) +
+    (onDeck ? seg("on deck", onDeck === S.league.slot ? "you" : "team " + onDeck,
+                  onDeck === S.league.slot) : "") +
+    '<span class="sep"></span>' +
+    seg("your pick", A.myNext ? "#" + A.myNext : "none left", true) +
+    '<span class="sep"></span>' +
+    '<span class="recent">' +
+      (recent.length
+        ? recent.map(function (pk) {
+            var pl = BY_NAME[pk.name] || {};
+            return '<span class="rp"><span class="mono">' + pk.pick + "</span> " +
+              (pk.unknown ? "<i>unknown</i>"
+                : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " +
+                  esc(pk.name)) + "</span>";
+          }).join("")
+        : '<span class="rp dimtext">no picks recorded yet</span>') +
+    "</span>";
+}
+
+/**
+ * A countdown for the league's own pick clock. Nothing here talks to Yahoo, so
+ * it is a stopwatch started by the last recorded pick, not a mirror of the real
+ * timer — its job is to answer "roughly how long until I'm up", which is the
+ * question you actually have while waiting.
+ */
+function pickSeconds() {
+  var v = parseInt($("#pickSecs").value, 10);
+  return v > 0 ? v : 0;
+}
+function mmss(sec) {
+  sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec / 60) + ":" + ("0" + (sec % 60)).slice(-2);
+}
+function tickClock() {
+  var out = $("#clockRead"), secs = pickSeconds();
+  if (!secs || !A || !S.pickStartedAt) { out.textContent = ""; return; }
+  var elapsed = (Date.now() - S.pickStartedAt) / 1000;
+  var left = secs - elapsed;
+  var gap = A.myNext ? A.myNext - A.cur : null;
+
+  if (gap === 0) {
+    out.innerHTML = '<b style="color:' + (left < 30 ? "var(--red)" : "var(--teal)") + '">' +
+      mmss(left) + "</b>";
+  } else if (gap) {
+    // Time left on this pick, plus a full clock for each pick between.
+    var eta = Math.max(0, left) + (gap - 1) * secs;
+    out.innerHTML = '<span class="dimtext">you\u2019re up in ~</span> <b>' + mmss(eta) + "</b>";
+  } else {
+    out.textContent = "";
+  }
+}
+setInterval(tickClock, 1000);
+$("#pickSecs").addEventListener("input", function () {
+  S.league.pickSeconds = pickSeconds();
+  if (!S.pickStartedAt) S.pickStartedAt = Date.now();
+  save(); tickClock();
+});
+
 function renderFilters() {
   var counts = {};
   A.avail.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
@@ -382,10 +481,19 @@ function renderFilters() {
           : (counts[p] || 0);
     return '<span class="pill' + (view.pos === p ? " on" : "") + '" data-pos="' + p + '">' +
            p + ' <span class="dimtext">' + c + "</span></span>";
-  }).join("");
-  $$("#posFilters .pill").forEach(function (el) {
+  }).join("") +
+  '<span style="flex:1"></span>' +
+  '<span class="pill' + (view.showTaken ? " on" : "") + '" id="pillTaken" ' +
+    'title="Keep drafted players in the list, struck through">drafted ' +
+    '<span class="dimtext">' + S.picks.length + "</span></span>";
+  $$("#posFilters .pill[data-pos]").forEach(function (el) {
     el.onclick = function () { view.pos = el.getAttribute("data-pos"); renderFilters(); renderList(); };
   });
+  $("#pillTaken").onclick = function () {
+    view.showTaken = !view.showTaken;
+    try { localStorage.setItem("draftline.showTaken", view.showTaken ? "1" : "0"); } catch (e) {}
+    renderFilters(); renderList();
+  };
   $("#survHead").textContent = A.myNext && A.myNext > A.cur ? "→" + A.myNext : "Survives";
 }
 
@@ -400,7 +508,7 @@ function matches(p) {
 }
 
 function sortedList() {
-  var l = A.avail.filter(matches);
+  var l = (view.showTaken ? A.all : A.avail).filter(matches);
   var cmp = {
     composite: function (a, b) { return b.comp - a.comp; },
     pts:       function (a, b) { return b.pts - a.pts; },
@@ -418,17 +526,25 @@ function rowHtml(p, i) {
   var est = p.projSource === "modeled" ? ' <span class="dimtext" title="modeled, not projected">~</span>' : "";
   var surv = Math.round((p.surv || 1) * 100);
   var survColor = surv > 70 ? "var(--green)" : surv > 35 ? "var(--amber)" : "var(--red)";
-  return '<div class="prow' + (view.selected === p.name ? " sel" : "") + '" data-name="' +
-      esc(p.name) + '">' +
+  var t = p.takenBy;
+  var cls = "prow" + (view.selected === p.name ? " sel" : "") +
+            (t ? " taken" + (t.mine ? " by-me" : "") : "");
+  var who = t ? '<span class="sub">' + (t.mine ? "you" : "team " + t.slot) + " \u00b7 " + t.pick + "</span>" : "";
+  return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
     '<span class="rank">' + (i + 1) + "</span>" +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
-      '<span class="sub">' + p.team + "</span>" + tag + "</span>" +
+      '<span class="sub">' + p.team + "</span>" + tag + who + "</span>" +
     '<span class="num">' + n0(p.pts) + est + "</span>" +
-    '<span class="num dimtext">' + p.bye + "</span>" +
-    '<span class="num">' + n0(p.vor) + "</span>" +
+    '<span class="num dimtext c-bye">' + p.bye + "</span>" +
+    '<span class="num c-vor">' + n0(p.vor) + "</span>" +
     '<span class="num dimtext">' + (p.adp || "").toFixed(0) + "</span>" +
     '<span class="num delta ' + (d > 0 ? "pos-val" : "neg-val") + '">' + (d > 0 ? "+" : "") + n0(d) + "</span>" +
-    '<span class="num" style="color:' + survColor + '">' + surv + "%</span>" +
+    '<span class="num" style="color:' + survColor + '">' + (t ? "\u2014" : surv + "%") + "</span>" +
+    (t ? '<span class="rowacts"></span>'
+       : '<span class="rowacts">' +
+           '<button data-act="gone" title="Someone else took him">GONE</button>' +
+           '<button class="mine" data-act="mine" title="I drafted him">MINE</button>' +
+         "</span>") +
   "</div>";
 }
 
@@ -438,12 +554,17 @@ function renderList() {
     '<div class="col-pad dimtext">Nobody matches that.</div>';
   $$("#plist .prow").forEach(function (el) {
     var name = el.getAttribute("data-name");
+    var taken = el.classList.contains("taken");
+    $$("[data-act]", el).forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); record(name, b.dataset.act === "mine"); };
+    });
     el.onclick = function (e) {
+      if (taken) return;
       if (e.shiftKey) return record(name, true);
       if (e.altKey || e.metaKey || e.ctrlKey) return record(name, false);
       view.selected = name; renderList(); renderDetail(name);
     };
-    el.ondblclick = function () { record(name, false); };
+    if (!taken) el.ondblclick = function () { record(name, false); };
   });
 }
 
@@ -1229,7 +1350,9 @@ function renderBrief() {
 /* ------------------------------------------------------------------- boot */
 
 syncKeepers();
+if (S.league.pickSeconds) $("#pickSecs").value = S.league.pickSeconds;
 render();
+tickClock();
 if (!S.picks.length && !localStorage.getItem(KEY_STATE)) openSetup();
 save();
 $("#search").focus();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904d">
+<link rel="stylesheet" href="assets/ff.css?v=20260904e">
 </head>
 <body>
 
@@ -21,8 +21,14 @@
     <div class="clock" id="nextPickInfo"></div>
     <div class="clock" id="syncBox" title="What pick is the real draft on? Type it here to check.">
       <span class="dimtext">live</span>
-      <input type="number" id="livePick" min="1" placeholder="—"
+      <input type="number" id="livePick" min="1" placeholder="—" autocomplete="off"
              style="width:56px;padding:3px 6px;font-size:13px;text-align:center">
+    </div>
+    <div class="clock" id="clockBox" title="Seconds on your league's pick clock">
+      <span class="dimtext">clock</span>
+      <input type="number" id="pickSecs" min="10" max="600" step="5" placeholder="120" autocomplete="off"
+             style="width:56px;padding:3px 6px;font-size:13px;text-align:center">
+      <span id="clockRead" class="mono"></span>
     </div>
     <div class="spacer"></div>
     <button class="btn btn-sm btn-primary hidden" id="btnStart">Start draft</button>
@@ -35,6 +41,7 @@
   </div>
 
   <div id="statusBar"></div>
+  <div id="ticker"></div>
 
   <div class="cols">
 
@@ -42,7 +49,13 @@
     <div class="col col-board">
       <div class="sticky-head">
         <div class="searchrow">
-          <input type="text" id="search" placeholder="Search name, team or position…  Enter = someone took him, Shift+Enter = I drafted him" autocomplete="off">
+          <!-- type=search plus the ignore hints: Chrome disregards autocomplete="off"
+               on a lone text input and offers your saved email, and the password
+               managers pile on after that. -->
+          <input type="search" id="search" name="player-filter" autocomplete="off"
+                 autocorrect="off" autocapitalize="off" spellcheck="false"
+                 data-1p-ignore data-lpignore="true" data-form-type="other"
+                 placeholder="Search name, team or position…  Enter = someone took him, Shift+Enter = I drafted him">
           <select id="sortBy" style="width:150px;flex:none">
             <option value="composite">Sort: suggested</option>
             <option value="pts">Sort: your points</option>
@@ -55,8 +68,10 @@
         <div class="filters" id="posFilters"></div>
       </div>
       <div class="phead">
-        <span></span><span>Player</span><span class="num">Pts</span><span class="num">Bye</span>
-        <span class="num">VOR</span><span class="num">ADP</span><span class="num">Δ</span><span class="num" id="survHead">Survives</span>
+        <span class="c-rank"></span><span>Player</span>
+        <span class="num">Pts</span><span class="num c-bye">Bye</span>
+        <span class="num c-vor">VOR</span><span class="num">ADP</span>
+        <span class="num c-delta">Δ</span><span class="num" id="survHead">Survives</span>
       </div>
       <div id="plist" class="plist"></div>
     </div>
@@ -265,12 +280,12 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904d"></script>
-<script src="data/players.js?v=20260904d"></script>
-<script src="assets/presets.js?v=20260904d"></script>
-<script src="assets/engine.js?v=20260904d"></script>
-<script src="assets/auth.js?v=20260904d"></script>
-<script src="assets/parser.js?v=20260904d"></script>
-<script src="assets/app.js?v=20260904d"></script>
+<script src="assets/config.js?v=20260904e"></script>
+<script src="data/players.js?v=20260904e"></script>
+<script src="assets/presets.js?v=20260904e"></script>
+<script src="assets/engine.js?v=20260904e"></script>
+<script src="assets/auth.js?v=20260904e"></script>
+<script src="assets/parser.js?v=20260904e"></script>
+<script src="assets/app.js?v=20260904e"></script>
 </body>
 </html>
