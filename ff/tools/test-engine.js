@@ -92,6 +92,28 @@ ok("VONA at a 3-pick gap is small",
    "gap3=" + (wr.pts - near14.WR.expected).toFixed(1) +
    " gap21=" + (wr.pts - far35.WR.expected).toFixed(1));
 
+console.log("\n== Tiers group interchangeable players, not runs of singletons ==");
+// The first attempt broke a tier on any gap beating a multiple of the MEDIAN gap.
+// The median is dragged down by the compressed tail, so the threshold came out at
+// about six points — noise across a season — and the top three backs landed in
+// three separate tiers. Anyone seeing that would rightly distrust the board.
+var rb = board.byPos.RB, wr = board.byPos.WR, te = board.byPos.TE, qb = board.byPos.QB;
+ok("the two best RBs share a tier (6 pts apart)", rb[0].tier === rb[1].tier,
+   rb[0].name + " T" + rb[0].tier + " / " + rb[1].name + " T" + rb[1].tier);
+ok("the two best WRs share a tier", wr[0].tier === wr[1].tier,
+   wr[0].name + " / " + wr[1].name);
+ok("the two elite TEs share a tier", te[0].tier === te[1].tier,
+   te[0].name + " / " + te[1].name);
+ok("RB3 has dropped a tier from RB1", rb[2].tier > rb[0].tier);
+// A singleton is correct where the gap is real: Allen is ~34 points clear.
+ok("the runaway QB stands alone", qb[0].tier === 1 && qb[1].tier === 2,
+   qb[0].name + " " + Math.round(qb[0].pts) + " vs " + Math.round(qb[1].pts));
+["QB", "RB", "WR", "TE", "K", "DEF"].forEach(function (pos) {
+  var l = board.byPos[pos];
+  var monotonic = l.every(function (p, i) { return i === 0 || p.tier >= l[i - 1].tier; });
+  ok(pos + " tiers never go backwards down the board", monotonic);
+});
+
 console.log("\n== Top of the board in Ken's scoring ==");
 board.players.slice(0, 12).forEach(function (p, i) {
   console.log("   " + String(i + 1).padStart(2) + ". " + p.name.padEnd(24) +

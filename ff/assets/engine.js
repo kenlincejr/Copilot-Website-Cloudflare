@@ -120,6 +120,54 @@
 
   var FLEX_SPLIT = { RB: 0.55, WR: 0.40, TE: 0.05 };
 
+
+  /**
+   * Fisher's optimal 1-D clustering. Partitions `list` (already sorted by points,
+   * descending) into `k` contiguous tiers that minimise total within-tier
+   * variance, then writes `tier` onto each player.
+   *
+   * O(k·n²), which for a 92-deep receiver board is about 68k operations — small
+   * enough to run inside buildBoard, and buildBoard does not run per keystroke.
+   */
+  function assignTiers(list) {
+    var n = list.length;
+    if (!n) return;
+    var k = Math.max(4, Math.min(12, Math.round(n / 5)));
+    if (n <= k) { list.forEach(function (p, i) { p.tier = i + 1; }); return; }
+
+    var sum = [0], sq = [0];
+    for (var i = 0; i < n; i++) {
+      sum.push(sum[i] + list[i].pts);
+      sq.push(sq[i] + list[i].pts * list[i].pts);
+    }
+    // Within-group sum of squared deviations for players a..b inclusive.
+    function cost(a, b) {
+      var cnt = b - a + 1;
+      var s2 = sum[b + 1] - sum[a];
+      return (sq[b + 1] - sq[a]) - (s2 * s2) / cnt;
+    }
+
+    var dp = [], back = [];
+    for (var g = 0; g <= k; g++) { dp.push(new Array(n).fill(Infinity)); back.push(new Array(n).fill(0)); }
+    for (var e = 0; e < n; e++) dp[1][e] = cost(0, e);
+    for (var g2 = 2; g2 <= k; g2++) {
+      for (var e2 = g2 - 1; e2 < n; e2++) {
+        for (var m = g2 - 2; m < e2; m++) {
+          var c = dp[g2 - 1][m] + cost(m + 1, e2);
+          if (c < dp[g2][e2]) { dp[g2][e2] = c; back[g2][e2] = m; }
+        }
+      }
+    }
+
+    var bounds = [], end = n - 1;
+    for (var g3 = k; g3 >= 1; g3--) { bounds.unshift(end); end = back[g3][end]; }
+    var tier = 1, at = 0;
+    bounds.forEach(function (b) {
+      for (; at <= b; at++) list[at].tier = tier;
+      tier++;
+    });
+  }
+
   /** Replacement rank per position, derived from roster + team count. */
   function replacementRanks(rules) {
     var r = rules.roster || {}, teams = rules.teams || 12, out = {};
@@ -156,23 +204,24 @@
     });
     scored.forEach(function (p) { p.vor = p.pts - (repl[p.pos] ? repl[p.pos].points : 0); });
 
-    // Tiers: where the position falls off a cliff. Everyone inside a tier is
-    // close enough to be interchangeable, so the question stops being "who is
-    // best" and becomes "how many of these are left" — which is the question
-    // that actually decides whether you can wait a round.
+    // Tiers.
+    //
+    // The first attempt broke a tier wherever the gap to the next player beat a
+    // multiple of the median gap. That fails badly at the top of a board: the
+    // median is dragged down by the long compressed tail — dozens of players
+    // within a point or two of each other — so the threshold came out around six
+    // points, and six points across a whole season is noise. The top three backs
+    // landed in three different tiers, which is both useless and looks broken.
+    //
+    // This instead partitions each position optimally, minimising the variance
+    // inside each tier (Fisher's exact 1-D clustering, by dynamic programming).
+    // It reads the shape of the whole position at once rather than reacting to
+    // one local gap, so genuinely similar players stay together and the breaks
+    // land where the position actually steps down.
     Object.keys(byPos).forEach(function (pos) {
-      var list = byPos[pos];
-      var gaps = [];
-      for (var i = 0; i + 1 < Math.min(list.length, 40); i++) gaps.push(list[i].pts - list[i + 1].pts);
-      var sorted = gaps.slice().sort(function (a, b) { return a - b; });
-      var median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
-      var cliff = Math.max(6, median * 2.2);
-      var tier = 1;
-      list.forEach(function (p, i) {
-        if (i > 0 && (list[i - 1].pts - p.pts) >= cliff) tier++;
-        p.tier = tier;
-      });
+      assignTiers(byPos[pos]);
     });
+
     scored.sort(function (a, b) { return b.vor - a.vor; });
     scored.forEach(function (p, i) { p.vorRank = i + 1; });
     return { players: scored, replacement: repl, byPos: byPos };
@@ -415,7 +464,7 @@
     pickSchedule: pickSchedule, scheduleWithKeepers: scheduleWithKeepers,
     survival: survival, expectedBestAvailable: expectedBestAvailable,
     assignRoster: assignRoster, positionalNeed: positionalNeed,
-    composite: composite, detectRuns: detectRuns, depthCap: depthCap, FLEX_SPLIT: FLEX_SPLIT
+    composite: composite, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers, FLEX_SPLIT: FLEX_SPLIT
   };
   root.DRAFTLINE_ENGINE = API;
   if (typeof module !== "undefined") module.exports = API;

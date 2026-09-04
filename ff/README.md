@@ -57,6 +57,34 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## How tiers are computed
+
+The first attempt broke a tier wherever the gap to the next player beat a
+multiple of the position's median gap. That is wrong in a way that only shows up
+at the top of the board, which is the worst place for it: the median is dragged
+down by the long compressed tail — dozens of players within a point or two of one
+another — so the threshold came out around six points. Six points across a whole
+season is noise, and the result was Gibbs T1, Robinson T2, McCaffrey T3. Three
+singleton tiers covering the three best backs in the draft, which is useless and
+looks broken enough to make someone distrust the rest of the board.
+
+`assignTiers()` in `engine.js` now partitions each position optimally with
+Fisher's exact 1-D clustering (dynamic programming), minimising variance within
+each tier. It reads the shape of the whole position rather than reacting to one
+local gap, and it produces:
+
+- **RB** T1 Gibbs + Robinson · T2 McCaffrey + Taylor · T3 the eight from Cook to
+  Jeanty
+- **TE** T1 Bowers + McBride — the elite-tight-end cliff, which is why that
+  strategy exists
+- **QB** T1 Josh Allen alone, and that singleton is *right*: he is 34 points
+  clear
+- **DEF** T1 the top four, matching the researched tiers
+
+O(k·n²), about 68k operations for the 92-deep receiver board, inside
+`buildBoard` — which does not run per keystroke. Six assertions in
+`test-engine.js` pin the behaviour.
+
 ## Columns
 
 Four columns, chosen by the user from thirteen, via **choose columns** under the
@@ -72,11 +100,11 @@ you get at it by tapping.
 that on a two-minute clock.** A percentage is a fact; "NOW" is a decision. So the
 columns that can be read as a decision are:
 
-- **TIER** — `T5 (1)`. Players grouped by the scoring cliffs at their position
-  (computed in `engine.js` from the median gap). Inside a tier they are
-  interchangeable, so the question stops being *who is best* and becomes *how
-  many are left*. The bracket is exactly that; at `(1)` he is the last of his
-  group and waiting drops you a whole tier. Amber at 1.
+- **TIER** — `T5 (1)`. Players grouped by the scoring cliffs at their position.
+  Inside a tier they are interchangeable, so the question stops being *who is
+  best* and becomes *how many are left*. The bracket is exactly that; at `(1)` he
+  is the last of his group and waiting drops you a whole tier. Amber at 1.
+  See **How tiers are computed** below — the obvious approach is wrong.
 - **WAIT?** — `wait` / `risky` / `NOW`, from survival odds against your own next
   pick. Above 70% spend this pick elsewhere; under 35% it is now or never.
 - **VALUE** — `fell 1.2` / `fair` / `reach 1.4`, his ADP against the pick on the

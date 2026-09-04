@@ -1543,12 +1543,27 @@ $("#btnRosters").addEventListener("click", function () { $("#btnLeague").click()
   var TARGETS = { report: "#btnReport", style: "#btnStyle", cols: "#btnCols",
                   setup: "#btnSetup", data: "#btnData", out: "#btnOut" };
   var wrap = $("#moreMenu"), btn = $("#btnMore");
+
+  // The app bar scrolls horizontally on a tablet, which means overflow-y:hidden,
+  // which clipped this dropdown to a six-pixel sliver — it was opening correctly
+  // and being cut off. Moving it to the body and positioning it fixed against the
+  // button's own rect takes it out of that clipping context entirely.
+  document.body.appendChild(wrap);
+  function place() {
+    var r = btn.getBoundingClientRect();
+    wrap.style.position = "fixed";
+    wrap.style.top = (r.bottom + 6) + "px";
+    wrap.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+    wrap.style.left = "auto";
+  }
   function close() { wrap.classList.add("hidden"); btn.setAttribute("aria-expanded", "false"); }
   btn.addEventListener("click", function (e) {
     e.stopPropagation();
     var nowHidden = wrap.classList.toggle("hidden");
+    if (!nowHidden) place();
     btn.setAttribute("aria-expanded", nowHidden ? "false" : "true");
   });
+  window.addEventListener("resize", function () { if (!wrap.classList.contains("hidden")) place(); });
   document.addEventListener("click", close);
   wrap.addEventListener("click", function (e) { e.stopPropagation(); });
   $$("#moreMenu button[data-more]").forEach(function (b) {
