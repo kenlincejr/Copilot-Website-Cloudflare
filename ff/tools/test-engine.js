@@ -214,7 +214,7 @@ ok("de-emphasising drops him rather than lifting him",
 ok("a position floor still blocks outright",
    !!E.composite(earlyRB, ctxFor([], { round: 2, strategy: { posFloorRound: { RB: 6 } } })).blocked);
 
-console.log("\n== The modelled room ==");
+console.log("\n== The modeled room ==");
 /* Opponents used to take at random from the top three by ADP: no variance that
    belonged to the player, no rosters, no runs. */
 function seeded(a) {

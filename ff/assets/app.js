@@ -43,7 +43,7 @@ DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
  */
 function isLive() { return (S.league.mode || "live") !== "solo"; }
 
-/** Same normalisation the bake uses, so the two name spaces line up. */
+/** Same normalization the bake uses, so the two name spaces line up. */
 function normName(n) {
   return String(n || "").toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -54,7 +54,7 @@ function normName(n) {
 }
 
 /**
- * Real-draft ADP the user pasted from Yahoo, keyed by normalised name. Kept in
+ * Real-draft ADP the user pasted from Yahoo, keyed by normalized name. Kept in
  * league state rather than baked, because it is their league's own view of the
  * market and it goes stale the moment they stop refreshing it.
  */
@@ -223,7 +223,7 @@ function standardBoard() {
   return STANDARD_BOARD;
 }
 
-function analyse() {
+function analyze() {
   var rules = S.league.rules;
   rules.teams = S.league.teams;
   var board = E.buildBoard(DATA.players, rules);
@@ -345,7 +345,7 @@ var A = null;   // latest analysis
 
 function render() {
   syncKeepers();
-  A = analyse();
+  A = analyze();
 
   // Pick number, round, who is on the clock and your next pick used to be
   // repeated in the app bar, the status strip, the ticker and the tracker.
@@ -441,7 +441,7 @@ function renderStatus() {
 
 $("#livePick").addEventListener("input", renderStatus);
 
-/* ------------------------------------------------- start, or practise first
+/* ------------------------------------------------- start, or practice first
 
    The practice run was the best thing in here and the most hidden: a button
    called "Simulate" tucked inside the tracker, which you only ever see once the
@@ -768,7 +768,7 @@ function renderTracker() {
           '<button class="btn btn-sm btn-ghost" id="tkPause">' +
             (S.paused ? "Resume" : "Pause") + "</button>" +
           '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
-            'can practise the flow">Simulate</button>' +
+            'can practice the flow">Simulate</button>' +
           '<button class="btn btn-sm btn-ghost" id="tkStop">Stop</button>' +
           '<button class="btn btn-sm btn-ghost btn-danger" id="tkReset" ' +
             'title="Clear every pick and go back to pick 1. Settings are kept.">Start over</button>' +
@@ -976,9 +976,9 @@ function marketCoverage() {
 }
 
 /**
- * Fills in opponent picks so the flow can be practised before it matters.
+ * Fills in opponent picks so the flow can be practiced before it matters.
  *
- * The room is modelled rather than guessed: every team draws near a player's
+ * The room is modeled rather than guessed: every team draws near a player's
  * real draft position with that player's own spread, respects the same position
  * caps you do, and leans into a run once one starts. It stops the moment the
  * pick is yours, which is the whole point \u2014 you make that one, then run it on.
@@ -1494,12 +1494,12 @@ function renderStyleDiff(newStyleKey, customKnobs) {
 
    Answers the question a list of style names cannot: what does this actually
    leave me holding? Runs the draft out from wherever it currently stands
-   against the same modelled room the live practice run uses — real
+   against the same modeled room the live practice run uses — real
    completed-draft ADP where the user has pasted it, each player drawn with his
    own standard deviation, opponents held to the same position caps — and the
    user's own picks chosen by the style's composite score.
 
-   The honest caveat, surfaced in the UI: nobody in the modelled room is chasing
+   The honest caveat, surfaced in the UI: nobody in the modeled room is chasing
    their own team's players, and no team in it is reading the room the way a
    human does.
 
@@ -1529,7 +1529,7 @@ function runMock(knobs, iterations, seed) {
   var byName = {}; board.players.forEach(function (q) { byName[q.name] = q; });
   var adpOrder = board.players.slice().sort(function (a, b) { return a.adp - b.adp; });
   // Carry the user's own real-draft data onto this board. The mock builds its
-  // own copy of the players, and without this the modelled room would fall back
+  // own copy of the players, and without this the modeled room would fall back
   // to mock ADP while the live board in front of them is using real ADP.
   var ya = yahooAdp();
   board.players.forEach(function (q) {
@@ -1549,7 +1549,7 @@ function runMock(knobs, iterations, seed) {
     var taken = Object.assign({}, seededTaken);
     var mine = seededMine.slice();
     var oppCounts = {};
-    // What every other team already holds, so the modelled room starts the
+    // What every other team already holds, so the modeled room starts the
     // simulation from the real draft rather than from an empty league.
     var known = allRosters();
     Object.keys(known).forEach(function (sl) {
@@ -1570,7 +1570,7 @@ function runMock(knobs, iterations, seed) {
         // Value-over-next-available has to be in here. Without it the mock has no
         // reason not to keep taking the position with the fattest raw VOR, and it
         // hoards running backs regardless of the style — which is exactly the
-        // behaviour VONA exists to prevent on the live board.
+        // behavior VONA exists to prevent on the live board.
         var later = myPickNumbers().filter(function (x) { return x > pk && !keeperAt(x); });
         var nextMine = later[0] || null;
         var need = E.positionalNeed(mine, rules);
@@ -1601,7 +1601,7 @@ function runMock(knobs, iterations, seed) {
         }
         if (best) { taken[best.name] = true; mine.push(best); }
       } else {
-        // The same modelled room the live Simulate drafts against, on the same
+        // The same modeled room the live Simulate drafts against, on the same
         // numbers: real completed-draft ADP where the user has it, each player
         // with his own spread, opponents obeying the same position caps. A
         // seeded generator so two styles get the identical sequence.
@@ -1623,10 +1623,10 @@ function runMock(knobs, iterations, seed) {
     }
     runs.push(mine);
   }
-  return summariseMock(runs, rules);
+  return summarizeMock(runs, rules);
 }
 
-function summariseMock(runs, rules) {
+function summarizeMock(runs, rules) {
   var slotCounts = [], totals = [], posCounts = {};
   runs.forEach(function (mine) {
     var r = E.assignRoster(mine, rules);
@@ -1817,7 +1817,7 @@ var STYLE_SYSTEM =
   "    need entirely and drafts pure value; 1 neutral; 2 doubles it.\n" +
   "  ceilingWeight 0-2 \u2014 how much a HIGH-UPSIDE player is REWARDED. Raise it\n" +
   "    for a manager chasing league-winners; LOWER it for one who wants safe floors.\n" +
-  "  riskWeight 0-2 \u2014 how heavily a RISKY player is PENALISED. RAISE it for a\n" +
+  "  riskWeight 0-2 \u2014 how heavily a RISKY player is PENALIZED. RAISE it for a\n" +
   "    cautious win-now manager; LOWER it for one happy to gamble. Mind the\n" +
   "    direction: a high riskWeight means MORE risk-averse, not more risk taken.\n" +
   "  byeTolerance 2-6 \u2014 starters allowed on one bye week before it costs\n" +
@@ -1825,7 +1825,7 @@ var STYLE_SYSTEM =
   "  stackBonus / handcuffBonus 0-25 \u2014 points added for a pass-catcher on your\n" +
   "    quarterback's team, or a back behind one you already own.\n" +
   "  posBias / earlyPosBias: object keyed QB RB WR TE K DEF, each 0.4-1.6, 1 = neutral.\n" +
-  "    Above 1 favours the position, below 1 avoids it. earlyPosBias applies only\n" +
+  "    Above 1 favors the position, below 1 avoids it. earlyPosBias applies only\n" +
   "    through earlyRounds, which is how Hero RB (one back early, then pivot)\n" +
   "    differs from Zero RB (none at all early).\n" +
   "  posFloorRound: object keyed by position, earliest round the position is allowed.\n" +
@@ -2270,7 +2270,7 @@ var COLUMNS = {
     desc: "Where the room actually took him in completed drafts on Yahoo, as opposed to the " +
           "mock-draft ADP the rest of this board runs on. Only present for players on pages " +
           "you have pasted in, and Yahoo computes it under standard scoring rather than " +
-          "yours \u2014 so read it as market behaviour, not as a ranking.",
+          "yours \u2014 so read it as market behavior, not as a ranking.",
     render: function (p) {
       if (p.yadp == null) return { v: "\u2014", cls: "dimtext" };
       return { v: p.yadp.toFixed(0) };
@@ -2805,7 +2805,7 @@ function renderRoster() {
   var groups = {}, printed = {};
   r.slots.forEach(function (sl) { (groups[sl.pos] = groups[sl.pos] || []).push(sl); });
 
-  // Colour is only worth spending where the picks are genuinely running out.
+  // Color is only worth spending where the picks are genuinely running out.
   var left = isMine && A.myNext
     ? myUpcoming(A.cur).length
     : S.league.rounds - (players.length || 1);
@@ -2852,7 +2852,7 @@ function renderRoster() {
 /* A ten-row chart of every bye week in the league, nine rows of which were
    empty, to say one thing: is any week going to leave you short. That one
    thing is a sentence, and the week each player is out is already on his own
-   roster row, coloured when it is part of a pile-up. */
+   roster row, colored when it is part of a pile-up. */
 function renderByeLine(counts, onBye, tol, starters) {
   var el = $("#byeLine");
   if (!starters) { el.innerHTML = ""; return; }
@@ -2931,7 +2931,7 @@ function renderLog() {
 
 /* ------------------------------------------------------------ interaction */
 
-// Second line of defence against Chrome deciding this is a login field: it will
+// Second line of defense against Chrome deciding this is a login field: it will
 // not autofill a readonly input, and the attribute is dropped the moment you
 // actually mean to type in it.
 (function guardSearch() {
@@ -3011,7 +3011,11 @@ function buildRosterForm() {
     }).join("") + "</div>";
 }
 function buildTeamNames() {
-  var names = S.league.teamNames || [];
+  // Nothing in this form is committed until Save league, so a rebuild has to
+  // carry the half-typed names with it. Changing the team count used to throw
+  // away every name you had entered.
+  var names = (S.league.teamNames || []).slice();
+  $$("#teamNames input").forEach(function (el) { names[+el.dataset.team - 1] = el.value; });
   var rows = [];
   for (var i = 1; i <= S.league.teams; i++) {
     rows.push('<div class="field" style="width:170px;margin-bottom:8px">' +
@@ -3022,12 +3026,49 @@ function buildTeamNames() {
   }
   $("#teamNames").innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
     rows.join("") + "</div>";
+  // Rename a team and the keeper picker has to agree with you immediately —
+  // otherwise you are choosing from names you have already replaced.
+  $$("#teamNames input").forEach(function (el) {
+    el.addEventListener("input", function () { buildKeeperSlots(); buildKeeperList(); });
+  });
+}
+
+/* A keeper belongs to a person, and you know your league by their names, not by
+   which seed the draft order handed them. The number was also a trap: typing 11
+   for the team called "team 11" is right only until someone is renamed.
+
+   It reads the names out of the form above rather than out of saved state, so a
+   name you have just typed is already on the dropdown when you add the keeper —
+   nothing is committed until Save league. */
+function setupTeamTitle(slot) {
+  var el = $('#teamNames input[data-team="' + slot + '"]');
+  var typed = el ? el.value.trim() : "";
+  var name = typed || ((S.league.teamNames || [])[slot - 1] || "").trim();
+  var mine = slot === (parseInt($("#cfgSlot").value, 10) || S.league.slot);
+  return name ? name + (mine ? " (you)" : "") : mine ? "your team" : "team " + slot;
+}
+
+function buildKeeperSlots() {
+  var sel = $("#kSlot");
+  var teams = parseInt($("#cfgTeams").value, 10) || S.league.teams;
+  var keep = parseInt(sel.value, 10);
+  var mine = parseInt($("#cfgSlot").value, 10) || S.league.slot;
+  // Shrinking the league can strand the chosen team off the end of the list.
+  // Falling through to your own slot, then to the first team, always lands on
+  // a team that exists rather than on a blank picker.
+  var want = keep && keep <= teams ? keep : mine <= teams ? mine : 1;
+  var opts = [];
+  for (var i = 1; i <= teams; i++) {
+    opts.push('<option value="' + i + '"' + (i === want ? " selected" : "") + ">" +
+      esc(setupTeamTitle(i)) + "</option>");
+  }
+  sel.innerHTML = opts.join("");
 }
 
 function buildKeeperList() {
   $("#keeperList").innerHTML = (S.league.keepers || []).map(function (k, i) {
     return '<div class="slot"><span class="who">' + esc(k.name) + "</span>" +
-      '<span class="dimtext">round ' + k.round + " · team " + (k.slot || S.league.slot) + "</span>" +
+      '<span class="dimtext">round ' + k.round + " · " + esc(setupTeamTitle(k.slot || S.league.slot)) + "</span>" +
       '<button class="btn btn-sm btn-ghost btn-danger" data-delk="' + i + '">remove</button></div>';
   }).join("") || '<div class="dimtext">No keepers.</div>';
   $$("#keeperList [data-delk]").forEach(function (b) {
@@ -3068,7 +3109,8 @@ function openSetup() {
   $("#allPlayers").innerHTML = DATA.players.map(function (p) {
     return '<option value="' + esc(p.name) + '">';
   }).join("");
-  buildScoringForm(); buildRosterForm(); buildKeeperList(); buildTeamNames();
+  buildScoringForm(); buildRosterForm(); buildTeamNames();
+  buildKeeperSlots(); buildKeeperList();
   renderModePicker();
   openModal("#setupModal");
 }
@@ -3080,7 +3122,15 @@ $("#presetSel").addEventListener("change", function (e) {
   S.league.teams = S.league.rules.teams || S.league.teams;
   $("#cfgTeams").value = S.league.teams;
   $("#presetBlurb").textContent = PRESETS[e.target.value].blurb || "";
-  buildScoringForm(); buildRosterForm();
+  buildScoringForm(); buildRosterForm(); buildTeamNames();
+  buildKeeperSlots(); buildKeeperList();
+});
+// The team count and your own slot both decide what the keeper picker can offer
+// and which entry says "(you)", so both have to repaint it.
+["#cfgTeams", "#cfgSlot"].forEach(function (sel) {
+  $(sel).addEventListener("input", function () {
+    buildTeamNames(); buildKeeperSlots(); buildKeeperList();
+  });
 });
 $("#kAdd").addEventListener("click", function () {
   var nm = $("#kName").value.trim();
@@ -3138,7 +3188,7 @@ var SITE_STEPS = {
       "Then do the same for the <b>Roster</b> tab and paste that too — ESPN splits them across two pages, and you can paste both one after the other."
     ],
     note: "ESPN labels most categories the same way Yahoo does, so the same rules apply. " +
-          "Anything unrecognised is listed for you rather than guessed at."
+          "Anything unrecognized is listed for you rather than guessed at."
   },
   sleeper: {
     label: "Sleeper",
@@ -3156,11 +3206,11 @@ var SITE_STEPS = {
     link: "",
     steps: [
       "Find whichever page lists your scoring categories and their point values.",
-      "Select all, copy, paste below, and see what it recognises."
+      "Select all, copy, paste below, and see what it recognizes."
     ],
     note: "The parser matches on category names rather than page layout, so unfamiliar " +
           "platforms often work anyway. Whatever it misses, set by hand in the scoring form below — " +
-          "and send me the lines it listed as unrecognised so they can be added."
+          "and send me the lines it listed as unrecognized so they can be added."
   }
 };
 
@@ -3187,7 +3237,7 @@ renderSiteSteps("yahoo");
 $("#yahooParse").addEventListener("click", function () {
   var res = globalThis.DRAFTLINE_YAHOO.parse($("#yahooBox").value);
   if (!res.rows.length) {
-    $("#yahooMsg").textContent = "Nothing recognised on that page.";
+    $("#yahooMsg").textContent = "Nothing recognized on that page.";
     return;
   }
   var store = S.league.yahooAdp || {}, added = 0, matched = 0;
@@ -3216,12 +3266,12 @@ $("#parseBtn").addEventListener("click", function () {
       '<td class="dimtext">' + (h[2] ? h[2].join(".") : "") + "</td></tr>";
   }).join("");
   $("#parseOut").innerHTML =
-    '<div class="note' + (res.confidence < 0.4 ? " warn" : "") + '">Recognised <b>' + res.hits.length +
-      "</b> settings, " + (res.missed.length ? res.missed.length + " lines not recognised"
-        : "everything on the page recognised") + ". Nothing has been applied yet — " +
+    '<div class="note' + (res.confidence < 0.4 ? " warn" : "") + '">Recognized <b>' + res.hits.length +
+      "</b> settings, " + (res.missed.length ? res.missed.length + " lines not recognized"
+        : "everything on the page recognized") + ". Nothing has been applied yet — " +
       "check the values below, then apply.</div>" +
     '<div class="mt" style="max-height:240px;overflow:auto"><table>' + rows + "</table></div>" +
-    (res.missed.length ? '<details class="mt"><summary class="dimtext">Lines it did not recognise</summary>' +
+    (res.missed.length ? '<details class="mt"><summary class="dimtext">Lines it did not recognize</summary>' +
       '<pre class="dimtext" style="font-size:11px;white-space:pre-wrap">' +
       esc(res.missed.join("\n")) + "</pre></details>" : "") +
     '<button class="btn btn-primary mt" id="applyParse">Apply these values</button>';
@@ -3491,7 +3541,7 @@ var SYSTEM =
   "You are a fantasy football draft advisor sitting next to the user during a live draft. " +
   "You will be given the current state of their board, computed by a scoring engine that " +
   "already applies their exact league rules. Trust those numbers — do not recompute them and " +
-  "do not substitute generic consensus rankings. Your job is judgement on top of the math: " +
+  "do not substitute generic consensus rankings. Your job is judgment on top of the math: " +
   "where the board's logic is thin, what the research notes actually imply, and what an " +
   "opponent might do next. Depth-chart slots and injury designations come straight from " +
   "the league feed and are current; where two ADP sources are given and they disagree, that " +

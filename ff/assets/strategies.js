@@ -96,7 +96,7 @@ globalThis.DRAFTLINE_STRATEGIES = {
   upside: {
     name: "Upside hunter",
     tagline: "Buy variance. Second place pays nothing.",
-    detail: "Weight ceiling hard and stop penalising risk. Right when only a few teams " +
+    detail: "Weight ceiling hard and stop penalizing risk. Right when only a few teams " +
             "make the playoffs and you need league-winners rather than a steady 8-6.",
     knobs: { ceilingWeight: 1.9, riskWeight: 0.45 }
   },

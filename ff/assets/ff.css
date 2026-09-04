@@ -430,7 +430,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 /* How full each position is, printed against the position it describes rather
    than in a second list further down that you had to hold this one in your
    head to read. Neutral while the draft is young — every slot is empty at
-   pick one, and colouring that is a wall of alarm that says only "you have not
+   pick one, and coloring that is a wall of alarm that says only "you have not
    drafted yet". Amber arrives when you are genuinely short of picks. */
 .slot .cnt { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--dim); }
 .slot .cnt.done { color: var(--teal); }

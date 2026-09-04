@@ -134,7 +134,7 @@
 
   /**
    * Fisher's optimal 1-D clustering. Partitions `list` (already sorted by points,
-   * descending) into `k` contiguous tiers that minimise total within-tier
+   * descending) into `k` contiguous tiers that minimize total within-tier
    * variance, then writes `tier` onto each player.
    *
    * O(k·n²), which for a 92-deep receiver board is about 68k operations — small
@@ -224,7 +224,7 @@
     // points, and six points across a whole season is noise. The top three backs
     // landed in three different tiers, which is both useless and looks broken.
     //
-    // This instead partitions each position optimally, minimising the variance
+    // This instead partitions each position optimally, minimizing the variance
     // inside each tier (Fisher's exact 1-D clustering, by dynamic programming).
     // It reads the shape of the whole position at once rather than reacting to
     // one local gap, so genuinely similar players stay together and the breaks
@@ -460,7 +460,7 @@
     if (bias !== 1) {
       mult *= bias;
       if (bias < 0.85) reasons.push(player.pos + " de-emphasised by your strategy");
-      else if (bias > 1.15) reasons.push(player.pos + " prioritised by your strategy");
+      else if (bias > 1.15) reasons.push(player.pos + " prioritized by your strategy");
     }
 
     // Hard caps. A player who can never enter your lineup is not a pick, however
@@ -594,7 +594,7 @@
    * that is a property of the player rather than a constant \u2014 a consensus
    * first-rounder goes within a pick or two of his ADP every time, a
    * late-round dart lands anywhere across two rounds \u2014 and it stops taking a
-   * position once its own roster is full. Modelling those three things is the
+   * position once its own roster is full. Modeling those three things is the
    * difference between a rehearsal and a slideshow, and it is the same
    * per-player standard deviation the survival column already reads.
    *

@@ -25,7 +25,7 @@ function is(label, actual, expected) {
 }
 
 console.log("\nconfidence " + (r.confidence * 100).toFixed(0) + "%, " +
-            r.hits.length + " recognised, " + r.missed.length + " unrecognised");
+            r.hits.length + " recognized, " + r.missed.length + " unrecognized");
 
 console.log("\n== Changed from Yahoo default (the three-line form) ==");
 is("interceptions -2, not -1",        S.passing.int, -2);

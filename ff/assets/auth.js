@@ -31,7 +31,7 @@
     return bytesToHex(a);
   }
 
-  /** PBKDF2 where WebCrypto is available; a labelled weak fallback otherwise. */
+  /** PBKDF2 where WebCrypto is available; a labeled weak fallback otherwise. */
   function hash(password, salt) {
     var subtle = (root.crypto || {}).subtle;
     if (!subtle || !subtle.importKey) {

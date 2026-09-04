@@ -18,7 +18,7 @@
 
     <div class="barbtns">
       <button class="btn btn-sm" id="btnUndo" title="Undo the last pick (Ctrl+Z)">Undo</button>
-      <button class="btn btn-sm btn-primary" id="btnBegin">Start / practise ▾</button>
+      <button class="btn btn-sm btn-primary" id="btnBegin">Start / practice ▾</button>
       <button class="btn btn-sm" id="btnRosters">Rosters</button>
       <button class="btn btn-sm" id="btnClaude">Ask Claude</button>
       <div class="menuwrap">
@@ -152,7 +152,7 @@
     <button class="btn btn-sm mt" id="parseBtn">Parse it</button>
     <p class="dimtext" style="font-size:12px;margin-top:8px">
       Nothing is applied until you read what it found and click apply. Anything it doesn't
-      recognise is listed rather than dropped.
+      recognize is listed rather than dropped.
     </p>
     <div id="parseOut" class="mt"></div>
   </details>
@@ -225,7 +225,7 @@
     <div class="field-row mt">
       <div class="field"><label>Player</label><input type="text" id="kName" list="allPlayers" placeholder="Drake Maye"></div>
       <div class="field" style="max-width:110px"><label>Round</label><input type="number" id="kRound" min="1" value="5"></div>
-      <div class="field" style="max-width:130px"><label>Team slot</label><input type="number" id="kSlot" min="1" placeholder="yours"></div>
+      <div class="field" style="max-width:180px"><label>Team</label><select id="kSlot"></select></div>
       <div class="field" style="max-width:110px;display:flex;align-items:flex-end">
         <button class="btn" id="kAdd" style="width:100%">Add</button></div>
     </div>
@@ -290,7 +290,7 @@
   <div class="panel mt" style="padding:14px">
     <div class="panel-head"><h3 style="margin:0">See what a style actually builds</h3></div>
     <p class="muted" style="font-size:13px;margin-bottom:10px">
-      Runs a full mock draft from where you are now against a modelled room — the same
+      Runs a full mock draft from where you are now against a modeled room — the same
       one the practice run drafts against. Every other team draws near a player's real
       draft position using that player's own spread, obeys the same position limits you
       do, and starts from the roster it has actually built so far. It shows the roster
@@ -357,14 +357,14 @@
 <div class="modal-bg hidden" id="beginModal"><div class="modal wide">
   <div class="modal-head">
     <div><h2 style="margin:0">Two ways in</h2>
-      <span class="muted">Practise the whole thing first, then run it for real on the night.</span></div>
+      <span class="muted">Practice the whole thing first, then run it for real on the night.</span></div>
     <button class="btn btn-sm" id="beginClose">Close</button>
   </div>
 
   <div class="beginpick">
     <button class="begincard" id="beginPractice">
       <div class="bc-kicker">Practice run</div>
-      <h3>Draft against a modelled room</h3>
+      <h3>Draft against a modeled room</h3>
       <p>The other eleven teams draft themselves. It stops the moment the pick is
          yours, you choose from the board exactly as you would on the night, and
          you set it running again. Nothing here is real and it all undoes.</p>

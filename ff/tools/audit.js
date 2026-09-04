@@ -13,7 +13,7 @@ var findings = [];
 function flag(sev, area, msg) { findings.push({ sev: sev, area: area, msg: msg }); }
 
 /* ---------------------------------------------- 1. name-matched side data */
-// depth/injury/adp2 are joined by normalised name. Sleeper's file has 12,226
+// depth/injury/adp2 are joined by normalized name. Sleeper's file has 12,226
 // records including retired and practice-squad players who share names with
 // starters, so a bad join would silently attach one player's injury to another.
 var posMismatch = 0;
@@ -120,7 +120,7 @@ if (splits.length) {
   var m = med[Math.floor(med.length / 2)];
   if (Math.abs(m) > 3)
     flag("HIGH", "adp", "median ADP residual is " + m.toFixed(1) +
-      ", so the de-drift correction is not centred");
+      ", so the de-drift correction is not centered");
   splits.filter(function (x) { return Math.abs(x.d) > 70; }).forEach(function (x) {
     flag("LOW", "adp", x.n + " residual " + Math.round(x.d) +
       " — extreme even after de-drifting; worth eyeballing");

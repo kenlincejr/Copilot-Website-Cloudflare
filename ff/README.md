@@ -47,7 +47,7 @@ numbers), fetched once and committed.
 **What we did not take from Sleeper, and why.** Sleeper's `rec_0_4 … rec_40p`
 buckets are a fixed 18/18/27/18/9/9 split applied to every player — synthetic, not
 projected — so the 40+ yard bonus counts are estimated from each player's own
-volume and efficiency instead, and labelled as estimates in the UI. Every kicker
+volume and efficiency instead, and labeled as estimates in the UI. Every kicker
 in the feed carries an identical stat line, so kickers are modeled off positional
 rank. Sleeper publishes no points-allowed buckets at all, so D/ST points allowed
 is a per-game probability distribution across the seven tiers, driven by the
@@ -69,7 +69,7 @@ singleton tiers covering the three best backs in the draft, which is useless and
 looks broken enough to make someone distrust the rest of the board.
 
 `assignTiers()` in `engine.js` now partitions each position optimally with
-Fisher's exact 1-D clustering (dynamic programming), minimising variance within
+Fisher's exact 1-D clustering (dynamic programming), minimizing variance within
 each tier. It reads the shape of the whole position rather than reacting to one
 local gap, and it produces:
 
@@ -83,7 +83,7 @@ local gap, and it produces:
 
 O(k·n²), about 68k operations for the 92-deep receiver board, inside
 `buildBoard` — which does not run per keystroke. Six assertions in
-`test-engine.js` pin the behaviour.
+`test-engine.js` pin the behavior.
 
 ## Three panels that were harder to read than the data in them
 
@@ -137,7 +137,7 @@ columns that can be read as a decision are:
   nobody asked; the column reads `there` / `maybe` / `gone` instead, which is the
   only thing that is live. The header names the pick it measures to, and that
   pick moves when you come on the clock — it used to stay pinned to the current
-  one, quietly labelling players you could see on the board as `risky`.
+  one, quietly labeling players you could see on the board as `risky`.
 - **VALUE** — `fell 1.2` / `fair` / `reach 1.4`, his ADP against the pick on the
   clock in *rounds*. "fell" is the free money.
 
@@ -194,9 +194,9 @@ disarms after four seconds on its own. `armOnce()` in `app.js`.
 ## Two ways in
 
 The practice run was the best thing in here and the most hidden: a ghost button
-labelled *Simulate*, tucked inside a tracker you only ever see **once the draft
+labeled *Simulate*, tucked inside a tracker you only ever see **once the draft
 is already live** — findable on the one night it is worthless. It is a front
-door now, beside the real one. **Start / practise** in the app bar opens a screen
+door now, beside the real one. **Start / practice** in the app bar opens a screen
 that explains both paths before committing to either:
 
 - **Practice run** — the room drafts itself and stops the moment the pick is
@@ -205,7 +205,7 @@ that explains both paths before committing to either:
 - **The real thing** — you record each pick as it happens and the board stays
   honest against it.
 
-The screen carries the loop as four numbered steps, what the modelled room is
+The screen carries the loop as four numbered steps, what the modeled room is
 actually doing, how much of the board is priced off the user's own real draft
 data versus mock ADP, and **the date of the last data pull with its age in
 days** — turning amber past a week, because a rehearsal against stale data
@@ -300,11 +300,11 @@ This was a ten-row chart of every bye week in the league, nine rows of which wer
 empty, to answer one question: is any week going to leave you short. That answer
 is a sentence, so it is a sentence — one line under the roster naming the week,
 how many starters are out and which of them, amber one short of the threshold and
-red at it. The week each player is out is already on his own roster row, coloured
+red at it. The week each player is out is already on his own roster row, colored
 the same way, so the line and the rows agree.
 
 Only **starters** are counted; bench players on a bye cost nothing. On the board,
-the bye cell colours when a pick would create a problem, and the two problems are
+the bye cell colors when a pick would create a problem, and the two problems are
 distinct:
 
 - **amber (watch)** — another starter at that position is already on that bye.
@@ -371,7 +371,7 @@ flex-eligible position a flex slot of its own, so running back, receiver and
 tight end could each claim the one slot a running back was already sitting in.
 `openFlexSlots()` asks the actual assignment instead.
 
-## The modelled room
+## The modeled room
 
 Both the practice run and the mock drafts need the other eleven teams to draft,
 and "take the top of the list" is not what a room does. One model serves both
@@ -405,7 +405,7 @@ does.
 
 Style names tell you nothing about what they leave you holding. The Style panel
 runs the draft out from wherever it currently stands — 25 times, or 50 when
-comparing two — against the modelled room above, with your own picks chosen by
+comparing two — against the modeled room above, with your own picks chosen by
 the style's composite score. It reports the median starting
 lineup, the positional composition, and the most common player in each slot with
 how often he filled it. About 80ms for 50 drafts.
@@ -496,7 +496,7 @@ three and drops Gibbs and Robinson four or five places. Undo returns to Balanced
 The taxonomy follows current coverage rather than received wisdom: Hero RB is the
 prevalent 2026 approach, the market has swung back toward drafting backs early,
 and Zero RB is genuinely contrarian this season. "Robust RB" barely appears in
-2026 writing and is labelled RB-heavy for that reason.
+2026 writing and is labeled RB-heavy for that reason.
 
 **Free-text tuning.** Describe how you want to draft and Claude proposes the
 knobs. Everything it returns goes through `sanitizeKnobs()`: unknown keys are
@@ -677,7 +677,7 @@ Claude as well.
 
 Stated in the UI, because it matters: Yahoo's page says *"ADP based on standard
 scoring settings"*, so these are not this league's PPR numbers. They are for
-market behaviour and movement, not ranking — the board keeps using its own
+market behavior and movement, not ranking — the board keeps using its own
 scoring for that.
 
 ## The audit
@@ -688,7 +688,7 @@ team contradicts the board, that nothing scores non-finite or zero, that
 replacement ranks exist within each position, that survival stays in [0,1] at the
 extremes, that tiers neither fragment into singletons nor collapse into one
 bucket, that the composite is finite for every player, that a full position is
-actually blocked, and that the ADP residual is centred. Re-run it after any
+actually blocked, and that the ADP residual is centered. Re-run it after any
 change to the bake or the engine.
 
 It found one real bug on its first run — see the ADP residual note below — and
@@ -725,14 +725,14 @@ Three things about that page break a reasonable-looking parser, all covered in
 ## The Claude feature
 
 Claude is given the board's already-computed numbers and told to trust them
-rather than substitute consensus rankings. It is there for judgement on top of
+rather than substitute consensus rankings. It is there for judgment on top of
 the math, not to re-rank anything.
 
 ### The on-deck brief
 
 The feature worth having. When the user's pick is a configurable number of picks
 away (default 2), the app fires exactly one request and renders the answer at the
-top of the centre column — so the call is already on screen when the clock
+top of the center column — so the call is already on screen when the clock
 starts, rather than thirty seconds into a two-minute timer. It is cached against
 the pick number, so re-renders, undo and reload never spend twice.
 
