@@ -300,21 +300,13 @@ function render() {
   syncKeepers();
   A = analyse();
 
+  // Pick number, round, who is on the clock and your next pick used to be
+  // repeated in the app bar, the status strip, the ticker and the tracker.
+  // The status strip carries the state, the tracker carries the detail, and
+  // the bar is identity and actions only.
   var total = S.league.teams * S.league.rounds;
-  var done = A.cur > total;
-  $("#pickNo").textContent = done ? "done" : A.cur;
-  $("#roundNo").textContent = done ? "" : "· round " + A.onClock.round;
-  var mineNow = !done && A.onClock.slot === S.league.slot;
-  var oc = $("#onClock");
-  oc.textContent = done ? "draft complete" : (mineNow ? "YOU'RE UP" : teamLabel(A.onClock.slot, true));
-  oc.className = "onclock" + (mineNow ? " me" : "");
-  $("#nextPickInfo").innerHTML = A.myNext
-    ? '<span class="dimtext">your next</span> <b>' + A.myNext + "</b>" +
-      (A.myAfter ? ' <span class="dimtext">then</span> <b>' + A.myAfter + "</b>" +
-        ' <span class="dimtext">(' + (A.myAfter - A.myNext) + " picks)</span>" : "")
-    : '<span class="dimtext">no picks left</span>';
 
-  renderStatus(); renderTicker();
+  renderStatus();
 
   // Say out loud whose roster the next click fills. The assignment has always
   // followed the clock; it was just invisible.
@@ -379,23 +371,27 @@ function renderStatus() {
   }
 
   var gap = A.myNext ? A.myNext - A.cur : null;
+  var clock = '<span class="sb-clock" id="sbClock"></span>';
+
   if (gap === 0) {
     el.className = "statusbar up";
-    el.innerHTML = "<b>You're on the clock — pick " + A.cur + "</b>" +
-      "<span class='grow'></span><span>Enter takes a player off the board, " +
-      "Shift+Enter drafts him to you.</span>";
+    el.innerHTML = "<b>You're on the clock</b>" +
+      '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round + "</span>" +
+      "<span class='grow'></span>" + clock;
   } else if (gap !== null && gap <= 3) {
     el.className = "statusbar soon";
     el.innerHTML = "<b>" + gap + " pick" + (gap === 1 ? "" : "s") + " until you're up</b>" +
-      "<span class='grow'></span><span>Pick " + A.myNext + " of round " + A.ctx.round +
-      (d === 0 ? " · in sync with the live draft" : "") + "</span>";
+      '<span class="sb-sub">you pick at ' + A.myNext + " · round " + A.ctx.round + "</span>" +
+      "<span class='grow'></span>" + clock;
   } else {
     el.className = "statusbar waiting";
-    el.innerHTML = "<span>Pick <b>" + A.cur + "</b> · team " + A.onClock.slot +
-      " on the clock</span><span class='grow'></span>" +
-      (A.myNext ? "<span>You pick at " + A.myNext + (gap ? " — " + gap + " away" : "") + "</span>" : "") +
-      (d === 0 ? " <span class='dimtext'>· in sync</span>" : "");
+    el.innerHTML = "<b>" + (isLive() ? esc(teamLabel(A.onClock.slot)) + " on the clock"
+                                     : "Pick " + A.cur) + "</b>" +
+      '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round +
+        (A.myNext ? " · you pick at " + A.myNext : "") + "</span>" +
+      "<span class='grow'></span>" + clock;
   }
+  tickClock();
 }
 
 $("#livePick").addEventListener("input", renderStatus);
@@ -539,25 +535,34 @@ function mmss(sec) {
   return Math.floor(sec / 60) + ":" + ("0" + (sec % 60)).slice(-2);
 }
 function tickClock() {
-  var out = $("#clockRead"), secs = pickSeconds();
-  if (S.paused) { out.innerHTML = '<b style="color:var(--amber)">paused</b>'; return; }
+  var out = $("#sbClock"), secs = pickSeconds();
+  if (!out) return;
+  if (S.paused) { out.innerHTML = '<b class="amber">paused</b>'; return; }
   if (!secs || !A || !S.pickStartedAt) { out.textContent = ""; return; }
   var elapsed = (Date.now() - S.pickStartedAt) / 1000;
   var left = secs - elapsed;
   var gap = A.myNext ? A.myNext - A.cur : null;
 
   if (gap === 0) {
-    out.innerHTML = '<b style="color:' + (left < 30 ? "var(--red)" : "var(--teal)") + '">' +
-      mmss(left) + "</b>";
+    out.innerHTML = '<b class="' + (left < 30 ? "red" : "") + '">' + mmss(left) + "</b>" +
+      '<span class="sb-lbl">left on this pick</span>';
   } else if (gap) {
     // Time left on this pick, plus a full clock for each pick between.
     var eta = Math.max(0, left) + (gap - 1) * secs;
-    out.innerHTML = '<span class="dimtext">you\u2019re up in ~</span> <b>' + mmss(eta) + "</b>";
+    out.innerHTML = "<b>" + mmss(eta) + '</b><span class="sb-lbl">until you\u2019re up</span>';
   } else {
     out.textContent = "";
   }
 }
 setInterval(tickClock, 1000);
+
+// Rotating an iPad changes which layout applies, and the column template is
+// generated rather than declared, so it has to be rebuilt.
+var resizeTimer = null;
+window.addEventListener("resize", function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function () { if (A) { renderColumnHeads(); renderList(); } }, 150);
+});
 /** Pausing stops the clock only; the board and every recorded pick are untouched. */
 function togglePause() {
   if (S.paused) {
@@ -618,8 +623,14 @@ function renderTracker() {
   var deck = [];
   for (var i = 1; i <= 3; i++) {
     var pk = A.cur + i;
-    if (pk <= total) deck.push(teamLabel(ownerOfPick(pk).slot, true));
+    if (pk > total) break;
+    var nm = teamLabel(ownerOfPick(pk).slot, true);
+    // At the turn a team picks twice in a row, and "Blitzkrieg, Blitzkrieg"
+    // reads like a rendering bug rather than the snake doing its job.
+    if (deck.length && deck[deck.length - 1].name === nm) deck[deck.length - 1].n++;
+    else deck.push({ name: nm, n: 1 });
   }
+  deck = deck.map(function (d) { return d.n > 1 ? d.name + " ×" + d.n : d.name; });
   var gap = A.myNext ? A.myNext - A.cur : null;
   var secs = pickSeconds();
   var eta = (gap && secs) ? " \u00b7 about " + mmss(gap * secs) : "";
@@ -667,14 +678,24 @@ function renderTracker() {
       "</div>" +
 
       '<div class="tk-entry">' +
-        '<input type="text" id="tkWho" list="availList" autocomplete="off" ' +
-          'autocorrect="off" autocapitalize="off" spellcheck="false" ' +
+        '<input type="text" id="tkWho" autocomplete="off" enterkeyhint="done" ' +
+          'autocorrect="off" autocapitalize="words" spellcheck="false" ' +
           'data-1p-ignore data-lpignore="true" ' +
           'placeholder="Who just went at pick ' + A.cur + '? \u2014 goes to ' +
           esc(teamLabel(A.onClock.slot)) + '">' +
         '<button class="btn btn-sm" id="tkRec">Record</button>' +
-        '<button class="btn btn-sm btn-ghost" id="tkUnknown" ' +
-          'title="The pick happened but you did not catch the name">Didn\u2019t catch it</button>' +
+      "</div>" +
+      '<div id="tkSuggest" class="tk-suggest hidden"></div>' +
+      '<div class="tk-mini">' +
+        '<button class="btn btn-sm btn-ghost" id="tkUnknown">Didn\u2019t catch the name</button>' +
+        '<span class="tk-field"><label for="tkLive">live pick</label>' +
+          '<input type="number" id="tkLive" inputmode="numeric" pattern="[0-9]*" min="1" ' +
+            'autocomplete="off" placeholder="' + A.cur + '" value="' +
+            esc($("#livePick").value) + '"></span>' +
+        '<span class="tk-field"><label for="tkSecs">clock (s)</label>' +
+          '<input type="number" id="tkSecs" inputmode="numeric" pattern="[0-9]*" min="10" ' +
+            'max="600" step="5" autocomplete="off" placeholder="120" value="' +
+            esc($("#pickSecs").value) + '"></span>' +
       "</div>" +
 
       (d ? '<div class="tk-drift">' +
@@ -689,17 +710,33 @@ function renderTracker() {
       '<div class="tk-recent">' + (recent || '<div class="dimtext">Nothing recorded yet.</div>') + "</div>" +
     "</div>";
 
-  var list = $("#availList");
-  if (!list) {
-    list = document.createElement("datalist");
-    list.id = "availList";
-    document.body.appendChild(list);
-  }
-  list.innerHTML = A.avail.slice(0, 300).map(function (p) {
-    return '<option value="' + esc(p.name) + '">' + p.pos + " " + p.team + "</option>";
-  }).join("");
-
   var who = $("#tkWho");
+  var sugg = $("#tkSuggest");
+
+  // A tap-friendly suggestion list. <datalist> is unreliable on iOS Safari and
+  // invisible until you have typed nearly the whole name; these are plain
+  // buttons that record on tap.
+  function paintSuggestions() {
+    var q = who.value.trim().toLowerCase();
+    var hits = q.length < 2 ? [] : A.avail.filter(function (pl) {
+      return pl.name.toLowerCase().indexOf(q) >= 0 || (pl.team || "").toLowerCase() === q;
+    }).slice(0, 6);
+    if (!hits.length) { sugg.classList.add("hidden"); sugg.innerHTML = ""; return; }
+    sugg.classList.remove("hidden");
+    sugg.innerHTML = hits.map(function (pl) {
+      return '<button type="button" data-pick="' + esc(pl.name) + '">' +
+        '<span class="pos pos-' + pl.pos + '">' + pl.pos + "</span>" +
+        "<span>" + esc(pl.name) + '</span><span class="dimtext">' + pl.team +
+        " \u00b7 " + n0(pl.pts) + "</span></button>";
+    }).join("");
+    $$("#tkSuggest button").forEach(function (b) {
+      b.onclick = function () {
+        who.value = ""; sugg.classList.add("hidden"); record(b.dataset.pick, false);
+      };
+    });
+  }
+  who.addEventListener("input", paintSuggestions);
+
   var commit = function () {
     var nm = who.value.trim();
     if (!nm) return;
@@ -712,8 +749,28 @@ function renderTracker() {
       nm = hit.name;
     }
     who.value = "";
+    sugg.classList.add("hidden");
     record(nm, false);
   };
+  // The live-pick and clock fields moved here from the app bar. They write
+  // through to the hidden originals so nothing else had to change, and carry
+  // inputmode="numeric" so iOS opens a number pad instead of a full keyboard.
+  var live = $("#tkLive");
+  live.addEventListener("input", function () {
+    $("#livePick").value = live.value;
+    var pos = live.selectionStart;
+    renderStatus(); renderTracker();
+    var again = $("#tkLive");
+    if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {} }
+  });
+  var secsIn = $("#tkSecs");
+  secsIn.addEventListener("input", function () {
+    $("#pickSecs").value = secsIn.value;
+    S.league.pickSeconds = pickSeconds();
+    if (!S.pickStartedAt) S.pickStartedAt = Date.now();
+    save(); tickClock();
+  });
+
   $("#tkPause").onclick = togglePause;
   $("#tkSim").onclick = simulateToMyPick;
   $("#tkStop").onclick = function () {
@@ -1260,6 +1317,30 @@ function renderStyleList() {
   $("#styleCurrent").textContent = "Current: " + styleName();
 }
 
+/* ------------------------------------------------------------- app bar */
+
+$("#btnRosters").addEventListener("click", function () { $("#btnLeague").click(); });
+
+// The visible bar carries identity and actions; everything situational lives in
+// the tracker or the status strip now. Secondary actions go behind one menu so
+// the bar cannot overflow on a tablet.
+(function moreMenu() {
+  var TARGETS = { report: "#btnReport", style: "#btnStyle", cols: "#btnCols",
+                  setup: "#btnSetup", data: "#btnData", out: "#btnOut" };
+  var wrap = $("#moreMenu"), btn = $("#btnMore");
+  function close() { wrap.classList.add("hidden"); btn.setAttribute("aria-expanded", "false"); }
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var nowHidden = wrap.classList.toggle("hidden");
+    btn.setAttribute("aria-expanded", nowHidden ? "false" : "true");
+  });
+  document.addEventListener("click", close);
+  wrap.addEventListener("click", function (e) { e.stopPropagation(); });
+  $$("#moreMenu button[data-more]").forEach(function (b) {
+    b.onclick = function () { close(); var t = TARGETS[b.dataset.more]; if (t) $(t).click(); };
+  });
+})();
+
 $("#btnStyle").addEventListener("click", function () {
   renderStyleList(); $("#styleDiff").innerHTML = ""; openModal("#styleModal");
 });
@@ -1570,9 +1651,16 @@ function activeCols() {
 
 function renderColumnHeads() {
   var cols = activeCols();
-  var tpl = "22px minmax(0,1fr) " + cols.map(function (k) { return COLUMNS[k].w; }).join(" ");
+  // The grid template is generated here, so it has to decide the narrow layout
+  // too — a media query that hides the rank cell cannot remove its track, and
+  // the content then shifts one column left and squeezes the player's name to
+  // nothing. Drop the track itself instead.
+  var compact = window.innerWidth < 1000;
+  document.body.classList.toggle("compact", compact);
+  var tpl = (compact ? "" : "22px ") + "minmax(0,1fr) " +
+    cols.map(function (k) { return COLUMNS[k].w; }).join(" ");
   var head = $(".phead");
-  head.innerHTML = '<span class="c-rank"></span><span>Player</span>' +
+  head.innerHTML = (compact ? "" : '<span class="c-rank"></span>') + "<span>Player</span>" +
     cols.map(function (k) {
       var c = COLUMNS[k];
       var label = (k === "wait" && A.myNext && A.myNext > A.cur) ? "WAIT →" + A.myNext
@@ -1691,7 +1779,8 @@ function rowHtml(p, i) {
   var who = t ? '<span class="sub">' +
         (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") + t.pick + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
-    '<span class="rank">' + (i + 1) + "</span>" +
+    (document.body.classList.contains("compact") ? "" :
+      '<span class="rank">' + (i + 1) + "</span>") +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
       '<span class="sub">' + p.team + "</span>" + tag + who + "</span>" +
     activeCols().map(function (k) {

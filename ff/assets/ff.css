@@ -392,28 +392,14 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
    drop the least load-bearing numbers rather than squeezing every column into an
    unreadable smear. VOR goes first: it is derivable from points, and the
    composite ranking already encodes it. */
-@media (max-width: 1250px) {
-  .prow, .phead { grid-template-columns: 20px minmax(0,1fr) 42px 30px 46px 46px 54px; }
-  .prow .c-vor, .phead .c-vor { display: none; }
-}
-@media (max-width: 1000px) {
-  .prow, .phead { grid-template-columns: minmax(0,1fr) 44px 46px 54px; }
-  .prow .rank, .phead .c-rank,
-  .prow .c-bye, .phead .c-bye,
-  .prow .c-vor, .phead .c-vor,
-  .prow .delta, .phead .c-delta { display: none; }
-}
+/* Column widths are generated in renderColumnHeads(), which also decides the
+   narrow layout — see the note there on why this cannot be a media query. */
 
 /* Touch. Apple's 44px minimum target, and row actions cannot wait for a hover
    that never arrives — so on touch they take a real column instead of floating.
    iOS also zooms any input under 16px on focus, which throws the layout out. */
 @media (hover: none) {
-  .prow { padding: 11px 14px; grid-template-columns: minmax(0,1fr) 46px 48px 56px 74px; }
-  .phead { grid-template-columns: minmax(0,1fr) 46px 48px 56px 74px; }
-  .prow .rank, .phead .c-rank,
-  .prow .c-bye, .phead .c-bye,
-  .prow .c-vor, .phead .c-vor,
-  .prow .delta, .phead .c-delta { display: none; }
+  .prow { padding: 11px 14px; }
   .rowacts {
     position: static; transform: none; opacity: 1; pointer-events: auto;
     padding-left: 0; background: none; box-shadow: none; justify-content: flex-end;
@@ -622,4 +608,84 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .btn.armed {
   background: var(--red) !important; color: #1a0505 !important;
   border-color: var(--red) !important; font-weight: 700;
+}
+
+/* ===================================================================
+   Dashboard: identity + actions on top, one situational strip below,
+   everything else in the tracker. Nothing repeated across the three.
+   =================================================================== */
+
+.barbtns { display: flex; align-items: center; gap: 6px; flex: none; }
+
+.menuwrap { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 60;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  min-width: 210px; padding: 5px;
+}
+.menu button {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; background: none; border: 0; color: var(--text); font: inherit;
+  text-align: left; padding: 11px 12px; border-radius: 6px; cursor: pointer;
+}
+.menu button:hover { background: var(--raised); }
+.menu .menu-sub { color: var(--dim); font-size: 11px; }
+.menu-sep { height: 1px; background: var(--line); margin: 5px 0; }
+
+.statusbar b { font-size: 15px; }
+.statusbar .sb-sub { color: inherit; opacity: .72; font-size: 12.5px; }
+.sb-clock { display: flex; align-items: baseline; gap: 7px; flex: none; }
+.sb-clock b { font-family: var(--mono); font-size: 17px; }
+.sb-clock b.red { color: var(--red); }
+.sb-clock b.amber { color: var(--amber); }
+.sb-clock .sb-lbl { font-size: 11px; opacity: .7; }
+
+/* Tracker: the moved sync fields and the tap-to-pick suggestion list. */
+.tk-mini {
+  display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;
+  margin: 2px 0 9px;
+}
+.tk-field { display: flex; flex-direction: column; gap: 2px; }
+.tk-field label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--dim); margin: 0;
+}
+.tk-field input { width: 74px; padding: 6px 8px; font-size: 14px; text-align: center; }
+
+.tk-suggest {
+  border: 1px solid var(--teal-dim); border-radius: var(--radius);
+  background: var(--panel-2); margin-bottom: 9px; overflow: hidden;
+}
+.tk-suggest button {
+  display: grid; grid-template-columns: 30px 1fr auto; gap: 9px; align-items: center;
+  width: 100%; background: none; border: 0; color: var(--text); font: inherit;
+  text-align: left; padding: 11px 10px; cursor: pointer; min-height: 44px;
+}
+.tk-suggest button + button { border-top: 1px solid var(--line-soft); }
+.tk-suggest button:hover, .tk-suggest button:active { background: var(--raised); }
+
+/* iPad: kill the 300ms double-tap delay on anything tappable, and stop iOS
+   trying to select text when someone taps a row quickly. */
+button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard, .byerow,
+.menu button, .tk-suggest button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(45,212,191,.14);
+}
+.prow, .pill, .menu button, .tk-suggest button { -webkit-user-select: none; user-select: none; }
+
+@media (hover: none) {
+  /* Apple's 44px floor, applied where it was not already met. */
+  .btn, .btn-sm, .menu button, .glosstoggle, .tc-name { min-height: 44px; }
+  .btn-sm { padding: 10px 13px; }
+  .tk-ctl .btn { min-height: 40px; padding: 8px 11px; font-size: 12px; }
+  .tk-field input { width: 88px; padding: 10px 8px; }
+  .byerow { padding: 7px 0; }
+  .modal { padding: 18px 16px; }
+  .modal-bg { padding: 3vh 10px; }
+  /* A modal has to be able to scroll to its own buttons on a short landscape
+     screen, and momentum scrolling makes that feel native. */
+  .modal { max-height: 94vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .statusbar { padding: 11px 16px; }
+  .sb-clock b { font-size: 19px; }
 }

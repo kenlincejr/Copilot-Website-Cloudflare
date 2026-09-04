@@ -275,6 +275,26 @@ your league's seconds-per-pick and it counts down from the last pick you
 recorded, answering "roughly how long until I'm up" rather than claiming to know
 the real timer.
 
+## The three bands at the top
+
+They used to repeat each other and the tracker. The app bar carried pick, round,
+who was on the clock, your next pick and the countdown; the status strip repeated
+the picks-until-you're-up; and the ticker repeated round, on the clock, on deck,
+your pick and the recent picks — every one of which the tracker already showed in
+the middle column with more room.
+
+Now:
+
+- **App bar** — identity and actions only. Undo, Rosters, Ask Claude, and one
+  More menu holding report, style, columns, league setup, save/load and sign out,
+  so the bar cannot overflow on a tablet.
+- **Status strip** — the one thing that must be readable without looking
+  anywhere: whose turn it is, how far away you are, or that you are out of sync;
+  plus the countdown, right-aligned and large.
+- **Ticker** — deleted.
+- **Tracker** — everything else, and it gained the two orphaned inputs (live
+  pick, clock seconds) that had been sitting in the app bar with no context.
+
 ## iPad
 
 Landscape (1194) keeps all three columns. Portrait (834) drops to board plus
