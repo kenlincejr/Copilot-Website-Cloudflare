@@ -132,6 +132,32 @@ function keeperAt(pick) {
     return k.round === o.round && (k.slot || S.league.slot) === o.slot;
   });
 }
+/**
+ * A keeper is off the board before pick 1, not when the draft happens to reach
+ * his round. This returns the ones whose pick has not come around yet, shaped
+ * like the picks in the log so everything that reads the log sees them.
+ *
+ * They are deliberately NOT written into S.picks: that list is the draft as it
+ * happened, in order, and `S.picks.length + 1` is the pick on the clock. Pushing
+ * a round-5 keeper into it at pick 1 would say four rounds had already gone.
+ */
+function pendingKeepers() {
+  // Any name already in the log is settled, keeper or not. If someone was
+  // drafted for real and is also listed as a keeper, the draft is the truth —
+  // otherwise the board would show one player owned by two teams at once.
+  var recorded = {};
+  S.picks.forEach(function (p) { if (p.name) recorded[p.name] = true; });
+  return (S.league.keepers || []).filter(function (k) { return !recorded[k.name]; })
+    .map(function (k) {
+      var slot = k.slot || S.league.slot;
+      return { pick: pickNumberFor(k.round, slot), name: k.name, slot: slot,
+               mine: slot === S.league.slot, keeper: true, pending: true };
+    });
+}
+
+/** The draft log plus every keeper not yet reached — who owns whom, right now. */
+function allPicks() { return S.picks.concat(pendingKeepers()); }
+
 /** Keepers occupy their slot automatically as the draft reaches them. */
 function syncKeepers() {
   var guard = 0;
@@ -163,7 +189,7 @@ function myUpcoming(from) {
 
 function draftedNames() {
   var set = {};
-  S.picks.forEach(function (p) { set[p.name] = true; });
+  allPicks().forEach(function (p) { set[p.name] = true; });
   return set;
 }
 
@@ -231,9 +257,10 @@ function analyze() {
   var avail = board.players.filter(function (p) { return !taken[p.name]; });
   var byName = {}; board.players.forEach(function (p) { byName[p.name] = p; });
 
-  var mine = S.picks.filter(function (p) { return p.mine; })
-                    .map(function (p) { return byName[p.name]; })
-                    .filter(Boolean);
+  var picks = allPicks();
+  var mine = picks.filter(function (p) { return p.mine; })
+                  .map(function (p) { return byName[p.name]; })
+                  .filter(Boolean);
 
   var cur = currentPick();
   var upcoming = myUpcoming(cur);
@@ -280,7 +307,7 @@ function analyze() {
   var ya = yahooAdp();
   var survTarget = (myNext && myNext > cur) ? myNext : (myAfter || myNext);
   var pickOf = {};
-  S.picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
+  picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
   var styled = Object.keys(activeKnobs()).length > 0;
   // Scoring the whole board a second time under Balanced is what lets any pick
   // answer "how much of this is the style I chose?". It is only worth doing when
@@ -1043,7 +1070,7 @@ function teamTitle(slot) {
 function allRosters() {
   var out = {};
   for (var i = 1; i <= S.league.teams; i++) out[i] = [];
-  S.picks.forEach(function (pk) {
+  allPicks().forEach(function (pk) {
     var pl = pk.name && A.byName[pk.name];
     if (pl) out[pk.slot].push(Object.assign({}, pl, { pick: pk.pick }));
     else if (pk.unknown) out[pk.slot].push({ name: "unknown", pos: "?", pick: pk.pick, pts: 0, bye: 0 });
@@ -1977,7 +2004,16 @@ function tagBadge(t) {
 /** Move an already-recorded pick to a different team. */
 function reassign(name, slot) {
   var pk = S.picks.find(function (q) { return q.name === name; });
-  if (!pk) return;
+  // A keeper the draft has not reached yet is not in the log, so the thing to
+  // correct is the keeper itself — otherwise the fix silently does nothing.
+  if (!pk) {
+    var k = (S.league.keepers || []).find(function (q) { return q.name === name; });
+    if (!k) return;
+    k.slot = slot;
+    save(); render();
+    banner(esc(name) + " is kept by " + esc(teamTitle(slot)) + ".");
+    return;
+  }
   pk.slot = slot;
   pk.mine = slot === S.league.slot;
   save(); render();
@@ -2471,7 +2507,10 @@ function rowHtml(p, i) {
   var cls = "prow" + (view.selected === p.name ? " sel" : "") +
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
   var who = t ? '<span class="sub">' +
-        (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") + t.pick + "</span>" : "";
+        (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") +
+        // A keeper is owned, but the pick he will burn has not happened
+        // yet — printing its number reads as a pick that already went.
+        (t.keeper ? "kept" : t.pick) + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
     (document.body.classList.contains("compact") ? "" :
       '<span class="rank">' + (i + 1) + "</span>") +
@@ -3134,9 +3173,25 @@ $("#presetSel").addEventListener("change", function (e) {
 });
 $("#kAdd").addEventListener("click", function () {
   var nm = $("#kName").value.trim();
-  if (!BY_NAME[nm]) return flash("#keeperList", "No player on the board with that exact name.", true);
-  S.league.keepers.push({ name: nm, round: +$("#kRound").value || 1,
-                          slot: +$("#kSlot").value || S.league.slot });
+  var round = +$("#kRound").value || 1;
+  var slot = +$("#kSlot").value || S.league.slot;
+  var rounds = parseInt($("#cfgRounds").value, 10) || S.league.rounds;
+  var keepers = S.league.keepers = S.league.keepers || [];
+  if (!BY_NAME[nm]) return flash("#keeperMsg", "No player on the board with that exact name.", true);
+  // Each of these silently produced a keeper that could never be honored: a
+  // round past the end of the draft has no pick to burn, and two keepers on one
+  // team in one round means only the first is ever reached.
+  if (round > rounds) return flash("#keeperMsg",
+    "Round " + round + " is past the end of a " + rounds + "-round draft.", true);
+  if (keepers.some(function (k) { return k.name === nm; }))
+    return flash("#keeperMsg", nm + " is already kept.", true);
+  var clash = keepers.find(function (k) {
+    return k.round === round && (k.slot || S.league.slot) === slot;
+  });
+  if (clash) return flash("#keeperMsg",
+    setupTeamTitle(slot) + " already keeps " + clash.name + " in round " + round +
+    " — one keeper burns one pick.", true);
+  keepers.push({ name: nm, round: round, slot: slot });
   $("#kName").value = ""; buildKeeperList();
 });
 $("#setupSave").addEventListener("click", function () {
