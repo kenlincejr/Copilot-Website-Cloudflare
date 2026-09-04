@@ -57,6 +57,38 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Recording a pick
+
+Each row carries two buttons. The left one is the team on the clock's initials —
+pressing it means *they* took him, and he comes off the board. The right one,
+**TO ME**, puts him on your roster instead. A legend under the filters spells
+that out with the current team's name in it, because two initialisms on a row are
+not self-explanatory.
+
+On your own pick there is only one button, **DRAFT**, because "someone else took
+him" is not a thing that can happen on your turn. Ownership is derived from the
+clock in live mode rather than from which button was pressed: a pick recorded at
+your slot is yours either way. Without that, a mis-click credited the player to
+your slot with `mine: false` — he appeared on your team in Rosters and nowhere on
+your own roster panel.
+
+## Pause, stop, simulate
+
+The tracker header carries three controls. **Pause** stops the clock only and
+hands the elapsed time back on resume, so the countdown continues rather than
+jumping. **Stop** ends the tracker, keeps every pick, and offers Resume and the
+report. **Simulate** fills in opponent picks up to your next one — roughly best
+available by ADP with some noise — so the whole flow can be rehearsed before it
+matters. Simulated picks are ordinary picks: undo works on them, the tracker
+labels the draft as containing them, and Reset draft in League clears the lot.
+
+## Viewing another team
+
+The roster panel's heading is a dropdown. Pick any team to see their roster,
+their positional needs and their bye clashes computed exactly the way yours are.
+Reading an opponent mid-draft is how you work out what they are about to take,
+and making that a modal is friction you do not have on a two-minute clock.
+
 ## Two ways to run a draft
 
 Chosen at the top of League setup, and switchable mid-draft without losing

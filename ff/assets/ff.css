@@ -569,3 +569,8 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .modecard li.up   { color: var(--muted); }
 .modecard li.down { color: var(--dim); }
 .modecard li.down::marker { color: var(--amber); }
+
+/* Tracker controls */
+.tk-ctl { display: flex; gap: 2px; flex: none; }
+.tk-ctl .btn { padding: 3px 8px; font-size: 11px; }
+.tk-count { font-size: 11px; margin: -6px 0 9px; }

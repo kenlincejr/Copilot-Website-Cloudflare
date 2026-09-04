@@ -83,7 +83,8 @@ function save() {
   try {
     localStorage.setItem(KEY_STATE, JSON.stringify({
       league: S.league, picks: S.picks,
-      draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt
+      draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
+      paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated
     }));
   }
   catch (e) { flash("#dataMsg", "Couldn't autosave — local storage is full or blocked.", true); }
@@ -160,8 +161,13 @@ function record(name, mine, quiet) {
   var pick = currentPick();
   if (pick > S.league.teams * S.league.rounds) return;
   var o = ownerOfPick(pick);
+  // In live mode the clock decides ownership: a pick made at your own slot is
+  // yours whichever button was pressed. Without this a mis-click credited the
+  // player to your slot with mine:false — he showed up on your team in Rosters
+  // and nowhere on your own roster panel.
+  var isMine = mine === true || (isLive() && o.slot === S.league.slot);
   S.picks.push({ pick: pick, name: name,
-                 slot: mine ? S.league.slot : o.slot, mine: !!mine,
+                 slot: isMine ? S.league.slot : o.slot, mine: isMine,
                  unknown: name === null });
   syncKeepers();
   bumpLivePick();
@@ -524,6 +530,7 @@ function mmss(sec) {
 }
 function tickClock() {
   var out = $("#clockRead"), secs = pickSeconds();
+  if (S.paused) { out.innerHTML = '<b style="color:var(--amber)">paused</b>'; return; }
   if (!secs || !A || !S.pickStartedAt) { out.textContent = ""; return; }
   var elapsed = (Date.now() - S.pickStartedAt) / 1000;
   var left = secs - elapsed;
@@ -541,6 +548,19 @@ function tickClock() {
   }
 }
 setInterval(tickClock, 1000);
+/** Pausing stops the clock only; the board and every recorded pick are untouched. */
+function togglePause() {
+  if (S.paused) {
+    // Hand back the time that elapsed while paused, so the countdown resumes
+    // where it stopped instead of jumping forward.
+    if (S.pausedAt && S.pickStartedAt) S.pickStartedAt += Date.now() - S.pausedAt;
+    S.paused = false; S.pausedAt = null;
+  } else {
+    S.paused = true; S.pausedAt = Date.now();
+  }
+  save(); render(); tickClock();
+}
+
 $("#pickSecs").addEventListener("input", function () {
   S.league.pickSeconds = pickSeconds();
   if (!S.pickStartedAt) S.pickStartedAt = Date.now();
@@ -560,11 +580,22 @@ function renderTracker() {
   if (!isLive()) { el.innerHTML = ""; return; }
   if (!S.draftStarted && !S.picks.length) { el.innerHTML = ""; return; }
 
-  if (A.cur > total) {
-    el.innerHTML = '<div class="tracker done"><div class="tk-head"><b>Draft complete</b>' +
-      '<span class="dimtext">' + total + " picks</span></div>" +
-      '<div class="dimtext" style="font-size:12.5px">Open Report for grades and a read on ' +
-      "every roster.</div></div>";
+  if (A.cur > total || S.draftEnded) {
+    var stopped = S.draftEnded && A.cur <= total;
+    el.innerHTML = '<div class="tracker done"><div class="tk-head"><b>' +
+      (stopped ? "Draft stopped" : "Draft complete") + "</b>" +
+      '<span class="dimtext">' + S.picks.length + " picks</span></div>" +
+      '<div class="dimtext" style="font-size:12.5px;margin-bottom:9px">' +
+        (stopped ? "Nothing has been lost — every pick is still recorded."
+                 : "Open Report for grades and a read on every roster.") + "</div>" +
+      '<div class="tk-entry">' +
+        (stopped ? '<button class="btn btn-sm btn-primary" id="tkResume">Resume draft</button>' : "") +
+        '<button class="btn btn-sm" id="tkReport">Open report</button>' +
+      "</div></div>";
+    if ($("#tkResume")) $("#tkResume").onclick = function () {
+      S.draftEnded = false; S.pickStartedAt = Date.now(); save(); render();
+    };
+    $("#tkReport").onclick = function () { $("#btnReport").click(); };
     return;
   }
 
@@ -594,8 +625,18 @@ function renderTracker() {
   el.innerHTML =
     '<div class="tracker' + (onMe ? " up" : "") + '">' +
       '<div class="tk-head">' +
-        "<b>" + (onMe ? "You're on the clock" : "Round " + A.onClock.round + " \u00b7 pick " + A.cur) + "</b>" +
-        '<span class="dimtext">' + S.picks.length + " of " + total + " recorded</span>" +
+        "<b>" + (S.paused ? "Paused" :
+          onMe ? "You're on the clock" : "Round " + A.onClock.round + " \u00b7 pick " + A.cur) + "</b>" +
+        '<span class="tk-ctl">' +
+          '<button class="btn btn-sm btn-ghost" id="tkPause">' +
+            (S.paused ? "Resume" : "Pause") + "</button>" +
+          '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
+            'can practise the flow">Simulate</button>' +
+          '<button class="btn btn-sm btn-ghost btn-danger" id="tkStop">Stop</button>' +
+        "</span>" +
+      "</div>" +
+      '<div class="tk-count dimtext">' + S.picks.length + " of " + total + " recorded" +
+        (S.simulated ? " \u00b7 <span style=\"color:var(--amber)\">includes simulated picks</span>" : "") +
       "</div>" +
 
       '<div class="tk-grid">' +
@@ -656,10 +697,43 @@ function renderTracker() {
     who.value = "";
     record(nm, false);
   };
+  $("#tkPause").onclick = togglePause;
+  $("#tkSim").onclick = simulateToMyPick;
+  $("#tkStop").onclick = function () {
+    if (!confirm("Stop the draft tracker? Every pick is kept and you can resume.")) return;
+    S.draftEnded = true; S.paused = false; save(); render();
+  };
   $("#tkRec").onclick = commit;
   who.addEventListener("keydown", function (e) { if (e.key === "Enter") commit(); });
   $("#tkUnknown").onclick = function () { record(null, false); };
   if ($("#tkCatch")) $("#tkCatch").onclick = openCatchup;
+}
+
+/**
+ * Fills in opponent picks so the flow can be practised before it matters. Takes
+ * roughly the best available by ADP with a little noise, which is close enough to
+ * how a real room drafts to be worth rehearsing against. Everything it records is
+ * an ordinary pick — undo works, and Reset draft in League clears the lot.
+ */
+function simulateToMyPick() {
+  if (!A.myNext) return;
+  var target = A.myNext, taken = draftedNames(), added = 0;
+  var pool = A.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
+  var guard = 0;
+  while (currentPick() < target && guard++ < 80) {
+    var choices = pool.filter(function (p) { return !taken[p.name]; }).slice(0, 3);
+    if (!choices.length) break;
+    var chosen = choices[Math.floor(Math.random() * choices.length)];
+    taken[chosen.name] = true;
+    record(chosen.name, false, true);
+    added++;
+  }
+  S.simulated = true;
+  S.pickStartedAt = Date.now();
+  save(); render();
+  banner("Simulated " + added + " opponent pick" + (added === 1 ? "" : "s") +
+    " up to pick " + target + ". These are guesses from ADP, not real picks — " +
+    "use Reset draft in League before the real thing.", true);
 }
 
 /* ------------------------------------------------------- league rosters */
@@ -1268,6 +1342,15 @@ function renderFilters() {
     renderFilters(); renderList();
   };
   $("#survHead").textContent = A.myNext && A.myNext > A.cur ? "→" + A.myNext : "Survives";
+
+  var lg = $("#rowLegend");
+  if (lg) {
+    lg.innerHTML = A.cur > S.league.teams * S.league.rounds ? ""
+      : myTurn()
+        ? "Your pick — <b>DRAFT</b> puts him on your roster."
+        : "Row buttons: <b>" + esc(onClockShort()) + "</b> = " + esc(onClockLabel()) +
+          " took him · <b>TO ME</b> = he goes on your roster instead";
+  }
 }
 
 function matches(p) {
@@ -1297,6 +1380,11 @@ function sortedList() {
 function onClockLabel() {
   return A && A.onClock ? teamLabel(A.onClock.slot) : "the team on the clock";
 }
+/** True when the pick about to be recorded belongs to you. */
+function myTurn() {
+  return !!(A && A.onClock && isLive() && A.onClock.slot === S.league.slot);
+}
+
 function onClockShort() {
   if (!A || !A.onClock || !isLive()) return "GONE";
   if (A.onClock.slot === S.league.slot) return "GONE";
@@ -1334,9 +1422,13 @@ function rowHtml(p, i) {
     '<span class="num" style="color:' + survColor + '">' + (t ? "\u2014" : surv + "%") + "</span>" +
     (t ? '<span class="rowacts"></span>'
        : '<span class="rowacts">' +
-           '<button data-act="gone" title="Goes to ' + esc(onClockLabel()) + '">' +
-             esc(onClockShort()) + "</button>" +
-           '<button class="mine" data-act="mine" title="I drafted him">MINE</button>' +
+           (myTurn()
+             ? ""   // your pick: "someone else took him" isn't a thing that can happen
+             : '<button data-act="gone" title="' + esc(onClockLabel()) +
+               ' took him — off the board">' + esc(onClockShort()) + "</button>") +
+           '<button class="mine" data-act="mine" title="' +
+             (myTurn() ? "Draft him" : "I took him") + ' — onto your roster">' +
+             (myTurn() ? "DRAFT" : "TO ME") + "</button>" +
          "</span>") +
   "</div>";
 }
@@ -1497,13 +1589,51 @@ function renderDetail(name) {
   $$("#detail [data-gone2]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone2, false); }; });
 }
 
+/**
+ * The right-hand panel can show any team, not just yours. Reading an opponent's
+ * roster mid-draft is how you work out what they are about to take, and having
+ * to open a modal for it is friction you do not have on a two-minute clock.
+ */
+function renderRosterPicker() {
+  var sel = $("#rosterTeam");
+  if (!isLive()) {
+    sel.innerHTML = '<option value="' + S.league.slot + '">Your roster</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  var cur = view.rosterSlot || S.league.slot;
+  var opts = [];
+  for (var i = 1; i <= S.league.teams; i++) {
+    opts.push('<option value="' + i + '"' + (i === cur ? " selected" : "") + ">" +
+      esc(i === S.league.slot ? "Your roster" : teamTitle(i)) + "</option>");
+  }
+  sel.innerHTML = opts.join("");
+}
+$("#rosterTeam").addEventListener("change", function (e) {
+  view.rosterSlot = parseInt(e.target.value, 10) || S.league.slot;
+  render();
+});
+
 function renderRoster() {
-  var r = A.roster;
-  $("#rosterCount").textContent = A.mine.length + " players";
+  renderRosterPicker();
+  var slot = (isLive() && view.rosterSlot) || S.league.slot;
+  var isMine = slot === S.league.slot;
+
+  // Viewing someone else: build their roster the same way, from the picks
+  // credited to them.
+  var players = isMine ? A.mine : allRosters()[slot].filter(function (p) { return p.pos !== "?"; });
+  var r = isMine ? A.roster : E.assignRoster(players, S.league.rules);
+  $("#rosterCount").textContent = players.length + " player" + (players.length === 1 ? "" : "s");
+  var counts = {};
+  r.slots.forEach(function (x) {
+    if (x.player) counts[x.player.bye] = (counts[x.player.bye] || 0) + 1;
+  });
+
   var html = r.slots.map(function (s) {
     if (!s.player) return '<div class="slot empty"><span class="lbl">' + s.pos + "</span>" +
       '<span class="who">—</span></div>';
-    var clash = (A.ctx.byeCounts[s.player.bye] || 0) >= (S.league.byeTolerance || 3);
+    var clash = (counts[s.player.bye] || 0) >= (S.league.byeTolerance || 3);
     return '<div class="slot' + (clash ? " bye-clash" : "") + '">' +
       '<span class="lbl">' + s.pos + "</span>" +
       '<span class="who"><span class="pos pos-' + s.player.pos + '">' + s.player.pos + "</span> " +
@@ -1518,11 +1648,12 @@ function renderRoster() {
   }).join("");
   $("#roster").innerHTML = html + (bench ? '<div class="eyebrow" style="margin:8px 0 4px">Bench</div>' + bench : "");
 
-  var byeList = Object.keys(A.ctx.byeCounts).filter(function (w) {
-    return A.ctx.byeCounts[w] >= (S.league.byeTolerance || 3);
+  var byeList = Object.keys(counts).filter(function (w) {
+    return counts[w] >= (S.league.byeTolerance || 3);
   });
+  var need = isMine ? A.need : E.positionalNeed(players, S.league.rules);
   $("#needs").innerHTML = ["QB", "RB", "WR", "TE", "K", "DEF"].map(function (pos) {
-    var nd = A.need[pos] || { have: 0, starters: 0, short: 0 };
+    var nd = need[pos] || { have: 0, starters: 0, short: 0 };
     var cls = nd.short > 0.5 ? " short" : nd.short <= 0 ? " done" : "";
     return '<span class="n' + cls + '">' + pos + " " + nd.have + "/" + nd.starters + "</span>";
   }).join("") +
