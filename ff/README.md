@@ -85,6 +85,29 @@ O(k·n²), about 68k operations for the 92-deep receiver board, inside
 `buildBoard` — which does not run per keystroke. Six assertions in
 `test-engine.js` pin the behaviour.
 
+## Three panels that were harder to read than the data in them
+
+**Still need** was six bordered chips that all turned amber at once, because at
+the start of a draft every slot is empty — a wall of alarm saying nothing except
+"you have not drafted yet". It is one quiet strip of slot pips now, read off the
+actual lineup assignment so the flex is right: filled pip, a starter you have;
+hollow pip, one you do not. Colour is spent only on slots you are genuinely
+running out of picks to fill.
+
+**The target cards** spent most of their height on a sentence that read
+"+108 over replacement (RB31)" — once per card, the same shape of number three
+times, in prose, where it is hardest to compare. The three numbers that actually
+decide between the cards are a row now, aligned across all three so the eye can
+run down a column: what he adds to the lineup you can field, whether he will
+still be there next time you choose, and how many of his tier are left. The
+sentence keeps only the thing a number cannot say.
+
+**Every roster** listed each position's players on one wrapping line separated by
+middots, which broke names across columns and never answered the question you
+open that panel to ask. It is the lineup now — one slot per row with a fixed
+label column, empty starting slots shown as empty, bench underneath — so a team
+with no quarterback and no tight end reads as exactly that at a glance.
+
 ## Columns
 
 Four columns, chosen by the user from thirteen, via **choose columns** under the
@@ -118,6 +141,24 @@ columns that can be read as a decision are:
 The numeric originals (`VOR`, `SURV`, `Δ`, `ADP`) are all still on the menu for
 anyone who prefers them, alongside `VS STD` — what your scoring does to him
 versus plain PPR, which is the arbitrage the whole tool exists for.
+
+## Naming the team that took him
+
+"Someone else took him" put a player in the nethers: off the board, credited to
+whichever team the snake said was on the clock, and if that guess was wrong
+there was no way to say so. Which team holds a player is not trivia \u2014 it is how
+you read what the room still needs \u2014 and it is the one thing a user can always
+look up on their league's own draft board.
+
+So every row names the team. On an available player, **who?** beside the fast
+"gone" button opens a picker of the twelve teams and credits the one you name.
+On a player already recorded, **move** re-credits him \u2014 the repair for a
+catch-up run that guessed wrong, or a mis-click three rounds ago. The picker
+marks the team currently on the clock as the safe bet, and says plainly that
+changing the credit does not move the pick, only who is charged with it.
+
+The one place it is not offered is your own clock, where "somebody else took
+him" cannot happen and offering it would credit your own pick to another team.
 
 ## Recording a pick
 

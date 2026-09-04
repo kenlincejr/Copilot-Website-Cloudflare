@@ -1073,17 +1073,30 @@ function renderLeague() {
 function renderTeamCards(slots, rosters) {
   $("#leagueBody").innerHTML = '<div class="teamgrid">' + slots.map(function (slot) {
     var team = rosters[slot];
-    var byPos = {};
-    team.forEach(function (p) { (byPos[p.pos] = byPos[p.pos] || []).push(p); });
-    var order = ["QB", "RB", "WR", "TE", "K", "DEF", "?"];
-    var body = order.filter(function (pos) { return byPos[pos]; }).map(function (pos) {
-      return '<div class="tg-pos"><span class="pos pos-' + (pos === "?" ? "K" : pos) + '">' +
-        pos + "</span> " +
-        byPos[pos].map(function (p) {
-          return '<span class="tg-p">' + esc(p.name) +
-            '<span class="dimtext"> ' + (p.bye || "") + "</span></span>";
-        }).join("") + "</div>";
+    /* This was every player at a position on one wrapping line separated by
+       middots, which broke names across columns and told you nothing about
+       whether the team could actually field a lineup. It is the lineup now:
+       one slot per row, empty slots shown as empty, bench underneath. Reading
+       an opponent's holes is the entire reason to open this panel. */
+    var real = team.filter(function (p) { return p.pos !== "?"; });
+    var lineup = E.assignRoster(real, S.league.rules);
+    var body = lineup.slots.map(function (sl) {
+      var p = sl.player;
+      return '<div class="tg-row' + (p ? "" : " empty") + '">' +
+        '<span class="pos pos-' + sl.pos + '">' + sl.pos + "</span>" +
+        (p ? '<span class="tg-n">' + esc(p.name) + "</span>" +
+             '<span class="tg-b">' + (p.bye || "\u2014") + "</span>"
+           : '<span class="tg-n dimtext">\u2014</span><span class="tg-b"></span>') +
+      "</div>";
     }).join("");
+    var bench = lineup.bench.concat(team.filter(function (p) { return p.pos === "?"; }));
+    if (bench.length) {
+      body += '<div class="tg-bench"><span class="tg-bk">BN</span>' +
+        bench.map(function (p) {
+          return '<span class="tg-bp"><i class="pos pos-' + (p.pos === "?" ? "K" : p.pos) + '">' +
+            (p.pos === "?" ? "\u2013" : p.pos) + "</i>" + esc(p.name) + "</span>";
+        }).join("") + "</div>";
+    }
     return '<div class="teamcard' + (slot === S.league.slot ? " me" : "") + '">' +
       '<div class="tc-head">' +
         '<input class="tc-name" type="text" autocomplete="off" data-name-slot="' + slot + '" ' +
@@ -1091,7 +1104,7 @@ function renderTeamCards(slots, rosters) {
           'placeholder="' + (slot === S.league.slot ? "your team" : "team " + slot) + '">' +
         '<span class="dimtext">' + (slot === S.league.slot ? "you \u00b7 " : "") +
           team.length + "</span></div>" +
-      (body || '<div class="dimtext" style="font-size:12px">nothing recorded</div>') +
+      (team.length ? body : '<div class="dimtext" style="font-size:12px">nothing recorded</div>') +
     "</div>";
   }).join("") + "</div>";
 }
@@ -1967,6 +1980,85 @@ function tagBadge(t) {
     (TAGS[t] ? ' title="' + esc(TAGS[t]) + '"' : "") + ">" + esc(tagLabel(t)) + "</span>";
 }
 
+/* ------------------------------------------------------- who took him
+
+   "Someone else took him" put a player in the nethers: off the board, credited
+   to whichever team the snake said was on the clock, and if that guess was
+   wrong there was no way to say so. Which team has a player is not trivia — it
+   is how you read what the room still needs, and it is the one thing the user
+   can always look up on their league's own draft board.
+
+   So: name the team. Any player, taken or not, from any row. On an available
+   player it records the pick and credits the team you name. On a player already
+   recorded it re-credits him, which is the repair for a catch-up run that
+   guessed wrong or a mis-click three rounds ago. */
+
+/** Move an already-recorded pick to a different team. */
+function reassign(name, slot) {
+  var pk = S.picks.find(function (q) { return q.name === name; });
+  if (!pk) return;
+  pk.slot = slot;
+  pk.mine = slot === S.league.slot;
+  save(); render();
+  banner(esc(name) + " is now on " + esc(teamTitle(slot)) + ".");
+}
+
+/** Record a player as taken, crediting the team the user names. */
+function recordTo(name, slot) {
+  record(name, slot === S.league.slot);
+  var pk = S.picks[S.picks.length - 1];
+  if (pk && pk.name === name && pk.slot !== slot) { pk.slot = slot; pk.mine = slot === S.league.slot; save(); render(); }
+}
+
+var assignFor = null;
+function openAssign(name, anchorEl, ev) {
+  if (ev) ev.stopPropagation();
+  if (!isLive()) { record(name, false); return; }   // solo mode has no teams
+  assignFor = name;
+  var already = S.picks.find(function (q) { return q.name === name; });
+  var pop = $("#assignPop");
+  var onClock = A.onClock ? A.onClock.slot : null;
+  var rows = [];
+  for (var i = 1; i <= S.league.teams; i++) rows.push(i);
+  pop.innerHTML =
+    '<div class="ap-head">' + esc(name) + "<span>" +
+      (already ? "move to" : "went to") + "</span></div>" +
+    '<div class="ap-grid">' + rows.map(function (sl) {
+      var isNow = already ? already.slot === sl : false;
+      return '<button class="ap-t' + (isNow ? " on" : "") +
+        (!already && sl === onClock ? " suggest" : "") + '" data-slot="' + sl + '">' +
+        esc(teamTitle(sl)) +
+        (!already && sl === onClock ? '<span class="ap-hint">on the clock</span>' : "") +
+        (isNow ? '<span class="ap-hint">now</span>' : "") + "</button>";
+    }).join("") + "</div>" +
+    '<div class="ap-foot">' +
+      (already
+        ? "Recorded at pick " + already.pick + ". Changing this does not move the pick, " +
+          "only who is credited with it."
+        : "Records the pick and credits that team. The team on the clock is the " +
+          "safe bet if you are keeping up.") +
+    "</div>";
+  var r = anchorEl.getBoundingClientRect();
+  pop.classList.remove("hidden");
+  var w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
+  pop.style.top = (r.bottom + h + 8 > window.innerHeight && r.top - h - 6 > 0
+    ? r.top - h - 6 : r.bottom + 6) + "px";
+  $$("#assignPop .ap-t").forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      var sl = +b.dataset.slot;
+      if (already) reassign(assignFor, sl); else recordTo(assignFor, sl);
+      closeAssign();
+    };
+  });
+}
+function closeAssign() { assignFor = null; $("#assignPop").classList.add("hidden"); }
+document.addEventListener("click", function (e) {
+  if (assignFor && !e.target.closest("#assignPop")) closeAssign();
+});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAssign(); });
+
 /* ------------------------------------------------- what the style did here
 
    A draft style is a set of weights, and weights are invisible. You pick "Zero
@@ -2395,16 +2487,25 @@ function rowHtml(p, i) {
         (c.title ? ' title="' + esc(c.title) + '"' : "") + ">" +
         (t && blankWhenTaken ? "\u2014" : c.v) + (k === "pts" ? est : "") + "</span>";
     }).join("") +
-    (t ? '<span class="rowacts"></span>'
-       : '<span class="rowacts">' +
-           (myTurn()
-             ? ""   // your pick: "someone else took him" isn't a thing that can happen
-             : '<button data-act="gone" title="' + esc(onClockLabel()) +
-               ' took him — off the board">' + esc(onClockShort()) + "</button>") +
-           '<button class="mine" data-act="mine" title="' +
-             (myTurn() ? "Draft him" : "I took him") + ' — onto your roster">' +
-             (myTurn() ? "DRAFT" : "TO ME") + "</button>" +
-         "</span>") +
+    // A taken player keeps one action: name the team that has him. Which team
+    // holds a player is how you read what the room still needs, and a guess
+    // three rounds ago should not be permanent.
+    (t
+      ? '<span class="rowacts">' + (isLive()
+          ? '<button data-act="assign" title="Change which team is credited with him">' +
+            "move</button>" : "") + "</span>"
+      : '<span class="rowacts">' +
+          (myTurn()
+            ? ""   // your pick: "someone else took him" isn't a thing that can happen
+            : '<button data-act="gone" title="' + esc(onClockLabel()) +
+              ' took him — off the board">' + esc(onClockShort()) + "</button>" +
+              (isLive()
+                ? '<button data-act="assign" title="Somebody else took him — name which team">' +
+                  "who?</button>" : "")) +
+          '<button class="mine" data-act="mine" title="' +
+            (myTurn() ? "Draft him" : "I took him") + ' — onto your roster">' +
+            (myTurn() ? "DRAFT" : "TO ME") + "</button>" +
+        "</span>") +
   "</div>";
 }
 
@@ -2416,7 +2517,11 @@ function renderList() {
     var name = el.getAttribute("data-name");
     var taken = el.classList.contains("taken");
     $$("[data-act]", el).forEach(function (b) {
-      b.onclick = function (e) { e.stopPropagation(); record(name, b.dataset.act === "mine"); };
+      b.onclick = function (e) {
+        e.stopPropagation();
+        if (b.dataset.act === "assign") { openAssign(name, b, e); return; }
+        record(name, b.dataset.act === "mine");
+      };
     });
     el.onclick = function (e) {
       if (taken) return;
@@ -2452,35 +2557,74 @@ function renderRecs() {
 
   $("#recTitle").innerHTML = (waiting ? "Target at pick " + A.myNext : "Take one of these") +
     ' <span class="stylechip" id="styleChip">' + esc(styleName()) + "</span>";
-  $("#recCtx").textContent = "round " + A.ctx.round +
-    (waiting ? " · " + (A.myNext - A.cur) + " picks away · 15%+ to reach you" : " · you're on the clock") +
-    (A.myAfter ? " · then " + A.myAfter : "");
+  $("#recCtx").textContent = waiting
+    ? "round " + A.ctx.round + " \u00b7 " + (A.myNext - A.cur) + " away" +
+      (A.myAfter ? " \u00b7 then " + A.myAfter : "")
+    : "round " + A.ctx.round + " \u00b7 you're on the clock" +
+      (A.myAfter ? " \u00b7 then " + A.myAfter : "");
 
+  /* Three cards, and the three numbers that actually decide between them: what
+     he adds to the lineup you can field, whether he will still be there next
+     time, and how many of his tier are left. The reason sentence used to carry
+     all of that as prose — "+108 over replacement (RB31)" three times over,
+     once per card, which is a lot of column for a number that barely separates
+     them. Prose says the one thing a number cannot; the numbers stay numbers. */
   var best = top[0] ? top[0].comp : 1;
   $("#recs").innerHTML = top.map(function (p, i) {
     var d = p.compDetail;
     var conf = Math.max(8, Math.min(100, Math.round(p.comp / Math.max(best, 1) * 100)));
-    var why = d.reasons.slice(0, 3).map(function (r) { return "<b>" + esc(r) + "</b>"; }).join(" · ");
+    // The lead reason, not three of them. The others are in Why?.
+    var why = d.reasons.length ? d.reasons[0] : "best remaining value";
+    var surv = Math.round(survShown(p) * 100);
+    var survCls = surv >= 70 ? "good" : surv >= 35 ? "warn" : "bad";
+    var stats = [
+      { k: "to your lineup", v: (d.marginal > 0 ? "+" : "") + n0(d.marginal),
+        cls: d.marginal > 0 ? "good" : "dim",
+        t: "Points he adds to the best starting lineup you can field, over a freely available " + p.pos },
+      { k: A.survTarget ? "reaches " + A.survTarget : "survives", v: surv + "%", cls: survCls,
+        t: "Chance he is still on the board the next time you choose" },
+      { k: "tier " + p.tier, v: p.tierLeft + " left", cls: p.tierLeft <= 1 ? "warn" : "dim",
+        t: p.tierLeft + " players left in tier " + p.tier + " at " + p.pos +
+           ". Inside a tier they are close enough to be interchangeable." }
+    ];
     return '<div class="rec' + (i === 0 ? " top" : "") + '">' +
-      '<div class="rec-head"><span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
+      '<div class="rec-head">' +
+        '<span class="rec-rank">' + (i + 1) + "</span>" +
+        '<span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
         '<span class="name">' + esc(p.name) + "</span>" +
-        '<span class="dimtext num">' + p.team + " · bye " + p.bye + "</span>" +
+        '<span class="rec-meta">' + p.team + " \u00b7 bye " + p.bye + "</span>" +
         tagBadge(p.tag) +
       "</div>" +
-      '<div class="rec-why">' + (why || "best remaining value") + "</div>" +
+      '<div class="rec-stats">' + stats.map(function (st) {
+        return '<span class="rs" title="' + esc(st.t) + '">' +
+          '<b class="rs-' + st.cls + '">' + st.v + "</b>" +
+          '<span class="rs-k">' + esc(st.k) + "</span></span>";
+      }).join("") + "</div>" +
+      '<div class="rec-why">' + esc(why) + "</div>" +
       styleChipHtml(p) +
-      '<div class="bar"><span style="width:' + conf + '%"></span></div>' +
-      '<div class="rec-actions">' +
-        '<button class="btn btn-sm btn-primary" data-take="' + esc(p.name) + '">I drafted him</button>' +
-        '<button class="btn btn-sm" data-gone="' + esc(p.name) + '">Taken</button>' +
-        '<button class="btn btn-sm btn-ghost" data-open="' + esc(p.name) + '">Why?</button>' +
+      '<div class="rec-foot">' +
+        '<div class="bar" title="' + esc("Board score " + n0(p.comp) +
+          (i ? ", against " + n0(best) + " for the top pick" : ", the top of the board")) +
+          '"><span style="width:' + conf + '%"></span></div>' +
+        '<div class="rec-actions">' +
+          '<button class="btn btn-sm btn-primary" data-take="' + esc(p.name) + '">' +
+            (myTurn() ? "Draft" : "I drafted him") + "</button>" +
+          // On your own clock "somebody else took him" cannot happen, and
+          // offering it would credit your own pick to another team.
+          (myTurn() ? "" :
+            '<button class="btn btn-sm" data-assign="' + esc(p.name) + '">' +
+            (isLive() ? "Taken by…" : "Taken") + "</button>") +
+          '<button class="btn btn-sm btn-ghost" data-open="' + esc(p.name) + '">Why?</button>' +
+        "</div>" +
       "</div></div>";
   }).join("") || '<div class="note">Nothing left that clears the position caps.</div>';
 
   var chip = $("#styleChip");
   if (chip) chip.onclick = function () { $("#btnStyle").click(); };
   $$("#recs [data-take]").forEach(function (b) { b.onclick = function () { record(b.dataset.take, true); }; });
-  $$("#recs [data-gone]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone, false); }; });
+  $$("#recs [data-assign]").forEach(function (b) {
+    b.onclick = function (e) { openAssign(b.dataset.assign, b, e); };
+  });
   $$("#recs [data-open]").forEach(function (b) {
     b.onclick = function () { view.selected = b.dataset.open; renderList(); renderDetail(b.dataset.open); };
   });
@@ -2673,19 +2817,36 @@ function renderRoster() {
   var byeList = Object.keys(counts).filter(function (w) {
     return counts[w] >= (S.league.byeTolerance || 3);
   });
-  var need = isMine ? A.need : E.positionalNeed(players, S.league.rules);
-  $("#needs").innerHTML = ["QB", "RB", "WR", "TE", "K", "DEF"].map(function (pos) {
-    var nd = need[pos] || { have: 0, starters: 0, short: 0 };
-    var cls = nd.short > 0.5 ? " short" : nd.short <= 0 ? " done" : "";
-    var over = nd.have - nd.starters;
-    var tip = nd.have + " on the roster for " + nd.starters + " starting " + pos +
-      (nd.starters === 1 ? " slot" : " slots") +
-      (over > 0 ? " — " + over + " spare, and a spare can't start" :
-       over < 0 ? " — still short" : "");
-    return '<span class="n' + cls + '" title="' + esc(tip) + '">' +
-      pos + " " + nd.have + "/" + nd.starters + "</span>";
+  // Slots, not counts. The question is "which of my starting spots is still
+  // empty", and the lineup assignment already answers it exactly — including
+  // the flex, which a per-position count gets wrong the moment anyone is in it.
+  var lineup = isMine ? A.roster : E.assignRoster(players, S.league.rules);
+  var order = [], groups = {};
+  lineup.slots.forEach(function (sl) {
+    if (!groups[sl.pos]) { groups[sl.pos] = []; order.push(sl.pos); }
+    groups[sl.pos].push(sl);
+  });
+  // Colour is only worth spending where the picks are genuinely running out.
+  var left = isMine && A.myNext
+    ? myUpcoming(A.cur).length
+    : S.league.rounds - Math.ceil((players.length || 1));
+  var empties = lineup.slots.filter(function (sl) { return !sl.player; }).length;
+  var pressed = left > 0 && empties >= left;
+
+  $("#needs").innerHTML = order.map(function (pos) {
+    var g = groups[pos];
+    var open = g.filter(function (sl) { return !sl.player; }).length;
+    var cls = open === 0 ? "filled" : pressed ? "urgent" : "";
+    var tip = open === 0
+      ? pos + ": filled"
+      : open + " of " + g.length + " " + pos + " slot" + (g.length === 1 ? "" : "s") +
+        " still open" + (pressed ? " \u2014 and you are running out of picks" : "");
+    return '<span class="nd ' + cls + '" title="' + esc(tip) + '"><b>' + pos + "</b>" +
+      '<span class="pips">' + g.map(function (sl) {
+        return '<i class="pip' + (sl.player ? " on" : pressed ? " urgent" : "") + '"></i>';
+      }).join("") + "</span></span>";
   }).join("") +
-  (byeList.length ? '<span class="n short">bye clash wk ' + byeList.join(", ") + "</span>" : "");
+  (byeList.length ? '<span class="clash">bye clash wk ' + byeList.join(", ") + "</span>" : "");
 }
 
 function renderTurn() {
