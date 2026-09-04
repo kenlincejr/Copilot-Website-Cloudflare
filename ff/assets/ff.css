@@ -491,3 +491,66 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .tg-pos { display: flex; gap: 6px; align-items: baseline; margin-bottom: 3px; }
 .tg-pos .tg-p { color: var(--muted); }
 .tg-pos .tg-p + .tg-p::before { content: " · "; color: var(--dim); }
+
+/* ------------------------------------------------------ live draft tracker */
+
+.tracker {
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--panel); padding: 12px 13px; margin-bottom: 12px;
+}
+.tracker.up {
+  border-color: var(--teal-dim);
+  background: linear-gradient(180deg, rgba(45,212,191,.10), var(--panel) 70%);
+}
+.tracker.done { opacity: .8; }
+.tk-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tk-head b { font-size: 15px; }
+
+.tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.tk-grid > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tk-grid .k {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
+}
+.tk-grid .v {
+  font-size: 13px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tk-grid .v.me { color: var(--teal); }
+
+.tk-entry { display: flex; gap: 6px; margin: 11px 0 8px; }
+.tk-entry input { font-size: 14px; }
+.tk-entry button { flex: none; }
+
+.tk-drift {
+  font-size: 12px; color: #fecaca; background: rgba(248,113,113,.13);
+  border-radius: var(--radius); padding: 6px 9px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px; justify-content: space-between;
+}
+.tk-ok { font-size: 11.5px; color: var(--dim); margin-bottom: 8px; }
+
+.tk-recent { border-top: 1px solid var(--line-soft); padding-top: 7px; }
+.tk-pick {
+  display: grid; grid-template-columns: 32px 96px 1fr; gap: 8px;
+  font-size: 12px; padding: 2px 0; color: var(--muted); align-items: baseline;
+}
+.tk-pick .mono { color: var(--dim); }
+.tk-pick .tk-team { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-pick.mine { color: var(--teal); }
+.tk-pick.mine .tk-team { color: var(--teal-dim); }
+
+/* Team name entry sits in the roster card header, where you look for it. */
+.tc-name {
+  background: transparent; border: 1px solid transparent; color: var(--text);
+  font: inherit; font-weight: 700; padding: 2px 5px; border-radius: 5px;
+  width: 100%; min-width: 0;
+}
+.tc-name:hover { border-color: var(--line); }
+.tc-name:focus {
+  background: #0d131b; border-color: var(--teal-dim);
+  box-shadow: 0 0 0 3px rgba(45,212,191,.12); outline: none;
+}
+.teamcard .tc-head { gap: 8px; }

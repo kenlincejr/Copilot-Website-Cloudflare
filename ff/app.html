@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904j">
+<link rel="stylesheet" href="assets/ff.css?v=20260904k">
 </head>
 <body>
 
@@ -81,6 +81,7 @@
 
     <!-- --------------------------------------------------- recommendation -->
     <div class="col col-rec col-pad">
+      <div id="tracker"></div>
       <div id="brief"></div>
       <div id="runBanner"></div>
       <div class="panel-head"><h3 id="recTitle">Best available for you</h3>
@@ -205,6 +206,12 @@
     <div><h2 style="margin:0">Every roster</h2>
       <span class="muted" id="leagueSub"></span></div>
     <button class="btn btn-sm" id="leagueClose">Close</button>
+  </div>
+  <div class="note" style="margin-bottom:12px">
+    Type over any team name below and it saves as you go. Names show up on the ticker,
+    the draft log and the report, and they make it much easier to see at a glance that a
+    pick landed on the right roster.
+    <span class="dimtext" id="nameSaved"></span>
   </div>
   <div class="filters" id="leagueFilters" style="margin-bottom:12px"></div>
   <div id="leagueBody"></div>
@@ -362,13 +369,13 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904j"></script>
-<script src="data/players.js?v=20260904j"></script>
-<script src="assets/presets.js?v=20260904j"></script>
-<script src="assets/engine.js?v=20260904j"></script>
-<script src="assets/auth.js?v=20260904j"></script>
-<script src="assets/parser.js?v=20260904j"></script>
-<script src="assets/strategies.js?v=20260904j"></script>
-<script src="assets/app.js?v=20260904j"></script>
+<script src="assets/config.js?v=20260904k"></script>
+<script src="data/players.js?v=20260904k"></script>
+<script src="assets/presets.js?v=20260904k"></script>
+<script src="assets/engine.js?v=20260904k"></script>
+<script src="assets/auth.js?v=20260904k"></script>
+<script src="assets/parser.js?v=20260904k"></script>
+<script src="assets/strategies.js?v=20260904k"></script>
+<script src="assets/app.js?v=20260904k"></script>
 </body>
 </html>

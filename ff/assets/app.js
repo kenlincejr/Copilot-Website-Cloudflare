@@ -46,7 +46,12 @@ function load() {
   catch (e) { return null; }
 }
 function save() {
-  try { localStorage.setItem(KEY_STATE, JSON.stringify({ league: S.league, picks: S.picks })); }
+  try {
+    localStorage.setItem(KEY_STATE, JSON.stringify({
+      league: S.league, picks: S.picks,
+      draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt
+    }));
+  }
   catch (e) { flash("#dataMsg", "Couldn't autosave — local storage is full or blocked.", true); }
 }
 
@@ -271,7 +276,7 @@ function render() {
       ? "Search \u2014 Enter drafts to YOU (you're on the clock)"
       : "Search \u2014 Enter puts him on " + teamLabel(A.onClock.slot) + ", Shift+Enter on yours";
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
-  renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker();
+  renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker(); renderTracker();
   if (view.selected) renderDetail(view.selected);
 }
 
@@ -293,7 +298,7 @@ function drift() {
 
 function renderStatus() {
   var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
-  $("#btnStart").classList.toggle("hidden", S.picks.length > 0);
+  $("#btnStart").classList.toggle("hidden", !!S.draftStarted || S.picks.length > 0);
 
   if (A.cur > total) {
     el.className = "statusbar waiting";
@@ -342,11 +347,15 @@ function renderStatus() {
 
 $("#livePick").addEventListener("input", renderStatus);
 $("#btnStart").addEventListener("click", function () {
+  S.draftStarted = true;
   S.startedAt = Date.now();
   S.pickStartedAt = Date.now();
+  if (!S.league.pickSeconds) { S.league.pickSeconds = 120; $("#pickSecs").value = 120; }
   save();
-  $("#livePick").value = 1;
-  $("#search").focus(); render(); tickClock();
+  $("#livePick").value = String(currentPick());
+  render(); tickClock();
+  var w = $("#tkWho"); if (w) w.focus();
+  banner("Draft tracker is live. Record every pick as it happens and the board stays honest.");
 });
 
 /* ------------------------------------------------------------- catch-up */
@@ -501,6 +510,120 @@ $("#pickSecs").addEventListener("input", function () {
   save(); tickClock();
 });
 
+/* --------------------------------------------------------- draft tracker */
+
+/**
+ * The panel Start draft actually opens. Everything needed to stay level with a
+ * live draft in one place: whose pick it is, who is next, how far away you are,
+ * what just went, and a box to record the pick that is happening right now
+ * without hunting for it in the list of 267.
+ */
+function renderTracker() {
+  var el = $("#tracker"), total = S.league.teams * S.league.rounds;
+  if (!S.draftStarted && !S.picks.length) { el.innerHTML = ""; return; }
+
+  if (A.cur > total) {
+    el.innerHTML = '<div class="tracker done"><div class="tk-head"><b>Draft complete</b>' +
+      '<span class="dimtext">' + total + " picks</span></div>" +
+      '<div class="dimtext" style="font-size:12.5px">Open Report for grades and a read on ' +
+      "every roster.</div></div>";
+    return;
+  }
+
+  var onMe = A.onClock.slot === S.league.slot;
+  var deck = [];
+  for (var i = 1; i <= 3; i++) {
+    var pk = A.cur + i;
+    if (pk <= total) deck.push(teamLabel(ownerOfPick(pk).slot, true));
+  }
+  var gap = A.myNext ? A.myNext - A.cur : null;
+  var secs = pickSeconds();
+  var eta = (gap && secs) ? " \u00b7 about " + mmss(gap * secs) : "";
+
+  var recent = S.picks.slice(-6).reverse().map(function (pk) {
+    var pl = BY_NAME[pk.name] || {};
+    return '<div class="tk-pick' + (pk.mine ? " mine" : "") + '">' +
+      '<span class="mono">' + pk.pick + "</span>" +
+      '<span class="tk-team">' + esc(teamLabel(pk.slot, true)) + "</span>" +
+      "<span>" + (pk.unknown ? "<i>unknown</i>"
+        : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " +
+          esc(pk.name)) + "</span>" +
+    "</div>";
+  }).join("");
+
+  var d = drift();
+
+  el.innerHTML =
+    '<div class="tracker' + (onMe ? " up" : "") + '">' +
+      '<div class="tk-head">' +
+        "<b>" + (onMe ? "You're on the clock" : "Round " + A.onClock.round + " \u00b7 pick " + A.cur) + "</b>" +
+        '<span class="dimtext">' + S.picks.length + " of " + total + " recorded</span>" +
+      "</div>" +
+
+      '<div class="tk-grid">' +
+        '<div><span class="k">on the clock</span><span class="v' + (onMe ? " me" : "") + '">' +
+          esc(teamLabel(A.onClock.slot)) + "</span></div>" +
+        '<div><span class="k">on deck</span><span class="v">' +
+          (deck.length ? esc(deck.join(", ")) : "\u2014") + "</span></div>" +
+        '<div><span class="k">you pick at</span><span class="v me">' +
+          (A.myNext ? A.myNext + (gap ? " \u00b7 " + gap + " away" + eta : "") : "no picks left") +
+          "</span></div>" +
+      "</div>" +
+
+      '<div class="tk-entry">' +
+        '<input type="text" id="tkWho" list="availList" autocomplete="off" ' +
+          'autocorrect="off" autocapitalize="off" spellcheck="false" ' +
+          'data-1p-ignore data-lpignore="true" ' +
+          'placeholder="Who just went at pick ' + A.cur + '? \u2014 goes to ' +
+          esc(teamLabel(A.onClock.slot)) + '">' +
+        '<button class="btn btn-sm" id="tkRec">Record</button>' +
+        '<button class="btn btn-sm btn-ghost" id="tkUnknown" ' +
+          'title="The pick happened but you did not catch the name">Didn\u2019t catch it</button>' +
+      "</div>" +
+
+      (d ? '<div class="tk-drift">' +
+            (d > 0 ? "The live draft is " + d + " pick" + (d === 1 ? "" : "s") + " ahead of this board."
+                   : "This board is " + (-d) + " pick" + (d === -1 ? "" : "s") + " ahead of the live draft.") +
+            (d > 0 ? ' <button class="btn btn-sm btn-primary" id="tkCatch">Catch up</button>' : "") +
+           "</div>"
+         : '<div class="tk-ok">In step with the live draft' +
+           ($("#livePick").value ? "" : " \u2014 type the live pick number in the bar above to keep it honest") +
+           "</div>") +
+
+      '<div class="tk-recent">' + (recent || '<div class="dimtext">Nothing recorded yet.</div>') + "</div>" +
+    "</div>";
+
+  var list = $("#availList");
+  if (!list) {
+    list = document.createElement("datalist");
+    list.id = "availList";
+    document.body.appendChild(list);
+  }
+  list.innerHTML = A.avail.slice(0, 300).map(function (p) {
+    return '<option value="' + esc(p.name) + '">' + p.pos + " " + p.team + "</option>";
+  }).join("");
+
+  var who = $("#tkWho");
+  var commit = function () {
+    var nm = who.value.trim();
+    if (!nm) return;
+    if (!BY_NAME[nm]) {
+      // Accept a partial: whatever is top of the current board and matches.
+      var hit = A.avail.filter(function (p) {
+        return p.name.toLowerCase().indexOf(nm.toLowerCase()) >= 0;
+      })[0];
+      if (!hit) { banner("No available player matching \u201c" + nm + "\u201d.", true); return; }
+      nm = hit.name;
+    }
+    who.value = "";
+    record(nm, false);
+  };
+  $("#tkRec").onclick = commit;
+  who.addEventListener("keydown", function (e) { if (e.key === "Enter") commit(); });
+  $("#tkUnknown").onclick = function () { record(null, false); };
+  if ($("#tkCatch")) $("#tkCatch").onclick = openCatchup;
+}
+
 /* ------------------------------------------------------- league rosters */
 
 /** The team's own name where we have one — "you" is unhelpful in a list of twelve. */
@@ -547,6 +670,11 @@ function renderLeague() {
   var slots = leagueView.slot ? [leagueView.slot]
             : Array.apply(null, { length: S.league.teams }).map(function (_, i) { return i + 1; });
 
+  renderTeamCards(slots, rosters);
+  wireTeamNameInputs();
+}
+
+function renderTeamCards(slots, rosters) {
   $("#leagueBody").innerHTML = '<div class="teamgrid">' + slots.map(function (slot) {
     var team = rosters[slot];
     var byPos = {};
@@ -561,12 +689,33 @@ function renderLeague() {
         }).join("") + "</div>";
     }).join("");
     return '<div class="teamcard' + (slot === S.league.slot ? " me" : "") + '">' +
-      '<div class="tc-head"><b>' + esc(teamTitle(slot)) +
-        (slot === S.league.slot ? ' <span class="dimtext">(you)</span>' : "") + "</b>" +
-        '<span class="dimtext">' + team.length + " picks</span></div>" +
+      '<div class="tc-head">' +
+        '<input class="tc-name" type="text" autocomplete="off" data-name-slot="' + slot + '" ' +
+          'value="' + esc(((S.league.teamNames || [])[slot - 1] || "")) + '" ' +
+          'placeholder="' + (slot === S.league.slot ? "your team" : "team " + slot) + '">' +
+        '<span class="dimtext">' + (slot === S.league.slot ? "you \u00b7 " : "") +
+          team.length + "</span></div>" +
       (body || '<div class="dimtext" style="font-size:12px">nothing recorded</div>') +
     "</div>";
   }).join("") + "</div>";
+}
+
+/** Names save as they are typed — there is no reason to make this a form. */
+function wireTeamNameInputs() {
+  $$("#leagueBody .tc-name").forEach(function (el) {
+    var commit = function () {
+      var names = S.league.teamNames || [];
+      names[+el.dataset.nameSlot - 1] = el.value.trim();
+      S.league.teamNames = names;
+      save(); render();
+      $("#nameSaved").textContent = " Saved.";
+      clearTimeout(el._t);
+      el._t = setTimeout(function () { $("#nameSaved").textContent = ""; }, 1500);
+    };
+    el.addEventListener("change", commit);
+    el.addEventListener("blur", commit);
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter") el.blur(); });
+  });
 }
 
 $("#btnLeague").addEventListener("click", function () { renderLeague(); openModal("#leagueModal"); });

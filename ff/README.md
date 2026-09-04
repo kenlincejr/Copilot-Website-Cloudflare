@@ -57,9 +57,31 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Start draft, and the tracker
+
+`Start draft` opens a panel at the top of the middle column and is the thing to
+work from once the draft is running. In one place: the round and pick, who is on
+the clock, the next three on deck, your next pick with how many away and roughly
+how long that is on your league's clock, the last six picks with the team that
+made them — and, most importantly, a box to record the pick that is happening
+right now.
+
+That box takes partial names ("bijan", "chase") and matches against what is
+actually still available, so it cannot put an already-drafted player back on a
+roster. Whatever you type goes to whoever is on the clock. **Didn't catch it**
+records an unknown pick: the slot is spent, the player stays available, and the
+board's pick count stays level with the real draft, which matters more than the
+name.
+
+Underneath, it says whether the board is in step with the live pick number, and
+offers catch-up when it isn't.
+
 ## The league, not just your team
 
-Team names go in at setup and replace "team 7" everywhere — ticker, status strip,
+Team names are edited **in the Rosters view** — click any card's title and type;
+it saves as you go. (They are also in League setup, under "Who else is in the
+league", but the roster cards are where people look for them.) They replace
+"team 7" everywhere — ticker, status strip,
 draft log, catch-up sheet, the row action button, and the report. **Rosters**
 shows all twelve at once, grouped by position with bye weeks, or one at a time.
 
