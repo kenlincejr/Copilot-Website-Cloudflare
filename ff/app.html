@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904at">
+<link rel="stylesheet" href="assets/ff.css?v=20260904au">
 </head>
 <body>
 
@@ -489,14 +489,31 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904at"></script>
-<script src="data/players.js?v=20260904at"></script>
-<script src="assets/presets.js?v=20260904at"></script>
-<script src="assets/engine.js?v=20260904at"></script>
-<script src="assets/auth.js?v=20260904at"></script>
-<script src="assets/parser.js?v=20260904at"></script>
-<script src="assets/draftanalysis.js?v=20260904at"></script>
-<script src="assets/strategies.js?v=20260904at"></script>
-<script src="assets/app.js?v=20260904at"></script>
+<script src="assets/config.js?v=20260904au"></script>
+<script src="data/players.js?v=20260904au"></script>
+<script src="assets/presets.js?v=20260904au"></script>
+<script src="assets/engine.js?v=20260904au"></script>
+<script src="assets/auth.js?v=20260904au"></script>
+<script src="assets/sync.js?v=20260904au"></script>
+<script src="assets/parser.js?v=20260904au"></script>
+<script src="assets/draftanalysis.js?v=20260904au"></script>
+<script src="assets/strategies.js?v=20260904au"></script>
+<script>
+/* app.js reads localStorage synchronously the moment it parses, so the account's
+   saved draft has to be in there before it loads. hydrate() always resolves —
+   if the server is unreachable the board opens on whatever this device has. */
+(function () {
+  var boot = function () {
+    var s = document.createElement("script");
+    s.src = "assets/app.js?v=20260904au";
+    document.body.appendChild(s);
+  };
+  if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }
+  DRAFTLINE_SYNC.hydrate().then(function (r) {
+    globalThis.DRAFTLINE_HYDRATION = r;
+    boot();
+  }, boot);
+})();
+</script>
 </body>
 </html>

@@ -21,6 +21,8 @@
  * Secret:  npx wrangler secret put ANTHROPIC_API_KEY
  */
 
+import { handleAccounts } from "./accounts.js";
+
 const ALLOWED_ORIGINS = [
   "https://copilotplaybook.com",
   "https://lincezone.com",
@@ -69,8 +71,8 @@ const DAILY_BUDGET_USD = 50.0;  // across everyone, resets at UTC midnight
 function corsHeaders(origin) {
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+    "Access-Control-Allow-Headers": "content-type, authorization",
     "Access-Control-Max-Age": "86400",
     "Vary": "Origin",
   };
@@ -94,6 +96,14 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders(allowed ? origin : "null") });
     }
     if (!allowed) return json({ error: { message: "Origin not allowed." } }, 403, "null");
+
+    // Accounts and saved drafts live under /api/. The Claude proxy stays on the
+    // bare root, where every already-deployed copy of the page posts to it.
+    const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
+    if (path.startsWith("/api/")) {
+      return handleAccounts(request, env, path, (body, status) => json(body, status, origin));
+    }
+
     if (request.method !== "POST") {
       return json({ error: { message: "POST only." } }, 405, origin);
     }

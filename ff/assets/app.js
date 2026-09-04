@@ -3,6 +3,7 @@
 "use strict";
 
 var E = DRAFTLINE_ENGINE, PRESETS = DRAFTLINE_PRESETS, DATA = DRAFTLINE_DATA, AUTH = DRAFTLINE_AUTH;
+var SYNC = globalThis.DRAFTLINE_SYNC || null;
 var STRATS = globalThis.DRAFTLINE_STRATEGIES, KNOBS = globalThis.DRAFTLINE_KNOB_SPEC;
 var $  = function (s) { return document.querySelector(s); };
 var $$ = function (s, root) {
@@ -93,19 +94,29 @@ function defaultLeague() {
 var S = load() || { league: defaultLeague(), picks: [] };
 
 function load() {
-  try { var raw = localStorage.getItem(KEY_STATE); return raw ? JSON.parse(raw) : null; }
+  try {
+    var raw = localStorage.getItem(KEY_STATE);
+    var o = raw ? JSON.parse(raw) : null;
+    // Every number on the board is computed from the league, so a saved draft
+    // without one is not a draft. Start fresh rather than take an undefined
+    // into the first render and die there.
+    if (!o || !o.league || !o.league.teams || !Array.isArray(o.picks)) return null;
+    return o;
+  }
   catch (e) { return null; }
 }
 function save() {
-  try {
-    localStorage.setItem(KEY_STATE, JSON.stringify({
-      league: S.league, picks: S.picks,
-      draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
-      paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated,
-      reportShown: S.reportShown
-    }));
-  }
+  var raw = JSON.stringify({
+    league: S.league, picks: S.picks,
+    draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
+    paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated,
+    reportShown: S.reportShown
+  });
+  try { localStorage.setItem(KEY_STATE, raw); }
   catch (e) { flash("#dataMsg", "Couldn't autosave — local storage is full or blocked.", true); }
+  // Local first, always: the pick is recorded before anything touches the
+  // network. SYNC debounces and swallows its own failures.
+  if (SYNC) SYNC.push(raw);
 }
 
 /* --------------------------------------------------------- draft plumbing */
@@ -3039,7 +3050,13 @@ document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
   if (e.key === "/" && document.activeElement !== $("#search")) { e.preventDefault(); $("#search").focus(); }
 });
-$("#btnOut").addEventListener("click", function () { AUTH.logout(); location.href = "index.html"; });
+$("#btnOut").addEventListener("click", function () {
+  // Get the last autosave up to the account before dropping the token that
+  // would let us send it.
+  if (SYNC) SYNC.flushNow();
+  AUTH.logout();
+  location.href = "index.html";
+});
 
 function flash(sel, msg, isErr) {
   var el = $(sel); if (!el) return;
@@ -4006,7 +4023,99 @@ function checkForUpdate() {
     .catch(function () { /* offline is the normal case at draft time */ });
 }
 
+/**
+ * What the account did to this board on the way in, and what to do when two
+ * devices disagree. Everything here is a statement of fact plus, where there is
+ * a real choice, the two buttons that make it — a draft is the wrong moment to
+ * be guessing which version somebody meant.
+ */
+function syncBanner(html, tone) {
+  var old = $("#syncBar");
+  if (old) old.remove();
+  var el = document.createElement("div");
+  el.id = "syncBar";
+  el.className = "statusbar " + (tone || "soon");
+  el.innerHTML = html;
+  $("#statusBar").insertAdjacentElement("afterend", el);
+  return el;
+}
+
+function whenAgo(ts) {
+  if (!ts) return "";
+  var mins = Math.round((Date.now() - ts) / 60000);
+  if (mins < 1) return " just now";
+  if (mins < 60) return " " + mins + " minute" + (mins === 1 ? "" : "s") + " ago";
+  var hrs = Math.round(mins / 60);
+  if (hrs < 24) return " " + hrs + " hour" + (hrs === 1 ? "" : "s") + " ago";
+  return " on " + new Date(ts).toLocaleDateString();
+}
+
+function offerConflict(info) {
+  var from = info.device ? "on " + esc(info.device) : "on another device";
+  syncBanner(
+    "<span>This draft was also changed " + from + whenAgo(info.at) +
+    ". Two versions exist and only one can win — nothing has been overwritten yet." +
+    "</span><span class='grow'></span>" +
+    '<button class="btn btn-sm" id="takeTheirs">Use that one</button>' +
+    '<button class="btn btn-sm btn-primary" id="takeMine">Keep this one</button>', "drift");
+
+  $("#takeTheirs").onclick = function () {
+    SYNC.resolve("theirs").then(function () { location.reload(); });
+  };
+  $("#takeMine").onclick = function () {
+    $("#takeMine").disabled = $("#takeTheirs").disabled = true;
+    SYNC.resolve("mine").then(function () {
+      syncBanner("<span>Kept this device's draft. The account now matches what is on screen.</span>");
+      setTimeout(function () { var b = $("#syncBar"); if (b) b.remove(); }, 6000);
+    });
+  };
+}
+
+function initSync() {
+  if (!SYNC) return;
+  var h = globalThis.DRAFTLINE_HYDRATION || {};
+
+  if (h.broughtOver) {
+    syncBanner("<span>Your existing draft on this device is now saved to your account, " +
+      "so it will be there on any other device you sign in from.</span>");
+    setTimeout(function () { var b = $("#syncBar"); if (b) b.remove(); }, 10000);
+  } else if (h.mode === "adopted") {
+    syncBanner("<span>Loaded the draft saved to your account" +
+      (h.from ? " from " + esc(h.from) : "") + whenAgo(h.at) + ".</span>");
+    setTimeout(function () { var b = $("#syncBar"); if (b) b.remove(); }, 8000);
+  } else if (h.mode === "conflict") {
+    offerConflict(SYNC.conflict() || h);
+  } else if (h.mode === "offline") {
+    syncBanner("<span>Working offline — the board is running on this device's copy and " +
+      "will sync to your account when the connection is back.</span>", "soon");
+  }
+
+  SYNC.onNotice = function (kind, info) {
+    if (kind === "offline") {
+      // Say it once and leave it up. Picks are still being recorded; what has
+      // stopped is the copy going to the account, and that is worth knowing
+      // before you pick up a different device.
+      if (!$("#syncBar") || !$("#syncBar").dataset.offline) {
+        syncBanner("<span>Can't reach your account right now — every pick is still being " +
+          "saved on this device, and they'll go up as soon as the connection is back.</span>",
+          "soon").dataset.offline = "1";
+      }
+    }
+    else if (kind === "saved") {
+      var b = $("#syncBar");
+      if (b && b.dataset.offline) b.remove();
+    }
+    else if (kind === "conflict") offerConflict(info);
+    else if (kind === "signedout") {
+      syncBanner("<span>Your sign-in expired, so nothing is being saved to your account. " +
+        "This device's copy is intact." + "</span><span class='grow'></span>" +
+        '<a class="btn btn-sm btn-primary" href="index.html">Sign in again</a>', "drift");
+    }
+  };
+}
+
 syncKeepers();
+initSync();
 if (S.league.pickSeconds) $("#pickSecs").value = S.league.pickSeconds;
 render();
 tickClock();

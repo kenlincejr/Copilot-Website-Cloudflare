@@ -1,8 +1,9 @@
 # Draftline — `/ff/`
 
 A fantasy draft assistant that re-scores every projection through the user's actual
-league rules and drafts off the result. Static files only: no server, no build step,
-no network calls during a draft.
+league rules and drafts off the result. No build step: the board is static files that
+run in the browser, and a small Cloudflare Worker behind them holds accounts, the saved
+draft, and the shared Claude key. Nothing about a pick waits on the network.
 
 Lives at `copilotplaybook.com/ff/` (and `lincezone.com/ff/`, same repo root).
 Excluded from `robots.txt` and carries `noindex` — it is not part of the
@@ -10,23 +11,27 @@ partner-facing site and is not linked from it.
 
 ```
 ff/
-  index.html          landing page + profile sign-in
+  index.html          landing page + account sign-in
   app.html            draft room
   assets/
     ff.css            dark instrument-panel styles (own system; not DESIGN.md's)
     engine.js         scoring + draft math. Pure functions, no DOM, no network.
     presets.js        scoring rule sets. Scoring is data, not code.
-    auth.js           device-local profiles (PBKDF2 hash in localStorage)
+    auth.js           account client: sign in/up against the Worker, hold the session
+    sync.js           pulls the account's saved draft in, pushes autosaves back
     parser.js         league-settings paste parser
     app.js            draft room UI
     config.js         deployment config (the Claude proxy URL)
-  worker/             Cloudflare Worker holding the shared Anthropic key
+  worker/             Cloudflare Worker: accounts, saved drafts, shared Anthropic key
+    src/index.js      routing, the Claude proxy and its limits
+    src/accounts.js   signup/login/session/state over KV
   data/
     players.js        267 players: ADP layer + projections + annotations, baked
   tools/
     bake-players.py   rebuilds data/players.js
     test-engine.js    31 assertions against independently-derived numbers
     test-parser.js    112 assertions against a real Yahoo settings page
+    test-accounts.sh  26 assertions against a local `wrangler dev`
     fixtures/         verbatim capture of that page
     players.json      the research board (input to the bake)
 ```
@@ -55,16 +60,37 @@ So the page sells the whole product now, in four moves:
 **Sign in vs. create is a segmented control, not a corner link.** The old panel put
 "Create a profile" as a small text link in the header, which is the one control a
 first-time visitor needs and the least visible thing in the box. Both are buttons of
-equal weight now, the page opens on whichever is right (create when the browser holds no
-profiles), and each mode carries a one-line explanation of what it is about to do.
+equal weight now, the page opens on whichever is right (create when this device has no
+remembered names), and each mode carries a one-line explanation of what it is about to do.
 
 ## Design decisions worth knowing
 
-**No accounts, and the UI says so.** GitHub Pages / Cloudflare Pages serves static
-files; there is nowhere to put a user table. A "profile" is a localStorage record
-whose password is stored as a PBKDF2-SHA256 hash with a random salt. It gates the
-profile on that device and nothing more. All state is namespaced under a
-`profileId` so a real backend can be added later without a migration.
+**Accounts are real, and the draft follows them.** This used to be a localStorage
+record per browser, which meant a name and password made on a laptop did not exist
+on a phone — and signing in from the phone answered "No profile with that name on
+this device." That sentence was true and useless. Accounts now live in the Worker's
+`USERS` KV namespace; the password is hashed there with PBKDF2-SHA256 at 100k
+iterations and a per-account salt, and the browser keeps only a session token.
+100k is not a preference — it is the ceiling the Workers runtime enforces, and
+`wrangler dev --local` does not enforce it, so a higher number passes every local
+test and then throws on the deployed Worker.
+
+There is deliberately no email on file, so there is **no password reset and no
+recovery** — the sign-in panel says so before you commit to one.
+
+**Local is still the source of truth while you draft.** `sync.js` does not replace
+localStorage, it feeds it. `hydrate()` runs once in `app.html` *before* `app.js` is
+loaded and makes localStorage agree with the account; `save()` writes locally first
+and then hands the same JSON to a debounced `push()`. So a pick is recorded and the
+board re-rendered without waiting on a request, and an unreachable server means the
+board opens on whatever this device already had.
+
+Writes carry the revision they were editing. If the server has moved past it, two
+devices hold two different drafts and the app says so and offers the choice rather
+than picking a winner — the one thing you cannot do at 8pm on draft night is
+silently throw away somebody's picks. Failed pushes back off and retry, and also
+retry on `online` and when the tab comes back to the foreground, because a
+backgrounded tab has its timers throttled to about once a minute.
 
 **Projections are baked, never fetched at draft time.** `data/players.js` is a
 plain `<script>` assigning a global, so the app also runs from `file://` with the
@@ -831,3 +857,20 @@ npx wrangler secret put ANTHROPIC_API_KEY   # interactive; never in the repo
 The key is a Cloudflare secret. It is not in this repo, not in `wrangler.jsonc`,
 and not readable from the deployed page. Watch spend with `npx wrangler tail`, and
 change the ceilings at the top of `worker/src/index.js`.
+
+### Accounts on the same Worker
+
+`src/accounts.js` serves everything under `/api/`; the Claude proxy keeps the bare
+root, so a browser still running an older build of the page is unaffected. It needs
+the `USERS` KV namespace already bound in `wrangler.jsonc` — a namespace separate
+from `LIMITS` on purpose, because clearing rate-limit counters is a reasonable thing
+to do and must not be able to take the accounts with it.
+
+Adding an origin to `ALLOWED_ORIGINS` is what lets a new domain sign in at all.
+
+To exercise it end to end against a local Worker:
+
+```bash
+cd ff/worker && npx wrangler dev --port 8787 --local
+bash ../tools/test-accounts.sh
+```

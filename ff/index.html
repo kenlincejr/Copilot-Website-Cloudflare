@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — a draft room that does the math while the clock runs</title>
-<meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, models the other eleven teams, rehearses the night before it happens, and runs entirely in your browser.">
-<link rel="stylesheet" href="assets/ff.css?v=20260904at">
+<meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, models the other eleven teams, rehearses the night before it happens, and runs in your browser.">
+<link rel="stylesheet" href="assets/ff.css?v=20260904au">
 </head>
 <body>
 
@@ -37,14 +37,14 @@
     <div class="panel" id="signin">
       <div class="seg" id="authSeg">
         <button type="button" id="tabLogin" class="on">Sign in</button>
-        <button type="button" id="tabCreate">Create a profile</button>
+        <button type="button" id="tabCreate">Create an account</button>
       </div>
 
       <div id="authBody">
         <p class="dimtext" id="authIntro" style="font-size:12.5px;margin:-4px 0 14px"></p>
 
         <div class="field">
-          <label for="authName">Profile name</label>
+          <label for="authName">Account name</label>
           <input type="text" id="authName" autocomplete="username" placeholder="Ken">
         </div>
         <div class="field">
@@ -65,10 +65,10 @@
         <div class="mt" id="profileList"></div>
 
         <p class="dimtext mt mb0" style="font-size:11.5px;line-height:1.55">
-          There is no server behind this page and no account to make. A profile is a place in
-          <em>this browser</em> to keep your draft, and the password only locks it on
-          <em>this device</em> — a lock on a drawer, not a bank vault. Clearing site data
-          deletes it, and the app has an export button for keeping a copy.
+          The account lives on Draftline's server, so the same name and password work from
+          any device and your draft follows you between them. There is no email on file,
+          which means there is <em>no password reset</em> — write it down. The board itself
+          still runs entirely in this browser and keeps working if the connection drops.
         </p>
       </div>
     </div>
@@ -79,7 +79,7 @@
   <section class="sec" id="what">
     <span class="eyebrow">Draft night, start to finish</span>
     <h2>Set it up once, then just call out picks.</h2>
-    <p class="sec-lede">Nothing to install, nothing to sign up for, and no network call once you are drafting.</p>
+    <p class="sec-lede">Nothing to install, one account that works on every device, and a board that keeps drafting if the network drops.</p>
     <div class="steps" style="margin-top:26px">
       <div class="step">
         <h3>Paste your league settings</h3>
@@ -184,7 +184,7 @@
   <section class="sec">
     <div class="cta">
       <h2>It takes about a minute to set up.</h2>
-      <p>Make a profile, paste your league settings, and run a practice draft tonight so
+      <p>Make an account, paste your league settings, and run a practice draft tonight so
          nothing about the interface is new on the night that counts.</p>
       <a href="#signin" class="btn btn-primary">Start a draft</a>
     </div>
@@ -197,10 +197,11 @@
   </div>
 </div>
 
-<script src="data/players.js?v=20260904at"></script>
-<script src="assets/presets.js?v=20260904at"></script>
-<script src="assets/engine.js?v=20260904at"></script>
-<script src="assets/auth.js?v=20260904at"></script>
+<script src="assets/config.js?v=20260904au"></script>
+<script src="data/players.js?v=20260904au"></script>
+<script src="assets/presets.js?v=20260904au"></script>
+<script src="assets/engine.js?v=20260904au"></script>
+<script src="assets/auth.js?v=20260904au"></script>
 <script>
 (function () {
   "use strict";
@@ -264,9 +265,9 @@
   if (!A.storageWorks()) {
     $("authSeg").classList.add("hidden");
     $("authBody").innerHTML =
-      '<div class="note err">This browser is blocking local storage, which is the only place ' +
-      'Draftline can keep a profile or a draft. Turn off private browsing or allow site data ' +
-      'for this page, then reload.</div>';
+      '<div class="note err">This browser is blocking local storage, which is where Draftline ' +
+      'holds your sign-in and the draft in progress. Turn off private browsing or allow site ' +
+      'data for this page, then reload.</div>';
     return;
   }
 
@@ -275,13 +276,13 @@
     var creating = m === "create";
     $("tabLogin").classList.toggle("on", !creating);
     $("tabCreate").classList.toggle("on", creating);
-    $("authGo").textContent = creating ? "Create profile & start drafting" : "Sign in";
+    $("authGo").textContent = creating ? "Create account & start drafting" : "Sign in";
     $("authIntro").textContent = creating
-      ? "Pick any name and any password. It takes ten seconds, and nothing leaves this device."
-      : "Welcome back. This unlocks the profile saved in this browser.";
+      ? "Pick any name and any password. It takes ten seconds, and it works on every device you draft from."
+      : "Welcome back. Sign in from any device and your draft comes with you.";
     $("confirmField").classList.toggle("hidden", !creating);
     $("passHint").textContent = creating
-      ? "Any 4+ characters. Use Show to check it before you commit — there is no reset."
+      ? "Six characters or more. Use Show to check it before you commit — there is no reset."
       : "";
     $("authPass").setAttribute("autocomplete", creating ? "new-password" : "current-password");
     hideErr();
@@ -315,7 +316,7 @@
   if (profiles.length) {
     setMode("login");
     $("profileList").innerHTML =
-      '<div class="eyebrow" style="margin-bottom:6px">Profiles in this browser</div>' +
+      '<div class="eyebrow" style="margin-bottom:6px">Used on this device</div>' +
       profiles.map(function (p) {
         return '<span class="pill" data-name="' + esc(p.name) + '">' + esc(p.name) + "</span>";
       }).join(" ");
