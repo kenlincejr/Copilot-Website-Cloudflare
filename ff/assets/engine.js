@@ -131,6 +131,18 @@
 
   var FLEX_SPLIT = { RB: 0.55, WR: 0.40, TE: 0.05 };
 
+  /** Weeks a season's projection is spread across, for reading a gain per week. */
+  var SEASON_WEEKS = 17;
+
+  /**
+   * How much of the wait-cost rides on top of value. Value already says what a
+   * player is worth to this roster; VONA says how much of that worth you keep by
+   * taking him now rather than at your next pick. Adding it whole counted the
+   * same worth twice — before any other term was reached, a scarce player's
+   * score was close to double a plentiful one's — so it enters as a tilt on a
+   * number that already stands on its own.
+   */
+  var VONA_WEIGHT = 0.5;
 
   /**
    * Fisher's optimal 1-D clustering. Partitions `list` (already sorted by points,
@@ -413,7 +425,13 @@
     var flexEl2 = (ctx.rules.roster.flexEligible || ["RB", "WR", "TE"]);
     var lineupSpots = (ctx.rules.roster[player.pos] || 0) +
       (flexEl2.indexOf(player.pos) >= 0 ? (ctx.rules.roster.FLEX || 0) : 0);
-    var benchDepth = Math.max(0, need.have - Math.max(1, need.starters || 0));
+    // Depth is counted against doors into the lineup, not against starting
+    // slots. A backup reaches the field through injury, bye or the flex, and the
+    // number of those doors is roster[pos] plus the flex if he is eligible for
+    // it. Counting starters instead put the *first* unstartable body at every
+    // position — the second quarterback in a one-QB league — at the same weight
+    // as a starter, and only began discounting at the third.
+    var benchDepth = Math.max(0, need.have - lineupSpots + 1);
     var benchWeight = (player.pos === "K" || player.pos === "DEF"
       ? 0.04 : Math.min(0.45, 0.14 * lineupSpots)) * Math.pow(0.55, benchDepth);
     var valueOf = function (pts, marg) {
@@ -441,7 +459,15 @@
           : laterPts - replPts;
         vcache[vkey] = valueOf(laterPts, laterMarg);
       }
-      vona = Math.max(0, value - vcache[vkey]);
+      // What waiting actually costs, and nothing more. Two clamps make it that.
+      // The later body's value is floored at zero first: when everything left at
+      // the position is below what your own lineup already fields, waiting costs
+      // you nothing, and a negative later-value turned "there is nothing left
+      // worth having" into an urgency bonus. Capping at `value` then keeps the
+      // term a difference between two players rather than a second copy of the
+      // first — the failure that let a quarterback outscore the whole board one
+      // pick after a quarterback was drafted.
+      vona = Math.max(0, Math.min(value, value - Math.max(0, vcache[vkey])));
     }
 
     // Need is carried by the value term now, so all that is left in the
@@ -532,7 +558,7 @@
     // late running backs *down* and Zero RB was pulling them *up*. Applying the
     // multiplier as a signed shift against the magnitude is identical arithmetic
     // wherever the old form was right, and correct where it was not.
-    var raw = value + vona;
+    var raw = value + VONA_WEIGHT * vona;
     var base = raw + (mult - 1) * Math.abs(raw);
     var score = base + ceilingAdj - riskAdj - byePenalty - tagPenalty + bonus;
     if (blocked) score -= 1000;
@@ -541,8 +567,16 @@
     if (ctx.myPlayers && aware > 0.5 && marginal <= 0.5)
       reasons.push("can't crack your starting lineup — depth only");
     else if (need.short > 0.9) reasons.push("fills an empty " + player.pos + " slot");
-    else if (marginal > 0.5 && need.have >= (need.starters || 0) && need.starters > 0)
-      reasons.push("upgrades your starting " + player.pos);
+    else if (marginal > 0.5 && need.have >= (need.starters || 0) && need.starters > 0) {
+      // Season totals flatter a narrow upgrade. Eight points reads like a
+      // headline and is half a point a Sunday, so say it in the unit that
+      // decides the pick — and when it is that small, say what it costs too.
+      var perWeek = Math.round(marginal / SEASON_WEEKS * 10) / 10;
+      reasons.push(perWeek >= 1.5
+        ? "upgrades your starting " + player.pos + " by " + perWeek + " pts a week"
+        : "upgrades your starting " + player.pos + " by only " + perWeek +
+          " pts a week, and benches the " + player.pos + " you have");
+    }
     if (vona > 8) reasons.push("+" + Math.round(vona) + " over what's likely left at pick " + ctx.nextPick);
     // A player who cannot start is not adding anything "to your lineup", and
     // saying so directly under "can't crack your starting lineup" was the board

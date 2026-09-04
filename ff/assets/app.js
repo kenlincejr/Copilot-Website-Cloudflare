@@ -101,7 +101,8 @@ function save() {
     localStorage.setItem(KEY_STATE, JSON.stringify({
       league: S.league, picks: S.picks,
       draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
-      paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated
+      paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated,
+      reportShown: S.reportShown
     }));
   }
   catch (e) { flash("#dataMsg", "Couldn't autosave — local storage is full or blocked.", true); }
@@ -392,6 +393,27 @@ function render() {
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner(); renderTracker();
   if (view.selected) renderDetail(view.selected);
+  maybeOpenReport(total);
+}
+
+/**
+ * The report is the best thing in here and it sat behind a button nobody had a
+ * reason to press once the drafting was over. So the last pick opens it.
+ *
+ * Once, and only on a draft that actually ran out of picks — a stopped draft is
+ * one you mean to resume, and reopening the report on every reload of a finished
+ * one is a modal in the way rather than a feature. The flag rides in the saved
+ * state so it survives a reload, and resetting the draft clears it along with
+ * everything else.
+ */
+function maybeOpenReport(total) {
+  if (A.cur <= total || S.reportShown || S.draftEnded) return;
+  S.reportShown = true; save();
+  // A beat, so the final pick registers on the board before the report covers
+  // it — landing straight on a modal reads as a glitch rather than an ending.
+  setTimeout(function () {
+    if (A.cur > S.league.teams * S.league.rounds) $("#btnReport").click();
+  }, 700);
 }
 
 /* --------------------------------------------------- draft status + sync */
@@ -947,6 +969,7 @@ function resetDraft() {
   S.pausedAt = null;
   S.pickStartedAt = null;
   S.simulated = false;
+  S.reportShown = false;          // a fresh draft earns its ending again
   view.selected = null;
   view.rosterSlot = null;
   briefCache = {};
@@ -3503,7 +3526,18 @@ function teamsAhead() {
 
 /** Everything Claude sees. Numbers only — it never re-derives the scoring. */
 function claudeContext() {
-  var top = A.avail.slice().sort(function (a, b) { return b.comp - a.comp; }).slice(0, 12);
+  // Draw from the same pool the recommendation cards draw from, on the same two
+  // conditions. A player the board caps out has no Draft button anywhere, so
+  // naming him only sends the reader hunting for a control that does not exist.
+  // And the brief is written up to `lead` picks *before* the clock reaches you:
+  // handing over the raw top of the board meant handing over players the teams
+  // in between were about to take, so the advice arrived naming somebody already
+  // gone. Ask instead for the top of the board that is likely to still be there.
+  var waiting = A.myNext > A.cur;
+  var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); });
+  var live = waiting ? pool.filter(function (p) { return p.surv >= 0.25; }) : pool;
+  if (live.length < 6) live = pool;             // late enough that nothing is safe
+  var top = live.sort(function (a, b) { return b.comp - a.comp; }).slice(0, 12);
   var lines = top.map(function (p) {
     var extra = [];
     if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);
@@ -3538,7 +3572,15 @@ function claudeContext() {
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
       (extra.length ? ", " + extra.join(", ") : "") +
-      ", ADP " + p.adp + ", chance he is still there at my FOLLOWING pick (" +
+      ", ADP " + p.adp +
+      // Two horizons, and conflating them is what produced advice like "only a
+      // 5% chance he lasts, so take him now" about a player who would not last
+      // to "now" either. The first number is whether he reaches the pick this
+      // brief is written for; the second is whether he would keep until the one
+      // after it, which is the question a fallback plan turns on.
+      (waiting ? ", chance he reaches the pick I am writing about (" + A.myNext +
+        ") is " + Math.round(p.surv * 100) + "%" : "") +
+      ", chance he is still there at my FOLLOWING pick (" +
       (A.myAfter || A.myNext) + ") is " +
       Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
       (p.tag ? ", flagged " + tagLabel(p.tag) +
@@ -3577,7 +3619,14 @@ function claudeContext() {
         ? " — " + STRATS[S.league.style || "balanced"].tagline : "") +
       ". The scores below already have it applied. Say when a pick is only on top " +
       "because of the style, and say so too when the style is steering me wrong here.",
-    "TOP AVAILABLE BY THE BOARD'S OWN SCORE:\n" + lines
+    (waiting
+      ? "LIKELY AVAILABLE WHEN MY TURN COMES, BY THE BOARD'S OWN SCORE. Every " +
+        "player here has a real chance of reaching pick " + A.myNext + "; the ones " +
+        "the teams in between will almost certainly take are already removed. Name " +
+        "a player from this list and nobody else."
+      : "AVAILABLE RIGHT NOW, BY THE BOARD'S OWN SCORE. I am on the clock, so " +
+        "every player here is takeable this second. Name a player from this list " +
+        "and nobody else.") + "\n" + lines
   ].filter(Boolean).join("\n\n");
 }
 function scoringHighlights() {
@@ -3714,20 +3763,23 @@ var briefCache = {};   // reassigned wholesale by resetDraft
 var briefTries = {};   // re-asks per pick, so a bad answer cannot bill in a loop
 
 /**
- * Which player a brief is telling you to take. The prompt asks for the name
- * alone on the first line, but it is a sentence generator, so match against the
- * board rather than trusting the line to be nothing but a name.
+ * The player named in a line of a brief. The prompt asks for the name alone on
+ * its own line, but it is a sentence generator, so match against the board
+ * rather than trusting the line to be nothing but a name. Longest name wins, so
+ * a surname sitting inside a longer name cannot steal the match.
  */
-function briefPlayer(text) {
-  var head = (text || "").split("\n")[0].trim();
-  if (!head) return null;
-  if (A.byName[head]) return A.byName[head];
+function playerIn(line) {
+  var s = (line || "").trim();
+  if (!s) return null;
+  if (A.byName[s]) return A.byName[s];
   var hit = null;
   A.all.forEach(function (p) {
-    if (head.indexOf(p.name) >= 0 && (!hit || p.name.length > hit.name.length)) hit = p;
+    if (s.indexOf(p.name) >= 0 && (!hit || p.name.length > hit.name.length)) hit = p;
   });
   return hit;
 }
+
+function briefPlayer(text) { return playerIn((text || "").split("\n")[0]); }
 
 /**
  * The brief is written up to `lead` picks before you are on the clock, and those
@@ -3819,18 +3871,90 @@ function renderBrief() {
   var lines = body.split("\n").filter(function (l) { return l.trim(); });
   var head = failed ? "" : lines.shift();
 
+  // The two players the brief actually tells you to take: its pick, and the
+  // fallback on the "If gone:" line. Both were prose and nothing else, so the
+  // advice arrived with no way to act on it — and because Claude chooses from
+  // the top twelve while the cards below show three, its pick is regularly on
+  // none of them. That left the reader searching the list for a name that is
+  // nowhere near the top of it.
+  var pick = failed ? null : briefPlayer(cached);
+  var alt = failed ? null : playerIn(lines.filter(function (l) {
+    return /^\s*if gone\s*:/i.test(l);
+  })[0]);
+  if (alt && pick && alt.name === pick.name) alt = null;
+
+  // A brief written on deck can be overtaken by the picks in between. It is
+  // re-asked when that happens, but only twice, so the third time the advice has
+  // to say plainly that it has been overtaken rather than leaving a
+  // recommendation on screen for a player who is off the board.
+  var gone = pick && pick.takenBy
+    ? esc(pick.name) + " went at pick " + pick.takenBy.pick +
+      (pick.takenBy.mine ? " — to you" : "") + ", after this was written." +
+      (alt ? " The fallback is still on the board." : "")
+    : "";
+
   el.innerHTML = '<div class="rec top' + (failed ? " brief-failed" : "") + '">' +
     '<div class="eyebrow" style="margin-bottom:6px">' + briefEyebrow() + "</div>" +
     (failed
       ? '<div class="claude-out">Claude is unavailable: ' + esc(body) +
         ' <span class="dimtext">The board below is unaffected.</span></div>'
-      : '<div class="rec-head"><span class="name">' + esc(head) + "</span></div>" +
-        '<div class="claude-out">' + esc(lines.join("\n")) + "</div>") +
-    '<div class="rec-actions"><button class="btn btn-sm btn-ghost" id="briefAgain">Ask again</button></div>' +
+      : (pick ? briefHeadHtml(pick)
+              : '<div class="rec-head"><span class="name">' + esc(head) + "</span></div>") +
+        '<div class="claude-out">' + esc(lines.join("\n")) + "</div>" +
+        (gone ? '<div class="banner">' + gone + "</div>" : "")) +
+    '<div class="rec-actions">' +
+      briefTakeHtml(pick, myTurn() ? "Draft" : "I drafted him", true) +
+      (alt ? briefTakeHtml(alt, (gone ? "Take " : "Fallback: ") + alt.name, !!gone) : "") +
+      (pick && !pick.takenBy
+        ? '<button class="btn btn-sm btn-ghost" data-bopen="' + esc(pick.name) + '">Why?</button>'
+        : "") +
+      '<button class="btn btn-sm btn-ghost" id="briefAgain">Ask again</button>' +
+    "</div>" +
   "</div>";
   $("#briefAgain").onclick = function () {
     delete briefCache[A.myNext]; briefTries[A.myNext] = 0; renderBrief();
   };
+  $$("#brief [data-btake]").forEach(function (b) {
+    b.onclick = function () { record(b.dataset.btake, true); };
+  });
+  $$("#brief [data-bopen]").forEach(function (b) {
+    b.onclick = function () {
+      view.selected = b.dataset.bopen; renderList(); renderDetail(b.dataset.bopen);
+    };
+  });
+}
+
+/** Where a player sits in the suggested order the board list is showing. */
+function briefRank(p) {
+  var order = A.avail.slice().sort(function (a, b) { return b.comp - a.comp; });
+  for (var i = 0; i < order.length; i++) if (order[i].name === p.name) return i + 1;
+  return 0;
+}
+
+/**
+ * The brief's head, built like a recommendation card's head — because that is
+ * what it is. The board rank is the honest part of it: Claude is handed the top
+ * twelve and invited to argue with the composite, so it will name a player the
+ * three cards below do not carry. Saying where he sits turns that from a
+ * contradiction the reader has to reconcile into a disagreement they can see.
+ */
+function briefHeadHtml(p) {
+  var r = briefRank(p);
+  return '<div class="rec-head">' +
+    '<span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
+    '<span class="name">' + esc(p.name) + "</span>" +
+    '<span class="rec-meta">' + esc(p.team) + " · bye " + p.bye +
+      (r ? " · board #" + r : "") + "</span>" +
+    tagBadge(p.tag) +
+  "</div>";
+}
+
+/** The button the advice was missing. Nothing to draft if he is already gone. */
+function briefTakeHtml(p, label, primary) {
+  if (!p || p.takenBy) return "";
+  return '<button class="btn btn-sm' + (primary ? " btn-primary" : "") +
+    (label.indexOf(p.name) >= 0 ? " btn-wide" : "") +
+    '" data-btake="' + esc(p.name) + '">' + esc(label) + "</button>";
 }
 
 /* ------------------------------------------------------------------- boot */

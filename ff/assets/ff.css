@@ -342,7 +342,15 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .knoblist .k-flat::before { content: "•"; color: var(--muted); }
 .bar { height: 4px; background: var(--raised); border-radius: 2px; overflow: hidden; }
 .bar > span { display: block; height: 100%; background: var(--teal); }
-.rec-actions { display: flex; gap: 6px; }
+/* Four buttons in a 210px column. Without wrapping, flex squeezed each one
+   until its own label broke across two or three lines, and a row of tall ragged
+   blocks is what you got. Let the row break between buttons instead, and hold
+   every label on one line — except the one that carries a player's name, which
+   is allowed to wrap on its own rather than dragging the whole row down with
+   it. */
+.rec-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+.rec-actions .btn { white-space: nowrap; }
+.rec-actions .btn-wide { white-space: normal; max-width: 100%; text-align: center; }
 
 /* The target cards. Three cards used to spend most of their height on a
    sentence that said "+108 over replacement (RB31)" once per card — the same

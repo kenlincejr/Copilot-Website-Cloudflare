@@ -335,6 +335,131 @@ function mockDraft(strategy, slot) {
       return a + (s.player ? s.player.pts : 0); }, 0)) + " pts");
 });
 
+console.log("\n== The board must not stack a position it is already full at ==");
+/* The bug these cover: at pick 62, one pick after taking Drake Maye (320) at
+   quarterback, the board's top recommendation was Lamar Jackson (328) — an
+   eight-point upgrade across a whole season, half a point a Sunday, bought with
+   a pick and a bench slot in a one-QB league. Two faults put him there. VONA was
+   added to value whole, so a player whose position had no comparable
+   replacement had his own worth counted a second time; and bench depth was
+   counted against starting slots rather than against doors into the lineup, so
+   the second quarterback in a one-QB league carried a starter's weight. */
+
+var R62 = ["Drake Maye", "James Cook III", "Derrick Henry", "Nico Collins",
+           "Jaylen Waddle", "Tyler Warren", "Saquon Barkley"].map(pick);
+var noQb = R62.filter(function (p) { return p.pos !== "QB"; });
+var lamar = pick("Lamar Jackson");
+
+// The complaint in one line: owning a quarterback has to make the next one
+// worth less. It is the whole point of scoring against your roster.
+var withQb = E.composite(lamar, ctxFor(R62, { round: 6, pick: 62, nextPick: 83 }));
+var withoutQb = E.composite(lamar, ctxFor(noQb, { round: 6, pick: 62, nextPick: 83 }));
+ok("a quarterback you already own makes the next one worth less",
+   withQb.score < withoutQb.score,
+   "full " + withQb.score.toFixed(1) + " vs empty slot " + withoutQb.score.toFixed(1));
+ok("and worth a lot less, not a rounding's worth",
+   withQb.score < withoutQb.score * 0.5,
+   withQb.score.toFixed(1) + " vs " + withoutQb.score.toFixed(1));
+
+/* VONA is the cost of waiting: value now, less value at your next pick. Added
+   to value it became a second copy of it, roughly doubling every score before
+   any other term was reached — and inverting outright where everything left at
+   a position was below what the roster already fielded, which turned "there is
+   nothing left worth having" into an urgency bonus. It is clamped at zero and
+   at value, so on a player worth nothing to you it contributes nothing. */
+var vonaBad = [], scanned = 0;
+[[R62, 6, 83], [noQb, 6, 83], [CORE, 10, 131], [[], 1, 24]].forEach(function (c) {
+  var ctx = ctxFor(c[0], { round: c[1], nextPick: c[2] });
+  var taken = {}; c[0].forEach(function (p) { taken[p.name] = 1; });
+  kenBoard.players.forEach(function (p) {
+    if (taken[p.name]) return;
+    scanned++;
+    var d = E.composite(p, ctx);
+    if (d.vona > Math.max(0, d.value) + 1e-9) vonaBad.push(p.name + " vona " +
+      d.vona.toFixed(1) + " > value " + d.value.toFixed(1));
+  });
+});
+ok("VONA never exceeds the value it is a difference of",
+   vonaBad.length === 0,
+   vonaBad.slice(0, 3).join("; ") || scanned + " scored across 4 rosters, clean");
+
+// Waiting cannot be the loudest thing in the score, least of all at a position
+// where everything left is below the starter the roster already fields.
+var qbLater = E.expectedBestAvailable(
+  kenBoard.players.filter(function (p) { return R62.indexOf(p) < 0; }), 83).QB.expected;
+ok("the QB likely left at the next pick is below the starter already rostered",
+   qbLater < pick("Drake Maye").pts,
+   "later " + Math.round(qbLater) + " vs Maye " + Math.round(pick("Drake Maye").pts));
+ok("so the wait-cost is not the largest term in the score",
+   withQb.score - withQb.value < withQb.value,
+   "wait-cost contributes " + (withQb.score - withQb.value).toFixed(1) +
+   " against value " + withQb.value.toFixed(1));
+
+console.log("\n== Bench depth is counted in doors into the lineup ==");
+/* A backup reaches the field through injury, bye or the flex, and the number of
+   those doors is the position's own starting slots plus the flex if he is
+   eligible for it: one at quarterback in a one-QB league, three at running
+   back. The old arithmetic counted starting slots, so the *first* unstartable
+   body at every position went in at a starter's weight and the discount only
+   began at the third. These lock the rule to the door count. */
+function benchFraction(player, mine) {
+  var d = E.composite(player, ctxFor(mine, { round: 8 }));
+  var beyond = (player.pts - kenBoard.replacement[player.pos].points) - d.marginal;
+  return beyond > 0.01 ? (d.value - d.marginal) / beyond : null;
+}
+function doorsFor(pos) {
+  var r = ken.roster;
+  return (r[pos] || 0) + (r.flexEligible.indexOf(pos) >= 0 ? (r.FLEX || 0) : 0);
+}
+[["QB", pick("Trevor Lawrence"), 1],       // 301, cannot beat Maye's 320
+ ["TE", pick("Kyle Pitts Sr."), 1],        // behind Tyler Warren, flex taken
+ ["RB", pick("Jaylen Warren"), 3]          // behind Cook, Henry and Barkley
+].forEach(function (c) {
+  var pos = c[0], player = c[1], have = c[2], doors = doorsFor(pos);
+  var want = Math.min(0.45, 0.14 * doors) * Math.pow(0.55, Math.max(0, have - doors + 1));
+  var got = benchFraction(player, R62);
+  near(pos + (have + 1) + " keeps the fraction his " + doors + " door" +
+       (doors === 1 ? "" : "s") + " earn (" + player.name + ")", got, want, 0.005);
+});
+
+// The regression itself: under the old starters-based rule the second
+// quarterback in a one-QB league kept the undiscounted 0.14, the same as a
+// starter. He must now keep strictly less.
+ok("the second quarterback is no longer priced like the first",
+   benchFraction(pick("Trevor Lawrence"), R62) < 0.14 - 1e-9,
+   "keeps " + benchFraction(pick("Trevor Lawrence"), R62).toFixed(3) + ", was 0.14");
+
+// The streaming positions were already special-cased at 0.04 and must stay
+// there: the fix moves the exponent, not the floor.
+var oneK = [kenBoard.byPos.K[0]], oneDef = [kenBoard.byPos.DEF[0]];
+ok("a backup kicker is still worth almost nothing",
+   Math.abs(E.composite(kenBoard.byPos.K[3], ctxFor(oneK, { round: 14 })).value) < 3,
+   E.composite(kenBoard.byPos.K[3], ctxFor(oneK, { round: 14 })).value.toFixed(2));
+ok("a backup defense is still worth almost nothing",
+   Math.abs(E.composite(kenBoard.byPos.DEF[3], ctxFor(oneDef, { round: 10 })).value) < 4,
+   E.composite(kenBoard.byPos.DEF[3], ctxFor(oneDef, { round: 10 })).value.toFixed(2));
+
+console.log("\n== The displacement accounting, so nobody 'fixes' it back ==");
+/* What survives of a displacing player's open-market worth is exactly the
+   surplus of the man he pushes out of the lineup — not a comparison against a
+   free agent, which is what a reading of the code once suggested. It is
+   asserted here because it looks like a bug and is not one: taking Lamar
+   converts Maye into bench insurance, and that insurance is what this term
+   prices. */
+var replQb = kenBoard.replacement.QB.points, floorQb = pick("Drake Maye").pts;
+near("a displacing player keeps exactly the displaced starter's surplus",
+     (lamar.pts - replQb) - withQb.marginal, floorQb - replQb, 0.5);
+
+console.log("\n== A narrow upgrade has to read as a narrow upgrade ==");
+var upgradeReason = withQb.reasons.filter(function (r) {
+  return r.indexOf("upgrades your starting") === 0;
+})[0] || "";
+ok("the upgrade is priced per week, not as a season total",
+   /pts a week/.test(upgradeReason), upgradeReason || "no upgrade reason at all");
+ok("and a half-point-a-week upgrade says what it costs",
+   /and benches the QB you have/.test(upgradeReason), upgradeReason);
+console.log("       " + (upgradeReason || "(none)"));
+
 console.log("\n== Top of the board in Ken's scoring ==");
 board.players.slice(0, 12).forEach(function (p, i) {
   console.log("   " + String(i + 1).padStart(2) + ". " + p.name.padEnd(24) +
