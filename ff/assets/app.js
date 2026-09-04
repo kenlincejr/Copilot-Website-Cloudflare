@@ -1339,7 +1339,7 @@ $("#reportAsk").addEventListener("click", function () {
     "PROGRESS: " + S.picks.length + " of " + (S.league.teams * S.league.rounds) + " picks.\n\n" +
     "STANDINGS BY PROJECTED STARTING LINEUP:\n" + table + "\n\n" +
     "MY ROSTER (I am " + mine.name + ", finished " + mine.rank + "):\n" + myRoster,
-    isLive() ? REPORT_SYSTEM : REPORT_SOLO_SYSTEM, 1800)
+    isLive() ? REPORT_SYSTEM : REPORT_SOLO_SYSTEM, 4000)
     .then(function (text) { out.querySelector(".claude-out").textContent = text; })
     .catch(function (err) {
       out.classList.add("err");
@@ -3284,8 +3284,10 @@ function claudePanes() {
   $("#claudeAsk").classList.toggle("hidden", !ready);
   $("#claudeModeNote").innerHTML = PROXY
     ? "Claude runs through this site's own proxy, so there is nothing for you to set up and no key to " +
-      "paste. The proxy pins the model and answer length, rate-limits per person, and stops for the day " +
-      "if the shared budget runs out — the draft board is unaffected either way."
+      "paste. Ask as much as you like — the proxy pins the model so nobody can order something " +
+      "expensive, and carries a daily stop set fifty times above what a whole draft night costs, " +
+      "which is there to catch a loop rather than to ration you. The draft board is unaffected " +
+      "either way."
     : "Optional; the draft board works fully without it. There is no server behind this page, so you " +
       "paste your own key. It stays in this browser's local storage and the request goes straight from " +
       "your machine to Anthropic. Haiku 4.5 answers cost a fraction of a cent each.";
@@ -3296,7 +3298,9 @@ function claudePanes() {
 function renderSpend() {
   var s = claudeCfg.spend || { calls: 0, in: 0, out: 0 };
   if (!s.calls) { $("#spendLine").textContent = "No questions asked yet this draft."; return; }
-  var usd = (s.in / 1e6) * 1.0 + (s.out / 1e6) * 5.0;
+  // Must match the prices the Worker pins, or the running total quietly lies.
+  var usd = PROXY ? (s.in / 1e6) * 2.0 + (s.out / 1e6) * 10.0
+                  : (s.in / 1e6) * 1.0 + (s.out / 1e6) * 5.0;
   $("#spendLine").textContent = s.calls + " question" + (s.calls === 1 ? "" : "s") + " so far · " +
     s.in.toLocaleString() + " in / " + s.out.toLocaleString() + " out · about $" + usd.toFixed(3) +
     (PROXY ? " against the shared budget" : " on your key") +
@@ -3505,7 +3509,7 @@ var SYSTEM =
 function claudeCall(question, systemOverride, maxTokens) {
   return claudeOnce(question, systemOverride, maxTokens).catch(function (err) {
     if (!err.emptyAnswer) throw err;
-    return claudeOnce(question, systemOverride, 2000);
+    return claudeOnce(question, systemOverride, Math.max(4000, (maxTokens || 0) * 2));
   });
 }
 
@@ -3513,7 +3517,7 @@ function claudeOnce(question, systemOverride, maxTokens) {
   var body = {
     system: systemOverride || SYSTEM,
     messages: [{ role: "user", content: question }],
-    max_tokens: maxTokens || 700
+    max_tokens: maxTokens || 2000
   };
   var url, headers = { "content-type": "application/json" };
 
@@ -3623,7 +3627,7 @@ function renderBrief() {
       'Claude · on deck for pick ' + A.myNext + '</div>' +
       '<div class="claude-out"><span class="spinner"></span> reading the board…</div></div>';
     var forPick = A.myNext;
-    claudeCall(briefQuestion(), null, 1400)
+    claudeCall(briefQuestion(), null, 2500)
       .then(function (text) { briefCache[forPick] = text; })
       .catch(function (err) { briefCache[forPick] = "!" + err.message; })
       .then(function () { if (A.myNext === forPick) renderBrief(); });

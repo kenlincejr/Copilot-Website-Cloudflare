@@ -756,9 +756,25 @@ money. The Worker bounds that rather than trusting the client:
 | Origin allowlist | Only the real pages can call it |
 | Model + `max_tokens` pinned server-side | A caller cannot ask for Opus at 64k |
 | Sonnet 5, not Haiku | Haiku 4.5 was measurably unreliable on this task — see below |
-| Per-IP rate limit (12/min) | Stops a single tab hammering it |
-| Daily budget ceiling ($2, all callers) | Hard stop; the board still works |
-| 24 KB body cap, last 4 messages only | Nobody can stuff the context window |
+| Per-IP rate limit (90/min) | Catches a loop, not a person |
+| Daily ceiling ($50, all callers) | The runaway stop; the board still works |
+| 96 KB body cap, last 8 messages only | Nobody can stuff the context window |
+
+**The limits are not a usage policy.** This is a private board shared with a
+dozen friends, and a limit a real draft night can reach is a limit that fires on
+the one evening the thing has to work. They sit where nobody using the app as
+intended will meet them: `max_tokens` defaults to 2000 and caps at 8000, so the
+prompt decides how long an answer is rather than the budget; ninety requests a
+minute from one address is a loop, not a person. A question costs about a cent
+and a whole draft night of briefs for twelve people is well under a dollar, so
+the $50 daily stop is fifty times a busy night. If it ever trips, something is
+wrong rather than popular.
+
+The ceiling stays, and stays deliberately. The key lives in the Worker, and the
+origin allowlist is a browser convention rather than a security boundary —
+anything that can make an HTTP request can claim any `Origin` it likes. The
+ceiling is the only control that still holds against something that is not a
+browser.
 
 **On the model choice.** The brief asks for reasoning across ~15 players with six
 numbers each while holding a pick schedule straight. Haiku 4.5 failed that

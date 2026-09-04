@@ -38,20 +38,33 @@ const ALLOWED_ORIGINS = [
 const MODEL = "claude-sonnet-5";
 
 // Sonnet 5 runs adaptive thinking by default and those tokens count against
-// max_tokens. At a flat 700 the draft report spent its entire budget reasoning
-// and came back with a thinking block and no text — so the client may ask for
-// more, within a ceiling it does not control.
-const MAX_TOKENS_DEFAULT = 700;
-const MAX_TOKENS_CAP = 2000;
+// max_tokens, so a budget tight enough to be economical is also tight enough to
+// come back as a thinking block with no answer in it. It did, repeatedly, at
+// 700. These are set to where they stop mattering: the model is never the thing
+// deciding how long an answer gets, the prompt is.
+const MAX_TOKENS_DEFAULT = 2000;
+const MAX_TOKENS_CAP = 8000;
 
 // Sonnet 5, USD per million tokens.
 const PRICE_IN = 2.0;
 const PRICE_OUT = 10.0;
 
-const MAX_BODY_BYTES = 24000;   // ~6k tokens of context, well past what we send
-const RATE_LIMIT = 12;          // requests per IP...
+/* These are not a usage policy. This is a private board shared with a dozen
+   friends, and a limit that a real draft night can reach is a limit that fires
+   on the one evening the thing has to work. They are set where nobody using the
+   app as intended will ever meet them.
+
+   The daily ceiling stays, and stays deliberately: the key lives in this Worker
+   and the origin allowlist below is a browser convention, not a security
+   boundary — anything that can make an HTTP request can claim any Origin it
+   likes. So the ceiling is not a budget, it is the stop on a runaway. At the
+   prices above a question costs about a cent; a whole draft night of briefs for
+   twelve people is well under a dollar, and this is fifty times that. If it
+   ever trips, something is wrong rather than popular. */
+const MAX_BODY_BYTES = 96000;   // the brief carries far more context than it did
+const RATE_LIMIT = 90;          // requests per IP...
 const RATE_WINDOW = 60;         // ...per this many seconds
-const DAILY_BUDGET_USD = 2.0;   // across everyone, resets at UTC midnight
+const DAILY_BUDGET_USD = 50.0;  // across everyone, resets at UTC midnight
 
 function corsHeaders(origin) {
   return {
@@ -114,7 +127,8 @@ export default {
     const used = parseInt((await env.LIMITS.get(rlKey)) || "0", 10);
     if (used >= RATE_LIMIT) {
       return json({ error: { message:
-        `Slow down — ${RATE_LIMIT} questions a minute is the limit.` } }, 429, origin);
+        `That is ${RATE_LIMIT} questions inside a minute from one address — ` +
+        `something is looping. Wait a moment and ask again.` } }, 429, origin);
     }
     await env.LIMITS.put(rlKey, String(used + 1), { expirationTtl: RATE_WINDOW * 2 });
 
@@ -123,8 +137,9 @@ export default {
     const spent = parseFloat((await env.LIMITS.get(spendKey)) || "0");
     if (spent >= DAILY_BUDGET_USD) {
       return json({ error: { message:
-        "Claude features are paused for today — the shared daily budget is used up. " +
-        "The draft board itself is unaffected." } }, 429, origin);
+        "Claude features are paused for today — the runaway stop tripped, which at " +
+        "this ceiling means something is looping rather than that people are asking " +
+        "a lot of questions. The draft board itself is unaffected." } }, 429, origin);
     }
 
     // ---- call Anthropic ---------------------------------------------------
@@ -138,10 +153,13 @@ export default {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: maxTokens,
-        system: typeof payload.system === "string" ? payload.system.slice(0, 4000) : undefined,
-        messages: messages.slice(-4).map((m) => ({
+        // Trimmed only so a bug cannot send an unbounded body, not to ration
+        // context. The brief now carries roster points, marginal values and the
+        // style's effect on every candidate, and it was brushing the old cap.
+        system: typeof payload.system === "string" ? payload.system.slice(0, 12000) : undefined,
+        messages: messages.slice(-8).map((m) => ({
           role: m.role === "assistant" ? "assistant" : "user",
-          content: String(m.content || "").slice(0, 20000),
+          content: String(m.content || "").slice(0, 60000),
         })),
       }),
     });
