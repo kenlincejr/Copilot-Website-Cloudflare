@@ -1951,8 +1951,12 @@ function renderFilters() {
   }).join("") +
   '<span style="flex:1"></span>' +
   '<span class="pill' + (view.showTaken ? " on" : "") + '" id="pillTaken" ' +
-    'title="Keep drafted players in the list, struck through">drafted ' +
-    '<span class="dimtext">' + S.picks.length + "</span></span>";
+    'title="Keep drafted players in the list, struck through. A name you type is ' +
+    'always searched against the whole board, drafted or not.">drafted ' +
+    // Players off the board, not picks recorded. A keeper is owned from before
+    // pick 1 without a pick having happened, so counting the log said "drafted
+    // 0" on a board that was already a player short.
+    '<span class="dimtext">' + (A.all.length - A.avail.length) + "</span></span>";
   $$("#posFilters .pill[data-pos]").forEach(function (el) {
     el.onclick = function () { view.pos = el.getAttribute("data-pos"); renderFilters(); renderList(); };
   });
@@ -2481,8 +2485,19 @@ function matches(p) {
   });
 }
 
+/**
+ * The list, from the pool the two filters leave behind.
+ *
+ * A typed query searches the whole board, drafted players included, whatever the
+ * "drafted" toggle says. The toggle is a browsing preference — how dense you
+ * want the list while you scroll it — but typing a name is a lookup, and there
+ * is no reading of "Drake Maye" under which the right answer is "Nobody matches
+ * that". He is on a roster, and the row already knows how to say so: struck
+ * through, with the team that holds him and `kept` where the pick number goes.
+ */
 function sortedList() {
-  var l = (view.showTaken ? A.all : A.avail).filter(matches);
+  var searching = !!view.q.trim();
+  var l = (view.showTaken || searching ? A.all : A.avail).filter(matches);
   var cmp = {
     composite: function (a, b) { return b.comp - a.comp; },
     pts:       function (a, b) { return b.pts - a.pts; },
@@ -2531,9 +2546,11 @@ function rowHtml(p, i) {
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
   var who = t ? '<span class="sub">' +
         (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") +
-        // A keeper is owned, but the pick he will burn has not happened
-        // yet — printing its number reads as a pick that already went.
-        (t.keeper ? "kept" : t.pick) + "</span>" : "";
+        // A keeper is owned, but the pick he will burn has not happened yet —
+        // printing its number reads as a pick that already went. The round it
+        // will cost is a fact rather than a claim, and it is the thing you
+        // actually want to know about a name you just searched for.
+        (t.keeper ? "kept R" + ownerOfPick(t.pick).round : t.pick) + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
     (document.body.classList.contains("compact") ? "" :
       '<span class="rank">' + (i + 1) + "</span>") +
