@@ -29,6 +29,17 @@
 
   var PA_KEYS = ["pa0", "pa1_6", "pa7_13", "pa14_20", "pa21_27", "pa28_34", "pa35plus"];
 
+  /* Research flags in the reader's language rather than the industry's. The
+     data keys are the vocabulary the sources use; "flag plant" is what an
+     analyst calls staking their name on a player, and it means nothing at all
+     to somebody reading a draft board on a two-minute clock. One map, here,
+     because both the engine's reason strings and the app's badges need it. */
+  var TAG_LABEL = {
+    FLAG_PLANT: "CONVICTION", BREAKOUT: "BREAKOUT", SLEEPER: "SLEEPER",
+    RISER: "RISING", FALLER: "SLIDING", LANDMINE: "LANDMINE",
+    AVOID: "AVOID", INJURY: "INJURY"
+  };
+
   /**
    * customPoints(player, rules) -> { total, byCategory, perGame, games, estimated }
    * The single place scoring rules are applied. Everything downstream — VOR,
@@ -302,15 +313,54 @@
     return { slots: slots, bench: bench, benchMax: r.BN || 6 };
   }
 
+  /** Points scored by the best starting lineup this set of players can field. */
+  function lineupPoints(players, rules) {
+    return assignRoster(players, rules).slots.reduce(function (sum, s) {
+      return sum + (s.player ? s.player.pts : 0);
+    }, 0);
+  }
+
+  /**
+   * What drafting this player adds to the lineup you can actually field, over
+   * simply taking a freely available body at his position.
+   *
+   * This is value over replacement rewritten to know about your roster, and it
+   * is the number the board is built on. Against an empty slot it reproduces
+   * classic VOR almost exactly. Against a filled one it collapses: a third
+   * tight end in a one-tight-end league is worth zero however good he is,
+   * because he cannot enter the lineup and neither could the free body he is
+   * being measured against. Classic VOR cannot see that — it compares every
+   * player to a stranger at his position rather than to the player you already
+   * own — which is how a board ends up recommending the same position twice in
+   * a row to a manager who is already full there.
+   */
+  function marginalVor(player, myPlayers, rules, replacementPts, cache) {
+    var pos = player.pos;
+    var withRepl = cache && cache._replLineup ? cache._replLineup[pos] : null;
+    if (withRepl == null) {
+      withRepl = lineupPoints(myPlayers.concat([
+        { name: "replacement " + pos, pos: pos, pts: replacementPts || 0 }]), rules);
+      if (cache) (cache._replLineup = cache._replLineup || {})[pos] = withRepl;
+    }
+    return lineupPoints(myPlayers.concat([player]), rules) - withRepl;
+  }
+
+  /** Flex slots still open once your current players are placed optimally. */
+  function openFlexSlots(myPlayers, rules) {
+    return assignRoster(myPlayers, rules).slots.filter(function (s) {
+      return s.pos === "FLEX" && !s.player;
+    }).length;
+  }
+
   /** Positional need, 0 (full) to 1 (nothing at all), plus hard caps. */
   function positionalNeed(myPlayers, rules, roundsLeft) {
     var r = rules.roster || {}, flexEl = r.flexEligible || ["RB", "WR", "TE"];
     var have = {}; myPlayers.forEach(function (p) { have[p.pos] = (have[p.pos] || 0) + 1; });
-    var need = {}, flexOpen = r.FLEX || 0;
-    flexEl.forEach(function (pos) {
-      flexOpen -= Math.max(0, (have[pos] || 0) - (r[pos] || 0));
-    });
-    flexOpen = Math.max(0, flexOpen);
+    // Ask the actual assignment how many flex slots are still empty rather than
+    // subtracting surpluses position by position. The old arithmetic let three
+    // positions each claim the same flex slot that one running back was already
+    // sitting in.
+    var need = {}, flexOpen = openFlexSlots(myPlayers, rules);
     ["QB", "RB", "WR", "TE", "K", "DEF"].forEach(function (pos) {
       var want = r[pos] || 0, got = have[pos] || 0;
       var short = Math.max(0, want - got);
@@ -322,38 +372,74 @@
 
   /**
    * The knobs, all in one place so the UI can explain any number it shows.
-   * Score = (VOR + VONA) × NeedMultiplier + CeilingAdj − RiskAdj − ByePenalty
+   * Score = (Value + VONA) × Bias + CeilingAdj − RiskAdj − ByePenalty
+   *
+   * "Value" is marginal value over replacement — what the player adds to the
+   * lineup *you* can field, not to an average team's. Need used to live in a
+   * multiplier applied on top of a roster-blind VOR, and that multiplier had a
+   * dead zone: it counted bodies against starting slots, so the moment your
+   * slots were full every position collapsed to the same flat discount and the
+   * board reverted to pure best-available for the whole back half of the draft.
+   * Need now lives inside the value term, where it cannot be flattened away.
    */
   function composite(player, ctx) {
     var round = ctx.round || 1, rounds = ctx.rounds || 15;
     var st = ctx.strategy || {};
     var need = ctx.need[player.pos] || { short: 0, have: 0, starters: 0 };
     var reasons = [];
+    var replPts = ((ctx.replacement && ctx.replacement[player.pos]) || {}).points || 0;
 
-    var vona = ctx.vona && ctx.vona[player.pos]
-      ? player.pts - ctx.vona[player.pos].expected : 0;
+    // How roster-aware the value term is. needWeight 0 is best-player-available:
+    // classic value over replacement, which knows nothing about who you own. At
+    // 1 it is what the player adds to the lineup you can actually field.
+    var aware = Math.max(0, Math.min(1, st.needWeight != null ? st.needWeight : 1));
+    var marginal = ctx.myPlayers
+      ? marginalVor(player, ctx.myPlayers, ctx.rules, replPts, ctx) : player.vor;
 
-    // Need multiplier. An empty starting slot is worth real weight — a player who
-    // can't get into your lineup is worth less than one who can, however good he
-    // is. Depth at a position you only start one of is discounted hardest.
-    var mult;
-    if (need.short > 0) {
-      mult = 1 + 0.50 * Math.min(1, need.short / 2);
-      if (rounds - round <= 3 && need.short >= 1) mult += 0.15;   // running out of picks
-    } else {
-      // Surplus beyond starters plus one flex-able backup. Each extra body at a
-      // position compounds the discount, which is what stops a late-round board
-      // from stacking a fifth tight end it can never start.
-      var flexEl = (ctx.rules.roster.flexEligible || ["RB", "WR", "TE"]);
-      var room = (ctx.rules.roster[player.pos] || 0) + (flexEl.indexOf(player.pos) >= 0 ? 1 : 0);
-      var surplus = Math.max(0, need.have - room);
-      mult = 0.75 * Math.pow(0.60, surplus);
+    // A player who cannot start for you today is not worthless — he is one
+    // injury from starting, he covers a bye, and the late rounds are where
+    // upside is bought. So the open-market value he carries beyond his value to
+    // your lineup is kept, at a fraction, and the fraction shrinks with every
+    // body you already hold at the position. Value below replacement is kept
+    // whole: on a picked-over board that is the only thing separating the
+    // remaining players from each other, and discounting it would rank the tail
+    // of the draft by noise.
+    var benchDepth = Math.max(0, need.have - Math.max(1, need.starters || 0));
+    var benchWeight = 0.30 * Math.pow(0.55, benchDepth);
+    var valueOf = function (pts, marg) {
+      var open = pts - replPts;                       // what he is worth to anyone
+      var lineup = open * (1 - aware) + marg * aware; // what he is worth to you
+      var beyond = open - lineup;
+      return lineup + (beyond > 0 ? benchWeight : 1) * beyond;
+    };
+    var value = valueOf(player.pts, marginal);
+
+    // Value over next available, on the same footing. Scarcity at a position you
+    // cannot start is worth nothing. The old VONA was per-position and therefore
+    // identical for every tight end however many you already had, so taking one
+    // never made the next one cheaper — which is why the same recommendation
+    // kept coming back.
+    var vona = 0;
+    if (ctx.vona && ctx.vona[player.pos]) {
+      var vkey = player.pos + ":" + aware;
+      var vcache = (ctx._laterValue = ctx._laterValue || {});
+      if (vcache[vkey] == null) {
+        var laterPts = ctx.vona[player.pos].expected;
+        var laterMarg = ctx.myPlayers
+          ? marginalVor({ name: "later " + player.pos, pos: player.pos, pts: laterPts },
+                        ctx.myPlayers, ctx.rules, replPts, ctx)
+          : laterPts - replPts;
+        vcache[vkey] = valueOf(laterPts, laterMarg);
+      }
+      vona = Math.max(0, value - vcache[vkey]);
     }
-    if (ctx.runs && ctx.runs[player.pos]) { mult += 0.12; reasons.push(player.pos + " run in progress"); }
 
-    // How hard need pulls at all. 0 flattens it to 1 — pure best-player-available;
-    // 2 doubles every deviation from neutral.
-    if (st.needWeight != null) mult = 1 + (mult - 1) * st.needWeight;
+    // Need is carried by the value term now, so all that is left in the
+    // multiplier is strategy bias and run pressure. Nothing about roster fit
+    // can hide in here any more, which is the point: this is where it used to
+    // flatten to one number for every position and stop discriminating.
+    var mult = 1;
+    if (ctx.runs && ctx.runs[player.pos]) { mult += 0.12; reasons.push(player.pos + " run in progress"); }
 
     // Positional bias. The early-round variant is what separates Hero RB (one
     // back, then pivot) from Zero RB (none until the pivot is forced).
@@ -400,10 +486,24 @@
     // Extra penalty for the research layer's own flags, for managers who would
     // rather leave value on the table than roster a known problem.
     var tagPenalty = (st.tagPenalty && player.tag && st.tagPenalty[player.tag]) || 0;
-    if (tagPenalty) reasons.push("flagged " + player.tag.replace("_", " ").toLowerCase());
+    if (tagPenalty) reasons.push("flagged " + (TAG_LABEL[player.tag] || player.tag).toLowerCase());
+
+    // An empty starting slot is a hole, and a hole scores nothing every Sunday.
+    // Late in the draft that outweighs any value argument, so filling one pays a
+    // bonus rather than a multiplier: by the end of a draft the only kickers and
+    // defenses left are below replacement by construction, and multiplying a
+    // negative number by 1.25 makes the pick look worse rather than more urgent.
+    var bonus = 0;
+    if (need.short > 0) {
+      var pressure = Math.max(0, Math.min(1, 1 - (rounds - round) / 5));
+      var urgency = 45 * pressure * Math.min(1, need.short);
+      if (urgency > 1) {
+        bonus += urgency;
+        reasons.push("picks are running out to fill " + player.pos);
+      }
+    }
 
     // Stacking your quarterback's receivers, and handcuffing your own backs.
-    var bonus = 0;
     if (st.stackBonus && ctx.stackTeams && ctx.stackTeams[player.team] &&
         ["WR", "TE"].indexOf(player.pos) >= 0) {
       bonus += st.stackBonus;
@@ -415,16 +515,28 @@
       reasons.push("handcuffs your " + player.team + " back");
     }
 
-    var base = (player.vor + vona) * mult;
+    // Bias has to move a player in the direction the style intends whatever the
+    // sign of his value. Multiplying does that only while the value is positive
+    // and silently inverts the moment it is not — which is most of the back half
+    // of a draft, where everyone left is below replacement. RB-heavy was pushing
+    // late running backs *down* and Zero RB was pulling them *up*. Applying the
+    // multiplier as a signed shift against the magnitude is identical arithmetic
+    // wherever the old form was right, and correct where it was not.
+    var raw = value + vona;
+    var base = raw + (mult - 1) * Math.abs(raw);
     var score = base + ceilingAdj - riskAdj - byePenalty - tagPenalty + bonus;
     if (blocked) score -= 1000;
 
-    if (need.short > 0.9) reasons.push("fills an empty " + player.pos + " slot");
-    else if (mult < 0.7) reasons.push("depth only — your " + player.pos + " slots are full");
+    // The lead reason is the honest one: whether he can play for you at all.
+    if (ctx.myPlayers && aware > 0.5 && marginal <= 0.5)
+      reasons.push("can't crack your starting lineup — depth only");
+    else if (need.short > 0.9) reasons.push("fills an empty " + player.pos + " slot");
+    else if (marginal > 0.5 && need.have >= (need.starters || 0) && need.starters > 0)
+      reasons.push("upgrades your starting " + player.pos);
     if (vona > 8) reasons.push("+" + Math.round(vona) + " over what's likely left at pick " + ctx.nextPick);
-    if (player.vor > 0 && ctx.replacement[player.pos])
-      reasons.push("+" + Math.round(player.vor) + " over replacement (" +
-                   player.pos + String(ctx.replacement[player.pos].rank) + ")");
+    if (value > 0.5 && ctx.replacement[player.pos])
+      reasons.push("+" + Math.round(value) + " to your lineup over a free " +
+                   player.pos + " (" + player.pos + String(ctx.replacement[player.pos].rank) + ")");
     if (ceilingAdj > 6) reasons.push("ceiling grade " + player.ceiling);
     if (riskAdj > 6) reasons.push("risk grade " + player.risk);
     if (byePenalty) reasons.push(conflicts + " starters already on bye " + player.bye);
@@ -432,7 +544,8 @@
       reasons.push(Math.round((player.adp - ctx.currentPick) / (ctx.rules.teams || 12) * 10) / 10 +
                    " rounds ahead of ADP");
 
-    return { score: score, vona: vona, mult: mult, ceilingAdj: ceilingAdj,
+    return { score: score, value: value, marginal: marginal, aware: aware,
+             vona: vona, mult: mult, ceilingAdj: ceilingAdj,
              riskAdj: riskAdj, byePenalty: byePenalty, tagPenalty: tagPenalty,
              bonus: bonus, bias: bias, blocked: blocked, reasons: reasons };
   }
@@ -444,11 +557,56 @@
     if (pos === "QB") return 2;
     var flexEl = roster.flexEligible || ["RB", "WR", "TE"];
     var flexable = flexEl.indexOf(pos) >= 0;
-    if (pos === "TE") return (roster.TE || 1) + (flexable ? 2 : 1);
+    // +1, not +2. A one-TE league can justify a backup; the third body was
+    // never startable and only existed because the old surplus discount had a
+    // dead zone that let him through at full weight.
+    if (pos === "TE") return (roster.TE || 1) + 1;
     return (roster[pos] || 0) + (flexable ? 4 : 2);
   }
 
-  /** ≥4 of the last 8 picks at one position. */
+  /** A standard normal draw from a uniform generator. Box-Muller. */
+  function gauss(rnd) {
+    var u = 1 - (rnd ? rnd() : Math.random()), v = (rnd ? rnd() : Math.random());
+    return Math.sqrt(-2 * Math.log(u || 1e-9)) * Math.cos(2 * Math.PI * v);
+  }
+
+  /**
+   * One pick by a team that is not you.
+   *
+   * A room does not take the top of a list. It takes *near* it, with a spread
+   * that is a property of the player rather than a constant \u2014 a consensus
+   * first-rounder goes within a pick or two of his ADP every time, a
+   * late-round dart lands anywhere across two rounds \u2014 and it stops taking a
+   * position once its own roster is full. Modelling those three things is the
+   * difference between a rehearsal and a slideshow, and it is the same
+   * per-player standard deviation the survival column already reads.
+   *
+   * `candidates` are { player, adp, sd, pct }: `adp` is the best number
+   * available for that player, which is real completed-draft ADP where the user
+   * has pasted it and mock-draft ADP otherwise.
+   */
+  function roomPick(candidates, rnd, opts) {
+    opts = opts || {};
+    var counts = opts.counts || {}, roster = opts.roster || {}, runs = opts.runs || {};
+    var best = null, bestDraw = Infinity, fallback = null, fbDraw = Infinity;
+    for (var i = 0; i < candidates.length; i++) {
+      var c = candidates[i], pl = c.player;
+      var sd = Math.max(c.sd || 6, 1.5);
+      var draw = c.adp + sd * gauss(rnd);
+      // A run pulls a room toward the position it is already taking. Half a
+      // standard deviation is enough to be visible without stampeding.
+      if (runs[pl.pos]) draw -= sd * 0.5;
+      // Someone taken in only half of drafts is not reliably taken at his ADP.
+      if (c.pct != null && c.pct < 100) draw += (100 - c.pct) * 0.12;
+      if (draw < fbDraw) { fbDraw = draw; fallback = pl; }
+      // Nobody drafts a third kicker. Opponents obey the same caps you do.
+      if ((counts[pl.pos] || 0) >= depthCap(pl.pos, roster)) continue;
+      if (draw < bestDraw) { bestDraw = draw; best = pl; }
+    }
+    return best || fallback;
+  }
+
+  /** \u22654 of the last 8 picks at one position. */
   function detectRuns(recentPicks) {
     var last = recentPicks.slice(-8), counts = {}, runs = {};
     last.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
@@ -464,7 +622,10 @@
     pickSchedule: pickSchedule, scheduleWithKeepers: scheduleWithKeepers,
     survival: survival, expectedBestAvailable: expectedBestAvailable,
     assignRoster: assignRoster, positionalNeed: positionalNeed,
-    composite: composite, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers, FLEX_SPLIT: FLEX_SPLIT
+    composite: composite, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
+    gauss: gauss, roomPick: roomPick, TAG_LABEL: TAG_LABEL,
+    lineupPoints: lineupPoints, marginalVor: marginalVor, openFlexSlots: openFlexSlots,
+    FLEX_SPLIT: FLEX_SPLIT
   };
   root.DRAFTLINE_ENGINE = API;
   if (typeof module !== "undefined") module.exports = API;

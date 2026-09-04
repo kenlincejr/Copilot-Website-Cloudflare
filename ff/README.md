@@ -105,8 +105,13 @@ columns that can be read as a decision are:
   best* and becomes *how many are left*. The bracket is exactly that; at `(1)` he
   is the last of his group and waiting drops you a whole tier. Amber at 1.
   See **How tiers are computed** below — the obvious approach is wrong.
-- **WAIT?** — `wait` / `risky` / `NOW`, from survival odds against your own next
-  pick. Above 70% spend this pick elsewhere; under 35% it is now or never.
+- **WAIT?** — `wait` / `risky` / `NOW`, from survival odds against the next pick
+  at which you are actually choosing. Above 70% spend this pick elsewhere; under
+  35% it is now or never. The header names the pick it is measuring to, because
+  the horizon moves: while you are waiting it is your next pick, but once you are
+  *on the clock* your next pick is this one and "will he last until now" is not a
+  question — so it shifts to the pick after. It used to stay pinned to the current
+  pick, which quietly labelled players you could see on the board as `risky`.
 - **VALUE** — `fell 1.2` / `fair` / `reach 1.4`, his ADP against the pick on the
   clock in *rounds*. "fell" is the free money.
 
@@ -141,6 +146,27 @@ straight back because a keeper is roster configuration, not a pick.
 It is destructive, so it asks with itself rather than with a browser dialog:
 first press arms the button and turns it red, second press does it, and it
 disarms after four seconds on its own. `armOnce()` in `app.js`.
+
+## Two ways in
+
+The practice run was the best thing in here and the most hidden: a ghost button
+labelled *Simulate*, tucked inside a tracker you only ever see **once the draft
+is already live** — findable on the one night it is worthless. It is a front
+door now, beside the real one. **Start / practise** in the app bar opens a screen
+that explains both paths before committing to either:
+
+- **Practice run** — the room drafts itself and stops the moment the pick is
+  yours. You choose from the same board with the same suggestions and the same
+  clock, then set it running again. Repeat to the end of round fifteen.
+- **The real thing** — you record each pick as it happens and the board stays
+  honest against it.
+
+The screen carries the loop as four numbered steps, what the modelled room is
+actually doing, how much of the board is priced off the user's own real draft
+data versus mock ADP, and **the date of the last data pull with its age in
+days** — turning amber past a week, because a rehearsal against stale data
+rehearses the wrong board. Everything the practice run records is an ordinary
+pick: undo works on any one of them, and *Reset draft* clears the lot.
 
 ## Pause, stop, simulate
 
@@ -236,18 +262,108 @@ colours when a pick would create a problem, and the two problems are distinct:
 - **red (overload)** — too many starters idle in one week, whatever they play.
   The threshold is 3 by default and the draft style can move it.
 
+## What a player is worth to *your* roster
+
+Value over replacement asks what a player is worth to an average team. That is
+the right question until you own somebody at his position, and the wrong one
+immediately afterwards — it keeps comparing him to a stranger rather than to the
+man already in your slot.
+
+The board is built on **marginal value over replacement** instead: assign your
+optimal starting lineup with the player added, assign it again with a freely
+available body at his position added, and take the difference. Against an empty
+slot it reproduces classic VOR almost exactly. Against a filled one it collapses
+to zero, which is the honest answer — a third tight end in a one-tight-end league
+cannot enter your lineup, and neither could the waiver body he is measured
+against.
+
+Value over next available is computed the same way, so scarcity at a position you
+cannot start is worth nothing. This is what stops the same recommendation coming
+back: taking a player at a position now visibly lowers what the next one there is
+worth, which the old per-position VONA could not express.
+
+A player who cannot start today is still worth something — he is one injury from
+starting, he covers a bye, and the late rounds are where upside is bought — so
+the open-market value he carries beyond his value to your lineup is kept at a
+fraction, shrinking with each body you already hold at the position. Value
+*below* replacement is kept whole: on a picked-over board it is the only thing
+separating the remaining players, and discounting it would rank the tail of the
+draft by noise.
+
+`needWeight` now interpolates between the two: 0 is best-player-available and
+roster-blind by definition, 1 is fully roster-aware. Need has left the
+multiplier entirely, so nothing about roster fit can hide in it.
+
+**What this replaced.** Need used to live in a multiplier over a roster-blind
+VOR, and that multiplier had a dead zone. It counted bodies against starting
+slots, and the surplus discount only began past `starters + 1` — so in a one-TE
+league a second *and* a third tight end both scored at the same flat 0.75, and
+drafting the second did not make the third one point cheaper. Once every starting
+slot was full, every position collapsed to that same 0.75 and the board reverted
+to pure best-available for the entire back half of the draft, precisely where
+roster fit is the only thing that matters. Running all twelve draft slots under
+four styles, **every single mock draft finished with three tight ends**. It was
+the engine's fixed point, not bad luck. It is two now, across all forty-eight,
+and the freed pick goes to a third receiver — a position this league starts two
+of plus a flex.
+
+The flex accounting had a smaller version of the same bug: `room` granted every
+flex-eligible position a flex slot of its own, so running back, receiver and
+tight end could each claim the one slot a running back was already sitting in.
+`openFlexSlots()` asks the actual assignment instead.
+
+## The modelled room
+
+Both the practice run and the mock drafts need the other eleven teams to draft,
+and "take the top of the list" is not what a room does. One model serves both
+(`E.roomPick`), and it does three things a list cannot:
+
+**It draws, rather than picks.** Every team draws near a player's draft position
+using **that player's own standard deviation** — the same `adp_sd` the survival
+column reads. A consensus first-rounder goes within a pick or two of his ADP
+every time; a late-round dart lands anywhere across two rounds. Reaches and
+slides happen at the rate they actually happen, instead of never.
+
+**It uses the realest number available.** Where the user has pasted their
+league's Yahoo draft analysis, the room drafts against **real completed-draft
+ADP from the platform this league runs on**, leaned halfway toward where the
+market has moved in the last seven days, and weighted by how often the player is
+drafted at all — someone taken in 40% of leagues is not reliably taken at his
+ADP. Everyone else falls back to mock-draft ADP. The UI says which, and what
+percentage of the board is covered, rather than letting the user assume.
+
+**It has rosters.** Opponents obey the same `depthCap` you do, counted against
+what each team has actually drafted so far — including the real picks already
+recorded, so a mock run mid-draft starts from the league as it stands rather
+than an empty one. Nobody takes a third kicker. It also leans half a standard
+deviation into a positional run once one starts.
+
+What it still does not model, stated in the UI: nobody in the room is chasing
+their own team's players, and no team in it is reading the room the way a human
+does.
+
 ## Mock drafts
 
 Style names tell you nothing about what they leave you holding. The Style panel
 runs the draft out from wherever it currently stands — 25 times, or 50 when
-comparing two — with the room taking roughly the best available by ADP and your
-own picks chosen by the style's composite score. It reports the median starting
+comparing two — against the modelled room above, with your own picks chosen by
+the style's composite score. It reports the median starting
 lineup, the positional composition, and the most common player in each slot with
 how often he filled it. About 80ms for 50 drafts.
 
 Both styles in a comparison get the **identical sequence of opponent picks**,
 from a seeded generator reset per style, so a difference between them is the
 style rather than the dice.
+
+The mock runs the *same* `composite()` the live board runs, on the same context:
+it recomputes `positionalNeed` and passes `myPlayers` after every one of your
+picks, so marginal value, the VONA gate and the position caps all apply exactly
+as they do on the clock, and it continues from wherever the live draft currently
+stands rather than from an empty roster. There is no second, simpler model to
+drift out of step with the first. What the mock does *not* do is give the
+opponents a brain — they take from the next four by ADP at random, which is the
+"where would he realistically land" model and the reason the caveat below is
+stated in the UI.
 
 The first version skipped value-over-next-available to save time. That turned out
 to be a much worse shortcut than it sounded: with nothing to counterweight raw
@@ -257,6 +373,54 @@ Hero RB, RB-heavy and Zero RB separate as they should.
 
 The caveat is stated in the UI: a room that drafts to ADP has no runs, no
 reaches, and nobody chasing their own team's players.
+
+Running the mock out from an empty roster across all twelve draft slots is also
+the cheapest end-to-end check on the scoring there is, and it is what caught the
+three-tight-end fixed point described above. `test-engine.js` runs a
+fifteen-round draft per style and asserts the roster that comes out is legal and
+startable.
+
+## Draft style
+
+**Bias has to keep its sign.** A style's positional weights were applied by
+multiplying the composite, which is correct only while the composite is
+positive. It is not, for most of the back half of a draft: once your starters are
+full, everyone left on the board is below replacement, and multiplying a negative
+number by 1.35 makes a pick look *worse*. RB-heavy was pushing late running backs
+down and Zero RB was pulling them up — each style doing the opposite of what it
+says on the card, in exactly the rounds where a style is supposed to be steering.
+The multiplier is applied as a signed shift against the magnitude now
+(`raw + (mult - 1) * |raw|`), which is the same arithmetic wherever the old form
+was right and correct where it was not. Six assertions in `test-engine.js` pin
+the direction, including one that a style's effect on an above-replacement player
+is unchanged to the penny.
+
+## What your style did to this pick
+
+A weight is invisible. You pick Zero RB, the board rearranges, and nothing tells
+you whether the player now at the top is there because he is good or because you
+told the engine to dislike running backs. So the board is scored a second time
+under Balanced whenever a style is active, and every pick carries the receipt:
+
+```
+WHAT ZERO RB DID TO THIS PICK
+Score under Balanced      -13
+Score under Zero RB       -10   +3
+Board rank                #10 -> #6  ·  up 4 places
+  ^ RB weighted x1.15 all draft
+  ^ ceiling weighted x1.25 (his grade 80)
+```
+
+The bullets are the knobs of your chosen style that actually bit on *this*
+player, with the direction each one pushed — not the whole knob list, which the
+style diff already shows. A player no knob touches says so, because "your style
+moved him four places without weighting anything about him" is itself worth
+knowing: it means the style moved everyone *around* him.
+
+The recommendation cards carry the one-line version (`ZERO RB +3 · #10→#6`), and
+the same figures go into the Claude brief, so the on-deck note can tell you when
+a pick is only on top because of the style — or when the style is steering you
+wrong here.
 
 ## Draft style
 
@@ -371,6 +535,23 @@ because the obvious one is not enough:
    `app.html?v=<build>` — a URL the cache has never seen. Keep `build` and the
    `?v=` stamps in step or the banner never fires.
 
+## Research flags, in the reader's language
+
+The annotation layer's tags are the vocabulary the sources use, and one of them
+was industry jargon nobody outside the industry has heard: **flag plant** is what
+an analyst calls staking their name on a player, and on a draft board under a
+two-minute clock it means nothing at all. The badge now reads **CONVICTION**, and
+every tag carries a sentence saying what it is claiming — `FLAG_PLANT` reads "a
+high-conviction call, analysts staking their name on him going well past where
+the market has him"; `RISER`/`FALLER` read RISING and SLIDING. The data keys are
+untouched, so `tagPenalty` in a draft style and the bake script are unaffected,
+and search matches either the badge or the underlying key.
+
+The same sentence goes to Claude alongside the tag, so the brief explains the
+flag rather than repeating the jargon back. The label map lives in `engine.js`
+(`E.TAG_LABEL`) rather than the app, because the engine's own reason strings
+render tag names too — two copies would eventually disagree, and did.
+
 ## Depth charts, injuries, and a second ADP
 
 Three layers baked from Sleeper's free `/v1/players/nfl` endpoint and its
@@ -458,7 +639,7 @@ also ate the R in RB.
 
 ## Tests
 
-`node ff/tools/test-engine.js` — 31 assertions. It checks the scoring engine
+`node ff/tools/test-engine.js` — 85 assertions. It checks the scoring engine
 against Sleeper's own PPR totals (must match to within 2%), and checks survival
 probabilities, replacement levels, the keeper-adjusted pick schedule and the D/ST
 point totals against figures derived independently in the research digest.

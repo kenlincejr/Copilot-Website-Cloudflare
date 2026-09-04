@@ -270,7 +270,7 @@ function analyse() {
     defFloorRound: S.league.defFloorRound || 7,
     kFloorRound: Math.max(1, S.league.rounds - 1),
     vona: vona, runs: runInfo.runs, replacement: board.replacement,
-    currentPick: cur, nextPick: myAfter || cur,
+    currentPick: cur, nextPick: myAfter || cur, myPlayers: mine,
     strategy: activeKnobs(), stackTeams: stackTeams, handcuffTeams: handcuffTeams
   };
 
@@ -278,13 +278,24 @@ function analyse() {
   // through, which is what makes the shape of a run visible — the gaps in the
   // ranking are themselves the information.
   var ya = yahooAdp();
+  var survTarget = (myNext && myNext > cur) ? myNext : (myAfter || myNext);
   var pickOf = {};
   S.picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
+  var styled = Object.keys(activeKnobs()).length > 0;
+  // Scoring the whole board a second time under Balanced is what lets any pick
+  // answer "how much of this is the style I chose?". It is only worth doing when
+  // a style is actually active — on Balanced the two boards are the same board.
+  var nctx = styled ? Object.assign({}, ctx, { strategy: {} }) : null;
   board.players.forEach(function (p) {
     var c = E.composite(p, ctx);
     p.comp = c.score; p.compDetail = c;
+    p.compNeutral = nctx ? E.composite(p, nctx).score : null;
     p.surv = myNext ? E.survival(p, myNext) : 1;
     p.survNext = myAfter ? E.survival(p, myAfter) : 1;
+    // What the WAIT? column asks. While you are waiting, that is your next pick;
+    // once you are on the clock your next pick is this one, and "will he last
+    // until now" is not a question — the horizon has to move to the pick after.
+    p.survShown = survTarget ? E.survival(p, survTarget) : 1;
     p.adpDelta = (p.adp || 200) - cur;
     p.takenBy = pickOf[p.name] || null;
     var y = ya[normName(p.name)];
@@ -296,6 +307,15 @@ function analyse() {
       p.ypct = y.pct;
     }
   });
+
+  // Board position under your style and under Balanced, so a pick can say where
+  // the style moved it rather than only what it cost.
+  if (styled) {
+    avail.slice().sort(function (a, b) { return b.comp - a.comp; })
+         .forEach(function (q, i) { q.rankStyled = i + 1; });
+    avail.slice().sort(function (a, b) { return b.compNeutral - a.compNeutral; })
+         .forEach(function (q, i) { q.rankNeutral = i + 1; });
+  }
 
   // How many of his tier are still on the board. This is the number that
   // actually decides whether you can wait a round.
@@ -309,6 +329,7 @@ function analyse() {
   return { board: board, avail: avail, all: board.players, byName: byName, mine: mine, roster: roster,
            byeCounts: byeCounts, byePos: byePos,
            need: need, ctx: ctx, cur: cur, myNext: myNext, myAfter: myAfter,
+           survTarget: survTarget,
            onClock: onClock, runInfo: runInfo, upcoming: upcoming };
 }
 
@@ -364,7 +385,9 @@ function drift() {
 
 function renderStatus() {
   var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
-  $("#btnStart").classList.toggle("hidden", !isLive() || !!S.draftStarted || S.picks.length > 0);
+  // The way in stays visible until a draft is actually running, and comes back
+  // the moment one is reset — it is how you reach the practice run.
+  $("#btnBegin").classList.toggle("hidden", !!S.draftStarted);
   $("#btnLeague").classList.toggle("hidden", !isLive());
 
   if (A.cur > total) {
@@ -417,7 +440,56 @@ function renderStatus() {
 }
 
 $("#livePick").addEventListener("input", renderStatus);
-$("#btnStart").addEventListener("click", function () {
+
+/* ------------------------------------------------- start, or practise first
+
+   The practice run was the best thing in here and the most hidden: a button
+   called "Simulate" tucked inside the tracker, which you only ever see once the
+   draft is already live. Nobody finds it before draft night, which is the only
+   time it is worth anything. It is a front door now, next to the real one, and
+   the door explains what is behind both. */
+
+function beginFacts() {
+  var m = DATA.meta || {};
+  var cov = marketCoverage();
+  var out = [];
+  out.push(cov.real
+    ? "<b>" + cov.pct + "% of the board</b> is priced off <b>your own real Yahoo draft data</b> \u2014 " +
+      cov.real + " players from completed drafts on the platform this league runs on, " +
+      "leaned halfway toward where the market has moved in the last seven days. " +
+      "The rest falls back to mock-draft ADP."
+    : "The room is priced off <b>mock-draft ADP</b>. Paste your league's Yahoo draft " +
+      "analysis page in League setup and the practice run switches to <b>real " +
+      "completed-draft ADP</b> instead \u2014 the same numbers the REAL and 7DAY columns show.");
+  if (m.adp_source) out.push("Mock-draft ADP: " + esc(m.adp_source) + ".");
+  if (m.proj_source) out.push("Projections: " + esc(m.proj_source) + ".");
+  out.push("Your picks, and the suggestions on them, use the same scoring engine the " +
+    "live draft uses \u2014 there is no simpler model behind the practice run.");
+  return out.map(function (t) { return "<li>" + t + "</li>"; }).join("");
+}
+
+function openBegin() {
+  var m = DATA.meta || {};
+  $("#beginFacts").innerHTML = beginFacts();
+  var built = m.built || m.baked;
+  var age = built ? Math.round((Date.now() - new Date(built + "T12:00:00").getTime()) / 864e5) : null;
+  $("#beginFresh").innerHTML =
+    "<b>Data last pulled " + esc(built || "unknown") + "</b>" +
+    (age != null ? " \u2014 " + (age <= 0 ? "today" : age === 1 ? "yesterday" : age + " days ago") : "") +
+    ". Projections, ADP, depth charts and injuries are all from that pull. " +
+    (age != null && age > 7
+      ? "That is old enough that news has moved since; rebuild the data before you " +
+        "trust a practice run to reflect today's board."
+      : "Fresh enough to rehearse against.") +
+    (S.picks.length
+      ? " <b>This draft already has " + S.picks.length + " pick" +
+        (S.picks.length === 1 ? "" : "s") + " recorded</b> \u2014 both options carry on from there. " +
+        "Use Reset draft in League setup to clear it."
+      : "");
+  openModal("#beginModal");
+}
+
+function startLive(practice) {
   S.draftStarted = true;
   S.startedAt = Date.now();
   S.pickStartedAt = Date.now();
@@ -425,9 +497,26 @@ $("#btnStart").addEventListener("click", function () {
   save();
   $("#livePick").value = String(currentPick());
   render(); tickClock();
-  var w = $("#tkWho"); if (w) w.focus();
-  banner("Draft tracker is live. Record every pick as it happens and the board stays honest.");
-});
+  closeModal("#beginModal");
+  if (practice) {
+    if (myTurn() || (A.myNext && A.myNext === A.cur)) {
+      banner("Practice run ready \u2014 the first pick is yours. Take one from the board, " +
+        "then hit Simulate and the room drafts to your next pick.", true);
+    } else {
+      simulateToMyPick();
+    }
+  } else {
+    var w = $("#tkWho"); if (w) w.focus();
+    banner("Draft tracker is live. Record every pick as it happens and the board stays honest.");
+  }
+}
+
+$("#btnBegin").addEventListener("click", openBegin);
+$("#beginClose").addEventListener("click", function () { closeModal("#beginModal"); });
+$("#beginPractice").addEventListener("click", function () { startLive(true); });
+$("#beginLive").addEventListener("click", function () { startLive(false); });
+
+
 
 /* ------------------------------------------------------------- catch-up */
 
@@ -851,30 +940,84 @@ function armOnce(btn, label, run) {
 }
 
 /**
- * Fills in opponent picks so the flow can be practised before it matters. Takes
- * roughly the best available by ADP with a little noise, which is close enough to
- * how a real room drafts to be worth rehearsing against. Everything it records is
- * an ordinary pick — undo works, and Reset draft in League clears the lot.
+ * The best draft position we have for a player, and how much to trust it.
+ *
+ * Yahoo's number comes from real completed drafts on the platform this league
+ * actually runs on; the baked number is mock drafts. Where the user has pasted
+ * the real one we use it, leaned halfway toward where the market has moved in
+ * the last seven days, and we carry how often he is drafted at all \u2014 a player
+ * taken in 40% of leagues is not reliably taken at his ADP.
+ */
+function marketAdp(p) {
+  if (p.yadp != null) {
+    return { adp: p.yadp - (p.ytrend || 0) * 0.5, sd: p.adp_sd,
+             pct: p.ypct != null ? p.ypct : null, real: true };
+  }
+  return { adp: p.adp, sd: p.adp_sd, pct: null, real: false };
+}
+
+/** How much of the board the user's own real-draft data covers. */
+function marketCoverage() {
+  var avail = (A && A.avail) || [];
+  var real = avail.filter(function (p) { return p.yadp != null; }).length;
+  return { real: real, total: avail.length,
+           pct: avail.length ? Math.round(real / avail.length * 100) : 0 };
+}
+
+/**
+ * Fills in opponent picks so the flow can be practised before it matters.
+ *
+ * The room is modelled rather than guessed: every team draws near a player's
+ * real draft position with that player's own spread, respects the same position
+ * caps you do, and leans into a run once one starts. It stops the moment the
+ * pick is yours, which is the whole point \u2014 you make that one, then run it on.
+ * Everything it records is an ordinary pick: undo works, and Reset draft in
+ * League clears the lot.
  */
 function simulateToMyPick() {
   if (!A.myNext) return;
-  var target = A.myNext, taken = draftedNames(), added = 0;
-  var pool = A.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
-  var guard = 0;
-  while (currentPick() < target && guard++ < 80) {
-    var choices = pool.filter(function (p) { return !taken[p.name]; }).slice(0, 3);
-    if (!choices.length) break;
-    var chosen = choices[Math.floor(Math.random() * choices.length)];
+  var target = A.myNext, taken = draftedNames(), added = 0, guard = 0;
+  var pool = A.avail.slice();
+  var counts = {};                       // per-slot position counts, as we go
+  var rosters = allRosters();
+  Object.keys(rosters).forEach(function (slot) {
+    counts[slot] = {};
+    rosters[slot].forEach(function (q) { counts[slot][q.pos] = (counts[slot][q.pos] || 0) + 1; });
+  });
+  var recent = S.picks.slice(-8).map(function (pk) { return A.byName[pk.name] || { pos: "?" }; });
+
+  while (currentPick() < target && guard++ < 120) {
+    var slot = ownerOfPick(currentPick()).slot;
+    var cands = [];
+    for (var i = 0; i < pool.length; i++) {
+      if (taken[pool[i].name]) continue;
+      var m = marketAdp(pool[i]);
+      cands.push({ player: pool[i], adp: m.adp, sd: m.sd, pct: m.pct });
+    }
+    if (!cands.length) break;
+    var chosen = E.roomPick(cands, null, {
+      counts: counts[slot] || {}, roster: S.league.rules.roster,
+      runs: E.detectRuns(recent).runs
+    });
+    if (!chosen) break;
     taken[chosen.name] = true;
+    counts[slot] = counts[slot] || {};
+    counts[slot][chosen.pos] = (counts[slot][chosen.pos] || 0) + 1;
+    recent.push(chosen); if (recent.length > 8) recent.shift();
     record(chosen.name, false, true);
     added++;
   }
   S.simulated = true;
   S.pickStartedAt = Date.now();
   save(); render();
+  var cov = marketCoverage();
   banner("Simulated " + added + " opponent pick" + (added === 1 ? "" : "s") +
-    " up to pick " + target + ". These are guesses from ADP, not real picks — " +
-    "use Reset draft in League before the real thing.", true);
+    " up to pick " + target + " \u2014 your pick. " +
+    (cov.real
+      ? "Drafted against your real Yahoo draft data on " + cov.pct + "% of the board"
+      : "Drafted against mock-draft ADP") +
+    ", each player with his own spread. Make your pick, then hit Simulate again. " +
+    "Reset draft in League before the real thing.", true);
 }
 
 /* ------------------------------------------------------- league rosters */
@@ -1326,13 +1469,15 @@ function renderStyleDiff(newStyleKey, customKnobs) {
 /* ------------------------------------------------------------ mock drafts
 
    Answers the question a list of style names cannot: what does this actually
-   leave me holding? Runs the draft out from wherever it currently stands, with
-   the rest of the room taking roughly the best available by ADP, and the user's
-   own picks chosen by the style's composite score.
+   leave me holding? Runs the draft out from wherever it currently stands
+   against the same modelled room the live practice run uses — real
+   completed-draft ADP where the user has pasted it, each player drawn with his
+   own standard deviation, opponents held to the same position caps — and the
+   user's own picks chosen by the style's composite score.
 
-   The honest caveat, surfaced in the UI: opponents drafting to ADP is a
-   simplification — real rooms have runs, reaches, and people who only draft their
-   own team's players, and this models none of that.
+   The honest caveat, surfaced in the UI: nobody in the modelled room is chasing
+   their own team's players, and no team in it is reading the room the way a
+   human does.
 
    The first version also skipped value-over-next-available to save time, which
    turned out to be a much worse shortcut than it sounded: without it there is
@@ -1359,6 +1504,16 @@ function runMock(knobs, iterations, seed) {
   var board = E.buildBoard(DATA.players, rules);
   var byName = {}; board.players.forEach(function (q) { byName[q.name] = q; });
   var adpOrder = board.players.slice().sort(function (a, b) { return a.adp - b.adp; });
+  // Carry the user's own real-draft data onto this board. The mock builds its
+  // own copy of the players, and without this the modelled room would fall back
+  // to mock ADP while the live board in front of them is using real ADP.
+  var ya = yahooAdp();
+  board.players.forEach(function (q) {
+    var y = ya[normName(q.name)];
+    if (!y) return;
+    q.yadp = y.all; q.ypct = y.pct;
+    q.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
+  });
   var total = S.league.teams * S.league.rounds;
   var startPick = currentPick();
   var seededTaken = draftedNames();
@@ -1369,7 +1524,15 @@ function runMock(knobs, iterations, seed) {
     var rnd = mulberry32(seed + it * 7919);
     var taken = Object.assign({}, seededTaken);
     var mine = seededMine.slice();
-    var cursor = 0;
+    var oppCounts = {};
+    // What every other team already holds, so the modelled room starts the
+    // simulation from the real draft rather than from an empty league.
+    var known = allRosters();
+    Object.keys(known).forEach(function (sl) {
+      if (+sl === S.league.slot) return;
+      oppCounts[sl] = {};
+      known[sl].forEach(function (q) { oppCounts[sl][q.pos] = (oppCounts[sl][q.pos] || 0) + 1; });
+    });
 
     for (var pk = startPick; pk <= total; pk++) {
       var k = keeperAt(pk);
@@ -1404,7 +1567,7 @@ function runMock(knobs, iterations, seed) {
           kFloorRound: Math.max(1, S.league.rounds - 1),
           vona: nextMine ? E.expectedBestAvailable(avail, nextMine) : null,
           runs: {}, replacement: board.replacement,
-          currentPick: pk, nextPick: nextMine || pk, strategy: knobs,
+          currentPick: pk, nextPick: nextMine || pk, myPlayers: mine, strategy: knobs,
           stackTeams: stack, handcuffTeams: cuffs
         };
         var best = null, bestScore = -1e9;
@@ -1414,14 +1577,24 @@ function runMock(knobs, iterations, seed) {
         }
         if (best) { taken[best.name] = true; mine.push(best); }
       } else {
-        while (cursor < adpOrder.length && taken[adpOrder[cursor].name]) cursor++;
-        var pool = [];
-        for (var j = cursor; j < adpOrder.length && pool.length < 4; j++) {
-          if (!taken[adpOrder[j].name]) pool.push(adpOrder[j]);
+        // The same modelled room the live Simulate drafts against, on the same
+        // numbers: real completed-draft ADP where the user has it, each player
+        // with his own spread, opponents obeying the same position caps. A
+        // seeded generator so two styles get the identical sequence.
+        var oslot = ownerOfPick(pk).slot;
+        var cands = [];
+        for (var j = 0; j < adpOrder.length; j++) {
+          if (taken[adpOrder[j].name]) continue;
+          var m = marketAdp(adpOrder[j]);
+          cands.push({ player: adpOrder[j], adp: m.adp, sd: m.sd, pct: m.pct });
         }
-        if (!pool.length) break;
-        var chosen = pool[Math.floor(rnd() * pool.length)];
+        if (!cands.length) break;
+        var chosen = E.roomPick(cands, rnd, {
+          counts: oppCounts[oslot] || (oppCounts[oslot] = {}), roster: rules.roster
+        });
+        if (!chosen) break;
         taken[chosen.name] = true;
+        oppCounts[oslot][chosen.pos] = (oppCounts[oslot][chosen.pos] || 0) + 1;
       }
     }
     runs.push(mine);
@@ -1523,9 +1696,15 @@ $("#mockRun").addEventListener("click", function () {
       '<p class="dimtext" style="font-size:11.5px;margin-top:9px">' +
       (resB ? "Both styles got the identical sequence of opponent picks, so the difference " +
               "between them is the style rather than the dice. " : "") +
-      "The room is modelled as taking roughly the best available by ADP, which is a " +
-      "simplification — real drafts have runs and reaches this does not, and nobody in it " +
-      "is chasing their own team's players. " +
+      (function () {
+        var cov = marketCoverage();
+        return "The room drew from " + (cov.real
+          ? "<b>your own real Yahoo draft data</b> on " + cov.pct + "% of the board"
+          : "mock-draft ADP") +
+          ", each player with his own spread, and every team held to the same position " +
+          "limits you are. What it still does not model: nobody in it is chasing their " +
+          "own team's players, and no team is reading the room the way you are. ";
+      })() +
       "Ran in " + (Date.now() - t0) + "ms.</p>";
     btn.disabled = false; btn.textContent = b ? "Run 50 drafts" : "Run 25 drafts";
   }, 30);
@@ -1544,7 +1723,7 @@ function renderStyleList() {
     var st = STRATS[k];
     return '<div class="stylecard' + (k === cur ? " on" : "") + '" data-style="' + k + '">' +
       '<div class="sc-head"><b>' + esc(st.name) + "</b>" +
-        (k === cur ? '<span class="badge tag-FLAG_PLANT">current</span>' : "") + "</div>" +
+        (k === cur ? '<span class="badge badge-current">current</span>' : "") + "</div>" +
       '<div class="sc-tag">' + esc(st.tagline) + "</div>" +
     "</div>";
   }).join("");
@@ -1763,6 +1942,101 @@ function renderFilters() {
    The menu is also the documentation — nothing here depends on hovering, which
    does not exist on a tablet. */
 
+/* Research flags, in the reader's language rather than the industry's.
+
+   The data keys are the vocabulary the sources use; "flag plant" is what an
+   analyst calls staking their name on a player, and it means nothing at all to
+   somebody looking at a draft board on a two-minute clock. The badge shows the
+   plain word and carries the sentence that explains it. */
+var TAGS = {
+  FLAG_PLANT: "A high-conviction call — analysts are staking their name on him going " +
+              "well past where the market has him, rather than a consensus ranking.",
+  BREAKOUT:   "Tipped to take a big step up this season.",
+  SLEEPER:    "Going later in drafts than his projection says he should.",
+  RISER:      "The room has been taking him earlier than it was a week ago.",
+  FALLER:     "The room has been taking him later than it was a week ago.",
+  LANDMINE:   "Real downside risk at the price he is going for — the research " +
+              "expects him to disappoint the pick you would spend.",
+  AVOID:      "The research says pass at any price.",
+  INJURY:     "Carrying an injury worth checking before you put him in a lineup."
+};
+function tagLabel(t) { return E.TAG_LABEL[t] || String(t).replace(/_/g, " "); }
+function tagBadge(t) {
+  if (!t) return "";
+  return ' <span class="badge tag-' + t + '"' +
+    (TAGS[t] ? ' title="' + esc(TAGS[t]) + '"' : "") + ">" + esc(tagLabel(t)) + "</span>";
+}
+
+/* ------------------------------------------------- what the style did here
+
+   A draft style is a set of weights, and weights are invisible. You pick "Zero
+   RB", the board rearranges, and nothing tells you whether the player now at the
+   top is there because he is good or because you told the engine to dislike
+   running backs. So every pick carries the answer: the same player scored under
+   Balanced, the difference, where he moved on the board, and which knobs of the
+   style you chose actually touched him. */
+
+/** The style's effect on one player, against Balanced. Null on Balanced. */
+function styleEffect(p) {
+  if (!p || p.compNeutral == null || p.takenBy) return null;
+  return {
+    delta: p.comp - p.compNeutral,
+    from: p.rankNeutral, to: p.rankStyled,
+    move: (p.rankNeutral || 0) - (p.rankStyled || 0)
+  };
+}
+
+/** The knobs of the active style that actually bit on this player. */
+function knobsHitting(p) {
+  var k = activeKnobs(), d = p.compDetail || {}, out = [];
+  var round = A.ctx.round, early = round <= (k.earlyRounds || 5);
+  if (early && k.earlyPosBias && k.earlyPosBias[p.pos] != null)
+    out.push([p.pos + " weighted \u00d7" + k.earlyPosBias[p.pos] + " through round " + (k.earlyRounds || 5),
+              k.earlyPosBias[p.pos] > 1 ? "up" : "down"]);
+  else if (k.posBias && k.posBias[p.pos] != null)
+    out.push([p.pos + " weighted \u00d7" + k.posBias[p.pos] + " all draft",
+              k.posBias[p.pos] > 1 ? "up" : "down"]);
+  if (k.needWeight != null && k.needWeight !== 1)
+    out.push([k.needWeight === 0
+      ? "roster need switched off \u2014 pure best available"
+      : "roster need weighted \u00d7" + k.needWeight, "flat"]);
+  if (k.ceilingWeight != null && k.ceilingWeight !== 1 && Math.abs(d.ceilingAdj) > 2)
+    out.push(["ceiling weighted \u00d7" + k.ceilingWeight + " (his grade " + p.ceiling + ")",
+              k.ceilingWeight > 1 ? "up" : "down"]);
+  if (k.riskWeight != null && k.riskWeight !== 1 && Math.abs(d.riskAdj) > 2)
+    out.push(["risk weighted \u00d7" + k.riskWeight + " (his grade " + p.risk + ")",
+              k.riskWeight > 1 ? "down" : "up"]);
+  if (d.tagPenalty) out.push(["\u2212" + Math.round(d.tagPenalty) + " for the " +
+    tagLabel(p.tag) + " flag", "down"]);
+  if (k.stackBonus && d.bonus && ["WR", "TE"].indexOf(p.pos) >= 0)
+    out.push(["+" + k.stackBonus + " for stacking your " + p.team + " quarterback", "up"]);
+  if (k.handcuffBonus && d.bonus && p.pos === "RB")
+    out.push(["+" + k.handcuffBonus + " for handcuffing your own back", "up"]);
+  if (k.posFloorRound && k.posFloorRound[p.pos] != null && round < k.posFloorRound[p.pos])
+    out.push(["no " + p.pos + " before round " + k.posFloorRound[p.pos], "down"]);
+  if (k.byeTolerance && d.byePenalty)
+    out.push(["\u2212" + Math.round(d.byePenalty) + ", over your bye tolerance of " + k.byeTolerance, "down"]);
+  return out;
+}
+
+/** One-line summary for the recommendation card. */
+function styleChipHtml(p) {
+  var fx = styleEffect(p);
+  if (!fx || (Math.abs(fx.delta) < 1 && !fx.move)) return "";
+  var d = Math.round(fx.delta);
+  var dir = d > 0 ? "up" : d < 0 ? "down" : "flat";
+  return '<span class="sfx sfx-' + dir + '" title="' + esc(styleName() +
+      " against Balanced: " + (d >= 0 ? "+" : "") + d + " on the score, board rank " +
+      fx.from + " to " + fx.to) + '">' + esc(styleName()) + " " +
+    (d >= 0 ? "+" : "\u2212") + Math.abs(d) +
+    (fx.move ? " \u00b7 #" + fx.from + "\u2192#" + fx.to : "") + "</span>";
+}
+
+/** Survival to whichever pick the WAIT? question is actually about. */
+function survShown(p) {
+  return p.survShown != null ? p.survShown : (p.surv != null ? p.surv : 1);
+}
+
 var COLUMNS = {
   pts: {
     short: "PTS", label: "Projected points", w: "46px",
@@ -1795,20 +2069,23 @@ var COLUMNS = {
   wait: {
     short: "WAIT?", label: "Can you afford to wait for him?", w: "58px",
     desc: "His survival odds read as a decision. WAIT is better than 70% he is still there " +
-          "at your next pick, so spend this one elsewhere. RISKY is a coin flip. NOW is under " +
-          "35% — if you want him it has to be this pick.",
+          "when you are next choosing, so spend this pick elsewhere. RISKY is a coin flip. " +
+          "NOW is under 35% — if you want him it has to be this pick. While you are waiting " +
+          "the horizon is your next pick; once you are on the clock it is the pick after " +
+          "this one, because whether he lasts until right now is not a question.",
     render: function (p) {
-      if (p.surv >= 0.7) return { v: "wait", style: "color:var(--green)" };
-      if (p.surv >= 0.35) return { v: "risky", style: "color:var(--amber)" };
+      var s = survShown(p);
+      if (s >= 0.7) return { v: "wait", style: "color:var(--green)" };
+      if (s >= 0.35) return { v: "risky", style: "color:var(--amber)" };
       return { v: "NOW", style: "color:var(--red);font-weight:700" };
     }
   },
   survives: {
     short: "SURV", label: "Survival odds as a percentage", w: "48px",
-    desc: "The raw number behind WAIT? — the chance he is still on the board at your " +
-          "next pick, from his own ADP standard deviation across ~7,800 mock drafts.",
+    desc: "The raw number behind WAIT? — the chance he is still on the board the next time " +
+          "you choose, from his own ADP standard deviation across ~7,800 mock drafts.",
     render: function (p) {
-      var pct = Math.round(p.surv * 100);
+      var pct = Math.round(survShown(p) * 100);
       return { v: pct + "%", style: "color:" +
         (pct > 70 ? "var(--green)" : pct > 35 ? "var(--amber)" : "var(--red)") };
     }
@@ -1984,8 +2261,8 @@ function renderColumnHeads() {
   head.innerHTML = (compact ? "" : '<span class="c-rank"></span>') + "<span>Player</span>" +
     cols.map(function (k) {
       var c = COLUMNS[k];
-      var label = (k === "wait" && A.myNext && A.myNext > A.cur) ? "WAIT →" + A.myNext
-                : (k === "survives" && A.myNext && A.myNext > A.cur) ? "→" + A.myNext
+      var label = (k === "wait" && A.survTarget) ? "WAIT →" + A.survTarget
+                : (k === "survives" && A.survTarget) ? "→" + A.survTarget
                 : c.short;
       return '<span class="num" title="' + esc(c.label) + '">' + label + "</span>";
     }).join("");
@@ -2049,7 +2326,9 @@ function matches(p) {
   var q = view.q.trim().toLowerCase();
   if (!q) return true;
   return q.split(/\s+/).every(function (t) {
-    return (p.name + " " + p.pos + " " + p.team + " " + (p.tag || "")).toLowerCase().indexOf(t) >= 0;
+    return (p.name + " " + p.pos + " " + p.team + " " +
+            (p.tag || "") + " " + (p.tag ? tagLabel(p.tag) : ""))
+             .toLowerCase().replace(/_/g, " ").indexOf(t.replace(/_/g, " ")) >= 0;
   });
 }
 
@@ -2089,13 +2368,13 @@ function onClockShort() {
 
 function rowHtml(p, i) {
   var d = p.adpDelta;
-  var tag = p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "";
+  var tag = tagBadge(p.tag);
   // An injury designation is too important to sit behind a column toggle.
   var inj = p.injury ? ' <span class="badge inj inj-' + p.injury.replace(/[^A-Za-z]/g, "") +
     '" title="' + esc(p.injury + (p.injuryPart ? " \u2014 " + p.injuryPart : "")) + '">' +
     esc(p.injury === "Questionable" ? "Q" : p.injury) + "</span>" : "";
   var est = p.projSource === "modeled" ? ' <span class="dimtext" title="modeled, not projected">~</span>' : "";
-  var surv = Math.round((p.surv || 1) * 100);
+  var surv = Math.round(survShown(p) * 100);
   var survColor = surv > 70 ? "var(--green)" : surv > 35 ? "var(--amber)" : "var(--red)";
   var t = p.takenBy;
   var br = t ? null : byeRisk(p);
@@ -2186,9 +2465,10 @@ function renderRecs() {
       '<div class="rec-head"><span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
         '<span class="name">' + esc(p.name) + "</span>" +
         '<span class="dimtext num">' + p.team + " · bye " + p.bye + "</span>" +
-        (p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "") +
+        tagBadge(p.tag) +
       "</div>" +
       '<div class="rec-why">' + (why || "best remaining value") + "</div>" +
+      styleChipHtml(p) +
       '<div class="bar"><span style="width:' + conf + '%"></span></div>' +
       '<div class="rec-actions">' +
         '<button class="btn btn-sm btn-primary" data-take="' + esc(p.name) + '">I drafted him</button>' +
@@ -2209,6 +2489,39 @@ function renderRecs() {
   var stillThere = view.selected && A.avail.some(function (p) { return p.name === view.selected; });
   if (!stillThere && top[0]) view.selected = top[0].name;
   if (view.selected) renderDetail(view.selected);
+}
+
+/** The full "what your style did to this pick" block for the detail panel. */
+function styleBlockHtml(p) {
+  var fx = styleEffect(p);
+  if (!fx) return "";
+  var hits = knobsHitting(p);
+  if (Math.abs(fx.delta) < 1 && !fx.move && !hits.length) return "";
+  var d = Math.round(fx.delta);
+  var arrow = fx.move > 0
+      ? '<span style="color:var(--green)">up ' + fx.move + " place" + (fx.move === 1 ? "" : "s") + "</span>"
+    : fx.move < 0
+      ? '<span style="color:var(--red)">down ' + (-fx.move) + " place" + (fx.move === -1 ? "" : "s") + "</span>"
+    : '<span class="dimtext">no move</span>';
+  return '<div class="panel-sub mt">' +
+    '<div class="eyebrow" style="margin-bottom:6px">What ' + esc(styleName()) +
+      " did to this pick</div>" +
+    "<table>" +
+      '<tr><td>Score under Balanced</td><td class="right num dimtext">' + n0(p.compNeutral) + "</td></tr>" +
+      '<tr><td>Score under ' + esc(styleName()) + '</td><td class="right num"><b>' + n0(p.comp) +
+        '</b> <span style="color:var(--' + (d >= 0 ? "green" : "red") + ')">' +
+        (d >= 0 ? "+" : "\u2212") + Math.abs(d) + "</span></td></tr>" +
+      '<tr><td>Board rank</td><td class="right num">#' + fx.from + " \u2192 #" + fx.to +
+        " \u00b7 " + arrow + "</td></tr>" +
+    "</table>" +
+    (hits.length
+      ? '<ul class="knoblist">' + hits.map(function (h) {
+          return '<li class="k-' + h[1] + '">' + esc(h[0]) + "</li>";
+        }).join("") + "</ul>"
+      : '<div class="dimtext mt" style="font-size:12px">Your style has no knob that ' +
+        "touches this player \u2014 the difference is what it did to everyone around him." +
+        "</div>") +
+    "</div>";
 }
 
 function renderDetail(name) {
@@ -2249,10 +2562,20 @@ function renderDetail(name) {
     '<div class="grid-auto">' +
       "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">Where the points come from</div>" +
         "<table>" + catRows + "</table></div>" +
-      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">How the suggestion is built</div><table>" +
-        '<tr><td>Value over replacement</td><td class="right num">' + n0(p.vor) + "</td></tr>" +
+      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">How the suggestion is built</div>" +
+        (d.marginal <= 0.5 && d.aware > 0.5
+          ? '<div class="note warn" style="margin-bottom:8px">He cannot enter your starting ' +
+            "lineup as it stands — you are already better at " + p.pos +
+            ". The first number below is what he is worth to any team; the second is what " +
+            "he is worth to yours." + "</div>"
+          : "") +
+        "<table>" +
+        '<tr><td>Value over replacement <span class="dimtext">(any team)</span></td>' +
+          '<td class="right num dimtext">' + n0(p.vor) + "</td></tr>" +
+        '<tr><td><b>Adds to your starting lineup</b> <span class="dimtext">(over a free ' +
+          p.pos + ')</span></td><td class="right num"><b>' + n0(d.marginal) + "</b></td></tr>" +
         '<tr><td>Value over next available</td><td class="right num">' + n0(d.vona) + "</td></tr>" +
-        '<tr><td>Need multiplier</td><td class="right num">×' + d.mult.toFixed(2) + "</td></tr>" +
+        '<tr><td>Bias multiplier</td><td class="right num">×' + d.mult.toFixed(2) + "</td></tr>" +
         '<tr><td>Ceiling adjustment</td><td class="right num">' + (d.ceilingAdj ? "+" + d.ceilingAdj.toFixed(1) : "—") + "</td></tr>" +
         '<tr><td>Risk adjustment</td><td class="right num">' + (d.riskAdj ? "-" + d.riskAdj.toFixed(1) : "—") + "</td></tr>" +
         '<tr><td>Bye penalty</td><td class="right num">' + (d.byePenalty ? "-" + d.byePenalty.toFixed(0) : "—") + "</td></tr>" +
@@ -2260,10 +2583,13 @@ function renderDetail(name) {
         (d.blocked ? '<tr><td colspan="2" class="dimtext">Blocked: ' + esc(d.blocked) + "</td></tr>" : "") +
       "</table>" +
       '<div class="mt dimtext" style="font-size:12px">' +
-        "Survives to " + (A.myNext || "—") + ": <b>" + Math.round(p.surv * 100) + "%</b>" +
-        (A.myAfter ? " · to " + A.myAfter + ": <b>" + Math.round(p.survNext * 100) + "%</b>" : "") +
+        "Survives to " + (A.survTarget || "—") + ": <b>" + Math.round(survShown(p) * 100) + "%</b>" +
+        (A.myAfter && A.myAfter !== A.survTarget
+          ? " · to " + A.myAfter + ": <b>" + Math.round(p.survNext * 100) + "%</b>" : "") +
       "</div></div>" +
     "</div>" +
+
+    styleBlockHtml(p) +
 
     '<div class="rec-actions mt">' +
       '<button class="btn btn-sm btn-primary" data-take2="' + esc(p.name) + '">I drafted him</button>' +
@@ -2351,7 +2677,13 @@ function renderRoster() {
   $("#needs").innerHTML = ["QB", "RB", "WR", "TE", "K", "DEF"].map(function (pos) {
     var nd = need[pos] || { have: 0, starters: 0, short: 0 };
     var cls = nd.short > 0.5 ? " short" : nd.short <= 0 ? " done" : "";
-    return '<span class="n' + cls + '">' + pos + " " + nd.have + "/" + nd.starters + "</span>";
+    var over = nd.have - nd.starters;
+    var tip = nd.have + " on the roster for " + nd.starters + " starting " + pos +
+      (nd.starters === 1 ? " slot" : " slots") +
+      (over > 0 ? " — " + over + " spare, and a spare can't start" :
+       over < 0 ? " — still short" : "");
+    return '<span class="n' + cls + '" title="' + esc(tip) + '">' +
+      pos + " " + nd.have + "/" + nd.starters + "</span>";
   }).join("") +
   (byeList.length ? '<span class="n short">bye clash wk ' + byeList.join(", ") + "</span>" : "");
 }
@@ -2886,18 +3218,42 @@ function claudeContext() {
       extra.push("the other ADP market is " + Math.abs(Math.round(p.adpResid)) + " picks " +
         (p.adpResid < 0 ? "higher" : "lower") + " on him than players of his price here");
     }
+    // The marginal number is the one that stops a model rationalising a
+    // downgrade: it says in points whether he can play for this roster at all.
+    var marg = p.compDetail ? Math.round(p.compDetail.marginal) : null;
+    if (marg != null) {
+      extra.push(marg <= 0
+        ? "he CANNOT crack my starting lineup — I am already better at " + p.pos +
+          ", so he is bench depth and nothing else"
+        : "he adds " + marg + " pts to my starting lineup over a free " + p.pos);
+    }
+    // What the chosen style is doing to him, so the brief can argue with it.
+    var fx = styleEffect(p);
+    if (fx && (Math.abs(fx.delta) >= 1 || fx.move)) {
+      extra.push("my " + styleName() + " style moves him " +
+        (fx.delta >= 0 ? "+" : "") + Math.round(fx.delta) + " and from board rank " +
+        fx.from + " to " + fx.to + " versus neutral scoring");
+    }
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
       (extra.length ? ", " + extra.join(", ") : "") +
       ", ADP " + p.adp + ", chance he is still there at my FOLLOWING pick (" +
       (A.myAfter || A.myNext) + ") is " +
       Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
-      (p.tag ? ", flagged " + p.tag : "") +
+      (p.tag ? ", flagged " + tagLabel(p.tag) +
+        (TAGS[p.tag] ? " (" + TAGS[p.tag] + ")" : "") : "") +
       (p.note ? ". Research note: " + p.note : "");
   }).join("\n");
+  // Projected points on every player I already own. Without them a model can
+  // recommend a candidate who is plainly worse than the man in the slot, and
+  // will happily write a paragraph explaining why he is an upgrade.
+  var line = function (pl) {
+    return pl.name + " (" + pl.pos + ", " + Math.round(pl.pts) + " pts, bye " + pl.bye + ")";
+  };
   var roster = A.roster.slots.map(function (s) {
-    return s.pos + ": " + (s.player ? s.player.name + " (" + s.player.pos + ", bye " + s.player.bye + ")" : "empty");
+    return s.pos + ": " + (s.player ? line(s.player) : "EMPTY");
   }).join("; ");
+  var bench = (A.roster.bench || []).map(line).join("; ");
   var needs = Object.keys(A.need).map(function (k) {
     return k + " " + A.need[k].have + "/" + A.need[k].starters;
   }).join(", ");
@@ -2909,8 +3265,17 @@ function claudeContext() {
       ", round " + A.onClock.round + ". My next pick is " + A.myNext +
       (A.myAfter ? ", then " + A.myAfter + " (" + (A.myAfter - A.myNext) + " picks apart)" : "") + ".",
     runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
-    "MY ROSTER: " + roster,
+    "MY STARTERS: " + roster,
+    bench ? "MY BENCH: " + bench : "",
     "STARTERS FILLED: " + needs,
+    "Compare any candidate against the man already in that slot, not against the " +
+      "league. A player who cannot start for me is worth close to nothing however " +
+      "well he scores in the abstract — say so plainly rather than arguing him up.",
+    "MY DRAFT STYLE: " + styleName() +
+      (STRATS[S.league.style || "balanced"]
+        ? " — " + STRATS[S.league.style || "balanced"].tagline : "") +
+      ". The scores below already have it applied. Say when a pick is only on top " +
+      "because of the style, and say so too when the style is steering me wrong here.",
     "TOP AVAILABLE BY THE BOARD'S OWN SCORE:\n" + lines
   ].filter(Boolean).join("\n\n");
 }

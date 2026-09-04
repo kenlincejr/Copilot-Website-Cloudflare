@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904z">
+<link rel="stylesheet" href="assets/ff.css?v=20260904af">
 </head>
 <body>
 
@@ -18,7 +18,7 @@
 
     <div class="barbtns">
       <button class="btn btn-sm" id="btnUndo" title="Undo the last pick (Ctrl+Z)">Undo</button>
-      <button class="btn btn-sm btn-primary hidden" id="btnStart">Start draft</button>
+      <button class="btn btn-sm btn-primary" id="btnBegin">Start / practise ▾</button>
       <button class="btn btn-sm" id="btnRosters">Rosters</button>
       <button class="btn btn-sm" id="btnClaude">Ask Claude</button>
       <div class="menuwrap">
@@ -296,10 +296,13 @@
   <div class="panel mt" style="padding:14px">
     <div class="panel-head"><h3 style="margin:0">See what a style actually builds</h3></div>
     <p class="muted" style="font-size:13px;margin-bottom:10px">
-      Runs a full mock draft from where you are now, with the rest of the room taking
-      roughly the best available by ADP, and shows the roster each style leaves you
-      holding. Pick two to compare them side by side — both get the identical sequence of
-      opponent picks, so any difference is the style rather than luck.
+      Runs a full mock draft from where you are now against a modelled room — the same
+      one the practice run drafts against. Every other team draws near a player's real
+      draft position using that player's own spread, obeys the same position limits you
+      do, and starts from the roster it has actually built so far. It shows the roster
+      each style leaves you holding. Pick two to compare them side by side — both get
+      the identical sequence of opponent picks, so any difference is the style rather
+      than luck.
     </p>
     <div class="field-row">
       <div class="field"><label>Style A</label><select id="mockA"></select></div>
@@ -353,6 +356,57 @@
     <button class="btn" id="catchupGuess">Fill from ADP</button>
     <button class="btn btn-primary" id="catchupApply">Record these picks</button>
   </div>
+</div></div>
+
+<div class="modal-bg hidden" id="beginModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Two ways in</h2>
+      <span class="muted">Practise the whole thing first, then run it for real on the night.</span></div>
+    <button class="btn btn-sm" id="beginClose">Close</button>
+  </div>
+
+  <div class="beginpick">
+    <button class="begincard" id="beginPractice">
+      <div class="bc-kicker">Practice run</div>
+      <h3>Draft against a modelled room</h3>
+      <p>The other eleven teams draft themselves. It stops the moment the pick is
+         yours, you choose from the board exactly as you would on the night, and
+         you set it running again. Nothing here is real and it all undoes.</p>
+      <div class="bc-go">Start a practice draft</div>
+    </button>
+    <button class="begincard" id="beginLive">
+      <div class="bc-kicker">The real thing</div>
+      <h3>Track your live draft</h3>
+      <p>You record each pick as it happens in your league and the board stays
+         honest against it — survival odds, what is left at your next pick, and
+         what the teams ahead of you still need.</p>
+      <div class="bc-go">Start the live tracker</div>
+    </button>
+  </div>
+
+  <div class="panel-head mt"><h3>How a practice run works</h3></div>
+  <ol class="beginsteps">
+    <li><b>Hit Simulate.</b> The room drafts, pick by pick, until the pick is yours.
+        It always stops on you — it never drafts your team for you.</li>
+    <li><b>Make your pick.</b> Same board, same suggestions, same two-minute clock.
+        <b>DRAFT</b> on a row puts him on your roster.</li>
+    <li><b>Hit Simulate again.</b> The room runs on to your next pick. Repeat to the
+        end of the fifteenth round.</li>
+    <li><b>Start over when you are done</b>, or <em>Reset draft</em> in League setup,
+        which clears every simulated pick. Undo works on any single one.</li>
+  </ol>
+
+  <div class="panel-head mt"><h3>What the room is actually doing</h3></div>
+  <p class="muted" style="margin:0 0 8px">
+    Not "take the top of the list". Every team draws near a player's real draft
+    position using <b>that player's own spread</b>, so consensus picks go where
+    they always go and late-round darts land anywhere across two rounds. Teams
+    obey the same position limits you do — nobody takes a third kicker — and they
+    lean into a positional run once one starts, the way a real room does.
+  </p>
+  <ul class="beginfacts" id="beginFacts"></ul>
+
+  <div class="note warn mt" id="beginFresh"></div>
 </div></div>
 
 <div class="modal-bg hidden" id="dataModal"><div class="modal">
@@ -438,14 +492,14 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904z"></script>
-<script src="data/players.js?v=20260904z"></script>
-<script src="assets/presets.js?v=20260904z"></script>
-<script src="assets/engine.js?v=20260904z"></script>
-<script src="assets/auth.js?v=20260904z"></script>
-<script src="assets/parser.js?v=20260904z"></script>
-<script src="assets/draftanalysis.js?v=20260904z"></script>
-<script src="assets/strategies.js?v=20260904z"></script>
-<script src="assets/app.js?v=20260904z"></script>
+<script src="assets/config.js?v=20260904af"></script>
+<script src="data/players.js?v=20260904af"></script>
+<script src="assets/presets.js?v=20260904af"></script>
+<script src="assets/engine.js?v=20260904af"></script>
+<script src="assets/auth.js?v=20260904af"></script>
+<script src="assets/parser.js?v=20260904af"></script>
+<script src="assets/draftanalysis.js?v=20260904af"></script>
+<script src="assets/strategies.js?v=20260904af"></script>
+<script src="assets/app.js?v=20260904af"></script>
 </body>
 </html>
