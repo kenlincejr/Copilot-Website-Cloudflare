@@ -2170,29 +2170,30 @@ var COLUMNS = {
     }
   },
   wait: {
-    short: "WAIT?", label: "Can you afford to wait for him?", w: "58px",
-    desc: "His survival odds read as a decision, and which decision depends on whose " +
-          "pick it is. On the clock: WAIT is better than 70% he lasts to your following " +
-          "pick, so spend this one elsewhere; RISKY is a coin flip; NOW is under 35% — if " +
-          "you want him it has to be this pick. While you are waiting you cannot take " +
-          "anyone now, so the column answers the only question that is live — will he still " +
-          "be THERE when you choose, MAYBE, or GONE. The header names the pick it is " +
-          "measuring to, and that pick moves when you come on the clock.",
+    short: "WAIT?", label: "Can you afford to wait for him?", w: "64px",
+    desc: "A forecast, never a draft state — nobody in this column has been taken. His " +
+          "survival odds read as a decision, and which decision depends on whose pick it " +
+          "is. On the clock: WAIT is better than 70% he lasts to your following pick, so " +
+          "spend this one elsewhere; RISKY is a coin flip; NOW is under 35% — if you want " +
+          "him it has to be this pick. While you are waiting you cannot take anyone now, so " +
+          "the column answers the only question that is live: does he last to the pick named " +
+          "in the header — YES, MAYBE, or NO. That pick moves when you come on the clock.",
     render: function (p) {
       var s = survShown(p);
       // Two different questions wear this column, and answering the wrong one
       // is worse than saying nothing. On the clock it is "can I wait?" and the
       // answer to no is NOW. While you are *waiting* you cannot take anybody
-      // now, so NOW is meaningless — the question is "will he still be there?"
-      // and the answer to no is that he is gone before you choose again.
+      // now, so NOW is meaningless — the question is "does he last until then?"
       if (myTurn()) {
         if (s >= 0.7) return { v: "wait", style: "color:var(--green)" };
         if (s >= 0.35) return { v: "risky", style: "color:var(--amber)" };
         return { v: "NOW", style: "color:var(--red);font-weight:700" };
       }
-      if (s >= 0.7) return { v: "there", style: "color:var(--green)" };
+      // "there"/"gone" were read as a report of who had already been drafted.
+      // Answering the header's question outright cannot be read as history.
+      if (s >= 0.7) return { v: "yes", style: "color:var(--green)" };
       if (s >= 0.35) return { v: "maybe", style: "color:var(--amber)" };
-      return { v: "gone", style: "color:var(--red);font-weight:700" };
+      return { v: "no", style: "color:var(--red);font-weight:700" };
     }
   },
   survives: {
@@ -2376,7 +2377,11 @@ function renderColumnHeads() {
   head.innerHTML = (compact ? "" : '<span class="c-rank"></span>') + "<span>Player</span>" +
     cols.map(function (k) {
       var c = COLUMNS[k];
-      var label = (k === "wait" && A.survTarget) ? "WAIT →" + A.survTarget
+      // The column asks a different question on and off the clock, and the answers
+      // below already switch. The header has to switch with them or it labels the
+      // wrong question — "lasts to 11?" is what yes/maybe/no are answering.
+      var label = (k === "wait" && A.survTarget)
+                  ? (myTurn() ? "WAIT →" : "LASTS→") + A.survTarget
                 : (k === "survives" && A.survTarget) ? "→" + A.survTarget
                 : c.short;
       return '<span class="num" title="' + esc(c.label) + '">' + label + "</span>";
