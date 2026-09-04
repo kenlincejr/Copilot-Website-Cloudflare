@@ -656,12 +656,25 @@ var STYLE_SYSTEM =
   "You translate a fantasy manager's description of how they want to draft into a set " +
   "of numeric weights for a draft engine. Reply with ONLY a JSON object, no prose and no " +
   "code fence. Allowed keys and ranges:\n" +
-  "  earlyRounds 1-10, needWeight 0-2 (0 = ignore roster need entirely),\n" +
-  "  ceilingWeight 0-2, riskWeight 0-2, byeTolerance 2-6,\n" +
-  "  stackBonus 0-25, handcuffBonus 0-25,\n" +
-  "  posBias / earlyPosBias: object keyed QB RB WR TE K DEF, each 0.4-1.6 (1 = neutral),\n" +
-  "  posFloorRound: object keyed by position, earliest round allowed,\n" +
-  "  tagPenalty: object keyed LANDMINE INJURY AVOID FALLER, each 0-40 extra points off.\n" +
+  "  earlyRounds 1-10 \u2014 how many rounds count as early.\n" +
+  "  needWeight 0-2 \u2014 how hard an empty starting slot pulls. 0 ignores roster\n" +
+  "    need entirely and drafts pure value; 1 neutral; 2 doubles it.\n" +
+  "  ceilingWeight 0-2 \u2014 how much a HIGH-UPSIDE player is REWARDED. Raise it\n" +
+  "    for a manager chasing league-winners; LOWER it for one who wants safe floors.\n" +
+  "  riskWeight 0-2 \u2014 how heavily a RISKY player is PENALISED. RAISE it for a\n" +
+  "    cautious win-now manager; LOWER it for one happy to gamble. Mind the\n" +
+  "    direction: a high riskWeight means MORE risk-averse, not more risk taken.\n" +
+  "  byeTolerance 2-6 \u2014 starters allowed on one bye week before it costs\n" +
+  "    points. LOWER is stricter.\n" +
+  "  stackBonus / handcuffBonus 0-25 \u2014 points added for a pass-catcher on your\n" +
+  "    quarterback's team, or a back behind one you already own.\n" +
+  "  posBias / earlyPosBias: object keyed QB RB WR TE K DEF, each 0.4-1.6, 1 = neutral.\n" +
+  "    Above 1 favours the position, below 1 avoids it. earlyPosBias applies only\n" +
+  "    through earlyRounds, which is how Hero RB (one back early, then pivot)\n" +
+  "    differs from Zero RB (none at all early).\n" +
+  "  posFloorRound: object keyed by position, earliest round the position is allowed.\n" +
+  "  tagPenalty: object keyed LANDMINE INJURY AVOID FALLER, each 0-40 points off a\n" +
+  "    player carrying that research flag. Higher means avoid them harder.\n" +
   "Include only the keys the description actually implies. Add a \"why\" key: one sentence, " +
   "under 25 words, saying what you changed and why. Nothing else.";
 
