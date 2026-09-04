@@ -554,3 +554,18 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   box-shadow: 0 0 0 3px rgba(45,212,191,.12); outline: none;
 }
 .teamcard .tc-head { gap: 8px; }
+
+/* Draft mode picker — the live/board-only choice at the top of League setup. */
+.modegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .modegrid { grid-template-columns: 1fr; } }
+.modecard {
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 11px 13px;
+  background: var(--panel-2); cursor: pointer; transition: border-color .12s, background .12s;
+}
+.modecard:hover { border-color: var(--teal-dim); }
+.modecard.on { border-color: var(--teal-dim); background: rgba(45,212,191,.08); }
+.modecard .mc-tag { color: var(--muted); font-size: 12.5px; margin: 2px 0 8px; }
+.modecard ul { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.55; }
+.modecard li.up   { color: var(--muted); }
+.modecard li.down { color: var(--dim); }
+.modecard li.down::marker { color: var(--amber); }

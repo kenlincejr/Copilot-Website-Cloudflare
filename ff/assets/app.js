@@ -29,10 +29,44 @@ DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
 
 /* ------------------------------------------------------------------ state */
 
+/**
+ * Two ways to run a draft.
+ *
+ * "live" tracks all twelve rosters: every pick is credited to whoever is on the
+ * clock, which buys opponent-need inference for the Claude brief and a graded
+ * league table afterwards. It costs you having to record who took each player.
+ *
+ * "solo" tracks only your team. You still mark players off as they go — the pool
+ * has to be right or nothing downstream is — but nothing is attributed to
+ * anyone. Survival and value-over-next-available still work, because those need
+ * the pick *count*, not who made them.
+ */
+function isLive() { return (S.league.mode || "live") !== "solo"; }
+
+var MODES = {
+  live: {
+    name: "Live draft",
+    tagline: "Track the whole league as it happens.",
+    gains: ["A draft tracker: who's up, who's on deck, the last picks",
+            "Every team's roster, and a graded report on all of them",
+            "Claude knows what the teams picking before you still need"],
+    costs: ["You record who took each player, not just that he's gone"]
+  },
+  solo: {
+    name: "Just the board",
+    tagline: "Cross players off yourself. Only your team is tracked.",
+    gains: ["Nothing to do but mark a player gone",
+            "Your points, value over replacement and survival odds are identical"],
+    costs: ["No opponent rosters, so no league grades",
+            "Claude can't see what the teams ahead of you need"]
+  }
+};
+
 function defaultLeague() {
   return {
     preset: "kinda_highlanders",
     rules: JSON.parse(JSON.stringify(PRESETS.kinda_highlanders)),
+    mode: "live",
     teams: 12, slot: 11, rounds: 15,
     keepers: [{ name: "Drake Maye", round: 5, slot: 11 }],
     byeTolerance: 3, defFloorRound: 7
@@ -272,9 +306,11 @@ function render() {
   var onMe = A.onClock.slot === S.league.slot;
   $("#search").placeholder = A.cur > total
     ? "Draft complete"
-    : onMe
-      ? "Search \u2014 Enter drafts to YOU (you're on the clock)"
-      : "Search \u2014 Enter puts him on " + teamLabel(A.onClock.slot) + ", Shift+Enter on yours";
+    : !isLive()
+      ? "Search \u2014 Enter marks him gone, Shift+Enter drafts him to you"
+      : onMe
+        ? "Search \u2014 Enter drafts to YOU (you're on the clock)"
+        : "Search \u2014 Enter puts him on " + teamLabel(A.onClock.slot) + ", Shift+Enter on yours";
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker(); renderTracker();
   if (view.selected) renderDetail(view.selected);
@@ -298,7 +334,8 @@ function drift() {
 
 function renderStatus() {
   var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
-  $("#btnStart").classList.toggle("hidden", !!S.draftStarted || S.picks.length > 0);
+  $("#btnStart").classList.toggle("hidden", !isLive() || !!S.draftStarted || S.picks.length > 0);
+  $("#btnLeague").classList.toggle("hidden", !isLive());
 
   if (A.cur > total) {
     el.className = "statusbar waiting";
@@ -451,10 +488,10 @@ function renderTicker() {
   el.innerHTML =
     seg("round", A.onClock.round + " of " + S.league.rounds) +
     '<span class="sep"></span>' +
-    seg("on the clock", teamLabel(A.onClock.slot, true),
-        A.onClock.slot === S.league.slot) +
-    (onDeck ? seg("on deck", teamLabel(onDeck, true),
-                  onDeck === S.league.slot) : "") +
+    (isLive()
+      ? seg("on the clock", teamLabel(A.onClock.slot, true), A.onClock.slot === S.league.slot) +
+        (onDeck ? seg("on deck", teamLabel(onDeck, true), onDeck === S.league.slot) : "")
+      : seg("pick", String(A.cur))) +
     '<span class="sep"></span>' +
     seg("your pick", A.myNext ? "#" + A.myNext : "none left", true) +
     '<span class="sep"></span>' +
@@ -520,6 +557,7 @@ $("#pickSecs").addEventListener("input", function () {
  */
 function renderTracker() {
   var el = $("#tracker"), total = S.league.teams * S.league.rounds;
+  if (!isLive()) { el.innerHTML = ""; return; }
   if (!S.draftStarted && !S.picks.length) { el.innerHTML = ""; return; }
 
   if (A.cur > total) {
@@ -770,6 +808,36 @@ function renderReport() {
   var rows = gradeDraft();
   var total = S.league.teams * S.league.rounds;
   var mine = rows.find(function (r) { return r.slot === S.league.slot; });
+
+  if (!isLive()) {
+    // Nothing was tracked but this roster, so there is no league to rank against.
+    // Grading it anyway would mean inventing a field of twelve.
+    var r2 = E.assignRoster(A.mine, S.league.rules);
+    var starters = r2.slots.filter(function (x) { return x.player; });
+    $("#reportSub").textContent = A.mine.length + " player" +
+      (A.mine.length === 1 ? "" : "s") + " on your roster.";
+    $("#reportBody").innerHTML =
+      '<div class="note">You ran this in <b>board-only</b> mode, so no opponent rosters ' +
+      "exist to rank against \u2014 there is no league table here, and inventing one would be " +
+      "worse than leaving it out. What follows is your roster measured against replacement " +
+      "level in your own scoring.</div>" +
+      '<div class="mt"><table><tr><th>Slot</th><th>Player</th>' +
+        "<th class='right'>Pts</th><th class='right'>Over repl.</th><th class='right'>Bye</th></tr>" +
+      r2.slots.map(function (x) {
+        return "<tr><td>" + x.pos + "</td><td>" +
+          (x.player ? '<span class="pos pos-' + x.player.pos + '">' + x.player.pos + "</span> " +
+            esc(x.player.name) : '<span class="dimtext">empty</span>') + "</td>" +
+          '<td class="right num">' + (x.player ? n0(x.player.pts) : "\u2014") + "</td>" +
+          '<td class="right num">' + (x.player ? n0(x.player.vor) : "\u2014") + "</td>" +
+          '<td class="right num">' + (x.player ? x.player.bye : "\u2014") + "</td></tr>";
+      }).join("") +
+      "<tr><td colspan='2'><b>Starting lineup</b></td>" +
+        '<td class="right num"><b>' +
+          n0(starters.reduce(function (a, x) { return a + x.player.pts; }, 0)) + "</b></td>" +
+        "<td colspan='2'></td></tr>" +
+      "</table></div>";
+    return rows;
+  }
   $("#reportSub").textContent = S.picks.length + " of " + total + " picks recorded" +
     (S.picks.length < total ? " — grades will move as the rest come in." : ".");
 
@@ -812,6 +880,14 @@ $("#btnReport").addEventListener("click", function () {
 });
 $("#reportClose").addEventListener("click", function () { closeModal("#reportModal"); });
 
+var REPORT_SOLO_SYSTEM =
+  "You are reading one fantasy manager's completed draft. Only their own roster was " +
+  "tracked \u2014 there are no opponent rosters, so do NOT speculate about what rivals hold " +
+  "or invent a league context. The points were computed by a scoring engine using this " +
+  "league's exact rules; trust them. Write three short paragraphs, no headings, no bullets, " +
+  "under 220 words: what this roster actually is; its single biggest weakness and what it " +
+  "will cost; and two concrete waiver or trade moves for the first fortnight. Be direct.";
+
 var REPORT_SYSTEM =
   "You are reading a completed or in-progress fantasy football draft for the manager who " +
   "drafted one of these teams. The grades and projected points were computed by a scoring " +
@@ -826,12 +902,43 @@ $("#reportAsk").addEventListener("click", function () {
   if (!claudeReady()) { closeModal("#reportModal"); $("#btnClaude").click(); return; }
   var rows = gradeDraft(), rosters = allRosters();
   var mine = rows.find(function (r) { return r.slot === S.league.slot; });
+
+  if (!isLive()) {
+    // Nothing was tracked but this roster, so there is no league to rank against.
+    // Grading it anyway would mean inventing a field of twelve.
+    var r2 = E.assignRoster(A.mine, S.league.rules);
+    var starters = r2.slots.filter(function (x) { return x.player; });
+    $("#reportSub").textContent = A.mine.length + " player" +
+      (A.mine.length === 1 ? "" : "s") + " on your roster.";
+    $("#reportBody").innerHTML =
+      '<div class="note">You ran this in <b>board-only</b> mode, so no opponent rosters ' +
+      "exist to rank against \u2014 there is no league table here, and inventing one would be " +
+      "worse than leaving it out. What follows is your roster measured against replacement " +
+      "level in your own scoring.</div>" +
+      '<div class="mt"><table><tr><th>Slot</th><th>Player</th>' +
+        "<th class='right'>Pts</th><th class='right'>Over repl.</th><th class='right'>Bye</th></tr>" +
+      r2.slots.map(function (x) {
+        return "<tr><td>" + x.pos + "</td><td>" +
+          (x.player ? '<span class="pos pos-' + x.player.pos + '">' + x.player.pos + "</span> " +
+            esc(x.player.name) : '<span class="dimtext">empty</span>') + "</td>" +
+          '<td class="right num">' + (x.player ? n0(x.player.pts) : "\u2014") + "</td>" +
+          '<td class="right num">' + (x.player ? n0(x.player.vor) : "\u2014") + "</td>" +
+          '<td class="right num">' + (x.player ? x.player.bye : "\u2014") + "</td></tr>";
+      }).join("") +
+      "<tr><td colspan='2'><b>Starting lineup</b></td>" +
+        '<td class="right num"><b>' +
+          n0(starters.reduce(function (a, x) { return a + x.player.pts; }, 0)) + "</b></td>" +
+        "<td colspan='2'></td></tr>" +
+      "</table></div>";
+    return rows;
+  }
   var out = $("#reportOut");
   out.classList.remove("hidden"); out.classList.remove("err");
   out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> reading the draft\u2026';
   $("#reportAsk").disabled = true;
 
-  var table = rows.map(function (r) {
+  var table = !isLive() ? "(board-only mode \u2014 no opponent rosters were tracked)"
+    : rows.map(function (r) {
     return "  " + r.rank + ". " + r.name + " \u2014 grade " + r.grade + ", " +
       Math.round(r.pts) + " projected starter points, " + r.starters + " of " +
       (r.starters + r.empty) + " slots filled" +
@@ -850,7 +957,7 @@ $("#reportAsk").addEventListener("click", function () {
     "PROGRESS: " + S.picks.length + " of " + (S.league.teams * S.league.rounds) + " picks.\n\n" +
     "STANDINGS BY PROJECTED STARTING LINEUP:\n" + table + "\n\n" +
     "MY ROSTER (I am " + mine.name + ", finished " + mine.rank + "):\n" + myRoster,
-    REPORT_SYSTEM, 1800)
+    isLive() ? REPORT_SYSTEM : REPORT_SOLO_SYSTEM, 1800)
     .then(function (text) { out.querySelector(".claude-out").textContent = text; })
     .catch(function (err) {
       out.classList.add("err");
@@ -1191,7 +1298,7 @@ function onClockLabel() {
   return A && A.onClock ? teamLabel(A.onClock.slot) : "the team on the clock";
 }
 function onClockShort() {
-  if (!A || !A.onClock) return "GONE";
+  if (!A || !A.onClock || !isLive()) return "GONE";
   if (A.onClock.slot === S.league.slot) return "GONE";
   var n = ((S.league.teamNames || [])[A.onClock.slot - 1] || "").trim();
   if (!n) return "T" + A.onClock.slot;
@@ -1212,7 +1319,8 @@ function rowHtml(p, i) {
   var br = t ? null : byeRisk(p);
   var cls = "prow" + (view.selected === p.name ? " sel" : "") +
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
-  var who = t ? '<span class="sub">' + teamLabel(t.slot, true) + " \u00b7 " + t.pick + "</span>" : "";
+  var who = t ? '<span class="sub">' +
+        (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") + t.pick + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
     '<span class="rank">' + (i + 1) + "</span>" +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
@@ -1463,7 +1571,7 @@ function renderLog() {
     var pl = BY_NAME[p.name] || {};
     return '<div style="padding:2px 0;' + (p.mine ? "color:var(--teal)" : "color:var(--dim)") + '">' +
       '<span class="mono">' + p.pick + "</span> " +
-      (p.mine ? "you" : "t" + p.slot) + " · " +
+      (isLive() || p.mine ? teamLabel(p.slot, true) + " · " : "") +
       (p.unknown ? "<i>unknown</i>" : esc(p.name)) +
       ' <span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span>" +
       (p.keeper ? ' <span class="dimtext">keeper</span>' : "") + "</div>";
@@ -1578,6 +1686,25 @@ function buildKeeperList() {
   });
 }
 
+function renderModePicker() {
+  var cur = S.league.mode || "live";
+  $("#modePicker").innerHTML = Object.keys(MODES).map(function (k) {
+    var m = MODES[k];
+    return '<div class="modecard' + (k === cur ? " on" : "") + '" data-mode="' + k + '">' +
+      "<b>" + esc(m.name) + "</b>" +
+      '<div class="mc-tag">' + esc(m.tagline) + "</div>" +
+      "<ul>" + m.gains.map(function (g) { return '<li class="up">' + esc(g) + "</li>"; }).join("") +
+        m.costs.map(function (c) { return '<li class="down">' + esc(c) + "</li>"; }).join("") +
+      "</ul></div>";
+  }).join("");
+  $$("#modePicker .modecard").forEach(function (el) {
+    el.onclick = function () {
+      S.league.mode = el.getAttribute("data-mode");
+      save(); renderModePicker(); render();
+    };
+  });
+}
+
 function openSetup() {
   $("#presetSel").innerHTML = Object.keys(PRESETS).map(function (k) {
     return '<option value="' + k + '"' + (S.league.preset === k ? " selected" : "") + ">" +
@@ -1591,6 +1718,7 @@ function openSetup() {
     return '<option value="' + esc(p.name) + '">';
   }).join("");
   buildScoringForm(); buildRosterForm(); buildKeeperList(); buildTeamNames();
+  renderModePicker();
   openModal("#setupModal");
 }
 $("#btnSetup").addEventListener("click", openSetup);
@@ -1869,7 +1997,7 @@ function opponentRosters() {
 
 /** The teams picking between now and your next turn, and what they still need. */
 function teamsAhead() {
-  if (!A.myNext) return [];
+  if (!A.myNext || !isLive()) return [];
   var rosters = opponentRosters(), r = S.league.rules.roster, out = [];
   for (var pk = A.cur; pk < A.myNext; pk++) {
     var slot = ownerOfPick(pk).slot;

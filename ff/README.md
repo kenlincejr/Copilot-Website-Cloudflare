@@ -57,6 +57,27 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Two ways to run a draft
+
+Chosen at the top of League setup, and switchable mid-draft without losing
+anything.
+
+**Live draft** attributes every pick to whoever is on the clock. That buys the
+tracker, all twelve rosters, a graded league report, and opponent-need inference
+for the Claude brief — "both teams ahead of you still need a back" is a sharper
+survival read than a standard deviation. It costs you recording *who* took each
+player rather than just that he is gone.
+
+**Just the board** tracks only your team. You still mark players off as they go —
+the pool has to be right or nothing downstream is — but nothing is attributed to
+anyone. Your points, value over replacement and survival odds are *identical*,
+because those need the pick count, not who made the picks. What you lose is the
+tracker, the rosters view, the league table, and the opponent context in the
+brief. The report in this mode says so plainly and shows your roster against
+replacement level instead of inventing a field of twelve to rank you in.
+
+The picker states the cost of each rather than selling both as equivalent.
+
 ## Start draft, and the tracker
 
 `Start draft` opens a panel at the top of the middle column and is the thing to
