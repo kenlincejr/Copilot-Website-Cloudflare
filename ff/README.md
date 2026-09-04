@@ -414,6 +414,28 @@ node ff/tools/test-engine.js
 `sleeper.json` is ~3 MB and is not committed. The ADP and annotation layers live in
 `tools/players.json`; refresh that file to update ADP, injuries and notes.
 
+## Real draft data, for free
+
+Everything else on this board is mock-draft ADP. Yahoo publishes ADP from **real
+completed drafts**, on the platform this league actually runs on, alongside a
+**last-seven-days** column — which is live market movement, the one thing a
+static file cannot give you. It is free and it is behind the user's own login.
+
+League setup → *Add real Yahoo draft data* takes a paste of
+`/f1/<league>/draftanalysis` and parses it (`assets/draftanalysis.js`). The page
+paginates thirty at a time; pastes accumulate, and the top hundred or so is what
+matters. It is stored per-league in localStorage rather than baked, because it is
+that user's own view of the market and goes stale the moment they stop pasting.
+
+Two columns come out of it: **REAL** (where the room actually took him) and
+**7DAY** (which way he has moved this week, ↑ earlier / ↓ later). Both go to
+Claude as well.
+
+Stated in the UI, because it matters: Yahoo's page says *"ADP based on standard
+scoring settings"*, so these are not this league's PPR numbers. They are for
+market behaviour and movement, not ranking — the board keeps using its own
+scoring for that.
+
 ## The audit
 
 `node ff/tools/audit.js` hunts the class of bug the tiering had: numbers that

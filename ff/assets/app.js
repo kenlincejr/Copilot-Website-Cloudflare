@@ -43,6 +43,23 @@ DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
  */
 function isLive() { return (S.league.mode || "live") !== "solo"; }
 
+/** Same normalisation the bake uses, so the two name spaces line up. */
+function normName(n) {
+  return String(n || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.']/g, " ").replace(/-/g, " ")
+    .split(/\s+/)
+    .filter(function (w) { return w && ["jr", "sr", "ii", "iii", "iv", "v"].indexOf(w) < 0; })
+    .join(" ");
+}
+
+/**
+ * Real-draft ADP the user pasted from Yahoo, keyed by normalised name. Kept in
+ * league state rather than baked, because it is their league's own view of the
+ * market and it goes stale the moment they stop refreshing it.
+ */
+function yahooAdp() { return S.league.yahooAdp || {}; }
+
 var MODES = {
   live: {
     name: "Live draft",
@@ -260,6 +277,7 @@ function analyse() {
   // Score everyone, not just the pool. Drafted players stay in the list struck
   // through, which is what makes the shape of a run visible — the gaps in the
   // ranking are themselves the information.
+  var ya = yahooAdp();
   var pickOf = {};
   S.picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
   board.players.forEach(function (p) {
@@ -269,6 +287,14 @@ function analyse() {
     p.survNext = myAfter ? E.survival(p, myAfter) : 1;
     p.adpDelta = (p.adp || 200) - cur;
     p.takenBy = pickOf[p.name] || null;
+    var y = ya[normName(p.name)];
+    if (y) {
+      p.yadp = y.all;
+      // Positive means the room is taking him earlier this week than it has all
+      // preseason — the market moving toward him in real drafts.
+      p.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
+      p.ypct = y.pct;
+    }
   });
 
   // How many of his tier are still on the board. This is the number that
@@ -1880,6 +1906,30 @@ var COLUMNS = {
                style: "color:" + (Math.abs(d) >= 30 ? "var(--amber)" : "var(--muted)") };
     }
   },
+  yadp: {
+    short: "REAL", label: "ADP from real Yahoo drafts", w: "46px",
+    desc: "Where the room actually took him in completed drafts on Yahoo, as opposed to the " +
+          "mock-draft ADP the rest of this board runs on. Only present for players on pages " +
+          "you have pasted in, and Yahoo computes it under standard scoring rather than " +
+          "yours \u2014 so read it as market behaviour, not as a ranking.",
+    render: function (p) {
+      if (p.yadp == null) return { v: "\u2014", cls: "dimtext" };
+      return { v: p.yadp.toFixed(0) };
+    }
+  },
+  trend: {
+    short: "7DAY", label: "Which way he is moving this week", w: "50px",
+    desc: "Yahoo's last-seven-days ADP against its all-preseason ADP, in picks. Positive " +
+          "means the room has started taking him earlier than it did all summer \u2014 " +
+          "somebody has won a job, or the news has turned. This is the one genuinely live " +
+          "signal on the board; everything else here is a snapshot.",
+    render: function (p) {
+      if (p.ytrend == null) return { v: "\u2014", cls: "dimtext" };
+      if (Math.abs(p.ytrend) < 0.3) return { v: "flat", cls: "dimtext" };
+      return { v: (p.ytrend > 0 ? "\u2191" : "\u2193") + Math.abs(p.ytrend).toFixed(1),
+               style: "color:" + (p.ytrend > 0 ? "var(--green)" : "var(--red)") };
+    }
+  },
   vsstd: {
     short: "VS STD", label: "What your scoring does to him", w: "54px",
     desc: "Points your rules add or remove versus plain full PPR. This is the arbitrage the " +
@@ -2614,6 +2664,31 @@ $$("#setupModal .pill[data-site]").forEach(function (el) {
 renderSiteSteps("yahoo");
 
 
+$("#yahooParse").addEventListener("click", function () {
+  var res = globalThis.DRAFTLINE_YAHOO.parse($("#yahooBox").value);
+  if (!res.rows.length) {
+    $("#yahooMsg").textContent = "Nothing recognised on that page.";
+    return;
+  }
+  var store = S.league.yahooAdp || {}, added = 0, matched = 0;
+  res.rows.forEach(function (r) {
+    var key = normName(r.name);
+    store[key] = { all: r.adpAll, recent: r.adpRecent, pct: r.pctDrafted, rank: r.rank };
+    added++;
+    if (BY_NAME[r.name] || DATA.players.some(function (q) { return normName(q.name) === key; })) matched++;
+  });
+  S.league.yahooAdp = store;
+  save(); render();
+  $("#yahooBox").value = "";
+  $("#yahooMsg").textContent = "Added " + added + " (" + matched + " on this board). " +
+    Object.keys(store).length + " players stored. Page through and paste the next one.";
+});
+
+$("#yahooClear").addEventListener("click", function () {
+  S.league.yahooAdp = null; save(); render();
+  $("#yahooMsg").textContent = "Cleared.";
+});
+
 $("#parseBtn").addEventListener("click", function () {
   var res = DRAFTLINE_PARSER.parse($("#pasteBox").value);
   var rows = res.hits.map(function (h) {
@@ -2804,6 +2879,13 @@ function claudeContext() {
     var extra = [];
     if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);
     if (p.injury) extra.push("listed " + p.injury + (p.injuryPart ? " (" + p.injuryPart + ")" : ""));
+    if (p.yadp != null) {
+      extra.push("real Yahoo drafts take him at " + p.yadp +
+        (p.ytrend != null && Math.abs(p.ytrend) >= 1
+          ? ", and he has moved " + Math.abs(p.ytrend) + " picks " +
+            (p.ytrend > 0 ? "earlier" : "later") + " in the last seven days"
+          : ""));
+    }
     if (p.adpResid != null && Math.abs(p.adpResid) >= 25) {
       extra.push("the other ADP market is " + Math.abs(Math.round(p.adpResid)) + " picks " +
         (p.adpResid < 0 ? "higher" : "lower") + " on him than players of his price here");

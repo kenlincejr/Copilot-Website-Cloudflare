@@ -1,0 +1,361 @@
+Draft Analysis
+
+*ADP based on standard scoring settings
+
+Standard
+
+Salary Cap
+ALL
+QB
+RB
+WR
+TE
+W/R/T
+K
+DEF
+ALL
+Fantasy
+
+Basic ADP
+
+Plus ADP
+
+Player Rank Pos Rank CER %Drafted Preseason All Drafts Last 7 Days Preseason 💎 All Drafts 💎 Last 7 Days 💎
+
+Jahmyr Gibbs
+Det - RB
+
+1
+
+100%
+
+1.4
+
+1.3
+
+Bijan Robinson
+Atl - RB
+
+2
+
+100%
+
+2.1
+
+2.0
+
+Ja'Marr Chase
+Cin - WR
+Q
+
+3
+
+100%
+
+3.6
+
+3.5
+
+Puka Nacua
+LAR - WR
+Q
+
+4
+
+100%
+
+5.1
+
+5.0
+
+Christian McCaffrey
+SF - RB
+Q
+
+6
+
+100%
+
+6.0
+
+5.9
+
+Jonathan Taylor
+Ind - RB
+
+5
+
+100%
+
+6.3
+
+6.3
+
+Jaxon Smith-Njigba
+Sea - WR
+
+8
+
+100%
+
+7.4
+
+7.2
+
+Amon-Ra St. Brown
+Det - WR
+
+7
+
+100%
+
+7.9
+
+7.9
+
+James Cook III
+Buf - RB
+
+9
+
+100%
+
+9.5
+
+9.4
+
+CeeDee Lamb
+Dal - WR
+
+12
+
+100%
+
+11.1
+
+11.0
+
+Saquon Barkley
+Phi - RB
+
+10
+
+100%
+
+11.2
+
+11.3
+
+Justin Jefferson
+Min - WR
+
+13
+
+100%
+
+13.3
+
+13.2
+
+De'Von Achane
+Mia - RB
+
+17
+
+100%
+
+15.3
+
+15.2
+
+Kenneth Walker III
+KC - RB
+
+11
+
+100%
+
+15.4
+
+15.4
+
+Chase Brown
+Cin - RB
+
+14
+
+100%
+
+15.8
+
+15.7
+
+Derrick Henry
+Bal - RB
+
+15
+
+100%
+
+17.2
+
+17.2
+
+Ashton Jeanty
+LV - RB
+Q
+
+21
+
+100%
+
+18.1
+
+17.7
+
+Omarion Hampton
+LAC - RB
+
+16
+
+100%
+
+18.3
+
+18.2
+
+Drake London
+Atl - WR
+
+20
+
+100%
+
+20.3
+
+20.1
+
+Josh Allen
+Buf - QB
+
+35
+
+100%
+
+20.5
+
+20.6
+
+Brock Bowers
+LV - TE
+
+19
+
+100%
+
+21.1
+
+21.0
+
+Nico Collins
+Hou - WR
+
+18
+
+100%
+
+21.6
+
+21.6
+
+George Pickens
+Dal - WR
+
+22
+
+100%
+
+22.6
+
+22.5
+
+A.J. Brown
+NE - WR
+
+23
+
+100%
+
+24.0
+
+24.0
+
+Trey McBride
+Ari - TE
+
+34
+
+100%
+
+27.3
+
+27.1
+
+Kyren Williams
+LAR - RB
+
+27
+
+100%
+
+27.9
+
+28.0
+
+DeVonta Smith
+Phi - WR
+
+26
+
+100%
+
+29.6
+
+29.5
+
+Jeremiyah Love
+Ari - RB
+Q
+
+28
+
+100%
+
+30.1
+
+29.7
+
+Malik Nabers
+NYG - WR
+Q
+
+25
+
+100%
+
+30.3
+
+30.4
+
+Chris Olave
+NO - WR
+
+24
+
+100%
+
+31.3
+
+31.3
+
+1-30

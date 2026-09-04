@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904w">
+<link rel="stylesheet" href="assets/ff.css?v=20260904x">
 </head>
 <body>
 
@@ -161,6 +161,35 @@
       recognise is listed rather than dropped.
     </p>
     <div id="parseOut" class="mt"></div>
+  </details>
+
+  <details class="mt">
+    <summary style="cursor:pointer;color:var(--muted)">Add real Yahoo draft data (optional, free)</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      The ADP shipped with this board comes from about 7,800 <em>mock</em> drafts. Yahoo
+      publishes ADP from <strong>real completed drafts on your own platform</strong>, plus a
+      <strong>last-seven-days</strong> column — which is live market movement, the one thing a
+      static file cannot give you. It costs nothing and takes a minute.
+    </p>
+    <ol class="muted" style="font-size:13px;padding-left:20px;line-height:1.6">
+      <li>In your league, open <b>Draft</b> → <b>Draft Analysis</b>
+        (address ends <span class="mono">/draftanalysis</span>).</li>
+      <li>Select all, copy, paste below, and parse.</li>
+      <li>It pages thirty at a time — click through the next few pages and paste each one.
+        They accumulate; the top 120 or so is what matters.</li>
+    </ol>
+    <div class="note warn" style="font-size:12.5px">
+      Yahoo's page says <em>“ADP based on standard scoring settings”</em>, so these are not
+      your league's PPR numbers. They are worth having for <b>where the room actually takes
+      people</b> and for <b>which way a player is moving this week</b> — not as a ranking.
+      The board keeps using its own scoring for that.
+    </div>
+    <textarea id="yahooBox" rows="6" class="mt" placeholder="Paste the Draft Analysis page here…"></textarea>
+    <div class="mt" style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-sm" id="yahooParse">Add this page</button>
+      <button class="btn btn-sm btn-ghost btn-danger" id="yahooClear">Forget it all</button>
+      <span class="dimtext" id="yahooMsg"></span>
+    </div>
   </details>
 
   <details class="mt" id="scoringDetails">
@@ -401,13 +430,14 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904w"></script>
-<script src="data/players.js?v=20260904w"></script>
-<script src="assets/presets.js?v=20260904w"></script>
-<script src="assets/engine.js?v=20260904w"></script>
-<script src="assets/auth.js?v=20260904w"></script>
-<script src="assets/parser.js?v=20260904w"></script>
-<script src="assets/strategies.js?v=20260904w"></script>
-<script src="assets/app.js?v=20260904w"></script>
+<script src="assets/config.js?v=20260904x"></script>
+<script src="data/players.js?v=20260904x"></script>
+<script src="assets/presets.js?v=20260904x"></script>
+<script src="assets/engine.js?v=20260904x"></script>
+<script src="assets/auth.js?v=20260904x"></script>
+<script src="assets/parser.js?v=20260904x"></script>
+<script src="assets/draftanalysis.js?v=20260904x"></script>
+<script src="assets/strategies.js?v=20260904x"></script>
+<script src="assets/app.js?v=20260904x"></script>
 </body>
 </html>
