@@ -128,13 +128,14 @@ columns that can be read as a decision are:
   best* and becomes *how many are left*. The bracket is exactly that; at `(1)` he
   is the last of his group and waiting drops you a whole tier. Amber at 1.
   See **How tiers are computed** below — the obvious approach is wrong.
-- **WAIT?** — `wait` / `risky` / `NOW`, from survival odds against the next pick
-  at which you are actually choosing. Above 70% spend this pick elsewhere; under
-  35% it is now or never. The header names the pick it is measuring to, because
-  the horizon moves: while you are waiting it is your next pick, but once you are
-  *on the clock* your next pick is this one and "will he last until now" is not a
-  question — so it shifts to the pick after. It used to stay pinned to the current
-  pick, which quietly labelled players you could see on the board as `risky`.
+- **WAIT?** — survival odds read as a decision, and *which* decision depends on
+  whose pick it is. On the clock: `wait` / `risky` / `NOW` — above 70% he lasts to
+  your following pick so spend this one elsewhere, under 35% it is now or never.
+  While you are waiting you cannot take anybody now, so `NOW` answers a question
+  nobody asked; the column reads `there` / `maybe` / `gone` instead, which is the
+  only thing that is live. The header names the pick it measures to, and that
+  pick moves when you come on the clock — it used to stay pinned to the current
+  one, quietly labelling players you could see on the board as `risky`.
 - **VALUE** — `fell 1.2` / `fair` / `reach 1.4`, his ADP against the pick on the
   clock in *rounds*. "fell" is the free money.
 
@@ -326,7 +327,15 @@ worth, which the old per-position VONA could not express.
 A player who cannot start today is still worth something — he is one injury from
 starting, he covers a bye, and the late rounds are where upside is bought — so
 the open-market value he carries beyond his value to your lineup is kept at a
-fraction, shrinking with each body you already hold at the position. Value
+fraction, shrinking with each body you already hold at the position. The fraction
+is set by how many lineup spots he could ever occupy: three at running back
+(two starters plus the flex), one at quarterback, and none worth counting at
+kicker or defense, which you stream rather than bench. Before that, a backup
+D/ST was priced at eighteen points of value against a startable tight end's
+eleven. And a player whose marginal value is zero is no longer described as
+adding anything "to your lineup" — that sentence used to sit directly under
+"can't crack your starting lineup" on the same card, the board contradicting
+itself in two consecutive lines. Value
 *below* replacement is kept whole: on a picked-over board it is the only thing
 separating the remaining players, and discounting it would rank the tail of the
 draft by noise.

@@ -639,14 +639,18 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   background: linear-gradient(180deg, rgba(45,212,191,.10), var(--panel) 70%);
 }
 .tracker.done { opacity: .8; }
+/* "You're on the clock" and four buttons do not fit across a 230px column, and
+   the flex default broke the sentence over three lines rather than moving the
+   buttons. The title never wraps now; the controls drop to their own line when
+   there is no room for them beside it. */
 .tk-head {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 10px; margin-bottom: 10px; padding-bottom: 8px;
+  display: flex; align-items: baseline; flex-wrap: wrap;
+  gap: 6px 10px; margin-bottom: 10px; padding-bottom: 8px;
   border-bottom: 1px solid var(--line-soft);
 }
-.tk-head b { font-size: 15px; }
+.tk-head b { font-size: 15px; white-space: nowrap; flex: 1 1 auto; }
 
-.tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px 10px; }
 .tk-grid > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .tk-grid .k {
   font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
@@ -707,7 +711,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .modecard li.down::marker { color: var(--amber); }
 
 /* Tracker controls */
-.tk-ctl { display: flex; gap: 2px; flex: none; }
+.tk-ctl { display: flex; gap: 2px; flex: 0 0 auto; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
 .tk-ctl .btn { padding: 3px 8px; font-size: 11px; }
 .tk-count { font-size: 11px; margin: -6px 0 9px; }
 

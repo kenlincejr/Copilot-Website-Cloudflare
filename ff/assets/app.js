@@ -781,10 +781,21 @@ function renderTracker() {
       '<div class="tk-grid">' +
         '<div><span class="k">on the clock</span><span class="v' + (onMe ? " me" : "") + '">' +
           esc(teamLabel(A.onClock.slot)) + "</span></div>" +
-        '<div><span class="k">on deck</span><span class="v">' +
-          (deck.length ? esc(deck.join(", ")) : "\u2014") + "</span></div>" +
-        '<div><span class="k">you pick at</span><span class="v me">' +
-          (A.myNext ? A.myNext + (gap ? " \u00b7 " + gap + " away" + eta : "") : "no picks left") +
+        '<div><span class="k">on deck</span><span class="v" title="' +
+          esc(deck.join(", ")) + '">' +
+          // Three team names never fit this column and the third was always
+          // the one that got cut. Show two, and count the rest.
+          (deck.length
+            ? esc(deck[0]) +
+              (deck.length > 1 ? ' <span class="dimtext">+' + (deck.length - 1) + "</span>" : "")
+            : "—") + "</span></div>" +
+        '<div><span class="k">you pick at</span><span class="v me" title="' +
+          esc(A.myNext ? "Pick " + A.myNext + (gap ? ", " + gap + " picks away" + eta : "")
+                       : "No picks left") + '">' +
+          // The estimate is worth having and not worth a whole column; it
+          // lives on the hover, which is where a number nobody reads belongs.
+          (A.myNext ? A.myNext + (gap ? ' <span class="dimtext">' + gap + " away</span>" : "")
+                    : "none left") +
           "</span></div>" +
       "</div>" +
 
@@ -2160,16 +2171,28 @@ var COLUMNS = {
   },
   wait: {
     short: "WAIT?", label: "Can you afford to wait for him?", w: "58px",
-    desc: "His survival odds read as a decision. WAIT is better than 70% he is still there " +
-          "when you are next choosing, so spend this pick elsewhere. RISKY is a coin flip. " +
-          "NOW is under 35% — if you want him it has to be this pick. While you are waiting " +
-          "the horizon is your next pick; once you are on the clock it is the pick after " +
-          "this one, because whether he lasts until right now is not a question.",
+    desc: "His survival odds read as a decision, and which decision depends on whose " +
+          "pick it is. On the clock: WAIT is better than 70% he lasts to your following " +
+          "pick, so spend this one elsewhere; RISKY is a coin flip; NOW is under 35% — if " +
+          "you want him it has to be this pick. While you are waiting you cannot take " +
+          "anyone now, so the column answers the only question that is live — will he still " +
+          "be THERE when you choose, MAYBE, or GONE. The header names the pick it is " +
+          "measuring to, and that pick moves when you come on the clock.",
     render: function (p) {
       var s = survShown(p);
-      if (s >= 0.7) return { v: "wait", style: "color:var(--green)" };
-      if (s >= 0.35) return { v: "risky", style: "color:var(--amber)" };
-      return { v: "NOW", style: "color:var(--red);font-weight:700" };
+      // Two different questions wear this column, and answering the wrong one
+      // is worse than saying nothing. On the clock it is "can I wait?" and the
+      // answer to no is NOW. While you are *waiting* you cannot take anybody
+      // now, so NOW is meaningless — the question is "will he still be there?"
+      // and the answer to no is that he is gone before you choose again.
+      if (myTurn()) {
+        if (s >= 0.7) return { v: "wait", style: "color:var(--green)" };
+        if (s >= 0.35) return { v: "risky", style: "color:var(--amber)" };
+        return { v: "NOW", style: "color:var(--red);font-weight:700" };
+      }
+      if (s >= 0.7) return { v: "there", style: "color:var(--green)" };
+      if (s >= 0.35) return { v: "maybe", style: "color:var(--amber)" };
+      return { v: "gone", style: "color:var(--red);font-weight:700" };
     }
   },
   survives: {
@@ -3471,7 +3494,22 @@ var SYSTEM =
  * key as a Cloudflare secret and pins the model and answer length server-side;
  * falls back to a key the user pasted in themselves.
  */
+/**
+ * One retry, at the ceiling, when the model spends its whole budget thinking.
+ *
+ * Sonnet 5 reasons adaptively and those tokens come out of max_tokens, so a
+ * short answer occasionally comes back as a thinking block and nothing else.
+ * That is a coin flip against a budget, not news, and making the user click
+ * "Ask again" to reflip it is a worse answer than reflipping it for them.
+ */
 function claudeCall(question, systemOverride, maxTokens) {
+  return claudeOnce(question, systemOverride, maxTokens).catch(function (err) {
+    if (!err.emptyAnswer) throw err;
+    return claudeOnce(question, systemOverride, 2000);
+  });
+}
+
+function claudeOnce(question, systemOverride, maxTokens) {
   var body = {
     system: systemOverride || SYSTEM,
     messages: [{ role: "user", content: question }],
@@ -3503,9 +3541,12 @@ function claudeCall(question, systemOverride, maxTokens) {
                    .map(function (b) { return b.text; }).join("\n").trim();
       // Thinking tokens count against the budget, so a long answer can come back
       // truncated — or, if reasoning ate the lot, with no text block at all.
-      if (!text) throw new Error(
-        "The model used its whole token budget reasoning and returned nothing. Ask again, " +
-        "or ask for something shorter.");
+      if (!text) {
+        var e = new Error("The model used its whole token budget reasoning and returned " +
+          "nothing. Ask again, or ask for something shorter.");
+        e.emptyAnswer = true;
+        throw e;
+      }
       if (res.j.stop_reason === "max_tokens") text += "\n\n[cut off at the token limit]";
       return text;
     });
@@ -3561,7 +3602,11 @@ function briefQuestion() {
     "Do not quote survival percentages on that line; a fallback is by definition " +
     "the player you take when the first one is already gone.\n" +
     "Under 110 words total. If the board's top pick is right, say so plainly and " +
-    "spend your words on what it cannot see.";
+    "spend your words on what it cannot see.\n" +
+    "Every player listed above is ON THE BOARD right now — nobody has taken them. " +
+    "A survival percentage is the chance he lasts until my pick, not a report that " +
+    "he has gone. Never describe an available player as gone, taken or off the " +
+    "board: say he is unlikely to last, which is the thing that is actually true.";
 }
 
 function renderBrief() {
@@ -3578,7 +3623,7 @@ function renderBrief() {
       'Claude · on deck for pick ' + A.myNext + '</div>' +
       '<div class="claude-out"><span class="spinner"></span> reading the board…</div></div>';
     var forPick = A.myNext;
-    claudeCall(briefQuestion())
+    claudeCall(briefQuestion(), null, 1400)
       .then(function (text) { briefCache[forPick] = text; })
       .catch(function (err) { briefCache[forPick] = "!" + err.message; })
       .then(function () { if (A.myNext === forPick) renderBrief(); });

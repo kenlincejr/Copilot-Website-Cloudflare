@@ -404,8 +404,18 @@
     // whole: on a picked-over board that is the only thing separating the
     // remaining players from each other, and discounting it would rank the tail
     // of the draft by noise.
+    // How much a body who cannot start today is worth depends on how likely he
+    // is to ever start, and that is a property of the position: a backup runs
+    // into the lineup through injury, bye or the flex, and there are three such
+    // doors at running back and one at quarterback. A second kicker or defense
+    // has none worth counting — you stream those — which is why a backup D/ST
+    // was being priced like a real pick.
+    var flexEl2 = (ctx.rules.roster.flexEligible || ["RB", "WR", "TE"]);
+    var lineupSpots = (ctx.rules.roster[player.pos] || 0) +
+      (flexEl2.indexOf(player.pos) >= 0 ? (ctx.rules.roster.FLEX || 0) : 0);
     var benchDepth = Math.max(0, need.have - Math.max(1, need.starters || 0));
-    var benchWeight = 0.30 * Math.pow(0.55, benchDepth);
+    var benchWeight = (player.pos === "K" || player.pos === "DEF"
+      ? 0.04 : Math.min(0.45, 0.14 * lineupSpots)) * Math.pow(0.55, benchDepth);
     var valueOf = function (pts, marg) {
       var open = pts - replPts;                       // what he is worth to anyone
       var lineup = open * (1 - aware) + marg * aware; // what he is worth to you
@@ -534,9 +544,16 @@
     else if (marginal > 0.5 && need.have >= (need.starters || 0) && need.starters > 0)
       reasons.push("upgrades your starting " + player.pos);
     if (vona > 8) reasons.push("+" + Math.round(vona) + " over what's likely left at pick " + ctx.nextPick);
-    if (value > 0.5 && ctx.replacement[player.pos])
-      reasons.push("+" + Math.round(value) + " to your lineup over a free " +
-                   player.pos + " (" + player.pos + String(ctx.replacement[player.pos].rank) + ")");
+    // A player who cannot start is not adding anything "to your lineup", and
+    // saying so directly under "can't crack your starting lineup" was the board
+    // contradicting itself on the same card.
+    if (value > 0.5 && ctx.replacement[player.pos]) {
+      reasons.push(marginal > 0.5
+        ? "+" + Math.round(value) + " to your lineup over a free " + player.pos +
+          " (" + player.pos + String(ctx.replacement[player.pos].rank) + ")"
+        : "best bench " + player.pos + " left — " + Math.round(player.vor) +
+          " over a free one if you ever need him");
+    }
     if (ceilingAdj > 6) reasons.push("ceiling grade " + player.ceiling);
     if (riskAdj > 6) reasons.push("risk grade " + player.risk);
     if (byePenalty) reasons.push(conflicts + " starters already on bye " + player.bye);
