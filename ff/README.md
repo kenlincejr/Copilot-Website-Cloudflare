@@ -31,6 +31,33 @@ ff/
     players.json      the research board (input to the bake)
 ```
 
+## The landing page
+
+The first version argued one point at length: that boosted D/ST scoring tiers move a
+defense 183 points and eight rounds. That is true, it is the sharpest thing the engine
+does — and it is a quirk of *one* league. A visitor whose league scores defenses the
+normal way reads three paragraphs and a table about a rule they do not have, and never
+finds out the app has a draft room, a clock, a modeled field of eleven opponents, a
+practice mode, nine strategies or a graded report.
+
+So the page sells the whole product now, in four moves:
+
+1. **Hero** — what it is in one sentence, then the sign-in panel beside it.
+2. **Three steps** — paste your settings, draft, read the report. The shape of a night.
+3. **Six cards** — one per thing a free board does not do: your scoring, survival odds,
+   the modeled room, rehearsal, styles with receipts, the on-deck brief.
+4. **One live table** — the same proof, moved to the back and re-cut around **a point per
+   reception** instead of defensive tiers, because that is the rule every reader already
+   has an opinion about. It reports how many of the first six rounds' players change round
+   between full PPR and none (48 of 79 at the time of writing) and shows the six that move
+   furthest. Still computed live by `engine.js`, so it cannot drift from the app.
+
+**Sign in vs. create is a segmented control, not a corner link.** The old panel put
+"Create a profile" as a small text link in the header, which is the one control a
+first-time visitor needs and the least visible thing in the box. Both are buttons of
+equal weight now, the page opens on whichever is right (create when the browser holds no
+profiles), and each mode carries a one-line explanation of what it is about to do.
+
 ## Design decisions worth knowing
 
 **No accounts, and the UI says so.** GitHub Pages / Cloudflare Pages serves static

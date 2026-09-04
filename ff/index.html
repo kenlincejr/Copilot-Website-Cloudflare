@@ -4,46 +4,45 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Draftline — draft in your league's points, not somebody else's</title>
-<meta name="description" content="A draft assistant that re-scores every projection through your actual league rules, then drafts off the result.">
-<link rel="stylesheet" href="assets/ff.css?v=20260904ao">
+<title>Draftline — a draft room that does the math while the clock runs</title>
+<meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, models the other eleven teams, rehearses the night before it happens, and runs entirely in your browser.">
+<link rel="stylesheet" href="assets/ff.css?v=20260904as">
 </head>
 <body>
 
 <div class="topbar"><div class="wrap topbar-inner">
   <div class="logo"><span class="dot"></span> Draftline <small>fantasy draft assistant</small></div>
-  <div><a href="#signin" class="btn btn-sm btn-primary">Sign in</a></div>
+  <div><a href="#signin" class="btn btn-sm btn-primary">Start a draft</a></div>
 </div></div>
 
 <div class="wrap">
 
   <section class="hero grid-2">
     <div>
-      <h1>Draft in your league's points, not somebody else's.</h1>
+      <h1>The whole draft, computed while you're on the clock.</h1>
       <p class="lede">
-        Every free draft tool ranks players by consensus ADP. ADP encodes <em>standard</em>
-        scoring. If your league pays for receptions, 40-yard plays, return yards, or uses
-        anything but default defensive tiers, that board is quietly wrong — and it's wrong
-        in the same direction for all twelve of you.
+        Draftline is a full draft room: 267 players scored in <strong>your</strong> league's
+        rules, a live board that re-ranks itself as picks come off, odds on who survives to
+        your next turn, eleven modeled opponents you can rehearse against, and a graded
+        report when it's done.
       </p>
       <p class="lede">
-        Draftline takes a stat-level projection for all 267 draftable players, runs it back
-        through <strong>your</strong> rules, and drafts off that. It runs entirely in your
-        browser: no server, no sync, nothing to go down at 7:01pm.
+        Two minutes on the clock is not enough time to work any of that out in your head.
+        It is plenty of time to read it off a screen.
       </p>
       <p><a href="#signin" class="btn btn-primary">Start a draft</a>
-         <a href="#how" class="btn">How it works</a></p>
+         <a href="#what" class="btn">See what it does</a></p>
     </div>
 
     <div class="panel" id="signin">
-      <div class="panel-head">
-        <h3 id="authTitle">Sign in</h3>
-        <span class="eyebrow" id="authSwitchWrap">
-          <a href="#" id="authSwitch">Create a profile</a>
-        </span>
+      <div class="seg" id="authSeg">
+        <button type="button" id="tabLogin" class="on">Sign in</button>
+        <button type="button" id="tabCreate">Create a profile</button>
       </div>
 
       <div id="authBody">
+        <p class="dimtext" id="authIntro" style="font-size:12.5px;margin:-4px 0 14px"></p>
+
         <div class="field">
           <label for="authName">Profile name</label>
           <input type="text" id="authName" autocomplete="username" placeholder="Ken">
@@ -65,11 +64,11 @@
 
         <div class="mt" id="profileList"></div>
 
-        <p class="dimtext mt mb0" style="font-size:11.5px;line-height:1.5">
-          <strong>Read this once:</strong> there is no server behind this page, so there is
-          no account. A profile lives in this browser's local storage and the password only
-          gates it on this device — it is a lock on a drawer, not a bank vault. Clearing site
-          data deletes it. Use the export button in the app to keep a copy of your draft.
+        <p class="dimtext mt mb0" style="font-size:11.5px;line-height:1.55">
+          There is no server behind this page and no account to make. A profile is a place in
+          <em>this browser</em> to keep your draft, and the password only locks it on
+          <em>this device</em> — a lock on a drawer, not a bank vault. Clearing site data
+          deletes it, and the app has an export button for keeping a copy.
         </p>
       </div>
     </div>
@@ -77,108 +76,193 @@
 
   <hr>
 
-  <section id="how">
-    <span class="eyebrow">The whole argument, in one table</span>
-    <h2>Same defense. Same projection. Three scoring systems.</h2>
-    <p class="muted" style="max-width:70ch">
-      Below is the top-ranked D/ST on the board, scored three ways from one identical stat
-      line. Nothing about the player changes. What changes is where they belong in your draft.
-      These numbers are computed live by the same engine the draft board uses.
+  <section class="sec" id="what">
+    <span class="eyebrow">Draft night, start to finish</span>
+    <h2>Set it up once, then just call out picks.</h2>
+    <p class="sec-lede">Nothing to install, nothing to sign up for, and no network call once you are drafting.</p>
+    <div class="steps" style="margin-top:26px">
+      <div class="step">
+        <h3>Paste your league settings</h3>
+        <p>Copy the settings page out of Yahoo and paste it in. Draftline reads the scoring,
+           the roster shape, the team count and the draft order out of it, and shows you what
+           it parsed before anything is saved. Or start from a preset and edit the numbers.</p>
+      </div>
+      <div class="step">
+        <h3>Draft</h3>
+        <p>Type a name, hit <span class="kbd">Enter</span> — somebody took him.
+           <span class="kbd">Shift</span>+<span class="kbd">Enter</span> means you did.
+           <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> undoes any depth. Every
+           number on screen re-computes on each pick while the clock runs.</p>
+      </div>
+      <div class="step">
+        <h3>Read the report</h3>
+        <p>Every roster in the league gets scored in your own rules, ranked, and graded on a
+           percentile — computed, not asked for. Then Claude reads the table and names your
+           biggest hole, the rival who is the real threat, and two moves to make.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="eyebrow">What makes it different</span>
+    <h2>Six things a free draft board does not do.</h2>
+
+    <div class="grid-3" style="margin-top:22px">
+      <div class="panel fcard">
+        <span class="kicker">Your rules, not the consensus</span>
+        <h3>Scored in your league's points</h3>
+        <p>Everything else ranks by consensus ADP, which encodes somebody else's scoring.
+           Draftline starts from a stat-level projection and re-scores it — receptions,
+           40-yard bonuses, return yards, your defensive tiers, your roster shape — and
+           derives replacement level from your league instead of a hardcoded list.</p>
+      </div>
+      <div class="panel fcard">
+        <span class="kicker">Survival, not vibes</span>
+        <h3>Who is actually still there at your turn</h3>
+        <p>Every player carries a real draft-position standard deviation from about 7,800
+           mock drafts. Picking back-to-back at the turn, the board tells you who is likely
+           to last one more pick — the difference between a reach and a free roll.</p>
+      </div>
+      <div class="panel fcard">
+        <span class="kicker">A room, not a ranking</span>
+        <h3>Eleven opponents that draft like people</h3>
+        <p>The modeled room draws near each player's own draft position rather than taking
+           the top of a list, obeys roster limits against what every team has actually taken,
+           and leans into a positional run once one starts. Reaches and slides happen at the
+           rate they really happen.</p>
+      </div>
+      <div class="panel fcard">
+        <span class="kicker">Rehearse it</span>
+        <h3>Run the whole night before it counts</h3>
+        <p>Practice mode drafts the room out and stops the moment the pick is yours — same
+           board, same suggestions, same clock. Or run 25 mock drafts forward from wherever
+           you currently stand and see the median roster you end up holding. About 80
+           milliseconds for the lot.</p>
+      </div>
+      <div class="panel fcard">
+        <span class="kicker">Styles that show their work</span>
+        <h3>Nine strategies, each with a receipt</h3>
+        <p>Hero RB, Zero RB, RB-heavy and six more — each a set of real knobs on the same
+           score, not a label. Before one applies you see which players move and by how many
+           places, and every pick afterward carries a line saying what your style did to it.</p>
+      </div>
+      <div class="panel fcard">
+        <span class="kicker">On deck</span>
+        <h3>A briefing waiting when your clock starts</h3>
+        <p>Two picks out, Draftline asks Claude one question and puts the answer on screen
+           before it is your turn. It gets the board's own numbers, the research notes on the
+           players left, and the thing no ADP tool has: what the teams picking ahead of you
+           still need.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <span class="eyebrow">Proof, computed live on this page</span>
+    <h2>One rule change. Players move rounds.</h2>
+    <p class="sec-lede">
+      Below is the same projection for the same players, scored two ways: a point per
+      reception, and none. Nothing about anybody changes — only where they belong in your
+      draft. Draftline reads every rule in your league this way, not just this one, and these
+      numbers come off the same engine the draft board runs.
     </p>
-    <div class="panel">
-      <table class="demo-table" id="archetype">
+    <div class="panel mt">
+      <table class="demo-table" id="movers">
         <thead><tr>
-          <th>Scoring system</th>
-          <th class="right">Points allowed</th>
-          <th class="right">Season total</th>
-          <th class="right">Worth</th>
-          <th class="right">Overall board rank</th>
+          <th>Player</th>
+          <th>Pos</th>
+          <th class="right">Full PPR</th>
+          <th class="right">No PPR</th>
+          <th class="right">Where he goes without it</th>
         </tr></thead>
         <tbody><tr><td colspan="5" class="dimtext">Computing…</td></tr></tbody>
       </table>
-      <p class="dimtext mb0" style="font-size:12px;margin-top:12px" id="archetypeNote"></p>
+      <p class="dimtext mb0" style="font-size:12px;margin-top:12px" id="moversNote"></p>
     </div>
+  </section>
 
-    <div class="grid-3 mt">
-      <div class="panel">
-        <h3>Value over replacement, derived</h3>
-        <p class="muted mb0" style="font-size:13px">
-          Replacement level comes from your roster shape and team count, never a hardcoded
-          list. Twelve teams starting one tight end puts replacement at TE13; change the
-          roster and every number on the board moves with it.
-        </p>
-      </div>
-      <div class="panel">
-        <h3>Survival, not vibes</h3>
-        <p class="muted mb0" style="font-size:13px">
-          Every player carries a real ADP standard deviation from ~7,800 mock drafts. When
-          you pick back-to-back at the turn, the board tells you who is actually likely to
-          still be there — the difference between a reach and a free roll.
-        </p>
-      </div>
-      <div class="panel">
-        <h3>Off the board in one click</h3>
-        <p class="muted mb0" style="font-size:13px">
-          Type a name, hit <span class="kbd">Enter</span>. Someone else took him. <span class="kbd">Shift</span>+<span class="kbd">Enter</span>
-          means you did. <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> undoes any depth. The list re-ranks itself while the
-          clock runs.
-        </p>
-      </div>
+  <section class="sec">
+    <div class="cta">
+      <h2>It takes about a minute to set up.</h2>
+      <p>Make a profile, paste your league settings, and run a practice draft tonight so
+         nothing about the interface is new on the night that counts.</p>
+      <a href="#signin" class="btn btn-primary">Start a draft</a>
     </div>
   </section>
 
   <div class="foot">
     Draftline · projections from Sleeper's public season endpoint, baked to a static file ·
-    ADP from FantasyFootballCalculator 12-team PPR · annotation layer from the Sep 4 research
-    digest. Nothing here calls the network during a draft.
+    ADP from FantasyFootballCalculator 12-team PPR, about 7,800 mock drafts · Nothing here
+    calls the network during a draft.
   </div>
 </div>
 
-<script src="data/players.js?v=20260904ao"></script>
-<script src="assets/presets.js?v=20260904ao"></script>
-<script src="assets/engine.js?v=20260904ao"></script>
-<script src="assets/auth.js?v=20260904ao"></script>
+<script src="data/players.js?v=20260904as"></script>
+<script src="assets/presets.js?v=20260904as"></script>
+<script src="assets/engine.js?v=20260904as"></script>
+<script src="assets/auth.js?v=20260904as"></script>
 <script>
 (function () {
   "use strict";
   var E = DRAFTLINE_ENGINE, P = DRAFTLINE_PRESETS, D = DRAFTLINE_DATA;
   var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
 
-  /* ---------------------------------------------------- live archetype table */
-  var systems = [
-    ["kinda_highlanders", "Kinda Highlanders (boosted D/ST tiers)"],
-    ["yahoo_default",     "Yahoo default"],
-    ["standard_non_ppr",  "Standard, no PPR"]
-  ];
-  // Rank the D/STs under each system and find where the best one lands overall.
-  var rows = systems.map(function (s) {
-    var rules = P[s[0]];
-    var board = E.buildBoard(D.players, rules);
-    var def = board.byPos.DEF[0];
-    var overall = board.players.findIndex(function (p) { return p.name === def.name; }) + 1;
-    var pa = E.customPoints(def, rules).byCategory["Points allowed"] || 0;
-    return { label: s[1], name: def.name, pa: pa, total: def.pts, vor: def.vor, overall: overall };
+  /* ------------------------------------------------------ live movers table
+     The old version of this section argued about boosted defensive scoring
+     tiers, which is a quirk of one league and reads as one. A point per
+     reception is the rule every visitor already has an opinion about, so it
+     proves the same thing without a paragraph of setup in front of it. */
+  var TEAMS = P.ppr_standard.teams || 12;
+  var roundOf = function (rank) { return Math.ceil(rank / TEAMS); };
+
+  var ppr = E.buildBoard(D.players, P.ppr_standard);
+  var flat = E.buildBoard(D.players, P.standard_non_ppr);
+  var flatRank = {};
+  flat.players.forEach(function (p) { flatRank[p.name] = p.vorRank; });
+
+  // Movement only means anything where somebody is actually being drafted, so
+  // the pool is the first six rounds of either board.
+  var pool = ppr.players.filter(function (p) {
+    var b = flatRank[p.name];
+    return b && (p.vorRank <= TEAMS * 6 || b <= TEAMS * 6);
   });
-  var base = rows[0];
-  $("archetype").querySelector("tbody").innerHTML = rows.map(function (r, i) {
-    return '<tr class="' + (i === 0 ? "hl" : "") + '">' +
-      "<td>" + r.label + "</td>" +
-      '<td class="right num">' + r.pa.toFixed(0) + "</td>" +
-      '<td class="right num">' + r.total.toFixed(0) + "</td>" +
-      '<td class="right num ' + (r.vor > base.vor * 0.6 ? "up" : "down") + '">' +
-        (r.vor > 0 ? "+" : "") + r.vor.toFixed(0) + " over replacement</td>" +
-      '<td class="right dimtext num">#' + r.overall + " of 267</td>" +
+  var moved = pool.filter(function (p) {
+    return roundOf(p.vorRank) !== roundOf(flatRank[p.name]);
+  });
+  var top = moved.slice().sort(function (a, b) {
+    return Math.abs(flatRank[b.name] - b.vorRank) - Math.abs(flatRank[a.name] - a.vorRank);
+  }).slice(0, 6);
+
+  $("movers").querySelector("tbody").innerHTML = top.map(function (p) {
+    var b = flatRank[p.name], dr = roundOf(b) - roundOf(p.vorRank);
+    return "<tr>" +
+      "<td>" + esc(p.name) + ' <span class="dimtext">' + esc(p.team) + "</span></td>" +
+      '<td><span class="pos pos-' + p.pos + '">' + p.pos + "</span></td>" +
+      '<td class="right num">#' + p.vorRank + " · rd " + roundOf(p.vorRank) + "</td>" +
+      '<td class="right num">#' + b + " · rd " + roundOf(b) + "</td>" +
+      // dr > 0 means he falls without the reception point; dr < 0 means he rises.
+      // Neither is good or bad, so the color is direction, not verdict.
+      '<td class="right num ' + (dr > 0 ? "down" : "up") + '">' +
+        Math.abs(dr) + " round" + (Math.abs(dr) === 1 ? "" : "s") +
+        (dr > 0 ? " later" : " earlier") + "</td>" +
     "</tr>";
   }).join("");
-  $("archetypeNote").textContent =
-    base.name + " projects " + base.total.toFixed(0) + " points in the boosted-tier league and " +
-    rows[1].total.toFixed(0) + " under Yahoo's defaults — a " +
-    (base.total - rows[1].total).toFixed(0) + "-point swing on an identical stat line. " +
-    "Public consensus (\"never draft a defense early\") is calibrated to the second row.";
+
+  $("moversNote").textContent =
+    moved.length + " of the " + pool.length + " players inside the first six rounds land in a " +
+    "different round between the two, and the six that move furthest are shown. A league that " +
+    "pays for catches is not drafting the same board as one that doesn't — and receptions are " +
+    "one rule out of the dozens Draftline reads back out of your settings.";
 
   /* -------------------------------------------------------------------- auth */
   var A = DRAFTLINE_AUTH, mode = "login";
   if (!A.storageWorks()) {
+    $("authSeg").classList.add("hidden");
     $("authBody").innerHTML =
       '<div class="note err">This browser is blocking local storage, which is the only place ' +
       'Draftline can keep a profile or a draft. Turn off private browsing or allow site data ' +
@@ -188,21 +272,25 @@
 
   function setMode(m) {
     mode = m;
-    $("authTitle").textContent = m === "login" ? "Sign in" : "Create a profile";
-    $("authGo").textContent    = m === "login" ? "Sign in" : "Create profile & start";
-    $("authSwitch").textContent = m === "login" ? "Create a profile" : "Sign in instead";
-    $("confirmField").classList.toggle("hidden", m === "login");
-    $("passHint").textContent = m === "login" ? "" :
-      "Any 4+ characters. Use Show to check it before you commit — there is no reset.";
-    $("authPass").setAttribute("autocomplete", m === "login" ? "current-password" : "new-password");
+    var creating = m === "create";
+    $("tabLogin").classList.toggle("on", !creating);
+    $("tabCreate").classList.toggle("on", creating);
+    $("authGo").textContent = creating ? "Create profile & start drafting" : "Sign in";
+    $("authIntro").textContent = creating
+      ? "Pick any name and any password. It takes ten seconds, and nothing leaves this device."
+      : "Welcome back. This unlocks the profile saved in this browser.";
+    $("confirmField").classList.toggle("hidden", !creating);
+    $("passHint").textContent = creating
+      ? "Any 4+ characters. Use Show to check it before you commit — there is no reset."
+      : "";
+    $("authPass").setAttribute("autocomplete", creating ? "new-password" : "current-password");
     hideErr();
   }
   function showErr(msg) { $("authErr").textContent = msg; $("authErr").classList.remove("hidden"); }
   function hideErr() { $("authErr").classList.add("hidden"); }
 
-  $("authSwitch").addEventListener("click", function (e) {
-    e.preventDefault(); setMode(mode === "login" ? "create" : "login");
-  });
+  $("tabLogin").addEventListener("click", function () { setMode("login"); $("authName").focus(); });
+  $("tabCreate").addEventListener("click", function () { setMode("create"); $("authName").focus(); });
   $("authReveal").addEventListener("click", function () {
     var shown = $("authPass").type === "text";
     ["authPass", "authPass2"].forEach(function (id) { $(id).type = shown ? "password" : "text"; });
@@ -225,10 +313,11 @@
 
   var profiles = A.list();
   if (profiles.length) {
+    setMode("login");
     $("profileList").innerHTML =
-      '<div class="eyebrow" style="margin-bottom:6px">Profiles on this device</div>' +
+      '<div class="eyebrow" style="margin-bottom:6px">Profiles in this browser</div>' +
       profiles.map(function (p) {
-        return '<span class="pill" data-name="' + p.name.replace(/"/g, "&quot;") + '">' + p.name + "</span>";
+        return '<span class="pill" data-name="' + esc(p.name) + '">' + esc(p.name) + "</span>";
       }).join(" ");
     Array.prototype.forEach.call($("profileList").querySelectorAll(".pill"), function (el) {
       el.addEventListener("click", function () {
@@ -236,11 +325,12 @@
       });
     });
   } else {
+    // Nobody has been here before, so Sign in is a dead end. Open on create.
     setMode("create");
   }
   if (A.current()) {
     $("profileList").insertAdjacentHTML("afterbegin",
-      '<div class="note" style="margin-bottom:10px">Signed in as <b>' + A.current().name +
+      '<div class="note" style="margin-bottom:10px">Signed in as <b>' + esc(A.current().name) +
       '</b> — <a href="app.html">open the draft board</a>.</div>');
   }
   $("authName").focus();
