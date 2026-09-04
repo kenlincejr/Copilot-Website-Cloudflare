@@ -55,6 +55,15 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Cache busting
+
+GitHub Pages serves assets with `max-age=600`, so a push can take ten minutes to
+reach a browser that already has the old file. Every `<script>` and `<link>` in
+the two HTML pages carries a `?v=` stamp; **bump it whenever an asset changes**
+or the fix you just shipped will not be the one running on draft night. The stamp
+is a single string near the top of the bake in `tools/` — or just find-and-replace
+the current value across `index.html` and `app.html`.
+
 ## Rebuilding the data
 
 ```bash

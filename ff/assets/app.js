@@ -943,7 +943,8 @@ function claudeContext() {
   var lines = top.map(function (p) {
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
-      ", ADP " + p.adp + ", survives to pick " + (A.myAfter || A.myNext) + " " +
+      ", ADP " + p.adp + ", chance he is still there at my FOLLOWING pick (" +
+      (A.myAfter || A.myNext) + ") is " +
       Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
       (p.tag ? ", flagged " + p.tag : "") +
       (p.note ? ". Research note: " + p.note : "");
@@ -1070,7 +1071,9 @@ function briefQuestion() {
     "Line 1 — the player you would take, and nothing else on that line.\n" +
     "Then two or three sentences on why, grounded in my open roster slots, the " +
     "board's numbers and anything the research notes flag.\n" +
-    "Last line — start it with \"If gone:\" and name the fallback.\n" +
+    "Last line — start it with \"If gone:\" and name one fallback in a single clause. " +
+    "Do not quote survival percentages on that line; a fallback is by definition " +
+    "the player you take when the first one is already gone.\n" +
     "Under 110 words total. If the board's top pick is right, say so plainly and " +
     "spend your words on what it cannot see.";
 }
