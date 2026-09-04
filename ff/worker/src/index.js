@@ -36,7 +36,13 @@ const ALLOWED_ORIGINS = [
 // token and still lands around a penny a question. The daily ceiling below is
 // unchanged, so the worst case costs the same; it just buys fewer answers.
 const MODEL = "claude-sonnet-5";
-const MAX_TOKENS = 700;
+
+// Sonnet 5 runs adaptive thinking by default and those tokens count against
+// max_tokens. At a flat 700 the draft report spent its entire budget reasoning
+// and came back with a thinking block and no text — so the client may ask for
+// more, within a ceiling it does not control.
+const MAX_TOKENS_DEFAULT = 700;
+const MAX_TOKENS_CAP = 2000;
 
 // Sonnet 5, USD per million tokens.
 const PRICE_IN = 2.0;
@@ -92,6 +98,11 @@ export default {
     try { payload = JSON.parse(raw); }
     catch { return json({ error: { message: "Malformed JSON." } }, 400, origin); }
 
+    const maxTokens = Math.min(
+      MAX_TOKENS_CAP,
+      Math.max(200, parseInt(payload.max_tokens, 10) || MAX_TOKENS_DEFAULT)
+    );
+
     const messages = Array.isArray(payload.messages) ? payload.messages : null;
     if (!messages || !messages.length) {
       return json({ error: { message: "No messages." } }, 400, origin);
@@ -126,7 +137,7 @@ export default {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: MAX_TOKENS,
+        max_tokens: maxTokens,
         system: typeof payload.system === "string" ? payload.system.slice(0, 4000) : undefined,
         messages: messages.slice(-4).map((m) => ({
           role: m.role === "assistant" ? "assistant" : "user",

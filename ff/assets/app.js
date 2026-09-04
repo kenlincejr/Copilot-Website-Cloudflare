@@ -701,7 +701,7 @@ $("#reportAsk").addEventListener("click", function () {
     "PROGRESS: " + S.picks.length + " of " + (S.league.teams * S.league.rounds) + " picks.\n\n" +
     "STANDINGS BY PROJECTED STARTING LINEUP:\n" + table + "\n\n" +
     "MY ROSTER (I am " + mine.name + ", finished " + mine.rank + "):\n" + myRoster,
-    REPORT_SYSTEM)
+    REPORT_SYSTEM, 1800)
     .then(function (text) { out.querySelector(".claude-out").textContent = text; })
     .catch(function (err) {
       out.classList.add("err");
@@ -1795,8 +1795,12 @@ var SYSTEM =
  * key as a Cloudflare secret and pins the model and answer length server-side;
  * falls back to a key the user pasted in themselves.
  */
-function claudeCall(question, systemOverride) {
-  var body = { system: systemOverride || SYSTEM, messages: [{ role: "user", content: question }] };
+function claudeCall(question, systemOverride, maxTokens) {
+  var body = {
+    system: systemOverride || SYSTEM,
+    messages: [{ role: "user", content: question }],
+    max_tokens: maxTokens || 700
+  };
   var url, headers = { "content-type": "application/json" };
 
   if (PROXY) {
@@ -1807,7 +1811,6 @@ function claudeCall(question, systemOverride) {
     headers["anthropic-version"] = "2023-06-01";
     headers["anthropic-dangerous-direct-browser-access"] = "true";
     body.model = claudeCfg.model || "claude-haiku-4-5";
-    body.max_tokens = 700;
   }
 
   return fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body) })
@@ -1820,8 +1823,15 @@ function claudeCall(question, systemOverride) {
       claudeCfg.spend = s;
       if (res.j.budget) claudeCfg.budget = res.j.budget;
       claudeSaveCfg(); renderSpend();
-      return (res.j.content || []).filter(function (b) { return b.type === "text"; })
-               .map(function (b) { return b.text; }).join("\n").trim() || "(no answer)";
+      var text = (res.j.content || []).filter(function (b) { return b.type === "text"; })
+                   .map(function (b) { return b.text; }).join("\n").trim();
+      // Thinking tokens count against the budget, so a long answer can come back
+      // truncated — or, if reasoning ate the lot, with no text block at all.
+      if (!text) throw new Error(
+        "The model used its whole token budget reasoning and returned nothing. Ask again, " +
+        "or ask for something shorter.");
+      if (res.j.stop_reason === "max_tokens") text += "\n\n[cut off at the token limit]";
+      return text;
     });
 }
 
