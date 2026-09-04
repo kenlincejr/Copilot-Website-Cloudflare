@@ -417,37 +417,31 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   background: var(--panel);
 }
 .slot.empty { border-style: dashed; color: var(--dim); background: transparent; }
-.slot .lbl { width: 38px; font-size: 11px; font-weight: 700; color: var(--dim); }
+.slot .lbl {
+  width: 54px; flex: none; display: flex; justify-content: space-between; align-items: baseline;
+  gap: 5px; font-size: 11px; font-weight: 700; color: var(--dim);
+}
 .slot .who { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .slot.bye-clash { border-color: rgba(248,113,113,.5); }
 .slot .bye { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-.slot.bye-clash .bye { color: var(--red); }
+.slot .bye.warn { color: var(--amber); }
+.slot .bye.bad, .slot.bye-clash .bye { color: var(--red); }
 
-/* Roster completion, read as a shape rather than as six warnings.
+/* How full each position is, printed against the position it describes rather
+   than in a second list further down that you had to hold this one in your
+   head to read. Neutral while the draft is young — every slot is empty at
+   pick one, and colouring that is a wall of alarm that says only "you have not
+   drafted yet". Amber arrives when you are genuinely short of picks. */
+.slot .cnt { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--dim); }
+.slot .cnt.done { color: var(--teal); }
+.slot .cnt.urgent { color: var(--amber); }
 
-   This was six bordered chips that all turned amber at once, because at the
-   start of a draft every slot is empty — a wall of alarm saying nothing except
-   "you have not drafted yet". It is one quiet strip of slots now: a filled pip
-   is a starter you have, a hollow one is a starter you do not, and the colour
-   is spent only on the slots you are genuinely running out of picks to fill. */
-.needbar { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
-.needbar .nd { display: inline-flex; align-items: center; gap: 5px; }
-.needbar .nd b {
-  font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--dim);
-  font-family: var(--mono);
+.byeline {
+  font-size: 11.5px; line-height: 1.45; margin-top: 7px; color: var(--dim);
 }
-.needbar .nd.filled b { color: var(--muted); }
-.needbar .nd.urgent b { color: var(--amber); }
-.needbar .pips { display: inline-flex; gap: 3px; }
-.needbar .pip {
-  width: 7px; height: 7px; border-radius: 50%;
-  border: 1px solid var(--line-soft); background: transparent;
-}
-.needbar .pip.on { background: var(--teal); border-color: var(--teal); }
-.needbar .pip.urgent { border-color: var(--amber); background: rgba(245,158,11,.2); }
-.needbar .clash {
-  font-size: 11px; color: var(--amber); font-family: var(--mono);
-}
+.byeline b { font-family: var(--mono); font-weight: 700; }
+.byeline.warn { color: var(--amber); }
+.byeline.bad { color: var(--red); }
 
 .banner {
   padding: 8px 12px; border-radius: var(--radius); font-size: 12.5px; margin-bottom: 10px;
@@ -551,22 +545,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   input, select, textarea { font-size: 16px; }
 }
 
-/* ------------------------------------------------- bye tracker + styles */
-
-.byerow {
-  display: grid; grid-template-columns: 44px 1fr auto 18px; gap: 8px;
-  align-items: center; padding: 3px 0; font-size: 12px;
-}
-.byerow .wk { color: var(--dim); font-family: var(--mono); font-size: 11px; }
-.byerow .bar { height: 5px; background: var(--raised); border-radius: 3px; overflow: hidden; }
-.byerow .bar > span { display: block; height: 100%; background: var(--teal-dim); }
-.byerow .who { color: var(--muted); font-size: 11px; font-family: var(--mono); }
-.byerow .n { text-align: right; font-family: var(--mono); color: var(--muted); }
-.byerow.none .who { color: var(--dim); }
-.byerow.warn .bar > span { background: var(--amber); }
-.byerow.warn .n, .byerow.warn .who { color: var(--amber); }
-.byerow.bad .bar > span { background: var(--red); }
-.byerow.bad .n, .byerow.bad .who { color: var(--red); }
+/* -------------------------------------------------------- bye styles */
 
 /* Bye cell on the board, when taking this player would create a problem. */
 .bye-watch    { color: var(--amber); }
@@ -821,7 +800,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 
 /* iPad: kill the 300ms double-tap delay on anything tappable, and stop iOS
    trying to select text when someone taps a row quickly. */
-button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard, .byerow,
+button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
 .menu button, .tk-suggest button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(45,212,191,.14);
@@ -834,7 +813,6 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard, .byerow,
   .btn-sm { padding: 10px 13px; }
   .tk-ctl .btn { min-height: 40px; padding: 8px 11px; font-size: 12px; }
   .tk-field input { width: 88px; padding: 10px 8px; }
-  .byerow { padding: 7px 0; }
   .modal { padding: 18px 16px; }
   .modal-bg { padding: 3vh 10px; }
   /* A modal has to be able to scroll to its own buttons on a short landscape

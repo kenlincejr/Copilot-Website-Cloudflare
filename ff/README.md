@@ -89,10 +89,12 @@ O(k·n²), about 68k operations for the 92-deep receiver board, inside
 
 **Still need** was six bordered chips that all turned amber at once, because at
 the start of a draft every slot is empty — a wall of alarm saying nothing except
-"you have not drafted yet". It is one quiet strip of slot pips now, read off the
-actual lineup assignment so the flex is right: filled pip, a starter you have;
-hollow pip, one you do not. Colour is spent only on slots you are genuinely
-running out of picks to fill.
+"you have not drafted yet". Then it was a quiet strip of pips, which was calmer
+but still a second list of the same slots, printed below the first one: to read
+it you had to hold the roster in your head. It is not a section at all now. Each
+roster row carries its own count in the left column — `RB 2/2`, `WR 1/2` — read
+off the actual lineup assignment so the flex is right, teal when the position is
+filled and amber only when you are genuinely running out of picks for it.
 
 **The target cards** spent most of their height on a sentence that read
 "+108 over replacement (RB31)" — once per card, the same shape of number three
@@ -294,9 +296,16 @@ trade moves. It is told to trust the numbers and not re-rank them.
 
 ## Bye weeks
 
-A tracker in the right column counts your **starters** — bench players on a bye
-cost nothing — per week, with the positions in each. On the board, the bye cell
-colours when a pick would create a problem, and the two problems are distinct:
+This was a ten-row chart of every bye week in the league, nine rows of which were
+empty, to answer one question: is any week going to leave you short. That answer
+is a sentence, so it is a sentence — one line under the roster naming the week,
+how many starters are out and which of them, amber one short of the threshold and
+red at it. The week each player is out is already on his own roster row, coloured
+the same way, so the line and the rows agree.
+
+Only **starters** are counted; bench players on a bye cost nothing. On the board,
+the bye cell colours when a pick would create a problem, and the two problems are
+distinct:
 
 - **amber (watch)** — another starter at that position is already on that bye.
 - **red (clash)** — you would have no like-for-like starter that week, because

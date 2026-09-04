@@ -363,7 +363,7 @@ function render() {
     : "Search " + A.avail.length + " available\u2026";
   renderColumnHeads();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
-  renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker(); renderTracker();
+  renderSchedule(); renderLog(); renderRunBanner(); renderTracker();
   if (view.selected) renderDetail(view.selected);
 }
 
@@ -1888,36 +1888,6 @@ function byeRisk(p) {
   return null;
 }
 
-function renderByeTracker() {
-  var weeks = [];
-  DATA.players.forEach(function (p) { if (weeks.indexOf(p.bye) < 0) weeks.push(p.bye); });
-  weeks.sort(function (a, b) { return a - b; });
-  var tol = (A.ctx.strategy && A.ctx.strategy.byeTolerance) || S.league.byeTolerance || 3;
-
-  var worst = 0;
-  weeks.forEach(function (w) { worst = Math.max(worst, A.byeCounts[w] || 0); });
-  $("#byeSummary").textContent = A.mine.length
-    ? (worst >= tol ? "week " + weeks.filter(function (w) { return (A.byeCounts[w] || 0) >= tol; }).join(", ") + " is heavy"
-                    : "no clashes")
-    : "";
-
-  $("#byeTracker").innerHTML = weeks.map(function (w) {
-    var n = A.byeCounts[w] || 0;
-    var pos = A.byePos[w] || {};
-    var lvl = n >= tol ? "bad" : n === tol - 1 ? "warn" : n ? "ok" : "none";
-    var who = Object.keys(pos).map(function (k) { return k + (pos[k] > 1 ? "\u00d7" + pos[k] : ""); }).join(" ");
-    return '<div class="byerow ' + lvl + '">' +
-      '<span class="wk">wk ' + w + "</span>" +
-      '<span class="bar"><span style="width:' + Math.min(100, n / 4 * 100) + '%"></span></span>' +
-      '<span class="who">' + (who || "\u2014") + "</span>" +
-      '<span class="n">' + (n || "") + "</span>" +
-    "</div>";
-  }).join("") +
-  '<p class="dimtext mb0" style="font-size:11.5px;margin-top:7px">' +
-    "Starters only \u2014 bench players on a bye cost you nothing. Flagged at " + tol +
-    " in one week, which your style can change.</p>";
-}
-
 function renderFilters() {
   var counts = {};
   A.avail.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
@@ -2819,20 +2789,54 @@ function renderRoster() {
   var players = isMine ? A.mine : allRosters()[slot].filter(function (p) { return p.pos !== "?"; });
   var r = isMine ? A.roster : E.assignRoster(players, S.league.rules);
   $("#rosterCount").textContent = players.length + " player" + (players.length === 1 ? "" : "s");
-  var counts = {};
+
+  var tol = S.league.byeTolerance || 3;
+  var counts = {}, onBye = {};
   r.slots.forEach(function (x) {
-    if (x.player) counts[x.player.bye] = (counts[x.player.bye] || 0) + 1;
+    if (!x.player) return;
+    counts[x.player.bye] = (counts[x.player.bye] || 0) + 1;
+    (onBye[x.player.bye] = onBye[x.player.bye] || []).push(x.player);
   });
 
+  // Slots, not per-position counts. The question is "which of my starting
+  // spots is still empty", and the lineup assignment already answers it
+  // exactly — including the flex, which a tally gets wrong the moment
+  // anyone is in it.
+  var groups = {}, printed = {};
+  r.slots.forEach(function (sl) { (groups[sl.pos] = groups[sl.pos] || []).push(sl); });
+
+  // Colour is only worth spending where the picks are genuinely running out.
+  var left = isMine && A.myNext
+    ? myUpcoming(A.cur).length
+    : S.league.rounds - (players.length || 1);
+  var empties = r.slots.filter(function (sl) { return !sl.player; }).length;
+  var pressed = left > 0 && empties >= left;
+
   var html = r.slots.map(function (s) {
-    if (!s.player) return '<div class="slot empty"><span class="lbl">' + s.pos + "</span>" +
-      '<span class="who">—</span></div>';
-    var clash = (counts[s.player.bye] || 0) >= (S.league.byeTolerance || 3);
-    return '<div class="slot' + (clash ? " bye-clash" : "") + '">' +
-      '<span class="lbl">' + s.pos + "</span>" +
+    var g = groups[s.pos];
+    var have = g.filter(function (x) { return x.player; }).length;
+    // The count belongs to the position, not to each of its rows, so it is
+    // printed once — on the first slot of the group. Repeating "0/2" down
+    // both RB rows reads as two separate facts about two separate things.
+    var first = !printed[s.pos]; printed[s.pos] = 1;
+    var cnt = !first ? ""
+      : '<span class="cnt ' + (have === g.length ? "done" : pressed ? "urgent" : "") +
+        '" title="' + esc(have === g.length
+          ? s.pos + ": filled"
+          : (g.length - have) + " of " + g.length + " " + s.pos + " slot" +
+            (g.length === 1 ? "" : "s") + " still open" +
+            (pressed ? " — and you are running out of picks" : "")) + '">' +
+        have + "/" + g.length + "</span>";
+    var lbl = '<span class="lbl">' + s.pos + cnt + "</span>";
+    if (!s.player) return '<div class="slot empty">' + lbl + '<span class="who">—</span></div>';
+    var n = counts[s.player.bye] || 0;
+    var lvl = n >= tol ? " bad" : (tol > 1 && n === tol - 1) ? " warn" : "";
+    return '<div class="slot' + (n >= tol ? " bye-clash" : "") + '">' + lbl +
       '<span class="who"><span class="pos pos-' + s.player.pos + '">' + s.player.pos + "</span> " +
         esc(s.player.name) + "</span>" +
-      '<span class="bye">' + s.player.bye + "</span>" +
+      '<span class="bye' + lvl + '" title="' + esc("bye week " + s.player.bye +
+        (n > 1 ? " — " + n + " of your starters are out that week" : "")) + '">' +
+        s.player.bye + "</span>" +
       '<span class="num dimtext" style="font-size:11px">' + n0(s.player.pts) + "</span></div>";
   }).join("");
   var bench = r.bench.map(function (p) {
@@ -2842,39 +2846,38 @@ function renderRoster() {
   }).join("");
   $("#roster").innerHTML = html + (bench ? '<div class="eyebrow" style="margin:8px 0 4px">Bench</div>' + bench : "");
 
-  var byeList = Object.keys(counts).filter(function (w) {
-    return counts[w] >= (S.league.byeTolerance || 3);
-  });
-  // Slots, not counts. The question is "which of my starting spots is still
-  // empty", and the lineup assignment already answers it exactly — including
-  // the flex, which a per-position count gets wrong the moment anyone is in it.
-  var lineup = isMine ? A.roster : E.assignRoster(players, S.league.rules);
-  var order = [], groups = {};
-  lineup.slots.forEach(function (sl) {
-    if (!groups[sl.pos]) { groups[sl.pos] = []; order.push(sl.pos); }
-    groups[sl.pos].push(sl);
-  });
-  // Colour is only worth spending where the picks are genuinely running out.
-  var left = isMine && A.myNext
-    ? myUpcoming(A.cur).length
-    : S.league.rounds - Math.ceil((players.length || 1));
-  var empties = lineup.slots.filter(function (sl) { return !sl.player; }).length;
-  var pressed = left > 0 && empties >= left;
+  renderByeLine(counts, onBye, tol, r.slots.length - empties);
+}
 
-  $("#needs").innerHTML = order.map(function (pos) {
-    var g = groups[pos];
-    var open = g.filter(function (sl) { return !sl.player; }).length;
-    var cls = open === 0 ? "filled" : pressed ? "urgent" : "";
-    var tip = open === 0
-      ? pos + ": filled"
-      : open + " of " + g.length + " " + pos + " slot" + (g.length === 1 ? "" : "s") +
-        " still open" + (pressed ? " \u2014 and you are running out of picks" : "");
-    return '<span class="nd ' + cls + '" title="' + esc(tip) + '"><b>' + pos + "</b>" +
-      '<span class="pips">' + g.map(function (sl) {
-        return '<i class="pip' + (sl.player ? " on" : pressed ? " urgent" : "") + '"></i>';
-      }).join("") + "</span></span>";
-  }).join("") +
-  (byeList.length ? '<span class="clash">bye clash wk ' + byeList.join(", ") + "</span>" : "");
+/* A ten-row chart of every bye week in the league, nine rows of which were
+   empty, to say one thing: is any week going to leave you short. That one
+   thing is a sentence, and the week each player is out is already on his own
+   roster row, coloured when it is part of a pile-up. */
+function renderByeLine(counts, onBye, tol, starters) {
+  var el = $("#byeLine");
+  if (!starters) { el.innerHTML = ""; return; }
+  var weeks = Object.keys(counts).map(Number).sort(function (a, b) { return a - b; });
+  var heavy = weeks.filter(function (w) { return counts[w] >= tol; });
+  var watch = weeks.filter(function (w) { return tol > 1 && counts[w] === tol - 1; });
+  var note = "Starters only — bench players on a bye cost you nothing. " +
+             "Flagged at " + tol + " in one week, which your style can change.";
+
+  function names(w) {
+    return onBye[w].map(function (p) {
+      var parts = p.name.replace(/\s+(Defense|D\/ST)$/i, "").split(/\s+/);
+      return parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    }).join(", ");
+  }
+  function row(w, cls) {
+    return '<div class="byeline ' + cls + '" title="' + esc(note) + '">' +
+      "<b>wk " + w + "</b> " + counts[w] + " starters out — " + esc(names(w)) + "</div>";
+  }
+
+  el.innerHTML = heavy.length ? heavy.map(function (w) { return row(w, "bad"); }).join("")
+    : watch.length ? watch.map(function (w) { return row(w, "warn"); }).join("")
+    : '<div class="byeline ok" title="' + esc(note) + '">Byes are spread — no week takes ' +
+      "more than " + Math.max.apply(null, weeks.map(function (w) { return counts[w]; })) +
+      " of your starters.</div>";
 }
 
 function renderTurn() {
