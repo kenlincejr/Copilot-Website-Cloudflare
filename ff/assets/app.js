@@ -601,11 +601,16 @@ function renderTracker() {
       '<div class="tk-entry">' +
         (stopped ? '<button class="btn btn-sm btn-primary" id="tkResume">Resume draft</button>' : "") +
         '<button class="btn btn-sm" id="tkReport">Open report</button>' +
-      "</div></div>";
+        '<button class="btn btn-sm btn-danger" id="tkReset2">Start over</button>' +
+      "</div>" +
+      '<div class="dimtext" style="font-size:11px;margin-top:7px">Start over clears every pick ' +
+      "and returns to pick 1. Your scoring, roster, keepers, team names and draft style are " +
+      "kept.</div></div>";
     if ($("#tkResume")) $("#tkResume").onclick = function () {
       S.draftEnded = false; S.pickStartedAt = Date.now(); save(); render();
     };
     $("#tkReport").onclick = function () { $("#btnReport").click(); };
+    armOnce($("#tkReset2"), "Start over", resetDraft);
     return;
   }
 
@@ -642,7 +647,9 @@ function renderTracker() {
             (S.paused ? "Resume" : "Pause") + "</button>" +
           '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
             'can practise the flow">Simulate</button>' +
-          '<button class="btn btn-sm btn-ghost btn-danger" id="tkStop">Stop</button>' +
+          '<button class="btn btn-sm btn-ghost" id="tkStop">Stop</button>' +
+          '<button class="btn btn-sm btn-ghost btn-danger" id="tkReset" ' +
+            'title="Clear every pick and go back to pick 1. Settings are kept.">Start over</button>' +
         "</span>" +
       "</div>" +
       '<div class="tk-count dimtext">' + S.picks.length + " of " + total + " recorded" +
@@ -710,13 +717,58 @@ function renderTracker() {
   $("#tkPause").onclick = togglePause;
   $("#tkSim").onclick = simulateToMyPick;
   $("#tkStop").onclick = function () {
-    if (!confirm("Stop the draft tracker? Every pick is kept and you can resume.")) return;
     S.draftEnded = true; S.paused = false; save(); render();
   };
+  armOnce($("#tkReset"), "Start over", resetDraft);
   $("#tkRec").onclick = commit;
   who.addEventListener("keydown", function (e) { if (e.key === "Enter") commit(); });
   $("#tkUnknown").onclick = function () { record(null, false); };
   if ($("#tkCatch")) $("#tkCatch").onclick = openCatchup;
+}
+
+/**
+ * Back to pick one. Clears every pick and the draft's own state — the clock, the
+ * pause, whether it was started or stopped, the simulated flag — and touches
+ * nothing else. Scoring, roster shape, keepers, team names, draft style and
+ * column choices all survive, which is what makes it safe to press when you just
+ * want another run at it.
+ */
+function resetDraft() {
+  S.picks = [];
+  S.draftStarted = false;
+  S.draftEnded = false;
+  S.paused = false;
+  S.pausedAt = null;
+  S.pickStartedAt = null;
+  S.simulated = false;
+  view.selected = null;
+  view.rosterSlot = null;
+  briefCache = {};
+  $("#livePick").value = "";
+  save();
+  syncKeepers();   // a keeper is roster config, not a pick, so it comes straight back
+  save();
+  render();
+  banner("Back to pick 1. League settings, keepers, team names and your draft style are all " +
+    "exactly as they were.");
+}
+
+/**
+ * A destructive button that asks with itself rather than with a browser dialog:
+ * first press arms it, second press does it, and it disarms on its own.
+ */
+function armOnce(btn, label, run) {
+  if (!btn) return;
+  var armed = false, timer = null;
+  btn.onclick = function () {
+    if (armed) { clearTimeout(timer); run(); return; }
+    armed = true;
+    btn.textContent = "Sure?";
+    btn.classList.add("armed");
+    timer = setTimeout(function () {
+      armed = false; btn.textContent = label; btn.classList.remove("armed");
+    }, 4000);
+  };
 }
 
 /**
@@ -2116,8 +2168,10 @@ $("#setupSave").addEventListener("click", function () {
   save(); closeModal("#setupModal"); render();
 });
 $("#btnReset").addEventListener("click", function () {
-  if (!confirm("Clear every pick in this draft? League settings and keepers stay.")) return;
-  S.picks = []; save(); closeModal("#setupModal"); render();
+  if (!confirm("Clear every pick and go back to pick 1? Scoring, roster, keepers, team " +
+               "names and your draft style are all kept.")) return;
+  closeModal("#setupModal");
+  resetDraft();
 });
 
 /* ------------------------------- league settings import (see parser.js) */
@@ -2495,7 +2549,7 @@ function askClaude() {
 
 // Cached against the pick number it was written for, so it is asked once and
 // survives re-renders, undo and reload without spending again.
-var briefCache = {};
+var briefCache = {};   // reassigned wholesale by resetDraft
 
 /**
  * The question that earns its keep. Everything in here is either computed by the

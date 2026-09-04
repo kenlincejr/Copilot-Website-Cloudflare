@@ -101,6 +101,19 @@ your slot is yours either way. Without that, a mis-click credited the player to
 your slot with `mine: false` — he appeared on your team in Rosters and nowhere on
 your own roster panel.
 
+## Starting over
+
+**Start over** sits in the tracker's control row while a draft is running, and
+again in the stopped/complete panel, which is where people look for it. It clears
+every pick and returns to pick 1 and touches nothing else — scoring, roster
+shape, keepers, team names, draft style and column choices all survive, which is
+what makes it safe to press when you just want another run at it. Keepers come
+straight back because a keeper is roster configuration, not a pick.
+
+It is destructive, so it asks with itself rather than with a browser dialog:
+first press arms the button and turns it red, second press does it, and it
+disarms after four seconds on its own. `armOnce()` in `app.js`.
+
 ## Pause, stop, simulate
 
 The tracker header carries three controls. **Pause** stops the clock only and

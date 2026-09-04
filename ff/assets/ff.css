@@ -617,3 +617,9 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 }
 .coldesc { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 3px; }
 .prow .num small { font-size: 9px; opacity: .75; }
+
+/* A destructive button that asks with itself instead of a browser dialog. */
+.btn.armed {
+  background: var(--red) !important; color: #1a0505 !important;
+  border-color: var(--red) !important; font-weight: 700;
+}
