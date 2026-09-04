@@ -586,7 +586,7 @@ because the obvious one is not enough:
 
 1. Every `<script>` and `<link>` carries a `?v=` stamp. **Bump it on every asset
    change** — find-and-replace the value across `index.html` and `app.html`.
-2. That alone does not work, and the reason is worth internalising: the stamps
+2. That alone does not work, and the reason is worth internalizing: the stamps
    live *inside* the cached HTML, so a stale page names stale assets and busts
    nothing. `assets/config.js` therefore carries a matching `build` string, and
    the app re-fetches that file with `cache: "no-store"` on load. If the deployed

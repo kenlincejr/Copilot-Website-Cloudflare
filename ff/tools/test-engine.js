@@ -193,9 +193,9 @@ function scoreUnder(player, mine, knobs, round) {
   return E.composite(player, ctxFor(mine, { strategy: knobs, round: round || 10 })).score;
 }
 var neutralEarly = scoreUnder(earlyRB, [], {}, 1);
-ok("emphasising a position still lifts an above-replacement player",
+ok("emphasizing a position still lifts an above-replacement player",
    scoreUnder(earlyRB, [], { earlyPosBias: { RB: 1.35 } }, 1) > neutralEarly);
-ok("de-emphasising still drops him",
+ok("de-emphasizing still drops him",
    scoreUnder(earlyRB, [], { earlyPosBias: { RB: 0.45 } }, 1) < neutralEarly);
 // Where the old multiply was correct, the new signed shift must be identical.
 near("and the arithmetic is unchanged where the old form was already right",
@@ -203,11 +203,11 @@ near("and the arithmetic is unchanged where the old form was already right",
      neutralEarly * 1.35, 0.01);
 
 var neutralLate = scoreUnder(lateRB, twoTe, {});
-ok("emphasising a position lifts a BELOW-replacement player too",
+ok("emphasizing a position lifts a BELOW-replacement player too",
    scoreUnder(lateRB, twoTe, { posBias: { RB: 1.35 } }) > neutralLate,
    lateRB.name + " VOR " + Math.round(lateRB.vor) + ": " + Math.round(neutralLate) +
      " -> " + Math.round(scoreUnder(lateRB, twoTe, { posBias: { RB: 1.35 } })));
-ok("de-emphasising drops him rather than lifting him",
+ok("de-emphasizing drops him rather than lifting him",
    scoreUnder(lateRB, twoTe, { posBias: { RB: 0.45 } }) < neutralLate,
    Math.round(neutralLate) + " -> " +
      Math.round(scoreUnder(lateRB, twoTe, { posBias: { RB: 0.45 } })));

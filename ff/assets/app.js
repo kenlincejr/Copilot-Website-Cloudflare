@@ -3464,7 +3464,7 @@ function claudeContext() {
       extra.push("the other ADP market is " + Math.abs(Math.round(p.adpResid)) + " picks " +
         (p.adpResid < 0 ? "higher" : "lower") + " on him than players of his price here");
     }
-    // The marginal number is the one that stops a model rationalising a
+    // The marginal number is the one that stops a model rationalizing a
     // downgrade: it says in points whether he can play for this roster at all.
     var marg = p.compDetail ? Math.round(p.compDetail.marginal) : null;
     if (marg != null) {

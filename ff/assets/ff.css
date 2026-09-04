@@ -2,6 +2,11 @@
    the site's light partner-facing pages (DESIGN.md §0 out-of-scope pattern). */
 
 :root {
+  /* The page paints itself dark, but the browser draws its own controls — the
+     select popup, number spinners, scrollbars, autofill — and without this it
+     draws every one of them in light mode, as white furniture on a black page. */
+  color-scheme: dark;
+
   --bg:        #0b0f14;
   --panel:     #121820;
   --panel-2:   #171f29;

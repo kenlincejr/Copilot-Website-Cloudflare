@@ -459,7 +459,7 @@
     else if (st.posBias && st.posBias[player.pos] != null) bias = st.posBias[player.pos];
     if (bias !== 1) {
       mult *= bias;
-      if (bias < 0.85) reasons.push(player.pos + " de-emphasised by your strategy");
+      if (bias < 0.85) reasons.push(player.pos + " de-emphasized by your strategy");
       else if (bias > 1.15) reasons.push(player.pos + " prioritized by your strategy");
     }
 

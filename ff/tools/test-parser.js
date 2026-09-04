@@ -107,7 +107,7 @@ var preset = require("../assets/presets.js").kinda_highlanders;
 });
 
 if (r.missed.length) {
-  console.log("\nUnrecognised lines (shown to the user, never silently dropped):");
+  console.log("\nUnrecognized lines (shown to the user, never silently dropped):");
   r.missed.forEach(function (m) { console.log("   " + m); });
 }
 
