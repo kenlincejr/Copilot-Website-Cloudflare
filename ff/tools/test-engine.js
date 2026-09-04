@@ -73,6 +73,14 @@ var expected = [11, 14, 35, 38, 62, 83, 86, 107, 110, 131, 134, 155, 158, 179];
 ok("14 open picks match the digest", JSON.stringify(open) === JSON.stringify(expected),
    open.join(","));
 
+// A keeper does not just remove a player, it removes a pick slot. Counting the
+// round-5 slot as still available would tell the engine it waits 21 picks after
+// 38 when it actually waits 24, which understates VONA exactly where the draft
+// is hardest.
+var gaps = open.slice(1).map(function (p, i) { return p - open[i]; });
+ok("gap after pick 38 is 24, not 21", gaps[3] === 24, "gaps: " + gaps.join(","));
+ok("no keeper-consumed slot survives in the schedule", open.indexOf(59) === -1);
+
 console.log("\n== VONA: 3-pick gap vs 21-pick gap ==");
 var board = E.buildBoard(DATA.players, ken);
 var avail = board.players;

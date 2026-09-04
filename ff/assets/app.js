@@ -83,9 +83,14 @@ function myPickNumbers() {
   for (var r = 1; r <= S.league.rounds; r++) out.push(pickNumberFor(r, S.league.slot));
   return out;
 }
-/** My next pick at or after `from`, and the one after that. */
+/**
+ * My remaining picks from `from` onward — excluding any round a keeper has
+ * already spent. Leaving those in silently shortens the gap the engine thinks
+ * it is drafting across: with a round-5 keeper, pick 38's real wait is 24 picks
+ * to 62, not 21 to a slot that is already gone.
+ */
 function myUpcoming(from) {
-  return myPickNumbers().filter(function (p) { return p >= from; });
+  return myPickNumbers().filter(function (p) { return p >= from && !keeperAt(p); });
 }
 
 function draftedNames() {
