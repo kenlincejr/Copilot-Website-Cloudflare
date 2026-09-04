@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /ff/
 
 Sitemap: https://copilotplaybook.com/sitemap.xml

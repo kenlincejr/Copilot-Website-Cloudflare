@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Draftline — draft in your league's points, not somebody else's</title>
+<meta name="description" content="A draft assistant that re-scores every projection through your actual league rules, then drafts off the result.">
+<link rel="stylesheet" href="assets/ff.css">
+</head>
+<body>
+
+<div class="topbar"><div class="wrap topbar-inner">
+  <div class="logo"><span class="dot"></span> Draftline <small>fantasy draft assistant</small></div>
+  <div><a href="#signin" class="btn btn-sm btn-primary">Sign in</a></div>
+</div></div>
+
+<div class="wrap">
+
+  <section class="hero grid-2">
+    <div>
+      <h1>Draft in your league's points, not somebody else's.</h1>
+      <p class="lede">
+        Every free draft tool ranks players by consensus ADP. ADP encodes <em>standard</em>
+        scoring. If your league pays for receptions, 40-yard plays, return yards, or uses
+        anything but default defensive tiers, that board is quietly wrong — and it's wrong
+        in the same direction for all twelve of you.
+      </p>
+      <p class="lede">
+        Draftline takes a stat-level projection for all 267 draftable players, runs it back
+        through <strong>your</strong> rules, and drafts off that. It runs entirely in your
+        browser: no server, no sync, nothing to go down at 7:01pm.
+      </p>
+      <p><a href="#signin" class="btn btn-primary">Start a draft</a>
+         <a href="#how" class="btn">How it works</a></p>
+    </div>
+
+    <div class="panel" id="signin">
+      <div class="panel-head">
+        <h3 id="authTitle">Sign in</h3>
+        <span class="eyebrow" id="authSwitchWrap">
+          <a href="#" id="authSwitch">Create a profile</a>
+        </span>
+      </div>
+
+      <div id="authBody">
+        <div class="field">
+          <label for="authName">Profile name</label>
+          <input type="text" id="authName" autocomplete="username" placeholder="Ken">
+        </div>
+        <div class="field">
+          <label for="authPass">Password</label>
+          <div style="display:flex;gap:8px">
+            <input type="password" id="authPass" autocomplete="current-password" placeholder="••••••••">
+            <button class="btn btn-sm" id="authReveal" type="button" style="flex:none;width:64px">Show</button>
+          </div>
+          <small class="dimtext" id="passHint" style="display:block;margin-top:6px"></small>
+        </div>
+        <div class="field hidden" id="confirmField">
+          <label for="authPass2">Confirm password</label>
+          <input type="password" id="authPass2" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary" id="authGo" style="width:100%">Sign in</button>
+        <div class="note err mt hidden" id="authErr"></div>
+
+        <div class="mt" id="profileList"></div>
+
+        <p class="dimtext mt mb0" style="font-size:11.5px;line-height:1.5">
+          <strong>Read this once:</strong> there is no server behind this page, so there is
+          no account. A profile lives in this browser's local storage and the password only
+          gates it on this device — it is a lock on a drawer, not a bank vault. Clearing site
+          data deletes it. Use the export button in the app to keep a copy of your draft.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <section id="how">
+    <span class="eyebrow">The whole argument, in one table</span>
+    <h2>Same defense. Same projection. Three scoring systems.</h2>
+    <p class="muted" style="max-width:70ch">
+      Below is the top-ranked D/ST on the board, scored three ways from one identical stat
+      line. Nothing about the player changes. What changes is where they belong in your draft.
+      These numbers are computed live by the same engine the draft board uses.
+    </p>
+    <div class="panel">
+      <table class="demo-table" id="archetype">
+        <thead><tr>
+          <th>Scoring system</th>
+          <th class="right">Points allowed</th>
+          <th class="right">Season total</th>
+          <th class="right">Worth</th>
+          <th class="right">Overall board rank</th>
+        </tr></thead>
+        <tbody><tr><td colspan="5" class="dimtext">Computing…</td></tr></tbody>
+      </table>
+      <p class="dimtext mb0" style="font-size:12px;margin-top:12px" id="archetypeNote"></p>
+    </div>
+
+    <div class="grid-3 mt">
+      <div class="panel">
+        <h3>Value over replacement, derived</h3>
+        <p class="muted mb0" style="font-size:13px">
+          Replacement level comes from your roster shape and team count, never a hardcoded
+          list. Twelve teams starting one tight end puts replacement at TE13; change the
+          roster and every number on the board moves with it.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Survival, not vibes</h3>
+        <p class="muted mb0" style="font-size:13px">
+          Every player carries a real ADP standard deviation from ~7,800 mock drafts. When
+          you pick back-to-back at the turn, the board tells you who is actually likely to
+          still be there — the difference between a reach and a free roll.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>Off the board in one click</h3>
+        <p class="muted mb0" style="font-size:13px">
+          Type a name, hit <span class="kbd">Enter</span>. Someone else took him. <span class="kbd">Shift</span>+<span class="kbd">Enter</span>
+          means you did. <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> undoes any depth. The list re-ranks itself while the
+          clock runs.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    Draftline · projections from Sleeper's public season endpoint, baked to a static file ·
+    ADP from FantasyFootballCalculator 12-team PPR · annotation layer from the Sep 4 research
+    digest. Nothing here calls the network during a draft.
+  </div>
+</div>
+
+<script src="data/players.js"></script>
+<script src="assets/presets.js"></script>
+<script src="assets/engine.js"></script>
+<script src="assets/auth.js"></script>
+<script>
+(function () {
+  "use strict";
+  var E = DRAFTLINE_ENGINE, P = DRAFTLINE_PRESETS, D = DRAFTLINE_DATA;
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------------------------------------------------- live archetype table */
+  var systems = [
+    ["kinda_highlanders", "Kinda Highlanders (boosted D/ST tiers)"],
+    ["yahoo_default",     "Yahoo default"],
+    ["standard_non_ppr",  "Standard, no PPR"]
+  ];
+  // Rank the D/STs under each system and find where the best one lands overall.
+  var rows = systems.map(function (s) {
+    var rules = P[s[0]];
+    var board = E.buildBoard(D.players, rules);
+    var def = board.byPos.DEF[0];
+    var overall = board.players.findIndex(function (p) { return p.name === def.name; }) + 1;
+    var pa = E.customPoints(def, rules).byCategory["Points allowed"] || 0;
+    return { label: s[1], name: def.name, pa: pa, total: def.pts, vor: def.vor, overall: overall };
+  });
+  var base = rows[0];
+  $("archetype").querySelector("tbody").innerHTML = rows.map(function (r, i) {
+    return '<tr class="' + (i === 0 ? "hl" : "") + '">' +
+      "<td>" + r.label + "</td>" +
+      '<td class="right num">' + r.pa.toFixed(0) + "</td>" +
+      '<td class="right num">' + r.total.toFixed(0) + "</td>" +
+      '<td class="right num ' + (r.vor > base.vor * 0.6 ? "up" : "down") + '">' +
+        (r.vor > 0 ? "+" : "") + r.vor.toFixed(0) + " over replacement</td>" +
+      '<td class="right dimtext num">#' + r.overall + " of 267</td>" +
+    "</tr>";
+  }).join("");
+  $("archetypeNote").textContent =
+    base.name + " projects " + base.total.toFixed(0) + " points in the boosted-tier league and " +
+    rows[1].total.toFixed(0) + " under Yahoo's defaults — a " +
+    (base.total - rows[1].total).toFixed(0) + "-point swing on an identical stat line. " +
+    "Public consensus (\"never draft a defense early\") is calibrated to the second row.";
+
+  /* -------------------------------------------------------------------- auth */
+  var A = DRAFTLINE_AUTH, mode = "login";
+  if (!A.storageWorks()) {
+    $("authBody").innerHTML =
+      '<div class="note err">This browser is blocking local storage, which is the only place ' +
+      'Draftline can keep a profile or a draft. Turn off private browsing or allow site data ' +
+      'for this page, then reload.</div>';
+    return;
+  }
+
+  function setMode(m) {
+    mode = m;
+    $("authTitle").textContent = m === "login" ? "Sign in" : "Create a profile";
+    $("authGo").textContent    = m === "login" ? "Sign in" : "Create profile & start";
+    $("authSwitch").textContent = m === "login" ? "Create a profile" : "Sign in instead";
+    $("confirmField").classList.toggle("hidden", m === "login");
+    $("passHint").textContent = m === "login" ? "" :
+      "Any 4+ characters. Use Show to check it before you commit — there is no reset.";
+    $("authPass").setAttribute("autocomplete", m === "login" ? "current-password" : "new-password");
+    hideErr();
+  }
+  function showErr(msg) { $("authErr").textContent = msg; $("authErr").classList.remove("hidden"); }
+  function hideErr() { $("authErr").classList.add("hidden"); }
+
+  $("authSwitch").addEventListener("click", function (e) {
+    e.preventDefault(); setMode(mode === "login" ? "create" : "login");
+  });
+  $("authReveal").addEventListener("click", function () {
+    var shown = $("authPass").type === "text";
+    ["authPass", "authPass2"].forEach(function (id) { $(id).type = shown ? "password" : "text"; });
+    $("authReveal").textContent = shown ? "Show" : "Hide";
+  });
+
+  function go() {
+    hideErr();
+    var name = $("authName").value, pw = $("authPass").value;
+    if (mode === "create" && pw !== $("authPass2").value) return showErr("The two passwords don't match.");
+    $("authGo").disabled = true;
+    (mode === "login" ? A.login(name, pw) : A.create(name, pw))
+      .then(function () { location.href = "app.html"; })
+      .catch(function (err) { showErr(err.message || String(err)); $("authGo").disabled = false; });
+  }
+  $("authGo").addEventListener("click", go);
+  ["authName", "authPass", "authPass2"].forEach(function (id) {
+    $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+  });
+
+  var profiles = A.list();
+  if (profiles.length) {
+    $("profileList").innerHTML =
+      '<div class="eyebrow" style="margin-bottom:6px">Profiles on this device</div>' +
+      profiles.map(function (p) {
+        return '<span class="pill" data-name="' + p.name.replace(/"/g, "&quot;") + '">' + p.name + "</span>";
+      }).join(" ");
+    Array.prototype.forEach.call($("profileList").querySelectorAll(".pill"), function (el) {
+      el.addEventListener("click", function () {
+        setMode("login"); $("authName").value = el.getAttribute("data-name"); $("authPass").focus();
+      });
+    });
+  } else {
+    setMode("create");
+  }
+  if (A.current()) {
+    $("profileList").insertAdjacentHTML("afterbegin",
+      '<div class="note" style="margin-bottom:10px">Signed in as <b>' + A.current().name +
+      '</b> — <a href="app.html">open the draft board</a>.</div>');
+  }
+  $("authName").focus();
+})();
+</script>
+</body>
+</html>

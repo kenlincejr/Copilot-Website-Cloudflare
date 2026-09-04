@@ -1,0 +1,926 @@
+/* DRAFTLINE app — draft room UI. Reads engine.js for every number it shows. */
+(function () {
+"use strict";
+
+var E = DRAFTLINE_ENGINE, PRESETS = DRAFTLINE_PRESETS, DATA = DRAFTLINE_DATA, AUTH = DRAFTLINE_AUTH;
+var $  = function (s) { return document.querySelector(s); };
+var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+var esc = function (s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+};
+var n0 = function (v) { return (v >= 0 ? "" : "-") + Math.abs(Math.round(v)); };
+
+/* ---------------------------------------------------------------- session */
+
+var me = AUTH.current();
+if (!me) { location.href = "index.html"; return; }
+$("#whoami").textContent = me.name;
+
+var KEY_STATE  = "draftline.state." + me.id;
+var KEY_CLAUDE = "draftline.claude." + me.id;
+
+var BY_NAME = {};
+DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
+
+/* ------------------------------------------------------------------ state */
+
+function defaultLeague() {
+  return {
+    preset: "kinda_highlanders",
+    rules: JSON.parse(JSON.stringify(PRESETS.kinda_highlanders)),
+    teams: 12, slot: 11, rounds: 15,
+    keepers: [{ name: "Drake Maye", round: 5, slot: 11 }],
+    byeTolerance: 3, defFloorRound: 7
+  };
+}
+
+var S = load() || { league: defaultLeague(), picks: [] };
+
+function load() {
+  try { var raw = localStorage.getItem(KEY_STATE); return raw ? JSON.parse(raw) : null; }
+  catch (e) { return null; }
+}
+function save() {
+  try { localStorage.setItem(KEY_STATE, JSON.stringify({ league: S.league, picks: S.picks })); }
+  catch (e) { flash("#dataMsg", "Couldn't autosave — local storage is full or blocked.", true); }
+}
+
+/* --------------------------------------------------------- draft plumbing */
+
+function ownerOfPick(pick) {
+  var t = S.league.teams, r = Math.ceil(pick / t), idx = pick - (r - 1) * t;
+  return { round: r, slot: (r % 2 === 1) ? idx : (t - idx + 1) };
+}
+function pickNumberFor(round, slot) {
+  var t = S.league.teams;
+  var idx = (round % 2 === 1) ? slot : (t - slot + 1);
+  return (round - 1) * t + idx;
+}
+function keeperAt(pick) {
+  var o = ownerOfPick(pick);
+  return (S.league.keepers || []).find(function (k) {
+    return k.round === o.round && (k.slot || S.league.slot) === o.slot;
+  });
+}
+/** Keepers occupy their slot automatically as the draft reaches them. */
+function syncKeepers() {
+  var guard = 0;
+  while (guard++ < 400) {
+    var next = S.picks.length + 1;
+    if (next > S.league.teams * S.league.rounds) break;
+    var k = keeperAt(next);
+    if (!k) break;
+    var o = ownerOfPick(next);
+    S.picks.push({ pick: next, name: k.name, slot: o.slot,
+                   mine: o.slot === S.league.slot, keeper: true });
+  }
+}
+function currentPick() { return S.picks.length + 1; }
+function myPickNumbers() {
+  var out = [];
+  for (var r = 1; r <= S.league.rounds; r++) out.push(pickNumberFor(r, S.league.slot));
+  return out;
+}
+/** My next pick at or after `from`, and the one after that. */
+function myUpcoming(from) {
+  return myPickNumbers().filter(function (p) { return p >= from; });
+}
+
+function draftedNames() {
+  var set = {};
+  S.picks.forEach(function (p) { set[p.name] = true; });
+  return set;
+}
+
+function record(name, mine) {
+  var pl = BY_NAME[name]; if (!pl) return;
+  var pick = currentPick();
+  if (pick > S.league.teams * S.league.rounds) return;
+  var o = ownerOfPick(pick);
+  S.picks.push({ pick: pick, name: name,
+                 slot: mine ? S.league.slot : o.slot, mine: !!mine });
+  syncKeepers(); save(); render();
+}
+function undo() {
+  var popped = null, guard = 0;
+  while (S.picks.length && guard++ < 50) {
+    popped = S.picks.pop();
+    if (!popped.keeper) break;
+  }
+  save(); syncKeepers(); render();
+}
+
+/* ------------------------------------------------------- derived analysis */
+
+var STANDARD_BOARD = null;   // full-PPR comparison, computed once
+function standardBoard() {
+  if (!STANDARD_BOARD) {
+    var b = E.buildBoard(DATA.players, PRESETS.ppr_standard);
+    STANDARD_BOARD = {};
+    b.players.forEach(function (p) { STANDARD_BOARD[p.name] = p; });
+  }
+  return STANDARD_BOARD;
+}
+
+function analyse() {
+  var rules = S.league.rules;
+  rules.teams = S.league.teams;
+  var board = E.buildBoard(DATA.players, rules);
+  var taken = draftedNames();
+  var avail = board.players.filter(function (p) { return !taken[p.name]; });
+  var byName = {}; board.players.forEach(function (p) { byName[p.name] = p; });
+
+  var mine = S.picks.filter(function (p) { return p.mine; })
+                    .map(function (p) { return byName[p.name]; })
+                    .filter(Boolean);
+
+  var cur = currentPick();
+  var upcoming = myUpcoming(cur);
+  var myNext = upcoming[0] || null;             // the pick I'm working toward
+  var myAfter = upcoming[1] || null;            // the one after it — drives VONA
+  var onClock = ownerOfPick(Math.min(cur, S.league.teams * S.league.rounds));
+
+  var roster = E.assignRoster(mine, rules);
+  var need = E.positionalNeed(mine, rules);
+  var byeCounts = {};
+  roster.slots.forEach(function (s) {
+    if (s.player) byeCounts[s.player.bye] = (byeCounts[s.player.bye] || 0) + 1;
+  });
+
+  var recent = S.picks.slice(-8).map(function (p) { return byName[p.name] || { pos: "?" }; });
+  var runInfo = E.detectRuns(recent);
+
+  var vona = myAfter ? E.expectedBestAvailable(avail, myAfter) : null;
+  var round = myNext ? ownerOfPick(myNext).round : ownerOfPick(cur).round;
+
+  var ctx = {
+    rules: rules, round: round, rounds: S.league.rounds, need: need,
+    byeCounts: byeCounts, byeTolerance: S.league.byeTolerance || 3,
+    defFloorRound: S.league.defFloorRound || 7,
+    kFloorRound: Math.max(1, S.league.rounds - 1),
+    vona: vona, runs: runInfo.runs, replacement: board.replacement,
+    currentPick: cur, nextPick: myAfter || cur
+  };
+
+  avail.forEach(function (p) {
+    var c = E.composite(p, ctx);
+    p.comp = c.score; p.compDetail = c;
+    p.surv = myNext ? E.survival(p, myNext) : 1;
+    p.survNext = myAfter ? E.survival(p, myAfter) : 1;
+    p.adpDelta = (p.adp || 200) - cur;
+  });
+
+  return { board: board, avail: avail, byName: byName, mine: mine, roster: roster,
+           need: need, ctx: ctx, cur: cur, myNext: myNext, myAfter: myAfter,
+           onClock: onClock, runInfo: runInfo, upcoming: upcoming };
+}
+
+/* -------------------------------------------------------------- rendering */
+
+var view = { pos: "ALL", sort: "composite", q: "", selected: null };
+var A = null;   // latest analysis
+
+function render() {
+  syncKeepers();
+  A = analyse();
+
+  var total = S.league.teams * S.league.rounds;
+  var done = A.cur > total;
+  $("#pickNo").textContent = done ? "done" : A.cur;
+  $("#roundNo").textContent = done ? "" : "· round " + A.onClock.round;
+  var mineNow = !done && A.onClock.slot === S.league.slot;
+  var oc = $("#onClock");
+  oc.textContent = done ? "draft complete" : (mineNow ? "YOU'RE UP" : "team " + A.onClock.slot);
+  oc.className = "onclock" + (mineNow ? " me" : "");
+  $("#nextPickInfo").innerHTML = A.myNext
+    ? '<span class="dimtext">your next</span> <b>' + A.myNext + "</b>" +
+      (A.myAfter ? ' <span class="dimtext">then</span> <b>' + A.myAfter + "</b>" +
+        ' <span class="dimtext">(' + (A.myAfter - A.myNext) + " picks)</span>" : "")
+    : '<span class="dimtext">no picks left</span>';
+
+  renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn();
+  renderSchedule(); renderLog(); renderRunBanner();
+  if (view.selected) renderDetail(view.selected);
+}
+
+function renderFilters() {
+  var counts = {};
+  A.avail.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
+  var list = ["ALL", "QB", "RB", "WR", "TE", "K", "DEF", "FLEX"];
+  $("#posFilters").innerHTML = list.map(function (p) {
+    var c = p === "ALL" ? A.avail.length
+          : p === "FLEX" ? (counts.RB || 0) + (counts.WR || 0) + (counts.TE || 0)
+          : (counts[p] || 0);
+    return '<span class="pill' + (view.pos === p ? " on" : "") + '" data-pos="' + p + '">' +
+           p + ' <span class="dimtext">' + c + "</span></span>";
+  }).join("");
+  $$("#posFilters .pill").forEach(function (el) {
+    el.onclick = function () { view.pos = el.getAttribute("data-pos"); renderFilters(); renderList(); };
+  });
+  $("#survHead").textContent = A.myNext && A.myNext > A.cur ? "→" + A.myNext : "Survives";
+}
+
+function matches(p) {
+  if (view.pos === "FLEX") { if (["RB","WR","TE"].indexOf(p.pos) < 0) return false; }
+  else if (view.pos !== "ALL" && p.pos !== view.pos) return false;
+  var q = view.q.trim().toLowerCase();
+  if (!q) return true;
+  return q.split(/\s+/).every(function (t) {
+    return (p.name + " " + p.pos + " " + p.team + " " + (p.tag || "")).toLowerCase().indexOf(t) >= 0;
+  });
+}
+
+function sortedList() {
+  var l = A.avail.filter(matches);
+  var cmp = {
+    composite: function (a, b) { return b.comp - a.comp; },
+    pts:       function (a, b) { return b.pts - a.pts; },
+    vor:       function (a, b) { return b.vor - a.vor; },
+    adp:       function (a, b) { return a.adp - b.adp; },
+    delta:     function (a, b) { return b.adpDelta - a.adpDelta; },
+    survival:  function (a, b) { return a.surv - b.surv; }
+  }[view.sort];
+  return l.sort(cmp);
+}
+
+function rowHtml(p, i) {
+  var d = p.adpDelta;
+  var tag = p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "";
+  var est = p.projSource === "modeled" ? ' <span class="dimtext" title="modeled, not projected">~</span>' : "";
+  var surv = Math.round((p.surv || 1) * 100);
+  var survColor = surv > 70 ? "var(--green)" : surv > 35 ? "var(--amber)" : "var(--red)";
+  return '<div class="prow' + (view.selected === p.name ? " sel" : "") + '" data-name="' +
+      esc(p.name) + '">' +
+    '<span class="rank">' + (i + 1) + "</span>" +
+    '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
+      '<span class="sub">' + p.team + "</span>" + tag + "</span>" +
+    '<span class="num">' + n0(p.pts) + est + "</span>" +
+    '<span class="num dimtext">' + p.bye + "</span>" +
+    '<span class="num">' + n0(p.vor) + "</span>" +
+    '<span class="num dimtext">' + (p.adp || "").toFixed(0) + "</span>" +
+    '<span class="num delta ' + (d > 0 ? "pos-val" : "neg-val") + '">' + (d > 0 ? "+" : "") + n0(d) + "</span>" +
+    '<span class="num" style="color:' + survColor + '">' + surv + "%</span>" +
+  "</div>";
+}
+
+function renderList() {
+  var l = sortedList().slice(0, 220);
+  $("#plist").innerHTML = l.map(rowHtml).join("") ||
+    '<div class="col-pad dimtext">Nobody matches that.</div>';
+  $$("#plist .prow").forEach(function (el) {
+    var name = el.getAttribute("data-name");
+    el.onclick = function (e) {
+      if (e.shiftKey) return record(name, true);
+      if (e.altKey || e.metaKey || e.ctrlKey) return record(name, false);
+      view.selected = name; renderList(); renderDetail(name);
+    };
+    el.ondblclick = function () { record(name, false); };
+  });
+}
+
+function renderRunBanner() {
+  var runs = Object.keys(A.runInfo.runs);
+  $("#runBanner").innerHTML = runs.length
+    ? runs.map(function (pos) {
+        return '<div class="banner"><b>' + pos + " run in progress</b> — " +
+               A.runInfo.runs[pos] + " of the last " + A.runInfo.window +
+               " picks. That position's urgency is raised.</div>";
+      }).join("")
+    : "";
+}
+
+function renderRecs() {
+  if (!A.myNext) { $("#recs").innerHTML = '<div class="note">Your draft is finished.</div>'; return; }
+
+  // Until you're on the clock, ranking the whole board is noise — the top of it
+  // will be gone. Restrict to players who can realistically still be there.
+  var waiting = A.myNext > A.cur;
+  var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
+  var realistic = waiting ? pool.filter(function (p) { return p.surv >= 0.15; }) : pool;
+  if (!realistic.length) realistic = pool;
+  var top = realistic.sort(function (a, b) { return b.comp - a.comp; }).slice(0, 3);
+
+  $("#recTitle").textContent = waiting ? "Target at pick " + A.myNext : "Take one of these";
+  $("#recCtx").textContent = "round " + A.ctx.round +
+    (waiting ? " · " + (A.myNext - A.cur) + " picks away · 15%+ to reach you" : " · you're on the clock") +
+    (A.myAfter ? " · then " + A.myAfter : "");
+
+  var best = top[0] ? top[0].comp : 1;
+  $("#recs").innerHTML = top.map(function (p, i) {
+    var d = p.compDetail;
+    var conf = Math.max(8, Math.min(100, Math.round(p.comp / Math.max(best, 1) * 100)));
+    var why = d.reasons.slice(0, 3).map(function (r) { return "<b>" + esc(r) + "</b>"; }).join(" · ");
+    return '<div class="rec' + (i === 0 ? " top" : "") + '">' +
+      '<div class="rec-head"><span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
+        '<span class="name">' + esc(p.name) + "</span>" +
+        '<span class="dimtext num">' + p.team + " · bye " + p.bye + "</span>" +
+        (p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "") +
+      "</div>" +
+      '<div class="rec-why">' + (why || "best remaining value") + "</div>" +
+      '<div class="bar"><span style="width:' + conf + '%"></span></div>' +
+      '<div class="rec-actions">' +
+        '<button class="btn btn-sm btn-primary" data-take="' + esc(p.name) + '">I drafted him</button>' +
+        '<button class="btn btn-sm" data-gone="' + esc(p.name) + '">Taken</button>' +
+        '<button class="btn btn-sm btn-ghost" data-open="' + esc(p.name) + '">Why?</button>' +
+      "</div></div>";
+  }).join("") || '<div class="note">Nothing left that clears the position caps.</div>';
+
+  $$("#recs [data-take]").forEach(function (b) { b.onclick = function () { record(b.dataset.take, true); }; });
+  $$("#recs [data-gone]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone, false); }; });
+  $$("#recs [data-open]").forEach(function (b) {
+    b.onclick = function () { view.selected = b.dataset.open; renderList(); renderDetail(b.dataset.open); };
+  });
+  // The selected player may have just been drafted — fall back to the top pick
+  // so the detail panel is never empty while there is something to explain.
+  var stillThere = view.selected && A.avail.some(function (p) { return p.name === view.selected; });
+  if (!stillThere && top[0]) view.selected = top[0].name;
+  if (view.selected) renderDetail(view.selected);
+}
+
+function renderDetail(name) {
+  var p = A.avail.find(function (x) { return x.name === name; });
+  if (!p) { $("#detail").innerHTML = ""; return; }
+  var std = standardBoard()[name];
+  var d = p.compDetail;
+
+  var cats = Object.keys(p.byCategory).sort(function (a, b) {
+    return Math.abs(p.byCategory[b]) - Math.abs(p.byCategory[a]);
+  });
+  var catRows = cats.map(function (c) {
+    var v = p.byCategory[c];
+    return "<tr><td>" + esc(c) + '</td><td class="right num">' +
+      (v >= 0 ? "" : "-") + Math.abs(v).toFixed(1) + "</td></tr>";
+  }).join("");
+
+  var swing = std ? p.pts - std.pts : 0;
+  var rankSwing = std ? std.posRank - p.posRank : 0;
+
+  $("#detail").innerHTML =
+    '<div class="panel mt"><div class="panel-head">' +
+      "<h3>" + esc(p.name) + ' <span class="pos pos-' + p.pos + '">' + p.pos + "</span></h3>" +
+      '<span class="eyebrow">' + p.pos + String(p.posRank) + " · ADP " + p.adp + "</span></div>" +
+
+    '<div class="note" style="margin-bottom:12px">' +
+      "<b>" + n0(p.pts) + " points in your scoring</b>" +
+      (std ? " vs <b>" + n0(std.pts) + "</b> in plain full PPR — a " +
+        (swing >= 0 ? "+" : "") + n0(swing) + "-point swing" +
+        (rankSwing ? ", moving him " + Math.abs(rankSwing) + " spot" + (Math.abs(rankSwing) === 1 ? "" : "s") +
+          (rankSwing > 0 ? " up" : " down") + " at " + p.pos : "") + "." : ".") +
+      (p.estimated ? ' <span class="dimtext">Includes modeled components — see below.</span>' : "") +
+    "</div>" +
+
+    (p.note ? '<div class="note warn" style="margin-bottom:12px">' + esc(p.note) +
+      (p.source ? ' <span class="dimtext">— ' + esc(p.source) + "</span>" : "") + "</div>" : "") +
+
+    '<div class="grid-auto">' +
+      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">Where the points come from</div>" +
+        "<table>" + catRows + "</table></div>" +
+      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">How the suggestion is built</div><table>" +
+        '<tr><td>Value over replacement</td><td class="right num">' + n0(p.vor) + "</td></tr>" +
+        '<tr><td>Value over next available</td><td class="right num">' + n0(d.vona) + "</td></tr>" +
+        '<tr><td>Need multiplier</td><td class="right num">×' + d.mult.toFixed(2) + "</td></tr>" +
+        '<tr><td>Ceiling adjustment</td><td class="right num">' + (d.ceilingAdj ? "+" + d.ceilingAdj.toFixed(1) : "—") + "</td></tr>" +
+        '<tr><td>Risk adjustment</td><td class="right num">' + (d.riskAdj ? "-" + d.riskAdj.toFixed(1) : "—") + "</td></tr>" +
+        '<tr><td>Bye penalty</td><td class="right num">' + (d.byePenalty ? "-" + d.byePenalty.toFixed(0) : "—") + "</td></tr>" +
+        '<tr><td><b>Composite</b></td><td class="right num"><b>' + n0(p.comp) + "</b></td></tr>" +
+        (d.blocked ? '<tr><td colspan="2" class="dimtext">Blocked: ' + esc(d.blocked) + "</td></tr>" : "") +
+      "</table>" +
+      '<div class="mt dimtext" style="font-size:12px">' +
+        "Survives to " + (A.myNext || "—") + ": <b>" + Math.round(p.surv * 100) + "%</b>" +
+        (A.myAfter ? " · to " + A.myAfter + ": <b>" + Math.round(p.survNext * 100) + "%</b>" : "") +
+      "</div></div>" +
+    "</div>" +
+
+    '<div class="rec-actions mt">' +
+      '<button class="btn btn-sm btn-primary" data-take2="' + esc(p.name) + '">I drafted him</button>' +
+      '<button class="btn btn-sm" data-gone2="' + esc(p.name) + '">Someone else took him</button>' +
+    "</div>" +
+    (p.estimated ? '<p class="dimtext mb0 mt" style="font-size:11.5px">' +
+      (p.pos === "DEF"
+        ? "Points allowed is modeled: a per-game probability across the seven tiers, set by " +
+          "this unit's researched tier. No projection source publishes points-allowed buckets."
+        : p.pos === "K"
+        ? "Kicker lines are modeled off position rank. Every kicker in the projection source " +
+          "carries an identical stat line, so rank is the only real signal available."
+        : "40+ yard play counts are estimated from this player's own volume and efficiency — " +
+          "no projection source publishes them. They are worth about a point each; treat them " +
+          "as a tiebreaker, not a reason.") + "</p>" : "") +
+    "</div>";
+
+  $$("#detail [data-take2]").forEach(function (b) { b.onclick = function () { record(b.dataset.take2, true); }; });
+  $$("#detail [data-gone2]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone2, false); }; });
+}
+
+function renderRoster() {
+  var r = A.roster;
+  $("#rosterCount").textContent = A.mine.length + " players";
+  var html = r.slots.map(function (s) {
+    if (!s.player) return '<div class="slot empty"><span class="lbl">' + s.pos + "</span>" +
+      '<span class="who">—</span></div>';
+    var clash = (A.ctx.byeCounts[s.player.bye] || 0) >= (S.league.byeTolerance || 3);
+    return '<div class="slot' + (clash ? " bye-clash" : "") + '">' +
+      '<span class="lbl">' + s.pos + "</span>" +
+      '<span class="who"><span class="pos pos-' + s.player.pos + '">' + s.player.pos + "</span> " +
+        esc(s.player.name) + "</span>" +
+      '<span class="bye">' + s.player.bye + "</span>" +
+      '<span class="num dimtext" style="font-size:11px">' + n0(s.player.pts) + "</span></div>";
+  }).join("");
+  var bench = r.bench.map(function (p) {
+    return '<div class="slot"><span class="lbl">BN</span>' +
+      '<span class="who"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) + "</span>" +
+      '<span class="bye">' + p.bye + "</span></div>";
+  }).join("");
+  $("#roster").innerHTML = html + (bench ? '<div class="eyebrow" style="margin:8px 0 4px">Bench</div>' + bench : "");
+
+  var byeList = Object.keys(A.ctx.byeCounts).filter(function (w) {
+    return A.ctx.byeCounts[w] >= (S.league.byeTolerance || 3);
+  });
+  $("#needs").innerHTML = ["QB", "RB", "WR", "TE", "K", "DEF"].map(function (pos) {
+    var nd = A.need[pos] || { have: 0, starters: 0, short: 0 };
+    var cls = nd.short > 0.5 ? " short" : nd.short <= 0 ? " done" : "";
+    return '<span class="n' + cls + '">' + pos + " " + nd.have + "/" + nd.starters + "</span>";
+  }).join("") +
+  (byeList.length ? '<span class="n short">bye clash wk ' + byeList.join(", ") + "</span>" : "");
+}
+
+function renderTurn() {
+  if (!A.myNext) { $("#turn").innerHTML = ""; return; }
+  var gap = A.myNext - A.cur;
+  $("#turnTitle").textContent = gap <= 0
+    ? "Who survives to pick " + (A.myAfter || "—") + "?"
+    : "Who survives to pick " + A.myNext + "?";
+  var target = gap <= 0 ? A.myAfter : A.myNext;
+  if (!target) { $("#turn").innerHTML = '<div class="dimtext">Last pick — take the best board score.</div>'; return; }
+
+  var pool = A.avail.filter(function (p) { return E.survival(p, target) >= 0.05; })
+                    .sort(function (a, b) { return b.comp - a.comp; }).slice(0, 10);
+  $("#turn").innerHTML = pool.map(function (p) {
+    var s = E.survival(p, target), pct = Math.round(s * 100);
+    var col = pct > 70 ? "var(--green)" : pct > 35 ? "var(--amber)" : "var(--red)";
+    return '<div class="srow"><span class="pos pos-' + p.pos + '" style="width:26px">' + p.pos + "</span>" +
+      '<span style="width:118px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(p.name) + "</span>" +
+      '<span class="sbar"><span style="width:' + pct + "%;background:" + col + '"></span></span>' +
+      '<span class="pct">' + pct + "%</span></div>";
+  }).join("") +
+  '<p class="dimtext" style="font-size:11.5px;margin-top:8px">' +
+    (gap > 0 && gap <= 6
+      ? "You pick again in " + gap + " picks. Anything above ~70% is worth waiting on."
+      : "From ADP standard deviations across ~7,800 mock drafts.") + "</p>";
+}
+
+function renderSchedule() {
+  var taken = {}; S.picks.forEach(function (p) { if (p.mine) taken[p.pick] = p.name; });
+  $("#schedule").innerHTML = myPickNumbers().map(function (pk) {
+    var k = keeperAt(pk);
+    var label = taken[pk] ? esc(taken[pk]) : k ? "keeper: " + esc(k.name) : "";
+    var isNext = pk === A.myNext;
+    return '<div style="padding:2px 0;color:' + (isNext ? "var(--teal)" : label ? "var(--muted)" : "var(--dim)") + '">' +
+      (isNext ? "▸ " : "&nbsp;&nbsp;") + String(pk).padStart(3, " ") + "  " + label + "</div>";
+  }).join("");
+}
+
+function renderLog() {
+  $("#logCount").textContent = S.picks.length + " picks";
+  $("#log").innerHTML = S.picks.slice().reverse().slice(0, 40).map(function (p) {
+    var pl = BY_NAME[p.name] || {};
+    return '<div style="padding:2px 0;' + (p.mine ? "color:var(--teal)" : "color:var(--dim)") + '">' +
+      '<span class="mono">' + p.pick + "</span> " +
+      (p.mine ? "you" : "t" + p.slot) + " · " + esc(p.name) +
+      ' <span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span>" +
+      (p.keeper ? ' <span class="dimtext">keeper</span>' : "") + "</div>";
+  }).join("");
+}
+
+/* ------------------------------------------------------------ interaction */
+
+$("#search").addEventListener("input", function (e) { view.q = e.target.value; renderList(); });
+$("#search").addEventListener("keydown", function (e) {
+  if (e.key !== "Enter") return;
+  var l = sortedList();
+  if (!l.length) return;
+  var name = l[0].name;
+  e.target.value = ""; view.q = "";   // clear before the re-render, not after
+  record(name, e.shiftKey);
+});
+$("#sortBy").addEventListener("change", function (e) { view.sort = e.target.value; renderList(); });
+$("#btnUndo").addEventListener("click", undo);
+document.addEventListener("keydown", function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
+  if (e.key === "/" && document.activeElement !== $("#search")) { e.preventDefault(); $("#search").focus(); }
+});
+$("#btnOut").addEventListener("click", function () { AUTH.logout(); location.href = "index.html"; });
+
+function flash(sel, msg, isErr) {
+  var el = $(sel); if (!el) return;
+  el.innerHTML = '<div class="note ' + (isErr ? "err" : "") + '">' + esc(msg) + "</div>";
+  setTimeout(function () { if (el.firstChild) el.innerHTML = ""; }, 6000);
+}
+function openModal(id) { $(id).classList.remove("hidden"); }
+function closeModal(id) { $(id).classList.add("hidden"); }
+
+/* ----------------------------------------------------------- setup modal */
+
+var HUMAN = {
+  yardsPerPoint: "Yards per point", td: "Touchdown", int: "Interception", twoPt: "2-pt conversion",
+  bonus400: "Bonus at 400 yds", bonus500: "Bonus at 500 yds", bonus150: "Bonus at 150 yds",
+  bonus200: "Bonus at 200 yds", comp40plus: "40+ yard completion", run40plus: "40+ yard run",
+  rec40plus: "40+ yard reception", td40plus: "40+ yard TD", perReception: "Per reception",
+  fumbleLost: "Fumble lost", offFumbleRetTd: "Fumble return TD",
+  returnYardsPerPoint: "Return yards per point", returnTd: "Return TD",
+  sack: "Sack", fumRec: "Fumble recovery", safety: "Safety", blockKick: "Blocked kick",
+  extraPointReturned: "XP returned", pa0: "0 points allowed", pa1_6: "1-6 allowed",
+  pa7_13: "7-13 allowed", pa14_20: "14-20 allowed", pa21_27: "21-27 allowed",
+  pa28_34: "28-34 allowed", pa35plus: "35+ allowed",
+  fg0_19: "FG 0-19", fg20_29: "FG 20-29", fg30_39: "FG 30-39", fg40_49: "FG 40-49",
+  fg50plus: "FG 50+", miss0_19: "Miss 0-19", miss20_29: "Miss 20-29", miss30_39: "Miss 30-39",
+  miss40_49: "Miss 40-49", miss50plus: "Miss 50+", pat: "Extra point", patMiss: "Missed XP"
+};
+var GROUPS = [["passing", "Passing"], ["rushing", "Rushing"], ["receiving", "Receiving"],
+              ["misc", "Miscellaneous"], ["kicking", "Kicking"], ["dst", "Defense / special teams"]];
+
+function buildScoringForm() {
+  var r = S.league.rules;
+  $("#scoringForm").innerHTML = GROUPS.map(function (g) {
+    var obj = r[g[0]] || {};
+    var fields = Object.keys(obj).map(function (k) {
+      return '<div class="field" style="min-width:150px;flex:1"><label>' + (HUMAN[k] || k) + "</label>" +
+        '<input type="number" step="0.05" data-grp="' + g[0] + '" data-key="' + k + '" value="' + obj[k] + '"></div>';
+    }).join("");
+    return '<div class="eyebrow" style="margin:14px 0 6px">' + g[1] + "</div>" +
+           '<div style="display:flex;flex-wrap:wrap;gap:10px">' + fields + "</div>";
+  }).join("");
+}
+function buildRosterForm() {
+  var r = S.league.rules.roster;
+  $("#rosterForm").innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
+    ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF", "BN", "IR"].map(function (k) {
+      return '<div class="field" style="width:90px"><label>' + k + "</label>" +
+        '<input type="number" min="0" data-roster="' + k + '" value="' + (r[k] || 0) + '"></div>';
+    }).join("") + "</div>";
+}
+function buildKeeperList() {
+  $("#keeperList").innerHTML = (S.league.keepers || []).map(function (k, i) {
+    return '<div class="slot"><span class="who">' + esc(k.name) + "</span>" +
+      '<span class="dimtext">round ' + k.round + " · team " + (k.slot || S.league.slot) + "</span>" +
+      '<button class="btn btn-sm btn-ghost btn-danger" data-delk="' + i + '">remove</button></div>';
+  }).join("") || '<div class="dimtext">No keepers.</div>';
+  $$("#keeperList [data-delk]").forEach(function (b) {
+    b.onclick = function () {
+      S.league.keepers.splice(+b.dataset.delk, 1); buildKeeperList();
+    };
+  });
+}
+
+function openSetup() {
+  $("#presetSel").innerHTML = Object.keys(PRESETS).map(function (k) {
+    return '<option value="' + k + '"' + (S.league.preset === k ? " selected" : "") + ">" +
+      esc(PRESETS[k].name) + "</option>";
+  }).join("");
+  $("#presetBlurb").textContent = (PRESETS[S.league.preset] || {}).blurb || "";
+  $("#cfgTeams").value = S.league.teams;
+  $("#cfgSlot").value = S.league.slot;
+  $("#cfgRounds").value = S.league.rounds;
+  $("#allPlayers").innerHTML = DATA.players.map(function (p) {
+    return '<option value="' + esc(p.name) + '">';
+  }).join("");
+  buildScoringForm(); buildRosterForm(); buildKeeperList();
+  openModal("#setupModal");
+}
+$("#btnSetup").addEventListener("click", openSetup);
+$("#setupClose").addEventListener("click", function () { closeModal("#setupModal"); });
+$("#presetSel").addEventListener("change", function (e) {
+  S.league.preset = e.target.value;
+  S.league.rules = JSON.parse(JSON.stringify(PRESETS[e.target.value]));
+  S.league.teams = S.league.rules.teams || S.league.teams;
+  $("#cfgTeams").value = S.league.teams;
+  $("#presetBlurb").textContent = PRESETS[e.target.value].blurb || "";
+  buildScoringForm(); buildRosterForm();
+});
+$("#kAdd").addEventListener("click", function () {
+  var nm = $("#kName").value.trim();
+  if (!BY_NAME[nm]) return flash("#keeperList", "No player on the board with that exact name.", true);
+  S.league.keepers.push({ name: nm, round: +$("#kRound").value || 1,
+                          slot: +$("#kSlot").value || S.league.slot });
+  $("#kName").value = ""; buildKeeperList();
+});
+$("#setupSave").addEventListener("click", function () {
+  $$("#scoringForm input").forEach(function (i) {
+    S.league.rules[i.dataset.grp][i.dataset.key] = parseFloat(i.value) || 0;
+  });
+  $$("#rosterForm input").forEach(function (i) {
+    S.league.rules.roster[i.dataset.roster] = parseInt(i.value, 10) || 0;
+  });
+  S.league.teams  = parseInt($("#cfgTeams").value, 10) || 12;
+  S.league.slot   = parseInt($("#cfgSlot").value, 10) || 1;
+  S.league.rounds = parseInt($("#cfgRounds").value, 10) || 15;
+  S.league.rules.teams = S.league.teams;
+  save(); closeModal("#setupModal"); render();
+});
+$("#btnReset").addEventListener("click", function () {
+  if (!confirm("Clear every pick in this draft? League settings and keepers stay.")) return;
+  S.picks = []; save(); closeModal("#setupModal"); render();
+});
+
+/* ------------------------------------------------ league settings parser */
+
+var SYN = [
+  [/points? per reception|^receptions?$|^rec$|^ppr$/i,        ["receiving", "perReception"]],
+  [/receiving yards?/i,                                        ["receiving", "yardsPerPoint"]],
+  [/receiving touchdown|rec(eiving)? td/i,                     ["receiving", "td"]],
+  [/rushing yards?/i,                                          ["rushing", "yardsPerPoint"]],
+  [/rushing touchdown|rush(ing)? td/i,                         ["rushing", "td"]],
+  [/passing yards?/i,                                          ["passing", "yardsPerPoint"]],
+  [/passing touchdown|pass(ing)? td/i,                         ["passing", "td"]],
+  [/interceptions? thrown|^interceptions?$/i,                  ["passing", "int"]],
+  [/fumbles? lost/i,                                           ["misc", "fumbleLost"]],
+  [/return yards?/i,                                           ["misc", "returnYardsPerPoint"]],
+  [/return touchdown|return td/i,                              ["misc", "returnTd"]],
+  [/^sacks?$/i,                                                ["dst", "sack"]],
+  [/fumble recover/i,                                          ["dst", "fumRec"]],
+  [/safet(y|ies)/i,                                            ["dst", "safety"]],
+  [/blocked kick/i,                                            ["dst", "blockKick"]],
+  [/points? allowed 0/i,                                       ["dst", "pa0"]],
+  [/points? allowed 1[-–]6/i,                                  ["dst", "pa1_6"]],
+  [/points? allowed 7[-–]13/i,                                 ["dst", "pa7_13"]],
+  [/points? allowed 14[-–]20/i,                                ["dst", "pa14_20"]],
+  [/points? allowed 21[-–]27/i,                                ["dst", "pa21_27"]],
+  [/points? allowed 28[-–]34/i,                                ["dst", "pa28_34"]],
+  [/points? allowed 35\+/i,                                    ["dst", "pa35plus"]],
+  [/field goals? 0[-–]19/i,                                    ["kicking", "fg0_19"]],
+  [/field goals? 20[-–]29/i,                                   ["kicking", "fg20_29"]],
+  [/field goals? 30[-–]39/i,                                   ["kicking", "fg30_39"]],
+  [/field goals? 40[-–]49/i,                                   ["kicking", "fg40_49"]],
+  [/field goals? 50\+/i,                                       ["kicking", "fg50plus"]],
+  [/point after|extra point/i,                                 ["kicking", "pat"]]
+];
+
+function parseSettings(text) {
+  var lines = text.split(/\r?\n/), hits = [], missed = [], draft = { roster: null, teams: null };
+  lines.forEach(function (raw) {
+    var line = raw.trim(); if (!line) return;
+
+    if (/roster positions/i.test(line)) {
+      var rp = line.split(/[:\t]/).slice(1).join(" ");
+      var counts = {};
+      rp.split(/[,\s]+/).forEach(function (tok) {
+        tok = tok.trim().toUpperCase().replace(/[^A-Z/]/g, "");
+        if (!tok) return;
+        var map = { "W/R/T": "FLEX", "W/R": "FLEX", "WRT": "FLEX", "FLEX": "FLEX",
+                    "DEF": "DEF", "D/ST": "DEF", "DST": "DEF", "BN": "BN", "BE": "BN", "IR": "IR" };
+        var key = map[tok] || tok;
+        if (["QB","RB","WR","TE","FLEX","K","DEF","BN","IR"].indexOf(key) >= 0)
+          counts[key] = (counts[key] || 0) + 1;
+      });
+      if (Object.keys(counts).length) { draft.roster = counts; hits.push(["Roster positions", JSON.stringify(counts)]); }
+      return;
+    }
+    if (/max(imum)? teams/i.test(line)) {
+      var t = line.match(/(\d+)/); if (t) { draft.teams = +t[1]; hits.push(["Teams", t[1]]); }
+      return;
+    }
+
+    // Label <tab | 2+ spaces | colon> value... Take the FIRST number after the
+    // label: Yahoo prints "League Value" then "Yahoo Default Value" on one line.
+    var parts = line.split(/\t|\s{2,}|:\s/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (parts.length < 2) return;
+    var label = parts[0], rest = parts.slice(1).join(" ");
+
+    // compound: "25 yards per point; 1 points at 400 yards; 2 points at 500 yards"
+    var compound = rest.match(/(\d+(?:\.\d+)?)\s*yards? per point/i);
+    var syn = SYN.find(function (s) { return s[0].test(label); });
+    if (!syn) { missed.push(line.slice(0, 60)); return; }
+
+    var val;
+    if (compound && syn[1][1] === "yardsPerPoint") val = parseFloat(compound[1]);
+    else {
+      var m = rest.match(/-?\d+(?:\.\d+)?/);
+      if (!m) { missed.push(line.slice(0, 60)); return; }
+      val = parseFloat(m[0]);
+    }
+    hits.push([label, val, syn[1]]);
+
+    var b400 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 400/i);
+    var b500 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 500/i);
+    var b150 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 150/i);
+    var b200 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 200/i);
+    if (b400) hits.push(["  bonus at 400", parseFloat(b400[1]), ["passing", "bonus400"]]);
+    if (b500) hits.push(["  bonus at 500", parseFloat(b500[1]), ["passing", "bonus500"]]);
+    if (b150) hits.push(["  bonus at 150", parseFloat(b150[1]), [syn[1][0], "bonus150"]]);
+    if (b200) hits.push(["  bonus at 200", parseFloat(b200[1]), [syn[1][0], "bonus200"]]);
+  });
+  return { hits: hits, missed: missed, draft: draft,
+           confidence: hits.length / Math.max(1, hits.length + missed.length) };
+}
+
+$("#parseBtn").addEventListener("click", function () {
+  var res = parseSettings($("#pasteBox").value);
+  var rows = res.hits.map(function (h) {
+    return "<tr><td>" + esc(h[0]) + '</td><td class="right num">' + esc(h[1]) + "</td>" +
+      '<td class="dimtext">' + (h[2] ? h[2].join(".") : "") + "</td></tr>";
+  }).join("");
+  $("#parseOut").innerHTML =
+    '<div class="note' + (res.confidence < 0.4 ? " warn" : "") + '">Recognised <b>' + res.hits.length +
+      "</b> settings, skipped " + res.missed.length + " lines. Nothing has been applied yet — " +
+      "check the values below, then apply.</div>" +
+    '<div class="mt" style="max-height:240px;overflow:auto"><table>' + rows + "</table></div>" +
+    (res.missed.length ? '<details class="mt"><summary class="dimtext">Lines it did not recognise</summary>' +
+      '<pre class="dimtext" style="font-size:11px;white-space:pre-wrap">' +
+      esc(res.missed.join("\n")) + "</pre></details>" : "") +
+    '<button class="btn btn-primary mt" id="applyParse">Apply these values</button>';
+  $("#applyParse").onclick = function () {
+    res.hits.forEach(function (h) {
+      if (!h[2]) return;
+      S.league.rules[h[2][0]] = S.league.rules[h[2][0]] || {};
+      S.league.rules[h[2][0]][h[2][1]] = h[1];
+    });
+    if (res.draft.roster) S.league.rules.roster =
+      Object.assign({ flexEligible: ["RB", "WR", "TE"] }, res.draft.roster);
+    if (res.draft.teams) { S.league.teams = res.draft.teams; $("#cfgTeams").value = res.draft.teams; }
+    buildScoringForm(); buildRosterForm();
+    flash("#parseOut", "Applied. Review the scoring section, then Save league.");
+  };
+});
+
+/* ------------------------------------------------------------ export/import */
+
+$("#btnData").addEventListener("click", function () { openModal("#dataModal"); });
+$("#dataClose").addEventListener("click", function () { closeModal("#dataModal"); });
+$("#btnExport").addEventListener("click", function () {
+  var blob = new Blob([JSON.stringify({ version: 1, profile: me.name,
+    league: S.league, picks: S.picks, exported: new Date().toISOString() }, null, 2)],
+    { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "draftline-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+$("#btnImport").addEventListener("click", function () { $("#fileIn").click(); });
+$("#fileIn").addEventListener("change", function (e) {
+  var f = e.target.files[0]; if (!f) return;
+  var fr = new FileReader();
+  fr.onload = function () {
+    try {
+      var o = JSON.parse(fr.result);
+      if (!o.league || !o.picks) throw new Error("That file isn't a Draftline export.");
+      S.league = o.league; S.picks = o.picks; save(); render();
+      flash("#dataMsg", "Loaded " + o.picks.length + " picks.");
+    } catch (err) { flash("#dataMsg", err.message, true); }
+  };
+  fr.readAsText(f);
+});
+
+/* ----------------------------------------------------------------- Claude */
+
+var claudeCfg = (function () {
+  try { return JSON.parse(localStorage.getItem(KEY_CLAUDE) || "{}"); } catch (e) { return {}; }
+})();
+
+function claudeSaveCfg() {
+  try { localStorage.setItem(KEY_CLAUDE, JSON.stringify(claudeCfg)); } catch (e) {}
+}
+function claudePanes() {
+  var has = !!claudeCfg.key;
+  $("#claudeSetup").classList.toggle("hidden", has);
+  $("#claudeAsk").classList.toggle("hidden", !has);
+}
+$("#btnClaude").addEventListener("click", function () {
+  $("#apiKey").value = claudeCfg.key || "";
+  $("#modelSel").value = claudeCfg.model || "claude-haiku-4-5";
+  claudePanes(); openModal("#claudeModal");
+});
+$("#claudeClose").addEventListener("click", function () { closeModal("#claudeModal"); });
+$("#keyReveal").addEventListener("click", function () {
+  var el = $("#apiKey"); var shown = el.type === "text";
+  el.type = shown ? "password" : "text";
+  $("#keyReveal").textContent = shown ? "Show" : "Hide";
+});
+$("#keySave").addEventListener("click", function () {
+  claudeCfg.key = $("#apiKey").value.trim();
+  claudeCfg.model = $("#modelSel").value;
+  claudeSaveCfg(); claudePanes();
+});
+$("#keyClear").addEventListener("click", function () {
+  claudeCfg = {}; claudeSaveCfg(); $("#apiKey").value = ""; claudePanes();
+});
+$("#keyEdit").addEventListener("click", function () {
+  $("#claudeSetup").classList.remove("hidden"); $("#claudeAsk").classList.add("hidden");
+});
+$$("#claudeAsk .pill").forEach(function (el) {
+  el.onclick = function () {
+    var q = {
+      top: "Talk me through the top recommendation. Is the board right, and what would make you take someone else?",
+      compare: "Compare the top two available players for my situation. Which one, and why?",
+      roster: "Look at my roster and tell me what shape it's in and what I should be hunting for.",
+      risk: "What is this board's blind spot right now? What would a sharp opponent do that I'm not seeing?"
+    }[el.dataset.q];
+    $("#claudeQ").value = q; askClaude();
+  };
+});
+$("#claudeGo").addEventListener("click", askClaude);
+
+/** Everything Claude sees. Numbers only — it never re-derives the scoring. */
+function claudeContext() {
+  var top = A.avail.slice().sort(function (a, b) { return b.comp - a.comp; }).slice(0, 12);
+  var lines = top.map(function (p) {
+    return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
+      Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
+      ", ADP " + p.adp + ", survives to pick " + (A.myAfter || A.myNext) + " " +
+      Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
+      (p.tag ? ", flagged " + p.tag : "") +
+      (p.note ? ". Research note: " + p.note : "");
+  }).join("\n");
+  var roster = A.roster.slots.map(function (s) {
+    return s.pos + ": " + (s.player ? s.player.name + " (" + s.player.pos + ", bye " + s.player.bye + ")" : "empty");
+  }).join("; ");
+  var needs = Object.keys(A.need).map(function (k) {
+    return k + " " + A.need[k].have + "/" + A.need[k].starters;
+  }).join(", ");
+  var runs = Object.keys(A.runInfo.runs);
+  return [
+    "LEAGUE: " + (S.league.rules.name || "custom") + ", " + S.league.teams + " teams, I pick at slot " + S.league.slot + ".",
+    "SCORING THAT DIFFERS FROM DEFAULT: " + scoringHighlights(),
+    "DRAFT STATE: pick " + A.cur + " of " + (S.league.teams * S.league.rounds) +
+      ", round " + A.onClock.round + ". My next pick is " + A.myNext +
+      (A.myAfter ? ", then " + A.myAfter + " (" + (A.myAfter - A.myNext) + " picks apart)" : "") + ".",
+    runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
+    "MY ROSTER: " + roster,
+    "STARTERS FILLED: " + needs,
+    "TOP AVAILABLE BY THE BOARD'S OWN SCORE:\n" + lines
+  ].filter(Boolean).join("\n\n");
+}
+function scoringHighlights() {
+  var r = S.league.rules, out = [];
+  if (r.receiving.perReception) out.push(r.receiving.perReception + " pt per reception");
+  if (r.passing.td !== 4) out.push(r.passing.td + " pt passing TD");
+  if (r.passing.bonus400) out.push("yardage bonuses at 400/500 pass, 150/200 rush and rec");
+  if (r.passing.comp40plus || r.receiving.rec40plus) out.push("40+ yard play and TD bonuses");
+  if (r.misc.returnYardsPerPoint) out.push("return yards at 1 pt per " + r.misc.returnYardsPerPoint);
+  if (r.dst.pa0 > 12) out.push("boosted D/ST points-allowed tiers (" + r.dst.pa0 + " for a shutout, " +
+    r.dst.pa7_13 + " for 7-13) — this makes an elite defense worth roughly a 7th-round pick, not a 15th");
+  return out.join("; ") || "nothing unusual";
+}
+
+var SYSTEM =
+  "You are a fantasy football draft advisor sitting next to the user during a live draft. " +
+  "You will be given the current state of their board, computed by a scoring engine that " +
+  "already applies their exact league rules. Trust those numbers — do not recompute them and " +
+  "do not substitute generic consensus rankings. Your job is judgement on top of the math: " +
+  "where the board's logic is thin, what the research notes actually imply, and what an " +
+  "opponent might do next. Be direct and brief — under 150 words unless asked for more. " +
+  "No preamble, no bullet-point sprawl, no restating the question. If the board looks right, " +
+  "say so in a sentence and add the one thing it doesn't know.";
+
+function askClaude() {
+  var q = $("#claudeQ").value.trim();
+  if (!q) return;
+  if (!claudeCfg.key) { claudePanes(); return; }
+  var out = $("#claudeOut");
+  out.classList.remove("hidden", "err");
+  out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> thinking…';
+  $("#claudeGo").disabled = true;
+
+  fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": claudeCfg.key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify({
+      model: claudeCfg.model || "claude-haiku-4-5",
+      max_tokens: 700,
+      system: SYSTEM,
+      messages: [{ role: "user", content: claudeContext() + "\n\nQUESTION: " + q }]
+    })
+  })
+  .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+  .then(function (res) {
+    if (!res.ok) throw new Error((res.j.error && res.j.error.message) || "Request failed.");
+    var text = (res.j.content || []).filter(function (b) { return b.type === "text"; })
+                 .map(function (b) { return b.text; }).join("\n").trim();
+    out.querySelector(".claude-out").textContent = text || "(no answer)";
+    var u = res.j.usage || {};
+    $("#claudeCost").textContent = u.input_tokens
+      ? u.input_tokens + " in / " + u.output_tokens + " out"
+      : "";
+  })
+  .catch(function (err) {
+    out.classList.add("err");
+    out.querySelector(".claude-out").textContent =
+      err.message + "  (If this says CORS or failed to fetch, check the key is a valid " +
+      "Anthropic API key with credit on it.)";
+  })
+  .then(function () { $("#claudeGo").disabled = false; });
+}
+
+/* ------------------------------------------------------------------- boot */
+
+syncKeepers();
+render();
+if (!S.picks.length && !localStorage.getItem(KEY_STATE)) openSetup();
+save();
+$("#search").focus();
+})();

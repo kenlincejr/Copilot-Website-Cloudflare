@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Draftline — draft board</title>
+<link rel="stylesheet" href="assets/ff.css">
+</head>
+<body>
+
+<div class="app">
+
+  <div class="appbar">
+    <div class="logo"><span class="dot"></span> Draftline</div>
+    <div class="clock">
+      <span class="dimtext">Pick</span> <b id="pickNo">—</b>
+      <span class="dimtext" id="roundNo"></span>
+      <span class="onclock" id="onClock">—</span>
+    </div>
+    <div class="clock" id="nextPickInfo"></div>
+    <div class="spacer"></div>
+    <button class="btn btn-sm" id="btnClaude" title="Ask Claude about this pick">Ask Claude</button>
+    <button class="btn btn-sm" id="btnUndo" title="Ctrl+Z">Undo</button>
+    <button class="btn btn-sm" id="btnSetup">League</button>
+    <button class="btn btn-sm" id="btnData">Save / load</button>
+    <span class="dimtext" id="whoami"></span>
+    <button class="btn btn-sm btn-ghost" id="btnOut">Sign out</button>
+  </div>
+
+  <div class="cols">
+
+    <!-- ------------------------------------------------ available players -->
+    <div class="col col-board">
+      <div class="sticky-head">
+        <div class="searchrow">
+          <input type="text" id="search" placeholder="Search name, team or position…  Enter = someone took him, Shift+Enter = I drafted him" autocomplete="off">
+          <select id="sortBy" style="width:150px;flex:none">
+            <option value="composite">Sort: suggested</option>
+            <option value="pts">Sort: your points</option>
+            <option value="vor">Sort: value over repl.</option>
+            <option value="adp">Sort: ADP</option>
+            <option value="delta">Sort: ADP arbitrage</option>
+            <option value="survival">Sort: least likely to last</option>
+          </select>
+        </div>
+        <div class="filters" id="posFilters"></div>
+      </div>
+      <div class="phead">
+        <span></span><span>Player</span><span class="num">Pts</span><span class="num">Bye</span>
+        <span class="num">VOR</span><span class="num">ADP</span><span class="num">Δ</span><span class="num" id="survHead">Survives</span>
+      </div>
+      <div id="plist" class="plist"></div>
+    </div>
+
+    <!-- --------------------------------------------------- recommendation -->
+    <div class="col col-rec col-pad">
+      <div id="runBanner"></div>
+      <div class="panel-head"><h3 id="recTitle">Best available for you</h3>
+        <span class="eyebrow" id="recCtx"></span></div>
+      <div id="recs"></div>
+      <div id="detail"></div>
+    </div>
+
+    <!-- ---------------------------------------------------------- roster -->
+    <div class="col col-roster col-pad">
+      <div class="panel-head"><h3>Your roster</h3><span class="eyebrow" id="rosterCount"></span></div>
+      <div id="roster"></div>
+
+      <div class="panel-head mt"><h3>Still need</h3></div>
+      <div class="needbar" id="needs"></div>
+
+      <div class="panel-head mt"><h3 id="turnTitle">Who survives to your next pick?</h3></div>
+      <div id="turn"></div>
+
+      <div class="panel-head mt"><h3>Your picks</h3></div>
+      <div id="schedule" class="dimtext" style="font-family:var(--mono);font-size:12px"></div>
+
+      <div class="panel-head mt"><h3>Draft log</h3><span class="eyebrow" id="logCount"></span></div>
+      <div id="log" style="font-size:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================== modals -->
+
+<div class="modal-bg hidden" id="setupModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">League setup</h2>
+      <span class="muted">Scoring is data, not code. Every number the board shows is computed from these values.</span></div>
+    <button class="btn btn-sm" id="setupClose">Close</button>
+  </div>
+
+  <div class="field">
+    <label>Start from a preset</label>
+    <select id="presetSel"></select>
+    <small class="dimtext" id="presetBlurb"></small>
+  </div>
+
+  <div class="field-row">
+    <div class="field"><label>Teams</label><input type="number" id="cfgTeams" min="4" max="20"></div>
+    <div class="field"><label>Your draft slot</label><input type="number" id="cfgSlot" min="1" max="20"></div>
+    <div class="field"><label>Rounds</label><input type="number" id="cfgRounds" min="1" max="30"></div>
+  </div>
+
+  <details class="mt">
+    <summary style="cursor:pointer;color:var(--muted)">Paste your league settings page instead</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      Open your league's settings page, select all, copy, paste below. Yahoo and ESPN both
+      paste as <span class="mono">Label &lt;tab&gt; Value</span> lines. Draftline parses what it
+      recognises, shows you exactly what it found, and leaves everything else alone — it never
+      silently accepts a parse.
+    </p>
+    <textarea id="pasteBox" rows="7" placeholder="Paste here…"></textarea>
+    <button class="btn btn-sm mt" id="parseBtn">Parse it</button>
+    <div id="parseOut" class="mt"></div>
+  </details>
+
+  <details class="mt" id="scoringDetails">
+    <summary style="cursor:pointer;color:var(--muted)">Scoring rules (every value the engine reads)</summary>
+    <div id="scoringForm" class="mt"></div>
+  </details>
+
+  <details class="mt">
+    <summary style="cursor:pointer;color:var(--muted)">Roster slots</summary>
+    <div id="rosterForm" class="mt"></div>
+  </details>
+
+  <details class="mt" open>
+    <summary style="cursor:pointer;color:var(--muted)">Keepers</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      A keeper removes the player from the pool and burns that round's pick for whoever owns
+      him. Add opponents' keepers too if you know them — it changes who is on the clock.
+    </p>
+    <div id="keeperList"></div>
+    <div class="field-row mt">
+      <div class="field"><label>Player</label><input type="text" id="kName" list="allPlayers" placeholder="Drake Maye"></div>
+      <div class="field" style="max-width:110px"><label>Round</label><input type="number" id="kRound" min="1" value="5"></div>
+      <div class="field" style="max-width:130px"><label>Team slot</label><input type="number" id="kSlot" min="1" placeholder="yours"></div>
+      <div class="field" style="max-width:110px;display:flex;align-items:flex-end">
+        <button class="btn" id="kAdd" style="width:100%">Add</button></div>
+    </div>
+    <datalist id="allPlayers"></datalist>
+  </details>
+
+  <div class="mt" style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-danger" id="btnReset">Reset draft</button>
+    <button class="btn btn-primary" id="setupSave">Save league</button>
+  </div>
+</div></div>
+
+<div class="modal-bg hidden" id="dataModal"><div class="modal">
+  <div class="modal-head"><h2 style="margin:0">Save / load</h2>
+    <button class="btn btn-sm" id="dataClose">Close</button></div>
+  <p class="muted">
+    Your draft autosaves to this browser on every pick. Export writes the whole thing —
+    league rules, keepers, every pick — to a file you can carry to another machine.
+  </p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-primary" id="btnExport">Export draft (.json)</button>
+    <button class="btn" id="btnImport">Import a file</button>
+    <input type="file" id="fileIn" accept="application/json" class="hidden">
+  </div>
+  <div id="dataMsg" class="mt"></div>
+</div></div>
+
+<div class="modal-bg hidden" id="claudeModal"><div class="modal">
+  <div class="modal-head"><h2 style="margin:0">Ask Claude</h2>
+    <button class="btn btn-sm" id="claudeClose">Close</button></div>
+
+  <div id="claudeSetup">
+    <p class="muted" style="font-size:13px">
+      This is optional and the draft board works fully without it. There is no server behind
+      this page, so there is nowhere to keep a shared API key — you paste your own, it stays
+      in this browser's local storage, and the request goes straight from your machine to
+      Anthropic. Haiku 4.5 answers cost a fraction of a cent each.
+    </p>
+    <div class="field">
+      <label for="apiKey">Anthropic API key</label>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off">
+        <button class="btn btn-sm" id="keyReveal" type="button" style="flex:none;width:64px">Show</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="modelSel">Model</label>
+      <select id="modelSel">
+        <option value="claude-haiku-4-5">Haiku 4.5 — cheap and fast (recommended for a live draft)</option>
+        <option value="claude-sonnet-5">Sonnet 5 — more considered, more expensive</option>
+        <option value="claude-opus-5">Opus 5 — best reasoning, slowest</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="keySave">Save key</button>
+    <button class="btn btn-ghost" id="keyClear">Forget key</button>
+  </div>
+
+  <div id="claudeAsk" class="hidden">
+    <div class="filters" style="margin-bottom:10px">
+      <span class="pill" data-q="top">Why this pick?</span>
+      <span class="pill" data-q="compare">Compare my top two</span>
+      <span class="pill" data-q="roster">Read my roster</span>
+      <span class="pill" data-q="risk">What am I missing?</span>
+    </div>
+    <div class="field">
+      <textarea id="claudeQ" rows="2" placeholder="Ask anything about the board, your roster, or a player…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-primary" id="claudeGo">Ask</button>
+      <span class="dimtext" id="claudeCost"></span>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn btn-sm btn-ghost" id="keyEdit">Change key</button>
+    </div>
+    <div class="note mt hidden" id="claudeOut"><div class="claude-out"></div></div>
+  </div>
+</div></div>
+
+<script src="data/players.js"></script>
+<script src="assets/presets.js"></script>
+<script src="assets/engine.js"></script>
+<script src="assets/auth.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
