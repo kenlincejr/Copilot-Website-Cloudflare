@@ -689,3 +689,25 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard, .byerow,
   .statusbar { padding: 11px 16px; }
   .sb-clock b { font-size: 19px; }
 }
+
+/* Mock drafts */
+.mockgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.mockcard {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel-2); padding: 12px;
+}
+.mk-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 7px; margin-bottom: 8px; border-bottom: 1px solid var(--line-soft);
+}
+.mk-head .mono { color: var(--teal); font-size: 15px; }
+.mk-comp { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 9px; }
+.mk-c {
+  font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--raised); color: var(--muted);
+}
+.mk-tbl { font-size: 12px; }
+.mk-tbl td { padding: 4px 6px; }
+.mk-tbl td:first-child {
+  color: var(--dim); font-size: 10px; font-weight: 700; width: 38px;
+}

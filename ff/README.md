@@ -208,6 +208,28 @@ colours when a pick would create a problem, and the two problems are distinct:
 - **red (overload)** — too many starters idle in one week, whatever they play.
   The threshold is 3 by default and the draft style can move it.
 
+## Mock drafts
+
+Style names tell you nothing about what they leave you holding. The Style panel
+runs the draft out from wherever it currently stands — 25 times, or 50 when
+comparing two — with the room taking roughly the best available by ADP and your
+own picks chosen by the style's composite score. It reports the median starting
+lineup, the positional composition, and the most common player in each slot with
+how often he filled it. About 80ms for 50 drafts.
+
+Both styles in a comparison get the **identical sequence of opponent picks**,
+from a seeded generator reset per style, so a difference between them is the
+style rather than the dice.
+
+The first version skipped value-over-next-available to save time. That turned out
+to be a much worse shortcut than it sounded: with nothing to counterweight raw
+VOR, the engine kept taking the position with the fattest number and every style
+produced the same running-back-heavy roster. It is computed properly now, and
+Hero RB, RB-heavy and Zero RB separate as they should.
+
+The caveat is stated in the UI: a room that drafts to ADP has no runs, no
+reaches, and nobody chasing their own team's players.
+
 ## Draft style
 
 Nine styles, each a set of overrides on the same composite score in

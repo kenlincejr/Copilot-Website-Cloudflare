@@ -1301,6 +1301,221 @@ function renderStyleDiff(newStyleKey, customKnobs) {
   $("#styleCancel").onclick = function () { $("#styleDiff").innerHTML = ""; };
 }
 
+/* ------------------------------------------------------------ mock drafts
+
+   Answers the question a list of style names cannot: what does this actually
+   leave me holding? Runs the draft out from wherever it currently stands, with
+   the rest of the room taking roughly the best available by ADP, and the user's
+   own picks chosen by the style's composite score.
+
+   The honest caveat, surfaced in the UI: opponents drafting to ADP is a
+   simplification — real rooms have runs, reaches, and people who only draft their
+   own team's players, and this models none of that.
+
+   The first version also skipped value-over-next-available to save time, which
+   turned out to be a much worse shortcut than it sounded: without it there is
+   nothing stopping the engine taking the position with the fattest raw VOR over
+   and over, so every style produced the same running-back-heavy roster. It is
+   computed properly here, and the styles separate as they should.
+
+   Both styles in a comparison are handed the identical sequence of opponent
+   picks, from a seeded generator reset per style, so a difference between them is
+   the style and not the dice. */
+
+function mulberry32(seed) {
+  var a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function runMock(knobs, iterations, seed) {
+  var rules = S.league.rules;
+  var board = E.buildBoard(DATA.players, rules);
+  var byName = {}; board.players.forEach(function (q) { byName[q.name] = q; });
+  var adpOrder = board.players.slice().sort(function (a, b) { return a.adp - b.adp; });
+  var total = S.league.teams * S.league.rounds;
+  var startPick = currentPick();
+  var seededTaken = draftedNames();
+  var seededMine = A.mine.slice();
+  var runs = [];
+
+  for (var it = 0; it < iterations; it++) {
+    var rnd = mulberry32(seed + it * 7919);
+    var taken = Object.assign({}, seededTaken);
+    var mine = seededMine.slice();
+    var cursor = 0;
+
+    for (var pk = startPick; pk <= total; pk++) {
+      var k = keeperAt(pk);
+      if (k) {
+        taken[k.name] = true;
+        if (ownerOfPick(pk).slot === S.league.slot && byName[k.name]) mine.push(byName[k.name]);
+        continue;
+      }
+      if (ownerOfPick(pk).slot === S.league.slot) {
+        var avail = board.players.filter(function (q) { return !taken[q.name]; });
+        // Value-over-next-available has to be in here. Without it the mock has no
+        // reason not to keep taking the position with the fattest raw VOR, and it
+        // hoards running backs regardless of the style — which is exactly the
+        // behaviour VONA exists to prevent on the live board.
+        var later = myPickNumbers().filter(function (x) { return x > pk && !keeperAt(x); });
+        var nextMine = later[0] || null;
+        var need = E.positionalNeed(mine, rules);
+        var byeCounts = {};
+        E.assignRoster(mine, rules).slots.forEach(function (sl) {
+          if (sl.player) byeCounts[sl.player.bye] = (byeCounts[sl.player.bye] || 0) + 1;
+        });
+        var stack = {}, cuffs = {};
+        mine.forEach(function (q) {
+          if (q.pos === "QB") stack[q.team] = true;
+          if (q.pos === "RB") cuffs[q.team] = true;
+        });
+        var ctx = {
+          rules: rules, round: ownerOfPick(pk).round, rounds: S.league.rounds,
+          need: need, byeCounts: byeCounts,
+          byeTolerance: knobs.byeTolerance || S.league.byeTolerance || 3,
+          defFloorRound: S.league.defFloorRound || 7,
+          kFloorRound: Math.max(1, S.league.rounds - 1),
+          vona: nextMine ? E.expectedBestAvailable(avail, nextMine) : null,
+          runs: {}, replacement: board.replacement,
+          currentPick: pk, nextPick: nextMine || pk, strategy: knobs,
+          stackTeams: stack, handcuffTeams: cuffs
+        };
+        var best = null, bestScore = -1e9;
+        for (var i = 0; i < avail.length; i++) {
+          var sc = E.composite(avail[i], ctx).score;
+          if (sc > bestScore) { bestScore = sc; best = avail[i]; }
+        }
+        if (best) { taken[best.name] = true; mine.push(best); }
+      } else {
+        while (cursor < adpOrder.length && taken[adpOrder[cursor].name]) cursor++;
+        var pool = [];
+        for (var j = cursor; j < adpOrder.length && pool.length < 4; j++) {
+          if (!taken[adpOrder[j].name]) pool.push(adpOrder[j]);
+        }
+        if (!pool.length) break;
+        var chosen = pool[Math.floor(rnd() * pool.length)];
+        taken[chosen.name] = true;
+      }
+    }
+    runs.push(mine);
+  }
+  return summariseMock(runs, rules);
+}
+
+function summariseMock(runs, rules) {
+  var slotCounts = [], totals = [], posCounts = {};
+  runs.forEach(function (mine) {
+    var r = E.assignRoster(mine, rules);
+    var pts = 0;
+    r.slots.forEach(function (sl, i) {
+      slotCounts[i] = slotCounts[i] || { pos: sl.pos, names: {} };
+      if (sl.player) {
+        slotCounts[i].names[sl.player.name] = (slotCounts[i].names[sl.player.name] || 0) + 1;
+        pts += sl.player.pts;
+      }
+    });
+    totals.push(pts);
+    var seen = {};
+    mine.forEach(function (q) { seen[q.pos] = (seen[q.pos] || 0) + 1; });
+    Object.keys(seen).forEach(function (pos) {
+      (posCounts[pos] = posCounts[pos] || []).push(seen[pos]);
+    });
+  });
+
+  totals.sort(function (a, b) { return a - b; });
+  var median = totals.length ? totals[Math.floor(totals.length / 2)] : 0;
+
+  // Two WR slots drawing from the same pool will both have the same modal name,
+  // which reads as though you drafted him twice. Once a name has taken a slot it
+  // is not offered to the next one.
+  var used = {};
+  var slots = slotCounts.map(function (sc) {
+    var ranked = Object.keys(sc.names)
+      .filter(function (n) { return !used[n]; })
+      .sort(function (a, b) { return sc.names[b] - sc.names[a]; });
+    var best = ranked[0];
+    if (best) used[best] = true;
+    return { pos: sc.pos, name: best || null,
+             pct: best ? Math.round(sc.names[best] / runs.length * 100) : 0,
+             distinct: Object.keys(sc.names).length };
+  });
+
+  var comp = {};
+  Object.keys(posCounts).forEach(function (pos) {
+    var arr = posCounts[pos].slice().sort(function (a, b) { return a - b; });
+    comp[pos] = arr[Math.floor(arr.length / 2)];
+  });
+
+  return { slots: slots, median: median, comp: comp, runs: runs.length,
+           low: totals[0] || 0, high: totals[totals.length - 1] || 0 };
+}
+
+function mockCard(key, res) {
+  var st = STRATS[key] || { name: "Custom" };
+  var comp = ["QB", "RB", "WR", "TE", "K", "DEF"]
+    .filter(function (pos) { return res.comp[pos]; })
+    .map(function (pos) { return '<span class="mk-c">' + pos + " " + res.comp[pos] + "</span>"; })
+    .join("");
+  return '<div class="mockcard"><div class="mk-head"><b>' + esc(st.name) + "</b>" +
+      '<span class="mono">' + n0(res.median) + " pts</span></div>" +
+    '<div class="mk-comp">' + comp + "</div>" +
+    '<table class="mk-tbl">' + res.slots.map(function (sl) {
+      return "<tr><td>" + sl.pos + "</td><td>" +
+        (sl.name ? esc(sl.name) : '<span class="dimtext">empty</span>') + "</td>" +
+        '<td class="right dimtext">' + (sl.name ? sl.pct + "%" : "") + "</td></tr>";
+    }).join("") + "</table>" +
+    '<div class="dimtext" style="font-size:11px;margin-top:7px">Starting lineup ' +
+      n0(res.low) + "–" + n0(res.high) + " across " + res.runs + " drafts. The percentage is " +
+      "how often that player filled the slot.</div></div>";
+}
+
+function fillMockSelects() {
+  var opts = Object.keys(STRATS).map(function (k) {
+    return '<option value="' + k + '">' + esc(STRATS[k].name) + "</option>";
+  }).join("");
+  $("#mockA").innerHTML = opts;
+  $("#mockB").innerHTML = '<option value="">— none —</option>' + opts;
+  $("#mockA").value = S.league.style || "balanced";
+}
+
+$("#mockRun").addEventListener("click", function () {
+  var a = $("#mockA").value, b = $("#mockB").value;
+  var btn = $("#mockRun");
+  btn.disabled = true; btn.textContent = "Drafting…";
+  $("#mockOut").innerHTML = '<div class="note"><span class="spinner"></span> ' +
+    "Running " + (b ? "50" : "25") + " mock drafts…</div>";
+
+  // Let the spinner paint before the loop blocks the thread.
+  setTimeout(function () {
+    var seed = 20260908;
+    var t0 = Date.now();
+    var resA = runMock((STRATS[a] || {}).knobs || {}, 25, seed);
+    var resB = b ? runMock((STRATS[b] || {}).knobs || {}, 25, seed) : null;
+    $("#mockOut").innerHTML =
+      '<div class="mockgrid">' + mockCard(a, resA) + (resB ? mockCard(b, resB) : "") + "</div>" +
+      '<p class="dimtext" style="font-size:11.5px;margin-top:9px">' +
+      (resB ? "Both styles got the identical sequence of opponent picks, so the difference " +
+              "between them is the style rather than the dice. " : "") +
+      "The room is modelled as taking roughly the best available by ADP, which is a " +
+      "simplification — real drafts have runs and reaches this does not, and nobody in it " +
+      "is chasing their own team's players. " +
+      "Ran in " + (Date.now() - t0) + "ms.</p>";
+    btn.disabled = false; btn.textContent = b ? "Run 50 drafts" : "Run 25 drafts";
+  }, 30);
+});
+
+$("#mockA").addEventListener("change", function () {
+  $("#mockRun").textContent = $("#mockB").value ? "Run 50 drafts" : "Run 25 drafts";
+});
+$("#mockB").addEventListener("change", function () {
+  $("#mockRun").textContent = $("#mockB").value ? "Run 50 drafts" : "Run 25 drafts";
+});
+
 function renderStyleList() {
   var cur = S.league.style || "balanced";
   $("#styleList").innerHTML = Object.keys(STRATS).map(function (k) {
@@ -1342,7 +1557,9 @@ $("#btnRosters").addEventListener("click", function () { $("#btnLeague").click()
 })();
 
 $("#btnStyle").addEventListener("click", function () {
-  renderStyleList(); $("#styleDiff").innerHTML = ""; openModal("#styleModal");
+  renderStyleList(); fillMockSelects();
+  $("#styleDiff").innerHTML = ""; $("#mockOut").innerHTML = "";
+  openModal("#styleModal");
 });
 $("#styleClose").addEventListener("click", function () { closeModal("#styleModal"); });
 $("#styleRevert").addEventListener("click", function () {
@@ -1492,9 +1709,10 @@ function renderFilters() {
   if (lg) {
     lg.innerHTML = A.cur > S.league.teams * S.league.rounds ? ""
       : myTurn()
-        ? "Your pick — <b>DRAFT</b> puts him on your roster."
-        : "Row buttons: <b>" + esc(onClockShort()) + "</b> = " + esc(onClockLabel()) +
-          " took him · <b>TO ME</b> = he goes on your roster instead";
+        ? "Your pick — <b>DRAFT</b> puts him on your roster. Enter drafts the top match."
+        : "<b>" + esc(onClockShort()) + "</b> = " + esc(onClockLabel()) +
+          " took him (or press Enter) · <b>TO ME</b> = he goes on your roster " +
+          "(Shift+Enter) instead";
   }
 }
 
