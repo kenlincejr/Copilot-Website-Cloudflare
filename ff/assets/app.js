@@ -3,6 +3,7 @@
 "use strict";
 
 var E = DRAFTLINE_ENGINE, PRESETS = DRAFTLINE_PRESETS, DATA = DRAFTLINE_DATA, AUTH = DRAFTLINE_AUTH;
+var STRATS = globalThis.DRAFTLINE_STRATEGIES, KNOBS = globalThis.DRAFTLINE_KNOB_SPEC;
 var $  = function (s) { return document.querySelector(s); };
 var $$ = function (s, root) {
   return Array.prototype.slice.call((root || document).querySelectorAll(s));
@@ -172,9 +173,19 @@ function analyse() {
 
   var roster = E.assignRoster(mine, rules);
   var need = E.positionalNeed(mine, rules);
-  var byeCounts = {};
+  var byeCounts = {}, byePos = {};
   roster.slots.forEach(function (s) {
-    if (s.player) byeCounts[s.player.bye] = (byeCounts[s.player.bye] || 0) + 1;
+    if (!s.player) return;
+    var w = s.player.bye;
+    byeCounts[w] = (byeCounts[w] || 0) + 1;
+    (byePos[w] = byePos[w] || {})[s.player.pos] = (byePos[w][s.player.pos] || 0) + 1;
+  });
+
+  // Teams to stack (your quarterbacks) and to handcuff (your running backs).
+  var stackTeams = {}, handcuffTeams = {};
+  mine.forEach(function (p) {
+    if (p.pos === "QB") stackTeams[p.team] = true;
+    if (p.pos === "RB") handcuffTeams[p.team] = true;
   });
 
   var recent = S.picks.slice(-8).map(function (p) { return byName[p.name] || { pos: "?" }; });
@@ -189,7 +200,8 @@ function analyse() {
     defFloorRound: S.league.defFloorRound || 7,
     kFloorRound: Math.max(1, S.league.rounds - 1),
     vona: vona, runs: runInfo.runs, replacement: board.replacement,
-    currentPick: cur, nextPick: myAfter || cur
+    currentPick: cur, nextPick: myAfter || cur,
+    strategy: activeKnobs(), stackTeams: stackTeams, handcuffTeams: handcuffTeams
   };
 
   // Score everyone, not just the pool. Drafted players stay in the list struck
@@ -207,6 +219,7 @@ function analyse() {
   });
 
   return { board: board, avail: avail, all: board.players, byName: byName, mine: mine, roster: roster,
+           byeCounts: byeCounts, byePos: byePos,
            need: need, ctx: ctx, cur: cur, myNext: myNext, myAfter: myAfter,
            onClock: onClock, runInfo: runInfo, upcoming: upcoming };
 }
@@ -241,7 +254,7 @@ function render() {
 
   renderStatus(); renderTicker();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
-  renderSchedule(); renderLog(); renderRunBanner();
+  renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker();
   if (view.selected) renderDetail(view.selected);
 }
 
@@ -471,6 +484,271 @@ $("#pickSecs").addEventListener("input", function () {
   save(); tickClock();
 });
 
+/* ------------------------------------------------------------ draft style */
+
+/** The knobs currently in force: a named style, plus any custom overrides. */
+function activeKnobs() {
+  var base = (STRATS[S.league.style || "balanced"] || STRATS.balanced).knobs || {};
+  var out = JSON.parse(JSON.stringify(base));
+  var custom = S.league.styleCustom;
+  if (custom) {
+    Object.keys(custom).forEach(function (k) {
+      if (custom[k] && typeof custom[k] === "object" && !Array.isArray(custom[k]))
+        out[k] = Object.assign(out[k] || {}, custom[k]);
+      else out[k] = custom[k];
+    });
+  }
+  if (S.league.byeTolerance && out.byeTolerance == null) out.byeTolerance = S.league.byeTolerance;
+  return out;
+}
+
+function styleName() {
+  var n = (STRATS[S.league.style || "balanced"] || STRATS.balanced).name;
+  return S.league.styleCustom ? n + " + your notes" : n;
+}
+
+/**
+ * Everything a model returns passes through here. Unknown keys are dropped,
+ * known ones are coerced and clamped to the bounds in DRAFTLINE_KNOB_SPEC. A
+ * language model proposing draft weights is a suggestion; letting it write
+ * arbitrary numbers into the scoring engine would not be.
+ */
+function sanitizeKnobs(raw) {
+  var out = {}, rejected = [];
+  if (!raw || typeof raw !== "object") return { knobs: out, rejected: ["not an object"] };
+  Object.keys(raw).forEach(function (k) {
+    var spec = KNOBS[k];
+    if (!spec) { rejected.push(k); return; }
+    var v = raw[k];
+    if (spec.type === "map") {
+      if (!v || typeof v !== "object") { rejected.push(k); return; }
+      var m = {};
+      Object.keys(v).forEach(function (pos) {
+        if (spec.keys.indexOf(pos) < 0) { rejected.push(k + "." + pos); return; }
+        var n = parseFloat(v[pos]);
+        if (!isFinite(n)) { rejected.push(k + "." + pos); return; }
+        n = Math.min(spec.max, Math.max(spec.min, n));
+        m[pos] = spec.int ? Math.round(n) : Math.round(n * 100) / 100;
+      });
+      if (Object.keys(m).length) out[k] = m;
+    } else {
+      var n2 = parseFloat(v);
+      if (!isFinite(n2)) { rejected.push(k); return; }
+      n2 = Math.min(spec.max, Math.max(spec.min, n2));
+      out[k] = spec.type === "int" ? Math.round(n2) : Math.round(n2 * 100) / 100;
+    }
+  });
+  return { knobs: out, rejected: rejected };
+}
+
+/** Human-readable description of one knob's value, for the diff table. */
+function knobLabel(key, val) {
+  if (val == null) return "\u2014";
+  if (typeof val === "object")
+    return Object.keys(val).map(function (k) { return k + " " + val[k]; }).join(", ") || "\u2014";
+  return String(val);
+}
+
+var KNOB_MEANING = {
+  earlyRounds:   "where \u201cearly\u201d stops",
+  needWeight:    "how hard roster need pulls (0 = pure best available)",
+  ceilingWeight: "weight on upside",
+  riskWeight:    "weight on the risk penalty",
+  byeTolerance:  "starters on one bye before it costs points",
+  stackBonus:    "bonus for pass-catchers on your QB's team",
+  handcuffBonus: "bonus for backups to your own running backs",
+  posBias:       "position emphasis, all rounds",
+  earlyPosBias:  "position emphasis, early rounds only",
+  posFloorRound: "earliest round a position is allowed",
+  tagPenalty:    "extra penalty on research flags"
+};
+
+/** Board top-N under a given knob set, without disturbing the live analysis. */
+function boardUnder(knobs, n) {
+  var ctx = Object.assign({}, A.ctx, { strategy: knobs });
+  return A.avail.map(function (p) {
+      return { name: p.name, pos: p.pos, score: E.composite(p, ctx).score };
+    })
+    .sort(function (a, b) { return b.score - a.score; })
+    .slice(0, n || 12);
+}
+
+/** The part that answers "what does this actually do to my draft". */
+function renderStyleDiff(newStyleKey, customKnobs) {
+  var before = activeKnobs();
+  var afterBase = (STRATS[newStyleKey] || STRATS.balanced).knobs || {};
+  var after = JSON.parse(JSON.stringify(afterBase));
+  if (customKnobs) Object.keys(customKnobs).forEach(function (k) { after[k] = customKnobs[k]; });
+
+  var keys = Object.keys(KNOBS).filter(function (k) {
+    return JSON.stringify(before[k]) !== JSON.stringify(after[k]);
+  });
+  var rows = keys.map(function (k) {
+    return "<tr><td>" + esc(KNOB_MEANING[k] || k) + "</td>" +
+      '<td class="right dimtext">' + esc(knobLabel(k, before[k])) + "</td>" +
+      '<td class="right"><b>' + esc(knobLabel(k, after[k])) + "</b></td></tr>";
+  }).join("");
+
+  var b4 = boardUnder(before, 12), af = boardUnder(after, 12);
+  var b4rank = {}; b4.forEach(function (p, i) { b4rank[p.name] = i + 1; });
+  var moves = af.map(function (p, i) {
+    var was = b4rank[p.name], now = i + 1;
+    var delta = was ? was - now : null;
+    var arrow = delta == null ? '<span style="color:var(--green)">new</span>'
+      : delta > 0 ? '<span style="color:var(--green)">\u2191' + delta + "</span>"
+      : delta < 0 ? '<span style="color:var(--red)">\u2193' + (-delta) + "</span>"
+      : '<span class="dimtext">\u2014</span>';
+    return "<tr><td>" + now + '</td><td><span class="pos pos-' + p.pos + '">' + p.pos +
+      "</span> " + esc(p.name) + '</td><td class="right">' + arrow + "</td></tr>";
+  }).join("");
+
+  $("#styleDiff").innerHTML =
+    '<div class="note"><b>' + esc((STRATS[newStyleKey] || {}).name || "Custom") + "</b> \u2014 " +
+      esc((STRATS[newStyleKey] || {}).detail || "") + "</div>" +
+    '<div class="grid-auto mt">' +
+      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">What changes in the engine</div>" +
+        (rows ? "<table><tr><th>knob</th><th class='right'>now</th><th class='right'>after</th></tr>" +
+                rows + "</table>"
+              : '<p class="dimtext">Nothing \u2014 this is the default weighting.</p>') + "</div>" +
+      "<div><div class=\"eyebrow\" style=\"margin-bottom:6px\">Who moves, at your next pick</div>" +
+        "<table>" + moves + "</table></div>" +
+    "</div>" +
+    '<button class="btn btn-primary mt" id="styleApply">Use this style</button> ' +
+    '<button class="btn mt" id="styleCancel">Cancel</button>';
+
+  $("#styleApply").onclick = function () {
+    S.league.stylePrev = { style: S.league.style, custom: S.league.styleCustom };
+    S.league.style = newStyleKey;
+    S.league.styleCustom = customKnobs || null;
+    save(); renderStyleList(); $("#styleDiff").innerHTML = ""; render();
+    banner("Draft style is now " + styleName() + ". The board has re-ranked.");
+  };
+  $("#styleCancel").onclick = function () { $("#styleDiff").innerHTML = ""; };
+}
+
+function renderStyleList() {
+  var cur = S.league.style || "balanced";
+  $("#styleList").innerHTML = Object.keys(STRATS).map(function (k) {
+    var st = STRATS[k];
+    return '<div class="stylecard' + (k === cur ? " on" : "") + '" data-style="' + k + '">' +
+      '<div class="sc-head"><b>' + esc(st.name) + "</b>" +
+        (k === cur ? '<span class="badge tag-FLAG_PLANT">current</span>' : "") + "</div>" +
+      '<div class="sc-tag">' + esc(st.tagline) + "</div>" +
+    "</div>";
+  }).join("");
+  $$("#styleList .stylecard").forEach(function (el) {
+    el.onclick = function () { renderStyleDiff(el.getAttribute("data-style"), null); };
+  });
+  $("#styleCurrent").textContent = "Current: " + styleName();
+}
+
+$("#btnStyle").addEventListener("click", function () {
+  renderStyleList(); $("#styleDiff").innerHTML = ""; openModal("#styleModal");
+});
+$("#styleClose").addEventListener("click", function () { closeModal("#styleModal"); });
+$("#styleRevert").addEventListener("click", function () {
+  S.league.style = "balanced"; S.league.styleCustom = null; S.league.stylePrev = null;
+  save(); renderStyleList(); $("#styleDiff").innerHTML = ""; render();
+  banner("Back to the default weighting.");
+});
+
+var STYLE_SYSTEM =
+  "You translate a fantasy manager's description of how they want to draft into a set " +
+  "of numeric weights for a draft engine. Reply with ONLY a JSON object, no prose and no " +
+  "code fence. Allowed keys and ranges:\n" +
+  "  earlyRounds 1-10, needWeight 0-2 (0 = ignore roster need entirely),\n" +
+  "  ceilingWeight 0-2, riskWeight 0-2, byeTolerance 2-6,\n" +
+  "  stackBonus 0-25, handcuffBonus 0-25,\n" +
+  "  posBias / earlyPosBias: object keyed QB RB WR TE K DEF, each 0.4-1.6 (1 = neutral),\n" +
+  "  posFloorRound: object keyed by position, earliest round allowed,\n" +
+  "  tagPenalty: object keyed LANDMINE INJURY AVOID FALLER, each 0-40 extra points off.\n" +
+  "Include only the keys the description actually implies. Add a \"why\" key: one sentence, " +
+  "under 25 words, saying what you changed and why. Nothing else.";
+
+$("#styleAsk").addEventListener("click", function () {
+  var text = $("#styleFree").value.trim();
+  if (!text) return;
+  if (!claudeReady()) { closeModal("#styleModal"); $("#btnClaude").click(); return; }
+  $("#styleAsk").disabled = true;
+  $("#styleAskMsg").innerHTML = '<span class="spinner"></span> thinking\u2026';
+
+  claudeCall("The league: " + scoringHighlights() + ".\n" +
+             "Roster: " + Object.keys(A.need).map(function (k) {
+               return k + " " + A.need[k].have + "/" + A.need[k].starters; }).join(", ") + ".\n" +
+             "Currently on style: " + styleName() + ".\n\n" +
+             "How they want to draft: " + text, STYLE_SYSTEM)
+    .then(function (out) {
+      var m = out.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error("Claude didn't return anything usable.");
+      var parsed = JSON.parse(m[0]);
+      var why = parsed.why; delete parsed.why;
+      var res = sanitizeKnobs(parsed);
+      if (!Object.keys(res.knobs).length) throw new Error("Nothing in that mapped to a knob the engine has.");
+      $("#styleAskMsg").innerHTML = esc(why || "") +
+        (res.rejected.length ? ' <span class="dimtext">(ignored: ' + esc(res.rejected.join(", ")) + ")</span>" : "");
+      renderStyleDiff(S.league.style || "balanced", res.knobs);
+    })
+    .catch(function (err) { $("#styleAskMsg").textContent = err.message; })
+    .then(function () { $("#styleAsk").disabled = false; });
+});
+
+/* ---------------------------------------------------------- bye weeks */
+
+/**
+ * Two different problems wear the same word. A *position clash* is a starter at
+ * the same position already on that bye — take this player and one of them sits
+ * with no like-for-like replacement. A *week overload* is simply too many of
+ * your starters idle in one week, whatever they play.
+ */
+function byeRisk(p) {
+  if (!p || !A) return null;
+  var w = p.bye;
+  var samePos = (A.byePos[w] && A.byePos[w][p.pos]) || 0;
+  var total = A.byeCounts[w] || 0;
+  var tol = (A.ctx.strategy && A.ctx.strategy.byeTolerance) || S.league.byeTolerance || 3;
+  if (samePos >= (S.league.rules.roster[p.pos] || 1))
+    return { level: "clash", samePos: samePos, total: total,
+             why: samePos + " of your " + p.pos + " starter" + (samePos === 1 ? "" : "s") +
+                  (samePos === 1 ? " already sits" : " already sit") + " out week " + w };
+  if (total + 1 > tol)
+    return { level: "overload", samePos: samePos, total: total,
+             why: (total + 1) + " starters would be on bye in week " + w };
+  if (samePos >= 1)
+    return { level: "watch", samePos: samePos, total: total,
+             why: "another " + p.pos + " starter is on bye in week " + w };
+  return null;
+}
+
+function renderByeTracker() {
+  var weeks = [];
+  DATA.players.forEach(function (p) { if (weeks.indexOf(p.bye) < 0) weeks.push(p.bye); });
+  weeks.sort(function (a, b) { return a - b; });
+  var tol = (A.ctx.strategy && A.ctx.strategy.byeTolerance) || S.league.byeTolerance || 3;
+
+  var worst = 0;
+  weeks.forEach(function (w) { worst = Math.max(worst, A.byeCounts[w] || 0); });
+  $("#byeSummary").textContent = A.mine.length
+    ? (worst >= tol ? "week " + weeks.filter(function (w) { return (A.byeCounts[w] || 0) >= tol; }).join(", ") + " is heavy"
+                    : "no clashes")
+    : "";
+
+  $("#byeTracker").innerHTML = weeks.map(function (w) {
+    var n = A.byeCounts[w] || 0;
+    var pos = A.byePos[w] || {};
+    var lvl = n >= tol ? "bad" : n === tol - 1 ? "warn" : n ? "ok" : "none";
+    var who = Object.keys(pos).map(function (k) { return k + (pos[k] > 1 ? "\u00d7" + pos[k] : ""); }).join(" ");
+    return '<div class="byerow ' + lvl + '">' +
+      '<span class="wk">wk ' + w + "</span>" +
+      '<span class="bar"><span style="width:' + Math.min(100, n / 4 * 100) + '%"></span></span>' +
+      '<span class="who">' + (who || "\u2014") + "</span>" +
+      '<span class="n">' + (n || "") + "</span>" +
+    "</div>";
+  }).join("") +
+  '<p class="dimtext mb0" style="font-size:11.5px;margin-top:7px">' +
+    "Starters only \u2014 bench players on a bye cost you nothing. Flagged at " + tol +
+    " in one week, which your style can change.</p>";
+}
+
 function renderFilters() {
   var counts = {};
   A.avail.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
@@ -527,6 +805,7 @@ function rowHtml(p, i) {
   var surv = Math.round((p.surv || 1) * 100);
   var survColor = surv > 70 ? "var(--green)" : surv > 35 ? "var(--amber)" : "var(--red)";
   var t = p.takenBy;
+  var br = t ? null : byeRisk(p);
   var cls = "prow" + (view.selected === p.name ? " sel" : "") +
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
   var who = t ? '<span class="sub">' + (t.mine ? "you" : "team " + t.slot) + " \u00b7 " + t.pick + "</span>" : "";
@@ -535,7 +814,8 @@ function rowHtml(p, i) {
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
       '<span class="sub">' + p.team + "</span>" + tag + who + "</span>" +
     '<span class="num">' + n0(p.pts) + est + "</span>" +
-    '<span class="num dimtext c-bye">' + p.bye + "</span>" +
+    '<span class="num c-bye ' + (br ? "bye-" + br.level : "dimtext") + '"' +
+      (br ? ' title="' + esc(br.why) + '"' : "") + ">" + p.bye + "</span>" +
     '<span class="num c-vor">' + n0(p.vor) + "</span>" +
     '<span class="num dimtext">' + (p.adp || "").toFixed(0) + "</span>" +
     '<span class="num delta ' + (d > 0 ? "pos-val" : "neg-val") + '">' + (d > 0 ? "+" : "") + n0(d) + "</span>" +
@@ -590,7 +870,8 @@ function renderRecs() {
   if (!realistic.length) realistic = pool;
   var top = realistic.sort(function (a, b) { return b.comp - a.comp; }).slice(0, 3);
 
-  $("#recTitle").textContent = waiting ? "Target at pick " + A.myNext : "Take one of these";
+  $("#recTitle").innerHTML = (waiting ? "Target at pick " + A.myNext : "Take one of these") +
+    ' <span class="stylechip" id="styleChip">' + esc(styleName()) + "</span>";
   $("#recCtx").textContent = "round " + A.ctx.round +
     (waiting ? " · " + (A.myNext - A.cur) + " picks away · 15%+ to reach you" : " · you're on the clock") +
     (A.myAfter ? " · then " + A.myAfter : "");
@@ -615,6 +896,8 @@ function renderRecs() {
       "</div></div>";
   }).join("") || '<div class="note">Nothing left that clears the position caps.</div>';
 
+  var chip = $("#styleChip");
+  if (chip) chip.onclick = function () { $("#btnStyle").click(); };
   $$("#recs [data-take]").forEach(function (b) { b.onclick = function () { record(b.dataset.take, true); }; });
   $$("#recs [data-gone]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone, false); }; });
   $$("#recs [data-open]").forEach(function (b) {
@@ -1225,8 +1508,8 @@ var SYSTEM =
  * key as a Cloudflare secret and pins the model and answer length server-side;
  * falls back to a key the user pasted in themselves.
  */
-function claudeCall(question) {
-  var body = { system: SYSTEM, messages: [{ role: "user", content: question }] };
+function claudeCall(question, systemOverride) {
+  var body = { system: systemOverride || SYSTEM, messages: [{ role: "user", content: question }] };
   var url, headers = { "content-type": "application/json" };
 
   if (PROXY) {

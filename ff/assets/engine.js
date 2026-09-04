@@ -259,6 +259,7 @@
    */
   function composite(player, ctx) {
     var round = ctx.round || 1, rounds = ctx.rounds || 15;
+    var st = ctx.strategy || {};
     var need = ctx.need[player.pos] || { short: 0, have: 0, starters: 0 };
     var reasons = [];
 
@@ -283,6 +284,22 @@
     }
     if (ctx.runs && ctx.runs[player.pos]) { mult += 0.12; reasons.push(player.pos + " run in progress"); }
 
+    // How hard need pulls at all. 0 flattens it to 1 — pure best-player-available;
+    // 2 doubles every deviation from neutral.
+    if (st.needWeight != null) mult = 1 + (mult - 1) * st.needWeight;
+
+    // Positional bias. The early-round variant is what separates Hero RB (one
+    // back, then pivot) from Zero RB (none until the pivot is forced).
+    var early = round <= (st.earlyRounds || 5);
+    var bias = 1;
+    if (early && st.earlyPosBias && st.earlyPosBias[player.pos] != null) bias = st.earlyPosBias[player.pos];
+    else if (st.posBias && st.posBias[player.pos] != null) bias = st.posBias[player.pos];
+    if (bias !== 1) {
+      mult *= bias;
+      if (bias < 0.85) reasons.push(player.pos + " de-emphasised by your strategy");
+      else if (bias > 1.15) reasons.push(player.pos + " prioritised by your strategy");
+    }
+
     // Hard caps. A player who can never enter your lineup is not a pick, however
     // much surplus value he carries — the discount alone doesn't stop the board
     // stacking a position with a steep cliff (tight end, most years).
@@ -293,10 +310,12 @@
     if (player.pos === "K" && have >= 1) blocked = "already have a kicker";
     if (player.pos === "DEF" && have >= (ctx.rules.roster.DEF || 1)) blocked = "already have a defense";
     if (player.pos === "QB" && have >= 2) blocked = "already have two quarterbacks";
-    if ((player.pos === "K") && round < (ctx.kFloorRound || rounds - 1))
-      blocked = "kickers wait until round " + (ctx.kFloorRound || rounds - 1);
-    if (player.pos === "DEF" && round < (ctx.defFloorRound || 7))
-      blocked = "no defenses before round " + (ctx.defFloorRound || 7);
+    var floors = st.posFloorRound || {};
+    var floor = floors[player.pos] != null ? floors[player.pos]
+              : player.pos === "K" ? (ctx.kFloorRound || rounds - 1)
+              : player.pos === "DEF" ? (ctx.defFloorRound || 7)
+              : 1;
+    if (round < floor) blocked = "no " + player.pos + " before round " + floor;
 
     // Ceiling/risk weighting shifts across the draft: buy floor early, buy
     // variance late. Six of twelve make the playoffs — late picks should swing.
@@ -304,13 +323,33 @@
     var wCeiling = 0.20 + 0.80 * t, wRisk = 1.00 - 0.70 * t;
     var ceilingAdj = player.ceiling ? ((player.ceiling - 70) / 100) * 26 * wCeiling : 0;
     var riskAdj = player.risk ? ((player.risk - 50) / 100) * 26 * wRisk : 0;
+    ceilingAdj *= (st.ceilingWeight != null ? st.ceilingWeight : 1);
+    riskAdj *= (st.riskWeight != null ? st.riskWeight : 1);
 
     // Bye penalty: only counts starters already parked on that week.
     var conflicts = ctx.byeCounts[player.bye] || 0;
     var byePenalty = conflicts >= (ctx.byeTolerance || 3) ? 5 * (conflicts - (ctx.byeTolerance || 3) + 1) : 0;
 
+    // Extra penalty for the research layer's own flags, for managers who would
+    // rather leave value on the table than roster a known problem.
+    var tagPenalty = (st.tagPenalty && player.tag && st.tagPenalty[player.tag]) || 0;
+    if (tagPenalty) reasons.push("flagged " + player.tag.replace("_", " ").toLowerCase());
+
+    // Stacking your quarterback's receivers, and handcuffing your own backs.
+    var bonus = 0;
+    if (st.stackBonus && ctx.stackTeams && ctx.stackTeams[player.team] &&
+        ["WR", "TE"].indexOf(player.pos) >= 0) {
+      bonus += st.stackBonus;
+      reasons.push("stacks your " + player.team + " quarterback");
+    }
+    if (st.handcuffBonus && ctx.handcuffTeams && ctx.handcuffTeams[player.team] &&
+        player.pos === "RB") {
+      bonus += st.handcuffBonus;
+      reasons.push("handcuffs your " + player.team + " back");
+    }
+
     var base = (player.vor + vona) * mult;
-    var score = base + ceilingAdj - riskAdj - byePenalty;
+    var score = base + ceilingAdj - riskAdj - byePenalty - tagPenalty + bonus;
     if (blocked) score -= 1000;
 
     if (need.short > 0.9) reasons.push("fills an empty " + player.pos + " slot");
@@ -327,7 +366,8 @@
                    " rounds ahead of ADP");
 
     return { score: score, vona: vona, mult: mult, ceilingAdj: ceilingAdj,
-             riskAdj: riskAdj, byePenalty: byePenalty, blocked: blocked, reasons: reasons };
+             riskAdj: riskAdj, byePenalty: byePenalty, tagPenalty: tagPenalty,
+             bonus: bonus, bias: bias, blocked: blocked, reasons: reasons };
   }
 
   /** Most bodies worth carrying at a position: starters, plus bench you can use. */

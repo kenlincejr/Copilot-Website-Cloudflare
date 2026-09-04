@@ -57,6 +57,42 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Bye weeks
+
+A tracker in the right column counts your **starters** — bench players on a bye
+cost nothing — per week, with the positions in each. On the board, the bye cell
+colours when a pick would create a problem, and the two problems are distinct:
+
+- **amber (watch)** — another starter at that position is already on that bye.
+- **red (clash)** — you would have no like-for-like starter that week, because
+  every slot at the position is already idle then.
+- **red (overload)** — too many starters idle in one week, whatever they play.
+  The threshold is 3 by default and the draft style can move it.
+
+## Draft style
+
+Nine styles, each a set of overrides on the same composite score in
+`engine.js` — `posBias`, `earlyPosBias`, `needWeight`, `ceilingWeight`,
+`riskWeight`, `posFloorRound`, `tagPenalty`, `stackBonus`, `handcuffBonus`,
+`byeTolerance`. Nothing in a style is an opinion the engine cannot act on.
+
+Picking one shows a diff before it applies: which knobs move, and — the part
+that matters — **which players move, with arrows**, computed by scoring the live
+board twice. Zero RB on an empty roster lifts Nacua and Smith-Njigba into the top
+three and drops Gibbs and Robinson four or five places. Undo returns to Balanced.
+
+The taxonomy follows current coverage rather than received wisdom: Hero RB is the
+prevalent 2026 approach, the market has swung back toward drafting backs early,
+and Zero RB is genuinely contrarian this season. "Robust RB" barely appears in
+2026 writing and is labelled RB-heavy for that reason.
+
+**Free-text tuning.** Describe how you want to draft and Claude proposes the
+knobs. Everything it returns goes through `sanitizeKnobs()`: unknown keys are
+dropped, known ones are coerced and clamped to the bounds in
+`DRAFTLINE_KNOB_SPEC`, and the user still sees the diff before anything applies.
+A model proposing draft weights is a suggestion; letting it write arbitrary
+numbers into the scoring engine would not be.
+
 ## Staying in sync with the real draft
 
 Every number the board produces — survival, VONA, the on-deck brief — is computed

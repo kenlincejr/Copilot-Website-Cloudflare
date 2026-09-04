@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904e">
+<link rel="stylesheet" href="assets/ff.css?v=20260904f">
 </head>
 <body>
 
@@ -32,6 +32,7 @@
     </div>
     <div class="spacer"></div>
     <button class="btn btn-sm btn-primary hidden" id="btnStart">Start draft</button>
+    <button class="btn btn-sm" id="btnStyle" title="How you want to draft">Style</button>
     <button class="btn btn-sm" id="btnClaude" title="Ask Claude about this pick">Ask Claude</button>
     <button class="btn btn-sm" id="btnUndo" title="Ctrl+Z">Undo</button>
     <button class="btn btn-sm" id="btnSetup">League</button>
@@ -93,6 +94,10 @@
 
       <div class="panel-head mt"><h3>Still need</h3></div>
       <div class="needbar" id="needs"></div>
+
+      <div class="panel-head mt"><h3>Bye weeks</h3>
+        <span class="eyebrow" id="byeSummary"></span></div>
+      <div id="byeTracker"></div>
 
       <div class="panel-head mt"><h3 id="turnTitle">Who survives to your next pick?</h3></div>
       <div id="turn"></div>
@@ -179,6 +184,40 @@
   <div class="mt" style="display:flex;gap:8px;justify-content:flex-end">
     <button class="btn btn-danger" id="btnReset">Reset draft</button>
     <button class="btn btn-primary" id="setupSave">Save league</button>
+  </div>
+</div></div>
+
+<div class="modal-bg hidden" id="styleModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Draft style</h2>
+      <span class="muted">Every style is a set of adjustments to the same scoring engine.
+        You can see exactly which ones, and exactly who moves because of them.</span></div>
+    <button class="btn btn-sm" id="styleClose">Close</button>
+  </div>
+
+  <div id="styleList"></div>
+
+  <details class="mt">
+    <summary style="cursor:pointer;color:var(--muted)">Describe it in your own words</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      Tell Claude how you want to draft and it proposes the adjustments. Nothing is
+      applied until you look at what changed — and every value it returns is checked
+      against a whitelist and clamped to a sane range before the board ever sees it.
+      A model suggesting numbers is a suggestion, not an instruction.
+    </p>
+    <textarea id="styleFree" rows="3" placeholder="e.g. I want to win now, avoid anyone with an injury history, and I'd rather have two good receivers than one great one."></textarea>
+    <div class="mt" style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-primary" id="styleAsk">Ask Claude to tune it</button>
+      <span class="dimtext" id="styleAskMsg"></span>
+    </div>
+  </details>
+
+  <div id="styleDiff" class="mt"></div>
+
+  <div class="mt" style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+    <span class="dimtext" id="styleCurrent"></span>
+    <span style="flex:1"></span>
+    <button class="btn" id="styleRevert">Undo — back to Balanced</button>
   </div>
 </div></div>
 
@@ -280,12 +319,13 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904e"></script>
-<script src="data/players.js?v=20260904e"></script>
-<script src="assets/presets.js?v=20260904e"></script>
-<script src="assets/engine.js?v=20260904e"></script>
-<script src="assets/auth.js?v=20260904e"></script>
-<script src="assets/parser.js?v=20260904e"></script>
-<script src="assets/app.js?v=20260904e"></script>
+<script src="assets/config.js?v=20260904f"></script>
+<script src="data/players.js?v=20260904f"></script>
+<script src="assets/presets.js?v=20260904f"></script>
+<script src="assets/engine.js?v=20260904f"></script>
+<script src="assets/auth.js?v=20260904f"></script>
+<script src="assets/parser.js?v=20260904f"></script>
+<script src="assets/strategies.js?v=20260904f"></script>
+<script src="assets/app.js?v=20260904f"></script>
 </body>
 </html>
