@@ -334,16 +334,12 @@ function render() {
 
   renderStatus();
 
-  // Say out loud whose roster the next click fills. The assignment has always
-  // followed the clock; it was just invisible.
-  var onMe = A.onClock.slot === S.league.slot;
-  $("#search").placeholder = A.cur > total
-    ? "Draft complete"
-    : !isLive()
-      ? "Search \u2014 Enter marks him gone, Shift+Enter drafts him to you"
-      : onMe
-        ? "Search \u2014 Enter drafts to YOU (you're on the clock)"
-        : "Search \u2014 Enter puts him on " + teamLabel(A.onClock.slot) + ", Shift+Enter on yours";
+  // Keep this short enough to never clip. The box is about 200px wide, and the
+  // legend directly beneath already carries the Enter / Shift+Enter guidance
+  // with the on-the-clock team named in it — a long placeholder here only
+  // repeated that and then truncated mid-word.
+  $("#search").placeholder = A.cur > total ? "Draft complete"
+    : "Search " + A.avail.length + " available\u2026";
   renderColumnHeads();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker(); renderTracker();
