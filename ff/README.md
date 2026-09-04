@@ -371,6 +371,37 @@ because the obvious one is not enough:
    `app.html?v=<build>` — a URL the cache has never seen. Keep `build` and the
    `?v=` stamps in step or the banner never fires.
 
+## Depth charts, injuries, and a second ADP
+
+Three layers baked from Sleeper's free `/v1/players/nfl` endpoint and its
+projections feed, answering "what is actually happening out there" rather than
+"what did a mock drafter click".
+
+**Depth chart slot** — `RB1`, `RB4`, `LWR2`. 216 of the 267 players on this board
+carry one, against the 84 the hand-written research layer reaches. It is the best
+available answer to *has he actually won the job*, and it corroborates the
+research independently: Josh Jacobs reads RB4, Zach Charbonnet RB4.
+
+**Injury designation** — Questionable / IR / PUP with the body part, shown as a
+badge on the row because it is too important to sit behind a column toggle. 51
+players on the board carry one, and it knows things the 4 September digest does
+not: Puka Nacua and Ja'Marr Chase are both listed Questionable.
+
+**A second ADP**, and this one needs care. Sleeper's own ADP is computed across
+its entire user base, **mixes mock with real drafts, and refreshes only once or
+twice a month**. It is therefore a second opinion, not a fresher one. The proof
+is in the data: Josh Jacobs sits at 38 on Sleeper against 69 on FFC purely
+because Sleeper has not absorbed his 30 August move to the Commissioner's Exempt
+List. The `SPLIT` column shows the disagreement and its description says exactly
+this — a wide split is a question, not an answer.
+
+All three go into the Claude brief, and the system prompt tells it that depth and
+injury are current while an ADP split usually means one market is behind the
+news, so it should say which rather than assume an edge.
+
+`tools/players_nfl.json` is ~15 MB and gitignored; re-fetch it with the URL in
+`bake-players.py`. Sleeper asks that it be called at most once a day.
+
 ## Rebuilding the data
 
 ```bash

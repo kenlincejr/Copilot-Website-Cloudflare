@@ -1838,6 +1838,43 @@ var COLUMNS = {
                title: br ? br.why : "" };
     }
   },
+  depth: {
+    short: "DEPTH", label: "Where he sits on his own depth chart", w: "54px",
+    desc: "His team's depth chart slot, straight from Sleeper and refreshed with the bake. " +
+          "RB1 is the starter; RB3 needs an injury in front of him to matter. This is the " +
+          "single best answer to \u201chas he actually won the job\u201d, and it covers 216 " +
+          "players on this board against the 84 the hand-written research layer reaches.",
+    render: function (p) {
+      if (!p.depth) return { v: "\u2014", cls: "dimtext" };
+      var label = (p.depthPos || p.pos) + p.depth;
+      return { v: label, style: "color:" +
+        (p.depth === 1 ? "var(--green)" : p.depth === 2 ? "var(--muted)" : "var(--amber)") };
+    }
+  },
+  adp2: {
+    short: "SLP", label: "Sleeper's own ADP", w: "44px",
+    desc: "A second ADP, computed across Sleeper's whole user base. Read it beside the main " +
+          "one rather than instead of it: Sleeper mixes mock with real drafts and refreshes " +
+          "once or twice a month, so it can be behind the news.",
+    render: function (p) {
+      if (!p.adp2) return { v: "\u2014", cls: "dimtext" };
+      return { v: p.adp2.toFixed(0), cls: "dimtext" };
+    }
+  },
+  split: {
+    short: "SPLIT", label: "How far the two ADP sources disagree", w: "56px",
+    desc: "The main ADP minus Sleeper's. A big number means the two markets disagree about " +
+          "him, which is worth a look — but it is not automatically an edge. Josh Jacobs " +
+          "splits by 31 picks purely because Sleeper had not absorbed his move to the " +
+          "exempt list. Treat a wide split as a question, not an answer.",
+    render: function (p) {
+      if (!p.adp2) return { v: "\u2014", cls: "dimtext" };
+      var d = Math.round(p.adp - p.adp2);
+      if (Math.abs(d) < 8) return { v: "\u2014", cls: "dimtext" };
+      return { v: (d > 0 ? "+" : "") + d,
+               style: "color:" + (Math.abs(d) >= 18 ? "var(--amber)" : "var(--muted)") };
+    }
+  },
   vsstd: {
     short: "VS STD", label: "What your scoring does to him", w: "54px",
     desc: "Points your rules add or remove versus plain full PPR. This is the arbitrage the " +
@@ -2002,6 +2039,10 @@ function onClockShort() {
 function rowHtml(p, i) {
   var d = p.adpDelta;
   var tag = p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "";
+  // An injury designation is too important to sit behind a column toggle.
+  var inj = p.injury ? ' <span class="badge inj inj-' + p.injury.replace(/[^A-Za-z]/g, "") +
+    '" title="' + esc(p.injury + (p.injuryPart ? " \u2014 " + p.injuryPart : "")) + '">' +
+    esc(p.injury === "Questionable" ? "Q" : p.injury) + "</span>" : "";
   var est = p.projSource === "modeled" ? ' <span class="dimtext" title="modeled, not projected">~</span>' : "";
   var surv = Math.round((p.surv || 1) * 100);
   var survColor = surv > 70 ? "var(--green)" : surv > 35 ? "var(--amber)" : "var(--red)";
@@ -2015,7 +2056,7 @@ function rowHtml(p, i) {
     (document.body.classList.contains("compact") ? "" :
       '<span class="rank">' + (i + 1) + "</span>") +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
-      '<span class="sub">' + p.team + "</span>" + tag + who + "</span>" +
+      '<span class="sub">' + p.team + "</span>" + inj + tag + who + "</span>" +
     activeCols().map(function (k) {
       var c = COLUMNS[k].render(p);
       var blankWhenTaken = (k === "wait" || k === "survives" || k === "value");
@@ -2755,8 +2796,15 @@ function teamsAhead() {
 function claudeContext() {
   var top = A.avail.slice().sort(function (a, b) { return b.comp - a.comp; }).slice(0, 12);
   var lines = top.map(function (p) {
+    var extra = [];
+    if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);
+    if (p.injury) extra.push("listed " + p.injury + (p.injuryPart ? " (" + p.injuryPart + ")" : ""));
+    if (p.adp2 && Math.abs(p.adp - p.adp2) >= 12) {
+      extra.push("ADP sources split: " + p.adp + " here vs " + p.adp2 + " on Sleeper");
+    }
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
+      (extra.length ? ", " + extra.join(", ") : "") +
       ", ADP " + p.adp + ", chance he is still there at my FOLLOWING pick (" +
       (A.myAfter || A.myNext) + ") is " +
       Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
@@ -2800,7 +2848,11 @@ var SYSTEM =
   "already applies their exact league rules. Trust those numbers — do not recompute them and " +
   "do not substitute generic consensus rankings. Your job is judgement on top of the math: " +
   "where the board's logic is thin, what the research notes actually imply, and what an " +
-  "opponent might do next. Be direct and brief — under 150 words unless asked for more. " +
+  "opponent might do next. Depth-chart slots and injury designations come straight from " +
+  "the league feed and are current; where two ADP sources are given and they disagree, that " +
+  "is a disagreement between markets and often just means one has not absorbed a piece of " +
+  "news yet — say which you think it is rather than assuming an edge. " +
+  "Be direct and brief — under 150 words unless asked for more. " +
   "No preamble, no bullet-point sprawl, no restating the question. If the board looks right, " +
   "say so in a sentence and add the one thing it doesn't know.";
 

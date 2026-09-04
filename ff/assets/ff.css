@@ -711,3 +711,8 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard, .byerow,
 .mk-tbl td:first-child {
   color: var(--dim); font-size: 10px; font-weight: 700; width: 38px;
 }
+
+/* Injury designations, straight from the feed. */
+.badge.inj { letter-spacing: 0; }
+.inj-Questionable { background: rgba(245,158,11,.18); color: var(--amber); }
+.inj-IR, .inj-PUP, .inj-NA, .inj-Sus, .inj-DNR { background: rgba(248,113,113,.18); color: var(--red); }

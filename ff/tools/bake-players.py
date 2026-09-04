@@ -5,9 +5,11 @@ projection snapshot and emit /ff/data/players.js (a plain <script>, so the app
 works from file:// with no network).
 
 Inputs
-  players.json   the 267-player research board (ADP, sd, tags, notes, dst_tier)
-  sleeper.json   raw response from
-                 https://api.sleeper.com/projections/nfl/2026?season_type=regular&position[]=...
+  players.json     the 267-player research board (ADP, sd, tags, notes, dst_tier)
+  sleeper.json     raw response from
+                   https://api.sleeper.com/projections/nfl/2026?season_type=regular&position[]=...
+  players_nfl.json raw response from https://api.sleeper.app/v1/players/nfl
+                   (~15 MB; Sleeper asks that it be called at most once a day)
 
 Output
   ../data/players.js   globalThis.DRAFTLINE_DATA = { meta, players: [...] }
@@ -20,6 +22,19 @@ What we take from Sleeper, and what we don't
         We estimate 40+ yard events ourselves and flag them `est`.
   DROP  Sleeper's kicker lines. Every kicker is projected identically
         (9/8/841/42 for all of them). We model kickers off positional rank.
+  TAKE  depth_chart_order, depth_chart_position, injury_status and the injured
+        body part from the players endpoint. This is the strongest thing in the
+        feed: 607 of 847 active skill players carry a depth chart slot and 155
+        carry an injury designation, all of it current and machine-readable.
+        The research layer annotates 84 players by hand; this covers the rest.
+  TAKE  Sleeper's own ADP, as a SECOND opinion beside FantasyFootballCalculator's
+        — never as a replacement. Sleeper's number is computed across its whole
+        user base and mixes mock with real drafts, and it refreshes only once or
+        twice a month. That staleness is visible in the data: Josh Jacobs sits at
+        38 on Sleeper against 69 on FFC because Sleeper has not absorbed his
+        30 August move to the Commissioner's Exempt List. So a divergence means
+        "these two populations disagree", which is worth seeing, and emphatically
+        not "the second number is better".
   ADD   Points-allowed tier distributions driven by the researched dst_tier.
         Sleeper has no PA tiers at all, and PA is the single biggest scoring
         difference in a league with boosted D/ST tiers.
@@ -123,14 +138,45 @@ RETURNERS = {
 
 # ==================================================================== main
 
+def load_player_meta(path):
+    """depth chart slot, injury designation and Sleeper ADP, keyed by normalised name."""
+    if not os.path.exists(path):
+        print("  (no players_nfl.json — skipping depth chart and injury layer)")
+        return {}
+    raw = json.load(open(path, encoding="utf-8"))
+    out = {}
+    for pl in raw.values():
+        if not pl.get("team") or pl.get("position") not in ("QB", "RB", "WR", "TE", "K"):
+            continue
+        nm = norm((pl.get("full_name") or
+                   ((pl.get("first_name") or "") + " " + (pl.get("last_name") or ""))))
+        if not nm:
+            continue
+        rec = {}
+        if pl.get("depth_chart_order") is not None:
+            rec["depth"] = pl["depth_chart_order"]
+            rec["depthPos"] = pl.get("depth_chart_position") or pl.get("position")
+        if pl.get("injury_status"):
+            rec["injury"] = pl["injury_status"]
+            if pl.get("injury_body_part"):
+                rec["injuryPart"] = pl["injury_body_part"]
+        # Prefer the record that actually looks like the fantasy-relevant player.
+        prev = out.get(nm)
+        if rec and (prev is None or ("depth" in rec and "depth" not in prev)):
+            out[nm] = rec
+    return out
+
+
 def main():
     research_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "players.json")
     sleeper_path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "sleeper.json")
     research = json.load(open(research_path, encoding="utf-8"))
     sleeper = json.load(open(sleeper_path, encoding="utf-8"))
+    meta = load_player_meta(os.path.join(HERE, "players_nfl.json"))
 
     # index sleeper by (normname, pos) and by (normname) for fallback
     by_np, by_n = {}, defaultdict(list)
+    sleeper_adp = {}
     def_by_team = {}
     for row in sleeper:
         p = row.get("player") or {}
@@ -142,6 +188,8 @@ def main():
         nm = norm(f"{p.get('first_name','')} {p.get('last_name','')}")
         if not nm:
             continue
+        if st.get("adp_ppr") and st["adp_ppr"] < 900:
+            sleeper_adp.setdefault((nm, pos), st["adp_ppr"])
         # keep the row with the most projected volume if duplicated
         key = (nm, pos)
         prev = by_np.get(key)
@@ -220,6 +268,13 @@ def main():
             rec["proj"] = {"gp": 17}
             rec["projSource"] = "none"
 
+        m = meta.get(nm)
+        if m:
+            rec.update(m)
+        sadp = sleeper_adp.get((nm, pos))
+        if sadp:
+            rec["adp2"] = round(sadp, 1)
+
         r = RETURNERS.get(nm)
         if r:
             rec["proj"]["ret_yd"] = r["ret_yd"]
@@ -228,14 +283,20 @@ def main():
         players.append(rec)
 
     meta = dict(research.get("meta", {}))
-    meta.update({
+    meta_out = {
         "proj_source": "Sleeper season projections (RotoWire), 2026 regular season",
         "proj_matched": matched,
         "proj_derived": derived,
         "game_sd": GAME_SD,
         "pa_dist_note": "Points-allowed buckets modeled per D/ST tier; Sleeper publishes none.",
+        "depth_source": "Sleeper /v1/players/nfl — depth chart slot and injury designation",
+        "adp2_source": "Sleeper platform ADP. Mixes mock and real drafts across their whole "
+                       "user base and refreshes once or twice a month, so it is a second "
+                       "opinion beside FFC's, not a fresher one.",
         "baked": "2026-09-04",
-    })
+    }
+    meta = dict(research.get("meta", {}))
+    meta.update(meta_out)
 
     body = json.dumps({"meta": meta, "players": players}, separators=(",", ":"))
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
@@ -244,6 +305,9 @@ def main():
 
     print(f"wrote {OUT}")
     print(f"  players: {len(players)}  sleeper-matched: {matched}  modeled/none: {derived}")
+    print(f"  depth chart slot: {sum(1 for p in players if 'depth' in p)}"
+          f"   injury designation: {sum(1 for p in players if 'injury' in p)}"
+          f"   second ADP: {sum(1 for p in players if 'adp2' in p)}")
     miss = [p["name"] for p in players if p.get("projSource") == "none"]
     print(f"  no projection ({len(miss)}): {', '.join(miss[:25])}")
 
