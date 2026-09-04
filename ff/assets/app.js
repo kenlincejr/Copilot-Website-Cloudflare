@@ -3619,6 +3619,8 @@ var SYSTEM =
  * That is a coin flip against a budget, not news, and making the user click
  * "Ask again" to reflip it is a worse answer than reflipping it for them.
  */
+var CLAUDE_TIMEOUT_MS = 30000;
+
 function claudeCall(question, systemOverride, maxTokens) {
   return claudeOnce(question, systemOverride, maxTokens).catch(function (err) {
     if (!err.emptyAnswer) throw err;
@@ -3644,7 +3646,15 @@ function claudeOnce(question, systemOverride, maxTokens) {
     body.model = claudeCfg.model || "claude-haiku-4-5";
   }
 
-  return fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body) })
+  // A fetch with no timeout can hang forever, and the brief marks itself
+  // in-flight while it waits: one stalled connection and the panel keeps a
+  // spinner up for the rest of the draft, with no Ask again to escape by. You
+  // are on a two-minute clock, so failing is better than never answering.
+  var ctl = typeof AbortController === "function" ? new AbortController() : null;
+  var timer = ctl && setTimeout(function () { ctl.abort(); }, CLAUDE_TIMEOUT_MS);
+
+  return fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body),
+                      signal: ctl ? ctl.signal : undefined })
     .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
     .then(function (res) {
       if (!res.ok) throw new Error((res.j.error && res.j.error.message) || "Request failed.");
@@ -3666,7 +3676,16 @@ function claudeOnce(question, systemOverride, maxTokens) {
       }
       if (res.j.stop_reason === "max_tokens") text += "\n\n[cut off at the token limit]";
       return text;
-    });
+    })
+    .catch(function (err) {
+      if (err && err.name === "AbortError") {
+        throw new Error("Claude took longer than " + Math.round(CLAUDE_TIMEOUT_MS / 1000) +
+                        " seconds to answer.");
+      }
+      throw err;
+    })
+    .then(function (text) { if (timer) clearTimeout(timer); return text; },
+          function (err) { if (timer) clearTimeout(timer); throw err; });
 }
 
 function askClaude() {
@@ -3692,6 +3711,41 @@ function askClaude() {
 // Cached against the pick number it was written for, so it is asked once and
 // survives re-renders, undo and reload without spending again.
 var briefCache = {};   // reassigned wholesale by resetDraft
+var briefTries = {};   // re-asks per pick, so a bad answer cannot bill in a loop
+
+/**
+ * Which player a brief is telling you to take. The prompt asks for the name
+ * alone on the first line, but it is a sentence generator, so match against the
+ * board rather than trusting the line to be nothing but a name.
+ */
+function briefPlayer(text) {
+  var head = (text || "").split("\n")[0].trim();
+  if (!head) return null;
+  if (A.byName[head]) return A.byName[head];
+  var hit = null;
+  A.all.forEach(function (p) {
+    if (head.indexOf(p.name) >= 0 && (!hit || p.name.length > hit.name.length)) hit = p;
+  });
+  return hit;
+}
+
+/**
+ * The brief is written up to `lead` picks before you are on the clock, and those
+ * are exactly the picks that can take the player it names. Cached against the
+ * pick number alone it went on recommending him afterwards — including, in one
+ * practice run, a back the user had already drafted himself two picks earlier.
+ *
+ * So the cache is keyed by the pick but valid only while its answer still is:
+ * the moment the named player is off the board the advice is void and it is
+ * asked again. Nothing else invalidates it, so a quiet board still costs one
+ * call, and briefTries caps the re-asks in case an answer never names anyone
+ * available.
+ */
+function briefStale(text) {
+  if (!text || text.charAt(0) === "!") return false;
+  var p = briefPlayer(text);
+  return !!(p && p.takenBy);
+}
 
 /**
  * The question that earns its keep. Everything in here is either computed by the
@@ -3726,6 +3780,13 @@ function briefQuestion() {
     "board: say he is unlikely to last, which is the thing that is actually true.";
 }
 
+/** On deck is a different moment from on the clock, and saying so costs nothing. */
+function briefEyebrow() {
+  return A.myNext <= A.cur
+    ? "Claude · on the clock at pick " + A.myNext
+    : "Claude · on deck for pick " + A.myNext;
+}
+
 function renderBrief() {
   var el = $("#brief");
   if (!claudeReady() || !claudeCfg.auto || !A.myNext) { el.innerHTML = ""; return; }
@@ -3734,10 +3795,15 @@ function renderBrief() {
   if (gap > (claudeCfg.lead || 2)) { el.innerHTML = ""; return; }
 
   var cached = briefCache[A.myNext];
+  if (cached && briefStale(cached) && (briefTries[A.myNext] || 0) < 2) {
+    briefTries[A.myNext] = (briefTries[A.myNext] || 0) + 1;
+    delete briefCache[A.myNext];
+    cached = undefined;
+  }
   if (cached === undefined) {
     briefCache[A.myNext] = null;                     // in flight; don't ask twice
     el.innerHTML = '<div class="rec top"><div class="eyebrow" style="margin-bottom:6px">' +
-      'Claude · on deck for pick ' + A.myNext + '</div>' +
+      briefEyebrow() + '</div>' +
       '<div class="claude-out"><span class="spinner"></span> reading the board…</div></div>';
     var forPick = A.myNext;
     claudeCall(briefQuestion(), null, 2500)
@@ -3754,7 +3820,7 @@ function renderBrief() {
   var head = failed ? "" : lines.shift();
 
   el.innerHTML = '<div class="rec top' + (failed ? " brief-failed" : "") + '">' +
-    '<div class="eyebrow" style="margin-bottom:6px">Claude · on deck for pick ' + A.myNext + "</div>" +
+    '<div class="eyebrow" style="margin-bottom:6px">' + briefEyebrow() + "</div>" +
     (failed
       ? '<div class="claude-out">Claude is unavailable: ' + esc(body) +
         ' <span class="dimtext">The board below is unaffected.</span></div>'
@@ -3762,7 +3828,9 @@ function renderBrief() {
         '<div class="claude-out">' + esc(lines.join("\n")) + "</div>") +
     '<div class="rec-actions"><button class="btn btn-sm btn-ghost" id="briefAgain">Ask again</button></div>' +
   "</div>";
-  $("#briefAgain").onclick = function () { delete briefCache[A.myNext]; renderBrief(); };
+  $("#briefAgain").onclick = function () {
+    delete briefCache[A.myNext]; briefTries[A.myNext] = 0; renderBrief();
+  };
 }
 
 /* ------------------------------------------------------------------- boot */
