@@ -99,14 +99,34 @@ function draftedNames() {
   return set;
 }
 
-function record(name, mine) {
-  var pl = BY_NAME[name]; if (!pl) return;
+/**
+ * `name` may be null: a pick you know happened but not who went. The slot is
+ * consumed either way, and that matters more than the name — refusing to record
+ * it would leave the board permanently behind the real draft, which is the whole
+ * failure this is here to prevent.
+ */
+function record(name, mine, quiet) {
+  if (name !== null && !BY_NAME[name]) return;
   var pick = currentPick();
   if (pick > S.league.teams * S.league.rounds) return;
   var o = ownerOfPick(pick);
   S.picks.push({ pick: pick, name: name,
-                 slot: mine ? S.league.slot : o.slot, mine: !!mine });
-  syncKeepers(); save(); render();
+                 slot: mine ? S.league.slot : o.slot, mine: !!mine,
+                 unknown: name === null });
+  syncKeepers();
+  bumpLivePick();
+  save();
+  if (!quiet) render();
+}
+
+/**
+ * The live-pick field is a checkpoint the user types, not a running counter. Once
+ * our own count passes it, carry it forward — otherwise recording your own pick
+ * would immediately read as "you have recorded more picks than have happened".
+ */
+function bumpLivePick() {
+  var box = $("#livePick"), live = parseInt(box.value, 10);
+  if (live && currentPick() > live) box.value = currentPick();
 }
 function undo() {
   var popped = null, guard = 0;
@@ -205,9 +225,151 @@ function render() {
         ' <span class="dimtext">(' + (A.myAfter - A.myNext) + " picks)</span>" : "")
     : '<span class="dimtext">no picks left</span>';
 
+  renderStatus();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner();
   if (view.selected) renderDetail(view.selected);
+}
+
+/* --------------------------------------------------- draft status + sync */
+
+/**
+ * The board silently computes survival, VONA and the brief against whatever
+ * pick number it thinks the draft is on. If the user misses a few opponent
+ * picks, every one of those numbers is wrong and nothing says so. `livePick` is
+ * the user's report of where the real draft actually is; the gap between that
+ * and our own count is the only reliable drift signal available without a live
+ * feed, so it gets the loudest element on the page.
+ */
+function drift() {
+  var live = parseInt($("#livePick").value, 10);
+  if (!live || live < 1) return null;
+  return live - A.cur;                       // >0 = we are behind reality
+}
+
+function renderStatus() {
+  var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
+  $("#btnStart").classList.toggle("hidden", S.picks.length > 0);
+
+  if (A.cur > total) {
+    el.className = "statusbar waiting";
+    el.innerHTML = "<b>Draft complete.</b> <span class='grow'></span>" +
+      "<span>15 rounds recorded. Export from Save / load if you want a copy.</span>";
+    return;
+  }
+
+  var d = drift();
+  if (d !== null && d !== 0) {
+    var behind = d > 0;
+    el.className = "statusbar drift";
+    el.innerHTML =
+      "<b>" + (behind ? "You're " + d + " pick" + (d === 1 ? "" : "s") + " behind the real draft"
+                      : "You've recorded " + (-d) + " more pick" + (d === -1 ? "" : "s") + " than have happened") +
+      "</b><span class='grow'></span>" +
+      (behind
+        ? "<span>Suggestions still count those players as available.</span>" +
+          '<button class="btn btn-sm btn-primary" id="btnCatchup">Catch up ' + d +
+            " pick" + (d === 1 ? "" : "s") + "</button>"
+        : '<button class="btn btn-sm" id="btnUndoDrift">Undo ' + (-d) + "</button>");
+    if (behind) $("#btnCatchup").onclick = openCatchup;
+    else $("#btnUndoDrift").onclick = function () { for (var i = 0; i < -d; i++) undo(); };
+    return;
+  }
+
+  var gap = A.myNext ? A.myNext - A.cur : null;
+  if (gap === 0) {
+    el.className = "statusbar up";
+    el.innerHTML = "<b>You're on the clock — pick " + A.cur + "</b>" +
+      "<span class='grow'></span><span>Enter takes a player off the board, " +
+      "Shift+Enter drafts him to you.</span>";
+  } else if (gap !== null && gap <= 3) {
+    el.className = "statusbar soon";
+    el.innerHTML = "<b>" + gap + " pick" + (gap === 1 ? "" : "s") + " until you're up</b>" +
+      "<span class='grow'></span><span>Pick " + A.myNext + " of round " + A.ctx.round +
+      (d === 0 ? " · in sync with the live draft" : "") + "</span>";
+  } else {
+    el.className = "statusbar waiting";
+    el.innerHTML = "<span>Pick <b>" + A.cur + "</b> · team " + A.onClock.slot +
+      " on the clock</span><span class='grow'></span>" +
+      (A.myNext ? "<span>You pick at " + A.myNext + (gap ? " — " + gap + " away" : "") + "</span>" : "") +
+      (d === 0 ? " <span class='dimtext'>· in sync</span>" : "");
+  }
+}
+
+$("#livePick").addEventListener("input", renderStatus);
+$("#btnStart").addEventListener("click", function () {
+  S.startedAt = Date.now(); save();
+  $("#livePick").value = 1;
+  $("#search").focus(); render();
+});
+
+/* ------------------------------------------------------------- catch-up */
+
+function openCatchup() {
+  var d = drift(); if (!d || d < 1) return;
+  var pool = A.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
+  var rows = [], used = {};
+  for (var i = 0; i < d; i++) {
+    var pk = A.cur + i, o = ownerOfPick(pk);
+    if (pk > S.league.teams * S.league.rounds) break;
+    var guess = pool.find(function (p) { return !used[p.name]; });
+    if (guess) used[guess.name] = true;
+    rows.push({ pick: pk, slot: o.slot, mine: o.slot === S.league.slot,
+                guess: guess ? guess.name : "" });
+  }
+  $("#catchupSub").textContent = "Picks " + rows[0].pick + " to " + rows[rows.length - 1].pick +
+    " happened while you weren't looking.";
+  $("#catchupCount").textContent = rows.length + " picks";
+  $("#catchupRows").innerHTML = rows.map(function (r, i) {
+    return '<div class="catchup-row">' +
+      '<span class="slotlbl">pick ' + r.pick + "<br>" +
+        (r.mine ? '<span class="mine">you</span>' : "team " + r.slot) + "</span>" +
+      '<input type="text" list="allPlayers" data-cu="' + i + '" value="" placeholder="who went here?">' +
+      '<button class="btn btn-sm btn-ghost" data-cuguess="' + i + '">' +
+        (r.guess ? "ADP" : "—") + "</button>" +
+    "</div>";
+  }).join("");
+  $("#allPlayers").innerHTML = A.avail.map(function (p) {
+    return '<option value="' + esc(p.name) + '">';
+  }).join("");
+
+  $$("#catchupRows [data-cuguess]").forEach(function (b) {
+    b.onclick = function () {
+      var i = +b.dataset.cuguess;
+      $('#catchupRows [data-cu="' + i + '"]').value = rows[i].guess;
+    };
+  });
+  $("#catchupGuess").onclick = function () {
+    rows.forEach(function (r, i) { $('#catchupRows [data-cu="' + i + '"]').value = r.guess; });
+  };
+  $("#catchupApply").onclick = function () {
+    var named = 0, unknown = 0, bad = [];
+    // In pick order, so each recorded name lands on the right team.
+    rows.forEach(function (r, i) {
+      var nm = $('#catchupRows [data-cu="' + i + '"]').value.trim();
+      var ok = nm && BY_NAME[nm] && !draftedNames()[nm];
+      if (nm && !ok) bad.push(nm);
+      record(ok ? nm : null, r.mine, true);
+      ok ? named++ : unknown++;
+    });
+    closeModal("#catchupModal");
+    render();
+    var msg = "Recorded " + rows.length + " picks — " + named + " by name" +
+      (unknown ? ", " + unknown + " as unknown (the slot is spent, the player stays available)" : "") +
+      (bad.length ? ". Not on the board or already drafted: " + bad.join(", ") : ".");
+    banner(msg, bad.length > 0);
+  };
+  openModal("#catchupModal");
+}
+$("#catchupClose").addEventListener("click", function () { closeModal("#catchupModal"); });
+
+/** A short-lived message under the status bar, for things worth reading once. */
+function banner(msg, isWarn) {
+  var el = document.createElement("div");
+  el.className = "statusbar " + (isWarn ? "drift" : "soon");
+  el.innerHTML = "<span>" + esc(msg) + "</span>";
+  $("#statusBar").insertAdjacentElement("afterend", el);
+  setTimeout(function () { el.remove(); }, 9000);
 }
 
 function renderFilters() {
@@ -492,7 +654,8 @@ function renderLog() {
     var pl = BY_NAME[p.name] || {};
     return '<div style="padding:2px 0;' + (p.mine ? "color:var(--teal)" : "color:var(--dim)") + '">' +
       '<span class="mono">' + p.pick + "</span> " +
-      (p.mine ? "you" : "t" + p.slot) + " · " + esc(p.name) +
+      (p.mine ? "you" : "t" + p.slot) + " · " +
+      (p.unknown ? "<i>unknown</i>" : esc(p.name)) +
       ' <span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span>" +
       (p.keeper ? ' <span class="dimtext">keeper</span>' : "") + "</div>";
   }).join("");

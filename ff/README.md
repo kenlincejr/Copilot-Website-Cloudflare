@@ -57,6 +57,33 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## Staying in sync with the real draft
+
+Every number the board produces — survival, VONA, the on-deck brief — is computed
+against whichever pick the app thinks the draft is on. Miss a few opponent picks
+and all of them are wrong, confidently and without a word. That is the same
+failure shape as any silent data bug, and it is the most likely thing to go wrong
+during a live draft.
+
+The fix is not a prompt for every pick; between picks 38 and 62 there are
+twenty-three of those, and a modal in the way of each one loses to a two-minute
+clock. Instead:
+
+- A **live pick** field in the app bar. Type whatever pick number the real draft
+  is showing. It is a checkpoint, not a counter — once your own recorded count
+  passes it, it carries forward on its own.
+- A **status strip** that owns the top of the board: teal when you are on the
+  clock, amber when you are within three picks, and red the moment your count and
+  the reported live pick disagree.
+- **Catch up** when they do: one row per missed slot, each with a one-click ADP
+  guess. The names are a guess and the UI says so — what matters is that those
+  players are off the board, and roughly the right players being gone beats the
+  right players still sitting there.
+- A row you leave blank, or fill with a name already drafted, records as an
+  **unknown pick**. The slot is consumed and the player stays available. Refusing
+  to record it would leave the app permanently behind, which is the failure this
+  exists to prevent.
+
 ## Cache busting
 
 GitHub Pages serves assets with `max-age=600`, so a push can take ten minutes to
