@@ -422,9 +422,13 @@ completed drafts**, on the platform this league actually runs on, alongside a
 static file cannot give you. It is free and it is behind the user's own login.
 
 League setup → *Add real Yahoo draft data* takes a paste of
-`/f1/<league>/draftanalysis` and parses it (`assets/draftanalysis.js`). The page
-paginates thirty at a time; pastes accumulate, and the top hundred or so is what
-matters. It is stored per-league in localStorage rather than baked, because it is
+`/f1/<league>/draftanalysis` and parses it (`assets/draftanalysis.js`). **The page
+is visible to every league member, not just the commissioner.** It shows thirty
+at a time, so the instructions point at the position chips — six pastes covers
+the top thirty at each position, which reaches more of the board than paging the
+combined list. `?pos=RB` and friends jump straight there for QB/RB/WR/TE;
+`?pos=DEF` and `?pos=K` come back empty and need the chip clicked, and those two
+row shapes are unverified. It is stored per-league in localStorage rather than baked, because it is
 that user's own view of the market and goes stale the moment they stop pasting.
 
 Two columns come out of it: **REAL** (where the room actually took him) and

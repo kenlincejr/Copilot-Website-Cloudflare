@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904x">
+<link rel="stylesheet" href="assets/ff.css?v=20260904y">
 </head>
 <body>
 
@@ -172,12 +172,20 @@
       static file cannot give you. It costs nothing and takes a minute.
     </p>
     <ol class="muted" style="font-size:13px;padding-left:20px;line-height:1.6">
-      <li>In your league, open <b>Draft</b> → <b>Draft Analysis</b>
-        (address ends <span class="mono">/draftanalysis</span>).</li>
-      <li>Select all, copy, paste below, and parse.</li>
-      <li>It pages thirty at a time — click through the next few pages and paste each one.
-        They accumulate; the top 120 or so is what matters.</li>
+      <li>In your league, click <b>Draft</b> in the top nav, then <b>Draft Analysis</b>.
+        You do <b>not</b> need to be the commissioner — it is visible to every league
+        member, and the address ends <span class="mono">/draftanalysis</span>.</li>
+      <li>It shows thirty at a time, so use the position chips along the top —
+        <span class="mono">QB · RB · WR · TE · K · DEF</span> — and do one at a time.
+        Six pastes covers the top thirty at every position, which is more of the board
+        than paging the combined list would give you.</li>
+      <li>For each: select all, copy, paste below, <b>Add this page</b>. They accumulate.</li>
     </ol>
+    <p class="dimtext" style="font-size:12px">
+      For QB, RB, WR and TE you can jump straight there by adding
+      <span class="mono">?pos=RB</span> to the address. The K and DEF pages need the chip
+      clicked — that URL parameter comes back empty for them.
+    </p>
     <div class="note warn" style="font-size:12.5px">
       Yahoo's page says <em>“ADP based on standard scoring settings”</em>, so these are not
       your league's PPR numbers. They are worth having for <b>where the room actually takes
@@ -430,14 +438,14 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904x"></script>
-<script src="data/players.js?v=20260904x"></script>
-<script src="assets/presets.js?v=20260904x"></script>
-<script src="assets/engine.js?v=20260904x"></script>
-<script src="assets/auth.js?v=20260904x"></script>
-<script src="assets/parser.js?v=20260904x"></script>
-<script src="assets/draftanalysis.js?v=20260904x"></script>
-<script src="assets/strategies.js?v=20260904x"></script>
-<script src="assets/app.js?v=20260904x"></script>
+<script src="assets/config.js?v=20260904y"></script>
+<script src="data/players.js?v=20260904y"></script>
+<script src="assets/presets.js?v=20260904y"></script>
+<script src="assets/engine.js?v=20260904y"></script>
+<script src="assets/auth.js?v=20260904y"></script>
+<script src="assets/parser.js?v=20260904y"></script>
+<script src="assets/draftanalysis.js?v=20260904y"></script>
+<script src="assets/strategies.js?v=20260904y"></script>
+<script src="assets/app.js?v=20260904y"></script>
 </body>
 </html>

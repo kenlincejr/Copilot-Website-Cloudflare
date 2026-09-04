@@ -12,6 +12,12 @@
    the page paginates thirty at a time, so a paste covers whatever the user
    bothered to page through.
 
+   Verified against the QB, RB, WR and TE pages. Team defenses and kickers are
+   reachable only by clicking the position chip (?pos=DEF returns an empty table),
+   and their row shape has not been confirmed — the parser accepts a D/ST token
+   and maps it to DEF, but treat a defense paste as unproven and check what the
+   confirmation screen reports before applying it.
+
    The rows arrive as a repeating block:
 
        Jahmyr Gibbs
