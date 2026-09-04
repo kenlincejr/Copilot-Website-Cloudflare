@@ -52,6 +52,14 @@ function save() {
 
 /* --------------------------------------------------------- draft plumbing */
 
+/** Display name for a draft slot: the league's own name if we have it. */
+function teamLabel(slot, short) {
+  if (slot === S.league.slot) return "you";
+  var n = (S.league.teamNames || [])[slot - 1];
+  if (n && n.trim()) return short && n.length > 14 ? n.slice(0, 13) + "\u2026" : n;
+  return "team " + slot;
+}
+
 function ownerOfPick(pick) {
   var t = S.league.teams, r = Math.ceil(pick / t), idx = pick - (r - 1) * t;
   return { round: r, slot: (r % 2 === 1) ? idx : (t - idx + 1) };
@@ -244,7 +252,7 @@ function render() {
   $("#roundNo").textContent = done ? "" : "· round " + A.onClock.round;
   var mineNow = !done && A.onClock.slot === S.league.slot;
   var oc = $("#onClock");
-  oc.textContent = done ? "draft complete" : (mineNow ? "YOU'RE UP" : "team " + A.onClock.slot);
+  oc.textContent = done ? "draft complete" : (mineNow ? "YOU'RE UP" : teamLabel(A.onClock.slot, true));
   oc.className = "onclock" + (mineNow ? " me" : "");
   $("#nextPickInfo").innerHTML = A.myNext
     ? '<span class="dimtext">your next</span> <b>' + A.myNext + "</b>" +
@@ -253,6 +261,15 @@ function render() {
     : '<span class="dimtext">no picks left</span>';
 
   renderStatus(); renderTicker();
+
+  // Say out loud whose roster the next click fills. The assignment has always
+  // followed the clock; it was just invisible.
+  var onMe = A.onClock.slot === S.league.slot;
+  $("#search").placeholder = A.cur > total
+    ? "Draft complete"
+    : onMe
+      ? "Search \u2014 Enter drafts to YOU (you're on the clock)"
+      : "Search \u2014 Enter puts him on " + teamLabel(A.onClock.slot) + ", Shift+Enter on yours";
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner(); renderByeTracker();
   if (view.selected) renderDetail(view.selected);
@@ -352,7 +369,7 @@ function openCatchup() {
   $("#catchupRows").innerHTML = rows.map(function (r, i) {
     return '<div class="catchup-row">' +
       '<span class="slotlbl">pick ' + r.pick + "<br>" +
-        (r.mine ? '<span class="mine">you</span>' : "team " + r.slot) + "</span>" +
+        (r.mine ? '<span class="mine">you</span>' : teamLabel(r.slot, true)) + "</span>" +
       '<input type="text" list="allPlayers" data-cu="' + i + '" value="" placeholder="who went here?">' +
       '<button class="btn btn-sm btn-ghost" data-cuguess="' + i + '">' +
         (r.guess ? "ADP" : "—") + "</button>" +
@@ -425,9 +442,9 @@ function renderTicker() {
   el.innerHTML =
     seg("round", A.onClock.round + " of " + S.league.rounds) +
     '<span class="sep"></span>' +
-    seg("on the clock", A.onClock.slot === S.league.slot ? "you" : "team " + A.onClock.slot,
+    seg("on the clock", teamLabel(A.onClock.slot, true),
         A.onClock.slot === S.league.slot) +
-    (onDeck ? seg("on deck", onDeck === S.league.slot ? "you" : "team " + onDeck,
+    (onDeck ? seg("on deck", teamLabel(onDeck, true),
                   onDeck === S.league.slot) : "") +
     '<span class="sep"></span>' +
     seg("your pick", A.myNext ? "#" + A.myNext : "none left", true) +
@@ -482,6 +499,215 @@ $("#pickSecs").addEventListener("input", function () {
   S.league.pickSeconds = pickSeconds();
   if (!S.pickStartedAt) S.pickStartedAt = Date.now();
   save(); tickClock();
+});
+
+/* ------------------------------------------------------- league rosters */
+
+/** The team's own name where we have one — "you" is unhelpful in a list of twelve. */
+function teamTitle(slot) {
+  var n = ((S.league.teamNames || [])[slot - 1] || "").trim();
+  return n || (slot === S.league.slot ? "your team" : "team " + slot);
+}
+
+/** Every team's picks, keyed by slot, scored in this league's rules. */
+function allRosters() {
+  var out = {};
+  for (var i = 1; i <= S.league.teams; i++) out[i] = [];
+  S.picks.forEach(function (pk) {
+    var pl = pk.name && A.byName[pk.name];
+    if (pl) out[pk.slot].push(Object.assign({}, pl, { pick: pk.pick }));
+    else if (pk.unknown) out[pk.slot].push({ name: "unknown", pos: "?", pick: pk.pick, pts: 0, bye: 0 });
+  });
+  return out;
+}
+
+var leagueView = { slot: null };
+
+function renderLeague() {
+  var rosters = allRosters();
+  $("#leagueSub").textContent = S.picks.length + " picks recorded across " +
+    S.league.teams + " teams.";
+
+  $("#leagueFilters").innerHTML =
+    '<span class="pill' + (leagueView.slot == null ? " on" : "") + '" data-slot="all">All teams</span>' +
+    Array.apply(null, { length: S.league.teams }).map(function (_, i) {
+      var slot = i + 1;
+      return '<span class="pill' + (leagueView.slot === slot ? " on" : "") +
+        '" data-slot="' + slot + '">' + esc(teamTitle(slot)) +
+        ' <span class="dimtext">' + rosters[slot].length + "</span></span>";
+    }).join("");
+  $$("#leagueFilters .pill").forEach(function (el) {
+    el.onclick = function () {
+      var v = el.getAttribute("data-slot");
+      leagueView.slot = v === "all" ? null : +v;
+      renderLeague();
+    };
+  });
+
+  var slots = leagueView.slot ? [leagueView.slot]
+            : Array.apply(null, { length: S.league.teams }).map(function (_, i) { return i + 1; });
+
+  $("#leagueBody").innerHTML = '<div class="teamgrid">' + slots.map(function (slot) {
+    var team = rosters[slot];
+    var byPos = {};
+    team.forEach(function (p) { (byPos[p.pos] = byPos[p.pos] || []).push(p); });
+    var order = ["QB", "RB", "WR", "TE", "K", "DEF", "?"];
+    var body = order.filter(function (pos) { return byPos[pos]; }).map(function (pos) {
+      return '<div class="tg-pos"><span class="pos pos-' + (pos === "?" ? "K" : pos) + '">' +
+        pos + "</span> " +
+        byPos[pos].map(function (p) {
+          return '<span class="tg-p">' + esc(p.name) +
+            '<span class="dimtext"> ' + (p.bye || "") + "</span></span>";
+        }).join("") + "</div>";
+    }).join("");
+    return '<div class="teamcard' + (slot === S.league.slot ? " me" : "") + '">' +
+      '<div class="tc-head"><b>' + esc(teamTitle(slot)) +
+        (slot === S.league.slot ? ' <span class="dimtext">(you)</span>' : "") + "</b>" +
+        '<span class="dimtext">' + team.length + " picks</span></div>" +
+      (body || '<div class="dimtext" style="font-size:12px">nothing recorded</div>') +
+    "</div>";
+  }).join("") + "</div>";
+}
+
+$("#btnLeague").addEventListener("click", function () { renderLeague(); openModal("#leagueModal"); });
+$("#leagueClose").addEventListener("click", function () { closeModal("#leagueModal"); });
+
+/* ---------------------------------------------------------- draft report */
+
+/**
+ * Grades are computed here, not asked for. Every team's best legal starting
+ * lineup is scored in this league's rules and compared with the rest of the
+ * league — a grade is a percentile of projected starter points, which is a
+ * defensible thing to put a letter on. Claude is asked to read the table
+ * afterwards, not to produce it.
+ */
+function gradeDraft() {
+  var rosters = allRosters(), rows = [];
+  for (var slot = 1; slot <= S.league.teams; slot++) {
+    var team = rosters[slot].filter(function (p) { return p.pos !== "?"; });
+    var r = E.assignRoster(team, S.league.rules);
+    var starters = r.slots.filter(function (x) { return x.player; });
+    var pts = starters.reduce(function (a, x) { return a + x.player.pts; }, 0);
+    var vor = team.reduce(function (a, p) { return a + Math.max(0, p.vor || 0); }, 0);
+    var byes = {};
+    starters.forEach(function (x) { byes[x.player.bye] = (byes[x.player.bye] || 0) + 1; });
+    var worstBye = Object.keys(byes).reduce(function (a, w) {
+      return byes[w] > (byes[a] || 0) ? w : a; }, null);
+    rows.push({
+      // In a standings table the manager's own team should read by its name, with
+      // "you" appended — "you" alone loses the row when you scan the column.
+      slot: slot,
+      name: ((S.league.teamNames || [])[slot - 1] || "").trim() ||
+            (slot === S.league.slot ? "your team" : "team " + slot),
+      isMe: slot === S.league.slot,
+      picks: team.length,
+      starters: starters.length, empty: r.slots.length - starters.length,
+      pts: pts, vor: vor,
+      worstBye: worstBye ? { week: +worstBye, n: byes[worstBye] } : null,
+      best: team.slice().sort(function (a, b) { return b.pts - a.pts; })[0] || null
+    });
+  }
+  rows.sort(function (a, b) { return b.pts - a.pts; });
+  var n = rows.length;
+  var LETTERS = ["A+", "A", "A-", "B+", "B", "B", "B-", "C+", "C", "C-", "D+", "D"];
+  rows.forEach(function (r, i) {
+    r.rank = i + 1;
+    r.grade = LETTERS[Math.min(LETTERS.length - 1, Math.floor(i / n * LETTERS.length))];
+  });
+  return rows;
+}
+
+function renderReport() {
+  var rows = gradeDraft();
+  var total = S.league.teams * S.league.rounds;
+  var mine = rows.find(function (r) { return r.slot === S.league.slot; });
+  $("#reportSub").textContent = S.picks.length + " of " + total + " picks recorded" +
+    (S.picks.length < total ? " — grades will move as the rest come in." : ".");
+
+  $("#reportBody").innerHTML =
+    '<div class="note"><b>You finished ' + mine.rank + " of " + rows.length +
+      "</b> on projected starting-lineup points in your own scoring" +
+      (mine.empty ? " — with " + mine.empty + " starting slot" + (mine.empty === 1 ? "" : "s") +
+        " still empty, which is dragging that number down." : ".") +
+      " Grades are a percentile of that, computed here rather than asked for." +
+    "</div>" +
+    '<div class="mt" style="max-height:44vh;overflow:auto"><table>' +
+      "<tr><th>#</th><th>Team</th><th class='right'>Grade</th>" +
+      "<th class='right'>Starters</th><th class='right'>Proj pts</th>" +
+      "<th class='right'>Surplus</th><th>Best pick</th><th>Bye risk</th></tr>" +
+      rows.map(function (r) {
+        return "<tr" + (r.slot === S.league.slot ? ' style="background:rgba(45,212,191,.07)"' : "") + ">" +
+          "<td>" + r.rank + "</td><td>" + esc(r.name) +
+            (r.isMe ? ' <span class="dimtext">(you)</span>' : "") + "</td>" +
+          '<td class="right"><b>' + r.grade + "</b></td>" +
+          '<td class="right num">' + r.starters + "/" + (r.starters + r.empty) + "</td>" +
+          '<td class="right num">' + n0(r.pts) + "</td>" +
+          '<td class="right num">' + n0(r.vor) + "</td>" +
+          "<td>" + (r.best ? '<span class="pos pos-' + r.best.pos + '">' + r.best.pos +
+            "</span> " + esc(r.best.name) : "\u2014") + "</td>" +
+          "<td>" + (r.worstBye && r.worstBye.n >= 3
+            ? '<span style="color:var(--amber)">' + r.worstBye.n + " in wk " + r.worstBye.week + "</span>"
+            : '<span class="dimtext">ok</span>') + "</td>" +
+        "</tr>";
+      }).join("") +
+    "</table></div>" +
+    '<p class="dimtext" style="font-size:11.5px;margin-top:10px">' +
+      "Proj pts is the best legal starting lineup from that roster, scored in your league's " +
+      "rules. Surplus adds up every pick's points above replacement, which rewards depth the " +
+      "starting lineup can't show. Neither knows about injuries that haven't happened yet.</p>";
+  return rows;
+}
+
+$("#btnReport").addEventListener("click", function () {
+  renderReport(); $("#reportOut").classList.add("hidden"); openModal("#reportModal");
+});
+$("#reportClose").addEventListener("click", function () { closeModal("#reportModal"); });
+
+var REPORT_SYSTEM =
+  "You are reading a completed or in-progress fantasy football draft for the manager who " +
+  "drafted one of these teams. The grades and projected points were computed by a scoring " +
+  "engine using their league's exact rules — trust them, do not recompute or re-rank. " +
+  "Write four short paragraphs, no headings, no bullets, under 300 words total: what their " +
+  "draft actually is (the shape of it, not a list of names); the single biggest weakness and " +
+  "what it will cost them; which rival team is the real threat and why; and two concrete " +
+  "waiver or trade moves to make in the first fortnight. Be specific and direct. Do not " +
+  "hedge every sentence.";
+
+$("#reportAsk").addEventListener("click", function () {
+  if (!claudeReady()) { closeModal("#reportModal"); $("#btnClaude").click(); return; }
+  var rows = gradeDraft(), rosters = allRosters();
+  var mine = rows.find(function (r) { return r.slot === S.league.slot; });
+  var out = $("#reportOut");
+  out.classList.remove("hidden"); out.classList.remove("err");
+  out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> reading the draft\u2026';
+  $("#reportAsk").disabled = true;
+
+  var table = rows.map(function (r) {
+    return "  " + r.rank + ". " + r.name + " \u2014 grade " + r.grade + ", " +
+      Math.round(r.pts) + " projected starter points, " + r.starters + " of " +
+      (r.starters + r.empty) + " slots filled" +
+      (r.worstBye && r.worstBye.n >= 3 ? ", " + r.worstBye.n + " starters on the week " +
+        r.worstBye.week + " bye" : "");
+  }).join("\n");
+
+  var myRoster = rosters[S.league.slot].map(function (p) {
+    return "  " + p.pos + " " + p.name + " (" + p.team + ", bye " + p.bye + ", " +
+      Math.round(p.pts) + " pts, taken " + p.pick + ")";
+  }).join("\n");
+
+  claudeCall(
+    "LEAGUE: " + S.league.teams + " teams. " + scoringHighlights() + "\n" +
+    "DRAFT STYLE THEY USED: " + styleName() + "\n" +
+    "PROGRESS: " + S.picks.length + " of " + (S.league.teams * S.league.rounds) + " picks.\n\n" +
+    "STANDINGS BY PROJECTED STARTING LINEUP:\n" + table + "\n\n" +
+    "MY ROSTER (I am " + mine.name + ", finished " + mine.rank + "):\n" + myRoster,
+    REPORT_SYSTEM)
+    .then(function (text) { out.querySelector(".claude-out").textContent = text; })
+    .catch(function (err) {
+      out.classList.add("err");
+      out.querySelector(".claude-out").textContent = err.message;
+    })
+    .then(function () { $("#reportAsk").disabled = false; });
 });
 
 /* ------------------------------------------------------------ draft style */
@@ -811,6 +1037,22 @@ function sortedList() {
   return l.sort(cmp);
 }
 
+/** Who the plain "took him" action will credit — always whoever is on the clock. */
+function onClockLabel() {
+  return A && A.onClock ? teamLabel(A.onClock.slot) : "the team on the clock";
+}
+function onClockShort() {
+  if (!A || !A.onClock) return "GONE";
+  if (A.onClock.slot === S.league.slot) return "GONE";
+  var n = ((S.league.teamNames || [])[A.onClock.slot - 1] || "").trim();
+  if (!n) return "T" + A.onClock.slot;
+  var words = n.split(/\s+/).filter(function (w) { return /[a-z0-9]/i.test(w); });
+  // "Gridiron Goons" reads better as GG than as GRIDIR.
+  return words.length > 1
+    ? words.map(function (w) { return w[0]; }).join("").slice(0, 4).toUpperCase()
+    : n.slice(0, 5).toUpperCase();
+}
+
 function rowHtml(p, i) {
   var d = p.adpDelta;
   var tag = p.tag ? ' <span class="badge tag-' + p.tag + '">' + p.tag.replace("_", " ") + "</span>" : "";
@@ -821,7 +1063,7 @@ function rowHtml(p, i) {
   var br = t ? null : byeRisk(p);
   var cls = "prow" + (view.selected === p.name ? " sel" : "") +
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
-  var who = t ? '<span class="sub">' + (t.mine ? "you" : "team " + t.slot) + " \u00b7 " + t.pick + "</span>" : "";
+  var who = t ? '<span class="sub">' + teamLabel(t.slot, true) + " \u00b7 " + t.pick + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
     '<span class="rank">' + (i + 1) + "</span>" +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
@@ -835,7 +1077,8 @@ function rowHtml(p, i) {
     '<span class="num" style="color:' + survColor + '">' + (t ? "\u2014" : surv + "%") + "</span>" +
     (t ? '<span class="rowacts"></span>'
        : '<span class="rowacts">' +
-           '<button data-act="gone" title="Someone else took him">GONE</button>' +
+           '<button data-act="gone" title="Goes to ' + esc(onClockLabel()) + '">' +
+             esc(onClockShort()) + "</button>" +
            '<button class="mine" data-act="mine" title="I drafted him">MINE</button>' +
          "</span>") +
   "</div>";
@@ -1080,6 +1323,20 @@ function renderLog() {
 
 /* ------------------------------------------------------------ interaction */
 
+// Second line of defence against Chrome deciding this is a login field: it will
+// not autofill a readonly input, and the attribute is dropped the moment you
+// actually mean to type in it.
+(function guardSearch() {
+  var el = $("#search");
+  el.setAttribute("readonly", "readonly");
+  ["focus", "pointerdown", "touchstart"].forEach(function (ev) {
+    el.addEventListener(ev, function () { el.removeAttribute("readonly"); });
+  });
+  el.addEventListener("blur", function () {
+    if (!el.value) el.setAttribute("readonly", "readonly");
+  });
+})();
+
 $("#search").addEventListener("input", function (e) { view.q = e.target.value; renderList(); });
 $("#search").addEventListener("keydown", function (e) {
   if (e.key !== "Enter") return;
@@ -1145,6 +1402,20 @@ function buildRosterForm() {
         '<input type="number" min="0" data-roster="' + k + '" value="' + (r[k] || 0) + '"></div>';
     }).join("") + "</div>";
 }
+function buildTeamNames() {
+  var names = S.league.teamNames || [];
+  var rows = [];
+  for (var i = 1; i <= S.league.teams; i++) {
+    rows.push('<div class="field" style="width:170px;margin-bottom:8px">' +
+      "<label>" + (i === S.league.slot ? "you (slot " + i + ")" : "slot " + i) + "</label>" +
+      '<input type="text" autocomplete="off" data-team="' + i + '" value="' +
+        esc(names[i - 1] || "") + '" placeholder="' +
+        (i === S.league.slot ? "your team" : "team " + i) + '"></div>');
+  }
+  $("#teamNames").innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
+    rows.join("") + "</div>";
+}
+
 function buildKeeperList() {
   $("#keeperList").innerHTML = (S.league.keepers || []).map(function (k, i) {
     return '<div class="slot"><span class="who">' + esc(k.name) + "</span>" +
@@ -1170,7 +1441,7 @@ function openSetup() {
   $("#allPlayers").innerHTML = DATA.players.map(function (p) {
     return '<option value="' + esc(p.name) + '">';
   }).join("");
-  buildScoringForm(); buildRosterForm(); buildKeeperList();
+  buildScoringForm(); buildRosterForm(); buildKeeperList(); buildTeamNames();
   openModal("#setupModal");
 }
 $("#btnSetup").addEventListener("click", openSetup);
@@ -1201,6 +1472,9 @@ $("#setupSave").addEventListener("click", function () {
   S.league.slot   = parseInt($("#cfgSlot").value, 10) || 1;
   S.league.rounds = parseInt($("#cfgRounds").value, 10) || 15;
   S.league.rules.teams = S.league.teams;
+  var names = [];
+  $$("#teamNames input").forEach(function (i) { names[+i.dataset.team - 1] = i.value.trim(); });
+  S.league.teamNames = names;
   save(); closeModal("#setupModal"); render();
 });
 $("#btnReset").addEventListener("click", function () {
@@ -1395,9 +1669,9 @@ $("#briefLead").addEventListener("change", function (e) {
 });
 $("#claudeClose").addEventListener("click", function () { closeModal("#claudeModal"); });
 $("#keyReveal").addEventListener("click", function () {
-  var el = $("#apiKey"); var shown = el.type === "text";
-  el.type = shown ? "password" : "text";
-  $("#keyReveal").textContent = shown ? "Show" : "Hide";
+  // Toggles the mask, not the input type — see the note on #apiKey in app.html.
+  var el = $("#apiKey"), shown = el.classList.toggle("revealed");
+  $("#keyReveal").textContent = shown ? "Hide" : "Show";
 });
 $("#keySave").addEventListener("click", function () {
   claudeCfg.key = $("#apiKey").value.trim();

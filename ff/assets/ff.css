@@ -469,3 +469,25 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   padding: 2px 7px; border-radius: 99px; cursor: pointer; vertical-align: middle;
 }
 .stylechip:hover { border-color: var(--teal-dim); color: var(--teal); }
+
+/* A masked field that is not a password input — see the note in app.html.
+   Chrome pairs any password input with a text input on the same page and offers
+   saved credentials there, which is how the player search kept filling with an
+   email address. */
+.masked { -webkit-text-security: disc; text-security: disc; }
+.masked.revealed { -webkit-text-security: none; text-security: none; }
+
+/* League rosters */
+.teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.teamcard {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel-2); padding: 10px 12px; font-size: 12.5px;
+}
+.teamcard.me { border-color: var(--teal-dim); background: rgba(45,212,191,.06); }
+.teamcard .tc-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 7px; padding-bottom: 5px; border-bottom: 1px solid var(--line-soft);
+}
+.tg-pos { display: flex; gap: 6px; align-items: baseline; margin-bottom: 3px; }
+.tg-pos .tg-p { color: var(--muted); }
+.tg-pos .tg-p + .tg-p::before { content: " · "; color: var(--dim); }

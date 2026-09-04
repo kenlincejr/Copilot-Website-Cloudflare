@@ -57,6 +57,28 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
+## The league, not just your team
+
+Team names go in at setup and replace "team 7" everywhere — ticker, status strip,
+draft log, catch-up sheet, the row action button, and the report. **Rosters**
+shows all twelve at once, grouped by position with bye weeks, or one at a time.
+
+Every pick has always been attributed to whoever was on the clock; that was just
+invisible. The search placeholder now names the team the next Enter will credit,
+and each row's action button carries that team's initials.
+
+## Draft report
+
+Grades are **computed, not asked for**. Each team's best legal starting lineup is
+scored in the league's own rules, ranked against the rest, and the letter is a
+percentile of that. Surplus adds every pick's points above replacement, which
+rewards depth a starting lineup can't show. Bye risk flags three or more starters
+idle in one week.
+
+Claude is then asked to *read the table* — the shape of your draft, the biggest
+weakness and its cost, which rival is the real threat, and two concrete waiver or
+trade moves. It is told to trust the numbers and not re-rank them.
+
 ## Bye weeks
 
 A tracker in the right column counts your **starters** — bench players on a bye

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904g">
+<link rel="stylesheet" href="assets/ff.css?v=20260904h">
 </head>
 <body>
 
@@ -32,6 +32,8 @@
     </div>
     <div class="spacer"></div>
     <button class="btn btn-sm btn-primary hidden" id="btnStart">Start draft</button>
+    <button class="btn btn-sm" id="btnLeague" title="Every team's roster">Rosters</button>
+    <button class="btn btn-sm" id="btnReport" title="Grade the draft">Report</button>
     <button class="btn btn-sm" id="btnStyle" title="How you want to draft">Style</button>
     <button class="btn btn-sm" id="btnClaude" title="Ask Claude about this pick">Ask Claude</button>
     <button class="btn btn-sm" id="btnUndo" title="Ctrl+Z">Undo</button>
@@ -164,6 +166,17 @@
     <div id="rosterForm" class="mt"></div>
   </details>
 
+  <details class="mt">
+    <summary style="cursor:pointer;color:var(--muted)">Who else is in the league</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      Optional, and worth two minutes before draft night. Names make the ticker, the
+      draft log and the post-draft report read like your actual league instead of
+      "team 7" — and they make it much easier to tell at a glance whether you've put a
+      pick on the right roster.
+    </p>
+    <div id="teamNames" class="mt"></div>
+  </details>
+
   <details class="mt" open>
     <summary style="cursor:pointer;color:var(--muted)">Keepers</summary>
     <p class="muted" style="font-size:13px;margin-top:10px">
@@ -185,6 +198,30 @@
     <button class="btn btn-danger" id="btnReset">Reset draft</button>
     <button class="btn btn-primary" id="setupSave">Save league</button>
   </div>
+</div></div>
+
+<div class="modal-bg hidden" id="leagueModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Every roster</h2>
+      <span class="muted" id="leagueSub"></span></div>
+    <button class="btn btn-sm" id="leagueClose">Close</button>
+  </div>
+  <div class="filters" id="leagueFilters" style="margin-bottom:12px"></div>
+  <div id="leagueBody"></div>
+</div></div>
+
+<div class="modal-bg hidden" id="reportModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Draft report</h2>
+      <span class="muted" id="reportSub"></span></div>
+    <button class="btn btn-sm" id="reportClose">Close</button>
+  </div>
+  <div id="reportBody"></div>
+  <div class="mt" style="display:flex;gap:8px;align-items:center">
+    <button class="btn btn-primary" id="reportAsk">Ask Claude to read it</button>
+    <span class="dimtext" id="reportMsg"></span>
+  </div>
+  <div class="note mt hidden" id="reportOut"><div class="claude-out"></div></div>
 </div></div>
 
 <div class="modal-bg hidden" id="styleModal"><div class="modal wide">
@@ -266,7 +303,13 @@
     <div class="field">
       <label for="apiKey">Anthropic API key</label>
       <div style="display:flex;gap:8px">
-        <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off">
+        <!-- Deliberately NOT type=password. A password input anywhere on this page
+             makes Chrome treat the player search as the matching username field
+             and offer your saved login there. Masked with -webkit-text-security
+             instead, which looks the same and creates no login form. -->
+        <input type="text" id="apiKey" class="masked" placeholder="sk-ant-…"
+               autocomplete="off" autocorrect="off" autocapitalize="off"
+               spellcheck="false" data-1p-ignore data-lpignore="true">
         <button class="btn btn-sm" id="keyReveal" type="button" style="flex:none;width:64px">Show</button>
       </div>
     </div>
@@ -319,13 +362,13 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904g"></script>
-<script src="data/players.js?v=20260904g"></script>
-<script src="assets/presets.js?v=20260904g"></script>
-<script src="assets/engine.js?v=20260904g"></script>
-<script src="assets/auth.js?v=20260904g"></script>
-<script src="assets/parser.js?v=20260904g"></script>
-<script src="assets/strategies.js?v=20260904g"></script>
-<script src="assets/app.js?v=20260904g"></script>
+<script src="assets/config.js?v=20260904h"></script>
+<script src="data/players.js?v=20260904h"></script>
+<script src="assets/presets.js?v=20260904h"></script>
+<script src="assets/engine.js?v=20260904h"></script>
+<script src="assets/auth.js?v=20260904h"></script>
+<script src="assets/parser.js?v=20260904h"></script>
+<script src="assets/strategies.js?v=20260904h"></script>
+<script src="assets/app.js?v=20260904h"></script>
 </body>
 </html>
