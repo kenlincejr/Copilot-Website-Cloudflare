@@ -626,6 +626,14 @@ $("#btnReset").addEventListener("click", function () {
 /* ------------------------------------------------ league settings parser */
 
 var SYN = [
+  // 40+ yard rules come first: "40+ Yard Receiving TD" would otherwise be
+  // swallowed by the generic receiving-touchdown pattern below.
+  [/40\+?\s*yards?.*(completion|pass(ing)? play)/i,            ["passing", "comp40plus"]],
+  [/40\+?\s*yards?.*pass(ing)?\s*(td|touchdown)/i,            ["passing", "td40plus"]],
+  [/40\+?\s*yards?.*rush(ing)?\s*(td|touchdown)/i,            ["rushing", "td40plus"]],
+  [/40\+?\s*yards?.*(rush|run)/i,                             ["rushing", "run40plus"]],
+  [/40\+?\s*yards?.*rec(eiving|eption)?\s*(td|touchdown)/i,   ["receiving", "td40plus"]],
+  [/40\+?\s*yards?.*rec(eiving|eption)/i,                     ["receiving", "rec40plus"]],
   [/points? per reception|^receptions?$|^rec$|^ppr$/i,        ["receiving", "perReception"]],
   [/receiving yards?/i,                                        ["receiving", "yardsPerPoint"]],
   [/receiving touchdown|rec(eiving)? td/i,                     ["receiving", "td"]],
@@ -648,13 +656,29 @@ var SYN = [
   [/points? allowed 21[-–]27/i,                                ["dst", "pa21_27"]],
   [/points? allowed 28[-–]34/i,                                ["dst", "pa28_34"]],
   [/points? allowed 35\+/i,                                    ["dst", "pa35plus"]],
+  // Misses before makes: "Missed Field Goal 0-19 Yards" contains "Field Goal
+  // 0-19", so the made-FG pattern would swallow it and quietly overwrite a
+  // scoring value with its own negative.
+  [/miss(ed)? field goals? 0[-–]19/i,                          ["kicking", "miss0_19"]],
+  [/miss(ed)? field goals? 20[-–]29/i,                         ["kicking", "miss20_29"]],
+  [/miss(ed)? field goals? 30[-–]39/i,                         ["kicking", "miss30_39"]],
+  [/miss(ed)? field goals? 40[-–]49/i,                         ["kicking", "miss40_49"]],
+  [/miss(ed)? field goals? 50\+/i,                             ["kicking", "miss50plus"]],
   [/field goals? 0[-–]19/i,                                    ["kicking", "fg0_19"]],
   [/field goals? 20[-–]29/i,                                   ["kicking", "fg20_29"]],
   [/field goals? 30[-–]39/i,                                   ["kicking", "fg30_39"]],
   [/field goals? 40[-–]49/i,                                   ["kicking", "fg40_49"]],
   [/field goals? 50\+/i,                                       ["kicking", "fg50plus"]],
-  [/point after|extra point/i,                                 ["kicking", "pat"]]
+  [/point after.*miss|missed extra point|missed point after/i, ["kicking", "patMiss"]],
+  [/point after|extra point/i,                                 ["kicking", "pat"]],
+  [/2[- ]?point conversion|two[- ]?point/i,                    ["passing", "twoPt"]],
+  [/touchdown/i,                                               ["dst", "td"]],
+  [/^interception(s)?$/i,                                      ["dst", "int"]],
+  [/extra point returned/i,                                    ["dst", "extraPointReturned"]]
 ];
+
+/** Everything after the label cell — i.e. the values, without the setting name. */
+function stripLabel(line) { return line.replace(/^[^\t]*/, ""); }
 
 function parseSettings(text) {
   var lines = text.split(/\r?\n/), hits = [], missed = [], draft = { roster: null, teams: null };
@@ -674,6 +698,19 @@ function parseSettings(text) {
           counts[key] = (counts[key] || 0) + 1;
       });
       if (Object.keys(counts).length) { draft.roster = counts; hits.push(["Roster positions", JSON.stringify(counts)]); }
+      return;
+    }
+    if (/fractional points/i.test(line)) {
+      draft.fractional = /\b(yes|true|on)\b/i.test(stripLabel(line));
+      hits.push(["Fractional points", draft.fractional ? "yes" : "no"]);
+      return;
+    }
+    if (/playoff weeks/i.test(line)) {
+      var wk = [], seen = {};
+      (stripLabel(line).match(/\d+/g) || []).map(Number).forEach(function (w) {
+        if (w >= 10 && w <= 22 && !seen[w]) { seen[w] = 1; wk.push(w); }
+      });
+      if (wk.length) { draft.playoffWeeks = wk; hits.push(["Playoff weeks", wk.join(", ")]); }
       return;
     }
     if (/max(imum)? teams/i.test(line)) {
@@ -738,6 +775,8 @@ $("#parseBtn").addEventListener("click", function () {
     if (res.draft.roster) S.league.rules.roster =
       Object.assign({ flexEligible: ["RB", "WR", "TE"] }, res.draft.roster);
     if (res.draft.teams) { S.league.teams = res.draft.teams; $("#cfgTeams").value = res.draft.teams; }
+    if (res.draft.fractional !== undefined) S.league.rules.fractional = res.draft.fractional;
+    if (res.draft.playoffWeeks) S.league.rules.playoffWeeks = res.draft.playoffWeeks;
     buildScoringForm(); buildRosterForm();
     flash("#parseOut", "Applied. Review the scoring section, then Save league.");
   };

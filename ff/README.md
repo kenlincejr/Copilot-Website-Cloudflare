@@ -23,6 +23,7 @@ ff/
   tools/
     bake-players.py   rebuilds data/players.js
     test-engine.js    31 assertions against independently-derived numbers
+    test-parser.js    29 assertions on the league-settings paste parser
     players.json      the research board (input to the bake)
 ```
 
@@ -70,6 +71,14 @@ node ff/tools/test-engine.js
 against Sleeper's own PPR totals (must match to within 2%), and checks survival
 probabilities, replacement levels, the keeper-adjusted pick schedule and the D/ST
 point totals against figures derived independently in the research digest.
+
+`node ff/tools/test-parser.js` — 29 assertions on the settings paste parser,
+against a realistic Yahoo clipboard dump. The one it cares most about: Yahoo
+prints `Label <tab> League Value <tab> Yahoo Default Value`, so the parser must
+take the *first* number. Reading the second would silently load somebody else's
+scoring, which would be worse than not parsing at all. Rule order matters too —
+"Missed Field Goal 0-19" contains "Field Goal 0-19", so misses are matched before
+makes.
 
 ## The optional Claude feature
 
