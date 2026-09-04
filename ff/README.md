@@ -133,9 +133,18 @@ money. The Worker bounds that rather than trusting the client:
 |---|---|
 | Origin allowlist | Only the real pages can call it |
 | Model + `max_tokens` pinned server-side | A caller cannot ask for Opus at 64k |
+| Sonnet 5, not Haiku | Haiku 4.5 was measurably unreliable on this task — see below |
 | Per-IP rate limit (12/min) | Stops a single tab hammering it |
 | Daily budget ceiling ($2, all callers) | Hard stop; the board still works |
 | 24 KB body cap, last 4 messages only | Nobody can stuff the context window |
+
+**On the model choice.** The brief asks for reasoning across ~15 players with six
+numbers each while holding a pick schedule straight. Haiku 4.5 failed that
+repeatedly in live testing: it named an empty WR slot and then recommended a
+running back, and called a 24-pick gap "three picks" with the correct number on
+screen beside it. Sonnet 5 is ~3x the token price and still lands near a penny a
+question. The daily ceiling is unchanged, so the worst case costs the same — it
+just buys fewer answers. Roughly 15 cents for a full draft.
 
 Deploying it:
 

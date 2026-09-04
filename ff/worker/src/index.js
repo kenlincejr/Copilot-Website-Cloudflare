@@ -28,12 +28,19 @@ const ALLOWED_ORIGINS = [
 ];
 
 // Pinned server-side. The client picks nothing that costs money.
-const MODEL = "claude-haiku-4-5";
+//
+// Sonnet, not Haiku. The brief asks the model to reason across ~15 players with
+// six numbers each and hold a pick schedule in its head; Haiku 4.5 was reliably
+// sloppy at it — naming an empty WR slot and then recommending a running back,
+// and misreading a 24-pick gap as three. Sonnet 5 is about 3x the price per
+// token and still lands around a penny a question. The daily ceiling below is
+// unchanged, so the worst case costs the same; it just buys fewer answers.
+const MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 700;
 
-// Haiku 4.5, USD per million tokens.
-const PRICE_IN = 1.0;
-const PRICE_OUT = 5.0;
+// Sonnet 5, USD per million tokens.
+const PRICE_IN = 2.0;
+const PRICE_OUT = 10.0;
 
 const MAX_BODY_BYTES = 24000;   // ~6k tokens of context, well past what we send
 const RATE_LIMIT = 12;          // requests per IP...
