@@ -599,3 +599,21 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 }
 .gl-v { font-size: 12px; color: var(--muted); line-height: 1.5; }
 .gl-v b { color: var(--text); font-weight: 600; }
+
+/* Column picker — the menu doubles as the documentation, since a tablet has no
+   hover to put a tooltip behind. */
+.colopt {
+  display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start;
+  padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius);
+  margin-bottom: 6px; cursor: pointer; background: var(--panel-2);
+}
+.colopt:hover { border-color: var(--teal-dim); }
+.colopt.on { border-color: var(--teal-dim); background: rgba(45,212,191,.07); }
+.colopt input { width: auto; margin-top: 2px; }
+.colopt b { font-weight: 650; }
+.colshort {
+  font-family: var(--mono); font-size: 10px; color: var(--teal);
+  background: var(--raised); border-radius: 4px; padding: 1px 5px; margin-left: 6px;
+}
+.coldesc { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 3px; }
+.prow .num small { font-size: 9px; opacity: .75; }

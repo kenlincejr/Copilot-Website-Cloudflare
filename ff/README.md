@@ -57,25 +57,34 @@ researched `dst_tier`. That last one is where most of the edge lives.
 distribution around the projected per-game mean — applying them once to a season
 total would be wrong in both directions.
 
-## What the columns mean
+## Columns
 
-Every header carries a tooltip, and "what do the columns mean?" under the filters
-opens a glossary written **against the user's own board** rather than in the
-abstract — it names the actual replacement ranks and the actual next pick number,
-because VOR only becomes meaningful once you can see it is measured against RB31
-in a twelve-team league starting two backs and a flex. Collapsed by default,
-remembered once opened.
+Four columns, chosen by the user from thirteen, via **choose columns** under the
+filters. Defaults: points, bye, tier, wait.
 
-The three that needed it:
+Two things drove the design.
 
-- **VOR** — points above a player you could have for nothing at that position.
-  It is what makes a tight end and a running back comparable at all; 250 points
-  means very different things at the two.
-- **Δ** — ADP minus the pick on the clock. Positive means he usually goes later
-  than now, so taking him here is early; negative means he is overdue and is the
-  bargain. Green is the arbitrage.
-- **→14** — the chance he is still there at your next pick, from his own ADP
-  standard deviation. The header carries whatever your next pick number is.
+**Tooltips do not exist on a tablet.** So the picker itself is the documentation:
+each option carries a full sentence on what it is *for*, not just what it is, and
+you get at it by tapping.
+
+**A raw number makes the reader do the interpreting, and there is no time for
+that on a two-minute clock.** A percentage is a fact; "NOW" is a decision. So the
+columns that can be read as a decision are:
+
+- **TIER** — `T5 (1)`. Players grouped by the scoring cliffs at their position
+  (computed in `engine.js` from the median gap). Inside a tier they are
+  interchangeable, so the question stops being *who is best* and becomes *how
+  many are left*. The bracket is exactly that; at `(1)` he is the last of his
+  group and waiting drops you a whole tier. Amber at 1.
+- **WAIT?** — `wait` / `risky` / `NOW`, from survival odds against your own next
+  pick. Above 70% spend this pick elsewhere; under 35% it is now or never.
+- **VALUE** — `fell 1.2` / `fair` / `reach 1.4`, his ADP against the pick on the
+  clock in *rounds*. "fell" is the free money.
+
+The numeric originals (`VOR`, `SURV`, `Δ`, `ADP`) are all still on the menu for
+anyone who prefers them, alongside `VS STD` — what your scoring does to him
+versus plain PPR, which is the arbitrage the whole tool exists for.
 
 ## Recording a pick
 

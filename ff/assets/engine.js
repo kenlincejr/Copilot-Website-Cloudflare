@@ -155,6 +155,24 @@
       repl[pos] = { rank: ranks[pos] || 12, points: r ? r.pts : 0, name: r ? r.name : null };
     });
     scored.forEach(function (p) { p.vor = p.pts - (repl[p.pos] ? repl[p.pos].points : 0); });
+
+    // Tiers: where the position falls off a cliff. Everyone inside a tier is
+    // close enough to be interchangeable, so the question stops being "who is
+    // best" and becomes "how many of these are left" — which is the question
+    // that actually decides whether you can wait a round.
+    Object.keys(byPos).forEach(function (pos) {
+      var list = byPos[pos];
+      var gaps = [];
+      for (var i = 0; i + 1 < Math.min(list.length, 40); i++) gaps.push(list[i].pts - list[i + 1].pts);
+      var sorted = gaps.slice().sort(function (a, b) { return a - b; });
+      var median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+      var cliff = Math.max(6, median * 2.2);
+      var tier = 1;
+      list.forEach(function (p, i) {
+        if (i > 0 && (list[i - 1].pts - p.pts) >= cliff) tier++;
+        p.tier = tier;
+      });
+    });
     scored.sort(function (a, b) { return b.vor - a.vor; });
     scored.forEach(function (p, i) { p.vorRank = i + 1; });
     return { players: scored, replacement: repl, byPos: byPos };

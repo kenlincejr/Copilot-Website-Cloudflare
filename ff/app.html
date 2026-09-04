@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904p">
+<link rel="stylesheet" href="assets/ff.css?v=20260904q">
 </head>
 <body>
 
@@ -71,19 +71,10 @@
         <div class="filters" id="posFilters"></div>
         <div class="legendrow">
           <span class="dimtext" id="rowLegend"></span>
-          <button class="glosstoggle" id="glossToggle">what do the columns mean?</button>
+          <button class="glosstoggle" id="btnCols">choose columns</button>
         </div>
-        <div id="glossary" class="hidden"></div>
       </div>
-      <div class="phead">
-        <span class="c-rank"></span><span>Player</span>
-        <span class="num" title="Projected season points in YOUR league's scoring">Pts</span>
-        <span class="num c-bye" title="Bye week — coloured when it clashes with your starters">Bye</span>
-        <span class="num c-vor" title="Value over replacement: points above a freely available player at this position">VOR</span>
-        <span class="num" title="Average draft position across ~7,800 mock drafts">ADP</span>
-        <span class="num c-delta" title="ADP minus the current pick. Positive means he usually goes later than now">Δ</span>
-        <span class="num" id="survHead" title="Chance he is still on the board at your next pick">Survives</span>
-      </div>
+      <div class="phead"></div>
       <div id="plist" class="plist"></div>
     </div>
 
@@ -213,6 +204,15 @@
     <button class="btn btn-danger" id="btnReset">Reset draft</button>
     <button class="btn btn-primary" id="setupSave">Save league</button>
   </div>
+</div></div>
+
+<div class="modal-bg hidden" id="colModal"><div class="modal">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Columns</h2>
+      <span class="muted">What the board shows next to each player.</span></div>
+    <button class="btn btn-sm" id="colClose">Close</button>
+  </div>
+  <div id="colBody"></div>
 </div></div>
 
 <div class="modal-bg hidden" id="leagueModal"><div class="modal wide">
@@ -383,13 +383,13 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904p"></script>
-<script src="data/players.js?v=20260904p"></script>
-<script src="assets/presets.js?v=20260904p"></script>
-<script src="assets/engine.js?v=20260904p"></script>
-<script src="assets/auth.js?v=20260904p"></script>
-<script src="assets/parser.js?v=20260904p"></script>
-<script src="assets/strategies.js?v=20260904p"></script>
-<script src="assets/app.js?v=20260904p"></script>
+<script src="assets/config.js?v=20260904q"></script>
+<script src="data/players.js?v=20260904q"></script>
+<script src="assets/presets.js?v=20260904q"></script>
+<script src="assets/engine.js?v=20260904q"></script>
+<script src="assets/auth.js?v=20260904q"></script>
+<script src="assets/parser.js?v=20260904q"></script>
+<script src="assets/strategies.js?v=20260904q"></script>
+<script src="assets/app.js?v=20260904q"></script>
 </body>
 </html>
