@@ -18,6 +18,8 @@ ff/
     presets.js        scoring rule sets. Scoring is data, not code.
     auth.js           device-local profiles (PBKDF2 hash in localStorage)
     app.js            draft room UI
+    config.js         deployment config (the Claude proxy URL)
+  worker/             Cloudflare Worker holding the shared Anthropic key
   data/
     players.js        267 players: ADP layer + projections + annotations, baked
   tools/
@@ -80,11 +82,60 @@ scoring, which would be worse than not parsing at all. Rule order matters too �
 "Missed Field Goal 0-19" contains "Field Goal 0-19", so misses are matched before
 makes.
 
-## The optional Claude feature
+## The Claude feature
 
-Off by default. The user pastes their own Anthropic API key; it stays in that
-browser's localStorage and the request goes straight from the browser to
+Claude is given the board's already-computed numbers and told to trust them
+rather than substitute consensus rankings. It is there for judgement on top of
+the math, not to re-rank anything.
+
+### The on-deck brief
+
+The feature worth having. When the user's pick is a configurable number of picks
+away (default 2), the app fires exactly one request and renders the answer at the
+top of the centre column — so the call is already on screen when the clock
+starts, rather than thirty seconds into a two-minute timer. It is cached against
+the pick number, so re-renders, undo and reload never spend twice.
+
+What makes the question worth asking is the context, not the model. Claude gets
+the board's own numbers, the research notes on the specific players still
+available, and — the part no ADP-based tool has — **what the teams picking
+between now and your turn still need**. Every recorded pick is attributed to the
+team that was on the clock, so opponent rosters come for free, and "both teams
+ahead of you still need a running back" says more about who survives than a
+standard deviation does.
+
+### Two ways it gets its key
+
+`assets/config.js` decides. If `claudeProxy` is set, the page calls that Worker
+and nobody needs a key of their own. If it is blank, the app falls back to asking
+each user for their own key, held in their own localStorage and sent straight to
 `api.anthropic.com` with `anthropic-dangerous-direct-browser-access: true`.
-Default model is Haiku 4.5. Claude is given the board's already-computed numbers
-and told to trust them rather than substitute consensus rankings — it is there for
-judgement on top of the math, not to re-rank anything.
+
+### The Worker
+
+`worker/` is the shared-key path. There is no way to put one key in front of many
+users on a static site without a server in the middle: embedding it in the
+JavaScript means anyone can read it out of View Source and spend the balance.
+
+Because the proxy is public, anyone who can open the page can spend the owner's
+money. The Worker bounds that rather than trusting the client:
+
+| Control | Why |
+|---|---|
+| Origin allowlist | Only the real pages can call it |
+| Model + `max_tokens` pinned server-side | A caller cannot ask for Opus at 64k |
+| Per-IP rate limit (12/min) | Stops a single tab hammering it |
+| Daily budget ceiling ($2, all callers) | Hard stop; the board still works |
+| 24 KB body cap, last 4 messages only | Nobody can stuff the context window |
+
+Deploying it:
+
+```bash
+cd ff/worker
+npx wrangler deploy
+npx wrangler secret put ANTHROPIC_API_KEY   # interactive; never in the repo
+```
+
+The key is a Cloudflare secret. It is not in this repo, not in `wrangler.jsonc`,
+and not readable from the deployed page. Watch spend with `npx wrangler tail`, and
+change the ceilings at the top of `worker/src/index.js`.

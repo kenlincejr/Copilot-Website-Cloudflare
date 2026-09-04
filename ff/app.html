@@ -55,6 +55,7 @@
 
     <!-- --------------------------------------------------- recommendation -->
     <div class="col col-rec col-pad">
+      <div id="brief"></div>
       <div id="runBanner"></div>
       <div class="panel-head"><h3 id="recTitle">Best available for you</h3>
         <span class="eyebrow" id="recCtx"></span></div>
@@ -169,12 +170,7 @@
     <button class="btn btn-sm" id="claudeClose">Close</button></div>
 
   <div id="claudeSetup">
-    <p class="muted" style="font-size:13px">
-      This is optional and the draft board works fully without it. There is no server behind
-      this page, so there is nowhere to keep a shared API key — you paste your own, it stays
-      in this browser's local storage, and the request goes straight from your machine to
-      Anthropic. Haiku 4.5 answers cost a fraction of a cent each.
-    </p>
+    <p class="muted" style="font-size:13px" id="claudeModeNote"></p>
     <div class="field">
       <label for="apiKey">Anthropic API key</label>
       <div style="display:flex;gap:8px">
@@ -195,8 +191,25 @@
   </div>
 
   <div id="claudeAsk" class="hidden">
+    <div class="panel" style="padding:12px;margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:9px;margin:0;font-size:13px;color:var(--text)">
+        <input type="checkbox" id="autoBrief" style="width:auto">
+        Brief me before I'm on the clock
+      </label>
+      <p class="dimtext mb0" style="font-size:12px;margin:7px 0 0">
+        Fires once, automatically, when your pick is
+        <select id="briefLead" style="width:auto;display:inline-block;padding:2px 6px;font-size:12px">
+          <option value="1">1 pick</option><option value="2">2 picks</option>
+          <option value="3">3 picks</option><option value="4">4 picks</option>
+        </select>
+        away — so the answer is already on screen when the clock starts, not
+        thirty seconds into it. Reads your open slots against what's actually left,
+        including what the teams picking ahead of you still need.
+      </p>
+      <p class="dimtext mb0" style="font-size:12px;margin:8px 0 0" id="spendLine"></p>
+    </div>
     <div class="filters" style="margin-bottom:10px">
-      <span class="pill" data-q="top">Why this pick?</span>
+      <span class="pill" data-q="brief">Brief me on this pick</span>
       <span class="pill" data-q="compare">Compare my top two</span>
       <span class="pill" data-q="roster">Read my roster</span>
       <span class="pill" data-q="risk">What am I missing?</span>
@@ -214,6 +227,7 @@
   </div>
 </div></div>
 
+<script src="assets/config.js"></script>
 <script src="data/players.js"></script>
 <script src="assets/presets.js"></script>
 <script src="assets/engine.js"></script>

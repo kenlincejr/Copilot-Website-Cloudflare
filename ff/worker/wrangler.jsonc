@@ -1,0 +1,17 @@
+{
+  "name": "draftline-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-25",
+
+  // Rate-limit counters and the running daily spend total. Both are short-lived
+  // keys with a TTL; nothing here is durable state worth backing up.
+  "kv_namespaces": [
+    { "binding": "LIMITS", "id": "91114a0eb08343b08ea5a2a63a194006" }
+  ],
+
+  // ANTHROPIC_API_KEY is a secret, not a var — set it with
+  //   npx wrangler secret put ANTHROPIC_API_KEY
+  // and it never enters this file or the repo.
+
+  "observability": { "enabled": true }
+}

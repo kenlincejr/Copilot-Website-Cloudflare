@@ -200,7 +200,7 @@ function render() {
         ' <span class="dimtext">(' + (A.myAfter - A.myNext) + " picks)</span>" : "")
     : '<span class="dimtext">no picks left</span>';
 
-  renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn();
+  renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner();
   if (view.selected) renderDetail(view.selected);
 }
@@ -812,22 +812,55 @@ $("#fileIn").addEventListener("change", function (e) {
 
 /* ----------------------------------------------------------------- Claude */
 
+var PROXY = (globalThis.DRAFTLINE_CONFIG || {}).claudeProxy || "";
+
 var claudeCfg = (function () {
   try { return JSON.parse(localStorage.getItem(KEY_CLAUDE) || "{}"); } catch (e) { return {}; }
 })();
+if (claudeCfg.auto === undefined) claudeCfg.auto = true;
+if (!claudeCfg.lead) claudeCfg.lead = 2;
+
+/** Claude is reachable if a shared proxy is configured, or the user brought a key. */
+function claudeReady() { return !!PROXY || !!claudeCfg.key; }
 
 function claudeSaveCfg() {
   try { localStorage.setItem(KEY_CLAUDE, JSON.stringify(claudeCfg)); } catch (e) {}
 }
 function claudePanes() {
-  var has = !!claudeCfg.key;
-  $("#claudeSetup").classList.toggle("hidden", has);
-  $("#claudeAsk").classList.toggle("hidden", !has);
+  var ready = claudeReady();
+  $("#claudeSetup").classList.toggle("hidden", ready);
+  $("#claudeAsk").classList.toggle("hidden", !ready);
+  $("#claudeModeNote").innerHTML = PROXY
+    ? "Claude runs through this site's own proxy, so there is nothing for you to set up and no key to " +
+      "paste. The proxy pins the model and answer length, rate-limits per person, and stops for the day " +
+      "if the shared budget runs out — the draft board is unaffected either way."
+    : "Optional; the draft board works fully without it. There is no server behind this page, so you " +
+      "paste your own key. It stays in this browser's local storage and the request goes straight from " +
+      "your machine to Anthropic. Haiku 4.5 answers cost a fraction of a cent each.";
+  $("#autoBrief").checked = !!claudeCfg.auto;
+  $("#briefLead").value = String(claudeCfg.lead);
+  renderSpend();
+}
+function renderSpend() {
+  var s = claudeCfg.spend || { calls: 0, in: 0, out: 0 };
+  if (!s.calls) { $("#spendLine").textContent = "No questions asked yet this draft."; return; }
+  var usd = (s.in / 1e6) * 1.0 + (s.out / 1e6) * 5.0;
+  $("#spendLine").textContent = s.calls + " question" + (s.calls === 1 ? "" : "s") + " so far · " +
+    s.in.toLocaleString() + " in / " + s.out.toLocaleString() + " out · about $" + usd.toFixed(3) +
+    (PROXY ? " against the shared budget" : " on your key") +
+    (claudeCfg.budget ? " · shared spend today $" + claudeCfg.budget.spentToday.toFixed(3) +
+      " of $" + claudeCfg.budget.dailyBudget.toFixed(2) : "");
 }
 $("#btnClaude").addEventListener("click", function () {
   $("#apiKey").value = claudeCfg.key || "";
   $("#modelSel").value = claudeCfg.model || "claude-haiku-4-5";
   claudePanes(); openModal("#claudeModal");
+});
+$("#autoBrief").addEventListener("change", function (e) {
+  claudeCfg.auto = e.target.checked; claudeSaveCfg(); render();
+});
+$("#briefLead").addEventListener("change", function (e) {
+  claudeCfg.lead = parseInt(e.target.value, 10) || 2; claudeSaveCfg(); render();
 });
 $("#claudeClose").addEventListener("click", function () { closeModal("#claudeModal"); });
 $("#keyReveal").addEventListener("click", function () {
@@ -849,15 +882,55 @@ $("#keyEdit").addEventListener("click", function () {
 $$("#claudeAsk .pill").forEach(function (el) {
   el.onclick = function () {
     var q = {
-      top: "Talk me through the top recommendation. Is the board right, and what would make you take someone else?",
+      brief: "__BRIEF__",
       compare: "Compare the top two available players for my situation. Which one, and why?",
       roster: "Look at my roster and tell me what shape it's in and what I should be hunting for.",
       risk: "What is this board's blind spot right now? What would a sharp opponent do that I'm not seeing?"
     }[el.dataset.q];
+    if (q === "__BRIEF__") {
+      closeModal("#claudeModal");
+      delete briefCache[A.myNext];
+      claudeCfg.auto = true; claudeSaveCfg();
+      return renderBrief();
+    }
     $("#claudeQ").value = q; askClaude();
   };
 });
 $("#claudeGo").addEventListener("click", askClaude);
+
+/**
+ * What every other team has drafted. Each recorded pick is attributed to the
+ * team that was on the clock, so opponent rosters come for free — and knowing
+ * that the two teams ahead of you both still need a running back says more
+ * about who survives than raw ADP does.
+ */
+function opponentRosters() {
+  var byTeam = {};
+  S.picks.forEach(function (p) {
+    var pl = A.byName[p.name]; if (!pl) return;
+    (byTeam[p.slot] = byTeam[p.slot] || []).push(pl);
+  });
+  return byTeam;
+}
+
+/** The teams picking between now and your next turn, and what they still need. */
+function teamsAhead() {
+  if (!A.myNext) return [];
+  var rosters = opponentRosters(), r = S.league.rules.roster, out = [];
+  for (var pk = A.cur; pk < A.myNext; pk++) {
+    var slot = ownerOfPick(pk).slot;
+    if (slot === S.league.slot) continue;
+    var have = {};
+    (rosters[slot] || []).forEach(function (p) { have[p.pos] = (have[p.pos] || 0) + 1; });
+    var short = ["QB", "RB", "WR", "TE", "K", "DEF"].filter(function (pos) {
+      return (have[pos] || 0) < (r[pos] || 0);
+    });
+    out.push({ pick: pk, slot: slot,
+               roster: (rosters[slot] || []).map(function (p) { return p.pos; }).join("/") || "empty",
+               needs: short.join(", ") || "starters full" });
+  }
+  return out;
+}
 
 /** Everything Claude sees. Numbers only — it never re-derives the scoring. */
 function claudeContext() {
@@ -911,48 +984,129 @@ var SYSTEM =
   "No preamble, no bullet-point sprawl, no restating the question. If the board looks right, " +
   "say so in a sentence and add the one thing it doesn't know.";
 
+/**
+ * One transport for every Claude call. Prefers the shared proxy, which holds the
+ * key as a Cloudflare secret and pins the model and answer length server-side;
+ * falls back to a key the user pasted in themselves.
+ */
+function claudeCall(question) {
+  var body = { system: SYSTEM, messages: [{ role: "user", content: question }] };
+  var url, headers = { "content-type": "application/json" };
+
+  if (PROXY) {
+    url = PROXY;
+  } else {
+    url = "https://api.anthropic.com/v1/messages";
+    headers["x-api-key"] = claudeCfg.key;
+    headers["anthropic-version"] = "2023-06-01";
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+    body.model = claudeCfg.model || "claude-haiku-4-5";
+    body.max_tokens = 700;
+  }
+
+  return fetch(url, { method: "POST", headers: headers, body: JSON.stringify(body) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    .then(function (res) {
+      if (!res.ok) throw new Error((res.j.error && res.j.error.message) || "Request failed.");
+      var u = res.j.usage || {};
+      var s = claudeCfg.spend || { calls: 0, in: 0, out: 0 };
+      s.calls++; s.in += u.input_tokens || 0; s.out += u.output_tokens || 0;
+      claudeCfg.spend = s;
+      if (res.j.budget) claudeCfg.budget = res.j.budget;
+      claudeSaveCfg(); renderSpend();
+      return (res.j.content || []).filter(function (b) { return b.type === "text"; })
+               .map(function (b) { return b.text; }).join("\n").trim() || "(no answer)";
+    });
+}
+
 function askClaude() {
   var q = $("#claudeQ").value.trim();
   if (!q) return;
-  if (!claudeCfg.key) { claudePanes(); return; }
+  if (!claudeReady()) { claudePanes(); return; }
   var out = $("#claudeOut");
-  out.classList.remove("hidden", "err");
+  out.classList.remove("hidden"); out.classList.remove("err");
   out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> thinking…';
   $("#claudeGo").disabled = true;
 
-  fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": claudeCfg.key,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
-    },
-    body: JSON.stringify({
-      model: claudeCfg.model || "claude-haiku-4-5",
-      max_tokens: 700,
-      system: SYSTEM,
-      messages: [{ role: "user", content: claudeContext() + "\n\nQUESTION: " + q }]
+  claudeCall(claudeContext() + "\n\nQUESTION: " + q)
+    .then(function (text) { out.querySelector(".claude-out").textContent = text; })
+    .catch(function (err) {
+      out.classList.add("err");
+      out.querySelector(".claude-out").textContent = err.message;
     })
-  })
-  .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-  .then(function (res) {
-    if (!res.ok) throw new Error((res.j.error && res.j.error.message) || "Request failed.");
-    var text = (res.j.content || []).filter(function (b) { return b.type === "text"; })
-                 .map(function (b) { return b.text; }).join("\n").trim();
-    out.querySelector(".claude-out").textContent = text || "(no answer)";
-    var u = res.j.usage || {};
-    $("#claudeCost").textContent = u.input_tokens
-      ? u.input_tokens + " in / " + u.output_tokens + " out"
-      : "";
-  })
-  .catch(function (err) {
-    out.classList.add("err");
-    out.querySelector(".claude-out").textContent =
-      err.message + "  (If this says CORS or failed to fetch, check the key is a valid " +
-      "Anthropic API key with credit on it.)";
-  })
-  .then(function () { $("#claudeGo").disabled = false; });
+    .then(function () { $("#claudeGo").disabled = false; });
+}
+
+/* ------------------------------------------------------- the on-deck brief */
+
+// Cached against the pick number it was written for, so it is asked once and
+// survives re-renders, undo and reload without spending again.
+var briefCache = {};
+
+/**
+ * The question that earns its keep. Everything in here is either computed by the
+ * board or known only because we track who drafted what — in particular, what
+ * the teams picking between now and your turn still need, which is the part raw
+ * ADP cannot tell you.
+ */
+function briefQuestion() {
+  var ahead = teamsAhead();
+  var aheadLines = ahead.length
+    ? ahead.map(function (t) {
+        return "  pick " + t.pick + " — team " + t.slot + " has " + t.roster +
+               ", still needs " + t.needs;
+      }).join("\n")
+    : "  (you are on the clock now)";
+
+  return claudeContext() + "\n\nTEAMS PICKING BEFORE YOU:\n" + aheadLines +
+    "\n\nQUESTION: I am about to be on the clock at pick " + A.myNext +
+    ". Give me the call before the timer starts.\n" +
+    "Answer in exactly this shape, no headings, no bullets:\n" +
+    "Line 1 — the player you would take, and nothing else on that line.\n" +
+    "Then two or three sentences on why, grounded in my open roster slots, the " +
+    "board's numbers and anything the research notes flag.\n" +
+    "Last line — start it with \"If gone:\" and name the fallback.\n" +
+    "Under 110 words total. If the board's top pick is right, say so plainly and " +
+    "spend your words on what it cannot see.";
+}
+
+function renderBrief() {
+  var el = $("#brief");
+  if (!claudeReady() || !claudeCfg.auto || !A.myNext) { el.innerHTML = ""; return; }
+
+  var gap = A.myNext - A.cur;
+  if (gap > (claudeCfg.lead || 2)) { el.innerHTML = ""; return; }
+
+  var cached = briefCache[A.myNext];
+  if (cached === undefined) {
+    briefCache[A.myNext] = null;                     // in flight; don't ask twice
+    el.innerHTML = '<div class="rec top"><div class="eyebrow" style="margin-bottom:6px">' +
+      'Claude · on deck for pick ' + A.myNext + '</div>' +
+      '<div class="claude-out"><span class="spinner"></span> reading the board…</div></div>';
+    var forPick = A.myNext;
+    claudeCall(briefQuestion())
+      .then(function (text) { briefCache[forPick] = text; })
+      .catch(function (err) { briefCache[forPick] = "!" + err.message; })
+      .then(function () { if (A.myNext === forPick) renderBrief(); });
+    return;
+  }
+  if (cached === null) return;                       // still waiting; leave the spinner
+
+  var failed = cached.charAt(0) === "!";
+  var body = failed ? cached.slice(1) : cached;
+  var lines = body.split("\n").filter(function (l) { return l.trim(); });
+  var head = failed ? "" : lines.shift();
+
+  el.innerHTML = '<div class="rec top' + (failed ? " brief-failed" : "") + '">' +
+    '<div class="eyebrow" style="margin-bottom:6px">Claude · on deck for pick ' + A.myNext + "</div>" +
+    (failed
+      ? '<div class="claude-out">Claude is unavailable: ' + esc(body) +
+        ' <span class="dimtext">The board below is unaffected.</span></div>'
+      : '<div class="rec-head"><span class="name">' + esc(head) + "</span></div>" +
+        '<div class="claude-out">' + esc(lines.join("\n")) + "</div>") +
+    '<div class="rec-actions"><button class="btn btn-sm btn-ghost" id="briefAgain">Ask again</button></div>' +
+  "</div>";
+  $("#briefAgain").onclick = function () { delete briefCache[A.myNext]; renderBrief(); };
 }
 
 /* ------------------------------------------------------------------- boot */
