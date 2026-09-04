@@ -283,6 +283,54 @@ def main():
         players.append(rec)
 
     meta = dict(research.get("meta", {}))
+    # ---- correct the two ADP sources for a structural difference ----------
+    #
+    # Naively subtracting one ADP from the other is wrong, and wrong in a way that
+    # looks like signal. Sleeper ranks about 2,150 players; this board carries 267.
+    # A deeper pool pushes late players further down, so the two lists agree
+    # closely at the top and drift apart with depth — median Sleeper ADP runs
+    # +0.4 against this board in the first fifty picks and +37 by pick 150-200.
+    # Reporting that raw difference would flag most of the late rounds as a market
+    # disagreement when it is only a difference in denominators.
+    #
+    # So: fit the expected Sleeper ADP for a given board ADP from the data itself
+    # (median within sliding bands, linearly interpolated), and report only the
+    # residual — how far he sits from where players of his own ADP normally sit
+    # on the other list.
+    pairs = sorted((p["adp"], p["adp2"]) for p in players if p.get("adp2"))
+    knots = []
+    if len(pairs) >= 20:
+        step = max(8, len(pairs) // 10)
+        for i in range(0, len(pairs), step):
+            chunk = pairs[i:i + step]
+            if len(chunk) < 4:
+                continue
+            xs = sorted(c[0] for c in chunk)
+            ys = sorted(c[1] for c in chunk)
+            knots.append((xs[len(xs) // 2], ys[len(ys) // 2]))
+
+    def expected_adp2(x):
+        if not knots:
+            return None
+        if x <= knots[0][0]:
+            return knots[0][1]
+        if x >= knots[-1][0]:
+            return knots[-1][1]
+        for i in range(len(knots) - 1):
+            x0, y0 = knots[i]
+            x1, y1 = knots[i + 1]
+            if x0 <= x <= x1:
+                t = 0 if x1 == x0 else (x - x0) / (x1 - x0)
+                return y0 + t * (y1 - y0)
+        return knots[-1][1]
+
+    for pl in players:
+        if pl.get("adp2"):
+            exp = expected_adp2(pl["adp"])
+            if exp is not None:
+                # Negative = the other market takes him earlier than his peers.
+                pl["adpResid"] = round(pl["adp2"] - exp, 1)
+
     meta_out = {
         "proj_source": "Sleeper season projections (RotoWire), 2026 regular season",
         "proj_matched": matched,
@@ -293,6 +341,11 @@ def main():
         "adp2_source": "Sleeper platform ADP. Mixes mock and real drafts across their whole "
                        "user base and refreshes once or twice a month, so it is a second "
                        "opinion beside FFC's, not a fresher one.",
+        "adp_resid_note": "adpResid is Sleeper's ADP minus what a player at this board ADP "
+                          "normally sits at on Sleeper. The raw difference is unusable: "
+                          "Sleeper ranks ~2,150 players against this board's 267, so the two "
+                          "drift apart with depth for structural reasons (+0.4 picks over the "
+                          "first fifty, +37 by 150-200). The residual removes that drift.",
         "baked": "2026-09-04",
     }
     meta = dict(research.get("meta", {}))
@@ -308,6 +361,11 @@ def main():
     print(f"  depth chart slot: {sum(1 for p in players if 'depth' in p)}"
           f"   injury designation: {sum(1 for p in players if 'injury' in p)}"
           f"   second ADP: {sum(1 for p in players if 'adp2' in p)}")
+    res = [p["adpResid"] for p in players if "adpResid" in p]
+    if res:
+        res.sort()
+        print(f"  ADP residual: median {res[len(res)//2]:+.1f}, "
+              f"range {res[0]:+.0f} to {res[-1]:+.0f} over {len(res)} players")
     miss = [p["name"] for p in players if p.get("projSource") == "none"]
     print(f"  no projection ({len(miss)}): {', '.join(miss[:25])}")
 

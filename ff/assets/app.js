@@ -1862,17 +1862,22 @@ var COLUMNS = {
     }
   },
   split: {
-    short: "SPLIT", label: "How far the two ADP sources disagree", w: "56px",
-    desc: "The main ADP minus Sleeper's. A big number means the two markets disagree about " +
-          "him, which is worth a look — but it is not automatically an edge. Josh Jacobs " +
-          "splits by 31 picks purely because Sleeper had not absorbed his move to the " +
-          "exempt list. Treat a wide split as a question, not an answer.",
+    short: "SPLIT", label: "Where the other market disagrees", w: "56px",
+    desc: "How far Sleeper's ADP sits from where players of this board ADP normally sit on " +
+          "Sleeper. Negative means the other market is higher on him than his peers, positive " +
+          "means lower. It is a de-drifted residual rather than a raw difference: Sleeper " +
+          "ranks about 2,150 players against this board's 267, so the two lists pull apart " +
+          "with depth for reasons that have nothing to do with anyone's opinion — subtracting " +
+          "them directly would flag most of the late rounds as a disagreement. Even " +
+          "corrected, a wide split is a question rather than an answer: Josh Jacobs reads as " +
+          "a bargain over there purely because Sleeper has not absorbed his move to the " +
+          "exempt list.",
     render: function (p) {
-      if (!p.adp2) return { v: "\u2014", cls: "dimtext" };
-      var d = Math.round(p.adp - p.adp2);
-      if (Math.abs(d) < 8) return { v: "\u2014", cls: "dimtext" };
+      if (p.adpResid == null) return { v: "\u2014", cls: "dimtext" };
+      var d = Math.round(p.adpResid);
+      if (Math.abs(d) < 12) return { v: "\u2014", cls: "dimtext" };
       return { v: (d > 0 ? "+" : "") + d,
-               style: "color:" + (Math.abs(d) >= 18 ? "var(--amber)" : "var(--muted)") };
+               style: "color:" + (Math.abs(d) >= 30 ? "var(--amber)" : "var(--muted)") };
     }
   },
   vsstd: {
@@ -2799,8 +2804,9 @@ function claudeContext() {
     var extra = [];
     if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);
     if (p.injury) extra.push("listed " + p.injury + (p.injuryPart ? " (" + p.injuryPart + ")" : ""));
-    if (p.adp2 && Math.abs(p.adp - p.adp2) >= 12) {
-      extra.push("ADP sources split: " + p.adp + " here vs " + p.adp2 + " on Sleeper");
+    if (p.adpResid != null && Math.abs(p.adpResid) >= 25) {
+      extra.push("the other ADP market is " + Math.abs(Math.round(p.adpResid)) + " picks " +
+        (p.adpResid < 0 ? "higher" : "lower") + " on him than players of his price here");
     }
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +

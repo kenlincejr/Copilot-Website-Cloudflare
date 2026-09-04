@@ -414,6 +414,22 @@ node ff/tools/test-engine.js
 `sleeper.json` is ~3 MB and is not committed. The ADP and annotation layers live in
 `tools/players.json`; refresh that file to update ADP, injuries and notes.
 
+## The audit
+
+`node ff/tools/audit.js` hunts the class of bug the tiering had: numbers that
+render without error and are quietly wrong. It checks that no depth-chart slot or
+team contradicts the board, that nothing scores non-finite or zero, that
+replacement ranks exist within each position, that survival stays in [0,1] at the
+extremes, that tiers neither fragment into singletons nor collapse into one
+bucket, that the composite is finite for every player, that a full position is
+actually blocked, and that the ADP residual is centred. Re-run it after any
+change to the bake or the engine.
+
+It found one real bug on its first run — see the ADP residual note below — and
+its own first version had a false-positive check that flagged every running back
+as mis-joined because the regex stripping receiver side-designators (LWR/RWR)
+also ate the R in RB.
+
 ## Tests
 
 `node ff/tools/test-engine.js` — 31 assertions. It checks the scoring engine
