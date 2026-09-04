@@ -170,12 +170,19 @@ scroll inside themselves — nothing makes the page itself scroll sideways.
 
 ## Cache busting
 
-GitHub Pages serves assets with `max-age=600`, so a push can take ten minutes to
-reach a browser that already has the old file. Every `<script>` and `<link>` in
-the two HTML pages carries a `?v=` stamp; **bump it whenever an asset changes**
-or the fix you just shipped will not be the one running on draft night. The stamp
-is a single string near the top of the bake in `tools/` — or just find-and-replace
-the current value across `index.html` and `app.html`.
+GitHub Pages serves everything with `max-age=600`, HTML included, so a push takes
+up to ten minutes to reach a browser that already has the page. Two mechanisms,
+because the obvious one is not enough:
+
+1. Every `<script>` and `<link>` carries a `?v=` stamp. **Bump it on every asset
+   change** — find-and-replace the value across `index.html` and `app.html`.
+2. That alone does not work, and the reason is worth internalising: the stamps
+   live *inside* the cached HTML, so a stale page names stale assets and busts
+   nothing. `assets/config.js` therefore carries a matching `build` string, and
+   the app re-fetches that file with `cache: "no-store"` on load. If the deployed
+   build has moved past the running one it offers a reload to
+   `app.html?v=<build>` — a URL the cache has never seen. Keep `build` and the
+   `?v=` stamps in step or the banner never fires.
 
 ## Rebuilding the data
 

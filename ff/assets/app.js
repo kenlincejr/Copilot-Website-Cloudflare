@@ -1929,10 +1929,41 @@ function renderBrief() {
 
 /* ------------------------------------------------------------------- boot */
 
+/**
+ * GitHub Pages serves this page with max-age=600. A browser holding the old HTML
+ * keeps running it — and the ?v= stamps live *inside* that HTML, so they are
+ * stale too and cannot bust anything. Re-fetch the config past the cache and, if
+ * the deployed build has moved on, offer a reload to a URL the cache has never
+ * seen. Nothing here blocks the board if it fails.
+ */
+function checkForUpdate() {
+  var mine = (globalThis.DRAFTLINE_CONFIG || {}).build;
+  if (!mine) return;
+  fetch("assets/config.js?bust=" + Date.now(), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.text() : null; })
+    .then(function (text) {
+      if (!text) return;
+      var m = text.match(/build:\s*"([^"]+)"/);
+      if (!m || m[1] === mine) return;
+      var el = document.createElement("div");
+      el.className = "statusbar soon";
+      el.innerHTML = "<span>A newer version of Draftline is deployed (" + esc(m[1]) +
+        "; you are on " + esc(mine) + "). Your draft is saved and will survive the reload." +
+        "</span><span class='grow'></span>" +
+        '<button class="btn btn-sm btn-primary" id="doUpdate">Reload</button>';
+      $("#statusBar").insertAdjacentElement("afterend", el);
+      $("#doUpdate").onclick = function () {
+        location.replace(location.pathname + "?v=" + m[1]);
+      };
+    })
+    .catch(function () { /* offline is the normal case at draft time */ });
+}
+
 syncKeepers();
 if (S.league.pickSeconds) $("#pickSecs").value = S.league.pickSeconds;
 render();
 tickClock();
+checkForUpdate();
 if (!S.picks.length && !localStorage.getItem(KEY_STATE)) openSetup();
 save();
 $("#search").focus();
