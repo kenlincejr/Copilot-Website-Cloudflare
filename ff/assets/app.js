@@ -628,143 +628,88 @@ $("#btnReset").addEventListener("click", function () {
   S.picks = []; save(); closeModal("#setupModal"); render();
 });
 
-/* ------------------------------------------------ league settings parser */
+/* ------------------------------- league settings import (see parser.js) */
 
-var SYN = [
-  // 40+ yard rules come first: "40+ Yard Receiving TD" would otherwise be
-  // swallowed by the generic receiving-touchdown pattern below.
-  [/40\+?\s*yards?.*(completion|pass(ing)? play)/i,            ["passing", "comp40plus"]],
-  [/40\+?\s*yards?.*pass(ing)?\s*(td|touchdown)/i,            ["passing", "td40plus"]],
-  [/40\+?\s*yards?.*rush(ing)?\s*(td|touchdown)/i,            ["rushing", "td40plus"]],
-  [/40\+?\s*yards?.*(rush|run)/i,                             ["rushing", "run40plus"]],
-  [/40\+?\s*yards?.*rec(eiving|eption)?\s*(td|touchdown)/i,   ["receiving", "td40plus"]],
-  [/40\+?\s*yards?.*rec(eiving|eption)/i,                     ["receiving", "rec40plus"]],
-  [/points? per reception|^receptions?$|^rec$|^ppr$/i,        ["receiving", "perReception"]],
-  [/receiving yards?/i,                                        ["receiving", "yardsPerPoint"]],
-  [/receiving touchdown|rec(eiving)? td/i,                     ["receiving", "td"]],
-  [/rushing yards?/i,                                          ["rushing", "yardsPerPoint"]],
-  [/rushing touchdown|rush(ing)? td/i,                         ["rushing", "td"]],
-  [/passing yards?/i,                                          ["passing", "yardsPerPoint"]],
-  [/passing touchdown|pass(ing)? td/i,                         ["passing", "td"]],
-  [/interceptions? thrown|^interceptions?$/i,                  ["passing", "int"]],
-  [/fumbles? lost/i,                                           ["misc", "fumbleLost"]],
-  [/return yards?/i,                                           ["misc", "returnYardsPerPoint"]],
-  [/return touchdown|return td/i,                              ["misc", "returnTd"]],
-  [/^sacks?$/i,                                                ["dst", "sack"]],
-  [/fumble recover/i,                                          ["dst", "fumRec"]],
-  [/safet(y|ies)/i,                                            ["dst", "safety"]],
-  [/blocked kick/i,                                            ["dst", "blockKick"]],
-  [/points? allowed 0/i,                                       ["dst", "pa0"]],
-  [/points? allowed 1[-–]6/i,                                  ["dst", "pa1_6"]],
-  [/points? allowed 7[-–]13/i,                                 ["dst", "pa7_13"]],
-  [/points? allowed 14[-–]20/i,                                ["dst", "pa14_20"]],
-  [/points? allowed 21[-–]27/i,                                ["dst", "pa21_27"]],
-  [/points? allowed 28[-–]34/i,                                ["dst", "pa28_34"]],
-  [/points? allowed 35\+/i,                                    ["dst", "pa35plus"]],
-  // Misses before makes: "Missed Field Goal 0-19 Yards" contains "Field Goal
-  // 0-19", so the made-FG pattern would swallow it and quietly overwrite a
-  // scoring value with its own negative.
-  [/miss(ed)? field goals? 0[-–]19/i,                          ["kicking", "miss0_19"]],
-  [/miss(ed)? field goals? 20[-–]29/i,                         ["kicking", "miss20_29"]],
-  [/miss(ed)? field goals? 30[-–]39/i,                         ["kicking", "miss30_39"]],
-  [/miss(ed)? field goals? 40[-–]49/i,                         ["kicking", "miss40_49"]],
-  [/miss(ed)? field goals? 50\+/i,                             ["kicking", "miss50plus"]],
-  [/field goals? 0[-–]19/i,                                    ["kicking", "fg0_19"]],
-  [/field goals? 20[-–]29/i,                                   ["kicking", "fg20_29"]],
-  [/field goals? 30[-–]39/i,                                   ["kicking", "fg30_39"]],
-  [/field goals? 40[-–]49/i,                                   ["kicking", "fg40_49"]],
-  [/field goals? 50\+/i,                                       ["kicking", "fg50plus"]],
-  [/point after.*miss|missed extra point|missed point after/i, ["kicking", "patMiss"]],
-  [/point after|extra point/i,                                 ["kicking", "pat"]],
-  [/2[- ]?point conversion|two[- ]?point/i,                    ["passing", "twoPt"]],
-  [/touchdown/i,                                               ["dst", "td"]],
-  [/^interception(s)?$/i,                                      ["dst", "int"]],
-  [/extra point returned/i,                                    ["dst", "extraPointReturned"]]
-];
+// Where each platform keeps the page, and what to copy. Written as steps rather
+// than a screenshot so it stays correct when they reskin the site.
+var SITE_STEPS = {
+  yahoo: {
+    label: "Yahoo",
+    link: "https://football.fantasysports.yahoo.com/f1/",
+    steps: [
+      "In your league, click <b>League</b> in the top nav, then <b>Settings</b>.",
+      "The page is titled <b>Scoring &amp; Settings</b> and its address ends in <span class=\"mono\">/settings</span>.",
+      "Click anywhere on the page, press <span class=\"kbd\">Ctrl</span>+<span class=\"kbd\">A</span> then <span class=\"kbd\">Ctrl</span>+<span class=\"kbd\">C</span>, and paste below.",
+      "Grab the <b>whole page</b>, not just the scoring tables — the roster slots, team count and playoff weeks live in the settings table above them."
+    ],
+    note: "Yahoo prints a second column of its own default values next to anything you have changed. " +
+          "Draftline always reads your league's number, never Yahoo's."
+  },
+  espn: {
+    label: "ESPN",
+    link: "https://fantasy.espn.com/football/",
+    steps: [
+      "In your league, open <b>League</b> → <b>Settings</b>.",
+      "Open the <b>Scoring</b> tab, select all and copy, and paste below.",
+      "Then do the same for the <b>Roster</b> tab and paste that too — ESPN splits them across two pages, and you can paste both one after the other."
+    ],
+    note: "ESPN labels most categories the same way Yahoo does, so the same rules apply. " +
+          "Anything unrecognised is listed for you rather than guessed at."
+  },
+  sleeper: {
+    label: "Sleeper",
+    link: "https://sleeper.com/",
+    steps: [
+      "Open your league, then <b>League Settings</b> → <b>Scoring Settings</b>.",
+      "Select all and copy, and paste below.",
+      "Sleeper's web app lays scoring out as label-and-value rows, which parses the same way."
+    ],
+    note: "Sleeper is the one platform with a clean public API. If pasting is awkward, the " +
+          "manual form below takes about two minutes and is exact."
+  },
+  other: {
+    label: "Another platform",
+    link: "",
+    steps: [
+      "Find whichever page lists your scoring categories and their point values.",
+      "Select all, copy, paste below, and see what it recognises."
+    ],
+    note: "The parser matches on category names rather than page layout, so unfamiliar " +
+          "platforms often work anyway. Whatever it misses, set by hand in the scoring form below — " +
+          "and send me the lines it listed as unrecognised so they can be added."
+  }
+};
 
-/** Everything after the label cell — i.e. the values, without the setting name. */
-function stripLabel(line) { return line.replace(/^[^\t]*/, ""); }
-
-function parseSettings(text) {
-  var lines = text.split(/\r?\n/), hits = [], missed = [], draft = { roster: null, teams: null };
-  lines.forEach(function (raw) {
-    var line = raw.trim(); if (!line) return;
-
-    if (/roster positions/i.test(line)) {
-      var rp = line.split(/[:\t]/).slice(1).join(" ");
-      var counts = {};
-      rp.split(/[,\s]+/).forEach(function (tok) {
-        tok = tok.trim().toUpperCase().replace(/[^A-Z/]/g, "");
-        if (!tok) return;
-        var map = { "W/R/T": "FLEX", "W/R": "FLEX", "WRT": "FLEX", "FLEX": "FLEX",
-                    "DEF": "DEF", "D/ST": "DEF", "DST": "DEF", "BN": "BN", "BE": "BN", "IR": "IR" };
-        var key = map[tok] || tok;
-        if (["QB","RB","WR","TE","FLEX","K","DEF","BN","IR"].indexOf(key) >= 0)
-          counts[key] = (counts[key] || 0) + 1;
-      });
-      if (Object.keys(counts).length) { draft.roster = counts; hits.push(["Roster positions", JSON.stringify(counts)]); }
-      return;
-    }
-    if (/fractional points/i.test(line)) {
-      draft.fractional = /\b(yes|true|on)\b/i.test(stripLabel(line));
-      hits.push(["Fractional points", draft.fractional ? "yes" : "no"]);
-      return;
-    }
-    if (/playoff weeks/i.test(line)) {
-      var wk = [], seen = {};
-      (stripLabel(line).match(/\d+/g) || []).map(Number).forEach(function (w) {
-        if (w >= 10 && w <= 22 && !seen[w]) { seen[w] = 1; wk.push(w); }
-      });
-      if (wk.length) { draft.playoffWeeks = wk; hits.push(["Playoff weeks", wk.join(", ")]); }
-      return;
-    }
-    if (/max(imum)? teams/i.test(line)) {
-      var t = line.match(/(\d+)/); if (t) { draft.teams = +t[1]; hits.push(["Teams", t[1]]); }
-      return;
-    }
-
-    // Label <tab | 2+ spaces | colon> value... Take the FIRST number after the
-    // label: Yahoo prints "League Value" then "Yahoo Default Value" on one line.
-    var parts = line.split(/\t|\s{2,}|:\s/).map(function (s) { return s.trim(); }).filter(Boolean);
-    if (parts.length < 2) return;
-    var label = parts[0], rest = parts.slice(1).join(" ");
-
-    // compound: "25 yards per point; 1 points at 400 yards; 2 points at 500 yards"
-    var compound = rest.match(/(\d+(?:\.\d+)?)\s*yards? per point/i);
-    var syn = SYN.find(function (s) { return s[0].test(label); });
-    if (!syn) { missed.push(line.slice(0, 60)); return; }
-
-    var val;
-    if (compound && syn[1][1] === "yardsPerPoint") val = parseFloat(compound[1]);
-    else {
-      var m = rest.match(/-?\d+(?:\.\d+)?/);
-      if (!m) { missed.push(line.slice(0, 60)); return; }
-      val = parseFloat(m[0]);
-    }
-    hits.push([label, val, syn[1]]);
-
-    var b400 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 400/i);
-    var b500 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 500/i);
-    var b150 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 150/i);
-    var b200 = rest.match(/(-?\d+(?:\.\d+)?)\s*points? at 200/i);
-    if (b400) hits.push(["  bonus at 400", parseFloat(b400[1]), ["passing", "bonus400"]]);
-    if (b500) hits.push(["  bonus at 500", parseFloat(b500[1]), ["passing", "bonus500"]]);
-    if (b150) hits.push(["  bonus at 150", parseFloat(b150[1]), [syn[1][0], "bonus150"]]);
-    if (b200) hits.push(["  bonus at 200", parseFloat(b200[1]), [syn[1][0], "bonus200"]]);
-  });
-  return { hits: hits, missed: missed, draft: draft,
-           confidence: hits.length / Math.max(1, hits.length + missed.length) };
+function renderSiteSteps(site) {
+  var c = SITE_STEPS[site] || SITE_STEPS.other;
+  $("#siteSteps").innerHTML =
+    "<b>" + esc(c.label) + "</b>" +
+    (c.link ? ' — <a href="' + c.link + '" target="_blank" rel="noopener">open your leagues</a>' : "") +
+    '<ol style="margin:8px 0 0;padding-left:20px;line-height:1.6">' +
+    c.steps.map(function (st) { return "<li>" + st + "</li>"; }).join("") +
+    "</ol>" +
+    '<p class="dimtext mb0" style="font-size:12px;margin-top:8px">' + c.note + "</p>";
 }
+$$("#setupModal .pill[data-site]").forEach(function (el) {
+  el.onclick = function () {
+    $$("#setupModal .pill[data-site]").forEach(function (o) { o.classList.remove("on"); });
+    el.classList.add("on");
+    renderSiteSteps(el.getAttribute("data-site"));
+  };
+});
+renderSiteSteps("yahoo");
+
 
 $("#parseBtn").addEventListener("click", function () {
-  var res = parseSettings($("#pasteBox").value);
+  var res = DRAFTLINE_PARSER.parse($("#pasteBox").value);
   var rows = res.hits.map(function (h) {
     return "<tr><td>" + esc(h[0]) + '</td><td class="right num">' + esc(h[1]) + "</td>" +
       '<td class="dimtext">' + (h[2] ? h[2].join(".") : "") + "</td></tr>";
   }).join("");
   $("#parseOut").innerHTML =
     '<div class="note' + (res.confidence < 0.4 ? " warn" : "") + '">Recognised <b>' + res.hits.length +
-      "</b> settings, skipped " + res.missed.length + " lines. Nothing has been applied yet — " +
+      "</b> settings, " + (res.missed.length ? res.missed.length + " lines not recognised"
+        : "everything on the page recognised") + ". Nothing has been applied yet — " +
       "check the values below, then apply.</div>" +
     '<div class="mt" style="max-height:240px;overflow:auto"><table>' + rows + "</table></div>" +
     (res.missed.length ? '<details class="mt"><summary class="dimtext">Lines it did not recognise</summary>' +
@@ -772,10 +717,11 @@ $("#parseBtn").addEventListener("click", function () {
       esc(res.missed.join("\n")) + "</pre></details>" : "") +
     '<button class="btn btn-primary mt" id="applyParse">Apply these values</button>';
   $("#applyParse").onclick = function () {
-    res.hits.forEach(function (h) {
-      if (!h[2]) return;
-      S.league.rules[h[2][0]] = S.league.rules[h[2][0]] || {};
-      S.league.rules[h[2][0]][h[2][1]] = h[1];
+    Object.keys(res.scoring).forEach(function (grp) {
+      S.league.rules[grp] = S.league.rules[grp] || {};
+      Object.keys(res.scoring[grp]).forEach(function (k) {
+        S.league.rules[grp][k] = res.scoring[grp][k];
+      });
     });
     if (res.draft.roster) S.league.rules.roster =
       Object.assign({ flexEligible: ["RB", "WR", "TE"] }, res.draft.roster);

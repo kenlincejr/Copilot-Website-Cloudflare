@@ -17,6 +17,7 @@ ff/
     engine.js         scoring + draft math. Pure functions, no DOM, no network.
     presets.js        scoring rule sets. Scoring is data, not code.
     auth.js           device-local profiles (PBKDF2 hash in localStorage)
+    parser.js         league-settings paste parser
     app.js            draft room UI
     config.js         deployment config (the Claude proxy URL)
   worker/             Cloudflare Worker holding the shared Anthropic key
@@ -25,7 +26,8 @@ ff/
   tools/
     bake-players.py   rebuilds data/players.js
     test-engine.js    31 assertions against independently-derived numbers
-    test-parser.js    29 assertions on the league-settings paste parser
+    test-parser.js    112 assertions against a real Yahoo settings page
+    fixtures/         verbatim capture of that page
     players.json      the research board (input to the bake)
 ```
 
@@ -83,13 +85,24 @@ against Sleeper's own PPR totals (must match to within 2%), and checks survival
 probabilities, replacement levels, the keeper-adjusted pick schedule and the D/ST
 point totals against figures derived independently in the research digest.
 
-`node ff/tools/test-parser.js` — 29 assertions on the settings paste parser,
-against a realistic Yahoo clipboard dump. The one it cares most about: Yahoo
-prints `Label <tab> League Value <tab> Yahoo Default Value`, so the parser must
-take the *first* number. Reading the second would silently load somebody else's
-scoring, which would be worse than not parsing at all. Rule order matters too —
-"Missed Field Goal 0-19" contains "Field Goal 0-19", so misses are matched before
-makes.
+`node ff/tools/test-parser.js` — 112 assertions against
+`fixtures/yahoo-settings.txt`, a verbatim capture of a real Yahoo Scoring &
+Settings page. The last block cross-checks every parsed value against the
+hand-built `kinda_highlanders` preset: two independently produced paths must
+agree on all forty-odd scoring keys.
+
+Three things about that page break a reasonable-looking parser, all covered in
+`assets/parser.js`:
+
+- **Changed settings render as three lines.** Label, the literal words "Yahoo
+  Default", then `<your value> <Yahoo's value>`. Skip lines without a number and
+  you drop every non-default setting — precisely the ones this tool exists for.
+- **The same label means different things per section.** "Interception" is 2
+  under Defense/Special Teams and -2 under Offense; "Return Yards" and
+  "Touchdown" appear in both. Rules are scoped to the section heading.
+- **The label can contain a number.** "Points Allowed 0 points" is worth 25.
+  Values are read from the text *after* the matched label, never from the start
+  of the line.
 
 ## The Claude feature
 

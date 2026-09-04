@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904b">
+<link rel="stylesheet" href="assets/ff.css?v=20260904c">
 </head>
 <body>
 
@@ -104,16 +104,25 @@
     <div class="field"><label>Rounds</label><input type="number" id="cfgRounds" min="1" max="30"></div>
   </div>
 
-  <details class="mt">
-    <summary style="cursor:pointer;color:var(--muted)">Paste your league settings page instead</summary>
-    <p class="muted" style="font-size:13px;margin-top:10px">
-      Open your league's settings page, select all, copy, paste below. Yahoo and ESPN both
-      paste as <span class="mono">Label &lt;tab&gt; Value</span> lines. Draftline parses what it
-      recognises, shows you exactly what it found, and leaves everything else alone — it never
-      silently accepts a parse.
-    </p>
-    <textarea id="pasteBox" rows="7" placeholder="Paste here…"></textarea>
+  <details class="mt" open>
+    <summary style="cursor:pointer;color:var(--muted)">Import your league's real scoring (recommended)</summary>
+
+    <div class="filters" style="margin:12px 0 10px">
+      <span class="pill on" data-site="yahoo">Yahoo</span>
+      <span class="pill" data-site="espn">ESPN</span>
+      <span class="pill" data-site="sleeper">Sleeper</span>
+      <span class="pill" data-site="other">Something else</span>
+    </div>
+
+    <div class="note" id="siteSteps"></div>
+
+    <textarea id="pasteBox" rows="7" class="mt"
+      placeholder="Paste the whole page here — Draftline ignores everything that isn't scoring."></textarea>
     <button class="btn btn-sm mt" id="parseBtn">Parse it</button>
+    <p class="dimtext" style="font-size:12px;margin-top:8px">
+      Nothing is applied until you read what it found and click apply. Anything it doesn't
+      recognise is listed rather than dropped.
+    </p>
     <div id="parseOut" class="mt"></div>
   </details>
 
@@ -227,11 +236,12 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904b"></script>
-<script src="data/players.js?v=20260904b"></script>
-<script src="assets/presets.js?v=20260904b"></script>
-<script src="assets/engine.js?v=20260904b"></script>
-<script src="assets/auth.js?v=20260904b"></script>
-<script src="assets/app.js?v=20260904b"></script>
+<script src="assets/config.js?v=20260904c"></script>
+<script src="data/players.js?v=20260904c"></script>
+<script src="assets/presets.js?v=20260904c"></script>
+<script src="assets/engine.js?v=20260904c"></script>
+<script src="assets/auth.js?v=20260904c"></script>
+<script src="assets/parser.js?v=20260904c"></script>
+<script src="assets/app.js?v=20260904c"></script>
 </body>
 </html>
