@@ -39,29 +39,28 @@ record of *why*, but do not rebuild anything marked done.
 | P3.1 measure `roomPick` | done 09-05 | table in the item |
 | P3.3 still-need in words | done | roster-gap strip, `renderStatus()` |
 | P3.4 brief provenance | done | eyebrow says "written N picks ago" |
+| P2.8 style block | done 09-05 | `c43ccf6` — built from `activeKnobs()`, own knobs marked |
+| P2.9 D/ST round | done 09-05 | `6bb57c7` — computed: round 2, #22, not the hand-written 7th |
+| P2.10 bake date | done 09-05 | `df0c530` — `BAKED_ON` in `SYSTEM` and on the LEAGUE line |
+| P3.2 live draft board | done 09-05 | `e4305a3` — targets, last-pick line, undo window, team chips |
 
 **What is actually left to build, in order:**
 
-1. **P2.8 — `styleBlock()` sends the preset, not the style in force · Sonnet · 30 min.**
-   Custom and Claude-tuned knobs never reach the model and the payload ends
-   `My own notes on it: [object Object]`. Build the block from `activeKnobs()`, diff against
-   the preset, name the user's own knobs. Assertion in `test-app.js`. Evidence:
-   `qa-suggestion-prompt.md` C1 and `tools/traces/hero_rb-seed11-pick38.txt`.
-2. **P2.9 — the payload's hard-coded "worth roughly a 7th-round pick" · Sonnet · 20 min.**
-   `scoringHighlights()` asserts it; the board's own VOR puts the best DEF at #22 and
-   `impact.js` computes `bestRank`/`bestRound`. Print the computed number. (C3.)
-3. **P2.10 — bake date in the payload · Sonnet · 15 min.** `SYSTEM` says injuries and depth
-   "are current"; say "as of <meta.built>" and put the date on the LEAGUE line. (C4.)
-4. **P3.2 — the live draft board · Opus to design, Sonnet to build · 5 hours.** The headline
-   build item. Fully specified in its section below, with the P3.1 numbers that shape it.
-5. **The suggestion-engine review · Opus xhigh · 3 days · runs before any engine change.**
+1. **The suggestion-engine review · Opus xhigh · 3 days · runs before any engine change.**
    `qa-suggestion-prompt.md` is the investigation brief for the composite itself: no wait
    cost (B1), fallen players unpriced (B2), grades and market movement inert (B3), the
    late-round collapse (B4), replacement level (B5), the floors (B6), bye semantics (B7),
    roster-blind survival (B8), injury as a badge (B9), handcuffs by team name (B10), and the
    model eval (D). Its findings become P2.11 onward; **do not build engine terms from the
    headings without the review's measurements.**
-6. P1.5 and P1.7 on their days. P3.5 only if a real Yahoo page proves it.
+2. P1.5 and P1.7 on their days. P3.5 only if a real Yahoo page proves it.
+
+**Two departures from P3.2's spec, both deliberate — read §5 P3.2 before reopening either.**
+Escape is not bound to undo: it is already taken by the popovers and the modal, the search box
+holds focus by default on a desktop, and the only way to make it fire from there is to make
+Escape-to-clear-the-search delete a pick. Ctrl+Z already undoes from anywhere. And solo mode
+still has no tracker — `roomTargets()` works and is tested there, but giving "Just the board" a
+tracker of its own was out of scope for the five hours.
 
 The serialization rule stands: one session edits `engine.js`, `app.js`, `ff.css` at a time.
 Another session has been landing commits to `app.js` daily; pull before you branch.
