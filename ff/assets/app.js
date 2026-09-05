@@ -4009,11 +4009,20 @@ function claudeContext() {
       // to "now" either. The first number is whether he reaches the pick this
       // brief is written for; the second is whether he would keep until the one
       // after it, which is the question a fallback plan turns on.
+      //
+      // There is not always a pick after it. At the last pick of the draft
+      // `A.myAfter` is null, `analyze()` parks `survNext` at 1 as a placeholder,
+      // and this line used to print that placeholder while labelling it with
+      // `(A.myAfter || A.myNext)` — so on the clock at 179 every candidate was
+      // described as "100% chance he is still there at pick 179", which is the
+      // pick being made. A placeholder is not a fact and must not be printed as
+      // one: say there is no following pick instead.
       (waiting ? ", chance he reaches the pick I am writing about (" + A.myNext +
         ") is " + Math.round(p.surv * 100) + "%" : "") +
-      ", chance he is still there at my FOLLOWING pick (" +
-      (A.myAfter || A.myNext) + ") is " +
-      Math.round(p.survNext * 100) + "%, composite " + Math.round(p.comp) +
+      (A.myAfter ? ", chance he is still there at my FOLLOWING pick (" +
+        A.myAfter + ") is " + Math.round(p.survNext * 100) + "%"
+        : ", and this is my last pick of the draft — there is no pick after it") +
+      ", composite " + Math.round(p.comp) +
       (p.tag ? ", flagged " + tagLabel(p.tag) +
         (TAGS[p.tag] ? " (" + TAGS[p.tag] + ")" : "") : "") +
       (p.note ? ". Research note: " + p.note : "");

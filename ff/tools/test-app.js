@@ -242,6 +242,7 @@ function loadApp(leagueState, picksState, opts) {
     "\nglobalThis.__APP_TEST__ = { analyze: analyze, record: record, undo: undo, " +
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
+    "claudeContext: claudeContext, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
     "draftedNames: draftedNames, allRosters: allRosters };\n";
@@ -586,6 +587,76 @@ console.log("\n== analyze ==");
   var a2 = api.getAnalysis();
   ok("a recorded player leaves the available pool", !a2.avail.some(function (p) { return p.name === top; }));
   ok("cur advances by one", a2.cur === a.cur + 1);
+})();
+
+/* ========================================================================
+   D2 — the payload never claims a survival chance at a pick that does not exist
+   ======================================================================== */
+console.log("\n== claudeContext survival horizons (D2) ==");
+(function () {
+  // Fill the board with unknown picks up to a given pick number, so `cur` lands
+  // where we want it. Who took them does not matter here — the two horizons are
+  // read off myUpcoming(), not off the rosters.
+  function atPick(n) {
+    var picks = Array.from({ length: n - 1 }, function (_, i) {
+      return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
+    });
+    var api = loadApp(kindaHighlandersLeague(), picks);
+    return { api: api, A: api.getAnalysis(), text: api.claudeContext() };
+  }
+
+  // Waiting at 177 for the last pick of the draft. `A.myAfter` is null here, and
+  // this is the state that used to print "still there at my FOLLOWING pick (179)
+  // is 100%" alongside "chance he reaches ... (179) is 41%" — the same pick
+  // number, two contradictory numbers, in one sentence.
+  var late = atPick(177);
+  ok("waiting at 177, the brief is written for pick 179", late.A.myNext === 179,
+     "myNext " + late.A.myNext);
+  ok("there is no pick after 179", late.A.myAfter === null, "myAfter " + late.A.myAfter);
+  ok("waiting at 177: the first horizon still names 179",
+     late.text.indexOf("chance he reaches the pick I am writing about (179)") >= 0);
+  ok("waiting at 177: no claim about a FOLLOWING pick",
+     late.text.indexOf("FOLLOWING pick") < 0);
+  ok("waiting at 177: the placeholder 100% is gone",
+     late.text.indexOf("is 100%") < 0);
+  ok("waiting at 177: it says plainly that this is the last pick",
+     late.text.indexOf("this is my last pick of the draft") >= 0);
+
+  // On the clock at 179. Nothing is waiting, so the only survival sentence that
+  // could appear is the false one.
+  var onClock = atPick(179);
+  ok("on the clock at 179, myNext is 179 and myAfter is null",
+     onClock.A.myNext === 179 && onClock.A.myAfter === null,
+     "myNext " + onClock.A.myNext + " myAfter " + onClock.A.myAfter);
+  ok("on the clock at 179: no claim about a FOLLOWING pick",
+     onClock.text.indexOf("FOLLOWING pick") < 0);
+  ok("on the clock at 179: no 100% survival claim",
+     onClock.text.indexOf("is 100%") < 0);
+
+  // Mid-draft, both horizons exist and must name DIFFERENT picks. This is the
+  // case the clause was written for and it has to keep working.
+  var mid = atPick(10);
+  ok("waiting at 10, the two horizons are picks 11 and 14",
+     mid.A.myNext === 11 && mid.A.myAfter === 14,
+     "myNext " + mid.A.myNext + " myAfter " + mid.A.myAfter);
+  ok("waiting at 10: the first horizon names 11",
+     mid.text.indexOf("chance he reaches the pick I am writing about (11)") >= 0);
+  ok("waiting at 10: the second horizon names 14, not 11",
+     mid.text.indexOf("FOLLOWING pick (14)") >= 0 &&
+     mid.text.indexOf("FOLLOWING pick (11)") < 0);
+
+  // Self-check: prove these assertions can fail. Rebuild the pre-fix expression
+  // from the same analysis and confirm it produces exactly the falsehood the
+  // assertions above are looking for — otherwise a passing test proves nothing.
+  var A = late.A;
+  var worst = A.avail.filter(function (q) { return !(q.compDetail && q.compDetail.blocked); })
+                     .sort(function (a, b) { return b.comp - a.comp; })[0];
+  var preFix = ", chance he is still there at my FOLLOWING pick (" +
+    (A.myAfter || A.myNext) + ") is " + Math.round(worst.survNext * 100) + "%";
+  ok("self-check: the pre-fix expression really did print a FOLLOWING pick of 179",
+     preFix.indexOf("FOLLOWING pick (179)") >= 0, preFix);
+  ok("self-check: and really did claim 100% for it",
+     preFix.indexOf("is 100%") >= 0, preFix);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
