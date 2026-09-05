@@ -4335,8 +4335,22 @@ function briefCandidates(waiting, limit) {
 
 /** Everything Claude sees. Numbers only — it never re-derives the scoring. */
 function claudeContext() {
+  var rules = S.league.rules;
   var waiting = A.myNext > A.cur;
-  var top = briefCandidates(waiting, 12);
+  // Eight, not twelve. The candidate block was 1,860 tokens of a 2,541-token
+  // payload — 73% of everything the model saw was a list of players, against
+  // 126 tokens describing the roster it was picking for. The roster block and
+  // the supply block are worth more per token than candidates nine through
+  // twelve, which were never the answer.
+  var top = briefCandidates(waiting, 8);
+  // What each candidate would actually add to the lineup the user can field
+  // today. This is the number the old prose was gesturing at when it told the
+  // model to compare against "the man already in that slot", except it is
+  // computed rather than asserted, and it is right when the slot is empty.
+  var baseLineup = E.lineupPoints(A.mine, S.league.rules);
+  var lineupAdd = function (p) {
+    return Math.round(E.lineupPoints(A.mine.concat([p]), S.league.rules) - baseLineup);
+  };
   var lines = top.map(function (p) {
     var extra = [];
     if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);
@@ -4368,8 +4382,18 @@ function claudeContext() {
         (fx.delta >= 0 ? "+" : "") + Math.round(fx.delta) + " and from board rank " +
         fx.from + " to " + fx.to + " versus neutral scoring");
     }
+    var add = lineupAdd(p);
+    var slotOpen = openStartingSlots().some(function (sl) {
+      return sl.pos === p.pos ||
+        (sl.pos === "FLEX" && (rules.roster.flexEligible || ["RB", "WR", "TE"]).indexOf(p.pos) >= 0);
+    });
+    var effect = add > 0
+      ? "+" + add + " to my starting lineup" +
+        (slotOpen ? " — he fills an open " + p.pos + " slot" : " — he beats the " + p.pos + " in my slot")
+      : "+0 to my starting lineup — depth only" +
+        (slotOpen ? ", and my " + p.pos + " slot is still open" : ", my " + p.pos + "s are better");
     return "- " + p.name + " (" + p.pos + " " + p.team + ", bye " + p.bye + "): " +
-      Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
+      effect + ". " + Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
       (extra.length ? ", " + extra.join(", ") : "") +
       ", ADP " + p.adp +
       // He is only on this list because the board rates him above everyone the

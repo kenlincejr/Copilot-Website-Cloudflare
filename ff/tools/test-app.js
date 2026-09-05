@@ -250,6 +250,7 @@ function loadApp(leagueState, picksState, opts) {
     "styleBlock: styleBlock, " +
     "teamsAheadBlock: teamsAheadBlock, runLine: runLine, " +
     "briefQuestion: briefQuestion, " +
+    "lineupPoints: E.lineupPoints, " +
     "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
     "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
@@ -1213,6 +1214,70 @@ console.log("\n== teamsAheadBlock / runLine ==");
      api.briefQuestion().indexOf("TEAMS PICKING BEFORE ME") >= 0);
   ok("and the old per-pick heading is gone",
      api.briefQuestion().indexOf("TEAMS PICKING BEFORE YOU") < 0);
+})();
+
+/* ========================================================================
+   The candidate block: eight, and what each would add to the lineup
+   ======================================================================== */
+console.log("\n== candidate block ==");
+(function () {
+  function withRoster(upTo, mine) {
+    var order = mine.slice(), picks = [];
+    for (var n = 1; n < upTo; n++) {
+      if (EXPECTED_SCHEDULE.indexOf(n) >= 0 && n !== 59 && order.length) {
+        picks.push({ pick: n, name: order.shift(), slot: 11, mine: true });
+      } else { picks.push({ pick: n, name: null, slot: null, mine: false, unknown: true }); }
+    }
+    return loadApp(kindaHighlandersLeague(), picks);
+  }
+  var api = withRoster(86, ["James Cook III", "Nico Collins", "Brock Bowers", "Derrick Henry"]);
+  var A = api.getAnalysis();
+  var text = api.claudeContext();
+  var lines = text.split("\n").filter(function (l) {
+    return l.indexOf("- ") === 0 && l.indexOf("pts in this league") > 0;
+  });
+
+  ok("the list is eight long, not twelve", lines.length === 8, lines.length + " lines");
+
+  // Every candidate states what he would add to the lineup that can be fielded
+  // today, computed from lineupPoints rather than asserted in prose.
+  ok("every candidate states his effect on the starting lineup",
+     lines.every(function (l) { return /to my starting lineup/.test(l); }),
+     lines.filter(function (l) { return !/to my starting lineup/.test(l); })[0] || "");
+  ok("and each says which of the three cases he is",
+     lines.every(function (l) {
+       return /fills an open .. slot|beats the .. in my slot|depth only/.test(l);
+     }), lines.filter(function (l) {
+       return !/fills an open .. slot|beats the .. in my slot|depth only/.test(l);
+     })[0] || "");
+
+  // The number has to be right, not just present: check one against the engine.
+  var first = api.briefCandidates(A.myNext > A.cur, 8)[0];
+  var base = ENGINE.lineupPoints(A.mine, kindaHighlandersLeague().rules);
+  var withHim = ENGINE.lineupPoints(A.mine.concat([first]), kindaHighlandersLeague().rules);
+  ok("the stated gain matches lineupPoints for the leading candidate",
+     lines[0].indexOf("+" + Math.round(withHim - base) + " to my starting lineup") >= 0,
+     lines[0].slice(0, 90));
+
+  // A depth-only body must name the slot that is still open beside him, which
+  // is the sentence the deleted paragraph got wrong in the other direction.
+  var depthLines = lines.filter(function (l) { return /depth only/.test(l); });
+  ok("a depth-only candidate says whether a slot at his position is still open",
+     depthLines.every(function (l) {
+       return /slot is still open|s are better/.test(l);
+     }), depthLines[0] || "(none in this state)");
+
+  // Size: the block was 73% of a 2,541-token payload against 126 tokens of
+  // roster. It should now be a minority of a much smaller whole.
+  var candChars = lines.join("\n").length;
+  // It was 73% of the payload against 126 tokens of roster. Measured here it is
+  // 51%: still the largest block, which is right — the candidates are the
+  // answer — but no longer crowding out what the answer is for.
+  ok("the candidate block no longer dominates the payload the way it did",
+     candChars < text.length * 0.6,
+     Math.round(100 * candChars / text.length) + "% of " + text.length + " chars, was 73%");
+  ok("the whole payload is well under the 2,541 tokens it was",
+     text.length / 3.7 < 2000, Math.round(text.length / 3.7) + " tokens");
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
