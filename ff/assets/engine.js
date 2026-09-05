@@ -135,6 +135,38 @@
   var SEASON_WEEKS = 17;
 
   /**
+   * Who actually occupies a superflex slot.
+   *
+   * The flex split is a statement about taste — a receiver and a back are close
+   * enough in a flex that which one starts is a matter of roster shape. The
+   * superflex split is not: it is a statement about points, and the points are
+   * one-sided. Filling every base slot on this board (12 QB, 24 RB, 24 WR,
+   * 12 TE) and then a round of flexes, the worst quarterback still in the pool
+   * beats the twelfth flex-type body left over by 3.3 pts/week in full PPR,
+   * 3.6 in Ken's scoring, 5.6 in Yahoo default and 6.4 in non-PPR. There is no
+   * scoring here in which a manager who owns a startable second quarterback
+   * plays somebody else in the slot.
+   *
+   * So the residual is not preference, it is supply. Twenty-four slots want a
+   * quarterback every week; the board carries about twenty-seven who project a
+   * real season (QB28 falls off to 170 points), so the league's spare arms are
+   * three deep. Every started quarterback is gone for exactly one week in
+   * SEASON_WEEKS — his bye — and three spares cannot cover all of that, let
+   * alone cover it alongside an injury. One bye in seventeen is therefore a
+   * deliberately conservative ceiling on how often the slot is *not* a
+   * quarterback; the true figure is lower, and erring this way underprices
+   * quarterbacks slightly rather than overpricing them.
+   *
+   * What covers the slot in that week is an ordinary flex body, so the residual
+   * is split by FLEX_SPLIT rather than by a second set of invented weights.
+   */
+  var SUPERFLEX_QB_SHARE = 1 - 1 / SEASON_WEEKS;          // 0.941
+  var SUPERFLEX_SPLIT = { QB: SUPERFLEX_QB_SHARE };
+  Object.keys(FLEX_SPLIT).forEach(function (pos) {
+    SUPERFLEX_SPLIT[pos] = FLEX_SPLIT[pos] * (1 - SUPERFLEX_QB_SHARE);
+  });
+
+  /**
    * How much of the wait-cost rides on top of value. Value already says what a
    * player is worth to this roster; VONA says how much of that worth you keep by
    * taking him now rather than at your next pick. Adding it whole counted the
@@ -195,10 +227,17 @@
   function replacementRanks(rules) {
     var r = rules.roster || {}, teams = rules.teams || 12, out = {};
     var flexEl = r.flexEligible || ["RB", "WR", "TE"];
+    // A superflex slot is a flex that a quarterback may also fill. Its eligible
+    // list is therefore the flex's plus QB unless the league says otherwise —
+    // reading r.SUPERFLEX but not r.superflexEligible would have quietly
+    // hardcoded the one thing a league is most likely to vary here.
+    var sflexEl = r.superflexEligible || ["QB"].concat(flexEl);
     ["QB", "RB", "WR", "TE", "K", "DEF"].forEach(function (pos) {
       var starters = teams * (r[pos] || 0);
       var flex = (r.FLEX || 0) * teams * (flexEl.indexOf(pos) >= 0 ? (FLEX_SPLIT[pos] || 0) : 0);
-      out[pos] = Math.max(1, Math.round(starters + flex));
+      var sflex = (r.SUPERFLEX || 0) * teams *
+        (sflexEl.indexOf(pos) >= 0 ? (SUPERFLEX_SPLIT[pos] || 0) : 0);
+      out[pos] = Math.max(1, Math.round(starters + flex + sflex));
     });
     return out;
   }
@@ -927,7 +966,7 @@
     composite: composite, modelGrades: modelGrades, tdShare: tdShare, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
     gauss: gauss, roomPick: roomPick, TAG_LABEL: TAG_LABEL,
     lineupPoints: lineupPoints, marginalVor: marginalVor, openFlexSlots: openFlexSlots,
-    FLEX_SPLIT: FLEX_SPLIT
+    FLEX_SPLIT: FLEX_SPLIT, SUPERFLEX_SPLIT: SUPERFLEX_SPLIT
   };
   root.DRAFTLINE_ENGINE = API;
   if (typeof module !== "undefined") module.exports = API;

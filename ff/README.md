@@ -857,18 +857,34 @@ A league scored like the baseline is told exactly that, and gets one sentence
 instead of a report. A tool that always finds an edge is not measuring anything,
 and `test-impact.js` pins that case first.
 
-### One thing it admits it cannot do
+### The superflex slot, which it used to admit it could not price
 
-`replacementRanks()` in `engine.js` shares out the `FLEX` slot and **ignores
-`SUPERFLEX` entirely**, so a superflex league's quarterback replacement level
-comes out identical to a one-quarterback league's. `parser.js` maps Yahoo's
-`Q/W/R/T` to `SUPERFLEX`, so a real league can reach this.
+`replacementRanks()` shared out the `FLEX` slot and ignored `SUPERFLEX`
+entirely, so a superflex league's quarterback replacement level came out
+identical to a one-quarterback league's — reachable by anyone, since `parser.js`
+maps Yahoo's `Q/W/R/T` to `SUPERFLEX`. The panel used to say so out loud and tell
+the reader to treat every QB figure as a floor.
 
-Rather than quietly report a wrong QB number as a finding, the panel says so out
-loud whenever the lineup has the slot, and tells the reader to treat every QB
-figure as a floor. `test-impact.js` asserts both the gap and the warning — if the
-engine is ever taught to price the slot, that test is the one that should fail
-and send somebody to delete the caveat.
+It is priced now. `SUPERFLEX_SPLIT` shares the slot out the way `FLEX_SPLIT`
+shares the flex, at **QB 0.941** and the rest by `FLEX_SPLIT`, and the number is
+measured rather than chosen: fill every base slot on this board and a round of
+flexes, and the worst quarterback still in the pool beats the twelfth flex-type
+body left over by 3.3 points a week in full PPR and 6.4 in non-PPR. No scoring
+here makes the slot anything but a quarterback. What is left over is supply, not
+preference — twenty-four slots want a quarterback every week and the board
+carries about twenty-seven who project a real season, so byes are not always
+coverable. One bye in seventeen is a conservative ceiling on how often the slot
+is not a quarterback, and erring that way underprices quarterbacks slightly
+rather than overpricing them.
+
+The panel reports the result through the same per-team lineup sentence every
+other roster difference goes through — a 14-team superflex league is told it
+starts *QB 1.9 a team against 1.0* — with no special case and no apology.
+
+**Still not priced:** `assignRoster()` and everything built on it —
+`positionalNeed()`, the lineup panel, `depthCap()` — know about `FLEX` and not
+about `SUPERFLEX`, so the slot moves replacement level and VOR but does not yet
+appear as a slot your second quarterback can be placed in.
 
 ### Cost
 

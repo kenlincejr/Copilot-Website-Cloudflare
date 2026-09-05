@@ -3618,10 +3618,17 @@ function buildScoringForm() {
            '<div style="display:flex;flex-wrap:wrap;gap:10px">' + fields + "</div>";
   }).join("");
 }
+/* SUPERFLEX is on this form because the rules object already carries it and the
+   engine now prices it. Yahoo's Q/W/R/T token has always parsed into
+   roster.SUPERFLEX, so a pasted superflex league arrived with the slot set and
+   no way to see it, correct it, or type it in from scratch — the form wrote
+   back only the keys it listed, so the value survived a save while staying
+   invisible. A number that changes every quarterback's replacement rank should
+   not be one you can only obtain by pasting. */
 function buildRosterForm() {
   var r = S.league.rules.roster;
   $("#rosterForm").innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
-    ["QB", "RB", "WR", "TE", "FLEX", "K", "DEF", "BN", "IR"].map(function (k) {
+    ["QB", "RB", "WR", "TE", "FLEX", "SUPERFLEX", "K", "DEF", "BN", "IR"].map(function (k) {
       return '<div class="field" style="width:90px"><label>' + k + "</label>" +
         '<input type="number" min="0" data-roster="' + k + '" value="' + (r[k] || 0) + '"></div>';
     }).join("") + "</div>";

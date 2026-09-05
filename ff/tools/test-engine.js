@@ -48,6 +48,40 @@ ok("RB~31", Math.abs(ranks.RB - 31) <= 1);
 ok("WR~29", Math.abs(ranks.WR - 29) <= 1);
 ok("K12 / DEF12", ranks.K === 12 && ranks.DEF === 12);
 
+
+// A superflex slot is a second quarterback for all but one week in seventeen, so
+// twelve of them raise the QB replacement rank by 12 x 0.941 = 11.3, landing on
+// 23.3 -> 23. The 0.059 that is not a quarterback splits by FLEX_SPLIT and is
+// worth 0.39 of a back, 0.28 of a receiver and 0.04 of a tight end across the
+// league — real, and correctly too small to move a rounded rank off 31/29/13.
+var sflex = JSON.parse(JSON.stringify(ken));
+sflex.roster.SUPERFLEX = 1;
+var sranks = E.replacementRanks(sflex);
+ok("superflex QB23, not QB12", sranks.QB === 23, JSON.stringify(sranks));
+ok("superflex leaves RB31/WR29/TE13 alone",
+   sranks.RB === ranks.RB && sranks.WR === ranks.WR && sranks.TE === ranks.TE);
+ok("superflex leaves K/DEF alone", sranks.K === 12 && sranks.DEF === 12);
+// The bug this replaces: SUPERFLEX was read by nobody, so a superflex league and
+// a one-QB league priced quarterbacks identically. Pin that they now differ.
+ok("a superflex league no longer prices QBs like a one-QB league",
+   sranks.QB > ranks.QB + 6);
+// Two superflex slots is three starting quarterbacks a team: 12 + 24 x 0.941 =
+// 34.6 -> 35, which is past the 30 quarterbacks this board carries. Replacement
+// is a rank, not a promise that the player exists; the board floors it later.
+var sflex2 = JSON.parse(JSON.stringify(ken)); sflex2.roster.SUPERFLEX = 2;
+ok("two superflex slots scale linearly", E.replacementRanks(sflex2).QB === 35);
+// superflexEligible is honored, not assumed. A league that lists only QB gives
+// the residual to nobody, so the flex-type ranks fall back to flex-only.
+var qbOnly = JSON.parse(JSON.stringify(ken));
+qbOnly.roster.SUPERFLEX = 1; qbOnly.roster.superflexEligible = ["QB"];
+var qranks = E.replacementRanks(qbOnly);
+ok("superflexEligible ['QB'] still lifts QB", qranks.QB === 23);
+ok("superflexEligible ['QB'] gives the flex positions nothing",
+   qranks.RB === ranks.RB && qranks.WR === ranks.WR && qranks.TE === ranks.TE);
+// And a league with no superflex slot is byte-identical to before the change.
+ok("no SUPERFLEX key changes nothing",
+   JSON.stringify(E.replacementRanks(ken)) === JSON.stringify(ranks));
+
 console.log("\n== Scoring engine vs Sleeper's own PPR totals (full-PPR preset) ==");
 ["Ja'Marr Chase", "Bijan Robinson", "Drake Maye", "Kenneth Walker", "Tucker Kraft"].forEach(function (n) {
   var pl = find(n), mine = E.customPoints(pl, ppr).total;

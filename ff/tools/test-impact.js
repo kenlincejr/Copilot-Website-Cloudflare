@@ -215,24 +215,31 @@ ok("but the lineup is reported separately", sfRep.shape !== null &&
    sfRep.shape.churn.total > 0);
 ok("the pool grows with the league", sfRep.poolSize === 210, String(sfRep.poolSize));
 
-/* The superflex caveat. replacementRanks() shares out FLEX and ignores
-   SUPERFLEX, so a superflex league's QB replacement level comes out identical
-   to a one-quarterback league's — a real gap, and one this panel has to admit
-   to rather than quietly report a wrong QB number as a finding. If the engine
-   is ever taught to price the slot, this test is the one that should fail and
-   send somebody to delete the caveat. */
-ok("the engine still does not price a superflex slot",
-   E.replacementRanks(sf).QB === sf.teams * sf.roster.QB,
+/* The superflex slot, which the engine used to ignore outright. Two assertions
+   here pinned that gap and a caveat headline admitted to it; both are gone,
+   because replacementRanks() now shares the slot out by SUPERFLEX_SPLIT. In a
+   14-team league that is 14 + 14 x 0.941 = 27.2 -> 27 starting quarterbacks,
+   1.9 a team, and the panel reports it through the same per-team lineup
+   sentence every other roster difference goes through — no special case, and
+   no apology. */
+ok("the engine prices a superflex slot", E.replacementRanks(sf).QB === 27,
    String(E.replacementRanks(sf).QB));
-ok("so the panel says so out loud", /superflex/i.test(joined(sfRep)) &&
-   /does not yet price it/.test(joined(sfRep)));
-ok("a league without one is not warned about it",
-   !/superflex/i.test(joined(ken)));
+ok("a superflex lineup is reported as QB depth, in the ordinary sentence",
+   /QB 1\.9 a team against 1\.0/.test(joined(sfRep)), joined(sfRep));
+ok("and no longer as a caveat about what the board cannot do",
+   !/does not yet price it/.test(joined(sfRep)));
+ok("a one-QB league is not told anything about quarterback depth",
+   !/QB \d\.\d a team against/.test(joined(ken)));
 
 /* Per-team reporting: a 14-team league starts more of everything, and saying
-   so once per position is repeating the team count back six times. */
+   so once per position is repeating the team count back six times. Measured on
+   a league whose only difference IS the team count — sf has a superflex slot,
+   which is a real lineup difference and is supposed to be reported. */
+var big = clone(PRESETS.ppr_standard);
+big.teams = 14;
+var bigRep = I.analyze(DATA.players, big, { rounds: 15 });
 ok("a bigger league alone is not reported as a lineup difference",
-   !/a team against/.test(joined(sfRep)), joined(sfRep));
+   !/a team against/.test(joined(bigRep)), joined(bigRep));
 
 var twoTe = clone(PRESETS.ppr_standard);
 twoTe.roster.TE = 2;

@@ -377,20 +377,6 @@
           deeper.join(", ") + ". Replacement level moves with it, and so does every player's " +
           "value at those positions.");
       }
-
-      /* A superflex slot is the one lineup difference the engine cannot yet
-         price: replacementRanks() shares out the FLEX slot and ignores
-         SUPERFLEX entirely, so a superflex league's quarterback replacement
-         level comes out identical to a one-quarterback league's. Saying
-         nothing would be worse than saying this, because the rest of this panel
-         reads as a complete account of what the lineup does. */
-      if ((rep.roster || {}).SUPERFLEX) {
-        out.push("One caveat this panel will not paper over: your lineup has a superflex slot, " +
-          "and the board does not yet price it. Replacement level at QB is being computed as " +
-          "though there were only " + rep.shape.positions.league.QB.starters + " starting " +
-          "quarterbacks in the league. Quarterbacks are worth materially more than this board " +
-          "says they are — treat every QB number here as a floor.");
-      }
     }
 
     return out;
