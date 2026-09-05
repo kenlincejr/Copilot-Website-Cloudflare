@@ -1098,6 +1098,7 @@ function resetDraft() {
   // budget already gone, so the first stale brief of the night went
   // straight to the "went at pick N" banner without being re-asked.
   briefTries = {};
+  briefWrittenAt = {};
   $("#livePick").value = "";
   save();
   syncKeepers();   // a keeper is roster config, not a pick, so it comes straight back
@@ -4408,6 +4409,11 @@ function askClaude() {
 // survives re-renders, undo and reload without spending again.
 var briefCache = {};   // reassigned wholesale by resetDraft
 var briefTries = {};   // re-asks per pick, so a bad answer cannot bill in a loop
+// The pick count when each brief was written. A brief is asked two picks out
+// and cached against the pick it is FOR, so it stays on screen while the room
+// keeps drafting — and a plan written before two other teams picked reads
+// exactly like one written for the board in front of you.
+var briefWrittenAt = {};
 
 /**
  * The player named in a line of a brief. The prompt asks for the name alone on
@@ -4519,9 +4525,19 @@ function briefQuestion() {
 
 /** On deck is a different moment from on the clock, and saying so costs nothing. */
 function briefEyebrow() {
-  return A.myNext <= A.cur
+  var head = A.myNext <= A.cur
     ? "Claude · on the clock at pick " + A.myNext
     : "Claude · on deck for pick " + A.myNext;
+  // Say how old the plan is. Until briefVoid() lands, a brief is re-asked on
+  // exactly one condition — the player it named being drafted — so it can
+  // outlive its own fallback and a run at the position it argued about and
+  // still be on screen when the clock starts. It should not read as a fresh
+  // decision while that is true.
+  var at = briefWrittenAt[A.myNext];
+  var age = at == null ? 0 : A.cur - at;
+  return age > 0
+    ? head + " · written " + age + " pick" + (age === 1 ? "" : "s") + " ago"
+    : head;
 }
 
 function renderBrief() {
@@ -4543,6 +4559,7 @@ function renderBrief() {
       briefEyebrow() + '</div>' +
       '<div class="claude-out"><span class="spinner"></span> reading the board…</div></div>';
     var forPick = A.myNext;
+    briefWrittenAt[forPick] = A.cur;
     claudeCall(briefQuestion(), null, 2500)
       .then(function (text) { briefCache[forPick] = text; })
       .catch(function (err) { briefCache[forPick] = "!" + err.message; })

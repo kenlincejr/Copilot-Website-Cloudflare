@@ -245,6 +245,9 @@ function loadApp(leagueState, picksState, opts) {
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
     "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
+    "briefEyebrow: briefEyebrow, " +
+    "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
+    "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
     "briefTries: function () { return briefTries; }, " +
     "spendBriefTry: function (n) { briefTries[n] = 2; }, " +
@@ -1016,6 +1019,42 @@ console.log("\n== stillNeedLine ==");
        html.indexOf("sb-need") >= 0 && /WR2/.test(html),
        html.slice(0, 160));
   });
+})();
+
+/* ========================================================================
+   A brief says which pick it was written for, and how old it is
+   ======================================================================== */
+console.log("\n== brief provenance ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), Array.from({ length: 83 },
+    function (_, i) { return { pick: i + 1, name: null, slot: null, mine: false, unknown: true }; }));
+  var A = api.getAnalysis();
+  ok("waiting at 84 for pick 86", A.cur === 84 && A.myNext === 86,
+     "cur " + A.cur + " myNext " + A.myNext);
+
+  // Written for this pick, at this pick: no age to report.
+  api.writeBriefAt(86, 84);
+  ok("a brief written just now says nothing about its age",
+     api.briefEyebrow() === "Claude · on deck for pick 86", api.briefEyebrow());
+
+  // Two picks have gone since it was written. That is the state the header used
+  // to render identically to the one above.
+  api.writeBriefAt(86, 82);
+  ok("a two-pick-old brief says so", /written 2 picks ago/.test(api.briefEyebrow()),
+     api.briefEyebrow());
+  ok("and still names the pick it was written for", /pick 86/.test(api.briefEyebrow()),
+     api.briefEyebrow());
+
+  api.writeBriefAt(86, 83);
+  ok("one pick is singular", /written 1 pick ago/.test(api.briefEyebrow()),
+     api.briefEyebrow());
+
+  // A brief with no recorded write time must not invent an age.
+  api.resetDraft();
+  ok("Start over clears the write times with the briefs",
+     Object.keys(api.briefWrittenAt()).length === 0);
+  ok("and an unknown write time reports no age at all",
+     !/written/.test(api.briefEyebrow()), api.briefEyebrow());
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
