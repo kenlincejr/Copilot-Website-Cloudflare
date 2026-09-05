@@ -1,0 +1,16 @@
+Overall Rank	Name	Pos	Team	Bye	ADP	Std Dev
+1	Jahmyr Gibbs	RB	DET	6	1.6	0.5
+2	Bijan Robinson	RB	ATL	11	2.2	0.6
+
+3	Puka Nacua	WR	LAR	11	3.1	0.9
+4	Ja'Marr Chase	WR	CIN	6	3.6	0.8
+5	Jaxon Smith-Njigba	WR	SEA	11	6.0	1.3
+--- this line is garbage on purpose, to prove the parser skips it instead of crashing ---
+6	Christian McCaffrey	RB	SF	8	9.4	2.1
+7	Amon-Ra St. Brown	WR	DET	6	7.0	1.3
+8	Jonathan Taylor	RB	IND	13	7.9	1.6
+9	De'Von Achane	RB	MIA	6	10.5	1.9
+10	CeeDee Lamb	WR	DAL	14	11.0	1.8
+11	James Cook III	RB	BUF	7	12.8	2.5
+12	Justin Jefferson	WR	MIN	6	11.9	2.0
+13	Marcus Ridgeline	RB	LV	8	14.2	2.3
