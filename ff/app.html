@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260905f">
+<link rel="stylesheet" href="assets/ff.css?v=20260905k">
 </head>
 <body>
 
@@ -25,6 +25,7 @@
         <button class="btn btn-sm" id="btnMore" aria-haspopup="true" aria-expanded="false">More ▾</button>
         <div class="menu hidden" id="moreMenu">
           <button data-more="start">Quick start guide</button>
+          <button data-more="plan">Draft plan</button>
           <button data-more="report">Draft report</button>
           <button data-more="style">Draft style</button>
           <button data-more="cols">Columns</button>
@@ -82,7 +83,6 @@
       <div class="panel-head"><h3 id="recTitle">Best available for you</h3>
         <span class="eyebrow" id="recCtx"></span></div>
       <div id="recs"></div>
-      <div id="detail"></div>
     </div>
 
     <!-- ---------------------------------------------------------- roster -->
@@ -107,10 +107,8 @@
 </div>
 
 <div class="hidden">
-  <input type="number" id="livePick" min="1"><input type="number" id="pickSecs" min="10" max="600">
-  <span id="clockRead"></span>
   <button id="btnLeague"></button><button id="btnReport"></button>
-  <button id="btnStyle"></button><button id="btnCols"></button>
+  <button id="btnStyle"></button><button id="btnCols"></button><button id="btnPlan"></button>
   <button id="btnSetup"></button><button id="btnData"></button><button id="btnOut"></button>
   <button id="btnStart"></button>
 </div>
@@ -431,6 +429,32 @@
 </div></div>
 
 <div id="assignPop" class="hidden"></div>
+<!-- The compact player card. Anchored to a row on hover at a desk, on the first
+     tap on a tablet. Positioned by openPlayerPop(). -->
+<div id="playerPop" class="hidden"></div>
+
+<!-- The full scoring breakdown. It used to live in the middle column and render
+     itself for the top recommendation whether anyone asked or not; on touch it
+     also sat above the live draft box. A modal cannot displace anything. -->
+<div class="modal-bg hidden" id="detailModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Full breakdown</h2>
+      <span class="muted">Every number behind the suggestion, and what your scoring did to it.</span></div>
+    <button class="btn btn-sm" id="detailClose">Close</button>
+  </div>
+  <div id="detail"></div>
+</div></div>
+
+<!-- What this draft probably looks like from your seat, before the first pick.
+     Everything in it is the local simulator; nothing here needs a network. -->
+<div class="modal-bg hidden" id="planModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Your draft plan</h2>
+      <span class="muted">What the board expects to be there at each of your picks.</span></div>
+    <button class="btn btn-sm" id="planClose">Close</button>
+  </div>
+  <div id="planBody"></div>
+</div></div>
 
 <div class="modal-bg hidden" id="beginModal"><div class="modal wide">
   <div class="modal-head">
@@ -566,16 +590,16 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260905f"></script>
-<script src="data/players.js?v=20260905f"></script>
-<script src="assets/presets.js?v=20260905f"></script>
-<script src="assets/engine.js?v=20260905f"></script>
-<script src="assets/impact.js?v=20260905f"></script>
-<script src="assets/auth.js?v=20260905f"></script>
-<script src="assets/sync.js?v=20260905f"></script>
-<script src="assets/parser.js?v=20260905f"></script>
-<script src="assets/draftanalysis.js?v=20260905f"></script>
-<script src="assets/strategies.js?v=20260905f"></script>
+<script src="assets/config.js?v=20260905k"></script>
+<script src="data/players.js?v=20260905k"></script>
+<script src="assets/presets.js?v=20260905k"></script>
+<script src="assets/engine.js?v=20260905k"></script>
+<script src="assets/impact.js?v=20260905k"></script>
+<script src="assets/auth.js?v=20260905k"></script>
+<script src="assets/sync.js?v=20260905k"></script>
+<script src="assets/parser.js?v=20260905k"></script>
+<script src="assets/draftanalysis.js?v=20260905k"></script>
+<script src="assets/strategies.js?v=20260905k"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -583,7 +607,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260905f";
+    s.src = "assets/app.js?v=20260905k";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }

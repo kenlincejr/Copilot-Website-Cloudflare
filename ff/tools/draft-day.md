@@ -184,27 +184,66 @@ Rules for the night:
 
 ---
 
+## 4b. Before the first pick
+
+Pressing **Start draft** opens the draft plan on its own, once. Read it — it is
+sixty seconds and it is the only time it is worth anything.
+
+What to take from it:
+
+- **Why this plan looks like this**, at the top, before the table. In this league
+  the first block is the one that matters: the boosted D/ST points-allowed tiers
+  give DEF **63% more positional edge** than a standard board, which puts the best
+  defense at #22 overall instead of #40. That is why the plan takes one at 83, and
+  it is a real consequence of the rules rather than a quirk of the floor.
+- **The shape.** If the plan comes out RB-heavy and you did not want an RB-heavy
+  draft, the thing to change is the **style**, now, not the pick when it arrives.
+- **Where your first receiver / tight end lands.** That is the round you are
+  actually planning around.
+- **Where it stops being a forecast.** The panel names the round from which no
+  single player holds even a fifth of the simulations. Past that, stop planning
+  and use the live suggestions.
+
+It is forty simulated drafts, not a prophecy. Every name on it carries the share
+of drafts it turned up in, and those percentages are the point.
+
+---
+
 ## 5. Out of step with Yahoo
 
-This is the most likely failure of the night. You are watching Yahoo's screen and
-typing into this one, and typing lags reality by a pick here and there.
+This is the most likely failure of the night, and it is not mistyping a pick — it
+is getting up for five minutes and coming back six picks behind.
 
-**How it shows up.** The status bar's `drift()` check compares the pick number you
-typed into "live pick" against the count this board has recorded. If they disagree,
-the status bar turns amber:
+**There is no clock and no drift alarm.** The board does not watch the real draft
+and never could; it knows what has been typed into it. It used to run a countdown
+started by the last pick recorded here, which was never Yahoo's timer — nobody
+takes their full two minutes and the next team is up the instant the last one
+picks. That is gone, and so is the pick number you had to keep re-typing to feed a
+red warning.
 
-- **You're behind** ("You're N picks behind the real draft") — a **Catch up N picks**
-  button opens the catch-up list, one row per missed pick, in order, each addressed
-  to the team whose slot it was.
-- **You're ahead** (you recorded more than Yahoo has actually made) — an **Undo N**
-  button walks the extra picks back off.
+**How it shows up now.** The bottom band of the live draft box says how long it has
+been since a pick landed on this board. Past eight minutes of silence it turns
+amber — *"Nothing recorded for 14 min — stepped away?"* — and opens itself.
 
-**The rule: when you don't know who went, record "Didn't catch the name."** Both the
-live tracker's own button (next to the record box) and each row of the catch-up list
-support this. Do not guess.
+**The way back, when you sit down again:**
 
-**Why an unknown pick is safe and a wrong guess is not.** Recording "Didn't catch the
-name" spends that team's slot and moves the pick count forward — the count stays
+1. Look at Yahoo. Read the pick number it is on.
+2. Type that number into **Yahoo is on pick** in that band. It answers immediately:
+   *"6 picks to record."*
+3. Press **Catch up 6**. The sheet opens with one row per missed pick, in order,
+   each addressed to the team whose slot it was.
+4. **Fill from ADP** guesses every row from the board's own ADP; fix the ones you
+   know; press **Record these picks**.
+
+If the number you type is *lower* than the board's own count, you have recorded
+something that has not happened. The band says so and points at **Undo** in the app
+bar rather than offering a second button for it.
+
+**The rule: when you don't know who went, record it as unknown.** The tracker's own
+**Missed the name** button — in the "do" band, next to the sentence naming the team
+on the clock — and each row of the catch-up list both do this. Do not guess.
+
+**Why an unknown pick is safe and a wrong guess is not.** Recording a pick as unknown spends that team's slot and moves the pick count forward — the count stays
 right — but leaves the player himself in the pool, available to be recorded
 correctly later if you find out who it was. A guessed name that's wrong does none of
 that safely: it removes the wrong player from the pool, credits him to the wrong
@@ -258,7 +297,7 @@ Keep next to it:
   thinking that slot is open.
 
 If the app comes back mid-draft, everything you drafted on paper goes into
-"Didn't catch the name" / catch-up as unknown picks for the other 11 teams, and by
+"Missed the name" / catch-up as unknown picks for the other 11 teams, and by
 name for your own — never guess a name to save time re-entering it.
 
 ---
@@ -267,7 +306,7 @@ name for your own — never guess a name to save time re-entering it.
 
 1. Do not ship anything after 12:00 without reloading the iPad yourself and telling
    the user to reload theirs. A silent deploy after noon is the same as no deploy.
-2. Do not guess a name you didn't catch. "Didn't catch the name" costs one player.
+2. Do not guess a name you didn't catch. "Missed the name" costs one player.
    A wrong guess costs the whole board.
 3. Do not redeploy the Worker mid-draft to fix an AI problem. The board doesn't need
    it; wait for a gap.

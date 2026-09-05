@@ -237,29 +237,45 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .appbar::-webkit-scrollbar { display: none; }
 .appbar > * { flex: none; }
 .appbar .spacer { flex: 1; }
-.clock {
-  display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px;
+
+/* The roster-gap strip: what you are still drafting for, and nothing else.
+
+   It used to carry the state phrase, the round, the pick, your next pick, four
+   clauses of roster need and a countdown on one horizontally scrolling line. On
+   an iPad that crowded into a ribbon nobody could read, and every fact on it
+   except the need is now in the live draft box a few pixels below. What is left
+   gets to be legible: a label, the open starting slots as chips, and the count
+   of picks left to fill them. It wraps rather than scrolling — a status bar that
+   hides half of itself off the right edge is worse than a taller one. */
+.statusbar {
+  flex: none; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px;
+  padding: 9px 16px; font-size: 13px;
+  background: var(--panel); border-bottom: 1px solid var(--line);
 }
-.clock b { color: var(--teal); font-size: 15px; }
-.onclock {
-  padding: 3px 9px; border-radius: 99px; font-size: 12px; font-weight: 650;
+.statusbar .grow { flex: 1; }
+.sb-k {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--dim); flex: none;
+}
+.sb-chips { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.sb-chip {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700; line-height: 1;
+  padding: 5px 8px; border-radius: 5px;
   background: var(--raised); border: 1px solid var(--line);
 }
-.onclock.me { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.sb-chip.sb-more { color: var(--dim); font-family: inherit; font-weight: 600; }
+.sb-full { color: var(--green); font-weight: 600; }
+.sb-left { color: var(--muted); font-size: 12px; flex: none; }
+.sb-left b { color: var(--text); font-size: 13px; }
 
-/* Draft status strip. The one thing that must be readable from across the room:
-   whether it is your turn, and whether the app still matches the real draft. */
-.statusbar {
-  flex: none; display: flex; align-items: center; gap: 12px;
-  overflow-x: auto; scrollbar-width: none;
-  padding: 9px 16px; font-size: 13px; border-bottom: 1px solid var(--line);
+/* A short-lived message, dropped in under the strip. It used to reuse the
+   strip's own state colours; the strip has none now. */
+.flashbar {
+  flex: none; padding: 9px 16px; font-size: 13px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(45,212,191,.10); color: #ccfbf1;
 }
-.statusbar b { font-size: 15px; }
-.statusbar.up      { background: linear-gradient(90deg, rgba(45,212,191,.22), rgba(45,212,191,.05)); color: #ccfbf1; }
-.statusbar.soon    { background: rgba(245,158,11,.10); color: #fcd34d; }
-.statusbar.waiting { background: var(--panel); color: var(--muted); }
-.statusbar.drift   { background: rgba(248,113,113,.14); color: #fecaca; }
-.statusbar .grow   { flex: 1; }
+.flashbar.warn { background: rgba(245,158,11,.12); color: #fcd34d; }
 
 .catchup-row {
   display: grid; grid-template-columns: 92px 1fr 78px; gap: 10px;
@@ -316,20 +332,6 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .searchrow input { font-size: 15px; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
-/* Draft ticker: round, who is up, who is on deck, and the last few picks. */
-.ticker {
-  flex: none; display: flex; align-items: center; gap: 14px; overflow-x: auto;
-  padding: 7px 16px; font-size: 12.5px; background: var(--panel);
-  border-bottom: 1px solid var(--line); white-space: nowrap;
-}
-.ticker .seg { display: flex; align-items: center; gap: 6px; flex: none; }
-.ticker .seg .k { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-.ticker .seg .v { font-weight: 600; }
-.ticker .seg.me .v { color: var(--teal); }
-.ticker .sep { width: 1px; height: 18px; background: var(--line); flex: none; }
-.ticker .recent { display: flex; gap: 10px; align-items: center; min-width: 0; }
-.ticker .recent .rp { color: var(--muted); flex: none; }
-.ticker .recent .rp .mono { color: var(--dim); font-size: 11px; }
 
 /* player rows */
 .plist { width: 100%; }
@@ -469,6 +471,86 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .rec-foot { display: flex; flex-direction: column; gap: 9px; }
 
 /* Naming the team that took a player, from any row on the board. */
+/* The compact player card: what makes him stand out, anchored to his own row.
+   Same fixed-position, flip-above mechanics as the assign popover. */
+#playerPop {
+  position: fixed; z-index: 210; width: 320px; max-width: calc(100vw - 16px);
+  background: var(--panel); border: 1px solid var(--teal-dim);
+  border-radius: var(--radius-lg); padding: 12px 13px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.6);
+  /* A researched note can run fifty words, and that is the good half of this
+     card — it is why the note is here at all. So the card scrolls rather than
+     the note being cut, and the actions stay pinned to the bottom of it. */
+  max-height: min(72vh, 560px); overflow-y: auto; overscroll-behavior: contain;
+}
+.pp-head { display: flex; align-items: baseline; gap: 7px; margin-bottom: 2px; }
+.pp-name { font-size: 15.5px; font-weight: 650; }
+.pp-sub { font-size: 11px; color: var(--dim); margin-bottom: 10px; }
+
+.pp-tiles { display: flex; gap: 8px; margin-bottom: 10px; }
+.pp-tile {
+  flex: 1; min-width: 0; text-align: center;
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 7px 4px;
+}
+.pp-tile b { display: block; font-size: 17px; font-weight: 700; line-height: 1.1; }
+.pp-tile b.good { color: var(--green); }
+.pp-tile b.warn { color: var(--amber); }
+.pp-tile b.bad  { color: var(--red); }
+.pp-tile b.dim  { color: var(--muted); }
+.pp-tile span {
+  display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--dim); margin-top: 3px;
+}
+
+.pp-market { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--muted); }
+.pp-k {
+  font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
+  flex: none;
+}
+.pp-val { font-size: 12px; margin: 3px 0 9px; }
+.pp-val.good { color: var(--green); font-weight: 600; }
+.pp-val.bad  { color: var(--red); }
+.pp-val.dim  { color: var(--dim); }
+
+/* Every line here is present only because it had something to say. A card that
+   prints eight labels and six em-dashes is worse than one that prints two
+   facts. */
+.pp-lines {
+  border-top: 1px solid var(--line-soft); padding-top: 8px; margin-bottom: 9px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.pp-line { font-size: 12px; line-height: 1.45; padding-left: 10px; position: relative; }
+.pp-line::before {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 4px; height: 4px; border-radius: 50%; background: currentColor;
+}
+.pp-line.good { color: var(--green); }
+.pp-line.warn { color: var(--amber); }
+.pp-line.bad  { color: var(--red); }
+.pp-line.dim  { color: var(--muted); }
+
+.pp-why {
+  font-size: 12px; color: var(--muted); font-style: italic;
+  border-left: 2px solid var(--teal-dim); padding-left: 8px; margin-bottom: 10px;
+}
+.pp-taken {
+  font-size: 12px; color: var(--dim); background: var(--panel-2);
+  border-radius: var(--radius); padding: 8px 10px; margin-bottom: 10px;
+}
+.pp-acts {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  position: sticky; bottom: -12px;
+  margin: 0 -13px -12px; padding: 8px 13px 12px;
+  background: var(--panel);
+}
+.pp-acts .btn { flex: 1 1 auto; }
+@media (hover: none) {
+  #playerPop { width: 340px; }
+  .pp-acts .btn { min-height: 44px; }
+  .pp-line, .pp-market, .pp-val, .pp-why { font-size: 13px; }
+}
+
 #assignPop {
   position: fixed; z-index: 200; width: 268px; max-width: calc(100vw - 16px);
   background: var(--panel); border: 1px solid var(--line);
@@ -712,17 +794,17 @@ body.touch .filters .pill { flex: none; }
    land off the bottom of an iPad. Order, not a DOM move: desktop keeps the
    markup and the reading order it has. */
 body.touch .col-rec { display: flex; flex-direction: column; }
-/* The clock outranks everything else in this column. #detail was floated to
-   the top so a tapped player's draft buttons were reachable without
-   scrolling, and with a tall card — a scoring breakdown runs eight rows —
-   that buried "You're on the clock", the pick count, the record box and the
-   on-deck list underneath it. The one panel you must never have to hunt for
-   while a timer runs is the one telling you the timer is running.
+/* The live draft box leads this column and nothing may get above it.
 
-   So the tracker leads and the card follows it. The draft buttons are still
-   the second thing in the column, above the brief and the suggestions. */
+   The scoring breakdown used to, and that was the whole problem: it carried
+   order:-1 so a tapped player's draft buttons were reachable without scrolling,
+   and a card eight rows tall then buried the box, the brief and the
+   suggestions underneath it. Tapping a player to look at him cost you the panel
+   you draft from.
+
+   The breakdown is a modal now, and the compact card is anchored to the row
+   itself, so neither is in this column at all and neither needs an order. */
 body.touch .col-rec > #tracker { order: -2; }
-body.touch .col-rec > #detail { order: -1; }
 
 body.touch .detail-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
 body.touch .detail-acts .btn { flex: 1 1 auto; min-height: 44px; font-size: 13px; }
@@ -837,7 +919,11 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
 .tg-bp { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
 .tg-bp .pos { margin-right: 3px; font-style: normal; }
 
-/* ------------------------------------------------------ live draft tracker */
+/* ------------------------------------------------------ live draft tracker
+
+   Four bands: head, do, order, sync. The panel is read at arm's length on a
+   tablet while a clock runs, so the rules here are about hierarchy rather than
+   decoration — exactly one thing is the loudest, and it is the next action. */
 
 .tracker {
   border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -848,48 +934,124 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
   background: linear-gradient(180deg, rgba(45,212,191,.10), var(--panel) 70%);
 }
 .tracker.done { opacity: .8; }
-/* "You're on the clock" and four buttons do not fit across a 230px column, and
-   the flex default broke the sentence over three lines rather than moving the
-   buttons. The title never wraps now; the controls drop to their own line when
-   there is no room for them beside it. */
+
+/* head ------------------------------------------------------------------- */
 .tk-head {
-  display: flex; align-items: baseline; flex-wrap: wrap;
-  gap: 6px 10px; margin-bottom: 10px; padding-bottom: 8px;
-  border-bottom: 1px solid var(--line-soft);
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 4px 10px; margin-bottom: 2px;
 }
-.tk-head b { font-size: 15px; white-space: nowrap; flex: 1 1 auto; }
+.tk-head b { font-size: 17px; letter-spacing: -.01em; flex: 1 1 auto; min-width: 0; }
+.tracker.up .tk-head b { color: var(--teal); }
+.tk-ctl { display: flex; gap: 2px; flex: 0 0 auto; margin-left: auto; }
+.tk-ctl .btn { padding: 3px 9px; font-size: 11px; }
+.tk-sub { font-size: 11.5px; color: var(--dim); line-height: 1.5; }
 
-.tk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px 10px; }
-.tk-grid > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.tk-grid .k {
-  font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
+/* How far through the whole draft, as a line rather than a sentence. */
+.tk-bar {
+  height: 3px; border-radius: 2px; background: var(--line);
+  margin: 8px 0 10px; overflow: hidden;
 }
-.tk-grid .v {
-  font-size: 13px; font-weight: 600;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.tk-bar i { display: block; height: 100%; background: var(--teal-dim); border-radius: 2px; }
+.tk-sim {
+  font-size: 11px; color: var(--amber); margin: -4px 0 9px;
 }
-.tk-grid .v.me { color: var(--teal); }
 
-.tk-entry { display: flex; gap: 6px; margin: 11px 0 8px; }
-.tk-entry input { font-size: 14px; }
+/* The destructive controls, folded behind the ⋯ so a thumb cannot find Start
+   over while reaching for Pause. */
+.tk-over {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 9px 10px; margin-bottom: 10px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.tk-overnote { flex: 1 1 100%; font-size: 11px; color: var(--dim); line-height: 1.5; }
+
+/* do — the one next action ------------------------------------------------ */
+.tk-do {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 11px; margin-bottom: 10px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel-2);
+}
+.tk-do > div { flex: 1 1 150px; min-width: 0; }
+.tk-do b { display: block; font-size: 13.5px; font-weight: 650; }
+.tk-do span { display: block; font-size: 11.5px; color: var(--dim); margin-top: 2px; line-height: 1.45; }
+.tk-do .btn { flex: 0 0 auto; }
+.tk-do.me { border-color: var(--teal-dim); background: rgba(45,212,191,.09); }
+.tk-do.me b { color: var(--teal); }
+.tk-do.bad { border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.11); }
+.tk-do.bad b { color: #fecaca; }
+.tk-do.bad span { color: #fca5a5; opacity: .85; }
+
+/* order — three picks ahead, the clock, four behind ----------------------- */
+.tk-order { margin-bottom: 10px; }
+.tk-row {
+  display: grid; grid-template-columns: 30px minmax(52px, 88px) 1fr; gap: 9px;
+  align-items: baseline; padding: 3px 0; font-size: 12.5px;
+}
+.tk-row .tk-n { font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: right; }
+.tk-row .tk-t { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-row .tk-w { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-row.mine .tk-t, .tk-row.mine .tk-n { color: var(--teal-dim); }
+.tk-row.mine .tk-w { color: var(--teal); }
+
+/* Upcoming picks are the faintest thing on the panel: they are context, not
+   news. Nothing has happened at them yet. */
+.tk-row.up { opacity: .55; }
+.tk-row.up.mine { opacity: 1; }
+
+/* The pick on the clock is the hinge the rest of the list hangs off, so it is
+   the only row with a background. Above it is the future, below it the record. */
+.tk-row.now {
+  background: var(--raised); border-radius: 6px; padding: 6px 8px; margin: 3px -8px;
+  font-weight: 650;
+}
+.tk-row.now .tk-t { color: var(--text); }
+.tk-row.now .tk-w { color: var(--dim); font-weight: 400; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .06em; }
+.tk-row.now.mine { background: rgba(45,212,191,.14); }
+.tk-row.now.mine .tk-t, .tk-row.now.mine .tk-n { color: var(--teal); }
+.tk-row.past .tk-w { color: var(--text); }
+.tk-row.past.mine .tk-w { color: var(--teal); }
+.tk-kp {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--amber); margin-right: 4px;
+}
+
+/* keep — the step-away band ---------------------------------------------- */
+.tk-keep { border-top: 1px solid var(--line-soft); padding-top: 6px; }
+.tk-keepbtn {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  background: none; border: 0; padding: 4px 0; cursor: pointer;
+  font: inherit; font-size: 11.5px; color: var(--dim); text-align: left;
+}
+.tk-keepbtn .tk-keepnote { flex: 1; min-width: 0; }
+.tk-keepbtn .tk-chev { color: var(--dim); font-size: 10px; }
+.tk-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex: none; background: var(--line);
+}
+/* Amber, not red. Being away from the screen for ten minutes is a normal thing
+   to have done, not an error state — the band is asking a question, not raising
+   an alarm. */
+.tk-keep.stale .tk-keepbtn { color: var(--amber); }
+.tk-keep.stale .tk-dot { background: var(--amber); }
+.tk-keepbody {
+  display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;
+  padding: 8px 0 2px;
+}
+.tk-keephint { flex: 1 1 100%; font-size: 11.5px; color: var(--dim); line-height: 1.5; }
+.tk-keephint b { color: var(--text); font-family: var(--mono); }
+.tk-keepmsg { flex: 1 1 100%; font-size: 11.5px; color: var(--muted); }
+.tk-keepmsg.ok { color: var(--green); }
+.tk-keepmsg.warn { color: var(--amber); }
+.tk-field { display: flex; flex-direction: column; gap: 2px; }
+.tk-field label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--dim); margin: 0;
+}
+.tk-field input { width: 96px; padding: 6px 8px; font-size: 14px; text-align: center; }
+
+/* The done / stopped panel still uses this row of buttons. */
+.tk-entry { display: flex; gap: 6px; margin: 11px 0 8px; flex-wrap: wrap; }
 .tk-entry button { flex: none; }
-
-.tk-drift {
-  font-size: 12px; color: #fecaca; background: rgba(248,113,113,.13);
-  border-radius: var(--radius); padding: 6px 9px; margin-bottom: 8px;
-  display: flex; align-items: center; gap: 8px; justify-content: space-between;
-}
-.tk-ok { font-size: 11.5px; color: var(--dim); margin-bottom: 8px; }
-
-.tk-recent { border-top: 1px solid var(--line-soft); padding-top: 7px; }
-.tk-pick {
-  display: grid; grid-template-columns: 32px 96px 1fr; gap: 8px;
-  font-size: 12px; padding: 2px 0; color: var(--muted); align-items: baseline;
-}
-.tk-pick .mono { color: var(--dim); }
-.tk-pick .tk-team { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tk-pick.mine { color: var(--teal); }
-.tk-pick.mine .tk-team { color: var(--teal-dim); }
 
 /* Team name entry sits in the roster card header, where you look for it. */
 .tc-name {
@@ -918,11 +1080,6 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
 .modecard li.up   { color: var(--muted); }
 .modecard li.down { color: var(--dim); }
 .modecard li.down::marker { color: var(--amber); }
-
-/* Tracker controls */
-.tk-ctl { display: flex; gap: 2px; flex: 0 0 auto; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
-.tk-ctl .btn { padding: 3px 8px; font-size: 11px; }
-.tk-count { font-size: 11px; margin: -6px 0 9px; }
 
 /* Column glossary */
 .legendrow {
@@ -996,50 +1153,16 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
 .menu .menu-sub { color: var(--dim); font-size: 11px; }
 .menu-sep { height: 1px; background: var(--line); margin: 5px 0; }
 
-.statusbar b { font-size: 15px; }
-.statusbar .sb-sub { color: inherit; opacity: .72; font-size: 12.5px; }
-/* What is still missing, printed where the user is already looking. It sits
-   at full opacity because it is the one thing on this bar that is an
-   instruction rather than a description of where the draft is. */
-.statusbar .sb-need { opacity: 1; font-weight: 600; white-space: nowrap; }
-.sb-clock { display: flex; align-items: baseline; gap: 7px; flex: none; }
-.sb-clock b { font-family: var(--mono); font-size: 17px; }
-.sb-clock b.red { color: var(--red); }
-.sb-clock b.amber { color: var(--amber); }
-.sb-clock .sb-lbl { font-size: 11px; opacity: .7; }
 
-/* Tracker: the moved sync fields and the tap-to-pick suggestion list. */
-.tk-mini {
-  display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap;
-  margin: 2px 0 9px;
-}
-.tk-field { display: flex; flex-direction: column; gap: 2px; }
-.tk-field label {
-  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
-  color: var(--dim); margin: 0;
-}
-.tk-field input { width: 74px; padding: 6px 8px; font-size: 14px; text-align: center; }
-
-.tk-suggest {
-  border: 1px solid var(--teal-dim); border-radius: var(--radius);
-  background: var(--panel-2); margin-bottom: 9px; overflow: hidden;
-}
-.tk-suggest button {
-  display: grid; grid-template-columns: 30px 1fr auto; gap: 9px; align-items: center;
-  width: 100%; background: none; border: 0; color: var(--text); font: inherit;
-  text-align: left; padding: 11px 10px; cursor: pointer; min-height: 44px;
-}
-.tk-suggest button + button { border-top: 1px solid var(--line-soft); }
-.tk-suggest button:hover, .tk-suggest button:active { background: var(--raised); }
 
 /* iPad: kill the 300ms double-tap delay on anything tappable, and stop iOS
    trying to select text when someone taps a row quickly. */
 button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
-.menu button, .tk-suggest button {
+.menu button {
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(45,212,191,.14);
 }
-.prow, .pill, .menu button, .tk-suggest button { -webkit-user-select: none; user-select: none; }
+.prow, .pill, .menu button { -webkit-user-select: none; user-select: none; }
 
 @media (hover: none) {
   /* Apple's 44px floor, applied where it was not already met. */
@@ -1047,13 +1170,118 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
   .btn-sm { padding: 10px 13px; }
   .tk-ctl .btn { min-height: 40px; padding: 8px 11px; font-size: 12px; }
   .tk-field input { width: 88px; padding: 10px 8px; }
+  /* The box is read at arm's length on a tablet. Everything in it that carries
+     a fact rather than a label goes up a size, and the fold toggles get a row
+     a thumb can actually land on. */
+  .tk-head b { font-size: 19px; }
+  .tk-sub { font-size: 12.5px; }
+  .tk-do b { font-size: 15px; }
+  .tk-do span { font-size: 12.5px; }
+  .tk-row { font-size: 14px; padding: 5px 0; }
+  .tk-row .tk-n { font-size: 12px; }
+  .tk-row.now { padding: 8px 8px; }
+  .tk-keepbtn { min-height: 44px; font-size: 12.5px; }
   .modal { padding: 18px 16px; }
   .modal-bg { padding: 3vh 10px; }
   /* A modal has to be able to scroll to its own buttons on a short landscape
      screen, and momentum scrolling makes that feel native. */
   .modal { max-height: 94vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .statusbar { padding: 11px 16px; }
-  .sb-clock b { font-size: 19px; }
+  .statusbar { padding: 11px 16px; font-size: 14px; }
+  .sb-chip { font-size: 12.5px; padding: 7px 10px; }
+}
+
+/* ------------------------------------------------------------- draft plan
+
+   A distribution, printed as a table. The percentages are the point: they are
+   what keeps this a forecast rather than a promise, so they are never smaller
+   than the thing they qualify by more than a step. */
+.pl-head {
+  display: flex; flex-wrap: wrap; gap: 10px 22px;
+  padding: 11px 13px; margin-bottom: 12px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.pl-head > div { display: flex; flex-direction: column; gap: 2px; }
+.pl-k {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim);
+}
+.pl-head b { font-size: 14px; font-weight: 650; }
+
+.pl-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pl-tbl th {
+  text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--dim); font-weight: 600; padding: 0 8px 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.pl-tbl td { padding: 7px 8px 7px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.pl-tbl .pl-r { font-weight: 700; width: 34px; }
+.pl-tbl .pl-p { font-family: var(--mono); color: var(--dim); width: 42px; }
+.pl-tbl .pl-pos { width: 130px; white-space: nowrap; }
+.pl-pct { color: var(--dim); font-size: 11px; font-family: var(--mono); margin-left: 5px; }
+.pl-alt { color: var(--dim); font-size: 11px; margin-left: 8px; }
+.pl-names { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.pl-nm { white-space: nowrap; color: var(--muted); }
+.pl-nm:first-child { color: var(--text); font-weight: 600; }
+.pl-keeper td { color: var(--dim); }
+.pl-kept {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--amber); margin-right: 5px;
+}
+
+/* Why the plan is the shape it is: scoring, seat, style, floors. This sits
+   above the table because it is the half a manager actually needs at 19:40 —
+   knowing you are taking a defense in round 7 is useless without knowing why. */
+.pl-why { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.pl-w {
+  padding: 11px 12px; border-radius: var(--radius);
+  background: var(--panel-2); border: 1px solid var(--line); border-left-width: 2px;
+}
+.pl-w p { margin: 0 0 6px; font-size: 12px; line-height: 1.55; color: var(--muted); }
+.pl-w p:last-child { margin-bottom: 0; }
+.pl-wh {
+  font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pl-w.pl-scoring { border-left-color: var(--violet); }
+.pl-w.pl-scoring .pl-wh { color: var(--violet); }
+.pl-w.pl-seat { border-left-color: var(--teal-dim); }
+.pl-w.pl-seat .pl-wh { color: var(--teal); }
+.pl-w.pl-style { border-left-color: var(--blue); }
+.pl-w.pl-style .pl-wh { color: var(--blue); }
+.pl-w.pl-floor { border-left-color: var(--amber); }
+.pl-w.pl-floor .pl-wh { color: var(--amber); }
+
+/* The engine's own account of a pick, under the names it chose between. */
+.pl-why-l {
+  display: block; width: 100%; margin-top: 3px;
+  font-size: 11px; color: var(--dim); line-height: 1.45;
+}
+
+.pl-fill { display: flex; flex-wrap: wrap; gap: 6px; }
+.pl-f {
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 12px; color: var(--muted);
+  padding: 6px 10px; border-radius: var(--radius);
+  background: var(--panel-2); border: 1px solid var(--line);
+}
+.pl-f.have { border-color: var(--teal-dim); color: var(--teal); }
+.pl-f.none { opacity: .5; }
+
+.pl-foot { font-size: 11.5px; color: var(--dim); line-height: 1.6; margin-top: 10px; }
+.pl-foot b { color: var(--muted); }
+.pl-notes { display: flex; flex-direction: column; gap: 8px; }
+.pl-note {
+  font-size: 12.5px; line-height: 1.6; color: var(--muted);
+  padding: 9px 11px; background: var(--panel-2);
+  border: 1px solid var(--line); border-left-width: 2px; border-radius: var(--radius);
+}
+.pl-note.pl-shape   { border-left-color: var(--teal-dim); }
+.pl-note.pl-settled { border-left-color: var(--green); }
+.pl-note.pl-open    { border-left-color: var(--amber); }
+.pl-note.pl-scoring { border-left-color: var(--violet); }
+
+@media (max-width: 620px) {
+  .pl-tbl .pl-pos { width: auto; }
+  .pl-tbl, .pl-tbl td { font-size: 12.5px; }
 }
 
 /* Mock drafts */

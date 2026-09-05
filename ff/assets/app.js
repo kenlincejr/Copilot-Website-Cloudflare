@@ -64,6 +64,15 @@ DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
  */
 function isLive() { return (S.league.mode || "live") !== "solo"; }
 
+/**
+ * Whether the live draft box is on screen. renderStatus uses it to stay out of
+ * the box's way: the two panels sit within an inch of each other and every fact
+ * printed in both of them is one the reader has to check twice.
+ */
+function trackerShowing() {
+  return isLive() && !!(S.draftStarted || S.picks.length);
+}
+
 /** Same normalization the bake uses, so the two name spaces line up. */
 function normName(n) {
   return String(n || "").toLowerCase()
@@ -129,6 +138,12 @@ function load() {
     // without one is not a draft. Start fresh rather than take an undefined
     // into the first render and die there.
     if (!o || !o.league || !o.league.teams || !Array.isArray(o.picks)) return null;
+    // The per-pick countdown is gone, and so is the pause that went with it. All
+    // that is kept from it is the one fact it was ever built on: when the last
+    // pick was recorded. Drafts saved before this carry the old field names.
+    if (o.lastPickAt == null && o.pickStartedAt != null) o.lastPickAt = o.pickStartedAt;
+    delete o.pickStartedAt; delete o.paused; delete o.pausedAt;
+    if (o.league) delete o.league.pickSeconds;
     return o;
   }
   catch (e) { return null; }
@@ -136,9 +151,9 @@ function load() {
 function save() {
   var raw = JSON.stringify({
     league: S.league, picks: S.picks,
-    draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
-    paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated,
-    practice: S.practice,
+    draftStarted: S.draftStarted, startedAt: S.startedAt, lastPickAt: S.lastPickAt,
+    draftEnded: S.draftEnded, simulated: S.simulated,
+    practice: S.practice, planShown: S.planShown,
     reportShown: S.reportShown
   });
   try { localStorage.setItem(KEY_STATE, raw); }
@@ -254,21 +269,11 @@ function record(name, mine, quiet) {
                  slot: isMine ? S.league.slot : o.slot, mine: isMine,
                  unknown: name === null });
   syncKeepers();
-  bumpLivePick();
-  S.pickStartedAt = Date.now();
+  S.lastPickAt = Date.now();
   save();
   if (!quiet) render();
 }
 
-/**
- * The live-pick field is a checkpoint the user types, not a running counter. Once
- * our own count passes it, carry it forward — otherwise recording your own pick
- * would immediately read as "you have recorded more picks than have happened".
- */
-function bumpLivePick() {
-  var box = $("#livePick"), live = parseInt(box.value, 10);
-  if (live && currentPick() > live) box.value = currentPick();
-}
 function undo() {
   var popped = null, guard = 0;
   while (S.picks.length && guard++ < 50) {
@@ -427,9 +432,9 @@ function render() {
   A = analyze();
 
   // Pick number, round, who is on the clock and your next pick used to be
-  // repeated in the app bar, the status strip, the ticker and the tracker.
-  // The status strip carries the state, the tracker carries the detail, and
-  // the bar is identity and actions only.
+  // repeated in the app bar, the status strip and the tracker. The live draft
+  // box carries all of it now; the strip carries the roster gap and nothing
+  // else; the bar is identity and actions only.
   var total = S.league.teams * S.league.rounds;
 
   renderStatus();
@@ -443,7 +448,11 @@ function render() {
   renderColumnHeads();
   renderFilters(); renderList(); renderRecs(); renderRoster(); renderTurn(); renderBrief();
   renderSchedule(); renderLog(); renderRunBanner(); renderTracker();
-  if (view.selected) renderDetail(view.selected);
+  // The breakdown modal, when it happens to be open on a player, is kept live —
+  // recording a pick while it is open should not leave stale numbers on screen.
+  if (view.selected && !$("#detailModal").classList.contains("hidden")) {
+    renderDetail(view.selected);
+  }
   maybeOpenReport(total);
 }
 
@@ -469,19 +478,12 @@ function maybeOpenReport(total) {
 
 /* --------------------------------------------------- draft status + sync */
 
-/**
- * The board silently computes survival, VONA and the brief against whatever
- * pick number it thinks the draft is on. If the user misses a few opponent
- * picks, every one of those numbers is wrong and nothing says so. `livePick` is
- * the user's report of where the real draft actually is; the gap between that
- * and our own count is the only reliable drift signal available without a live
- * feed, so it gets the loudest element on the page.
- */
-function drift() {
-  var live = parseInt($("#livePick").value, 10);
-  if (!live || live < 1) return null;
-  return live - A.cur;                       // >0 = we are behind reality
-}
+/* Drift detection used to live here: a pick number the user re-typed every
+   round so the board could turn red when the two disagreed. It only ever worked
+   if it was fed, and feeding it is the exact chore a person sitting in a live
+   draft will not do. What replaced it is `sinceLastPick()` below — a fact the
+   board already owns — and a catch-up sheet the user opens on purpose when they
+   sit back down. See renderTracker's "keeping up" band. */
 
 /**
  * The starting lineup as labeled slots, with who is in each and whether an
@@ -520,108 +522,111 @@ function openStartingSlots() {
 }
 
 /**
- * What is still missing, in words, for the status strip.
+ * What is still missing from the starting lineup, as data rather than a
+ * sentence.
  *
- * positionalNeed() has computed this on every render since the beginning and
- * the strip never printed it. In the round-8 screenshot the answer was "WR2 and
- * K" and nothing on screen said so — it had to be read off the roster panel one
- * slot at a time, while the clock ran.
+ * It used to be prose, and the prose was the whole problem with the strip:
+ * "still need RB1, RB2, WR1 +3 more · K from round 14, DEF from round 7 · 14
+ * picks left" is four separate ideas competing for one line, and on an iPad it
+ * crowded into an unreadable ribbon. The strip prints the open slots as chips
+ * now, capped, and nothing else.
+ *
+ * The floors — a kicker that cannot be taken until round 14 — are deliberately
+ * dropped here rather than shortened. They are a promise about later, not
+ * something to act on this pick, and the roster panel already shows K 0/1.
  *
  * Deliberately not built from need[pos].short: that is
  * max(0, want - got) + flexOpen * FLEX_SPLIT[pos], a fraction, and "you still
- * need WR 1.4" is not a sentence. The slots themselves are the honest source.
+ * need WR 1.4" is not a thing to put in front of anyone. The slots themselves
+ * are the honest source.
  */
-function stillNeedLine() {
-  if (!A.myNext) return "";
-  var slots = startingSlots();
-  var open = [], later = [];
-  slots.forEach(function (s) {
-    if (s.player) return;
-    if (s.blocked) later.push(s.label + " from round " + s.floor);
-    else open.push(s.label);
+function needSummary() {
+  if (!A.myNext) return null;
+  var open = [];
+  startingSlots().forEach(function (sl) {
+    if (!sl.player && !sl.blocked) open.push(sl.label);
   });
-  var picks = (A.upcoming || []).length;
-  var parts = [];
-  if (open.length) {
-    // The bar scrolls horizontally rather than wrapping, and the pick clock
-    // lives at the far end of it. Four or more open slots is early enough in a
-    // draft that naming them all costs the clock its place on a 744px screen,
-    // and the count is the useful half of that sentence anyway.
-    parts.push("still need " + (open.length > 3
-      ? open.slice(0, 3).join(", ") + " +" + (open.length - 3) + " more"
-      : open.join(", ")));
-  } else if (!later.length) {
-    parts.push("every starter filled");
-  }
-  if (later.length) parts.push(later.join(", "));
-  if (open.length && picks) {
-    parts.push(picks + " pick" + (picks === 1 ? "" : "s") + " left");
-  }
-  return parts.join(" · ");
+  return { open: open, picks: (A.upcoming || []).length,
+           filled: open.length === 0 };
 }
 
+/**
+ * How long since a pick was recorded on this board.
+ *
+ * This is the honest remainder of the pick clock. That clock counted down from
+ * the league's pick length, started by the last pick recorded here — so it was
+ * never Yahoo's timer, and it could not be: nobody takes their full two minutes
+ * and the next team is on the clock the instant the last one picks. It was
+ * precision the board did not have.
+ *
+ * What the same timestamp does support is the question actually worth asking on
+ * draft night: have I stepped away and missed a run of picks? Ten minutes of
+ * silence on a board that is being kept by hand means yes.
+ */
+function sinceLastPick() {
+  if (!S.lastPickAt) return null;
+  var mins = Math.floor((Date.now() - S.lastPickAt) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + " min ago";
+  var hrs = Math.floor(mins / 60);
+  return hrs + " hr " + (mins % 60) + " min ago";
+}
+
+/**
+ * The strip under the app bar: what you are still drafting for, and nothing
+ * else.
+ *
+ * It used to carry the state phrase, the round, the pick, your next pick, four
+ * clauses of roster need and a countdown, all on one scrolling line. Every one
+ * of those except the need is now in the live draft box, twenty pixels below
+ * it, said better. What is left is the one thing the box does not say and the
+ * roster panel says too far away to glance at: the holes in your starting
+ * lineup, as chips, with how many picks you have left to fill them.
+ */
 function renderStatus() {
   var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
+
   // The way in stays visible until a draft is actually running, and comes back
   // the moment one is reset — it is how you reach the practice run.
   $("#btnBegin").classList.toggle("hidden", !!S.draftStarted);
   $("#btnLeague").classList.toggle("hidden", !isLive());
 
-  if (A.cur > total) {
-    el.className = "statusbar waiting";
-    el.innerHTML = "<b>Draft complete.</b> <span class='grow'></span>" +
-      "<span>15 rounds recorded. Export from Save / load if you want a copy.</span>";
+  var need = A.myNext ? needSummary() : null;
+
+  // Before a draft is running, and after it is over, there is nothing to be
+  // drafting for. An empty bar is better than a bar saying nothing.
+  if (!need || A.cur > total) { el.className = "statusbar hidden"; el.innerHTML = ""; return; }
+
+  el.className = "statusbar";
+  if (need.filled) {
+    el.innerHTML = '<span class="sb-k">roster</span>' +
+      '<span class="sb-full">Every starter filled</span>' +
+      "<span class='grow'></span>" + sbPicksLeft(need);
     return;
   }
 
-  var d = drift();
-  if (d !== null && d !== 0) {
-    var behind = d > 0;
-    el.className = "statusbar drift";
-    el.innerHTML =
-      "<b>" + (behind ? "You're " + d + " pick" + (d === 1 ? "" : "s") + " behind the real draft"
-                      : "You've recorded " + (-d) + " more pick" + (d === -1 ? "" : "s") + " than have happened") +
-      "</b><span class='grow'></span>" +
-      (behind
-        ? "<span>Suggestions still count those players as available.</span>" +
-          '<button class="btn btn-sm btn-primary" id="btnCatchup">Catch up ' + d +
-            " pick" + (d === 1 ? "" : "s") + "</button>"
-        : '<button class="btn btn-sm" id="btnUndoDrift">Undo ' + (-d) + "</button>");
-    if (behind) $("#btnCatchup").onclick = openCatchup;
-    else $("#btnUndoDrift").onclick = function () { for (var i = 0; i < -d; i++) undo(); };
-    return;
-  }
-
-  var gap = A.myNext ? A.myNext - A.cur : null;
-  var clock = '<span class="sb-clock" id="sbClock"></span>';
-  // Built once, printed by every branch below that describes a live draft. Not
-  // by the drift branch, which is a warning and must not be diluted, and not by
-  // "draft complete", which needs nothing.
-  var sn = stillNeedLine();
-  var need = sn ? '<span class="sb-sub sb-need">' + esc(sn) + "</span>" : "";
-
-  if (gap === 0) {
-    el.className = "statusbar up";
-    el.innerHTML = "<b>You're on the clock</b>" +
-      '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round + "</span>" +
-      need + "<span class='grow'></span>" + clock;
-  } else if (gap !== null && gap <= 3) {
-    el.className = "statusbar soon";
-    el.innerHTML = "<b>" + gap + " pick" + (gap === 1 ? "" : "s") + " until you're up</b>" +
-      '<span class="sb-sub">you pick at ' + A.myNext + " · round " + A.ctx.round + "</span>" +
-      need + "<span class='grow'></span>" + clock;
-  } else {
-    el.className = "statusbar waiting";
-    el.innerHTML = "<b>" + (isLive() ? esc(teamLabel(A.onClock.slot)) + " on the clock"
-                                     : "Pick " + A.cur) + "</b>" +
-      '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round +
-        (A.myNext ? " · you pick at " + A.myNext : "") + "</span>" +
-      need + "<span class='grow'></span>" + clock;
-  }
-  tickClock();
+  // Four chips is what fits beside the label and the pick count on an iPad in
+  // portrait, measured. Past that the count is the useful half of the sentence
+  // anyway, and the roster panel has the full list.
+  var CAP = 4;
+  var shown = need.open.slice(0, CAP);
+  var rest = need.open.length - shown.length;
+  el.innerHTML =
+    '<span class="sb-k">still need</span>' +
+    '<span class="sb-chips">' +
+      shown.map(function (lbl) {
+        return '<span class="sb-chip pos-' + lbl.replace(/\d+$/, "") + '">' + esc(lbl) + "</span>";
+      }).join("") +
+      (rest ? '<span class="sb-chip sb-more" title="' + esc(need.open.join(", ")) + '">+' +
+        rest + "</span>" : "") +
+    "</span>" +
+    "<span class='grow'></span>" + sbPicksLeft(need);
 }
 
-$("#livePick").addEventListener("input", renderStatus);
+function sbPicksLeft(need) {
+  return '<span class="sb-left"><b>' + need.picks + "</b> pick" +
+    (need.picks === 1 ? "" : "s") + " left</span>";
+}
 
 /* ------------------------------------------------- start, or practice first
 
@@ -677,11 +682,9 @@ function startLive(practice) {
   // tracker has no other way to know it is not wanted on the night.
   S.practice = !!practice;
   S.startedAt = Date.now();
-  S.pickStartedAt = Date.now();
-  if (!S.league.pickSeconds) { S.league.pickSeconds = 120; $("#pickSecs").value = 120; }
+  S.lastPickAt = Date.now();
   save();
-  $("#livePick").value = String(currentPick());
-  render(); tickClock();
+  render();
   closeModal("#beginModal");
   if (practice) {
     if (myTurn() || (A.myNext && A.myNext === A.cur)) {
@@ -691,8 +694,15 @@ function startLive(practice) {
       simulateToMyPick();
     }
   } else {
-    var w = $("#tkWho"); if (w) w.focus();
-    banner("Draft tracker is live. Record every pick as it happens and the board stays honest.");
+    banner("Draft tracker is live. Tap a player as each pick goes in — " +
+      "twice on a tablet — and the board stays honest.");
+  }
+  // The plan is worth most in the sixty seconds before the first pick, which is
+  // exactly when nobody thinks to go looking for it in a menu. Shown once per
+  // draft, on the way in, and reachable from More afterwards.
+  if (!S.planShown) {
+    S.planShown = true; save();
+    setTimeout(openDraftPlan, 400);
   }
 }
 
@@ -705,8 +715,16 @@ $("#beginLive").addEventListener("click", function () { startLive(false); });
 
 /* ------------------------------------------------------------- catch-up */
 
-function openCatchup() {
-  var d = drift(); if (!d || d < 1) return;
+/**
+ * The way back from stepping away: one row per pick this board has not got,
+ * in order, each addressed to the team whose slot it was.
+ *
+ * It takes the count from its caller now rather than reading a drift signal of
+ * its own. There is no drift signal any more — the board does not watch the
+ * real draft, it is told about it, once, by someone who has just sat back down.
+ */
+function openCatchup(d) {
+  if (!d || d < 1) return;
   var pool = A.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
   var rows = [], used = {};
   for (var i = 0; i < d; i++) {
@@ -762,95 +780,23 @@ function openCatchup() {
   openModal("#catchupModal");
 }
 $("#catchupClose").addEventListener("click", function () { closeModal("#catchupModal"); });
+$("#btnPlan").addEventListener("click", openDraftPlan);
+$("#planClose").addEventListener("click", function () { closeModal("#planModal"); });
+$("#detailClose").addEventListener("click", function () { closeModal("#detailModal"); });
 
 /** A short-lived message under the status bar, for things worth reading once. */
 function banner(msg, isWarn) {
   var el = document.createElement("div");
-  el.className = "statusbar " + (isWarn ? "drift" : "soon");
+  // It used to borrow the strip's own state colors. The strip has no state
+  // colors any more — it is one quiet line about the roster — so the banner
+  // carries its own.
+  el.className = "flashbar" + (isWarn ? " warn" : "");
   el.innerHTML = "<span>" + esc(msg) + "</span>";
   $("#statusBar").insertAdjacentElement("afterend", el);
   setTimeout(function () { el.remove(); }, 9000);
 }
 
-/* ------------------------------------------------- ticker and pick clock */
-
-/**
- * Round, who is on the clock, who is on deck, and the last few names off the
- * board. The draft log in the right column is a record; this is the thing you
- * glance at without moving your eyes far.
- */
-function renderTicker() {
-  var el = $("#ticker"), total = S.league.teams * S.league.rounds;
-  if (A.cur > total) { el.className = ""; el.innerHTML = ""; return; }
-
-  var onDeckPick = A.cur + 1;
-  var onDeck = onDeckPick <= total ? ownerOfPick(onDeckPick).slot : null;
-  var recent = S.picks.slice(-5).reverse();
-
-  function seg(k, v, mine) {
-    return '<span class="seg' + (mine ? " me" : "") + '"><span class="k">' + k +
-           '</span><span class="v">' + v + "</span></span>";
-  }
-
-  el.className = "ticker";
-  el.innerHTML =
-    seg("round", A.onClock.round + " of " + S.league.rounds) +
-    '<span class="sep"></span>' +
-    (isLive()
-      ? seg("on the clock", esc(teamLabel(A.onClock.slot, true)), A.onClock.slot === S.league.slot) +
-        (onDeck ? seg("on deck", esc(teamLabel(onDeck, true)), onDeck === S.league.slot) : "")
-      : seg("pick", String(A.cur))) +
-    '<span class="sep"></span>' +
-    seg("your pick", A.myNext ? "#" + A.myNext : "none left", true) +
-    '<span class="sep"></span>' +
-    '<span class="recent">' +
-      (recent.length
-        ? recent.map(function (pk) {
-            var pl = BY_NAME[pk.name] || {};
-            return '<span class="rp"><span class="mono">' + pk.pick + "</span> " +
-              (pk.unknown ? "<i>unknown</i>"
-                : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " +
-                  esc(pk.name)) + "</span>";
-          }).join("")
-        : '<span class="rp dimtext">no picks recorded yet</span>') +
-    "</span>";
-}
-
-/**
- * A countdown for the league's own pick clock. Nothing here talks to Yahoo, so
- * it is a stopwatch started by the last recorded pick, not a mirror of the real
- * timer — its job is to answer "roughly how long until I'm up", which is the
- * question you actually have while waiting.
- */
-function pickSeconds() {
-  var v = parseInt($("#pickSecs").value, 10);
-  return v > 0 ? v : 0;
-}
-function mmss(sec) {
-  sec = Math.max(0, Math.round(sec));
-  return Math.floor(sec / 60) + ":" + ("0" + (sec % 60)).slice(-2);
-}
-function tickClock() {
-  var out = $("#sbClock"), secs = pickSeconds();
-  if (!out) return;
-  if (S.paused) { out.innerHTML = '<b class="amber">paused</b>'; return; }
-  if (!secs || !A || !S.pickStartedAt) { out.textContent = ""; return; }
-  var elapsed = (Date.now() - S.pickStartedAt) / 1000;
-  var left = secs - elapsed;
-  var gap = A.myNext ? A.myNext - A.cur : null;
-
-  if (gap === 0) {
-    out.innerHTML = '<b class="' + (left < 30 ? "red" : "") + '">' + mmss(left) + "</b>" +
-      '<span class="sb-lbl">left on this pick</span>';
-  } else if (gap) {
-    // Time left on this pick, plus a full clock for each pick between.
-    var eta = Math.max(0, left) + (gap - 1) * secs;
-    out.innerHTML = "<b>" + mmss(eta) + '</b><span class="sb-lbl">until you\u2019re up</span>';
-  } else {
-    out.textContent = "";
-  }
-}
-setInterval(tickClock, 1000);
+/* ---------------------------------------------------------- view plumbing */
 
 // Rotating an iPad changes which layout applies, and the column template is
 // generated rather than declared, so it has to be rebuilt.
@@ -859,33 +805,44 @@ window.addEventListener("resize", function () {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(function () { if (A) { renderColumnHeads(); renderList(); } }, 150);
 });
-/** Pausing stops the clock only; the board and every recorded pick are untouched. */
-function togglePause() {
-  if (S.paused) {
-    // Hand back the time that elapsed while paused, so the countdown resumes
-    // where it stopped instead of jumping forward.
-    if (S.pausedAt && S.pickStartedAt) S.pickStartedAt += Date.now() - S.pausedAt;
-    S.paused = false; S.pausedAt = null;
-  } else {
-    S.paused = true; S.pausedAt = Date.now();
-  }
-  save(); render(); tickClock();
-}
 
-$("#pickSecs").addEventListener("input", function () {
-  S.league.pickSeconds = pickSeconds();
-  if (!S.pickStartedAt) S.pickStartedAt = Date.now();
-  save(); tickClock();
-});
+// The strip and the box both print how long ago the last pick landed, and that
+// number goes stale on its own with nothing to trigger a re-render. A minute is
+// the resolution it is printed at, so a minute is how often it is refreshed.
+setInterval(function () { if (A && S.draftStarted) renderTracker(); }, 60000);
 
 /* --------------------------------------------------------- draft tracker */
 
-/**
- * The panel Start draft actually opens. Everything needed to stay level with a
- * live draft in one place: whose pick it is, who is next, how far away you are,
- * what just went, and a box to record the pick that is happening right now
- * without hunting for it in the list of 267.
- */
+/* ------------------------------------------------------------------ the box
+
+   The live draft box answers three questions, pick after pick, without being
+   read: where the draft is, who just went, and what to do next. The brief and
+   the cards below it answer the fourth — who to take.
+
+   Four bands, in that order:
+
+     head   your own state, the round, and how far through the draft it is
+     do     the single next action, in a sentence, with its one button
+     order  the picks either side of now, so "am I still in step" is a glance
+     keep   how long since a pick landed here, and the way back if you stepped
+            away and missed a run of them
+
+   Two things it deliberately does not have. There is no search box: a pick is
+   recorded by tapping the player in the list, which is where the names already
+   are and where the ADP, the tier and the survival number are too. And there is
+   no clock. The countdown that used to sit here started from the last pick
+   recorded on this board, so it was never Yahoo's timer and could not be —
+   nobody takes their full two minutes, and the next team is up the instant the
+   last one picks. All that survives it is the timestamp in the "keep" band,
+   which answers the question that is actually worth asking: have I been away
+   long enough to have missed something? */
+
+/** Both folds are view state, not draft state — they never reach save(). */
+var tkKeepOpen = false, tkMoreOpen = false;
+
+/** Minutes of silence on a hand-kept board before it is worth asking about. */
+var TK_STALE_MIN = 8;
+
 function renderTracker() {
   var el = $("#tracker"), total = S.league.teams * S.league.rounds;
   if (!isLive()) { el.innerHTML = ""; return; }
@@ -908,7 +865,7 @@ function renderTracker() {
       "and returns to pick 1. Your scoring, roster, keepers, team names and draft style are " +
       "kept.</div></div>";
     if ($("#tkResume")) $("#tkResume").onclick = function () {
-      S.draftEnded = false; S.pickStartedAt = Date.now(); save(); render();
+      S.draftEnded = false; S.lastPickAt = Date.now(); save(); render();
     };
     $("#tkReport").onclick = function () { $("#btnReport").click(); };
     armOnce($("#tkReset2"), "Start over", resetDraft);
@@ -916,188 +873,180 @@ function renderTracker() {
   }
 
   var onMe = A.onClock.slot === S.league.slot;
-  var deck = [];
-  for (var i = 1; i <= 3; i++) {
-    var pk = A.cur + i;
-    if (pk > total) break;
-    var nm = teamLabel(ownerOfPick(pk).slot, true);
-    // At the turn a team picks twice in a row, and "Blitzkrieg, Blitzkrieg"
-    // reads like a rendering bug rather than the snake doing its job.
-    if (deck.length && deck[deck.length - 1].name === nm) deck[deck.length - 1].n++;
-    else deck.push({ name: nm, n: 1 });
-  }
-  deck = deck.map(function (d) { return d.n > 1 ? d.name + " ×" + d.n : d.name; });
   var gap = A.myNext ? A.myNext - A.cur : null;
-  var secs = pickSeconds();
-  var eta = (gap && secs) ? " \u00b7 about " + mmss(gap * secs) : "";
+  var plural = function (c, one) { return c === 1 ? one : one + "s"; };
 
-  var recent = S.picks.slice(-6).reverse().map(function (pk) {
-    var pl = BY_NAME[pk.name] || {};
-    return '<div class="tk-pick' + (pk.mine ? " mine" : "") + '">' +
-      '<span class="mono">' + pk.pick + "</span>" +
-      '<span class="tk-team">' + esc(teamLabel(pk.slot, true)) + "</span>" +
-      "<span>" + (pk.unknown ? "<i>unknown</i>"
-        : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " +
-          esc(pk.name)) + "</span>" +
-    "</div>";
-  }).join("");
+  /* ---- head: where YOU are. Where the draft is goes on the line under it —
+     the bold line is the only thing on this panel worth a glance from across
+     the room, and it should answer the question you actually have. */
+  var state = onMe ? "You're on the clock"
+    : gap === null ? "Your picks are all in"
+    : gap === 1 ? "You're up next"
+    : "You're up in " + gap + " picks";
 
-  var d = drift();
+  var sub = "round " + A.onClock.round + " of " + S.league.rounds +
+    " · pick " + A.cur + " of " + total +
+    (gap ? " · you pick at " + A.myNext + (A.myAfter ? ", then " + A.myAfter : "") : "");
+  var done = Math.round(S.picks.length / total * 100);
+
+  /* ---- do: one instruction, one button. The branches are exclusive, so there
+     is never a second thing on screen competing to be the next move. */
+  var doHtml;
+  if (S.practice && !onMe && A.myNext) {
+    doHtml = '<div class="tk-do">' +
+      "<div><b>Practice run.</b><span>The room drafts itself up to your turn — " +
+      "nothing in here is real.</span></div>" +
+      '<button class="btn btn-sm btn-primary" id="tkSim">Simulate to ' + A.myNext + "</button></div>";
+  } else if (onMe) {
+    doHtml = '<div class="tk-do me"><div><b>Your pick — take it off the board.</b><span>' +
+      (IS_TOUCH ? "Tap a name in the player list, then tap it again to draft him."
+                : "Double-click a name in the player list, or use Draft on his card.") +
+      "</span></div></div>";
+  } else {
+    doHtml = '<div class="tk-do">' +
+      "<div><b>Pick " + A.cur + " goes to " + esc(teamLabel(A.onClock.slot)) + ".</b><span>" +
+      (IS_TOUCH ? "Tap whoever just went in the player list, then tap again to confirm."
+                : "Double-click whoever just went in the player list.") +
+      "</span></div>" +
+      '<button class="btn btn-sm btn-ghost" id="tkUnknown" ' +
+        'title="Records the pick against this slot with no name, so the count stays right">' +
+        "Missed the name</button></div>";
+  }
+
+  /* ---- order: three picks ahead, the pick on the clock, four behind. Reading
+     down the column is going back in time, which is the direction the numbers
+     already run. It replaces both the on-the-clock / on-deck grid and the
+     recent list — those were the same handful of facts, printed twice, in two
+     different shapes, and neither one showed both sides of now. */
+  function orderRow(pk, slot, what, cls) {
+    return '<div class="tk-row ' + cls + (slot === S.league.slot ? " mine" : "") + '">' +
+      '<span class="tk-n">' + pk + "</span>" +
+      '<span class="tk-t">' + esc(teamLabel(slot, true)) + "</span>" +
+      '<span class="tk-w">' + what + "</span></div>";
+  }
+  var rows = [];
+  for (var pk = Math.min(total, A.cur + 3); pk > A.cur; pk--) {
+    var kp = keeperAt(pk);
+    rows.push(orderRow(pk, ownerOfPick(pk).slot,
+      kp ? '<span class="tk-kp">keeper</span> ' + esc(kp.name)
+         : ownerOfPick(pk).slot === S.league.slot ? "your pick" : "", "up"));
+  }
+  rows.push(orderRow(A.cur, A.onClock.slot, "on the clock", "now"));
+  S.picks.slice(-4).reverse().forEach(function (p) {
+    var pl = BY_NAME[p.name] || {};
+    rows.push(orderRow(p.pick, p.slot, p.unknown
+      ? "<i>name not recorded</i>"
+      : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " + esc(p.name),
+      "past"));
+  });
+
+  /* ---- keep: the step-away band.
+     This board only knows what has been typed into it, so the failure that
+     actually happens on draft night is not mistyping a pick — it is getting up
+     for five minutes and coming back six picks behind. The line says how long
+     it has been quiet; past TK_STALE_MIN it says so in amber and opens itself.
+     Catching up is one number: the pick Yahoo is showing. */
+  var idle = S.lastPickAt ? Math.floor((Date.now() - S.lastPickAt) / 60000) : null;
+  var stale = idle !== null && idle >= TK_STALE_MIN && !onMe;
+  var keepOpen = tkKeepOpen || stale;
+  var keepNote = !S.picks.length ? "No picks recorded here yet"
+    : stale ? "Nothing recorded for " + sinceLastPick().replace(" ago", "") + " — stepped away?"
+    : "Last pick recorded " + sinceLastPick();
 
   el.innerHTML =
     '<div class="tracker' + (onMe ? " up" : "") + '">' +
+
       '<div class="tk-head">' +
-        "<b>" + (S.paused ? "Paused" :
-          onMe ? "You're on the clock" : "Round " + A.onClock.round + " \u00b7 pick " + A.cur) + "</b>" +
+        "<b>" + state + "</b>" +
         '<span class="tk-ctl">' +
-          '<button class="btn btn-sm btn-ghost" id="tkPause">' +
-            (S.paused ? "Resume" : "Pause") + "</button>" +
-          // Simulate drafts the room for you. In a rehearsal that is the point; in
-          // a real draft it silently invents picks that never happened, and it
-          // was sitting between Pause and Stop where a thumb goes.
-          (S.practice
-            ? '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
-              'can practice the flow">Simulate</button>'
-            : "") +
-          '<button class="btn btn-sm btn-ghost" id="tkStop">Stop</button>' +
-          '<button class="btn btn-sm btn-ghost btn-danger" id="tkReset" ' +
-            'title="Clear every pick and go back to pick 1. Settings are kept.">Start over</button>' +
+          '<button class="btn btn-sm btn-ghost" id="tkMore" aria-expanded="' + tkMoreOpen +
+            '" aria-label="More draft controls">⋯</button>' +
         "</span>" +
       "</div>" +
-      '<div class="tk-count dimtext">' + S.picks.length + " of " + total + " recorded" +
-        (S.simulated ? " \u00b7 <span style=\"color:var(--amber)\">includes simulated picks</span>" : "") +
+      '<div class="tk-sub">' + sub + "</div>" +
+      '<div class="tk-bar" title="' + S.picks.length + " of " + total +
+        ' picks recorded"><i style="width:' + done + '%"></i></div>' +
+      (S.simulated
+        ? '<div class="tk-sim">Includes simulated picks — this is not a record of a ' +
+          "real draft.</div>"
+        : "") +
+
+      '<div class="tk-over' + (tkMoreOpen ? "" : " hidden") + '">' +
+        (S.practice && (onMe || !A.myNext)
+          ? '<button class="btn btn-sm btn-ghost" id="tkSim">Simulate</button>' : "") +
+        '<button class="btn btn-sm btn-ghost" id="tkStop">Stop draft</button>' +
+        '<button class="btn btn-sm btn-ghost btn-danger" id="tkReset" ' +
+          'title="Clear every pick and go back to pick 1. Settings are kept.">Start over</button>' +
+        '<span class="tk-overnote">Stop keeps every pick and lets you resume. Start over clears ' +
+          "them and returns to pick 1 — scoring, roster, keepers and team names are kept.</span>" +
       "</div>" +
 
-      '<div class="tk-grid">' +
-        '<div><span class="k">on the clock</span><span class="v' + (onMe ? " me" : "") + '">' +
-          esc(teamLabel(A.onClock.slot)) + "</span></div>" +
-        '<div><span class="k">on deck</span><span class="v" title="' +
-          esc(deck.join(", ")) + '">' +
-          // Three team names never fit this column and the third was always
-          // the one that got cut. Show two, and count the rest.
-          (deck.length
-            ? esc(deck[0]) +
-              (deck.length > 1 ? ' <span class="dimtext">+' + (deck.length - 1) + "</span>" : "")
-            : "—") + "</span></div>" +
-        '<div><span class="k">you pick at</span><span class="v me" title="' +
-          esc(A.myNext ? "Pick " + A.myNext + (gap ? ", " + gap + " picks away" + eta : "")
-                       : "No picks left") + '">' +
-          // The estimate is worth having and not worth a whole column; it
-          // lives on the hover, which is where a number nobody reads belongs.
-          (A.myNext ? A.myNext + (gap ? ' <span class="dimtext">' + gap + " away</span>" : "")
-                    : "none left") +
-          "</span></div>" +
-      "</div>" +
+      doHtml +
+      '<div class="tk-order">' + rows.join("") + "</div>" +
 
-      '<div class="tk-entry">' +
-        '<input type="text" id="tkWho" autocomplete="off" enterkeyhint="done" ' +
-          'autocorrect="off" autocapitalize="words" spellcheck="false" ' +
-          'data-1p-ignore data-lpignore="true" ' +
-          'placeholder="Who just went at pick ' + A.cur + '? \u2014 goes to ' +
-          esc(teamLabel(A.onClock.slot)) + '">' +
-        '<button class="btn btn-sm" id="tkRec">Record</button>' +
+      '<div class="tk-keep' + (stale ? " stale" : "") + '">' +
+        '<button type="button" class="tk-keepbtn" id="tkKeepT" aria-expanded="' + keepOpen + '">' +
+          '<span class="tk-dot"></span><span class="tk-keepnote">' + esc(keepNote) + "</span>" +
+          '<span class="tk-chev">' + (keepOpen ? "▴" : "▾") + "</span></button>" +
+        '<div class="tk-keepbody' + (keepOpen ? "" : " hidden") + '">' +
+          '<div class="tk-keephint">Stepped away? This board has <b>' + A.cur +
+            "</b> on the clock. Type the pick number Yahoo is showing and record what " +
+            "went while you were gone.</div>" +
+          '<span class="tk-field"><label for="tkYahoo">Yahoo is on pick</label>' +
+            '<input type="number" id="tkYahoo" inputmode="numeric" pattern="[0-9]*" ' +
+              'min="1" max="' + total + '" autocomplete="off" placeholder="' + A.cur + '"></span>' +
+          '<button class="btn btn-sm btn-primary" id="tkCatch" disabled>Catch up</button>' +
+          '<span class="tk-keepmsg" id="tkKeepMsg"></span>' +
+        "</div>" +
       "</div>" +
-      '<div id="tkSuggest" class="tk-suggest hidden"></div>' +
-      '<div class="tk-mini">' +
-        '<button class="btn btn-sm btn-ghost" id="tkUnknown">Didn\u2019t catch the name</button>' +
-        '<span class="tk-field"><label for="tkLive">live pick</label>' +
-          '<input type="number" id="tkLive" inputmode="numeric" pattern="[0-9]*" min="1" ' +
-            'autocomplete="off" placeholder="' + A.cur + '" value="' +
-            esc($("#livePick").value) + '"></span>' +
-        '<span class="tk-field"><label for="tkSecs">clock (s)</label>' +
-          '<input type="number" id="tkSecs" inputmode="numeric" pattern="[0-9]*" min="10" ' +
-            'max="600" step="5" autocomplete="off" placeholder="120" value="' +
-            esc($("#pickSecs").value) + '"></span>' +
-      "</div>" +
-
-      (d ? '<div class="tk-drift">' +
-            (d > 0 ? "The live draft is " + d + " pick" + (d === 1 ? "" : "s") + " ahead of this board."
-                   : "This board is " + (-d) + " pick" + (d === -1 ? "" : "s") + " ahead of the live draft.") +
-            (d > 0 ? ' <button class="btn btn-sm btn-primary" id="tkCatch">Catch up</button>' : "") +
-           "</div>"
-         : '<div class="tk-ok">In step with the live draft' +
-           ($("#livePick").value ? "" : " \u2014 type the live pick number in the bar above to keep it honest") +
-           "</div>") +
-
-      '<div class="tk-recent">' + (recent || '<div class="dimtext">Nothing recorded yet.</div>') + "</div>" +
     "</div>";
 
-  var who = $("#tkWho");
-  var sugg = $("#tkSuggest");
-
-  // A tap-friendly suggestion list. <datalist> is unreliable on iOS Safari and
-  // invisible until you have typed nearly the whole name; these are plain
-  // buttons that record on tap.
-  function paintSuggestions() {
-    var q = who.value.trim().toLowerCase();
-    var hits = q.length < 2 ? [] : A.avail.filter(function (pl) {
-      return pl.name.toLowerCase().indexOf(q) >= 0 || (pl.team || "").toLowerCase() === q;
-    }).slice(0, 6);
-    if (!hits.length) { sugg.classList.add("hidden"); sugg.innerHTML = ""; return; }
-    sugg.classList.remove("hidden");
-    sugg.innerHTML = hits.map(function (pl) {
-      return '<button type="button" data-pick="' + esc(pl.name) + '">' +
-        '<span class="pos pos-' + pl.pos + '">' + pl.pos + "</span>" +
-        "<span>" + esc(pl.name) + '</span><span class="dimtext">' + pl.team +
-        " \u00b7 " + n0(pl.pts) + "</span></button>";
-    }).join("");
-    $$("#tkSuggest button").forEach(function (b) {
-      b.onclick = function () {
-        who.value = ""; sugg.classList.add("hidden"); record(b.dataset.pick, false);
-      };
-    });
-  }
-  who.addEventListener("input", paintSuggestions);
-
-  var commit = function () {
-    var nm = who.value.trim();
-    if (!nm) return;
-    if (!BY_NAME[nm]) {
-      // Accept a partial: whatever is top of the current board and matches.
-      var hit = A.avail.filter(function (p) {
-        return p.name.toLowerCase().indexOf(nm.toLowerCase()) >= 0;
-      })[0];
-      if (!hit) { banner("No available player matching \u201c" + nm + "\u201d.", true); return; }
-      nm = hit.name;
-    }
-    who.value = "";
-    sugg.classList.add("hidden");
-    record(nm, false);
-  };
-  // The live-pick and clock fields moved here from the app bar. They write
-  // through to the hidden originals so nothing else had to change, and carry
-  // inputmode="numeric" so iOS opens a number pad instead of a full keyboard.
-  var live = $("#tkLive");
-  live.addEventListener("input", function () {
-    $("#livePick").value = live.value;
-    var pos = live.selectionStart;
-    renderStatus(); renderTracker();
-    var again = $("#tkLive");
-    if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {} }
-  });
-  var secsIn = $("#tkSecs");
-  secsIn.addEventListener("input", function () {
-    $("#pickSecs").value = secsIn.value;
-    S.league.pickSeconds = pickSeconds();
-    if (!S.pickStartedAt) S.pickStartedAt = Date.now();
-    save(); tickClock();
-  });
-
-  $("#tkPause").onclick = togglePause;
+  $("#tkKeepT").onclick = function () { tkKeepOpen = !keepOpen; renderTracker(); };
+  $("#tkMore").onclick = function () { tkMoreOpen = !tkMoreOpen; renderTracker(); };
   if ($("#tkSim")) $("#tkSim").onclick = simulateToMyPick;
   $("#tkStop").onclick = function () {
-    S.draftEnded = true; S.paused = false; save(); render();
+    S.draftEnded = true; save(); render();
   };
   armOnce($("#tkReset"), "Start over", resetDraft);
-  $("#tkRec").onclick = commit;
-  who.addEventListener("keydown", function (e) { if (e.key === "Enter") commit(); });
-  $("#tkUnknown").onclick = function () { record(null, false); };
-  if ($("#tkCatch")) $("#tkCatch").onclick = openCatchup;
+  if ($("#tkUnknown")) $("#tkUnknown").onclick = function () { record(null, false); };
+
+  /* The catch-up field writes into its own message and button rather than
+     re-rendering the panel. A re-render on every keystroke is what forced the
+     old live-pick field to save and restore its own caret, and the field is
+     under a thumb on a tablet. */
+  var yah = $("#tkYahoo"), msg = $("#tkKeepMsg"), go = $("#tkCatch");
+  function readGap() {
+    var v = parseInt(yah.value, 10);
+    if (!v || v < 1) return null;
+    return v - A.cur;
+  }
+  function paintGap() {
+    var g = readGap();
+    if (g === null) { msg.textContent = ""; msg.className = "tk-keepmsg"; go.disabled = true; return; }
+    if (g > 0) {
+      msg.textContent = g + " " + plural(g, "pick") + " to record.";
+      msg.className = "tk-keepmsg";
+      go.disabled = false;
+      go.textContent = "Catch up " + g;
+    } else if (g === 0) {
+      msg.textContent = "In step — nothing to record.";
+      msg.className = "tk-keepmsg ok";
+      go.disabled = true; go.textContent = "Catch up";
+    } else {
+      // Recorded more than have happened. Undo is in the app bar, one press
+      // deep, and saying so is more use than a second button for it here.
+      msg.textContent = "This board is " + (-g) + " ahead. Use Undo in the bar above.";
+      msg.className = "tk-keepmsg warn";
+      go.disabled = true; go.textContent = "Catch up";
+    }
+  }
+  yah.addEventListener("input", paintGap);
+  go.onclick = function () { var g = readGap(); if (g > 0) openCatchup(g); };
 }
 
 /**
- * Back to pick one. Clears every pick and the draft's own state — the clock, the
- * pause, whether it was started or stopped, the simulated flag — and touches
+ * Back to pick one. Clears every pick and the draft's own state — when the last
+ * pick landed, whether it was started or stopped, the simulated flag — and touches
  * nothing else. Scoring, roster shape, keepers, team names, draft style and
  * column choices all survive, which is what makes it safe to press when you just
  * want another run at it.
@@ -1106,12 +1055,11 @@ function resetDraft() {
   S.picks = [];
   S.draftStarted = false;
   S.draftEnded = false;
-  S.paused = false;
-  S.pausedAt = null;
-  S.pickStartedAt = null;
+  S.lastPickAt = null;
   S.simulated = false;
   S.practice = false;
   S.reportShown = false;          // a fresh draft earns its ending again
+  S.planShown = false;            // and its plan
   view.selected = null;
   view.rosterSlot = null;
   briefCache = {};
@@ -1121,7 +1069,6 @@ function resetDraft() {
   // straight to the "went at pick N" banner without being re-asked.
   briefTries = {};
   briefWrittenAt = {};
-  $("#livePick").value = "";
   save();
   syncKeepers();   // a keeper is roster config, not a pick, so it comes straight back
   save();
@@ -1230,7 +1177,7 @@ function simulateToMyPick() {
     added++;
   }
   S.simulated = true;
-  S.pickStartedAt = Date.now();
+  S.lastPickAt = Date.now();
   save(); render();
   var cov = marketCoverage();
   banner("Simulated " + added + " opponent pick" + (added === 1 ? "" : "s") +
@@ -1774,10 +1721,17 @@ function runMock(knobs, iterations, seed) {
   var seededMine = A.mine.slice();
   var runs = [];
 
+  // What each simulated draft actually handed us, pick number by pick number.
+  // `runs` only keeps the roster, which is enough to score a style and useless
+  // for answering "what does round 6 look like" — the question the pre-draft
+  // plan exists to answer.
+  var planRuns = [];
+
   for (var it = 0; it < iterations; it++) {
     var rnd = mulberry32(seed + it * 7919);
     var taken = Object.assign({}, seededTaken);
     var mine = seededMine.slice();
+    var myPicks = [];
     var oppCounts = {};
     // What every other team already holds, so the modeled room starts the
     // simulation from the real draft rather than from an empty league.
@@ -1799,6 +1753,9 @@ function runMock(knobs, iterations, seed) {
         // ever taking a real backup, so it could not show what one would cost.
         if (ownerOfPick(pk).slot === S.league.slot && byName[k.name] &&
             !mine.some(function (q) { return q.name === k.name; })) mine.push(byName[k.name]);
+        if (ownerOfPick(pk).slot === S.league.slot && byName[k.name]) {
+          myPicks.push({ pick: pk, name: k.name, pos: byName[k.name].pos, keeper: true });
+        }
         continue;
       }
       if (ownerOfPick(pk).slot === S.league.slot) {
@@ -1830,12 +1787,25 @@ function runMock(knobs, iterations, seed) {
           currentPick: pk, nextPick: nextMine || pk, myPlayers: mine, strategy: knobs,
           stackTeams: stack, handcuffTeams: cuffs
         };
-        var best = null, bestScore = -1e9;
+        var best = null, bestScore = -1e9, bestWhy = null;
         for (var i = 0; i < avail.length; i++) {
-          var sc = E.composite(avail[i], ctx).score;
-          if (sc > bestScore) { bestScore = sc; best = avail[i]; }
+          // The detail, not just the score. composite() already writes the
+          // sentence explaining itself; throwing it away and then guessing at
+          // the reason afterwards is how a panel ends up inventing one.
+          var det = E.composite(avail[i], ctx);
+          if (det.score > bestScore) { bestScore = det.score; best = avail[i]; bestWhy = det; }
         }
-        if (best) { taken[best.name] = true; mine.push(best); }
+        if (best) {
+          taken[best.name] = true; mine.push(best);
+          myPicks.push({ pick: pk, name: best.name, pos: best.pos,
+                         // What was still empty when this pick was made. "Your
+                         // backs were already full by here" is the other half of
+                         // any answer about why a position went when it did.
+                         open: E.assignRoster(mine.slice(0, mine.length - 1), rules).slots
+                                .filter(function (sl) { return !sl.player; })
+                                .map(function (sl) { return sl.pos; }),
+                         why: (bestWhy.reasons || []).slice(0, 3) });
+        }
       } else {
         // The same modeled room the live Simulate drafts against, on the same
         // numbers: real completed-draft ADP where the user has it, each player
@@ -1858,11 +1828,76 @@ function runMock(knobs, iterations, seed) {
       }
     }
     runs.push(mine);
+    planRuns.push(myPicks);
   }
-  return summarizeMock(runs, rules);
+  return summarizeMock(runs, rules, planRuns);
 }
 
-function summarizeMock(runs, rules) {
+/**
+ * The round-by-round view of those same simulations: for each of your picks,
+ * what position it usually turns into and who is usually there.
+ *
+ * The names are the point and also the thing most likely to be wrong, so the
+ * percentage is printed beside every one of them. "Chase Brown, 34%" is an
+ * honest sentence; "you will get Chase Brown" is not.
+ */
+function summarizePlan(planRuns) {
+  if (!planRuns || !planRuns.length) return [];
+  var byPick = {};
+  planRuns.forEach(function (run) {
+    run.forEach(function (p) {
+      var slot = byPick[p.pick] || (byPick[p.pick] = { pick: p.pick, keeper: !!p.keeper,
+                                                       pos: {}, names: {}, why: {} });
+      slot.pos[p.pos] = (slot.pos[p.pos] || 0) + 1;
+      slot.names[p.name] = (slot.names[p.name] || 0) + 1;
+      (p.why || []).forEach(function (w) {
+        // The reason text carries the pick number it was computed against
+        // ("+31 over what's likely left at pick 38"), which would make every
+        // simulation's wording unique and every count 1. The shape is what is
+        // being counted, so the numbers come out.
+        var key = String(w).replace(/[-+]?\d+(\.\d+)?/g, "#");
+        slot.why[key] = (slot.why[key] || { n: 0, sample: w });
+        slot.why[key].n++;
+      });
+    });
+  });
+  var n = planRuns.length;
+  return Object.keys(byPick).map(Number).sort(function (a, b) { return a - b; })
+    .map(function (pk) {
+      var slot = byPick[pk];
+      var posRank = Object.keys(slot.pos).sort(function (a, b) { return slot.pos[b] - slot.pos[a]; });
+      var nameRank = Object.keys(slot.names).sort(function (a, b) {
+        return slot.names[b] - slot.names[a];
+      });
+      return {
+        pick: pk,
+        round: ownerOfPick(pk).round,
+        keeper: slot.keeper,
+        pos: posRank[0] || null,
+        posPct: posRank[0] ? Math.round(slot.pos[posRank[0]] / n * 100) : 0,
+        // A second position worth naming only when the simulation genuinely
+        // split — "RB or WR" is information, "RB or, 4% of the time, TE" is not.
+        alt: posRank[1] && slot.pos[posRank[1]] / n >= 0.25 ? posRank[1] : null,
+        altPct: posRank[1] ? Math.round(slot.pos[posRank[1]] / n * 100) : 0,
+        names: nameRank.slice(0, 3).map(function (nm) {
+          return { name: nm, pct: Math.round(slot.names[nm] / n * 100) };
+        }),
+        // The engine's own account of the pick, kept only when it gave the
+        // same account in most of the drafts. A reason that showed up a third
+        // of the time is not why this pick happens.
+        why: Object.keys(slot.why)
+          .sort(function (a, b) { return slot.why[b].n - slot.why[a].n; })
+          .filter(function (k) { return slot.why[k].n / n >= 0.5; })
+          .slice(0, 2)
+          .map(function (k) { return slot.why[k].sample; }),
+        // How settled the pick is. One name at 60% is a plan; twelve names at
+        // 8% each is a coin toss, and saying so is the useful part.
+        spread: nameRank.length
+      };
+    });
+}
+
+function summarizeMock(runs, rules, planRuns) {
   var slotCounts = [], totals = [], posCounts = {}, own = {};
   runs.forEach(function (mine) {
     mine.forEach(function (q) { own[q.name] = (own[q.name] || { pos: q.pos, n: 0 }); own[q.name].n++; });
@@ -1908,7 +1943,8 @@ function summarizeMock(runs, rules) {
   });
 
   return { slots: slots, median: median, comp: comp, runs: runs.length, own: own,
-           low: totals[0] || 0, high: totals[totals.length - 1] || 0 };
+           low: totals[0] || 0, high: totals[totals.length - 1] || 0,
+           plan: summarizePlan(planRuns) };
 }
 
 function mockCard(key, res) {
@@ -2031,6 +2067,383 @@ $("#mockB").addEventListener("change", function () {
   $("#mockRun").textContent = $("#mockB").value ? "Run 50 drafts" : "Run 25 drafts";
 });
 
+/* ------------------------------------------------------------ draft plan
+
+   Before the first pick: what this draft is probably going to look like from
+   your seat.
+
+   Everything in here is the board's own simulator — the same `runMock()` that
+   scores a draft style, run against your style's knobs, your scoring, your
+   roster shape, your keepers and your real Yahoo ADP where you have pasted it.
+   The room drafts the way the room drafts; you draft the way your style says.
+   Forty of those, and what comes out is a distribution over your fourteen
+   picks.
+
+   It is deliberately a local simulation and not a Claude call. This is the
+   screen somebody opens at 18:55 on a hotel wifi, and a plan that cannot be
+   produced without a network is not a plan.
+
+   The honesty rule for this panel: every name carries the percentage of drafts
+   it actually showed up in. "Chase Brown, 31%" is a true sentence. "You will
+   get Chase Brown in round 3" is not, and it is the sentence a panel like this
+   wants to write. */
+
+var PLAN_RUNS = 40;
+var planCache = null;      // { sig, plan, res } — the sim is not cheap
+
+/** A signature for everything the plan depends on. */
+function planSig() {
+  return JSON.stringify([S.league.slot, S.league.teams, S.league.rounds,
+    S.league.style, S.league.styleCustom, S.league.keepers,
+    S.league.rules, S.picks.length, Object.keys(yahooAdp()).length]);
+}
+
+function draftPlan() {
+  var sig = planSig();
+  if (planCache && planCache.sig === sig) return planCache;
+  // The seed is fixed so that opening the panel twice does not quietly show two
+  // different drafts. It is the same board either way; a plan that reshuffles
+  // itself while you read it is not one you can act on.
+  var res = runMock(activeKnobs(), PLAN_RUNS, 20260908);
+  planCache = { sig: sig, plan: res.plan, res: res };
+  return planCache;
+}
+
+/**
+ * Why this plan looks like this — the three things that shaped it, before the
+ * table that came out of them.
+ *
+ * The panel's first version printed the roster and left the reasoning to the
+ * reader, which is the wrong half of the job: a manager who knows he is taking
+ * a defense in round 7 and does not know *why* will talk himself out of it at
+ * 19:40 with eleven people waiting. Every block here is derived — from the
+ * scoring impact analysis, from the snake, from the style's own knobs — and
+ * nothing in it is written by hand about any particular league.
+ */
+function planWhy() {
+  var out = [];
+
+  /* ---- 1. what your scoring does -------------------------------------
+     impact.js already measures this and already writes the sentence. It is
+     the single most valuable thing in this panel for a league with unusual
+     rules, and it was buried at the bottom under the round-by-round table. */
+  try {
+    var rep = impactReport();
+    var rel = rep.scoring.relative.rel || {};
+    var movers = Object.keys(rel)
+      .filter(function (pos) { return Math.abs(rel[pos]) >= 0.10; })
+      .sort(function (a, b) { return Math.abs(rel[b]) - Math.abs(rel[a]); });
+    // The headline that names a position is the one worth leading with; the
+    // first headline is always the "how far from baseline" summary.
+    var posLines = (rep.headlines || []).filter(function (h) {
+      return movers.some(function (pos) { return h.indexOf(pos + " gains") === 0 ||
+                                                 h.indexOf(pos + " loses") === 0; });
+    });
+    out.push({
+      k: "scoring",
+      head: movers.length
+        ? movers.map(function (pos) {
+            return pos + " " + (rel[pos] > 0 ? "gains" : "loses") + " " +
+                   Math.round(Math.abs(rel[pos]) * 100) + "%";
+          }).join(", ") + " against a standard board"
+        : "Your scoring ranks the pool almost exactly as a standard board does",
+      body: posLines.length ? posLines : [(rep.headlines || [])[0]].filter(Boolean)
+    });
+  } catch (e) { /* the plan survives without it */ }
+
+  /* ---- 2. what your seat does ----------------------------------------
+     A snake slot is not a preference, it is arithmetic, and it decides more
+     about the shape of a draft than most managers realize. Slot 11 of 12
+     picks in pairs three apart and then waits twenty-one. */
+  var sched = myPickNumbers();
+  var gaps = [];
+  for (var i = 1; i < sched.length; i++) gaps.push(sched[i] - sched[i - 1]);
+  if (gaps.length) {
+    var shortG = Math.min.apply(null, gaps), longG = Math.max.apply(null, gaps);
+    var seat = [];
+    if (longG - shortG >= 6) {
+      seat.push("Your picks arrive in pairs " + shortG + " apart, then a gap of " + longG +
+        ". You are choosing two players at a time, so pair them by position rather than " +
+        "taking the same one twice — and assume nothing you are undecided about survives " +
+        "the long wait.");
+    } else {
+      seat.push("Your picks are evenly spaced, about " + Math.round(
+        gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length) +
+        " apart. No turn to plan around; take the board as it comes.");
+    }
+    var mid = (S.league.teams + 1) / 2;
+    var edge = Math.abs(S.league.slot - mid) / (mid - 1);
+    if (edge > 0.6) {
+      seat.push("At slot " + S.league.slot + " of " + S.league.teams + " you are near the turn: " +
+        "the elite tier is gone before your first pick, and in exchange you get the two best " +
+        "players nobody else can reach between your pairs.");
+    }
+    out.push({ k: "seat", head: "Slot " + S.league.slot + " of " + S.league.teams, body: seat });
+  }
+
+  /* ---- 3. what your style does ---------------------------------------
+     Read off the knobs actually in force rather than the style's blurb, so a
+     style someone has edited describes what it now is. */
+  var st = STRATS[S.league.style || "balanced"] || STRATS.balanced;
+  var knobs = activeKnobs();
+  var styleBody = [];
+  if (st.detail) styleBody.push(st.detail);
+  var biases = [];
+  ["earlyPosBias", "posBias"].forEach(function (key) {
+    var b = knobs[key];
+    if (!b) return;
+    Object.keys(b).forEach(function (pos) {
+      if (Math.abs(b[pos] - 1) < 0.1) return;
+      biases.push(pos + " " + (b[pos] > 1 ? "up" : "down") + " " +
+        Math.round(Math.abs(b[pos] - 1) * 100) + "%" +
+        (key === "earlyPosBias" ? " for the first " + (knobs.earlyRounds || 5) + " rounds" : ""));
+    });
+  });
+  if (biases.length) {
+    styleBody.push("In force right now: " + biases.join(", ") + ".");
+  } else if (!S.league.styleCustom) {
+    styleBody.push("No positional thumb on the scale — every position is priced on what it " +
+      "adds to your lineup and nothing else. If the plan below is not the draft you want, " +
+      "this is the thing to change.");
+  }
+  out.push({ k: "style", head: styleName(), body: styleBody });
+
+  /* ---- 4. the floors -------------------------------------------------
+     Two rounds in every draft are decided by a setting rather than by the
+     board, and a plan that shows a kicker in round 14 without saying why
+     reads as a recommendation instead of a rule. */
+  var kFloor = A.ctx ? A.ctx.kFloorRound : null;
+  var dFloor = S.league.defFloorRound || 7;
+  out.push({ k: "floor", head: "Floors you set",
+    body: ["This board refuses to take a defense before round " + dFloor +
+      (kFloor ? " or a kicker before round " + kFloor : "") + ". Those are your settings, not " +
+      "the board's opinion — if the plan takes one the moment the floor lifts, that is the " +
+      "scoring saying the position is worth more here than what is left around it."] });
+
+  return out;
+}
+
+/**
+ * When each starting position actually gets filled, counting what you already
+ * hold.
+ *
+ * The first version of this read the simulation alone and reported "first QB in
+ * round 11" for a manager holding a kept quarterback — round 11 was the
+ * *second* one. A need you have already met is not a need, and a plan that says
+ * otherwise sends you shopping for a position you are done with.
+ */
+function planFillRounds(plan) {
+  var out = {};
+  // Anything already on the roster — drafted or kept — is filled now.
+  A.mine.forEach(function (p) { if (p && !out[p.pos]) out[p.pos] = { round: 0 }; });
+  plan.forEach(function (r) {
+    if (!r.pos && !r.keeper) return;
+    var pos = r.keeper ? ((BY_NAME[r.names[0] && r.names[0].name] || {}).pos) : r.pos;
+    if (!pos || out[pos]) return;
+    out[pos] = { round: r.round, pick: r.pick, keeper: !!r.keeper, pct: r.posPct };
+  });
+  return out;
+}
+
+/**
+ * What the distribution says, in sentences, without overclaiming.
+ *
+ * Four kinds of note, and only the ones the numbers support: the shape the plan
+ * comes out in, the picks the simulation is genuinely confident about, where it
+ * stops being confident, and what your scoring is doing underneath all of it.
+ * The third is the most useful and the one a panel like this normally leaves
+ * out.
+ */
+function planNotes(plan, fill) {
+  var out = [];
+  var live = plan.filter(function (r) { return !r.keeper; });
+  if (!live.length) return out;
+
+  // ---- the shape of the first third -------------------------------------
+  var early = live.slice(0, 5);
+  var counts = {};
+  early.forEach(function (r) { if (r.pos) counts[r.pos] = (counts[r.pos] || 0) + 1; });
+  var lead = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0];
+  if (lead && counts[lead] >= 3) {
+    var lateOnes = ["RB", "WR", "TE"].filter(function (pos) {
+      return pos !== lead && fill[pos] && fill[pos].round >= 5;
+    });
+    out.push({ k: "shape", t: "This plan is " + lead + "-heavy: " + counts[lead] +
+      " of your first " + early.length + " picks come out at " + lead + "." +
+      (lateOnes.length
+        ? " Your first " + lateOnes.map(function (pos) {
+            return pos + " lands in round " + fill[pos].round;
+          }).join(", and your first ") + ". If that is not the draft you want, the " +
+          "style is the thing to change, not the pick."
+        : "") });
+  }
+
+  // ---- the picks it is actually sure about -------------------------------
+  // The gate used to be 30%, which on this board caught every pick and produced
+  // "the simulation keeps landing on the same player at 14 of your picks" — a
+  // sentence that says nothing. Only the top few, and only when they are strong.
+  var settled = live.filter(function (r) { return r.names[0] && r.names[0].pct >= 40; })
+    .sort(function (a, b) { return b.names[0].pct - a.names[0].pct; })
+    .slice(0, 3);
+  if (settled.length) {
+    out.push({ k: "settled", t: "The most settled picks on your board are " +
+      settled.map(function (r) {
+        return r.names[0].name + " at " + r.pick + " (round " + r.round + ", " +
+               r.names[0].pct + "% of drafts)";
+      }).join(", ") + ". Where the board and the room agree this often, the value is " +
+      "usually real rather than contested — but it also means somebody else may reach " +
+      "for him a pick early." });
+  }
+
+  // ---- and where it stops being sure ------------------------------------
+  var openFrom = null;
+  for (var i = 0; i < live.length; i++) {
+    if (live[i].names[0] && live[i].names[0].pct < 20) { openFrom = live[i]; break; }
+  }
+  out.push(openFrom
+    ? { k: "open", t: "From round " + openFrom.round + " on, no single name shows up in even " +
+        "one draft in five — the pool is wide enough by then that the plan stops being a plan. " +
+        "That is where the live suggestions and the survival numbers earn their keep, and it " +
+        "is not a flaw in the forecast." }
+    : { k: "open", t: "Every one of your picks has a favorite in this simulation, which is " +
+        "less reassuring than it sounds — it means the room is modeled as behaving very " +
+        "predictably. One early reach by a real manager moves everything after it." });
+
+  // ---- the positions your scoring actually moves ------------------------
+  // impactReport() is cached against the rules, so this is nearly free after the
+  // first open, and it is the only part of this panel that is about the league
+  // rather than about the draft.
+  try {
+    var rep = impactReport();
+    (rep.headlines || []).slice(0, 2).forEach(function (h) { out.push({ k: "scoring", t: h }); });
+  } catch (e) { /* the plan is still a plan without it */ }
+
+  return out;
+}
+
+function renderDraftPlan() {
+  var body = $("#planBody");
+  var m = DATA.meta || {};
+  var cov = marketCoverage();
+
+  var got = draftPlan();
+  var plan = got.plan, res = got.res;
+  var fill = planFillRounds(plan);
+  var mine = A.mine.length;
+
+  var rows = plan.map(function (r) {
+    if (r.keeper) {
+      return '<tr class="pl-keeper"><td class="pl-r">R' + r.round + "</td>" +
+        '<td class="pl-p">' + r.pick + "</td>" +
+        '<td colspan="2"><span class="pl-kept">kept</span> ' +
+          esc(r.names[0] ? r.names[0].name : "") + "</td></tr>";
+    }
+    var names = r.names.map(function (nm) {
+      return '<span class="pl-nm">' + esc(nm.name) +
+        '<span class="pl-pct">' + nm.pct + "%</span></span>";
+    }).join("");
+    return "<tr><td class=\"pl-r\">R" + r.round + "</td>" +
+      '<td class="pl-p">' + r.pick + "</td>" +
+      '<td class="pl-pos"><span class="pos pos-' + r.pos + '">' + r.pos + "</span>" +
+        '<span class="pl-pct">' + r.posPct + "%</span>" +
+        (r.alt ? '<span class="pl-alt">or <span class="pos pos-' + r.alt + '">' + r.alt +
+          "</span> " + r.altPct + "%</span>" : "") + "</td>" +
+      '<td class="pl-names">' + (names || '<span class="dimtext">wide open</span>') +
+        // The engine's own reason for the pick, kept only when it gave the same
+        // reason in most of the simulations. This is the difference between a
+        // plan and a list: a manager who knows he is taking a defense in round
+        // 7 but not why will talk himself out of it on the night.
+        (r.why && r.why.length
+          ? '<span class="pl-why-l">' + esc(r.why.join(" · ")) + "</span>"
+          : "") +
+      "</td></tr>";
+  }).join("");
+
+  body.innerHTML =
+    '<div class="pl-head">' +
+      '<div><span class="pl-k">style</span><b>' + esc(styleName()) + "</b></div>" +
+      '<div><span class="pl-k">your slot</span><b>' + S.league.slot + " of " +
+        S.league.teams + "</b></div>" +
+      '<div><span class="pl-k">rounds</span><b>' + S.league.rounds + "</b></div>" +
+      '<div><span class="pl-k">picks left</span><b>' + (A.upcoming || []).length + "</b></div>" +
+      ((S.league.keepers || []).length
+        ? '<div><span class="pl-k">keeper</span><b>' +
+          esc((S.league.keepers || []).map(function (k) {
+            return k.name + " (R" + k.round + ")";
+          }).join(", ")) + "</b></div>"
+        : "") +
+    "</div>" +
+
+    // Only when a draft is actually under way. "This draft is already 0 picks
+    // old and you hold 1" is what counting the pending keeper as a pick reads
+    // like at the moment somebody presses Start.
+    (S.picks.length
+      ? '<div class="note">This draft is already ' + S.picks.length + " pick" +
+        (S.picks.length === 1 ? "" : "s") + " old" +
+        (mine ? " and you hold " + mine : "") + ". The plan below starts from where the " +
+        "board actually is, not from pick 1.</div>"
+      : "") +
+
+    '<div class="panel-head mt"><h3>Why this plan looks like this</h3></div>' +
+    '<div class="pl-why">' + planWhy().map(function (w) {
+      return '<div class="pl-w pl-' + w.k + '">' +
+        '<div class="pl-wh">' + esc(w.head) + "</div>" +
+        w.body.map(function (b) { return "<p>" + esc(b) + "</p>"; }).join("") +
+      "</div>";
+    }).join("") + "</div>" +
+
+    '<div class="panel-head mt"><h3>Round by round</h3>' +
+      '<span class="eyebrow">' + res.runs + " simulated drafts</span></div>" +
+    '<table class="pl-tbl"><thead><tr>' +
+      "<th>rd</th><th>pick</th><th>position</th><th>who is usually there</th>" +
+    "</tr></thead><tbody>" + rows + "</tbody></table>" +
+
+    '<div class="pl-foot">Every percentage is how often that actually happened across ' +
+      res.runs + " drafts — they are odds, not promises. The room is drafted against " +
+      (cov.real
+        ? "<b>your real Yahoo draft data</b> on " + cov.pct + "% of the board"
+        : "<b>mock-draft ADP</b>") +
+      ", each player with his own spread, and your picks are made by the same scoring engine " +
+      "the live board uses. A simulated draft is not a forecast of this draft — it is what " +
+      "this board would do against a room that behaves like the market.</div>" +
+
+    '<div class="panel-head mt"><h3>When each starting slot gets filled</h3></div>' +
+    '<div class="pl-fill">' + ["QB", "RB", "WR", "TE", "DEF", "K"].map(function (pos) {
+      var f = fill[pos];
+      return '<span class="pl-f' + (f ? (f.round === 0 ? " have" : "") : " none") + '">' +
+        '<span class="pos pos-' + pos + '">' + pos + "</span>" +
+        (!f ? "not in the plan"
+            : f.round === 0 ? "you have one"
+            : f.keeper ? "kept, R" + f.round
+            : "round " + f.round) + "</span>";
+    }).join("") + "</div>" +
+
+    '<div class="panel-head mt"><h3>What that means for you</h3></div>' +
+    '<div class="pl-notes">' + planNotes(plan, fill).map(function (nt) {
+      return '<div class="pl-note pl-' + nt.k + '">' + esc(nt.t) + "</div>";
+    }).join("") + "</div>" +
+
+    '<div class="pl-foot">Data pulled ' + esc(m.built || m.baked || "unknown") + ". " +
+      "Change your draft style and this plan changes with it — " +
+      '<a href="#" id="planStyle">try a different one</a>.</div>';
+
+  if ($("#planStyle")) $("#planStyle").onclick = function (e) {
+    e.preventDefault(); closeModal("#planModal"); $("#btnStyle").click();
+  };
+}
+
+/** Opened from the More menu, and once on the way into a draft. */
+function openDraftPlan() {
+  $("#planBody").innerHTML =
+    '<div class="claude-out"><span class="spinner"></span> Simulating ' + PLAN_RUNS +
+    " drafts from your seat…</div>";
+  openModal("#planModal");
+  // Forty full drafts is a second or so of blocked main thread. Yield once so
+  // the modal and its spinner actually paint before that starts, rather than
+  // the button appearing to do nothing and then the panel arriving complete.
+  setTimeout(renderDraftPlan, 30);
+}
+
 function renderStyleList() {
   var cur = S.league.style || "balanced";
   $("#styleList").innerHTML = Object.keys(STRATS).map(function (k) {
@@ -2064,7 +2477,7 @@ $("#btnRosters").addEventListener("click", function () { $("#btnLeague").click()
 // the tracker or the status strip now. Secondary actions go behind one menu so
 // the bar cannot overflow on a tablet.
 (function moreMenu() {
-  var TARGETS = { start: "#btnStart", report: "#btnReport", style: "#btnStyle",
+  var TARGETS = { start: "#btnStart", plan: "#btnPlan", report: "#btnReport", style: "#btnStyle",
                   cols: "#btnCols", setup: "#btnSetup", data: "#btnData", out: "#btnOut" };
   var wrap = $("#moreMenu"), btn = $("#btnMore");
 
@@ -2366,8 +2779,16 @@ function openAssign(name, anchorEl, ev) {
 function closeAssign() { assignFor = null; $("#assignPop").classList.add("hidden"); }
 document.addEventListener("click", function (e) {
   if (assignFor && !e.target.closest("#assignPop")) closeAssign();
+  // A pinned card is dismissed by clicking away from it — but not by the click
+  // on the row that opened it, and not by a click inside the card itself.
+  if (popFor && !e.target.closest("#playerPop") && !e.target.closest(".prow")) closePlayerPop();
 });
-document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAssign(); });
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Escape") return;
+  closeAssign();
+  closePlayerPop();
+  closeModal("#detailModal");
+});
 
 /* ------------------------------------------------- what the style did here
 
@@ -2927,21 +3348,64 @@ function renderList() {
       // is aimed at something visible that says whose pick it is. Undo is in the
       // appbar and one press deep.
       if (IS_TOUCH && view.selected === name) return record(name, false);
-      view.selected = name; renderList(); renderDetail(name);
+      view.selected = name;
+      renderList();
+      // renderList replaced every node in the list, this one included, so the
+      // card has to be anchored to the row that exists now rather than the one
+      // that was clicked.
+      showPopFor(name, true);
     };
     if (!taken) el.ondblclick = function () { record(name, false); };
+
+    /* At a desk the card is a hover. There is no hover on a tablet, which is
+       why the first tap above does the same job — and why the hover handlers
+       are not bound at all on touch, where a stray mouseover from a scroll
+       would open a card nobody asked for. */
+    if (!IS_TOUCH) {
+      el.addEventListener("mouseenter", function () {
+        if (popPinned) return;
+        clearTimeout(popTimer); clearTimeout(popHideTimer);
+        popTimer = setTimeout(function () { openPlayerPop(name, el, false); }, 170);
+      });
+      el.addEventListener("mouseleave", function () {
+        clearTimeout(popTimer);
+        if (popPinned) return;
+        // Long enough to cross the six-pixel gap between the row and the card
+        // and land on a button. 160ms was not: the card closed under the
+        // pointer on the way to it, which made every action on it unreachable
+        // by the one gesture that opens it.
+        popHideTimer = setTimeout(closePlayerPop, 420);
+      });
+    }
   });
 }
 
+/** Anchor the card to whichever row node is currently in the list. */
+function showPopFor(name, pinned) {
+  var rows = $$("#plist .prow"), el = null;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].getAttribute("data-name") === name) { el = rows[i]; break; }
+  }
+  if (el) openPlayerPop(name, el, pinned);
+}
+
+/**
+ * Runs, in one line rather than one amber block each. Two positions running at
+ * once is common and normal — four backs and four receivers inside eight picks
+ * is the whole window — and printing it as two stacked warnings made an
+ * ordinary board read like an emergency, twice.
+ */
 function renderRunBanner() {
   var runs = Object.keys(A.runInfo.runs);
-  $("#runBanner").innerHTML = runs.length
-    ? runs.map(function (pos) {
-        return '<div class="banner"><b>' + pos + " run in progress</b> — " +
-               A.runInfo.runs[pos] + " of the last " + A.runInfo.window +
-               " picks. That position's urgency is raised.</div>";
-      }).join("")
-    : "";
+  if (!runs.length) { $("#runBanner").innerHTML = ""; return; }
+  var w = A.runInfo.window;
+  var counts = runs.map(function (pos) {
+    return "<b>" + pos + " " + A.runInfo.runs[pos] + "</b>";
+  }).join(", ");
+  $("#runBanner").innerHTML = '<div class="banner runline">' +
+    (runs.length > 1 ? "Runs in progress" : "Run in progress") + " — " + counts +
+    " of the last " + w + " picks. " +
+    (runs.length > 1 ? "Their urgency is raised." : "Its urgency is raised.") + "</div>";
 }
 
 function renderRecs() {
@@ -3026,13 +3490,13 @@ function renderRecs() {
     b.onclick = function (e) { openAssign(b.dataset.assign, b, e); };
   });
   $$("#recs [data-open]").forEach(function (b) {
-    b.onclick = function () { view.selected = b.dataset.open; renderList(); renderDetail(b.dataset.open); };
+    b.onclick = function () { openDetail(b.dataset.open); };
   });
-  // The selected player may have just been drafted — fall back to the top pick
-  // so the detail panel is never empty while there is something to explain.
-  var stillThere = view.selected && A.avail.some(function (p) { return p.name === view.selected; });
-  if (!stillThere && top[0]) view.selected = top[0].name;
-  if (view.selected) renderDetail(view.selected);
+  // This used to end by selecting the top recommendation and rendering its full
+  // breakdown into the column, whether or not anybody had asked to see it — two
+  // tables of composite arithmetic permanently under the suggestion cards, and
+  // on touch sitting above the live draft box. "Why?" opens it now, in a modal,
+  // and the column stays about the draft.
 }
 
 /** The full "what your style did to this pick" block for the detail panel. */
@@ -3066,6 +3530,215 @@ function styleBlockHtml(p) {
         "touches this player \u2014 the difference is what it did to everyone around him." +
         "</div>") +
     "</div>";
+}
+
+/* ------------------------------------------------------------ player card
+
+   The one thing worth knowing about a player, where the player already is.
+
+   This used to be a full scoring breakdown rendered into the middle column,
+   and it was rendered whether or not anyone asked for it: renderRecs ended by
+   selecting the top recommendation and calling renderDetail on it, so the
+   column permanently carried a two-table teardown of the composite under the
+   suggestion cards. On touch that card also carried `order: -1`, which put it
+   *above* the live draft box — so on draft day, tapping any player to look at
+   him pushed the box, the brief and the recommendations off the screen.
+
+   Now: a compact card anchored to the row, on hover at a desk and on the first
+   tap on a tablet, carrying what makes this player stand out rather than every
+   number the engine touched. The full breakdown still exists, one press away,
+   in a modal that cannot displace anything.
+
+   It is deliberately not a fixed grid. A card that prints eight labels and six
+   em-dashes is worse than a card that prints two facts — every row in here is
+   present only when it has something to say. */
+
+var popFor = null;         // name the card is showing, or null
+var popPinned = false;     // opened by a click/tap rather than a hover
+var popTimer = null, popHideTimer = null;
+
+/** The 320px card, anchored under the row, flipping above it when short. */
+function openPlayerPop(name, anchorEl, pinned) {
+  var p = A.byName[name] || BY_NAME[name];
+  if (!p || !anchorEl) return;
+  clearTimeout(popHideTimer);
+  popFor = name;
+  popPinned = !!pinned;
+
+  var pop = $("#playerPop");
+  pop.innerHTML = playerPopHtml(p);
+  pop.classList.remove("hidden");
+
+  var r = anchorEl.getBoundingClientRect();
+  var w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
+  // Below the row by default, above it when the bottom of the window is closer
+  // than the card is tall. Never beside it: the column to the right is where
+  // the live draft box lives, and a hover card is not allowed to cover that.
+  pop.style.top = (r.bottom + h + 8 > window.innerHeight && r.top - h - 6 > 0
+    ? r.top - h - 6 : r.bottom + 6) + "px";
+
+  $$("#playerPop [data-pact]").forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      var act = b.dataset.pact;
+      if (act === "full") { closePlayerPop(); openDetail(name); return; }
+      if (act === "assign") { closePlayerPop(); openAssign(name, anchorEl, e); return; }
+      closePlayerPop();
+      record(name, act === "mine");
+    };
+  });
+}
+
+/* The card cancels its own dismissal. Without this the hover card is a
+   read-only tooltip: it opens on the row, and the moment the pointer leaves the
+   row to reach a button on the card, the timer that closes it is already
+   running. Bound once, at load, because #playerPop outlives every render. */
+(function () {
+  var pop = $("#playerPop");
+  if (!pop) return;
+  pop.addEventListener("mouseenter", function () { clearTimeout(popHideTimer); });
+  pop.addEventListener("mouseleave", function () {
+    if (popPinned) return;
+    popHideTimer = setTimeout(closePlayerPop, 260);
+  });
+})();
+
+function closePlayerPop() {
+  clearTimeout(popTimer); clearTimeout(popHideTimer);
+  popFor = null; popPinned = false;
+  var pop = $("#playerPop");
+  if (pop) pop.classList.add("hidden");
+}
+
+/**
+ * What makes him stand out, in at most four lines.
+ *
+ * The ordering is deliberate: things that change whether you take him at all
+ * come before things that change how you feel about it. An injury outranks a
+ * market move; running out of a tier outranks a depth chart.
+ */
+function standoutLines(p) {
+  var out = [];
+  var std = standardBoard()[p.name];
+
+  if (p.injury) {
+    out.push({ cls: "bad", t: p.injury + (p.injuryPart ? " — " + p.injuryPart : "") });
+  }
+  if (p.tierLeft <= 1) {
+    out.push({ cls: "warn", t: "Last of tier " + p.tier + " at " + p.pos +
+      " — the next one is a step down." });
+  }
+  if (std) {
+    var swing = Math.round(p.pts - std.pts);
+    if (Math.abs(swing) >= 12) {
+      out.push({ cls: swing > 0 ? "good" : "dim",
+        t: (swing > 0 ? "+" : "") + swing + " points versus plain full PPR — your scoring " +
+           (swing > 0 ? "likes him more than the room does." : "likes him less than the room does.") });
+    }
+  }
+  if (p.ytrend != null && Math.abs(p.ytrend) >= 1.5) {
+    out.push({ cls: p.ytrend > 0 ? "warn" : "good",
+      t: "Yahoo drafters have moved him " + Math.abs(p.ytrend).toFixed(1) + " picks " +
+         (p.ytrend > 0 ? "earlier" : "later") + " in the last seven days." });
+  }
+  if (p.depth >= 3) {
+    out.push({ cls: "warn", t: (p.depthPos || p.pos) + p.depth +
+      " on his own depth chart — he needs an injury in front of him." });
+  } else if (p.depth === 1 && (p.pos === "RB" || p.pos === "WR" || p.pos === "TE")) {
+    out.push({ cls: "good", t: (p.depthPos || p.pos) + "1 on his own depth chart." });
+  }
+  if (p.note) out.push({ cls: "dim", t: p.note + (p.source ? " — " + p.source : "") });
+  return out.slice(0, 4);
+}
+
+function playerPopHtml(p) {
+  var d = p.compDetail || {};
+  var t = p.takenBy;
+  var lines = standoutLines(p);
+
+  /* Survival, value and the composite are computed for players who are still
+     on the board. A drafted one has none of them, and rendering NaN% into a
+     card is worse than not having a card — so the whole live half is built
+     only on the branch that shows it. */
+  var live = "";
+  if (!t) {
+    var surv = Math.round(survShown(p) * 100);
+    var survCls = surv >= 70 ? "good" : surv >= 35 ? "warn" : "bad";
+    var rounds = (p.adpDelta || 0) / (S.league.teams || 12);
+    var market = ["ADP " + (p.adp || 0).toFixed(0)];
+    if (p.yadp != null) market.push("real " + p.yadp.toFixed(0));
+    if (p.ytrend != null && Math.abs(p.ytrend) >= 0.3) {
+      market.push((p.ytrend > 0 ? "↑" : "↓") + Math.abs(p.ytrend).toFixed(1) + " 7d");
+    }
+    var val = rounds <= -0.75
+        ? { cls: "good", t: "Fell " + Math.abs(rounds).toFixed(1) + " rounds past his ADP" }
+      : rounds >= 1
+        ? { cls: "bad", t: "A " + rounds.toFixed(1) + "-round reach at pick " + A.cur }
+        : { cls: "dim", t: "On schedule at pick " + A.cur };
+
+    /* Three numbers, because three is what decides between two players: what he
+       is worth to the lineup you can actually field, whether he will still be
+       there next time, and how thin his tier is. Everything else on this card
+       is context for those. */
+    live =
+      '<div class="pp-tiles">' +
+        '<div class="pp-tile"><b>' + n0(p.pts) + "</b><span>your points</span></div>" +
+        '<div class="pp-tile"><b class="' + (d.marginal > 0 ? "good" : "dim") + '">' +
+          (d.marginal > 0 ? "+" : "") + n0(d.marginal || 0) +
+          "</b><span>to your lineup</span></div>" +
+        '<div class="pp-tile"><b class="' + survCls + '">' + surv + "%</b><span>" +
+          (A.survTarget ? "lasts to " + A.survTarget : "survives") + "</span></div>" +
+      "</div>" +
+      '<div class="pp-market"><span class="pp-k">market</span>' +
+        "<span>" + market.join(" · ") + "</span></div>" +
+      '<div class="pp-val ' + val.cls + '">' + esc(val.t) + "</div>";
+  }
+
+  return '<div class="pp-head">' +
+      '<span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
+      '<span class="pp-name">' + esc(p.name) + "</span>" +
+      tagBadge(p.tag) +
+    "</div>" +
+    '<div class="pp-sub">' + p.pos + p.posRank + " · " + esc(p.team) + " · bye " + p.bye +
+      " · tier " + p.tier + ", " + p.tierLeft + " left" +
+      (p.projSource === "modeled" ? " · modeled projection" : "") + "</div>" +
+
+    (t
+      ? '<div class="pp-taken">Off the board — ' +
+        (isLive() ? esc(teamLabel(t.slot)) + " has him" : "already drafted") +
+        (t.keeper ? ", kept in round " + ownerOfPick(t.pick).round : ", pick " + t.pick) +
+        "</div>"
+      : live) +
+
+    (lines.length
+      ? '<div class="pp-lines">' + lines.map(function (l) {
+          return '<div class="pp-line ' + l.cls + '">' + esc(l.t) + "</div>";
+        }).join("") + "</div>"
+      : "") +
+
+    (!t && d.reasons && d.reasons.length
+      ? '<div class="pp-why">' + esc(d.reasons[0]) + "</div>" : "") +
+
+    '<div class="pp-acts">' +
+      (t
+        ? (isLive() ? '<button class="btn btn-sm" data-pact="assign">Change team</button>' : "")
+        : (myTurn()
+            ? '<button class="btn btn-sm btn-primary" data-pact="mine">Draft him</button>'
+            : '<button class="btn btn-sm" data-pact="gone">' + esc(onClockLabel()) +
+              " took him</button>" +
+              (isLive() ? '<button class="btn btn-sm" data-pact="assign">who?</button>' : "") +
+              '<button class="btn btn-sm btn-teal" data-pact="mine">To me</button>')) +
+      '<button class="btn btn-sm btn-ghost" data-pact="full">Full breakdown</button>' +
+    "</div>";
+}
+
+/** The deep card. A modal, so it cannot displace the draft box behind it. */
+function openDetail(name) {
+  view.selected = name;
+  renderList();
+  renderDetail(name);
+  openModal("#detailModal");
 }
 
 function renderDetail(name) {
@@ -3167,16 +3840,21 @@ function renderDetail(name) {
           "as a tiebreaker, not a reason.") + "</p>" : "") +
     "</div>";
 
-  $$("#detail [data-take2]").forEach(function (b) { b.onclick = function () { record(b.dataset.take2, true); }; });
-  $$("#detail [data-gone2]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone2, false); }; });
+  $$("#detail [data-take2]").forEach(function (b) {
+    b.onclick = function () { closeModal("#detailModal"); record(b.dataset.take2, true); };
+  });
+  $$("#detail [data-gone2]").forEach(function (b) {
+    b.onclick = function () { closeModal("#detailModal"); record(b.dataset.gone2, false); };
+  });
 
   // The touch action bar. Same three actions the row carries on desktop, same
   // two functions underneath — only the thing you tapped to get here differs.
   $$("#detail [data-dact]").forEach(function (b) {
     b.onclick = function (e) {
       var act = b.dataset.dact;
-      if (act === "close") { view.selected = null; $("#detail").innerHTML = ""; renderList(); return; }
+      if (act === "close") { closeModal("#detailModal"); return; }
       if (act === "assign") { openAssign(p.name, b, e); return; }
+      closeModal("#detailModal");
       record(p.name, act === "mine");
     };
   });
@@ -3806,7 +4484,7 @@ function quickStartSteps() {
         ? named + " of " + others + " other teams named"
         : "Nobody named yet — they read as team 1 through team " + L.teams,
       body: "Two minutes, and it changes how the whole night reads. Names show up on the " +
-        "ticker, in the draft log, on the roster switcher and all through the report.",
+        "live draft box, in the draft log, on the roster switcher and all through the report.",
       cost: "everything says team 7. The real cost is not cosmetic: the commonest mistake " +
         "on draft night is putting a pick on the wrong roster, and a list of names is far " +
         "easier to check at a glance than a column of numbers.",
@@ -5356,9 +6034,7 @@ function initSync() {
 
 syncKeepers();
 initSync();
-if (S.league.pickSeconds) $("#pickSecs").value = S.league.pickSeconds;
 render();
-tickClock();
 checkForUpdate();
 // A new account used to land on League setup with no context: forty scoring
 // fields and nothing saying what to do first. The guide leads there instead, and

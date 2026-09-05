@@ -46,6 +46,8 @@ var IMPACT = globalThis.DRAFTLINE_IMPACT;
 var KNOB_SPEC = globalThis.DRAFTLINE_KNOB_SPEC;
 
 var APP_PATH = path.join(__dirname, "../assets/app.js");
+var HTML_APP = require("fs").readFileSync(
+  require("path").join(__dirname, "../app.html"), "utf8");
 
 var pass = 0, fail = 0;
 function ok(label, cond, detail) {
@@ -261,7 +263,12 @@ function loadApp(leagueState, picksState, opts) {
     "setShownNames: function (n) { briefCandidateNames[A.myNext] = n; }, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
-    "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
+    "needSummary: needSummary, sinceLastPick: sinceLastPick, " +
+    "playerPopHtml: playerPopHtml, standoutLines: standoutLines, " +
+    "summarizePlan: summarizePlan, planNotes: planNotes, " +
+    "planFillRounds: planFillRounds, activeKnobs: activeKnobs, " +
+    "planWhy: planWhy, impactReport: impactReport, " +
+    "startingSlots: startingSlots, " +
     "briefEyebrow: briefEyebrow, " +
     "supplyBlock: supplyBlock, " +
     "styleBlock: styleBlock, " +
@@ -983,9 +990,16 @@ console.log("\n== rosterBlock (the roster the model is shown) ==");
 })();
 
 /* ========================================================================
-   "Still need", in words, on the strip the user is already reading
+   The roster-gap strip: one idea, as chips
+
+   The strip used to print "still need RB1, RB2, WR1 +3 more · K from round 14,
+   DEF from round 7 · 14 picks left" beside a state phrase and a countdown, on
+   one horizontally scrolling line. Reported from the iPad: it crowded into a
+   ribbon that could not be read. Everything on it except the need is in the
+   live draft box now, so what is left is the need alone — and as data rather
+   than prose, because prose is what made it a ribbon.
    ======================================================================== */
-console.log("\n== stillNeedLine ==");
+console.log("\n== the roster-gap strip ==");
 (function () {
   function withRoster(upTo, mine) {
     var order = mine.slice(), picks = [];
@@ -1001,52 +1015,87 @@ console.log("\n== stillNeedLine ==");
 
   // Round 8, one back and one receiver owned: the screenshot's own answer.
   var api = withRoster(86, ["James Cook III", "Nico Collins", "Brock Bowers"]);
-  var line = api.stillNeedLine();
-  ok("it names the empty receiver slot", /WR2/.test(line), line);
-  ok("it names the empty back slot", /RB2/.test(line), line);
-  ok("it says how many picks are left to fill them", /\d+ picks left/.test(line), line);
-  // The bar scrolls rather than wraps and the clock sits at the end of it, so a
-  // long list is truncated to a count rather than allowed to push the clock off
-  // a 744px screen.
-  ok("a long list is capped, and says how many it did not name",
-     !/\+\d+ more/.test(line) || line.split(",").length <= 3, line);
-  ok("the line stays short enough for the bar", line.length <= 70, line.length + " chars");
+  var need = api.needSummary();
+  ok("it names the empty receiver slot", need.open.indexOf("WR2") >= 0, need.open.join(","));
+  ok("it names the empty back slot", need.open.indexOf("RB2") >= 0, need.open.join(","));
+  ok("it counts the picks left to fill them", need.picks > 0, String(need.picks));
+  ok("a filled slot is not listed", need.open.indexOf("RB1") < 0, need.open.join(","));
 
   // The trap: need[pos].short is max(0, want-got) + flexOpen * FLEX_SPLIT[pos],
-  // a fraction. "You still need WR 1.4" is not a sentence, and the temptation to
-  // print it is the reason this is built off the slots instead.
-  ok("no fractional count leaks into the line", !/\d+\.\d/.test(line), line);
+  // a fraction. "You still need WR 1.4" is not a thing to put on screen, and the
+  // temptation to print it is why this is built off the slots instead.
+  ok("no fractional count can leak in",
+     need.open.every(function (l) { return !/\d+\.\d/.test(l); }), need.open.join(","));
 
   // A kicker slot is empty from pick 1 and cannot be filled until round 14.
-  // Calling it a need in round 8 is noise; saying when it opens is not.
-  ok("the kicker is not listed as something needed now",
-     !/still need[^·]*\bK\b/.test(line), line);
-  ok("but the round it opens is stated", /K from round 14/.test(line), line);
+  // Calling it a need in round 8 is noise. The promise about round 14 used to be
+  // printed here too; it is a fact about later, not something to act on now, and
+  // the roster panel already shows K 0/1.
+  ok("the kicker is not a need in round 8", need.open.indexOf("K") < 0, need.open.join(","));
+  ok("and the strip does not promise when it opens either",
+     !/from round/.test(strip(api)), strip(api));
 
   // Round 15: everything is fillable, and the kicker is now a real need.
   var late = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
     "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Trey McBride"]);
-  var lateLine = late.stillNeedLine();
   ok("late on, the kicker becomes a need rather than a promise",
-     /still need[^·]*\bK\b/.test(lateLine) || !/K from round/.test(lateLine), lateLine);
+     late.needSummary().open.indexOf("K") >= 0, late.needSummary().open.join(","));
 
   // A complete starting lineup says so rather than going blank, which reads as
   // a bug on a bar that is otherwise never empty.
   var full = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
     "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Houston Defense",
     "Brandon Aubrey", "Trey McBride", "Chase Brown"]);
-  ok("a full starting lineup is stated, not left blank",
-     /every starter filled/.test(full.stillNeedLine()), full.stillNeedLine());
+  ok("a full starting lineup is flagged, not left blank", full.needSummary().filled === true);
+  ok("and the strip says so in words", /Every starter filled/.test(strip(full)), strip(full));
 
-  // It has to survive the render, in every branch that describes a live draft.
-  [86, 85, 84].forEach(function (n) {
-    var a = withRoster(n, ["James Cook III", "Nico Collins", "Brock Bowers"]);
-    var html = a._sandbox.document.getElementById("statusBar").innerHTML || "";
-    ok("the strip prints it at pick " + n + " (gap " +
-       (a.getAnalysis().myNext - a.getAnalysis().cur) + ")",
-       html.indexOf("sb-need") >= 0 && /WR2/.test(html),
-       html.slice(0, 160));
-  });
+  function strip(a) {
+    return (a._sandbox.document.getElementById("statusBar") || {}).innerHTML || "";
+  }
+
+  // --- what the strip actually renders ------------------------------------
+  var html = strip(api);
+  ok("the open slots are chips, not a sentence", (html.match(/class="sb-chip/g) || []).length > 0,
+     html.slice(0, 200));
+  ok("the receiver slot is one of them", /class="sb-chip pos-WR">WR2</.test(html), html);
+  ok("the picks-left count is on it", /sb-left/.test(html) && /picks left/.test(html), html);
+
+  // The cap is the whole point: four chips is what fits beside the label and the
+  // count on an iPad in portrait. Past that it counts rather than crowds.
+  var early = withRoster(11, []);
+  var eHtml = strip(early);
+  var chips = (eHtml.match(/class="sb-chip pos-/g) || []).length;
+  ok("an empty roster does not print nine chips", chips <= 4, chips + " chips");
+  ok("it says how many it did not name instead", /class="sb-chip sb-more"[^>]*>\+\d+</.test(eHtml),
+     eHtml);
+  ok("and the ones it did not name are still reachable, on the title",
+     /sb-more" title="[^"]*WR/.test(eHtml), eHtml);
+
+  // Nothing the box already says may appear here. This is the whole reason the
+  // strip was rebuilt: two panels an inch apart printing the same sentence.
+  ok("no state phrase", !/on the clock|up next|up in \d/.test(html), html);
+  ok("no round or pick number", !/round \d|pick \d/.test(html), html);
+  ok("no clock", !/sb-clock|left on this pick|until you/.test(html), html);
+
+  // renderStatus also owns two app-bar buttons, and it is the only thing that
+  // does. Rewriting the strip once dropped them and shipped "Start / practice"
+  // sitting over a draft that was already running.
+  function barHidden(a, id) {
+    var el = a._sandbox.document.getElementById(id);
+    return !!(el && el.classList && el.classList.contains("hidden"));
+  }
+  var started = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+  var fresh = loadApp(kindaHighlandersLeague(), []);
+  ok("the way in is hidden once a draft is running", barHidden(started, "btnBegin"));
+  ok("and is there before one is", !barHidden(fresh, "btnBegin"));
+
+  // Before a draft and after it, there is nothing to be drafting for.
+  var over = loadApp(kindaHighlandersLeague(),
+    Array.from({ length: 180 }, function (_, i) {
+      return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
+    }));
+  ok("a finished draft leaves the strip empty rather than stale",
+     strip(over).trim() === "", strip(over).slice(0, 120));
 })();
 
 /* ========================================================================
@@ -1853,24 +1902,27 @@ console.log("\n== the middle column's order on touch ==");
   }
 
   var tracker = orderOf("tracker");
-  var detail = orderOf("detail");
 
   ok("the tracker is given an explicit order on touch", tracker !== null, String(tracker));
-  ok("so is the detail card", detail !== null, String(detail));
-  ok("the tracker comes before the detail card",
-     tracker !== null && detail !== null && tracker < detail,
-     "tracker " + tracker + " vs detail " + detail);
+  ok("it is negative, so nothing with the default order can precede it",
+     tracker < 0, String(tracker));
 
-  // Everything else in that column keeps the DOM order, which already puts the
-  // brief, the run banner and the suggestions after the tracker. Both explicit
-  // orders must be negative or those would jump ahead of them.
-  ok("both are negative, so nothing with the default order can precede them",
-     tracker < 0 && detail < 0, "tracker " + tracker + ", detail " + detail);
+  // The scoring breakdown used to be the other reordered panel, floated above
+  // the tracker so a tapped player's draft buttons were reachable. A card eight
+  // rows tall then buried the box you draft from. It is a modal now, and the
+  // compact card is anchored to the row, so neither is in this column.
+  ok("the breakdown is no longer ordered into this column", orderOf("detail") === null);
+  ok("and it is not in the middle column any more",
+     HTML_APP.indexOf('<div id="detail">') > HTML_APP.indexOf('id="detailModal"'),
+     "detail at " + HTML_APP.indexOf('<div id="detail">') +
+     ", modal at " + HTML_APP.indexOf('id="detailModal"'));
+  ok("it lives in its own modal instead", /id="detailModal"/.test(HTML_APP));
+  ok("with a close button", /id="detailClose"/.test(HTML_APP));
 
-  // Only these two may be reordered. A third rule would silently change what
-  // the drafter sees first while a timer runs.
+  // Only the tracker may be reordered. A second rule would silently change what
+  // the drafter sees first.
   var rules = css.match(/body\.touch\s+\.col-rec\s*>\s*#[A-Za-z-]+\s*\{[^}]*order:/g) || [];
-  ok("exactly two panels in this column are reordered", rules.length === 2,
+  ok("exactly one panel in this column is reordered", rules.length === 1,
      rules.length + ": " + rules.join(" | "));
 
   // The column has to be a flex container for order to mean anything at all.
@@ -1916,7 +1968,10 @@ console.log("\n== draft day on touch ==");
      handler.slice(handler.indexOf("IS_TOUCH"), handler.indexOf("IS_TOUCH") + 70));
   ok("and it is the SECOND tap, not the first - the first only arms the row",
      handler.indexOf("view.selected === name") <
-     handler.indexOf("view.selected = name; renderList()"));
+     handler.indexOf("view.selected = name;"));
+  ok("the first tap also opens the player card, anchored to the row",
+     /view\.selected = name;[\s\S]*renderList\(\);[\s\S]*showPopFor\(name, true\)/.test(handler),
+     handler.slice(handler.indexOf("view.selected = name;"), handler.indexOf("view.selected = name;") + 220));
   ok("record(name, false) is what credits the team on the clock, not a new path",
      handler.indexOf("record(name, false)") > 0);
   ok("desktop keeps double-click, which is what this mirrors",
@@ -1952,10 +2007,15 @@ console.log("\n== draft day on touch ==");
      real.slice(0, 80));
   ok("a real draft has no Simulate button", real.indexOf('id="tkSim"') < 0);
   ok("a practice run still has one", prac.indexOf('id="tkSim"') >= 0);
-  ok("both keep Pause, Stop and Start over",
-     ["tkPause", "tkStop", "tkReset"].every(function (id) {
+  // Pause went with the pick clock — it paused a countdown that was never
+  // Yahoo's to begin with. Stop and Start over are the two that act on the draft
+  // itself, and both survive.
+  ok("both keep Stop and Start over",
+     ["tkStop", "tkReset"].every(function (id) {
        return real.indexOf(id) >= 0 && prac.indexOf(id) >= 0;
      }));
+  ok("and neither has a Pause any more",
+     real.indexOf("tkPause") < 0 && prac.indexOf("tkPause") < 0);
 
   // The flag has to survive a reload or the button comes back mid-draft.
   ok("practice is persisted with the rest of the draft state",
@@ -1969,6 +2029,494 @@ console.log("\n== draft day on touch ==");
   // on every render.
   ok("the Simulate handler is guarded",
      /if \(\$\("#tkSim"\)\) \$\("#tkSim"\)\.onclick/.test(app));
+})();
+
+/* ========================================================================
+   The live draft box: four bands, one instruction, no second search field
+
+   Reported from the iPad: "I don't need another search box in here — I have
+   that on the player screen. This box needs to contain only the most important
+   and vital information to me pick by pick." The panel had grown a name field,
+   a Record button, a suggestion list, an unknown-pick button and two settings
+   fields, none of which is a fact about the draft, all of them between the
+   drafter and the four things that are.
+
+   What this pins down is the shape, because the shape is the fix: state, one
+   next action, the picks either side of now, and the sync fold — and nothing
+   in it that asks the drafter to type a player's name.
+   ======================================================================== */
+console.log("\n== the live draft box ==");
+(function () {
+  function upTo(api, n) {
+    var out = [];
+    for (var i = 1; i <= n; i++) {
+      var slot = api.ownerOfPick(i).slot;
+      out.push({ pick: i, name: null, slot: slot, mine: slot === 11, unknown: true });
+    }
+    return out;
+  }
+  // Two picks are enough to place the box: an empty draft renders nothing.
+  var probe = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+  function box(picks, opts) {
+    var o = Object.assign({ draftStarted: true }, opts || {});
+    var api = loadApp(kindaHighlandersLeague(), picks, o);
+    return {
+      html: (api._sandbox.document.getElementById("tracker") || {}).innerHTML || "",
+      api: api
+    };
+  }
+
+  // Waiting: pick 9 is on the clock, slot 9's, and pick 11 is mine.
+  var waiting = box(upTo(probe, 8));
+  // On the clock: ten picks gone, so pick 11 — mine — is up.
+  var mine = box(upTo(probe, 10));
+
+  // --- the search box is gone --------------------------------------------
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  ok("no name field in the box", waiting.html.indexOf('id="tkWho"') < 0 &&
+     mine.html.indexOf('id="tkWho"') < 0);
+  ok("no Record button", waiting.html.indexOf('id="tkRec"') < 0);
+  ok("no suggestion list", waiting.html.indexOf("tk-suggest") < 0);
+  ok("and nothing left in app.js still reaches for them",
+     app.indexOf("tkWho") < 0 && app.indexOf("tkSuggest") < 0 && app.indexOf("tkRec\"") < 0);
+  // Removing it only works because the list itself records. That path is
+  // asserted in the touch block above; this is the half that would strand it.
+  ok("the player list is still the thing that records a pick",
+     app.indexOf("ondblclick = function () { record(name, false); }") > 0 &&
+     /IS_TOUCH && view\.selected === name\) return record\(name, false\)/.test(app));
+
+  // --- exactly one next action -------------------------------------------
+  // "tk-dot" is the sync light; the band's own class is tk-do, alone or with a
+  // modifier, and nothing else in the panel starts with it.
+  function bands(html) { return (html.match(/class="tk-do[ "]/g) || []).length; }
+  ok("waiting shows exactly one instruction band", bands(waiting.html) === 1,
+     String(bands(waiting.html)));
+  ok("on the clock shows exactly one too", bands(mine.html) === 1,
+     String(bands(mine.html)));
+  ok("waiting, it names the team the pick belongs to",
+     /Pick 9 goes to /.test(waiting.html), waiting.html.slice(0, 200));
+  ok("on the clock, it says the pick is yours instead",
+     /Your pick — take it off the board/.test(mine.html) &&
+     !/goes to /.test(mine.html));
+  // The unknown-pick escape hatch survived the cut — it is the only way to keep
+  // the count level when a name is missed, and losing it would be a data bug.
+  ok("waiting still offers the unknown pick", waiting.html.indexOf('id="tkUnknown"') >= 0);
+  ok("but not on your own turn, where there is no name to miss",
+     mine.html.indexOf('id="tkUnknown"') < 0);
+
+  // --- the pick order, both sides of now ---------------------------------
+  function rows(html) {
+    return (html.match(/<div class="tk-row [^"]*"/g) || []).map(function (m) {
+      return m.replace(/^<div class="tk-row /, "").replace(/"$/, "");
+    });
+  }
+  var r = rows(waiting.html);
+  ok("exactly one row is the pick on the clock",
+     r.filter(function (c) { return c.indexOf("now") === 0; }).length === 1, r.join(" | "));
+  ok("three picks ahead of it", r.filter(function (c) { return c.indexOf("up") === 0; }).length === 3,
+     r.join(" | "));
+  ok("four behind it", r.filter(function (c) { return c.indexOf("past") === 0; }).length === 4,
+     r.join(" | "));
+  ok("the future is above the clock and the record below it",
+     r.slice(0, 3).every(function (c) { return c.indexOf("up") === 0; }) &&
+     r[3].indexOf("now") === 0 &&
+     r.slice(4).every(function (c) { return c.indexOf("past") === 0; }), r.join(" | "));
+  // Descending pick numbers are what makes reading down the column mean going
+  // back in time. If they ever stop descending the list is lying about order.
+  var nums = (waiting.html.match(/<span class="tk-n">(\d+)</g) || []).map(function (m) {
+    return parseInt(m.replace(/\D/g, ""), 10);
+  });
+  ok("the pick numbers descend without a gap",
+     nums.length > 1 && nums.every(function (n, i) { return i === 0 || n === nums[i - 1] - 1; }),
+     nums.join(","));
+  ok("your own upcoming pick is called out by name", /your pick/.test(waiting.html));
+  ok("and it is pick 11 that carries it",
+     /<span class="tk-n">11<\/span><span class="tk-t">you<\/span><span class="tk-w">your pick/
+       .test(waiting.html.replace(/\s+/g, " ")),
+     waiting.html.slice(waiting.html.indexOf("tk-order"), waiting.html.indexOf("tk-order") + 400));
+
+  // --- the step-away band -------------------------------------------------
+  // There is no clock and no drift alarm. What is left is the one fact the board
+  // owns — when a pick last landed on it — and a way back when the answer is
+  // "a while ago".
+  ok("the catch-up field is behind a fold",
+     waiting.html.indexOf('class="tk-keepbody hidden"') >= 0 &&
+     waiting.html.indexOf('id="tkYahoo"') >= 0);
+  ok("and the fold's own line says how long it has been quiet",
+     /Last pick recorded |No picks recorded here yet/.test(waiting.html), waiting.html.slice(-400));
+  ok("catching up is one button, and it starts disabled",
+     /id="tkCatch" disabled/.test(waiting.html));
+  ok("no countdown survives anywhere in the box",
+     !/left on this pick|until you\u2019re up|sb-clock|id="tkSecs"/.test(waiting.html));
+
+  // --- destructive controls are folded away -------------------------------
+  ok("Start over is present but not on the surface",
+     /<div class="tk-over hidden">[\s\S]*id="tkReset"/.test(waiting.html));
+  ok("Stop is folded with it", /<div class="tk-over hidden">[\s\S]*id="tkStop"/.test(waiting.html));
+  ok("and there is no Pause left to sit beside them",
+     waiting.html.indexOf('id="tkPause"') < 0);
+
+  // --- practice puts Simulate where the next action goes -------------------
+  var prac = box(upTo(probe, 8), { practice: true });
+  ok("in a practice run the next action IS Simulate",
+     /<div class="tk-do">[\s\S]*id="tkSim"/.test(prac.html));
+  ok("and a real draft still has no Simulate anywhere",
+     waiting.html.indexOf('id="tkSim"') < 0 && mine.html.indexOf('id="tkSim"') < 0);
+  // One button, one id: the handler is bound once and cannot be bound to a
+  // stale duplicate.
+  ok("Simulate appears exactly once", (prac.html.match(/id="tkSim"/g) || []).length === 1);
+
+  // --- and the strip above it says none of it again ------------------------
+  var strip = (waiting.api._sandbox.document.getElementById("statusBar") || {}).innerHTML || "";
+  ok("the strip carries the roster gap and nothing the box already carries",
+     strip.indexOf("sb-chip") >= 0 &&
+     !/on the clock|round \d|pick \d|sb-clock/.test(strip), strip.slice(0, 220));
+})();
+
+/* ========================================================================
+   The player card, and the breakdown that stopped squatting in the column
+
+   Reported from the iPad: the middle column is the draft-day column, and a
+   two-table scoring teardown was living in it permanently — renderRecs ended
+   by selecting the top recommendation and rendering its full breakdown whether
+   anyone had asked or not. On touch that card also carried order:-1, so
+   tapping any player to look at him pushed the live draft box, the brief and
+   the recommendations off the screen.
+   ======================================================================== */
+console.log("\n== the player card ==");
+(function () {
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+
+  // --- the column is clean -------------------------------------------------
+  var rr = app.slice(app.indexOf("function renderRecs"));
+  rr = rr.slice(0, rr.indexOf("\nfunction "));
+  ok("renderRecs no longer renders the breakdown into the column",
+     rr.indexOf("renderDetail(") < 0, rr.slice(-200));
+  ok("and no longer selects a player nobody chose",
+     rr.indexOf("if (!stillThere && top[0])") < 0);
+  ok('"Why?" opens the breakdown deliberately instead', /openDetail\(b\.dataset\.open\)/.test(rr));
+  ok("openDetail is what opens the modal", /function openDetail[\s\S]{0,220}openModal\("#detailModal"\)/.test(app));
+
+  // render() may only refresh the breakdown while it is actually on screen —
+  // otherwise recording a pick rebuilds a card nobody is looking at.
+  var rn = app.slice(app.indexOf("function render() {"));
+  rn = rn.slice(0, rn.indexOf("\n/**"));
+  ok("render only refreshes the breakdown when its modal is open",
+     /detailModal"\)\.classList\.contains\("hidden"\)/.test(rn), rn.slice(-320));
+
+  // --- hover is desktop-only ----------------------------------------------
+  var rl = app.slice(app.indexOf("function renderList() {"));
+  rl = rl.slice(0, rl.indexOf("\n/** Anchor the card"));
+  ok("the hover handlers are bound only off touch",
+     /if \(!IS_TOUCH\) \{[\s\S]*mouseenter/.test(rl));
+  ok("a pinned card is not replaced by a passing hover",
+     /mouseenter[\s\S]{0,120}if \(popPinned\) return/.test(rl));
+  ok("the hover waits before opening, so scrolling the list does not flash cards",
+     /popTimer = setTimeout\(function \(\) \{ openPlayerPop\(name, el, false\); \}, \d+\)/.test(rl));
+
+  /* Reported from the browser: "it won't stay out long enough for me to move my
+     mouse over it and click on anything on the card". The card is six pixels
+     below the row, so leaving the row to reach a button on the card starts the
+     timer that closes it — and nothing cancelled that timer, which made every
+     action on the card unreachable by the one gesture that opens it. */
+  var leave = rl.match(/mouseleave[\s\S]{0,400}?popHideTimer = setTimeout\(closePlayerPop, (\d+)\)/);
+  ok("the row's dismissal is slow enough to cross the gap to the card",
+     leave && +leave[1] >= 350, leave ? leave[1] + "ms" : "no timer found");
+  ok("and the card cancels its own dismissal when the pointer reaches it",
+     /#playerPop[\s\S]{0,400}addEventListener\("mouseenter", function \(\) \{ clearTimeout\(popHideTimer\)/
+       .test(app));
+  ok("then closes when the pointer leaves the card itself",
+     /pop\.addEventListener\("mouseleave"[\s\S]{0,200}popHideTimer = setTimeout\(closePlayerPop/
+       .test(app));
+  ok("but a pinned card is not closed by the pointer leaving it",
+     /pop\.addEventListener\("mouseleave"[\s\S]{0,120}if \(popPinned\) return/.test(app));
+
+  // --- what the card says --------------------------------------------------
+  function api(picks) {
+    return loadApp(kindaHighlandersLeague(), picks || [], { draftStarted: true });
+  }
+  var a = api();
+  var A = a.getAnalysis();
+  var avail = A.avail[0];
+  var card = a.playerPopHtml(avail);
+
+  ok("the card names the player", card.indexOf(avail.name) >= 0 || /pp-name/.test(card));
+  ok("it leads with three numbers, not a table",
+     (card.match(/class="pp-tile"/g) || []).length === 3, card.slice(0, 200));
+  ok("one of them is what he adds to YOUR lineup", /to your lineup/.test(card));
+  ok("one of them is whether he survives to your next pick", /lasts to|survives/.test(card));
+  ok("it carries the market line", /pp-market/.test(card) && /ADP \d/.test(card));
+  ok("it says whether he is a bargain or a reach at this pick",
+     /pp-val/.test(card) && /(Fell|reach|On schedule)/.test(card));
+  ok("and it offers the full breakdown rather than containing it",
+     /data-pact="full"/.test(card) && !/Where the points come from/i.test(card));
+  ok("no scoring-breakdown table leaks into it", card.indexOf("<table") < 0);
+
+  // --- a drafted player has none of those numbers --------------------------
+  // Survival and the composite are computed for the players still on the board.
+  // Rendering NaN% into a card is worse than having no card.
+  var withPick = api([{ pick: 1, name: A.avail[0].name, slot: 1, mine: false }]);
+  var A2 = withPick.getAnalysis();
+  var gone = A2.byName[A.avail[0].name];
+  var goneCard = withPick.playerPopHtml(gone);
+  ok("a drafted player's card says who has him", /pp-taken/.test(goneCard), goneCard.slice(0, 200));
+  ok("and prints no NaN anywhere", goneCard.indexOf("NaN") < 0, goneCard.slice(0, 300));
+  ok("and offers no draft action for a player already gone",
+     !/data-pact="mine"/.test(goneCard), goneCard);
+
+  // --- the standout lines --------------------------------------------------
+  // Only lines with something to say. A card that prints eight labels and six
+  // em-dashes is worse than one that prints two facts.
+  var lines = a.standoutLines(avail);
+  ok("standout lines are capped", lines.length <= 4, String(lines.length));
+  ok("every line has text", lines.every(function (l) { return l.t && l.t.length > 3; }),
+     JSON.stringify(lines));
+  ok("no em-dash placeholders", lines.every(function (l) { return l.t.trim() !== "\u2014"; }));
+
+  // An injury outranks a market move: it changes whether you take him at all.
+  var hurt = A.avail.filter(function (p) { return p.injury; })[0];
+  if (hurt) {
+    var hl = a.standoutLines(hurt);
+    ok("an injury leads the standout lines", hl.length > 0 && hl[0].cls === "bad" &&
+       hl[0].t.indexOf(hurt.injury) === 0, JSON.stringify(hl[0]));
+  } else {
+    ok("(no injured player on this board to check ordering with)", true);
+  }
+})();
+
+/* ========================================================================
+   The draft plan: a distribution, not a promise
+
+   runMock() has always simulated whole drafts from the user's seat; all it
+   returned was the roster that came out, which is enough to score a style and
+   useless for "what does round 6 look like". summarizePlan() reads the same
+   simulations pick by pick.
+
+   The thing being guarded here is honesty. A panel like this wants to write
+   "you will get Chase Brown in round 3", and the only defence against that is
+   that every name carries the share of drafts it actually appeared in.
+   ======================================================================== */
+console.log("\n== the draft plan ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+  var res = api.runMock(api.activeKnobs(), 12, 20260908);
+  var plan = res.plan;
+
+  ok("runMock now returns a per-pick plan", Array.isArray(plan) && plan.length > 0,
+     JSON.stringify(plan && plan.slice(0, 1)));
+
+  // The schedule is hand-computed at the top of this file. The plan must cover
+  // exactly the user's own picks — no more, no fewer, and the keeper among them.
+  var picks = plan.map(function (r) { return r.pick; });
+  ok("it covers exactly the user's own picks",
+     JSON.stringify(picks) === JSON.stringify(EXPECTED_SCHEDULE),
+     picks.join(",") + " vs " + EXPECTED_SCHEDULE.join(","));
+  ok("in pick order", picks.every(function (p, i) { return i === 0 || p > picks[i - 1]; }));
+
+  var keeper = plan.filter(function (r) { return r.keeper; });
+  ok("the kept round is marked as kept, not predicted",
+     keeper.length === 1 && keeper[0].pick === 59, JSON.stringify(keeper));
+  ok("and it names the keeper", keeper[0].names[0] && keeper[0].names[0].name === "Drake Maye",
+     JSON.stringify(keeper[0].names));
+
+  // --- every claim carries its own odds -----------------------------------
+  var live = plan.filter(function (r) { return !r.keeper; });
+  ok("every pick reports a most-likely position", live.every(function (r) { return !!r.pos; }));
+  ok("every position carries the share of drafts it happened in",
+     live.every(function (r) { return r.posPct > 0 && r.posPct <= 100; }),
+     JSON.stringify(live.map(function (r) { return r.posPct; })));
+  ok("every named player carries his own percentage",
+     live.every(function (r) {
+       return r.names.every(function (nm) { return nm.pct > 0 && nm.pct <= 100 && nm.name; });
+     }));
+  ok("at most three names per pick",
+     live.every(function (r) { return r.names.length <= 3; }));
+  ok("the names are ordered most likely first",
+     live.every(function (r) {
+       return r.names.every(function (nm, i) { return i === 0 || nm.pct <= r.names[i - 1].pct; });
+     }));
+  // A second position is only worth naming when the simulation genuinely split.
+  ok("a second position is only named when it is a real split",
+     live.every(function (r) { return !r.alt || r.altPct >= 25; }),
+     JSON.stringify(live.filter(function (r) { return r.alt; })
+       .map(function (r) { return r.pos + "/" + r.alt + " " + r.altPct; })));
+
+  // --- a need you have already met is not a need ---------------------------
+  // The first version read the simulation alone and told a manager holding a
+  // kept quarterback that his "first QB" was in round 11. That was the second.
+  var fill = api.planFillRounds(plan);
+  ok("a kept position is reported as already held, not as a future need",
+     fill.QB && fill.QB.round === 0, JSON.stringify(fill.QB));
+  ok("positions you do not hold report the round they arrive",
+     fill.RB && fill.RB.round >= 1, JSON.stringify(fill.RB));
+
+  // --- the notes ------------------------------------------------------------
+  var notes = api.planNotes(plan, fill);
+  ok("the plan says something in words", notes.length > 0);
+  ok("every note is a real sentence",
+     notes.every(function (n) { return n.t && n.t.length > 30 && /\.$/.test(n.t.trim()); }),
+     JSON.stringify(notes.map(function (n) { return n.k; })));
+  ok("and every note is typed, so it can be styled by what it is",
+     notes.every(function (n) { return /^(shape|settled|open|scoring)$/.test(n.k); }),
+     notes.map(function (n) { return n.k; }).join(","));
+  // It always says something about how far to trust itself. That note is the
+  // one a panel like this normally leaves out.
+  ok("it always says where the forecast stops being one",
+     notes.some(function (n) { return n.k === "open"; }),
+     notes.map(function (n) { return n.k; }).join(","));
+
+  // The "settled" note used to fire at 30%, which caught every pick on this
+  // board and produced "the simulation keeps landing on the same player at 14
+  // of your picks" — a sentence that says nothing.
+  var settled = notes.filter(function (n) { return n.k === "settled"; })[0];
+  if (settled) {
+    ok("the settled note names a few picks rather than counting all of them",
+       !/\b1[0-4] of your picks\b/.test(settled.t), settled.t.slice(0, 120));
+    ok("and every player it names carries a percentage",
+       (settled.t.match(/% of drafts/g) || []).length >= 1, settled.t.slice(0, 160));
+  } else {
+    ok("(no pick on this board is settled enough to be named)", true);
+  }
+
+  // --- it starts from where the draft actually is --------------------------
+  var mid = loadApp(kindaHighlandersLeague(),
+    Array.from({ length: 34 }, function (_, i) {
+      var slot = mid_owner(i + 1);
+      return { pick: i + 1, name: null, slot: slot, mine: slot === 11, unknown: true };
+    }), { draftStarted: true });
+  function mid_owner(p) {
+    var r = Math.ceil(p / 12), i = p - (r - 1) * 12;
+    return (r % 2 === 1) ? i : (12 - i + 1);
+  }
+  var midPlan = mid.runMock(mid.activeKnobs(), 6, 20260908).plan;
+  ok("a plan opened mid-draft only covers the picks still to come",
+     midPlan.every(function (r) { return r.pick > 34; }),
+     midPlan.map(function (r) { return r.pick; }).join(","));
+
+  // --- the same inputs give the same plan ----------------------------------
+  // The seed is fixed on purpose: a plan that reshuffles itself while you read
+  // it is not one you can act on.
+  var again = api.runMock(api.activeKnobs(), 12, 20260908).plan;
+  ok("the same seed gives the same plan twice",
+     JSON.stringify(again) === JSON.stringify(plan));
+})();
+
+/* ========================================================================
+   Why the plan looks like this
+
+   The plan's first version printed the roster and left the reasoning to the
+   reader, which is the wrong half of the job — a manager who knows he is
+   taking a defense in round 7 and does not know why will talk himself out of
+   it at 19:40 with eleven people waiting.
+
+   Kinda Highlanders is the case that proves it. Its D/ST points-allowed tiers
+   are boosted hard (pa0 25 against 10, pa1_6 20 against 7, pa7_13 14 against
+   4), and nothing else in the scoring moves materially. Every claim below is
+   derived, so none of it is hand-written about this league in particular.
+   ======================================================================== */
+console.log("\n== why the plan looks like this ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+
+  // --- the scoring really does move the defense ---------------------------
+  var rep = api.impactReport();
+  var rel = rep.scoring.relative.rel;
+  ok("this league's scoring moves DEF and essentially nothing else",
+     rel.DEF > 0.4 &&
+     ["QB", "RB", "WR", "TE"].every(function (p) { return Math.abs(rel[p]) < 0.05; }),
+     JSON.stringify(rel));
+
+  // --- and the panel says so, first --------------------------------------
+  var why = api.planWhy();
+  ok("the panel leads with what the scoring does", why[0] && why[0].k === "scoring",
+     why.map(function (w) { return w.k; }).join(","));
+  ok("and names the position it moves, with the size of the move",
+     /DEF gains \d+%/.test(why[0].head), why[0].head);
+  ok("with the measured evidence under it, not an assertion",
+     why[0].body.join(" ").indexOf("positional edge") >= 0, why[0].body.join(" ").slice(0, 160));
+  ok("including where that puts the best one on this board",
+     /best DEF is the #\d+ player on this board/.test(why[0].body.join(" ")),
+     why[0].body.join(" ").slice(0, 240));
+
+  // --- the seat -----------------------------------------------------------
+  // Slot 11 of 12 picks 11 and 14 (three apart), then waits twenty-one for 35.
+  var seat = why.filter(function (w) { return w.k === "seat"; })[0];
+  ok("the panel explains the seat", !!seat);
+  ok("it reads the snake rather than being told about it",
+     /pairs 3 apart, then a gap of 21/.test(seat.body.join(" ")), seat.body.join(" ").slice(0, 140));
+  ok("and says what being near the turn costs and buys",
+     /near the turn/.test(seat.body.join(" ")));
+
+  // A middle slot has no turn to plan around and must not be told it does.
+  var midSeat = loadApp(kindaHighlandersLeague({ slot: 6, keepers: [] }), [],
+    { draftStarted: true }).planWhy().filter(function (w) { return w.k === "seat"; })[0];
+  ok("a middle slot is not told it is near the turn",
+     !/near the turn/.test(midSeat.body.join(" ")), midSeat.body.join(" ").slice(0, 160));
+
+  // --- the floors ---------------------------------------------------------
+  var floor = why.filter(function (w) { return w.k === "floor"; })[0];
+  ok("the floors are named as settings, not as the board's opinion",
+     /your settings, not/.test(floor.body.join(" ")), floor.body.join(" ").slice(0, 160));
+  ok("and both floors are stated", /defense before round 7/.test(floor.body.join(" ")) &&
+     /kicker before round \d+/.test(floor.body.join(" ")), floor.body.join(" "));
+
+  // --- the style ----------------------------------------------------------
+  var style = why.filter(function (w) { return w.k === "style"; })[0];
+  ok("the style block names the style in force", style.head === "Balanced", style.head);
+  ok("balanced says it has no thumb on the scale",
+     /No positional thumb/.test(style.body.join(" ")), style.body.join(" ").slice(0, 120));
+
+  // A style with real bias must report the bias actually in force, read off
+  // the knobs rather than off the style's blurb — so an edited style describes
+  // what it now is rather than what it was.
+  var zero = loadApp(kindaHighlandersLeague({ style: "zero_rb" }), [], { draftStarted: true });
+  var zStyle = zero.planWhy().filter(function (w) { return w.k === "style"; })[0];
+  ok("a biased style reports the bias in force", /In force right now:/.test(zStyle.body.join(" ")),
+     zStyle.body.join(" ").slice(-200));
+  ok("naming the position and the direction",
+     /RB down \d+%/.test(zStyle.body.join(" ")), zStyle.body.join(" ").slice(-200));
+
+  // --- and every pick carries the engine's own account of itself ----------
+  var res = api.runMock(api.activeKnobs(), 10, 20260908);
+  var live = res.plan.filter(function (r) { return !r.keeper; });
+  ok("picks carry a reason", live.some(function (r) { return r.why && r.why.length; }),
+     JSON.stringify(live.map(function (r) { return r.why; })));
+  ok("at most two reasons per pick, so the table stays a table",
+     live.every(function (r) { return !r.why || r.why.length <= 2; }));
+
+  // The reason has to be the engine's, not the panel's. composite() writes it.
+  var eng = require("fs").readFileSync(
+    require("path").join(__dirname, "../assets/engine.js"), "utf8");
+  var sample = live.filter(function (r) { return r.why && r.why.length; })[0].why[0];
+  var stem = sample.replace(/[-+]?\d+(\.\d+)?/g, "").split(/\s+/)
+    .filter(function (w) { return w.length > 4; })[0];
+  ok("and the wording comes from engine.js, not from the plan",
+     eng.indexOf(stem) > 0, "stem '" + stem + "' from: " + sample);
+
+  // The DEF pick is the one this whole block exists for: it must explain
+  // itself in terms of what it adds, not just assert the position.
+  var def = live.filter(function (r) { return r.pos === "DEF"; })[0];
+  if (def) {
+    ok("the defense pick explains itself",
+       def.why.join(" ").indexOf("DEF") >= 0, JSON.stringify(def.why));
+    ok("and it lands the round the floor lifts, which the floor block explains",
+       def.round === (kindaHighlandersLeague().defFloorRound || 7),
+       "round " + def.round);
+  } else {
+    ok("(no defense in this plan to check)", true);
+  }
+
+  // A reason only survives if most of the simulations gave it. One draft in
+  // three is not why a pick happens.
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  ok("a reason is kept only when most drafts agreed on it",
+     /slot\.why\[b\]\.n - slot\.why\[a\]\.n[\s\S]{0,160}\/ n >= 0\.5/.test(app));
+  // The reason text carries pick numbers ("+31 over what's likely left at pick
+  // 38"), which would make every simulation's wording unique and every count 1.
+  // The shape is what is being counted, so the numbers come out first.
+  var keyLine = (app.match(/var key = String\(w\)[^\n]*/) || ["not found"])[0];
+  ok("numbers are stripped before counting, or nothing would ever agree",
+     keyLine.indexOf('"#"') > 0 && keyLine.indexOf("replace(") > 0, keyLine);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

@@ -362,28 +362,55 @@ The picker states the cost of each rather than selling both as equivalent.
 ## Start draft, and the tracker
 
 `Start draft` opens a panel at the top of the middle column and is the thing to
-work from once the draft is running. In one place: the round and pick, who is on
-the clock, the next three on deck, your next pick with how many away and roughly
-how long that is on your league's clock, the last six picks with the team that
-made them — and, most importantly, a box to record the pick that is happening
-right now.
+work from once the draft is running. It has four bands, top to bottom, and it is
+built so that the four questions you have on every single pick are answered in
+that order without scrolling:
 
-That box takes partial names ("bijan", "chase") and matches against what is
-actually still available, so it cannot put an already-drafted player back on a
-roster. Whatever you type goes to whoever is on the clock. **Didn't catch it**
-records an unknown pick: the slot is spent, the player stays available, and the
-board's pick count stays level with the real draft, which matters more than the
-name.
+1. **Head — where you are.** Your own state in a phrase you can read across a
+   room ("You're on the clock", "You're up next", "You're up in 4 picks"), then
+   the round, the pick out of the whole draft, and your next two picks. A
+   hairline bar shows how far through the draft the room actually is.
+2. **Do — the one next action.** Exactly one instruction, in a sentence, with at
+   most one button: catch up when the board has fallen behind Yahoo, Simulate in
+   a practice run, "take it off the board" on your own turn, and otherwise which
+   team pick N belongs to and how to record it. The branches are exclusive, so
+   there is never a second thing competing to be the next move.
+3. **Order — the picks either side of now.** Three picks ahead, the pick on the
+   clock, four behind, in one descending column. Reading down it is going back in
+   time. Your own upcoming picks are called out, keepers are labeled, and every
+   recorded pick shows the position and the player. "Am I still in step with the
+   room" is a glance rather than a comparison.
+4. **Keep — the step-away band.** One line saying how long since a pick landed on
+   this board, and behind it the way back when the answer is "a while ago". See
+   *Stepping away* below.
 
-Underneath, it says whether the board is in step with the live pick number, and
-offers catch-up when it isn't.
+There is no search box in the tracker. **A pick is recorded on the player list**
+— double-click a row on a desktop, tap it twice on a tablet — which is where the
+names already are, alongside the ADP, the tier and the survival number. The pick
+is credited to whoever is on the clock. **Missed the name** records an unknown
+pick: the slot is spent, the player stays available, and the board's pick count
+stays level with the real draft, which matters more than the name.
+
+Stop and Start over are folded behind the **⋯**, so a thumb cannot find Start
+over while reaching for something else.
+
+### There is no pick clock
+
+There used to be a countdown here, and a Pause for it, and a per-league clock
+length in settings. It counted down from the last pick *recorded on this board*,
+which meant it was never Yahoo's timer and could not have been: nobody takes their
+full two minutes, and the next team is on the clock the instant the last one picks.
+It was precision the board did not have, dressed up as a number.
+
+What survives it is the timestamp underneath — when a pick last landed here —
+which answers the question that is actually worth asking on draft night.
 
 ## The league, not just your team
 
 Team names are edited **in the Rosters view** — click any card's title and type;
 it saves as you go. (They are also in League setup, under "Who else is in the
 league", but the roster cards are where people look for them.) They replace
-"team 7" everywhere — ticker, status strip,
+"team 7" everywhere — the live draft box,
 draft log, catch-up sheet, the row action button, and the report. **Rosters**
 shows all twelve at once, grouped by position with bye weeks, or one at a time.
 
@@ -614,32 +641,154 @@ dropped, known ones are coerced and clamped to the bounds in
 A model proposing draft weights is a suggestion; letting it write arbitrary
 numbers into the scoring engine would not be.
 
-## Staying in sync with the real draft
+## Stepping away, and getting back
 
 Every number the board produces — survival, VONA, the on-deck brief — is computed
 against whichever pick the app thinks the draft is on. Miss a few opponent picks
-and all of them are wrong, confidently and without a word. That is the same
-failure shape as any silent data bug, and it is the most likely thing to go wrong
-during a live draft.
+and all of them are wrong, confidently and without a word. That is the same failure
+shape as any silent data bug, and it is the most likely thing to go wrong during a
+live draft.
 
-The fix is not a prompt for every pick; between picks 38 and 62 there are
-twenty-three of those, and a modal in the way of each one loses to a two-minute
-clock. Instead:
+The failure is not mistyping a pick. It is getting up for five minutes.
 
-- A **live pick** field in the app bar. Type whatever pick number the real draft
-  is showing. It is a checkpoint, not a counter — once your own recorded count
-  passes it, it carries forward on its own.
-- A **status strip** that owns the top of the board: teal when you are on the
-  clock, amber when you are within three picks, and red the moment your count and
-  the reported live pick disagree.
-- **Catch up** when they do: one row per missed slot, each with a one-click ADP
-  guess. The names are a guess and the UI says so — what matters is that those
-  players are off the board, and roughly the right players being gone beats the
-  right players still sitting there.
+The fix is not a prompt for every pick either; between picks 38 and 62 there are
+twenty-three of those. Nor is it what used to be here — a pick number you re-typed
+every round so the strip could turn red when the two disagreed. That only ever
+worked if it was fed, and feeding it is exactly the chore a person sitting in a
+live draft will not do. Instead:
+
+- **The step-away band**, at the bottom of the live draft box, says how long it has
+  been since a pick landed on this board. Past eight minutes of silence it turns
+  amber — *"Nothing recorded for 14 min — stepped away?"* — and opens itself. It is
+  a question, not an alarm; being away from the screen is a normal thing to have
+  done.
+- **One number gets you back.** Read the pick Yahoo is on, type it in, and the band
+  answers immediately: *"6 picks to record."* Press **Catch up 6**.
+- **The catch-up sheet** is one row per missed slot, in order, each addressed to
+  the team whose slot it was, each with a one-click ADP guess. The names are a
+  guess and the UI says so — what matters is that those players are off the board,
+  and roughly the right players being gone beats the right players still sitting
+  there.
 - A row you leave blank, or fill with a name already drafted, records as an
   **unknown pick**. The slot is consumed and the player stays available. Refusing
   to record it would leave the app permanently behind, which is the failure this
   exists to prevent.
+- Typing a number *lower* than the board's own count means something is recorded
+  here that has not happened. The band says so and points at **Undo** in the app
+  bar rather than growing a second button for it.
+
+## The draft plan
+
+Pressing **Start draft** opens it once, and **More › Draft plan** reopens it any
+time. It is what this draft probably looks like from your seat, before the first
+pick — forty full drafts simulated by `runMock()` against your style's knobs,
+your scoring, your roster shape, your keepers and your real Yahoo ADP where you
+have pasted it. The room drafts the way the market drafts; you draft the way your
+style says.
+
+**Why this plan looks like this** comes first, because a manager who knows he is
+taking a defense in round 7 and does not know *why* will talk himself out of it
+at 19:40 with eleven people waiting. Four derived blocks:
+
+- **What your scoring does**, from the impact analysis. In a league with boosted
+  D/ST points-allowed tiers this reads: *"DEF gains ground in your league. From
+  the best DEF down to the last one you can start is 61 points here against 37
+  on the baseline — 63% more positional edge. Expect the board to take DEFs
+  earlier than ADP does. The best DEF is the #22 player on this board, against
+  #40 on the baseline."* That sentence explains most of what the table below
+  does, and it was previously buried underneath it.
+- **What your seat does.** The snake is arithmetic, not a preference, and it
+  decides more about a draft's shape than most managers realize. Slot 11 of 12
+  reads: *"Your picks arrive in pairs 3 apart, then a gap of 21. You are choosing
+  two players at a time, so pair them by position rather than taking the same one
+  twice."* A middle slot is told it has no turn to plan around, rather than being
+  told it does.
+- **What your style does**, read off the knobs actually in force rather than the
+  style's blurb — so a style you have edited describes what it now is. Zero RB
+  reports "RB down 55% for the first 5 rounds, WR up 30%…"; Balanced says it has
+  no thumb on the scale and that this is the thing to change if the plan is not
+  the draft you want.
+- **Floors you set.** Two rounds in every draft are decided by a setting rather
+  than by the board. The block says so plainly: if the plan takes a defense the
+  moment the floor lifts, that is your scoring saying the position is worth more
+  than what is left around it — not the board's opinion.
+
+**Round by round** is the body of it: every one of your picks, the position it
+most often turns into, and the two or three names most often there. A pick where
+the simulation genuinely splits says so — "TE 63% or RB 38%" — and a kept round
+is marked kept rather than predicted.
+
+Under each pick is **the engine's own account of it** — `composite()` already
+writes the sentence explaining itself, so the plan keeps it instead of guessing
+at a reason afterwards. Pick 83 reads *"fills an empty DEF slot · +61 to your
+lineup over a free DEF (DEF12)"*. Rounds where nothing can crack the starting
+lineup say exactly that, which is the honest answer to "what am I doing in round
+10". A reason is only shown when at least half the simulations gave it, and pick
+numbers are stripped before counting or no two would ever match.
+
+**When each starting slot gets filled** is the same data as a row of chips: the
+round your first back, receiver, tight end, quarterback, defense and kicker
+arrive. A position you already hold reads "you have one" rather than naming a
+round — the first version of this told a manager holding a kept quarterback that
+his first QB was in round 11, which was the second.
+
+**What that means for you** is at most five sentences, and only the ones the
+numbers support: the shape the plan comes out in, the two or three picks the
+simulation is genuinely confident about, and — the note a panel like this usually
+leaves out — where it stops being confident. When no single name holds even a
+fifth of the drafts from some round on, it says so and hands you back to the live
+suggestions. Then one or two headlines from the scoring impact analysis, which is
+the only part of the panel about the league rather than about the draft.
+
+**The honesty rule.** Every name carries the share of drafts it actually appeared
+in. "Chase Brown, 31%" is a true sentence; "you will get Chase Brown in round 3"
+is not, and it is the sentence a panel like this wants to write. The seed is
+fixed, so opening it twice does not quietly show you two different drafts.
+
+It is deliberately a local simulation rather than a Claude call — this is the
+screen somebody opens at 18:55 on hotel wifi, and a plan that needs a network is
+not a plan. Forty drafts is about half a second of blocked main thread, so the
+modal paints its spinner first.
+
+## The player card
+
+Hovering a row at a desk, or the first tap on a tablet, opens a compact card
+anchored to that row. It carries what makes the player stand out, not every
+number the engine touched:
+
+- **Three tiles** — his points in your scoring, what he adds to the best starting
+  lineup you can actually field, and the odds he survives to your next pick.
+  Three, because three is what decides between two players.
+- **The market line** — mock ADP, real completed-draft Yahoo ADP where you have
+  pasted it, and this week's seven-day move. Then whether that makes him a
+  bargain or a reach *at the pick on the clock*.
+- **Standout lines**, at most four, ordered so that things which change whether
+  you take him at all come before things that change how you feel about it: an
+  injury outranks a market move, running out of a tier outranks a depth chart.
+  Every line is present only because it had something to say — a card that
+  prints eight labels and six em-dashes is worse than one that prints two facts.
+  The hand-written research note lands here, in full, and the card scrolls rather
+  than truncating it.
+- **The same actions the row carries**, and one **Full breakdown** button.
+
+A drafted player's card says who has him and stops there — survival and the
+composite are computed for players still on the board, and rendering `NaN%` into
+a card is worse than having no card.
+
+### Why the breakdown moved
+
+The full scoring teardown used to live in the middle column, and it rendered
+whether or not anyone asked: `renderRecs` ended by selecting the top
+recommendation and calling `renderDetail` on it, so two tables of composite
+arithmetic sat permanently under the suggestion cards. On touch that card also
+carried `order: -1`, which put it *above* the live draft box — so on draft day,
+tapping any player to look at him pushed the box, the brief and the
+recommendations off the screen. Tapping a player to read about him cost you the
+panel you draft from.
+
+It is a modal now, opened deliberately by **Full breakdown** or by **Why?** on a
+recommendation, and it cannot displace anything. The middle column is the draft
+column again: the live box, Claude's brief, the three suggestions.
 
 ## The board keeps drafted players
 
@@ -648,34 +797,28 @@ ranked position, with who took them and at which pick. The gaps in the ranking
 are themselves the information — a run is visible as a cluster of strikethroughs
 near the top of a position. Toggle with the `drafted` pill; the choice persists.
 
-The ticker under the status strip carries round, who is on the clock, who is on
-deck, your next pick, and the last five names off the board — the draft log in
-the right column is a record, the ticker is what you glance at.
+## The two bands at the top
 
-The pick clock is a stopwatch, not a mirror: nothing here talks to Yahoo. Enter
-your league's seconds-per-pick and it counts down from the last pick you
-recorded, answering "roughly how long until I'm up" rather than claiming to know
-the real timer.
-
-## The three bands at the top
-
-They used to repeat each other and the tracker. The app bar carried pick, round,
-who was on the clock, your next pick and the countdown; the status strip repeated
-the picks-until-you're-up; and the ticker repeated round, on the clock, on deck,
-your pick and the recent picks — every one of which the tracker already showed in
-the middle column with more room.
+Three of them used to repeat each other and the tracker. The app bar carried pick,
+round, who was on the clock, your next pick and a countdown; the status strip
+repeated the picks-until-you're-up, four clauses of roster need and the countdown
+again; and a ticker repeated round, on the clock, on deck, your pick and the recent
+picks — every one of which the live draft box already showed in the middle column
+with more room. On an iPad the strip crowded into a ribbon nobody could read.
 
 Now:
 
 - **App bar** — identity and actions only. Undo, Rosters, Ask Claude, and one
   More menu holding report, style, columns, league setup, save/load and sign out,
   so the bar cannot overflow on a tablet.
-- **Status strip** — the one thing that must be readable without looking
-  anywhere: whose turn it is, how far away you are, or that you are out of sync;
-  plus the countdown, right-aligned and large.
-- **Ticker** — deleted.
-- **Tracker** — everything else, and it gained the two orphaned inputs (live
-  pick, clock seconds) that had been sitting in the app bar with no context.
+- **Roster-gap strip** — one idea, and one the box does not carry: the holes in
+  your starting lineup, as chips, capped at four with a count for the rest, and
+  how many picks are left to fill them. No state phrase, no round, no pick number,
+  no clock. It wraps rather than scrolling, because a status bar that hides half
+  of itself off the right edge is worse than a taller one.
+- **Ticker** — deleted. (It had already stopped rendering: there was no `#ticker`
+  element and nothing called `renderTicker()`.)
+- **Live draft box** — everything else.
 
 ## iPad
 
@@ -684,8 +827,8 @@ recommendation with the roster full-width underneath, rather than collapsing to
 one column and burying the recommendation under 200 player rows. Under
 `hover: none` the row actions stop hiding behind a hover that never arrives and
 take a real column, rows grow to a 54px tap target, and every input is 16px so
-iOS does not zoom the layout on focus. The app bar, status strip and ticker
-scroll inside themselves — nothing makes the page itself scroll sideways.
+iOS does not zoom the layout on focus. The app bar scrolls inside itself and the
+roster-gap strip wraps — nothing makes the page itself scroll sideways.
 
 ## Cache busting
 

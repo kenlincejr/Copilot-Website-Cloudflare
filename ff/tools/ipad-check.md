@@ -63,19 +63,50 @@ Check:
 Pass = all of the above except the last, which is informational either way.
 Screenshot: ______________
 
+## 3b. 0:06 — Draft plan — not a blocker
+
+Open **More › Draft plan**. It runs forty simulations, which is about half a
+second of blocked main thread on a desktop and will be slower here.
+
+- The spinner appears first — the button must not look dead while it computes.
+- Time it roughly: ______ seconds. Anything over four is worth knowing about
+  before Monday, though it is not a blocker; nothing about drafting needs it.
+- Scroll to the bottom. The chips row and the notes must both be reachable — on
+  a short screen the modal scrolls inside its own backdrop.
+
+Pass = it opens, it finishes, and you can read all of it.
+Screenshot: ______________
+
 ## 4. 0:07 — Tracker — BLOCKER
 
 Open the live tracker (start or resume a practice draft if one isn't running).
 
 Check, all at once:
-- The record box, "Didn't catch the name", Pause, Stop, Simulate, and Start over
-  are all comfortably tappable — each at least 44px.
-- The pick clock's text is legible held at arm's length, not squinting distance.
-- Tap "Start over" once: it turns red and says "Sure?" — do **not** tap it again.
-  Wait and confirm it disarms back to its normal label after about 4 seconds on
-  its own, with no second tap.
+- The **⋯**, the "last pick recorded" line, and whatever button the "do" band is
+  showing (Simulate / Missed the name) are all comfortably tappable — each at
+  least 44px.
+- All four bands — the state line, the one instruction, the pick order, the
+  step-away line — are on screen at once without scrolling the middle column.
+- The pick order reads correctly: your own upcoming pick is called out, the pick
+  on the clock is the highlighted row, and the picks under it are the ones that
+  have actually happened, newest first.
+- The state line ("You're up in 4 picks") is legible held at arm's length, not
+  squinting distance. So is the roster-gap strip above it.
+- Tap the "last pick recorded" line to open the step-away band. The **Yahoo is on
+  pick** field opens a number pad, not a full keyboard, and typing a number two or
+  three ahead of the board's own pick immediately reads back "N picks to record"
+  with the Catch up button enabling itself.
+- Open the **⋯**, then tap "Start over" once: it turns red and says "Sure?" — do
+  **not** tap it again. Wait and confirm it disarms back to its normal label
+  after about 4 seconds on its own, with no second tap.
 
-Pass = all three true, and the disarm actually happens without a second tap.
+Pass = all of the above true, and the disarm actually happens without a second
+tap.
+
+**And the thing this row exists to catch:** tap a player in the list. The card
+opens anchored to his row — and the live draft box must not move. If the box,
+the brief or the suggestions scroll out from under you when you tap a name, stop
+and say so; that is the failure this layout was rebuilt to remove.
 Screenshot: ______________
 
 ---
@@ -152,8 +183,8 @@ lower risk than the rows above:
   already measured this; a real-device regression would show up as visible lag in
   row 5's timed test, which is covered.
 - **Contrast** (teal/amber-on-dark) — a legibility nuisance, not a blocker; row 4
-  already checks the clock is readable at arm's length, which is the one contrast
-  case that matters live.
+  already checks the state line and the roster-gap strip are readable at arm's
+  length, which is the contrast case that matters live.
 - **Background tab behavior** (switching to Yahoo's tab and back) — Split View
   (row 7) is the actual plan for Monday, which makes this scenario moot; if Split
   View works, nothing switches tabs.
@@ -163,15 +194,15 @@ lower risk than the rows above:
 ## Flagged: the one cut we're least comfortable with
 
 **Row 9 (not run here): sleep and return.** Lock the iPad for five minutes
-mid-draft, unlock, and confirm the clock and pick count are still right. This is
-cut for time, but it's a real Monday-night scenario — someone will lock the screen
-to check a phone at some point in three hours. If there's a spare five minutes
-before 19:00, run this one too:
+mid-draft, unlock, and confirm the board picks the thread back up. This is cut for
+time, but it's a real Monday-night scenario — someone will lock the screen to check
+a phone at some point in three hours, and it is the exact case the step-away band
+exists for. If there's a spare five minutes before 19:00, run this one too:
 
 - Mid-practice-draft, lock the iPad. Wait 5 minutes. Unlock.
-- Check: does the clock show correct elapsed time, or did it freeze/reset? Is the
-  pick count still right? If Safari reloaded the page, is the draft state intact
-  and the sync status accurate rather than stuck on "syncing"?
+- Check: is the pick count still right? Does the "last pick recorded" line show a
+  sensible elapsed time rather than "just now"? If Safari reloaded the page, is the
+  draft state intact and the sync status accurate rather than stuck on "syncing"?
 
 Pass/fail if run: ______________________
 
@@ -194,7 +225,7 @@ in-process store with strict read-after-write consistency, so it only ever prove
 the optimistic logic is right when reads are consistent.
 
 So the point of this test is not to prove the race is fixed. It is to find out
-what it looks like on your screen if it happens, so you recognise it at 19:40
+what it looks like on your screen if it happens, so you recognize it at 19:40
 instead of discovering it afterwards.
 
 **Setup.** iPad signed in, on the deployed site. I drive a browser signed in to the
