@@ -557,6 +557,32 @@
     var reasons = [];
     var replPts = ((ctx.replacement && ctx.replacement[player.pos]) || {}).points || 0;
 
+    // Filling an empty starting slot is not the same decision as adding another
+    // body, and one replacement number cannot tell the two apart.
+    //
+    // The rank replacementRanks() derives is a draft-start constant. By round 8 a
+    // deep position has been picked down *to* it, so `marginal` for the very
+    // player who would fill your empty slot comes out at zero. At pick 86 of a
+    // real draft the WR2 slot was empty, replacement WR was fixed at WR29 before
+    // pick 1, and the best receiver left on the board *was* WR29 — so filling the
+    // hole scored 0.0 while a second tight end, behind a rostered tier-1 tight
+    // end, kept 28% of a real open-market surplus and took the top of the board.
+    // Across 200 seeded drafts that was every board in round 8, 200 times out of
+    // 200.
+    //
+    // Against an empty slot the honest baseline is not a body from a table
+    // computed before the draft began — it is the body you expect to be there at
+    // your next pick, which expectedBestAvailable already computes. Taking the
+    // lower of the two keeps this a strict correction: early, while the pool is
+    // still well above the replacement rank, nothing moves at all.
+    var slotBaseline = false;
+    var slotEmpty = (ctx.rules.roster[player.pos] || 0) > (need.have || 0);
+    if (slotEmpty && ctx.vona && ctx.vona[player.pos] &&
+        ctx.vona[player.pos].expected < replPts) {
+      replPts = ctx.vona[player.pos].expected;
+      slotBaseline = true;
+    }
+
     // How roster-aware the value term is. needWeight 0 is best-player-available:
     // classic value over replacement, which knows nothing about who you own. At
     // 1 it is what the player adds to the lineup you can actually field.
@@ -604,7 +630,12 @@
     // never made the next one cheaper — which is why the same recommendation
     // kept coming back.
     var vona = 0;
-    if (ctx.vona && ctx.vona[player.pos]) {
+    // With the empty-slot baseline in play, `value` is already measured against
+    // what you would get at your next pick, so VONA here would be a second copy
+    // of the same difference — exactly the double count the two clamps below
+    // exist to prevent. The receiver who should have been the pick at 86 scored
+    // 27.2 of value and another 27.2 of VONA before this guard.
+    if (!slotBaseline && ctx.vona && ctx.vona[player.pos]) {
       var vkey = player.pos + ":" + aware;
       var vcache = (ctx._laterValue = ctx._laterValue || {});
       if (vcache[vkey] == null) {
@@ -750,8 +781,14 @@
     // contradicting itself on the same card.
     if (value > 0.5 && ctx.replacement[player.pos]) {
       reasons.push(marginal > 0.5
-        ? "+" + Math.round(value) + " to your lineup over a free " + player.pos +
-          " (" + player.pos + String(ctx.replacement[player.pos].rank) + ")"
+        // Name the thing the number was actually measured against. Against an
+        // empty slot that is no longer the static replacement rank, and printing
+        // "over a free WR (WR29)" beside a figure computed from what is left at
+        // the next pick is the card explaining itself with the wrong baseline.
+        ? "+" + Math.round(value) + " to your lineup over " + (slotBaseline
+            ? "what is likely left at pick " + ctx.nextPick
+            : "a free " + player.pos +
+              " (" + player.pos + String(ctx.replacement[player.pos].rank) + ")")
         : "best bench " + player.pos + " left — " + Math.round(player.vor) +
           " over a free one if you ever need him");
     }
