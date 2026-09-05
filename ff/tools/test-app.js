@@ -262,6 +262,7 @@ function loadApp(leagueState, picksState, opts) {
     "briefPlayer: briefPlayer, " +
     "setShownNames: function (n) { briefCandidateNames[A.myNext] = n; }, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
+    "SYSTEM: SYSTEM, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
     "needSummary: needSummary, sinceLastPick: sinceLastPick, " +
     "playerPopHtml: playerPopHtml, standoutLines: standoutLines, " +
@@ -1246,6 +1247,27 @@ console.log("\n== styleBlock ==");
      /posBias [^;]*\(my own tweak\)/.test(both), both);
   ok("and the number quoted is the merged one the board ranked on",
      /"TE":1\.3/.test(both), both);
+})();
+
+/* ========================================================================
+   the bake date - what the model is told about how old the data is
+   ======================================================================== */
+console.log("\n== the bake date reaches the model ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var built = (DATA.meta || {}).built || (DATA.meta || {}).baked;
+
+  ok("the fixture board carries a bake date at all", !!built, String(built));
+  ok("the unconditional currency claim is gone",
+     api.SYSTEM.indexOf("and are current") < 0, api.SYSTEM.slice(400, 560));
+  ok("the feed is dated instead", api.SYSTEM.indexOf("as of " + built) >= 0);
+  ok("and the model is told what an old date means",
+     /designation may have moved since/.test(api.SYSTEM));
+  // Read from the fixture rather than pinned to a literal date, so the Sunday
+  // re-bake moves this with the board instead of breaking the suite.
+  ok("the LEAGUE line carries the date too",
+     api.claudeContext().indexOf("Board data baked " + built) >= 0,
+     api.claudeContext().slice(0, 120));
 })();
 
 /* ========================================================================

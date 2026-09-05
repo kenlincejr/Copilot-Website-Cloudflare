@@ -5569,7 +5569,8 @@ function claudeContext() {
       (p.note ? ". Research note: " + p.note : "");
   }).join("\n");
   return [
-    "LEAGUE: " + (S.league.rules.name || "custom") + ", " + S.league.teams + " teams, I pick at slot " + S.league.slot + ".",
+    "LEAGUE: " + (S.league.rules.name || "custom") + ", " + S.league.teams +
+      " teams, I pick at slot " + S.league.slot + ". Board data baked " + BAKED_ON + ".",
     "SCORING THAT DIFFERS FROM DEFAULT: " + scoringHighlights(),
     "DRAFT STATE: pick " + A.cur + " of " + (S.league.teams * S.league.rounds) +
       ", round " + A.onClock.round + ". My next pick is " + A.myNext +
@@ -5618,6 +5619,16 @@ function scoringHighlights() {
   return out.join("; ") || "nothing unusual";
 }
 
+/**
+ * The date the board was baked. Every projection, ADP, depth-chart slot and
+ * injury designation in the app is a snapshot taken that morning — SYSTEM used
+ * to tell the model they "are current", which is true on bake day and a lie by
+ * draft night. audit.js flags the same gap at three days. Saying the date lets
+ * the model discount a designation it has reason to think has moved, which is
+ * the judgment it is here for.
+ */
+var BAKED_ON = (DATA.meta || {}).built || (DATA.meta || {}).baked || "an unknown date";
+
 var SYSTEM =
   "You are a fantasy football draft advisor sitting next to the user during a live draft. " +
   "You will be given the current state of their board, computed by a scoring engine that " +
@@ -5625,7 +5636,9 @@ var SYSTEM =
   "do not substitute generic consensus rankings. Your job is judgment on top of the math: " +
   "where the board's logic is thin, what the research notes actually imply, and what an " +
   "opponent might do next. Depth-chart slots and injury designations come straight from " +
-  "the league feed and are current; where two ADP sources are given and they disagree, that " +
+  "the league feed as of " + BAKED_ON + "; if that is more than a couple of days old, a " +
+  "designation may have moved since, and saying so is more use than repeating it. " +
+  "Where two ADP sources are given and they disagree, that " +
   "is a disagreement between markets and often just means one has not absorbed a piece of " +
   "news yet — say which you think it is rather than assuming an edge. " +
   "Be direct and brief — under 150 words unless asked for more. " +
