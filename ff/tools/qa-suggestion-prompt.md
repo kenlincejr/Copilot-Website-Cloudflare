@@ -508,6 +508,19 @@ is the join that currently silently misses on suffixes and apostrophes.
 **G2. Free and external.** The verified list is in the appendix below — endpoints, auth,
 fields seen, freshness. Read it, re-verify anything you will wire, and write the row.
 
+### H. The live draft board uses the same room
+
+`draftline-build-spec.md` P3.2 specifies the live draft board: the clock line, the last-pick
+line, and three predicted picks for the team on the clock as one-tap record targets, with the
+treatment set by the P3.1 hit-rate table (top-3 88% in round 1, about 50% by round 5, under
+10% from round 12, against a synthetic room). Two checks belong to this review rather than to
+the build: (1) the targets, the practice run and the mock plan must all draw from one
+`roomPick` over one `marketAdp()` — a rehearsal that drafts a different room than the night's
+tap targets predict is a rehearsal of the wrong draft; assert it. (2) Once a Yahoo paste is
+applied, re-run `measure-roompick.js` with `yadp`/`ypct` populated (add the flag) and report
+what the `pct`-availability and run terms do to the top-3 rate by round, because they never
+fire on the bare board the table was measured on.
+
 ---
 
 ## 5. Deliverables
@@ -534,4 +547,119 @@ the commit message saying which finding it closes.
 
 ## Appendix — free data sources, verified 2026-09-05
 
-<!-- APPENDIX_SOURCES -->
+Every endpoint below was fetched on 2026-09-05 and the HTTP status recorded. Field names are
+ones that appeared in a real response; nothing is inferred. Re-verify before wiring — these
+are third-party surfaces and any of them can move.
+
+### Ranked for *this* league (1-QB, full PPR, boosted D/ST, Monday draft)
+
+| # | Source | What it adds to a pick | Enters | Effort |
+|---|---|---|---|---|
+| 1 | **ESPN scoreboard odds, weeks 15–17** (§A5c) | The only free source with playoff-week spreads and totals already posted. Implied team totals for weeks 15–17 → a D/ST and QB matchup prior, and the playoff-SOS tiebreaker between two players the board rates equally. | bake → new `pw` field per team; payload line; a small late-round term | 1 h |
+| 2 | **Sleeper 2025 season stats** (§A2) | Real 2025 snap share, target share, red-zone targets and carries, games active — separates "the projection likes him" from "the offense fed him". Also `gp`/`gms_active` for 2022–2025: a four-year durability curve, the games-missed history B9 wants. | bake → `usage` block; risk grade; payload line | 1.5 h |
+| 3 | **Sleeper 2026 schedule** (§A4) | 27 KB, all 18 weeks. Byes derived; weeks 15–17 opponents to join with #1. | bake | 0.5 h |
+| 4 | **DynastyProcess ECR mirror** (§A7) | Expert consensus rank with `sd`, `best`, `worst` across 127 experts. Disagreement among analysts is a different signal from disagreement among drafters (`adp_sd`), and it is the "reach or fell" input the README asked for. CORS `*`, keyless, license-clean. | bake → `ecr`, `ecrSd`; ceiling/risk input; payload | 1 h |
+| 5 | **ESPN `kona_player_info`** (§A5a) | A second independent ADP with its own `percentChange` (ownership movement — the free, no-paste version of the 7-day signal), plus `injuryStatus` refreshed today. Callable from the browser (CORS reflects origin) — could be live on draft night, not baked. | bake, or live at load | 1.5 h |
+| 6 | **Sleeper trending adds/drops** (§A1) | Which of two similar bench fliers the market is already moving on. Rank signal, not magnitude. | bake or live; late-round tiebreak | 0.5 h |
+| 7 | **ESPN injuries** (§A5b) | Beat-writer `shortComment` per designation, timestamped today — what the designation is *about*, which Sleeper's feed lacks. | payload line beside the designation | 1.5 h |
+| 8 | **nflverse `roster_2026.csv`** (§A6) | `sleeper_id`, `yahoo_id`, `espn_id`, `gsis_id` crosswalk. Enabler for 4, 5 and the Yahoo paste join by ID. | bake | 1 h |
+| 9 | **nflverse `stats_player_reg_2025.csv`** (§A6) | `wopr`, `target_share`, `air_yards_share`, EPA. Refines 2. Needs a real CSV parser and a server-side fetch. | bake | 2 h |
+| 10 | **nflverse `draft_picks.csv`** (§A6) | 2026 rookie round and pick — the ceiling input for the ten or so rookies on the board. | bake → ceiling | 0.75 h |
+| — | Sleeper `adp_2qb`, FFC `2qb` format, ESPN `SUPERFLEX` rank, ECR `redraft-op` | Superflex market pricing on endpoints already called. Irrelevant Monday; the cheapest win in the app for a superflex league. | bake | 0.5 h total |
+
+Not usable before Monday: Yahoo's OAuth API (401; application process), The Odds API (key),
+DraftKings direct (403). Keep the Yahoo paste.
+
+### A1. Sleeper trending
+`https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=50` and
+`.../trending/drop?...` — 200, no auth, CORS `*`, `s-maxage=600`. Array of `{count,
+player_id}` only. `lookback_hours=168` works. `player_id` is a team abbreviation for DSTs.
+
+### A2. Sleeper 2025 season stats
+`https://api.sleeper.com/stats/nfl/2025?season_type=regular&position[]=RB&position[]=WR&position[]=TE&position[]=QB&order_by=pts_ppr`
+— 200, 2.45 MB, 3,116 rows; 2022–2024 also 200. 129 stat keys. Verified populated:
+`gp`, `gms_active`, `off_snp`, `tm_off_snp` (snap share = ratio), `rec_tgt`, `rec_rz_tgt`,
+`rush_rz_att`, `pass_rz_att`, `rec_air_yd`, `rec_yar`, `rec_drop`, `rush_btkl`, `rush_yac`,
+`pos_rank_ppr`, `pts_ppr`. Embedded `player` carries `years_exp`, `news_updated`,
+`injury_*`. Frozen (last_modified ≈ 2026-01-05). Provider `sportradar` here versus
+`rotowire` for projections — do not mix.
+
+### A3. Sleeper weekly projections and the ADP suite
+`https://api.sleeper.com/projections/nfl/2026/1?season_type=regular&position[]=RB...` —
+200, carries `opponent`, `team`, `date`, `week`, 48 stat keys, updated today. The season
+endpoint the bake already calls also carries `adp_ppr`, `adp_half_ppr`, `adp_std`,
+`adp_2qb`, dynasty and rookie variants on every row (`adp_rookie` is 999 for veterans).
+
+### A4. Sleeper 2026 schedule
+`https://api.sleeper.app/schedule/nfl/regular/2026` — 200, 27 KB, 273 rows for 272 games
+(dedupe on `game_id`), weeks 1–18, keys `status, date, home, week, game_id, away`. No bye
+field; a team absent in a week is on bye.
+
+### A5. ESPN, unauthenticated
+**5a.** `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leaguedefaults/3?view=kona_player_info`
+with header `X-Fantasy-Filter: {"players":{"limit":1500,"filterStatsForSplitTypeIds":{"value":[0]},"sortDraftRanks":{"sortPriority":100,"sortAsc":true,"value":"PPR"}}}`
+— 200, 3.76 MB with the split filter (18 MB without; `filterStatsForTopScoringPeriodIds`
+returns 400). 1,036 players. `ownership.{averageDraftPosition, averageDraftPositionPercentChange,
+percentChange, percentOwned, percentStarted, auctionValueAverage, date}`;
+`draftRanksByRankType.{STANDARD, PPR, SUPERFLEX}.rank`; `injuryStatus` (ACTIVE 808,
+QUESTIONABLE 124, INJURY_RESERVE 51, OUT 9, SUSPENSION 1); `stats[]` with `statSourceId` 0
+actual / 1 projected and `seasonId`; `lastNewsDate`. CORS reflects `Origin` and preflight
+allows `x-fantasy-filter`, so it is callable from the page.
+**5b.** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries` — 200, 9 MB,
+CORS `*`, 800 rows, `{id, longComment, shortComment, status, date, athlete, type}`; the
+athlete id is only in `athlete.links[].href`.
+**5c.** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=15&dates=2026`
+— 200, CORS `*`, ~256 KB per week, `max-age=1`. `competitions[0].odds[0].{provider, overUnder,
+spread, details, ...}` (DraftKings). **16 of 16 games carry `overUnder` and `spread` in weeks
+1, 15, 16 and 17.** `spread` is signed relative to the **home** team; `details` is text naming
+the favorite — use `spread`. Home implied total = `overUnder/2 − spread/2`.
+
+### A6. nflverse (GitHub, no auth)
+`raw.githubusercontent.com` sends CORS `*`; release assets redirect to
+`objects.githubusercontent.com` with **no** CORS header, so they need a server-side fetch
+(the bake script, or the Worker). All CSVs carry quoted fields with embedded commas
+(`headshot_url`); a naive split shifts every column — use a real parser.
+- `https://github.com/nflverse/nfldata/raw/master/data/games.csv` — 200, 272 rows for 2026;
+  `spread_line`/`total_line` populated for week 1 only (16/16), week 16 (4/16), none for 15,
+  17, 18. Unique columns: `away_rest`, `home_rest`, `div_game`, `roof`, `surface`.
+- `.../releases/download/stats_player/stats_player_reg_2025.csv` — 200 (the `player_stats`
+  tag is legacy and 404s for 2025). Columns include `target_share`, `air_yards_share`,
+  `wopr`, `racr`, `games`, `targets`, `carries`, `receiving_epa`, `fantasy_points_ppr`.
+  `stats_player_week_2025.csv` adds `week`, `opponent_team`.
+- `.../snap_counts/snap_counts_2025.csv` — 200, `offense_snaps`, `offense_pct` per game.
+- `.../injuries/injuries_2025.csv` — 200, `report_status`, `practice_status` per week; no
+  `date_modified`.
+- `.../draft_picks/draft_picks.csv` — 200, 257 rows for 2026, `round`, `pick`, `age`.
+- `.../rosters/roster_2026.csv` — 200, `sleeper_id, yahoo_id, espn_id, gsis_id, pfr_id,
+  years_exp, rookie_year, draft_number`.
+- `.../pfr_advstats/advstats_season_rec.csv` (and `_rush`) — 200, updated today, `adot`,
+  `brk_tkl`, `drop_percent`.
+- `depth_charts_2026.csv` is current but 46 MB of history — Sleeper's `depth_chart_order`
+  covers it. `nextgen_stats` ships only `.csv.gz`/`.parquet`. `snap_counts_2026`,
+  `injuries_2026`: 404 (season not started).
+
+### A7. Expert consensus
+- `https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_fpecr_latest.csv`
+  — 200, 999 KB, CORS `*`, scraped 2026-09-04. Filter `page_type`/`ecr_type`:
+  `redraft-overall/ro` (525 rows), per-position `redraft-rb/rp` etc., and `redraft-op/rsf`
+  (superflex). Columns `player, id, pos, team, ecr, sd, best, worst, bye, scrape_date`.
+  `id` is the FantasyPros player id; `yahoo_id` is NA here — join through `roster_2026.csv`.
+- FantasyPros' documented v2 API returns 403 without a key; the key is free but tied to a
+  membership tier and an application. Their site-internal `partners.fantasypros.com`
+  endpoint answers 200 keyless with `rank_ecr, rank_min, rank_max, rank_std, tier,
+  player_yahoo_id, player_bye_week` — but it is CORS-locked to fantasypros.com and
+  undocumented, and their ToS governs it. Prefer the mirror above.
+
+### A8. Sleeper players feed — population counts that matter
+`https://api.sleeper.app/v1/players/nfl` — 14.65 MB, 12,226 players. `years_exp` 12,158;
+`age` 10,977; `news_updated` 8,228; `injury_status` 786; `injury_body_part` 708 (e.g. "Knee -
+ACL"); `injury_notes` 92 and short; **`injury_start_date` 0 and `practice_participation` 1** —
+these keys exist and are empty, do not model on them. `yahoo_id` on 6,750, `espn_id` on
+6,736: the join keys to the Yahoo paste, ESPN and FantasyPros. `metadata.rookie_year` exists;
+draft capital does not — use nflverse `draft_picks.csv`.
+
+### A9. FantasyFootballCalculator, already wired
+`https://fantasyfootballcalculator.com/api/v1/adp/ppr?teams=12&year=2026&position=all` is
+the source in use (7,430 drafts, 08-29 → 09-05). The same endpoint answers for `2qb` (7,208
+drafts), `half-ppr` (2,879) and `dynasty` (111 — too thin). Same keys: `adp, times_drafted,
+high, low, stdev, bye`.

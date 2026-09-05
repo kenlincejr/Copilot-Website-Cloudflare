@@ -13,6 +13,61 @@ you build the fix.** Nothing here restates evidence that already exists three fi
 
 ---
 
+## Status as of 2026-09-05 — read this first
+
+Most of Phases 1 and 2 landed between the 09-04 writing and now. Verified by grepping the
+code for each item's signature on 2026-09-05; the item sections below are kept as the
+record of *why*, but do not rebuild anything marked done.
+
+| Item | Status | Evidence |
+|---|---|---|
+| P1.1 build stamp | done, recurring | `config.js` build `20260905k`; bump again on every deploy |
+| P1.2 fabricated 100% survival | done | `claudeContext()` prints "this is my last pick of the draft" |
+| P1.3 candidate filter hid the best | done | `briefCandidates()` keeps `comp > bestLive` |
+| P1.4 `marketAdp()` standard-scoring bias | done | leans FFC ADP by half the 7-day trend; never reads `yadp` raw |
+| P1.5 Sunday re-bake | **open, Sunday** | `draft-day.md` §3 |
+| P1.6 runbook | done | `tools/draft-day.md` |
+| P1.7 iPad device check | **open, user runs it** | `tools/ipad-check.md` |
+| P1.8 live-flow tests | partly | `test-app.js` 423 checks incl. reassign/recordTo; catch-up path coverage unverified |
+| P2.1 payload redesign | done | `rosterBlock`, `supplyBlock`, `teamsAheadBlock`, `styleBlock` |
+| P2.2 `briefVoid()` | done | four local tests, one re-ask on gaps ≥ 8 |
+| P2.3 invariant guard | done | `composite()` −100 while a starter slot is open |
+| P2.4 `lineupSpots` flex door | done | `openFlexSlots(ctx.myPlayers)` |
+| P2.5 Hero RB anchor | done, unmeasured | `posBias RB 1.05` after round 5; E in the suggestion review measures shape |
+| P2.6 style leverage | done | ceiling schedule moves with the weight (`tc`) |
+| P2.7 remaining findings | superseded | by the suggestion review below |
+| P3.1 measure `roomPick` | done 09-05 | table in the item |
+| P3.3 still-need in words | done | roster-gap strip, `renderStatus()` |
+| P3.4 brief provenance | done | eyebrow says "written N picks ago" |
+
+**What is actually left to build, in order:**
+
+1. **P2.8 — `styleBlock()` sends the preset, not the style in force · Sonnet · 30 min.**
+   Custom and Claude-tuned knobs never reach the model and the payload ends
+   `My own notes on it: [object Object]`. Build the block from `activeKnobs()`, diff against
+   the preset, name the user's own knobs. Assertion in `test-app.js`. Evidence:
+   `qa-suggestion-prompt.md` C1 and `tools/traces/hero_rb-seed11-pick38.txt`.
+2. **P2.9 — the payload's hard-coded "worth roughly a 7th-round pick" · Sonnet · 20 min.**
+   `scoringHighlights()` asserts it; the board's own VOR puts the best DEF at #22 and
+   `impact.js` computes `bestRank`/`bestRound`. Print the computed number. (C3.)
+3. **P2.10 — bake date in the payload · Sonnet · 15 min.** `SYSTEM` says injuries and depth
+   "are current"; say "as of <meta.built>" and put the date on the LEAGUE line. (C4.)
+4. **P3.2 — the live draft board · Opus to design, Sonnet to build · 5 hours.** The headline
+   build item. Fully specified in its section below, with the P3.1 numbers that shape it.
+5. **The suggestion-engine review · Opus xhigh · 3 days · runs before any engine change.**
+   `qa-suggestion-prompt.md` is the investigation brief for the composite itself: no wait
+   cost (B1), fallen players unpriced (B2), grades and market movement inert (B3), the
+   late-round collapse (B4), replacement level (B5), the floors (B6), bye semantics (B7),
+   roster-blind survival (B8), injury as a badge (B9), handcuffs by team name (B10), and the
+   model eval (D). Its findings become P2.11 onward; **do not build engine terms from the
+   headings without the review's measurements.**
+6. P1.5 and P1.7 on their days. P3.5 only if a real Yahoo page proves it.
+
+The serialization rule stands: one session edits `engine.js`, `app.js`, `ff.css` at a time.
+Another session has been landing commits to `app.js` daily; pull before you branch.
+
+---
+
 ## 0. How to use this document
 
 1. Work the phases in order. Phase 1 is ship-or-not. Phase 2 is the quality of the pick.
@@ -378,27 +433,138 @@ The number that justifies this phase: **the user has 15 picks and has to record 
 own picks are two taps after E1. The other 165 are typed by hand, on a clock, while watching
 Yahoo on the same screen.
 
-### P3.1 — Measure `roomPick` before building anything · Opus · 1 hour
+### P3.1 — Measure `roomPick` before building anything · Opus · 1 hour — DONE 2026-09-05
 
-Over 200 seeded drafts, for every opponent pick, report how often the actual pick is
-`roomPick`'s first choice, and how often it is in the top 3 and top 5, **broken down by
-round**. Round 2 and round 13 will not behave alike.
+`node ff/tools/measure-roompick.js` exists and was run on 2026-09-05: 200 seeded drafts,
+33,000 opponent picks, `roomPick`'s frequency-ranked prediction scored against a
+structurally different "chalk with reaches" room (read the file header — there is no logged
+real draft, so this is a proxy, not ground truth).
 
-**This measurement decides whether P3.2 ships at all.** Do it first and report the number
-before writing any UI.
+```
+round   top-1   top-3   top-5        round   top-1   top-3   top-5
+  1     32.0%   88.0%   94.6%          8     25.0%   52.3%   68.0%
+  2     31.9%   80.5%   91.8%          9     21.7%   42.3%   57.5%
+  3     31.5%   69.2%   86.8%         10     16.2%   35.8%   55.0%
+  4     30.1%   68.0%   90.1%         11     12.9%   31.0%   50.0%
+  5     12.8%   52.2%   80.4%         12      1.5%    7.7%   23.8%
+  6     16.6%   58.3%   79.1%         13      1.3%   12.0%   27.6%
+  7     29.0%   66.7%   87.6%         14      7.3%   16.3%   30.5%
+                                      15      6.5%   24.6%   41.7%
+overall: top-1 18.4%  top-3 47.0%  top-5 64.3%
+```
 
-### P3.2 — Predicted pick tap targets · Sonnet, gated on P3.1 · 3 hours
+**Verdict: ship P3.2, and let the round decide the treatment.** Three predictions cover the
+actual pick well over half the time through round 8 and near 90% in the first two rounds,
+which is where the room moves fastest and the user is most behind. From round 9 the three
+are a coin toss and from round 12 they are noise; they stay on screen only if they are labeled
+as guesses, and the "tap him in the list" path is the primary action there. The round-5/6 dip
+is the QB and TE runs the chalk room does not model; expect it on the night.
 
-Show `roomPick`'s most likely picks for the team on the clock as buttons above the record
-box, ordered by **probability, not board rank** — this is a prediction about what *they* will
-do, and the two differ most exactly where the user needs help.
+### P3.2 — The live draft board · Opus to design, Sonnet to build · 5 hours
 
-**The risk is worse than the reward and is the whole design problem.** A typed name is slow
-and self-checking. A tapped name is fast and is not, and a wrong tap is a silently wrong
-board: the pool, every survival number, the roster it was credited to, and every later
-recommendation, with nothing on screen saying so. So: show name, position and team; never put
-a prediction where the thumb lands by default; make them read as guesses. Confirm a wrong tap
-is recoverable in one action and that undo restores the pool exactly.
+**What the user asked for, in their words (2026-09-05):** an easy-to-read live draft board at
+the top of the middle column that keeps the app in step with the Yahoo client. It must show,
+at a glance, which team is on the clock, what round and pick it is, who was picked last, and
+the three players that team is probably about to take, so that recording an opponent's pick
+is one tap and moving to the next pick is automatic. When the team takes somebody else, the
+user goes to the player list and double-clicks or taps the button to credit that player to
+that team, and the board moves on. The whole live experience has to be clean, interactive and
+obvious: at every moment the user knows exactly what is going on and exactly what to do next
+to keep the draft moving.
+
+**What exists.** `renderTracker()` already has the four bands the README describes — head
+(where *you* are), do (one instruction, one button), order (three ahead, the clock, four
+behind), keep (the step-away band and catch-up). The user's screenshot at pick 3 shows the
+gap: the bold line is "You're up in 8 picks", the team on the clock is a sentence inside the
+do band, the last pick is a row in the order list with no emphasis, and there is nothing to
+tap — every one of the 165 opponent picks is a hunt through the player list.
+
+**The redesign, band by band.** Keep the four bands; change what each one leads with.
+
+1. **The clock, not you.** The bold line becomes the draft's state: `Pick 3 · Round 1 ·
+   TEAM 3 on the clock`, with the team name in the team's own color chip so it can be found
+   across a room. The second line is you: `You're up in 8 · picks 11 and 14`. When it is your
+   pick the two lines swap and the panel takes the `up` treatment it already has. The
+   progress hairline stays.
+2. **Last pick, said once and loudly.** A single line directly under the head: `Last: pick 2 ·
+   team 2 · RB Jahmyr Gibbs`, with the position chip, and an inline **Undo** on it for four
+   seconds after a record (the same `armOnce` pattern as Start over — one press, no dialog).
+   This is the line the user checks against the Yahoo panel after every pick, so it is the
+   line that has to be right and visible without scrolling. An unknown pick reads `Last: pick
+   2 · team 2 · name not recorded · name him` with the existing re-credit path behind it.
+3. **The do band becomes the pick-to-pick loop.** For an opponent on the clock:
+   - The instruction: `Pick 3 goes to team 3.` One line.
+   - **Three predicted picks as tap targets**, from `roomPick` run as a Monte Carlo over the
+     current pool with the on-clock team's own roster counts and depth cap, ordered by
+     **probability, not board rank**. Each target shows name, position chip, NFL team and
+     ADP, so the user can confirm identity against the Yahoo panel at a glance before
+     touching it. One tap records that player to the team on the clock, the last-pick line
+     updates with its Undo, the head advances, and the next team's three targets render
+     in the same place — no scroll, no focus change. That is the loop.
+   - **Honest labels by round**, from the P3.1 table: through round 8 the group is captioned
+     `likely` and the chips are full weight; rounds 9 to 11 read `maybe`; from round 12 the
+     caption is `long shots` and the chips are the ghost treatment. The caption is text
+     computed from the round, so the design degrades with the measurement rather than
+     pretending.
+   - Under the targets, the fallback in one sentence: `Took someone else? Tap him in the
+     player list` (desktop: `double-click him`), and the existing **Pick went to…** for a
+     name the user did not catch. The player list's row button already carries the on-clock
+     team's initials; that path does not change.
+   - Targets must never include a player the team cannot take (`depthCap` — the room model
+     already refuses them) and must use the same `marketAdp()` the practice room uses, so a
+     pasted Yahoo file sharpens them.
+   - With no Yahoo paste in rounds 12 and later, and a top-3 under 10%, consider showing
+     only the caption and the fallback; the number decides, and the spec allows it.
+4. **The order band stays**, but two corrections. The team label on a past pick must be the
+   team the pick was *credited to*, and when that differs from the snake's owner it says so
+   (`team 1 · re-credited`): the screenshot shows pick 2 labeled `team 1` under pick 3 for
+   team 3, which is either a re-credit or a defect and the row cannot currently tell the user
+   which. And the three upcoming rows carry the same predicted first choice per team in dim
+   text, so the user can see a run forming before it lands.
+5. **The keep band stays as it is.** Catch-up is the recovery when the loop is broken by
+   absence; the loop above is what keeps it from breaking.
+
+**On the user's own pick.** The do band becomes what it is now — the brief's pick with its
+Draft button and the three cards below — with one addition: the last-pick line and the head
+stay in the same place, so the panel does not jump between the two modes.
+
+**Why the risk J1 named is now acceptable.** J1's concern stands: a tapped wrong name is a
+silently wrong board. Three things answer it. The target shows enough to confirm identity
+(name, position, NFL team, ADP) rather than a bare name. The record is undone by one press on
+the last-pick line for four seconds, and by Undo in the app bar after that. And the targets
+sit above the order band, not at the bottom where a thumb rests. Measure the wrong-tap rate
+in the E2 device check before the night: five people, twenty picks each, against a printed
+Yahoo mock. If it is above one in fifty, the chips get a second tap to confirm on touch.
+
+**Keyboard, desktop only.** `1`, `2`, `3` record the corresponding target when nothing has
+focus; `Escape` undoes within the four seconds. Show the digits on the chips.
+
+**Layout.** The band grows by one row of three chips, about 48 px on touch. The E1 rule holds:
+nine board rows visible under the sticky head at 744×1133 and the tracker fully visible at
+1133×744 without scrolling the column. If the row does not fit in portrait, the order band
+drops from four past picks to two — the last-pick line already carries the most recent one.
+
+**Tests, in `test-app.js`, before the UI is styled:**
+- the three targets are ordered by `roomPick` frequency, never by composite;
+- no target violates the on-clock team's `depthCap`, including K and DEF;
+- tapping a target records the player to the on-clock slot with `mine: false`, advances
+  `currentPick()` by one, and the next call produces targets for the next team;
+- undo within the window removes exactly that pick and restores the pool, survival numbers
+  and the team's roster to the byte;
+- a re-credited pick is labeled in the order band;
+- the round caption is `likely` at round 8 and `maybe` at round 9;
+- in a `Just the board` league the targets are still offered (the pool is what matters) but
+  the record is unattributed, and the head reads the pick count without a team.
+
+**Acceptance.** Time twenty consecutive opponent picks on the iPad against the Yahoo mock:
+a predicted pick records in one tap and under two seconds; an unpredicted one in two taps
+and under six; the user never has to scroll the middle column to do either; and after every
+record, the head, the last-pick line and the next targets are correct without a refresh.
+Screenshots at both iPad viewports go in the commit.
+
+**Pointer.** The suggestion-engine review (`qa-suggestion-prompt.md`, workstream H) verifies
+that the same `roomPick` and `marketAdp()` feed these targets and the practice room, so the
+rehearsal and the night draft the same room.
 
 ### P3.3 — "Still need", in words · Sonnet · 30 minutes
 
