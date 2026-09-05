@@ -1249,6 +1249,35 @@ console.log("\n== styleBlock ==");
 })();
 
 /* ========================================================================
+   scoringHighlights - the D/ST sentence is computed, not hand-written
+   ======================================================================== */
+console.log("\n== the D/ST clause in the payload ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var text = api.claudeContext();
+  var def = api.impactReport().scoring.positions.league.DEF;
+
+  ok("the board really does rate an elite defense far higher than a 15th-rounder",
+     def.bestRank > 0 && def.bestRound > 0, "#" + def.bestRank + ", round " + def.bestRound);
+  ok("the hand-written round is gone", text.indexOf("7th-round pick") < 0);
+  // Computed from the report rather than pinned to a literal, so the assertion
+  // tracks a re-bake instead of going stale against one.
+  ok("the payload quotes the round the board actually implies",
+     text.indexOf("worth roughly a round " + def.bestRound + " pick") >= 0,
+     text.slice(text.indexOf("SCORING THAT DIFFERS"), text.indexOf("SCORING THAT DIFFERS") + 260));
+  ok("and the rank the impact panel puts on screen",
+     text.indexOf("(#" + def.bestRank + " on this board)") >= 0);
+
+  // The clause is gated on boosted tiers. A league without them should not get
+  // a defense sentence at all, computed or otherwise.
+  var flat = kindaHighlandersLeague({ preset: "ppr_standard",
+    rules: JSON.parse(JSON.stringify(PRESETS.ppr_standard)) });
+  var flatText = loadApp(flat, []).claudeContext();
+  ok("a league with ordinary D/ST tiers gets no defense clause",
+     flatText.indexOf("elite defense") < 0);
+})();
+
+/* ========================================================================
    teamsAheadBlock and runLine - one line per team, and the log as six numbers
    ======================================================================== */
 console.log("\n== teamsAheadBlock / runLine ==");

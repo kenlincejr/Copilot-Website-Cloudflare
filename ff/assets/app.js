@@ -5596,8 +5596,25 @@ function scoringHighlights() {
   if (r.passing.bonus400) out.push("yardage bonuses at 400/500 pass, 150/200 rush and rec");
   if (r.passing.comp40plus || r.receiving.rec40plus) out.push("40+ yard play and TD bonuses");
   if (r.misc.returnYardsPerPoint) out.push("return yards at 1 pt per " + r.misc.returnYardsPerPoint);
-  if (r.dst.pa0 > 12) out.push("boosted D/ST points-allowed tiers (" + r.dst.pa0 + " for a shutout, " +
-    r.dst.pa7_13 + " for 7-13) — this makes an elite defense worth roughly a 7th-round pick, not a 15th");
+  if (r.dst.pa0 > 12) {
+    // "Worth roughly a 7th-round pick" was hand-written and, in this league,
+    // wrong by five rounds: the board's own VOR puts the best defense at #22,
+    // a round 2 pick. impact.js has computed bestRank and bestRound for exactly
+    // this sentence all along, and bestRank is the number the impact panel puts
+    // on screen — so quoting it is also the only way the payload and the panel
+    // can be pinned to each other. If the report cannot be built, the tier
+    // numbers still stand on their own; a missing clause beats a made-up one.
+    var dst = "boosted D/ST points-allowed tiers (" + r.dst.pa0 + " for a shutout, " +
+      r.dst.pa7_13 + " for 7-13)";
+    try {
+      var def = impactReport().scoring.positions.league.DEF;
+      if (def && def.bestRound && def.bestRank) {
+        dst += " — this makes an elite defense worth roughly a round " + def.bestRound +
+          " pick (#" + def.bestRank + " on this board)";
+      }
+    } catch (e) { /* the tiers are still worth saying without the rank */ }
+    out.push(dst);
+  }
   return out.join("; ") || "nothing unusual";
 }
 
