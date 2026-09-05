@@ -246,6 +246,7 @@ function loadApp(leagueState, picksState, opts) {
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
     "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
     "briefEyebrow: briefEyebrow, " +
+    "supplyBlock: supplyBlock, " +
     "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
     "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
@@ -1055,6 +1056,50 @@ console.log("\n== brief provenance ==");
      Object.keys(api.briefWrittenAt()).length === 0);
   ok("and an unknown write time reports no age at all",
      !/written/.test(api.briefEyebrow()), api.briefEyebrow());
+})();
+
+/* ========================================================================
+   supplyBlock - scarcity as counts, never as a second copy of the board
+   ======================================================================== */
+console.log("\n== supplyBlock ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), Array.from({ length: 85 },
+    function (_, i) { return { pick: i + 1, name: null, slot: null, mine: false, unknown: true }; }));
+  var A = api.getAnalysis();
+  var text = api.supplyBlock();
+
+  ["QB", "RB", "WR", "TE", "K", "DEF"].forEach(function (pos) {
+    ok("every position is accounted for: " + pos,
+       new RegExp("- " + pos + ": ").test(text));
+  });
+
+  // The counts must be computed, not asserted against themselves: derive them
+  // here from A.avail and the board's own replacement level.
+  var wr = A.avail.filter(function (p) { return p.pos === "WR"; });
+  var replPts = A.board.replacement.WR.points;
+  var above = wr.filter(function (p) { return p.pts > replPts; }).length;
+  var line = (text.match(/- WR: [^\n]*/) || [""])[0];
+  ok("the WR count matches the pool", line.indexOf(wr.length + " left") >= 0, line);
+  ok("the above-replacement count matches a direct computation",
+     line.indexOf(above + " above replacement") >= 0, line);
+  ok("and it names the replacement level in points",
+     line.indexOf("(" + Math.round(replPts) + " pts)") >= 0, line);
+
+  var best = wr.slice().sort(function (a, b) { return b.pts - a.pts; })[0];
+  ok("it names the best man left, with his points",
+     line.indexOf("Best is " + best.name + " at " + Math.round(best.pts)) >= 0, line);
+  ok("it says how many of his tier are left", /tier \d+ with \d+ left in it/.test(line), line);
+  ok("and how far the drop to the next tier is",
+     /the next tier starts at \d+ \(\d+ pts down\)/.test(line), line);
+
+  // It is a supply block, not a list: no position may enumerate its players.
+  var names = wr.slice(1, 6).filter(function (p) { return text.indexOf(p.name) >= 0; });
+  ok("it does not list the position out, only the best of it",
+     names.length === 0, names.map(function (p) { return p.name; }).join(", "));
+
+  // Six lines, one per position, however deep the draft is.
+  ok("it is six lines and a heading",
+     text.split("\n").length === 7, text.split("\n").length + " lines");
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

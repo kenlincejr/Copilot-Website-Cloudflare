@@ -4150,6 +4150,48 @@ function rosterBlock() {
 }
 
 /**
+ * How much is left at each position, as counts rather than as a list.
+ *
+ * The candidate block already spends most of the payload naming individual
+ * players. What it cannot show is scarcity: whether the receiver you are
+ * looking at is the last one worth starting or the first of nine, and how far
+ * the drop is once his tier empties. That is the whole "wait or take him now"
+ * question at slot 11, where the gaps alternate three and twenty-one.
+ *
+ * Counts and one name per position, never a list. Six lines replace what would
+ * otherwise be a second copy of the board.
+ */
+function supplyBlock() {
+  var order = ["QB", "RB", "WR", "TE", "K", "DEF"];
+  var repl = (A.board && A.board.replacement) || {};
+  var lines = order.map(function (pos) {
+    var left = A.avail.filter(function (p) { return p.pos === pos; });
+    if (!left.length) return "- " + pos + ": nobody left.";
+    var replPts = repl[pos] ? repl[pos].points : null;
+    var above = replPts == null ? null
+      : left.filter(function (p) { return p.pts > replPts; }).length;
+    var best = left.slice().sort(function (a, b) { return b.pts - a.pts; })[0];
+
+    var out = "- " + pos + ": " + left.length + " left";
+    if (above != null) {
+      out += ", " + above + " above replacement (" + Math.round(replPts) + " pts)";
+    }
+    out += ". Best is " + best.name + " at " + Math.round(best.pts);
+    // The cliff: how many of his tier remain, and what the next one costs you.
+    var sameTier = left.filter(function (p) { return p.tier === best.tier; });
+    var nextTier = left.filter(function (p) { return p.tier > best.tier; })
+      .sort(function (a, b) { return b.pts - a.pts; })[0];
+    out += ", tier " + best.tier + " with " + sameTier.length + " left in it";
+    if (nextTier) {
+      out += "; the next tier starts at " + Math.round(nextTier.pts) +
+        " (" + Math.round(best.pts - nextTier.pts) + " pts down)";
+    }
+    return out + ".";
+  });
+  return "WHAT IS LEFT, BY POSITION:\n" + lines.join("\n");
+}
+
+/**
  * The players the brief is allowed to name, best first.
  *
  * Draw from the same pool the recommendation cards draw from, on the same two
@@ -4261,6 +4303,7 @@ function claudeContext() {
       (A.myAfter ? ", then " + A.myAfter + " (" + (A.myAfter - A.myNext) + " picks apart)" : "") + ".",
     runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
     rosterBlock(),
+    supplyBlock(),
     "MY DRAFT STYLE: " + styleName() +
       (STRATS[S.league.style || "balanced"]
         ? " — " + STRATS[S.league.style || "balanced"].tagline : "") +
