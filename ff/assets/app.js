@@ -354,6 +354,25 @@ function analyze() {
   // answer "how much of this is the style I chose?". It is only worth doing when
   // a style is actually active — on Balanced the two boards are the same board.
   var nctx = styled ? Object.assign({}, ctx, { strategy: {} }) : null;
+
+  // Real-draft telemetry has to land on the board BEFORE anything is scored.
+  // It used to be attached in the same loop that scores, a dozen lines below
+  // the composite() call, so every player was priced against his grade as it
+  // stood before his own trend was known — the signal was on screen in the
+  // TREND column and reached the score for nobody. Attaching it here, and
+  // re-deriving the grades off it, is the whole difference between showing the
+  // market moving and acting on it.
+  board.players.forEach(function (p) {
+    var y = ya[normName(p.name)];
+    if (!y) return;
+    p.yadp = y.all;
+    // Positive means the room is taking him earlier this week than it has all
+    // preseason — the market moving toward him in real drafts.
+    p.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
+    p.ypct = y.pct;
+  });
+  E.applyMarketSignals(board.players);
+
   board.players.forEach(function (p) {
     var c = E.composite(p, ctx);
     p.comp = c.score; p.compDetail = c;
@@ -366,14 +385,6 @@ function analyze() {
     p.survShown = survTarget ? E.survival(p, survTarget) : 1;
     p.adpDelta = (p.adp || 200) - cur;
     p.takenBy = pickOf[p.name] || null;
-    var y = ya[normName(p.name)];
-    if (y) {
-      p.yadp = y.all;
-      // Positive means the room is taking him earlier this week than it has all
-      // preseason — the market moving toward him in real drafts.
-      p.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
-      p.ypct = y.pct;
-    }
   });
 
   // Board position under your style and under Balanced, so a pick can say where
@@ -1753,6 +1764,10 @@ function runMock(knobs, iterations, seed) {
     q.yadp = y.all; q.ypct = y.pct;
     q.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
   });
+  // Same reason as in analyze(): the mock has to price players against grades
+  // that already know what the market did this week, or a rehearsal is scored
+  // on different information than the live board beside it.
+  E.applyMarketSignals(board.players);
   var total = S.league.teams * S.league.rounds;
   var startPick = currentPick();
   var seededTaken = draftedNames();

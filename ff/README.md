@@ -751,6 +751,62 @@ news, so it should say which rather than assume an edge.
 `tools/players_nfl.json` is ~15 MB and gitignored; re-fetch it with the URL in
 `bake-players.py`. Sleeper asks that it be called at most once a day.
 
+## What the market is allowed to say about a grade
+
+Every player carries a `ceiling` and a `risk`. 74 of the 267 get theirs from the
+hand-written research layer; the other 193 are modeled here. Two market signals
+adjust both, and they are different in kind, which is why they are not summed
+into one number.
+
+**`adpResid` is disagreement.** Sleeper's price for a player against what a
+player at this board's price normally costs there. Negative is Sleeper reaching
+earlier — one room is higher on him than the other. Disagreement in *either*
+direction is uncertainty, so it raises risk by its magnitude while only its
+direction moves the ceiling.
+
+**`ytrend` is movement.** Picks earlier or later in real Yahoo drafts over the
+last seven days, on the platform this league actually runs on. That is not
+disagreement, it is news arriving — a starter named, a competitor hurt, a camp
+report — and it reaches draft rooms well before it reaches a season projection.
+So it is directional on both terms: a player the market is moving toward gets a
+higher ceiling and a slightly lower risk. The ceiling moves more than the risk,
+because movement is better evidence about upside than about floor.
+
+### Two wires that were missing
+
+`modelGrades()` used to open with `if (researched) return`, so **the 84 annotated
+players — the ones a manager actually agonizes over in rounds 3 through 10 — were
+the only players on the board no market signal could ever reach.** A hand grade
+written before camp cannot know the market has moved forty picks on somebody
+since; refusing to look is not respect for the research, it is a stale number
+defended. Research is the base now and the market updates it at **half** the
+weight it carries on a modeled player. On the shipped board that moves 59 of the
+74, almost all by a point or two — Sam LaPorta, whose residual is −59.9, moves
+the most at +4.
+
+`ytrend` reached the opponent room model and the TREND column and **nothing
+else** — it never moved a player's own grade. Worse, it was attached to the board
+a dozen lines *below* the `composite()` call that priced him, in the same loop,
+so even the wire that looked connected could not have fired. It is attached
+before scoring now, at both the live board and the mock.
+
+Grades are stored as `ceilingBase` / `riskBase` and recomputed from the base
+every time, so `applyMarketSignals()` is idempotent and can re-run whenever
+fresher draft data is pasted without compounding on its own output.
+
+### It is silent when it has nothing to say
+
+`ytrend` is null until the Yahoo draftanalysis page is pasted, and the baked
+board carries none. On a board with no telemetry this term does nothing at all —
+it does not invent a trend from the static ADP that is already priced through
+survival and VONA. `test-engine.js` pins that as its own assertion.
+
+**Not done yet:** VONA is still computed as the expected best available *at a
+position*, so a specific falling player is averaged into his position's
+expectation rather than priced as himself. That is the remaining half of "take
+the steal at another position", and it needs a seeded-draft harness to tune
+safely rather than by eye.
+
 ## Rebuilding the data
 
 ```bash

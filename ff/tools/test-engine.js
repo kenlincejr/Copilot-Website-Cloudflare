@@ -377,6 +377,71 @@ function mockDraft(strategy, slot) {
       return a + (s.player ? s.player.pts : 0); }, 0)) + " pts");
 });
 
+console.log("\n== Market signals reach the grade, research included ==");
+/* Two wires that were missing. adpResid only ever reached players with no
+   researched grade, because modelGrades() returned early on the researched ones
+   — so the 84 annotated players, the ones actually agonized over, were the only
+   players on the board no market signal could touch. And ytrend (Yahoo's
+   last-7-days movement, the user's own live-draft telemetry) reached the
+   opponent model and the TREND column and nothing else: it never moved a
+   player's own grade, so the board could show the market moving and not act
+   on it. */
+
+function graded(over) {
+  var pl = Object.assign({}, find("Ja'Marr Chase"), over);
+  var board = E.buildBoard([pl].concat(DATA.players.filter(function (q) {
+    return q.name !== pl.name; })), ken);
+  return board.players.find(function (q) { return q.name === pl.name; });
+}
+
+// A researched grade is a prior the market may update, at half weight.
+var resBase = graded({ ceiling: 80, risk: 40, adpResid: null, ytrend: null });
+var resUp   = graded({ ceiling: 80, risk: 40, adpResid: null, ytrend: 3 });
+ok("a researched grade is still the base", resBase.ceiling === 80 && resBase.risk === 40,
+   "ceiling " + resBase.ceiling + " risk " + resBase.risk);
+ok("and the market can now move it — it used to be untouchable",
+   resUp.ceiling > resBase.ceiling, resBase.ceiling + " -> " + resUp.ceiling);
+ok("but only at half a modeled player's weight",
+   Math.abs(resUp.ceiling - 80 - 2.5) <= 0.5, "moved " + (resUp.ceiling - 80) + ", expected ~2.5");
+
+// A modeled grade takes it at full weight.
+var modFlat = graded({ ceiling: null, risk: null, adpResid: null, ytrend: null });
+var modUp   = graded({ ceiling: null, risk: null, adpResid: null, ytrend: 3 });
+var modDown = graded({ ceiling: null, risk: null, adpResid: null, ytrend: -3 });
+ok("a rising player's ceiling goes up", modUp.ceiling > modFlat.ceiling,
+   modFlat.ceiling + " -> " + modUp.ceiling);
+ok("and his risk goes down, by less than the ceiling moved",
+   modUp.risk < modFlat.risk && (modFlat.risk - modUp.risk) < (modUp.ceiling - modFlat.ceiling),
+   "risk " + modFlat.risk + " -> " + modUp.risk);
+ok("a falling player is the same statement inverted",
+   modDown.ceiling < modFlat.ceiling && modDown.risk > modFlat.risk,
+   "ceiling " + modDown.ceiling + " risk " + modDown.risk);
+ok("movement is capped, so one outlier cannot run away with a grade",
+   graded({ ceiling: null, risk: null, ytrend: 40 }).ceiling ===
+   graded({ ceiling: null, risk: null, ytrend: 9 }).ceiling);
+
+// The silence guarantee: no telemetry, no movement. This is what keeps the
+// board honest for anyone who has not pasted a draftanalysis page.
+var silent = graded({ ceiling: null, risk: null, adpResid: null, ytrend: null });
+ok("no ytrend changes nothing at all",
+   silent.ceiling === modFlat.ceiling && silent.risk === modFlat.risk);
+
+// Idempotence is the whole reason grades are stored as a base and recomputed:
+// re-running on fresher data must not compound on its own output.
+var once = graded({ ceiling: null, risk: null, ytrend: 3 });
+var c1 = once.ceiling, r1 = once.risk;
+E.applyMarketSignals([once]); E.applyMarketSignals([once]);
+ok("applying market signals twice is the same as applying them once",
+   once.ceiling === c1 && once.risk === r1, c1 + " vs " + once.ceiling);
+
+// And the signal has to survive into the pick, not stop at the grade.
+var ctxM = ctxFor(CORE, { round: 6, pick: 62, nextPick: 83 });
+var rise = graded({ ceiling: null, risk: null, ytrend: 3 });
+var flat = graded({ ceiling: null, risk: null, ytrend: null });
+ok("a player the market is moving toward scores higher than the same player flat",
+   E.composite(rise, ctxM).score > E.composite(flat, ctxM).score,
+   E.composite(flat, ctxM).score.toFixed(1) + " -> " + E.composite(rise, ctxM).score.toFixed(1));
+
 console.log("\n== The board must not stack a position it is already full at ==");
 /* The bug these cover: at pick 62, one pick after taking Drake Maye (320) at
    quarterback, the board's top recommendation was Lamar Jackson (328) — an

@@ -305,6 +305,84 @@
   }
 
   /**
+   * How far a market signal is allowed to move a grade, by where the grade came
+   * from. A modeled grade is this file's own guess and the market is entitled to
+   * argue with it at full volume; a researched one was reasoned about by a
+   * person, so the market gets half a vote rather than none.
+   */
+  var MARKET_TRUST = { research: 0.5, modeled: 1 };
+
+  /**
+   * What the market is saying about a player, as a nudge to his ceiling and risk.
+   *
+   * Two signals, and they are different in kind, which is why they are not
+   * summed into one number.
+   *
+   * `adpResid` is cross-market *disagreement*: Sleeper's price for him against
+   * what a player at this board's price normally costs there. A negative
+   * residual is Sleeper reaching earlier — one room is higher on him than the
+   * other. Disagreement in either direction is uncertainty, so it raises risk by
+   * its magnitude while only the direction moves the ceiling.
+   *
+   * `ytrend` is *movement*: picks earlier (positive) or later (negative) in real
+   * Yahoo drafts over the last seven days, on the platform this league runs on.
+   * That is not disagreement, it is news arriving — a starter named, a competitor
+   * hurt, a camp report — and it arrives in draft rooms well before it reaches a
+   * season projection. So it is directional on both terms: a player the market is
+   * moving toward gets a higher ceiling and, because the usual cause is role
+   * security, a slightly lower risk. Falling is the same statement inverted, and
+   * the asymmetry is deliberate — the ceiling moves more than the risk, because
+   * movement is better evidence about upside than about floor.
+   *
+   * Both are clamped before they are scaled, so one loud outlier cannot dominate
+   * a grade, and both are silent when their data is absent. `ytrend` is null
+   * until the user pastes Yahoo's draftanalysis page, which means this term does
+   * nothing at all on a board with no telemetry — the honest behavior, rather
+   * than inventing a trend from the static ADP that is already priced elsewhere.
+   */
+  function marketSignals(p) {
+    var dCeiling = 0, dRisk = 0;
+
+    if (p.adpResid != null) {
+      var z = clamp(p.adpResid / 14, -1.5, 1.5);
+      dCeiling += -5 * z;
+      dRisk += 4 * Math.abs(z);
+    }
+
+    // Scaled by 3 picks: the board calls movement under 0.3 picks "flat" and
+    // flags a full pick as worth mentioning, so three picks in a week is a
+    // decisive move and lands at the cap.
+    if (p.ytrend != null) {
+      var t = clamp(p.ytrend / 3, -1.5, 1.5);
+      dCeiling += 5 * t;
+      dRisk += -3 * t;
+    }
+
+    return { ceiling: dCeiling, risk: dRisk };
+  }
+
+  /**
+   * Recompute `ceiling` and `risk` from the stored base plus whatever the market
+   * currently says. Idempotent by construction: it always reads `ceilingBase`
+   * and never its own output, so it can be re-run every time the user pastes
+   * fresher draft data without the adjustment compounding on itself.
+   */
+  function applyMarketSignals(players) {
+    players.forEach(function (p) {
+      if (p.ceilingBase == null || p.riskBase == null) return;
+      var d = marketSignals(p);
+      var w = MARKET_TRUST[p.gradeSource] != null ? MARKET_TRUST[p.gradeSource] : 1;
+      p.marketCeilingAdj = d.ceiling * w;
+      p.marketRiskAdj = d.risk * w;
+      p.ceiling = Math.round(clamp(p.ceilingBase + p.marketCeilingAdj,
+                                   GRADE_BOUNDS.ceiling[0], GRADE_BOUNDS.ceiling[1]));
+      p.risk = Math.round(clamp(p.riskBase + p.marketRiskAdj,
+                                GRADE_BOUNDS.risk[0], GRADE_BOUNDS.risk[1]));
+    });
+    return players;
+  }
+
+  /**
    * Write `ceiling`, `risk` and `gradeSource` onto every scored player.
    * Research grades pass through untouched; everything else is modeled.
    */
@@ -345,8 +423,23 @@
     Object.keys(shares).forEach(function (pos) { posMedian[pos] = median(shares[pos]); });
 
     scored.forEach(function (p) {
+      // A researched grade is a prior, not a verdict. It used to return here,
+      // which meant the 84 annotated players — the ones a manager actually
+      // agonizes over in rounds 3 through 10 — were the only players on the
+      // board that no market signal could ever reach. A hand grade written
+      // before camp cannot know that the market has moved forty picks on
+      // somebody since; refusing to look is not respect for the research, it is
+      // just a stale number defended. So research sets the base and the market
+      // updates it, at half the weight it gets on a modeled player, because a
+      // grade somebody actually reasoned about should not be shoved around by
+      // cross-market noise as easily as one this file invented.
       var researched = p.ceiling != null && p.risk != null;
-      if (researched) { p.gradeSource = "research"; return; }
+      if (researched) {
+        p.gradeSource = "research";
+        p.ceilingBase = p.ceiling;
+        p.riskBase = p.risk;
+        return;
+      }
 
       var ceiling = 70, risk = 50;
 
@@ -360,14 +453,6 @@
         // letting one loud outlier reach it.
         var u = clamp(Math.log(p.adp_sd / exp) / 0.5, -1, 1);
         ceiling += 9 * u; risk += 7 * u;
-      }
-
-      // Cross-market. A negative residual is Sleeper reaching earlier than this
-      // board's price predicts — one room is higher on him than the other.
-      if (p.adpResid != null) {
-        var z = clamp(p.adpResid / 14, -1.5, 1.5);
-        ceiling += -5 * z;
-        risk += 4 * Math.abs(z);
       }
 
       // Role security.
@@ -391,10 +476,12 @@
       ceiling += clamp(40 * s, -8, 8);
       risk += clamp(34 * s, -8, 8);
 
-      p.ceiling = Math.round(clamp(ceiling, GRADE_BOUNDS.ceiling[0], GRADE_BOUNDS.ceiling[1]));
-      p.risk = Math.round(clamp(risk, GRADE_BOUNDS.risk[0], GRADE_BOUNDS.risk[1]));
+      p.ceilingBase = clamp(ceiling, GRADE_BOUNDS.ceiling[0], GRADE_BOUNDS.ceiling[1]);
+      p.riskBase = clamp(risk, GRADE_BOUNDS.risk[0], GRADE_BOUNDS.risk[1]);
       p.gradeSource = "modeled";
     });
+
+    applyMarketSignals(scored);
   }
 
   /**
@@ -963,7 +1050,8 @@
     pickSchedule: pickSchedule, scheduleWithKeepers: scheduleWithKeepers,
     survival: survival, expectedBestAvailable: expectedBestAvailable,
     assignRoster: assignRoster, positionalNeed: positionalNeed,
-    composite: composite, modelGrades: modelGrades, tdShare: tdShare, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
+    composite: composite, modelGrades: modelGrades,
+    applyMarketSignals: applyMarketSignals, marketSignals: marketSignals, tdShare: tdShare, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
     gauss: gauss, roomPick: roomPick, TAG_LABEL: TAG_LABEL,
     lineupPoints: lineupPoints, marginalVor: marginalVor, openFlexSlots: openFlexSlots,
     FLEX_SPLIT: FLEX_SPLIT, SUPERFLEX_SPLIT: SUPERFLEX_SPLIT
