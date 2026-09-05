@@ -861,5 +861,93 @@ console.log("\n== resetDraft clears briefTries (D8) ==");
      JSON.stringify(api.briefTries()));
 })();
 
+/* ========================================================================
+   rosterBlock — the payload stops saying things the roster contradicts
+
+   The three lines this replaced printed "STARTERS FILLED: RB 5/2", which is
+   not a fraction of anything, and carried a standing instruction to say that a
+   player who cannot start is worth close to nothing — which attached "he
+   CANNOT crack my starting lineup" to the receiver who would have filled an
+   empty WR slot, two paragraphs under a line reading WR: EMPTY.
+   ======================================================================== */
+console.log("\n== rosterBlock (the roster the model is shown) ==");
+(function () {
+  // Deterministic: unknown picks for the room, named players credited to the
+  // user at the user's own picks. No simulateToMyPick(), so no Math.random().
+  function withRoster(upTo, mine) {
+    var owned = {}, order = mine.slice();
+    var picks = [];
+    for (var n = 1; n < upTo; n++) {
+      var isMine = EXPECTED_SCHEDULE.indexOf(n) >= 0 && n !== 59;
+      if (isMine && order.length) {
+        var name = order.shift();
+        owned[name] = 1;
+        picks.push({ pick: n, name: name, slot: 11, mine: true });
+      } else {
+        picks.push({ pick: n, name: null, slot: null, mine: false, unknown: true });
+      }
+    }
+    return loadApp(kindaHighlandersLeague(), picks);
+  }
+
+  // One back, one receiver, one tight end by pick 86: WR2 and RB2 are open.
+  var api = withRoster(86, ["James Cook III", "Nico Collins", "Brock Bowers"]);
+  var A = api.getAnalysis();
+  var text = api.claudeContext();
+
+  ok("the fixture put three players on the user's roster", A.mine.length === 4,
+     A.mine.map(function (p) { return p.name; }).join(", "));   // three plus the keeper
+
+  // The falsehoods are gone.
+  ok("the payload no longer prints a STARTERS FILLED fraction",
+     text.indexOf("STARTERS FILLED") < 0);
+  ok("and no longer carries the standing 'cannot start' instruction",
+     !/cannot start for me is worth close to nothing/.test(text));
+
+  // The slots are named individually, so an empty one cannot hide behind a count.
+  ok("every starting slot is named", text.indexOf("MY ROSTER, SLOT BY SLOT") >= 0);
+  ok("the filled receiver slot names the man in it",
+     /WR1: Nico Collins/.test(text), text.match(/- WR1:[^\n]*/));
+  ok("the empty receiver slot says EMPTY", /WR2: EMPTY/.test(text),
+     text.match(/- WR2:[^\n]*/));
+  ok("and says who the best man left for it is, in points",
+     /WR2: EMPTY\. Best left is .+ \(WR\), \d+ pts/.test(text),
+     text.match(/- WR2:[^\n]*/));
+
+  // The floor is stated rather than left as an unexplained absence.
+  ok("the kicker slot says why it cannot be filled yet",
+     /K: EMPTY \(cannot be taken until round 14\)/.test(text),
+     text.match(/- K:[^\n]*/));
+  ok("and the still-empty line repeats the floor",
+     /STARTING SLOTS STILL EMPTY:.*K \(round 14 at the earliest\)/.test(text),
+     text.match(/STARTING SLOTS STILL EMPTY:[^\n]*/));
+  ok("the still-empty line names the receiver slot",
+     /STARTING SLOTS STILL EMPTY:.*WR2/.test(text));
+
+  // A filled slot states what an upgrade there would actually be worth.
+  ok("a filled slot prices the best man left against the man in it",
+     /(pts better|pts worse)/.test(text),
+     (text.match(/- RB1:[^\n]*/) || [""])[0]);
+
+  // The empty flex must not go silent just because nobody's position is "FLEX".
+  ok("an empty flex still names a best available body",
+     text.indexOf("FLEX: EMPTY") < 0 ||
+     /FLEX: EMPTY\. Best left is .+ \((RB|WR|TE)\)/.test(text),
+     (text.match(/- FLEX:[^\n]*/) || [""])[0]);
+
+  ok("the picks remaining are stated", /PICKS I HAVE LEFT: \d+/.test(text),
+     (text.match(/PICKS I HAVE LEFT:[^\n]*/) || [""])[0]);
+
+  // With every slot filled the block says so, rather than printing nothing and
+  // leaving the reader to infer it.
+  var full = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
+    "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Houston Defense",
+    "Brandon Aubrey", "Trey McBride", "Chase Brown"]);
+  var ftext = full.claudeContext();
+  ok("a full starting lineup is stated as full",
+     /STARTING SLOTS STILL EMPTY: none/.test(ftext),
+     (ftext.match(/STARTING SLOTS STILL EMPTY:[^\n]*/) || [""])[0]);
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail > 0 ? 1 : 0);

@@ -3974,6 +3974,108 @@ function teamsAhead() {
 }
 
 /**
+ * The user's roster, slot by slot, and what is still missing from it.
+ *
+ * This replaces three lines that were between them saying something false. The
+ * old block printed "STARTERS FILLED: RB 5/2", which is not a fraction of
+ * anything: `have` counts every back owned and `starters` counts the slots, so
+ * a healthy bench read as an overflowing starting lineup. Beside it sat a
+ * standing instruction to compare every candidate against "the man already in
+ * that slot" and to say plainly that a player who cannot start is worth close
+ * to nothing — which, with a slot actually empty, produced "he CANNOT crack my
+ * starting lineup" attached to the receiver who would have filled the hole,
+ * two paragraphs below a line reading WR: EMPTY.
+ *
+ * So: name the slot, name who is in it, and say what the best man left would
+ * add to it. That is the same argument, made out of facts the app holds,
+ * without a sentence that can contradict the roster printed above it.
+ */
+function rosterBlock() {
+  var rules = S.league.rules, roster = rules.roster || {};
+  var seen = {}, lines = [], open = [];
+  var round = A.onClock.round;
+  var floorFor = function (pos) {
+    if (pos === "K") return A.ctx.kFloorRound;
+    if (pos === "DEF") return A.ctx.defFloorRound;
+    return 0;
+  };
+  // Best available at a position by projected points, not composite: this line
+  // answers "who would go in the hole", and the hole is filled with points.
+  var bestLeft = function (pos) {
+    var best = null;
+    A.avail.forEach(function (p) {
+      if (p.pos !== pos) return;
+      if (p.compDetail && p.compDetail.blocked) return;
+      if (!best || p.pts > best.pts) best = p;
+    });
+    return best;
+  };
+
+  A.roster.slots.forEach(function (s) {
+    var n = (seen[s.pos] = (seen[s.pos] || 0) + 1);
+    var many = (s.pos === "FLEX" ? 1 : (roster[s.pos] || 1)) > 1;
+    var label = s.pos + (many ? String(n) : "");
+    if (s.player) {
+      var pl = s.player;
+      var line = "- " + label + ": " + pl.name + ", " + Math.round(pl.pts) +
+        " pts, bye " + pl.bye;
+      if (s.pos === "FLEX") line += " (" + pl.pos + ")";
+      // What an upgrade here is actually worth, in the only unit that matters.
+      var up = bestLeft(s.pos === "FLEX" ? pl.pos : s.pos);
+      if (up) {
+        var d = Math.round(up.pts - pl.pts);
+        line += d > 0
+          ? ". Best left at the position is " + up.name + ", " + d + " pts better"
+          : ". Nobody left at the position beats him (" + up.name +
+            " is the best, " + Math.abs(d) + " pts worse)";
+      }
+      lines.push(line);
+    } else {
+      var floor = floorFor(s.pos);
+      var blocked = floor && round < floor;
+      // Nobody's position is "FLEX", so ask the positions that can fill it.
+      var b = s.pos === "FLEX"
+        ? (rules.roster.flexEligible || ["RB", "WR", "TE"])
+            .map(bestLeft).filter(Boolean)
+            .sort(function (x, y) { return y.pts - x.pts; })[0]
+        : bestLeft(s.pos);
+      lines.push("- " + label + ": EMPTY" +
+        (blocked ? " (cannot be taken until round " + floor + ")" : "") +
+        (b && !blocked ? ". Best left is " + b.name + " (" + b.pos + "), " +
+          Math.round(b.pts) + " pts" : ""));
+      open.push(label + (blocked ? " (round " + floor + " at the earliest)" : ""));
+    }
+  });
+
+  var bench = (A.roster.bench || []).map(function (p) {
+    return p.name + " (" + p.pos + ", " + Math.round(p.pts) + " pts)";
+  });
+
+  var out = ["MY ROSTER, SLOT BY SLOT:\n" + lines.join("\n")];
+  out.push("MY BENCH: " + (bench.length ? bench.join("; ") : "empty"));
+  out.push(open.length
+    ? "STARTING SLOTS STILL EMPTY: " + open.join(", ") + "."
+    : "STARTING SLOTS STILL EMPTY: none — every starter is filled, so anything " +
+      "from here is depth or an upgrade.");
+
+  // A bye stack is a real cost and it is invisible on a slot-by-slot read.
+  var stacked = Object.keys(A.byeCounts || {}).filter(function (w) {
+    return A.byeCounts[w] >= (A.ctx.byeTolerance || 3);
+  });
+  if (stacked.length) {
+    out.push("STARTERS SHARING A BYE: " + stacked.map(function (w) {
+      return A.byeCounts[w] + " in week " + w;
+    }).join(", ") + " (tolerance is " + (A.ctx.byeTolerance || 3) + ").");
+  }
+
+  var left = (A.upcoming || []).length;
+  out.push("PICKS I HAVE LEFT: " + left +
+    (left ? " (" + A.upcoming.slice(0, 4).join(", ") +
+      (left > 4 ? ", ..." : "") + ")" : "") + ".");
+  return out.join("\n\n");
+}
+
+/**
  * The players the brief is allowed to name, best first.
  *
  * Draw from the same pool the recommendation cards draw from, on the same two
@@ -4076,19 +4178,6 @@ function claudeContext() {
         (TAGS[p.tag] ? " (" + TAGS[p.tag] + ")" : "") : "") +
       (p.note ? ". Research note: " + p.note : "");
   }).join("\n");
-  // Projected points on every player I already own. Without them a model can
-  // recommend a candidate who is plainly worse than the man in the slot, and
-  // will happily write a paragraph explaining why he is an upgrade.
-  var line = function (pl) {
-    return pl.name + " (" + pl.pos + ", " + Math.round(pl.pts) + " pts, bye " + pl.bye + ")";
-  };
-  var roster = A.roster.slots.map(function (s) {
-    return s.pos + ": " + (s.player ? line(s.player) : "EMPTY");
-  }).join("; ");
-  var bench = (A.roster.bench || []).map(line).join("; ");
-  var needs = Object.keys(A.need).map(function (k) {
-    return k + " " + A.need[k].have + "/" + A.need[k].starters;
-  }).join(", ");
   var runs = Object.keys(A.runInfo.runs);
   return [
     "LEAGUE: " + (S.league.rules.name || "custom") + ", " + S.league.teams + " teams, I pick at slot " + S.league.slot + ".",
@@ -4097,12 +4186,7 @@ function claudeContext() {
       ", round " + A.onClock.round + ". My next pick is " + A.myNext +
       (A.myAfter ? ", then " + A.myAfter + " (" + (A.myAfter - A.myNext) + " picks apart)" : "") + ".",
     runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
-    "MY STARTERS: " + roster,
-    bench ? "MY BENCH: " + bench : "",
-    "STARTERS FILLED: " + needs,
-    "Compare any candidate against the man already in that slot, not against the " +
-      "league. A player who cannot start for me is worth close to nothing however " +
-      "well he scores in the abstract — say so plainly rather than arguing him up.",
+    rosterBlock(),
     "MY DRAFT STYLE: " + styleName() +
       (STRATS[S.league.style || "balanced"]
         ? " — " + STRATS[S.league.style || "balanced"].tagline : "") +
