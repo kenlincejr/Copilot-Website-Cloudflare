@@ -144,7 +144,10 @@ function dumpPick(api, A, label) {
   // What the three cards would show (renderRecs filter: surv >= 0.15 while waiting).
   var waiting = A.myNext > A.cur;
   var realistic = waiting ? pool.filter(function (p) { return p.surv >= 0.15; }) : pool;
-  out("CARDS (renderRecs): " + realistic.slice(0, 3).map(function (p) { return p.name; }).join(" | "));
+  // Ask the app which three it would show rather than re-deriving it here. This
+  // line used to be its own top-three and therefore disagreed with the app in
+  // exactly the states worth tracing.
+  out("CARDS (renderRecs): " + api.recCards(realistic).map(function (p) { return p.name; }).join(" | "));
 
   // What the brief may name.
   var bc = api.briefCandidates(waiting, 8);

@@ -845,8 +845,28 @@
     var tc = cw >= 1 ? t + (Math.min(cw, 2) - 1) * (1 - t) : t;
     var wCeiling = (0.20 + 0.80 * tc) * cw;
     var wRisk = (1.00 - 0.70 * t) * rw;
-    var ceilingAdj = player.ceiling ? ((player.ceiling - 70) / 100) * 26 * wCeiling : 0;
-    var riskAdj = player.risk ? ((player.risk - 50) / 100) * 26 * wRisk : 0;
+    // Both grades are point adjustments — the 26 is a points scale — so they
+    // have to stand on the same footing as the points they adjust. They did
+    // not. `value` above discounts a body who cannot start for you down to
+    // benchWeight, which is about 8% for a second quarterback or tight end;
+    // these two were applied at full strength to the same player. The units
+    // stopped matching, and in the rounds where every starting slot is filled
+    // the consequence is the whole ranking: real surplus over replacement
+    // arrives as ±1 while ceiling minus risk swings ±3, so the board sorts the
+    // middle rounds by two hand-weighted grades and not by value at all. That
+    // is how a backup quarterback behind a kept starter comes out first.
+    //
+    // A backup's upside reaches your team on exactly the weeks he does — an
+    // injury, a bye, the flex — so it is discounted by the same fraction his
+    // points are. `reaches` is that fraction, read off what actually survived
+    // into `value` rather than recomputed, so the two can never drift apart.
+    // For a player who improves the lineup today it is 1 and this is a no-op,
+    // which is every pick of the early draft.
+    var open0 = player.pts - replPts;
+    var reaches = open0 > 0 ? Math.min(1, Math.max(benchWeight, value / open0))
+                : marginal > 0.5 ? 1 : benchWeight;
+    var ceilingAdj = player.ceiling ? ((player.ceiling - 70) / 100) * 26 * wCeiling * reaches : 0;
+    var riskAdj = player.risk ? ((player.risk - 50) / 100) * 26 * wRisk * reaches : 0;
 
     // Bye penalty: only counts starters already parked on that week.
     var conflicts = ctx.byeCounts[player.bye] || 0;
@@ -919,10 +939,28 @@
     // -200 to +77, so a zero-marginal player at the very top lands near -23 and
     // still sits below any real positive-marginal alternative. Re-check it if the
     // scoring rules ever widen the *upper* end of that range.
+    //
+    // "Empty" has to mean empty and fillable. It used to count every slot with
+    // nobody in it, and the kicker's slot is empty from pick 1 until round 14
+    // because the floor rule forbids filling it — so from the round the rest of
+    // the lineup came together until the round a kicker became legal, this
+    // subtracted 100 from every player on the board at every pick. Uniformly,
+    // so it reordered nothing, but it put the whole board at -98 to -101 and
+    // made a score that reads as catastrophic the normal state of the middle
+    // rounds. A slot you are not allowed to fill is not an argument against
+    // taking somebody else.
     if (ctx.myPlayers && aware > 0.5 && marginal <= 0.5) {
-      if (ctx._openStarters == null)
+      if (ctx._openStarters == null) {
+        var fl = st.posFloorRound || {};
         ctx._openStarters = assignRoster(ctx.myPlayers, ctx.rules).slots
-          .filter(function (s) { return !s.player; }).length;
+          .filter(function (s) {
+            if (s.player) return false;
+            var f = fl[s.pos] != null ? fl[s.pos]
+                  : s.pos === "K" ? (ctx.kFloorRound || rounds - 1)
+                  : s.pos === "DEF" ? (ctx.defFloorRound || 7) : 1;
+            return round >= f;
+          }).length;
+      }
       if (ctx._openStarters > 0) score -= 100;
     }
 

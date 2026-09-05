@@ -3777,6 +3777,43 @@ function renderRunBanner() {
     (runs.length > 1 ? "Their urgency is raised." : "Its urgency is raised.") + "</div>";
 }
 
+/**
+ * Which three players get cards.
+ *
+ * Three cards headed "take one of these" have to be a choice. Once every
+ * startable slot is filled, nothing left improves the lineup, so the ranking
+ * among the survivors is thin — first to third is often under a point — and
+ * they arrive sorted by a value that clusters hard by position. That is how
+ * round 9 offered three quarterbacks behind a kept starter, each one labeled
+ * "can't crack your starting lineup". It was one idea printed three times, and
+ * the two real alternatives were below the fold.
+ *
+ * So when nothing on the board can improve the lineup, the cards are the best
+ * body at three different positions. The board underneath does not change and
+ * neither does the order: the #1 is still the #1. This decides only what the
+ * other two cards are for, which is showing the choice actually available.
+ * While something CAN improve the lineup the ranking means what it says, and
+ * the top three stand.
+ *
+ * Lives out here rather than inside renderRecs() because trace-suggestions.js
+ * reports what the cards would show, and it was reimplementing this as a plain
+ * top-three — so the trace disagreed with the app in exactly the states worth
+ * tracing.
+ */
+function recCards(pool) {
+  var ranked = pool.slice().sort(function (a, b) { return b.comp - a.comp; });
+  var improves = ranked.some(function (p) {
+    return ((p.compDetail || {}).marginal || 0) > 0.5;
+  });
+  if (improves) return ranked.slice(0, 3);
+  var seen = {}, out = [];
+  ranked.forEach(function (p) {
+    if (out.length >= 3 || seen[p.pos]) return;
+    seen[p.pos] = true; out.push(p);
+  });
+  return out.length === 3 ? out : ranked.slice(0, 3);
+}
+
 function renderRecs() {
   if (!A.myNext) { $("#recs").innerHTML = '<div class="note">Your draft is finished.</div>'; return; }
 
@@ -3786,7 +3823,7 @@ function renderRecs() {
   var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
   var realistic = waiting ? pool.filter(function (p) { return p.surv >= 0.15; }) : pool;
   if (!realistic.length) realistic = pool;
-  var top = realistic.sort(function (a, b) { return b.comp - a.comp; }).slice(0, 3);
+  var top = recCards(realistic);
 
   $("#recTitle").innerHTML = (waiting ? "Target at pick " + A.myNext : "Take one of these") +
     ' <span class="stylechip" id="styleChip">' + esc(styleName()) + "</span>";
@@ -5794,7 +5831,29 @@ function supplyBlock() {
  */
 function applyReserveRule(ranked, limit) {
   var open = openStartingSlots();
-  if (!open.length) return ranked.slice(0, limit);
+  /* With the lineup full this used to hand back the raw top of the board, and
+     the raw top of the board clusters by position once nothing can improve the
+     lineup — so the model was handed twelve names, all quarterbacks, under
+     "name a player from this list and nobody else", and it did what it was
+     told. The answer read as a considered case for a backup quarterback because
+     no other kind of answer was available to it. A depth list has to span the
+     positions depth can actually be bought at. */
+  if (!open.length) {
+    var out0 = ranked.slice(0, limit);
+    var posSeen = {};
+    out0.forEach(function (p) { posSeen[p.pos] = true; });
+    if (Object.keys(posSeen).length >= 3) return out0;
+    var room0 = Math.floor(limit / 2);
+    var added = 0;
+    ranked.forEach(function (p) {
+      if (added >= room0 || posSeen[p.pos]) return;
+      if (p.pos === "K" || p.pos === "DEF") return;   // streamed, never depth
+      posSeen[p.pos] = true;
+      out0[out0.length - 1 - added] = p;
+      added++;
+    });
+    return out0;
+  }
 
   var rules = S.league.rules;
   var flexEl = rules.roster.flexEligible || ["RB", "WR", "TE"];

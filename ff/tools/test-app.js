@@ -292,6 +292,7 @@ function loadApp(leagueState, picksState, opts) {
     "undoWindowOpen: undoWindowOpen, renderTracker: renderTracker, " +
     "lastPickLine: lastPickLine, sortedList: sortedList, " +
     "askQuestions: askQuestions, renderAskQuestions: renderAskQuestions, " +
+    "recCards: recCards, " +
     "renderSpend: renderSpend, setSpend: function (s) { claudeCfg.spend = s; } };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
 
@@ -2989,6 +2990,116 @@ console.log("\n== Ask Claude ==");
      /40 questions this draft/.test(line) && /\$/.test(line), line);
   ok("and no longer prints raw token counts at the drafter",
      line.indexOf("137,903") < 0 && line.indexOf("in /") < 0, line);
+})();
+
+/* ========================================================================
+   the full-lineup rounds - what the board says when nothing can improve it
+   ======================================================================== */
+console.log("\n== picks with the starting lineup already full ==");
+(function () {
+  function ownerSlot(pick, teams) {
+    var r = Math.ceil(pick / teams), idx = pick - (r - 1) * teams;
+    return (r % 2 === 1) ? idx : (teams - idx + 1);
+  }
+  // Round 9, every startable slot filled, a quarterback kept. This is the state
+  // the user reported: the top three cards were all quarterbacks, each labeled
+  // "can't crack your starting lineup", and every score on the board sat at
+  // -98 to -101.
+  // Slot 11's own picks get real players so the lineup is genuinely full; the
+  // rest of the room is unnamed, which is all this needs them to be.
+  // Pick 59 is slot 11's round-5 pick, which is where the kept quarterback
+  // lands. Without him the QB slot is genuinely open and the board is right to
+  // say so — which is a different state from the one being pinned here.
+  var MINE = { 11: "Jahmyr Gibbs", 14: "Puka Nacua", 35: "Chase Brown",
+               38: "Jayden Reed", 59: "Drake Maye", 62: "Brock Bowers",
+               83: "Javonte Williams", 86: "Houston Defense" };
+  // The room takes the board in ADP order, so by pick 107 the pool is as
+  // picked-over as it would really be. With the opponents' picks left blank the
+  // first round is still sitting there and nothing about these rounds is real.
+  var byAdp = DATA.players.slice().sort(function (a, b) {
+    return (a.adp || 999) - (b.adp || 999);
+  }).map(function (p) { return p.name; });
+  var used = {};
+  Object.keys(MINE).forEach(function (k) { used[MINE[k]] = true; });
+  var picks = [], feed = 0;
+  for (var i = 1; i <= 106; i++) {
+    var slot = ownerSlot(i, 12), nm = MINE[i];
+    if (!nm) {
+      while (feed < byAdp.length && used[byAdp[feed]]) feed++;
+      nm = byAdp[feed]; used[nm] = true;
+    }
+    picks.push({ pick: i, name: nm, slot: slot, mine: slot === 11, unknown: false });
+  }
+  var api = loadApp(kindaHighlandersLeague(), picks);
+  var A = api.getAnalysis();
+  ok("the fixture really does field a full starting lineup",
+     (A.mine || []).length >= 8, (A.mine || []).map(function (p) { return p.pos; }).join(","));
+  var open = api.openStartingSlots();
+  var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
+
+  // 1. The guard used to count the kicker's slot, which the floor rule forbids
+  //    filling until round 14 — so it subtracted 100 from every player on the
+  //    board at every pick from the round the lineup came together onward.
+  var worst100 = pool.slice(0, 5).filter(function (p) { return p.comp < -60; }).length;
+  ok("a slot nobody may fill yet no longer condemns the whole board",
+     worst100 === 0,
+     pool.slice(0, 5).map(function (p) { return p.name + " " + p.comp.toFixed(0); }).join(", "));
+  ok("openStartingSlots() agrees the fillable slots are full or nearly so",
+     open.length <= 1, open.map(function (s) { return s.label; }).join(","));
+
+  // 2. Ceiling and risk are point adjustments and must not outweigh the points
+  //    they adjust. They were applied at full strength to players whose value
+  //    had been discounted to about 8% for being bench bodies.
+  var flipped = 0;
+  pool.slice(0, 10).forEach(function (p) {
+    var d = p.compDetail;
+    if (Math.abs((d.ceilingAdj || 0) - (d.riskAdj || 0)) > Math.abs(d.value || 0) + 0.5) flipped++;
+  });
+  ok("the grades no longer outweigh the value term they adjust",
+     flipped <= 2, flipped + " of the top 10");
+
+  // 3. Three cards headed "take one of these" have to be three different ideas.
+  var cards = api.recCards(pool);
+  var poss = {};
+  cards.forEach(function (p) { poss[p.pos] = true; });
+  var anyImproves = pool.some(function (p) { return (p.compDetail.marginal || 0) > 0.5; });
+  if (!anyImproves) {
+    ok("with nothing left to improve the lineup, the cards span three positions",
+       Object.keys(poss).length === 3,
+       cards.map(function (p) { return p.pos + " " + p.name; }).join(" | "));
+    ok("and the board's own #1 is still the first card",
+       cards[0].name === pool[0].name, cards[0].name + " vs " + pool[0].name);
+  } else {
+    ok("something can still improve the lineup, so the top three stand",
+       cards.length === 3 && cards[0].name === pool[0].name);
+  }
+
+  // 4. The model was handed a list of one position and told to name a player
+  //    from it and nobody else, so its answer could only be that position.
+  var cands = api.briefCandidates ? api.briefCandidates() : null;
+  if (cands && cands.length) {
+    var cpos = {};
+    cands.forEach(function (p) { cpos[p.pos] = true; });
+    ok("the payload's candidate list is not one position deep",
+       Object.keys(cpos).length >= 2,
+       cands.map(function (p) { return p.pos; }).join(","));
+  }
+})();
+
+(function () {
+  // The scaling must be a no-op while a player genuinely improves the lineup,
+  // which is every pick of the early draft. If it moved round 1 it would be
+  // re-tuning the whole board rather than fixing the bench.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var A = api.getAnalysis();
+  var top = A.avail.slice().sort(function (a, b) { return b.comp - a.comp; })[0];
+  var d = top.compDetail;
+  var starterCeiling = ((top.ceiling - 70) / 100) * 26 * (0.20 + 0.80 * 0);
+  ok("a round-1 starter's ceiling adjustment is undiscounted",
+     Math.abs((d.ceilingAdj || 0) - starterCeiling) < 0.05,
+     "got " + (d.ceilingAdj || 0).toFixed(2) + ", full strength is " + starterCeiling.toFixed(2));
+  ok("and he improves the lineup, so nothing here applies to him",
+     (d.marginal || 0) > 0.5, String((d.marginal || 0).toFixed(1)));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
