@@ -11,12 +11,32 @@
    call, and a rejected token signs you out.
 
    There is still no email on file, so there is still no password reset. The UI
-   says so on the way in. */
+   says so on the way in.
+
+   Creating an account also takes a one-use signup code, issued out of band. The
+   board spends a shared Anthropic key on every brief, so an account anyone can
+   make is a bill anyone can run up. */
 (function (root) {
   "use strict";
 
   var SESSION = "draftline.session";   // { token, user: { id, name } }
   var RECENT  = "draftline.recent";    // names typed on this device, newest first
+
+  // Must match CODE_ALPHABET and CODE_LEN in worker/src/accounts.js. Kept here
+  // only so a dropped character costs a typo message instead of a round trip;
+  // the server never trusts this and re-normalizes everything it is sent.
+  var CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+  var CODE_LEN = 8;
+
+  /** Fold a typed code to its canonical form, or "" if it cannot be one. */
+  function normalizeCode(input) {
+    var s = String(input || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    if (s.length !== CODE_LEN) return "";
+    for (var i = 0; i < s.length; i++) {
+      if (CODE_ALPHABET.indexOf(s.charAt(i)) < 0) return "";
+    }
+    return s;
+  }
 
   function base() {
     var c = root.DRAFTLINE_CONFIG || {};
@@ -89,8 +109,16 @@
       return read(RECENT, []).map(function (n) { return { name: n }; });
     },
 
-    create: function (name, password) {
+    /** Exposed so the sign-in screen can format the field as it is typed. */
+    normalizeCode: normalizeCode,
+
+    create: function (name, password, invite) {
       name = String(name || "").trim();
+      var code = normalizeCode(invite);
+      if (!code) {
+        return Promise.reject(new Error(
+          "That signup code doesn't look right — it's eight characters, like K7M2-PQ4X."));
+      }
       if (name.length < 2) return Promise.reject(new Error("Pick a name with at least 2 characters."));
       if (String(password || "").length < 6) {
         return Promise.reject(new Error("Password needs at least 6 characters."));
@@ -99,8 +127,10 @@
         return Promise.reject(new Error(
           "This browser is blocking local storage, so it can't hold a sign-in."));
       }
-      return call("/api/signup", { method: "POST", anon: true, body: { name: name, password: password } })
-        .then(finish);
+      return call("/api/signup", {
+        method: "POST", anon: true,
+        body: { name: name, password: password, invite: code }
+      }).then(finish);
     },
 
     login: function (name, password) {

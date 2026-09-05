@@ -1,11 +1,28 @@
 #!/usr/bin/env bash
 # tools/test-accounts.sh — end-to-end check of the accounts API.
 # Start the Worker first:  cd ff/worker && npx wrangler dev --port 8787 --local
+#
+# Signup is invite-only, so this script mints its own codes through the admin
+# route and therefore needs the same secret the Worker has. For a local run, put
+#   ADMIN_TOKEN = "local-dev-admin-token"
+# in ff/worker/.dev.vars (gitignored); against a deployed Worker, export
+# DRAFTLINE_ADMIN_TOKEN to match the secret set with `wrangler secret put`.
 
 B=${DRAFTLINE_API:-http://127.0.0.1:8787}
 O="Origin: ${DRAFTLINE_ORIGIN:-http://localhost:8123}"
 J='content-type: application/json'
+ADMIN=${DRAFTLINE_ADMIN_TOKEN:-local-dev-admin-token}
 pass=0; fail=0
+
+# One fresh single-use code. Every signup below that is meant to SUCCEED calls
+# this; the ones meant to fail for some other reason pass DUD instead, so a
+# failure there proves the other check fired without spending a real code.
+newcode() {
+  curl -s -H "$O" -H "$J" -H "Authorization: Bearer $ADMIN" \
+       -d '{"count":1,"note":"test-accounts.sh"}' $B/api/admin/codes \
+    | sed -n 's/.*"codes":\["\([^"]*\)".*/\1/p'
+}
+DUD="AAAA2222"   # well-formed, and not a code anyone has ever been issued
 ck() { # ck <label> <expected-substring> <actual>
   if [[ "$3" == *"$2"* ]]; then echo "  ok   $1"; pass=$((pass+1));
   else echo "  FAIL $1"; echo "       wanted: $2"; echo "       got:    $3"; fail=$((fail+1)); fi
@@ -16,21 +33,80 @@ UPPER=$(echo "$NAME" | tr "[:lower:]" "[:upper:]")
 PW="laredo"
 
 echo "== bad origin is refused"
-r=$(curl -s -H "Origin: https://evil.example" -H "$J" -d '{"name":"x","password":"yyyyyy"}' $B/api/signup)
+r=$(curl -s -H "Origin: https://evil.example" -H "$J" -d "{\"name\":\"x\",\"password\":\"yyyyyy\",\"invite\":\"$DUD\"}" $B/api/signup)
 ck "origin allowlist" "Origin not allowed" "$r"
 
 echo "== signup"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$NAME\",\"password\":\"$PW\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$NAME\",\"password\":\"$PW\",\"invite\":\"$(newcode)\"}" $B/api/signup)
 ck "returns a token" '"token"' "$r"
 TOK=$(echo "$r" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 
 echo "== signup rules"
-r=$(curl -s -H "$O" -H "$J" -d '{"name":"shorty","password":"abc"}' $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"shorty\",\"password\":\"abc\",\"invite\":\"$DUD\"}" $B/api/signup)
 ck "min password" "at least 6" "$r"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$NAME\",\"password\":\"another\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$NAME\",\"password\":\"another\",\"invite\":\"$DUD\"}" $B/api/signup)
 ck "duplicate name" "already taken" "$r"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$UPPER\",\"password\":\"another\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$UPPER\",\"password\":\"another\",\"invite\":\"$DUD\"}" $B/api/signup)
 ck "duplicate is case-insensitive" "already taken" "$r"
+
+echo "== invite codes"
+# A fresh address per run, and a different one per purpose. A rejected code
+# counts a failure on the iv: bucket for the caller's address, and ten of those
+# inside fifteen minutes is a refusal — so fixed addresses here would mean the
+# third or fourth run of this script in one sitting failing on a counter left
+# behind by the second, which reads as a broken invite check and is not one.
+# 198.18.0.0/15 is the benchmarking range: reserved, and never a real client.
+rip() { echo "CF-Connecting-IP: 198.18.$((RANDOM % 256)).$((RANDOM % 256))"; }
+IIP=$(rip)
+signup() { # signup <name> <code> [ip-header]
+  curl -s -H "$O" -H "$J" -H "${3:-$IIP}" \
+       -d "{\"name\":\"$1\",\"password\":\"laredo-inv\",\"invite\":\"$2\"}" $B/api/signup
+}
+
+CODE=$(newcode)
+ck "the admin route hands back a hyphenated code" "-" "$CODE"
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"nocode-$RANDOM\",\"password\":\"laredo-inv\"}" $B/api/signup)
+ck "no code at all is refused" "eight characters" "$r"
+r=$(signup "shortcode-$RANDOM" "K7M2")
+ck "a short code is refused on its shape" "eight characters" "$r"
+r=$(signup "badchar-$RANDOM" "K7M2PQ4I")
+ck "a code using an excluded look-alike is refused on its shape" "eight characters" "$r"
+r=$(signup "unknown-$RANDOM" "K7M2PQ4X")
+ck "a well-formed code nobody was issued is refused" "isn't valid" "$r"
+
+INAME="invited-$RANDOM$RANDOM"
+r=$(signup "$INAME" "$CODE")
+ck "a real code creates the account" '"token"' "$r"
+r=$(signup "second-$RANDOM" "$CODE")
+ck "the same code a second time is refused" "isn't valid" "$r"
+r=$(signup "third-$RANDOM" "$(echo "$CODE" | tr -d - | tr "[:upper:]" "[:lower:]")")
+ck "and refused again unhyphenated and lower case (normalizing is not a way around it)" \
+   "isn't valid" "$r"
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$INAME\",\"password\":\"laredo-inv\"}" $B/api/login)
+ck "the account made with it still signs in afterwards" '"token"' "$r"
+
+# Hyphens, spaces and case are all cosmetic on the way in.
+r=$(signup "sloppy-$RANDOM" "$(newcode | tr "[:upper:]" "[:lower:]")")
+ck "a code typed in lower case with its hyphen works" '"token"' "$r"
+
+echo "== the admin route does not announce itself"
+r=$(curl -s -H "$O" $B/api/admin/codes)
+ck "no token gets the same 404 as an unknown route" "No such endpoint" "$r"
+r=$(curl -s -H "$O" -H "$(rip)" -H "Authorization: Bearer not-the-admin-token" $B/api/admin/codes)
+ck "a wrong token gets it too — never a 401" "No such endpoint" "$r"
+r=$(curl -s -H "$O" -H "Authorization: Bearer $ADMIN" $B/api/admin/codes)
+ck "the real token lists codes" '"codes"' "$r"
+ck "and the listing shows the spent one against the account that used it" "$INAME" "$r"
+
+echo "== ten wrong codes from one address is a refusal"
+BIP=$(rip)
+for i in $(seq 1 10); do signup "flood-$i-$RANDOM" "K7M2PQ4X" "$BIP" > /dev/null; done
+r=$(signup "flood-11-$RANDOM" "K7M2PQ4X" "$BIP")
+ck "the 11th is turned away before the code is even looked up" "Too many wrong signup codes" "$r"
+# A good code from a clean address is unaffected — the bucket is per-IP, and
+# unlike the sign-in name bucket it cannot be aimed at anybody.
+r=$(signup "clean-$RANDOM" "$(newcode)" "$(rip)")
+ck "a different address with a good code still signs up" '"token"' "$r"
 
 echo "== login"
 r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$NAME\",\"password\":\"$PW\"}" $B/api/login)
@@ -74,7 +150,7 @@ r=$(curl -s -X PUT -H "$O" -H "$J" -H "Authorization: Bearer $TOK2" \
 ck "force overrides" '"rev":3' "$r"
 
 echo "== isolation between accounts"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"other-$RANDOM\",\"password\":\"laredo2\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"other-$RANDOM\",\"password\":\"laredo2\",\"invite\":\"$(newcode)\"}" $B/api/signup)
 TOK3=$(echo "$r" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 r=$(curl -s -H "$O" -H "Authorization: Bearer $TOK3" $B/api/state)
 ck "a new account sees no one else's draft" '"rev":0' "$r"
@@ -109,7 +185,7 @@ echo "== lockout is per-IP, not per-account-name (workstream F fix)"
 # unaffected.
 LNAME="lockout-$RANDOM$RANDOM"
 LPW="laredo-lock"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$LNAME\",\"password\":\"$LPW\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$LNAME\",\"password\":\"$LPW\",\"invite\":\"$(newcode)\"}" $B/api/signup)
 ck "lockout fixture signs up" '"token"' "$r"
 for i in $(seq 1 20); do
   curl -s -H "$O" -H "$J" -H "CF-Connecting-IP: 203.0.113.9" \
@@ -132,7 +208,7 @@ echo "== a 64 KB+ state body (workstream F: the pagehide keepalive limit)"
 # no equivalent for and cannot reproduce — that half of the risk is a client
 # finding, recorded in qa-findings-G.md, not something this script can assert.
 BIGNAME="bigstate-$RANDOM$RANDOM"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$BIGNAME\",\"password\":\"laredo-big\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$BIGNAME\",\"password\":\"laredo-big\",\"invite\":\"$(newcode)\"}" $B/api/signup)
 BIGTOK=$(echo "$r" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 node -e '
 var fs = require("fs");
@@ -162,7 +238,7 @@ echo "== two devices saving within the same instant (workstream F race)"
 # more room to interleave; that gap is structural (no CAS primitive is used)
 # and is written up in qa-findings-G.md rather than "fixed" here.
 RNAME="race-$RANDOM$RANDOM"
-r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$RNAME\",\"password\":\"laredo-race\"}" $B/api/signup)
+r=$(curl -s -H "$O" -H "$J" -d "{\"name\":\"$RNAME\",\"password\":\"laredo-race\",\"invite\":\"$(newcode)\"}" $B/api/signup)
 RTOK=$(echo "$r" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
 r=$(curl -s -X PUT -H "$O" -H "$J" -H "Authorization: Bearer $RTOK" \
     -d '{"rev":0,"state":"{\"picks\":[0]}","device":"base"}' $B/api/state)

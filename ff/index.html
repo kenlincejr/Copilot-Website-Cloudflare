@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — a draft room that does the math while the clock runs</title>
 <meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, reads live draft results to say who will still be there at your next pick, gets you a Claude briefing before your clock starts, and grades every roster when it's over.">
-<link rel="stylesheet" href="assets/ff.css?v=20260905t">
+<link rel="stylesheet" href="assets/ff.css?v=20260905u">
 </head>
 <body>
 
@@ -64,6 +64,14 @@
         <div class="field hidden" id="confirmField">
           <label for="authPass2">Confirm password</label>
           <input type="password" id="authPass2" autocomplete="new-password">
+        </div>
+        <div class="field hidden" id="codeField">
+          <label for="authCode">Signup code</label>
+          <input type="text" id="authCode" autocomplete="off" autocapitalize="characters"
+                 autocorrect="off" spellcheck="false" maxlength="9" placeholder="K7M2-PQ4X">
+          <small class="dimtext" style="display:block;margin-top:6px">
+            Draftline is invite-only. Ask Ken for a code — each one works once.
+          </small>
         </div>
         <button class="btn btn-primary" id="authGo" style="width:100%">Sign in</button>
         <div class="note err mt hidden" id="authErr"></div>
@@ -244,11 +252,11 @@ Two moves in the first two weeks: put a waiver claim in on the backup behind tea
   </div>
 </div>
 
-<script src="assets/config.js?v=20260905t"></script>
-<script src="data/players.js?v=20260905t"></script>
-<script src="assets/presets.js?v=20260905t"></script>
-<script src="assets/engine.js?v=20260905t"></script>
-<script src="assets/auth.js?v=20260905t"></script>
+<script src="assets/config.js?v=20260905u"></script>
+<script src="data/players.js?v=20260905u"></script>
+<script src="assets/presets.js?v=20260905u"></script>
+<script src="assets/engine.js?v=20260905u"></script>
+<script src="assets/auth.js?v=20260905u"></script>
 <script>
 (function () {
   "use strict";
@@ -330,9 +338,10 @@ Two moves in the first two weeks: put a waiver claim in on the backup behind tea
     $("tabCreate").classList.toggle("on", creating);
     $("authGo").textContent = creating ? "Create account & start drafting" : "Sign in";
     $("authIntro").textContent = creating
-      ? "Pick any name and any password. It takes ten seconds, and it works on every device you draft from."
+      ? "Pick any name and any password, and enter the signup code you were given. It takes ten seconds, and it works on every device you draft from."
       : "Welcome back. Sign in from any device and your draft comes with you.";
     $("confirmField").classList.toggle("hidden", !creating);
+    $("codeField").classList.toggle("hidden", !creating);
     $("passHint").textContent = creating
       ? "Six characters or more. Use Show to check it before you commit — there is no reset."
       : "";
@@ -344,6 +353,21 @@ Two moves in the first two weeks: put a waiver claim in on the backup behind tea
 
   $("tabLogin").addEventListener("click", function () { setMode("login"); $("authName").focus(); });
   $("tabCreate").addEventListener("click", function () { setMode("create"); $("authName").focus(); });
+  /* The code is read off a phone and typed here, so the field does the tidying:
+     upper case, drop anything that is not in the alphabet, and put the hyphen
+     back after the fourth character. What is on screen is then exactly what gets
+     sent, which is what makes a rejection believable. The caret is restored by
+     counting the code characters ahead of it rather than by jumping to the end,
+     so fixing a character in the middle does not throw you out of position. */
+  $("authCode").addEventListener("input", function () {
+    var el = $("authCode");
+    var before = el.value.slice(0, el.selectionStart || 0).replace(/[^A-Za-z0-9]/g, "").length;
+    var raw = el.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+    el.value = raw.length > 4 ? raw.slice(0, 4) + "-" + raw.slice(4) : raw;
+    var at = before + (before > 4 ? 1 : 0);
+    try { el.setSelectionRange(at, at); } catch (e) {}
+  });
+
   $("authReveal").addEventListener("click", function () {
     var shown = $("authPass").type === "text";
     ["authPass", "authPass2"].forEach(function (id) { $(id).type = shown ? "password" : "text"; });
@@ -354,13 +378,19 @@ Two moves in the first two weeks: put a waiver claim in on the backup behind tea
     hideErr();
     var name = $("authName").value, pw = $("authPass").value;
     if (mode === "create" && pw !== $("authPass2").value) return showErr("The two passwords don't match.");
+    if (mode === "create" && !A.normalizeCode($("authCode").value)) {
+      $("authCode").focus();
+      return showErr($("authCode").value.trim()
+        ? "That signup code doesn't look right — it's eight characters, like K7M2-PQ4X."
+        : "Creating an account takes a signup code. Ask Ken for one.");
+    }
     $("authGo").disabled = true;
-    (mode === "login" ? A.login(name, pw) : A.create(name, pw))
+    (mode === "login" ? A.login(name, pw) : A.create(name, pw, $("authCode").value))
       .then(function () { location.href = "app.html"; })
       .catch(function (err) { showErr(err.message || String(err)); $("authGo").disabled = false; });
   }
   $("authGo").addEventListener("click", go);
-  ["authName", "authPass", "authPass2"].forEach(function (id) {
+  ["authName", "authPass", "authPass2", "authCode"].forEach(function (id) {
     $(id).addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
   });
 

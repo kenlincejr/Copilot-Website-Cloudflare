@@ -13,17 +13,25 @@
  * iteration count the runtime allows, with a per-account salt; the difference
  * from before is that the hash now lives somewhere its owner cannot read.
  *
+ * Signup is invite-only. The board spends a shared Anthropic key on every brief,
+ * so an account anyone can make is a bill anyone can run up; a one-use code
+ * issued out of band is the smallest thing that closes that. See the invite
+ * section below for why the code is checked the way it is.
+ *
  * Routes, all under /api/ so the bare-root Claude proxy keeps working for any
  * browser still running an older build of the page:
  *
- *   POST /api/signup   {name, password}      -> {token, user}
- *   POST /api/login    {name, password}      -> {token, user}
- *   POST /api/logout                         -> {ok}
- *   GET  /api/session                        -> {user}
- *   GET  /api/state                          -> {rev, updatedAt, device, state}
- *   PUT  /api/state    {rev, state, device}  -> {rev, updatedAt} | 409 conflict
+ *   POST /api/signup       {name, password, invite}  -> {token, user}
+ *   POST /api/login        {name, password}          -> {token, user}
+ *   POST /api/logout                                 -> {ok}
+ *   GET  /api/session                                -> {user}
+ *   GET  /api/state                                  -> {rev, updatedAt, device, state}
+ *   PUT  /api/state        {rev, state, device}      -> {rev, updatedAt} | 409 conflict
+ *   POST /api/admin/codes  {count, note, ...}        -> {codes}
+ *   GET  /api/admin/codes                            -> {codes}
  *
- * Everything but signup and login takes `Authorization: Bearer <token>`.
+ * Everything but signup and login takes `Authorization: Bearer <token>`; the
+ * admin pair takes the ADMIN_TOKEN secret instead of a session.
  */
 
 // 100k is the ceiling the Workers runtime enforces on PBKDF2: ask for more and
@@ -40,6 +48,22 @@ const MAX_BODY_BYTES = 512 * 1024;       // a 15-round draft is a few KB; this i
 // are counted per IP and per account name over a rolling window.
 const AUTH_LIMIT = 20;
 const AUTH_WINDOW = 900;                 // 15 minutes
+
+/* Invite codes.
+ *
+ * No 0, 1, I, L, O or U: these get read off one phone screen and typed into
+ * another one, and every pair in that set is the same glyph to somebody doing it
+ * in a hurry. Eight characters out of the remaining thirty is 30^8, about
+ * 6.6e11 — against the failure limit below, guessing one is not a thing that
+ * happens, and a longer code would only be harder to read aloud.
+ *
+ * Unlike the sign-in name bucket, this limit is allowed to REFUSE rather than
+ * only count. The reasoning that makes that bucket advisory does not apply: an
+ * invite bucket keyed on the address cannot be aimed at a particular victim, and
+ * there is no innocent way to get a code wrong ten times running. */
+const CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTVWXYZ";
+const CODE_LEN = 8;
+const INVITE_LIMIT = 10;
 
 const enc = new TextEncoder();
 
@@ -79,6 +103,45 @@ const nameKey  = (name) => "u:name:" + String(name || "").trim().toLowerCase();
 const userKey  = (id) => "u:" + id;
 const sessKey  = (token) => "s:" + token;
 const stateKey = (id) => "st:" + id;
+const codeKey  = (code) => "ic:" + code;
+
+/**
+ * Fold what somebody typed down to the canonical eight characters, or "" if it
+ * cannot be one. Hyphens, spaces and lower case all survive the trip; a
+ * character outside the alphabet does not, and the length check then rejects the
+ * whole thing. That is deliberate — mapping look-alikes back (a typed O to a 0)
+ * would need a table that the browser and this file both carry and could drift
+ * apart on, and the payoff is one saved retype against a clear error message.
+ */
+function normalizeCode(input) {
+  const s = String(input || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (s.length !== CODE_LEN) return "";
+  for (const ch of s) if (!CODE_ALPHABET.includes(ch)) return "";
+  return s;
+}
+
+/** Hyphenated for display only. Never stored, never compared. */
+const formatCode = (code) => code.slice(0, 4) + "-" + code.slice(4);
+
+function randomCode() {
+  const bytes = new Uint8Array(CODE_LEN);
+  crypto.getRandomValues(bytes);
+  let out = "";
+  // Rejection-free because 256 % 30 is not 0, so the low values are very
+  // slightly favored. At 6.6e11 codes and a ten-guess limit that bias buys an
+  // attacker nothing, and the alternative is a loop that can in principle spin.
+  for (const b of bytes) out += CODE_ALPHABET[b % CODE_ALPHABET.length];
+  return out;
+}
+
+/** True when this record can still be spent. One place, so signup and the admin
+    listing can never disagree about what "used" means. */
+function codeSpendable(rec) {
+  if (!rec) return false;
+  if ((rec.uses || 0) >= (rec.maxUses || 1)) return false;
+  if (rec.expiresAt && Date.now() > rec.expiresAt) return false;
+  return true;
+}
 
 function bearer(request) {
   const h = request.headers.get("Authorization") || "";
@@ -97,10 +160,10 @@ async function whoami(request, env) {
 }
 
 /** Rolling failure counter, shared by every rate-limited path. */
-async function attempts(env, bucket) {
+async function attempts(env, bucket, limit = AUTH_LIMIT) {
   const key = `al:${bucket}:${Math.floor(Date.now() / 1000 / AUTH_WINDOW)}`;
   const used = parseInt((await env.LIMITS.get(key)) || "0", 10);
-  return { over: used >= AUTH_LIMIT, key, used };
+  return { over: used >= limit, key, used };
 }
 async function countFailure(env, buckets) {
   await Promise.all(buckets.map(async (b) => {
@@ -147,6 +210,14 @@ export async function handleAccounts(request, env, path, json) {
   if (path === "/api/signup" && method === "POST") {
     const name = String(body.name || "").trim();
     const password = String(body.password || "");
+    const invite = normalizeCode(body.invite);
+
+    // Shape first: it costs nothing and it is the common failure, so the person
+    // who dropped a character gets told that instead of a generic refusal.
+    if (!invite) {
+      return json({ error: { message:
+        "That signup code doesn't look right — it's eight characters, like K7M2-PQ4X." } }, 400);
+    }
     if (name.length < 2)   return json({ error: { message: "Pick a name with at least 2 characters." } }, 400);
     if (name.length > 120) return json({ error: { message: "That name is too long." } }, 400);
     if (password.length < MIN_PASSWORD) {
@@ -156,23 +227,63 @@ export async function handleAccounts(request, env, path, json) {
     if ((await attempts(env, `ip:${ip}`)).over) {
       return json({ error: { message: "Too many attempts. Wait fifteen minutes." } }, 429);
     }
+    if ((await attempts(env, `iv:${ip}`, INVITE_LIMIT)).over) {
+      return json({ error: { message:
+        "Too many wrong signup codes from this connection. Wait fifteen minutes." } }, 429);
+    }
     if (await env.USERS.get(nameKey(name))) {
       return json({ error: { message: "That name is already taken." } }, 409);
     }
 
+    // Derived before the code is read, not after. The window in which two
+    // requests can both see one unused code is the gap between reading it and
+    // marking it spent, and PBKDF2 at 100k iterations is ~100ms of wall clock —
+    // easily the widest thing that could sit in that gap. Moving it above the
+    // read leaves a couple of KV round trips there instead.
     const salt = randomHex(16);
     const rec = {
       id: "p_" + randomHex(8), name, salt,
       hash: await derive(password, salt),
       kdf: `pbkdf2-sha256-${ITER}`,
       created: Date.now(), lastSeen: Date.now(),
+      invite,
     };
-    // KV is eventually consistent, so two signups racing on one name can both
-    // pass the check above. On a private board shared with a dozen friends that
-    // is a theoretical loss of a name, not of data: each account keeps its own
-    // id and its own state, and the loser simply cannot sign in under that name.
-    await env.USERS.put(userKey(rec.id), JSON.stringify(rec));
-    await env.USERS.put(nameKey(name), rec.id);
+
+    const code = await env.USERS.get(codeKey(invite), "json");
+    if (!codeSpendable(code)) {
+      // One message for never-existed, already-spent and expired. Which of the
+      // three it was is only useful to somebody working through the code space.
+      await countFailure(env, [`iv:${ip}`]);
+      return json({ error: { message:
+        "That signup code isn't valid, or it's already been used." } }, 403);
+    }
+
+    /* Spend the code BEFORE writing the account. KV has no compare-and-swap, so
+       two requests that read the same unused code in the same instant can both
+       get here; marking first narrows that to the width of one put instead of
+       the width of an account creation. It cannot close it, and it does not need
+       to — on a board shared with a dozen friends, one code used twice is worth
+       nothing to an attacker and shows up in usedBy afterwards. A Durable Object
+       for a counter that ticks a dozen times a season is not the trade. */
+    code.uses = (code.uses || 0) + 1;
+    code.usedBy = (code.usedBy || []).concat([{ id: rec.id, name, at: Date.now(), ip }]);
+    await env.USERS.put(codeKey(invite), JSON.stringify(code));
+
+    try {
+      // KV is eventually consistent, so two signups racing on one name can both
+      // pass the check above. On a private board shared with a dozen friends that
+      // is a theoretical loss of a name, not of data: each account keeps its own
+      // id and its own state, and the loser simply cannot sign in under that name.
+      await env.USERS.put(userKey(rec.id), JSON.stringify(rec));
+      await env.USERS.put(nameKey(name), rec.id);
+    } catch (e) {
+      // Hand the code back rather than eating it on an error the user did not
+      // cause — they have no way to get another one except by asking.
+      code.uses -= 1;
+      code.usedBy.pop();
+      await env.USERS.put(codeKey(invite), JSON.stringify(code));
+      throw e;
+    }
     return json(await startSession(env, rec), 200);
   }
 
@@ -205,6 +316,59 @@ export async function handleAccounts(request, env, path, json) {
       return json({ error: { message: "That name and password don't match an account." } }, 401);
     }
     return json(await startSession(env, rec), 200);
+  }
+
+  /* --------------------------------------------------------- admin: codes */
+  /* Minting is a job for whoever owns the deployment, not for an account, so
+     this is gated on a secret rather than on a session — there is no notion of
+     an admin user and adding one would mean a role on every record.
+
+     A missing or wrong token gets the same 404 an unknown route does. A 401
+     would confirm that there is something here to find a token for, and this is
+     the only path on the Worker that can create the thing signup requires. */
+  if (path === "/api/admin/codes") {
+    const supplied = bearer(request) || "";
+    const secret = env.ADMIN_TOKEN || "";
+    if (!secret || !sameHash(supplied, secret)) {
+      if (supplied) await countFailure(env, [`iv:${ip}`]);
+      return json({ error: { message: "No such endpoint." } }, 404);
+    }
+
+    if (method === "GET") {
+      // Small by construction — a code per person invited. If this ever needs
+      // paging, the thing to fix is upstream of the listing.
+      const listed = await env.USERS.list({ prefix: "ic:", limit: 1000 });
+      const codes = await Promise.all(listed.keys.map(async (k) => {
+        const rec = await env.USERS.get(k.name, "json");
+        return rec && { ...rec, display: formatCode(rec.code), spendable: codeSpendable(rec) };
+      }));
+      return json({ codes: codes.filter(Boolean).sort((a, b) => b.created - a.created) }, 200);
+    }
+
+    if (method === "POST") {
+      const count = Math.min(50, Math.max(1, parseInt(body.count, 10) || 1));
+      const maxUses = Math.min(50, Math.max(1, parseInt(body.maxUses, 10) || 1));
+      const days = Math.max(0, parseInt(body.expiresDays, 10) || 0);
+      const note = String(body.note || "").slice(0, 200);
+      const made = [];
+      for (let i = 0; i < count; i++) {
+        // A collision here would silently hand out a code that already belongs
+        // to somebody. At 6.6e11 it will not happen; checking costs one read.
+        let code = randomCode();
+        while (await env.USERS.get(codeKey(code))) code = randomCode();
+        const rec = {
+          code, note, source: "manual",
+          created: Date.now(),
+          expiresAt: days ? Date.now() + days * 86400000 : 0,
+          maxUses, uses: 0, usedBy: [], capture: "",
+        };
+        await env.USERS.put(codeKey(code), JSON.stringify(rec));
+        made.push(formatCode(code));
+      }
+      return json({ codes: made }, 200);
+    }
+
+    return json({ error: { message: "No such endpoint." } }, 404);
   }
 
   /* ------------------------------------------------------- session, state */

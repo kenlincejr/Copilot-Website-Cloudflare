@@ -1259,7 +1259,56 @@ to do and must not be able to take the accounts with it.
 
 Adding an origin to `ALLOWED_ORIGINS` is what lets a new domain sign in at all.
 
-To exercise it end to end against a local Worker:
+### Signup is invite-only
+
+Creating an account takes a one-use code. The board spends a shared Anthropic key
+on every brief, so an account anyone can make is a bill anyone can run up; a code
+issued out of band is the smallest thing that closes that, and it does not need an
+email, a payment or anything else the app would then have to hold.
+
+A code is eight characters from `23456789ABCDEFGHJKMNPQRSTVWXYZ` — no `0`, `1`,
+`I`, `L`, `O` or `U`, because these are read off one phone screen and typed into
+another. It is displayed as `K7M2-PQ4X`; the hyphen is cosmetic, and the field on
+the signup form puts it back as you type. Codes live in `USERS` under `ic:`,
+alongside the accounts rather than the disposable counters.
+
+Mint them through the admin route, which is gated on the `ADMIN_TOKEN` secret
+rather than on a session — there is no notion of an admin account. A missing or
+wrong token gets the same 404 an unknown route does, because a 401 would confirm
+there is something here worth finding a token for:
+
+The token is read by the same `bearer()` parser the session tokens use, so it has
+to be letters, digits, `_` or `-` — a token with a `+` or `=` in it is rejected
+before it is ever compared, and looks from the outside exactly like a wrong one.
+Random hex is the safe shape:
+
+```powershell
+npx wrangler secret put ADMIN_TOKEN     # once, from ff/worker
+$h = @{ Authorization = "Bearer $env:DRAFTLINE_ADMIN_TOKEN"; "content-type" = "application/json" }
+Invoke-RestMethod -Method Post -Uri "https://draftline-api.ken-lince.workers.dev/api/admin/codes" -Headers $h -Body '{"count":5,"note":"league text thread"}'
+```
+
+`GET` the same route to see every code with the account that spent it. Codes are
+never deleted on use — a spent one records who used it and when, and an expired one
+that still exists tells you what happened where a vanished one looks exactly like a
+code that was never issued.
+
+Two things that look like oversights and are not. Signup marks the code spent
+*before* it writes the account: KV has no compare-and-swap, so the window in which
+two requests both see one unused code cannot be closed, only narrowed to the width
+of a single put. And the per-address limit on wrong codes is allowed to *refuse*,
+unlike the sign-in limit keyed on an account name — a bucket keyed on the address
+cannot be aimed at a chosen victim, and there is no innocent way to get a code
+wrong ten times running.
+
+`ff/tools/invite-and-payment-spec.md` has the rest of the reasoning, plus the
+unbuilt second half: taking $9.99 through PayPal and Venmo to mint a code
+automatically.
+
+To exercise it end to end against a local Worker. The suite mints its own codes, so
+it needs the admin secret — put `ADMIN_TOKEN = "local-dev-admin-token"` in
+`ff/worker/.dev.vars` (gitignored) for a local run, or export
+`DRAFTLINE_ADMIN_TOKEN` to match the deployed secret:
 
 ```bash
 cd ff/worker && npx wrangler dev --port 8787 --local

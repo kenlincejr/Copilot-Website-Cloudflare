@@ -6,3 +6,6 @@ __pycache__/
 # Agent scratch and local session config — machine-local, not shared state
 .buildtmp/
 .claude/
+
+# Local Worker secrets for `wrangler dev` — real values, never commit
+.dev.vars
