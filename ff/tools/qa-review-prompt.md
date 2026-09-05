@@ -305,6 +305,314 @@ The user asked directly: what data or telemetry could be added that would raise 
 
 For each, say: the source, whether it is free, how it enters the bake or the engine, which term of `composite()` it changes, and what could go wrong.
 
+### I. Why the board stacks a position you have already filled
+
+**This is the highest-priority workstream after A and E1, and it outranks the rest of B.**
+It was raised by the user from a live practice draft, not found by testing, which means
+the existing suites do not cover it. Read this whole section before touching anything.
+
+**What the user saw.** Two screenshots from a practice draft on the real league settings,
+slot 11, Drake Maye kept at pick 59.
+
+*Round 8, pick 86.* The roster reads QB 1/1 Drake Maye, RB 2/2 Derrick Henry and Saquon
+Barkley, WR 1/2 Ladd McConkey, WR empty, TE 1/1 Sam LaPorta (199 pts, tier 1), FLEX 1/1
+Breece Hall, K 0/1 empty, DEF 1/1 Houston. The board's top five by composite are: 1 TE
+Harold Fannin Jr., 2 TE Tucker Kraft, 3 QB Trevor Lawrence, 4 RB Tony Pollard, 5 TE Dalton
+Kincaid. The "Take one of these" card for Fannin says, in the app's own words, **"0 to your
+lineup"** and **"can't crack your starting lineup — depth only"** — and ranks him number
+one anyway. The brief picked Kraft and argued: *"Nothing on this list actually starts for
+you — WR2 stays empty another round regardless, since even Reed grades VOR 0 and can't beat
+replacement there."*
+
+*Round 10, pick 110.* Same draft. The top twenty-four of the board is almost entirely tight
+ends and quarterbacks — the two positions this roster has filled — while WR2 is still empty
+and K is still 0/1. The brief recommended Kyler Murray as a second quarterback behind the
+keeper, with Dalton Kincaid as the fallback.
+
+The user's judgment, which is correct and is the standard this workstream is measured
+against: *any drafter would question two tight ends inside two rounds of each other in the
+first eight rounds, when a tier-1 tight end is already rostered.*
+
+**The lead. Confirm or refute it first, before anything else in this section.**
+
+`positionalNeed()` (`engine.js:531`) was deliberately fixed to ask the real lineup how many
+flex slots are actually open, and the comment above it says why:
+
+> Ask the actual assignment how many flex slots are still empty rather than subtracting
+> surpluses position by position. The old arithmetic let three positions each claim the same
+> flex slot that one running back was already sitting in.
+
+`composite()` (`engine.js:582`) still does that old arithmetic:
+
+```js
+var lineupSpots = (ctx.rules.roster[player.pos] || 0) +
+  (flexEl2.indexOf(player.pos) >= 0 ? (ctx.rules.roster.FLEX || 0) : 0);
+```
+
+It adds `roster.FLEX` for every flex-eligible position unconditionally and never asks
+whether the flex is occupied. `openFlexSlots()` already exists, one function above, and is
+exactly the call that is missing. On the round-8 roster above, where Breece Hall is *in* the
+flex:
+
+| term | today | with the flex counted as taken |
+|---|---|---|
+| `lineupSpots` (TE) | 2 | 1 |
+| `benchDepth` = `have - lineupSpots + 1` | 0 | 1 |
+| `Math.pow(0.55, benchDepth)` | 1.00 — no discount at all | 0.55 |
+| `benchWeight` | 0.28 | 0.077 |
+
+A second tight end keeps 28% of his open-market surplus with no depth discount whatsoever,
+priced as the first body at a two-slot position. That is 3.6x too high, and it switches on
+at exactly the moment the flex fills — which is why rounds 1 to 4 are, in the user's words,
+"a no brainer" and everything after breaks down.
+
+Do not assume this is the whole answer. It is one hypothesis with a clean mechanism. Prove
+how much of the observed behavior it accounts for, in points of composite, and then keep
+going: the ranking above is wrong by more than one term's worth, and there are at least
+three other candidates below.
+
+**What to do.**
+
+1. **Reproduce the exact board first.** Rebuild both states — pick 86 and pick 110 with the
+   rosters listed above, `kinda_highlanders`, Balanced, 12 teams, 15 rounds, slot 11, keeper
+   Drake Maye — and print the top twenty-five by composite with every term of `composite()`
+   broken out per player: `value`, `marginal`, `open`, `lineup`, `beyond`, `benchDepth`,
+   `benchWeight`, `vona`, `mult`, `ceilingAdj`, `riskAdj`, `byePenalty`, `tagPenalty`,
+   `blocked`. You must be able to point at the terms that put Fannin above every startable
+   body before you propose anything. Save the table in the report.
+2. **Then fix `lineupSpots` to use `openFlexSlots()`** and print the same table again. Report
+   the new top twenty-five at both states and say plainly how much moved. This changes a
+   formula, so per rule 3 it is written up with a proposed diff rather than committed — but
+   it is small, it is the same call `positionalNeed()` already makes, and if it holds up it
+   is the single recommendation to make first. Say so if it is.
+3. **`benchDepth` at the boundary, again, with the flex correct.** Re-run the check that
+   workstream B did (`B` found it correct) with `lineupSpots` fixed, because B checked the
+   arithmetic against the *current* `lineupSpots` and would not have caught a wrong input to
+   a right formula. Second QB, second TE, third RB, third WR, with the flex both open and
+   filled. Four cases each.
+4. **The empty-slot problem, which is the other half and may be larger.** WR2 was *empty*
+   and the app still said no available receiver was worth anything — "even Reed grades VOR 0
+   and can't beat replacement there", with Jayden Reed at 201 points sitting at board #12.
+   Work out what `marginalVor()` returns for Reed into that empty WR2 slot and why it is
+   near zero. The suspicion: `replacementPts` is a league-wide positional replacement level
+   computed once by `replacementRanks()`, so in a deep full-PPR receiver pool the marginal
+   value of filling an empty starting slot is measured against a body the user does not
+   have and may never get. Filling an empty starter is not the same decision as adding a
+   fourth one, and the arithmetic currently cannot tell them apart. Decide whether
+   replacement for an *empty starting slot* should instead be the best body the model expects
+   to be available at the user's next pick at that position — which is what `expectedBestAvailable()`
+   already computes — rather than a static positional constant. Quantify both ways at pick 86.
+5. **`FLEX_SPLIT` interacts with all of this.** `positionalNeed()` spreads the open flex
+   across RB/WR/TE at 0.55/0.40/0.05. When the flex is *closed*, `flexOpen` is 0 and the
+   split is moot; when it is open, TE claims 5% of it. Check whether `short` is doing
+   anything useful for TE at all, and whether the 0.05 is why a tight end is never urgent
+   when you need one and never discouraged when you do not.
+6. **`depthCap` is the last line of defense and it is not holding.** TE is capped at
+   roster+1 = 2, so a second tight end is never `blocked`. Given the tier cliff at tight end,
+   ask whether the cap is the right instrument at all, or whether the real answer is that
+   the *value* term should make a second TE uncompetitive so the cap never has to fire.
+   A cap that is the only thing preventing a bad recommendation is a cap that will be wrong
+   in the one state nobody tested.
+7. **Then measure it across the whole draft, not just two states.** Simulate 200 seeded
+   drafts from slot 11 under Balanced with the keeper, and for every one of the user's picks
+   from round 5 to round 15 record: the position the board ranked first, whether that
+   position had an empty starting slot, whether it was already full, and the `marginal` of
+   the top-ranked player. Report the rate at which the board's number one is a position with
+   no open starting slot while a starting slot elsewhere is empty. That number is the
+   headline of this workstream. Do it before and after any fix you propose.
+8. **Kickers and defenses.** K was 0/1 from round 8 through round 10 in the user's draft and
+   never surfaced. `kFloorRound` is rounds-1 = 14, which is deliberate and probably right,
+   but confirm the board says something useful about an empty K slot rather than nothing at
+   all, and that the late rounds do not arrive with two empty slots and no warning.
+
+**Severity.** A board that ranks a filled position first while a starting slot is empty is
+`HIGH` at minimum and `BLOCKER` if it survives to a pick the user would actually make —
+this is the number the app exists to produce, and the user has now seen it be wrong three
+times in one practice draft. Treat the user's report as the reproduction; your job is the
+mechanism.
+
+### I2. What the AI is told, and what it should be told instead
+
+The brief at pick 86 was not stupid — it reasoned correctly from a board that was already
+wrong, and then said so out loud: *"Nothing on this list actually starts for you."* That is
+the model doing its job with bad inputs. Fixing I will fix most of this. But the user has
+asked a second, separate question that stands on its own, and it is a design question rather
+than a defect:
+
+> The AI logic needs to focus on the player's current roster, strength at position, open
+> positions, what they need at each position — and give an overall "this is where we're at,
+> this is what we need, here are general suggestions for the next round", and then the
+> "take one of these" cards carry the specific picks and the why.
+
+And the constraint the user correctly identified:
+
+> We can't ship the entire draft and everyone that's been picked on every single AI call.
+
+**What to work out.**
+
+- **Read `briefQuestion()` and `claudeContext()` and write down exactly what the model gets
+  about the user's own roster today.** Not what you assume — the literal payload, printed, at
+  the pick-86 state above. The user's diagnosis is that roster state is thin or absent
+  relative to the candidate list. Confirm or refute it with the printed payload. Workstream D
+  is auditing whether the numbers in that payload are *correct*; this is a different
+  question — whether the right *things* are in it at all.
+- **Design the roster-state block.** Per position: how many starting slots, how many filled,
+  the points of the body currently in each slot, the drop from that body to the best
+  available at that position, whether the flex is open and who is in it, the bye collisions,
+  and the count of picks remaining. That is roughly twenty numbers and it is the cheapest
+  useful context in the whole payload — far cheaper than the twelve candidate blocks already
+  being sent. Cost it in tokens.
+- **Answer the user's constraint properly.** They are right that the whole draft cannot go in
+  every call. Work out what actually has to: the user's own roster (small, changes by one
+  row per pick), the positional supply left (a count and a tier-cliff distance per position,
+  not a list), what the teams between now and the user's next pick need (`teamsAhead()`
+  already computes this and the composite ignores it), and the candidate list. Everything
+  else — the 180 picks, the other eleven rosters in full — is summarizable to a few numbers.
+  Propose the payload, in full, with a token count, and show it at the pick-86 and pick-110
+  states so it can be read as a person would read it.
+- **Split the ask.** The user wants two different things from the model and today they are
+  one prompt: a *situation read* ("this is where we're at, this is what we need, this is what
+  the next two rounds have to accomplish") and a *pick* ("take him, here is why, here is the
+  fallback"). Propose how to get both without doubling the calls or the latency — the same
+  answer in two labeled parts is the obvious candidate, but say whether the situation read
+  should be cached across picks between the user's turns, since it changes far more slowly
+  than the candidate list.
+- **Ground the "why".** The user's standard is "reliable, accurate predictions based on facts
+  we know — not guesses." Enumerate what the app actually knows that the model could cite: the
+  scoring engine's own points, the tier and how many are left in it, survival probability to
+  the next pick, the research note and its date, the depth-chart slot, the injury designation,
+  the bye collisions, what the teams ahead need. Then state the rule the prompt should carry:
+  every claim in the brief must trace to one of those, and a claim that cannot is not made.
+  Propose the prompt language for it.
+- **Do not implement any of this.** Propose it, in full, with the diff and the payloads, and
+  stop. This changes what the model is told, which rule 3 reserves for the user.
+
+**One thing to be careful about.** Do not fix the brief by teaching the prompt to work around
+a broken board. If the composite ranks a second tight end first, the answer is workstream I,
+not a sentence in the system prompt telling the model to distrust the ranking. Say so if you
+find yourself drafting that sentence.
+
+### I3. When the AI call happens — decided
+
+This was an open question the user asked to have settled. It is settled here, and the
+answer is binding on any implementation of I2's payload redesign. Two workstreams reached
+it independently; the reasoning is recorded so nobody relitigates it.
+
+**The schedule decides it.** At slot 11 in a 12-team snake the gaps alternate all night:
+
+```
+11 → 14   gap 3        86  → 107  gap 21
+14 → 35   gap 21       107 → 110  gap 3
+35 → 38   gap 3        110 → 131  gap 21
+38 → 59   gap 21  (keeper)   131 → 134  gap 3
+59 → 62   gap 3        134 → 155  gap 21
+62 → 83   gap 21       155 → 158  gap 3
+83 → 86   gap 3        158 → 179  gap 21
+```
+
+Seven short gaps of 3 and seven long gaps of 21. **On the seven short gaps, "right after we
+pick" and "at lead 2" are the same moment** — pick 83 to pick 86 is three picks, so a lead of
+2 fires one pick after the user's own. The question therefore only bites on the long gaps,
+and there it answers itself: a name chosen 21 picks early is a guess. `survival()` at 21 picks
+carries the full width of the ADP distribution, and workstream B measured `survival()` and
+`roomPick()` disagreeing by up to 58 points on individual players, with wide-SD players coming
+off the board 9.7 picks early in the simulator. Two picks out, roughly two players come off
+and the answer is nearly certain.
+
+**The decision.**
+
+1. **The pick call stays at lead 2.** It is the earliest moment the answer is reliable and the
+   latest moment it is still on screen before the clock starts. Do not move it to the user's
+   own pick, and do not defer it to gap 0.
+2. **Do not add a second call on the short gaps.** Two calls inside a 3-pick turn collide
+   inside 90 seconds of real time and the second arrives after the clock has started.
+3. **The real defect is not when the call happens — it is that it never happens again.**
+   `renderBrief()` caches by `A.myNext` and reuses that text at gap 2, 1 and 0, and
+   `briefStale()` re-asks on exactly one condition: the named player is taken. A brief
+   therefore survives its own fallback being drafted, a positional run starting, and a
+   startable body falling to the user. Replace `briefStale()` with a `briefVoid()` that runs
+   four local tests — named player gone, fallback gone, a player now ranks #1 who was not in
+   the candidate list, a run detected at a position the brief argued about — and re-asks only
+   when one fires. This is deterministic, costs nothing, and needs no API call to evaluate.
+4. **Allow at most one re-ask, and only on the gaps of 8 or more.** On a 3-pick gap there is
+   no time for it and nothing material changes in three picks.
+5. **The situation read is cached, not a second call.** Cache it on a fingerprint of the
+   roster so it is rewritten only when the roster changes — which is once per turn by
+   construction — and reuse it across the re-ask. Measured at +25 input tokens and −55 output
+   tokens on every re-ask.
+6. **Never block the Draft button on a pending re-ask.** The existing brief stays on screen
+   and is replaced in place when the new one lands. A spinner where a recommendation was is
+   worse than a recommendation two picks old.
+
+State in the report what this does to worst-case calls per minute against the Worker's 90-per-IP
+limit, and confirm it stays inside the client's 30-second timeout on the 3-pick turns.
+
+### J. The night itself: making the app cheap to operate while drafting
+
+Raised by the user, and it is a workstream rather than a polish pass because of one number:
+**the user has 15 picks and has to record 180.** Their own picks are two taps after E1. The
+other 165 are typed by hand, one at a time, on a clock, while watching the Yahoo client on the
+same screen. That asymmetry is where draft night actually gets expensive, and almost nothing
+has been spent on it.
+
+Everything below reuses math the app already computes. Nothing here needs new data.
+
+**J1. Predicted pick tap targets. The largest single reduction in work on the night.**
+
+`roomPick()` already models what the team on the clock will take — it is the engine that runs
+the whole practice draft. It is not surfaced anywhere in the live tracker. Surface it: with a
+team on the clock, show its most likely picks as buttons above the record box, so recording an
+opponent's pick becomes one tap instead of a typed name. When the prediction misses, the user
+types as they do today; nothing is lost.
+
+- **Measure the hit rate before building the UI, and let the number decide the design.** Over
+  200 seeded drafts, for every opponent pick, report how often the actual pick is `roomPick`'s
+  first choice, and how often it is in the top 3 and the top 5. Break it down by round, because
+  round 2 and round 13 will not behave alike. If the top-5 rate is below about 50% the feature
+  is still worth building — half of 165 picks is 80 fewer names typed — but the presentation
+  has to be honest about being a guess.
+- **The risk is the whole design problem, and it is worse than the reward.** A tapped wrong
+  name is a silently wrong board: the pool, every survival number, the roster of the team it was
+  credited to, and every subsequent recommendation are all wrong, and nothing on screen says so.
+  Typing a name is slow and self-checking; tapping a plausible name is fast and is not. So the
+  buttons must show enough to confirm identity at a glance — name, position, team — must never
+  be positioned where the thumb lands by default, and must read as predictions rather than
+  facts. Propose the treatment. Say plainly whether you would ship it at the hit rate you measured.
+- Order the buttons by `roomPick` probability, not by board rank: this is a prediction about
+  what *they* will do, not about who is best, and the two differ most exactly where the user
+  most needs help.
+- The "Didn't catch it" and `move` paths already exist and are the recovery. Confirm a wrong
+  tap is recoverable in one action and that undo restores the pool exactly.
+
+**J2. Say what the user still needs, in words, where they are already looking.**
+
+`positionalNeed()` computes it every render and the status strip does not print it. In the
+user's round-8 screenshot the answer was "WR2 and K" and no line on screen said so — it had to
+be read off the roster panel slot by slot. One line, always visible: what is still empty, and
+how many picks are left to fill it. This is the question the user asks themselves before every
+single pick, and the app knows the answer and does not say it.
+
+**J3. Say what the brief is, and how old it is.**
+
+The brief header reads `CLAUDE · ON THE CLOCK AT PICK 86`. It should say which pick it was
+written for and how many picks have gone since, so a two-pick-old plan does not read as a fresh
+decision. This matters most until I3's `briefVoid()` lands and matters somewhat after.
+
+**J4. Batch-record from the Yahoo draft results panel.**
+
+Yahoo's own draft board is on the screen beside this app all night. The catch-up flow exists,
+and `draftanalysis.js` already parses a Yahoo paste. Investigate whether the live results panel
+can be pasted to reconcile several picks at once after the user looks away. Verify against a real
+Yahoo page before proposing anything — this one is speculative in a way J1 to J3 are not, and if
+the page cannot be usefully copied on an iPad, say so and drop it.
+
+**Constraints on all of J.** Screen space in portrait is already the binding constraint after
+E1 — the board must keep nine rows visible under the sticky head, which is the E1 acceptance
+criterion, so anything added to the tracker column has to earn its height. Check every proposal
+at 744x1133 and 1133x744 before recommending it. Time every interaction that happens on the
+clock; the brief's standard is two taps and five seconds to record a pick, and J1 exists to
+beat it, not to match it.
+
 ---
 
 ## 4. Deliverables
@@ -316,5 +624,9 @@ For each, say: the source, whether it is free, how it enters the bake or the eng
 5. **The fidelity ranking** from workstream H, as its own section of the report, with a clear line between "before Monday" and "after the season".
 6. **The iPad fix** from workstream E1, as its own short commit series (touch detection and row rule, detail card placement, breakpoint and shell height, copy and controls), each commit green on every suite, with before and after screenshots at 744x1133 and 1133x744 in the report.
 7. **The iPad matrix** from workstream E2, filled in per cell for landscape and portrait, emulated and real device, with screenshot paths, as its own section of the report. If the real-device pass could not be run, the section says so and ships the fifteen-minute checklist for the user to run instead.
+
+8. **The suggestion-quality report** from workstream I, as its own section: the two term-by-term board tables at pick 86 and pick 110 before and after any fix, the whole-draft rate at which the board's number one is a position with no open starting slot, and the proposed diff. The workstream I2 payload redesign follows it, with the full proposed payload printed at both states and its token count.
+
+9. **The draft-night operating report** from workstream J: the measured `roomPick` top-1/top-3/top-5 hit rate by round, a recommendation on whether to ship the predicted tap targets at that hit rate, and the proposed treatment for J1 to J4 checked at both iPad viewports. Section I3 is already decided and is a constraint on this work, not an open question.
 
 End with a single paragraph, in plain words, answering the user's actual question: on draft night, does this hold up, and what are the two or three things they should do between now and then.
