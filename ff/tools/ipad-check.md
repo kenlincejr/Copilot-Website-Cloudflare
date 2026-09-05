@@ -83,8 +83,9 @@ Open the live tracker (start or resume a practice draft if one isn't running).
 
 Check, all at once:
 - The **⋯**, the "last pick recorded" line, and whatever button the "do" band is
-  showing (Simulate / Missed the name) are all comfortably tappable — each at
-  least 44px.
+  showing (Simulate / Pick went to…) are all comfortably tappable — each at
+  least 44px. Tap **Pick went to…** and confirm every team button in the grid is
+  a real tap target, then dismiss it without choosing one.
 - All four bands — the state line, the one instruction, the pick order, the
   step-away line — are on screen at once without scrolling the middle column.
 - The pick order reads correctly: your own upcoming pick is called out, the pick

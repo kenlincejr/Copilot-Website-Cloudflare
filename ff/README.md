@@ -387,9 +387,27 @@ that order without scrolling:
 There is no search box in the tracker. **A pick is recorded on the player list**
 — double-click a row on a desktop, tap it twice on a tablet — which is where the
 names already are, alongside the ADP, the tier and the survival number. The pick
-is credited to whoever is on the clock. **Missed the name** records an unknown
-pick: the slot is spent, the player stays available, and the board's pick count
-stays level with the real draft, which matters more than the name.
+is credited to whoever is on the clock, and **who?** on the row credits a
+different team in the same action.
+
+### A pick you did not see
+
+**Pick went to…** opens the team grid. Choosing a team logs that pick against
+them with no player name: the slot is spent, the count moves on, and the player
+himself stays on the board.
+
+This replaced a button called **Missed the name**, which was two steps pretending
+to be one. It logged the pick against whoever the snake said was on the clock —
+a guess exactly when you are not watching closely — and if you then found the
+player and assigned him, that recorded a *second* pick. One real selection ate
+two slots, and the draft log stopped matching the draft. Everything downstream of
+that log is wrong when it happens: survival, VONA, every suggestion.
+
+So the team is chosen rather than assumed, and the other half is closed too: the
+**who?** popover on any undrafted player lists the picks that are on the board
+with no name, under *"or fill in a pick you missed"*. Choosing one puts his name
+on that pick in place. The team that was credited is untouched — this corrects
+the name, not the owner — and no extra pick is spent.
 
 Stop and Start over are folded behind the **⋯**, so a thumb cannot find Start
 over while reaching for something else.

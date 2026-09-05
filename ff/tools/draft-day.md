@@ -239,9 +239,16 @@ If the number you type is *lower* than the board's own count, you have recorded
 something that has not happened. The band says so and points at **Undo** in the app
 bar rather than offering a second button for it.
 
-**The rule: when you don't know who went, record it as unknown.** The tracker's own
-**Missed the name** button — in the "do" band, next to the sentence naming the team
-on the clock — and each row of the catch-up list both do this. Do not guess.
+**The rule: when you don't know who went, log the pick and pick the team.** The
+tracker's **Pick went to…** button opens the team grid; choosing a team logs that
+pick against them with no player name. Each row of the catch-up list does the same
+thing for a run of missed picks. Do not guess at a name.
+
+**If you find out later who it was**, do not record him as a fresh pick — that
+spends a second slot for one real selection and the log stops matching the draft.
+Open **who?** on his row and use **or fill in a pick you missed** at the bottom of
+that popover. The name lands on the pick that was blank, the team it was credited
+to is untouched, and no extra pick is spent.
 
 **Why an unknown pick is safe and a wrong guess is not.** Recording a pick as unknown spends that team's slot and moves the pick count forward — the count stays
 right — but leaves the player himself in the pool, available to be recorded
@@ -296,9 +303,11 @@ Keep next to it:
 - **The keeper:** Drake Maye, already in at round 5 / pick 59 — don't draft a QB
   thinking that slot is open.
 
-If the app comes back mid-draft, everything you drafted on paper goes into
-"Missed the name" / catch-up as unknown picks for the other 11 teams, and by
-name for your own — never guess a name to save time re-entering it.
+If the app comes back mid-draft, everything you drafted on paper goes back in
+through **Pick went to…** / catch-up as nameless picks for the other 11 teams,
+and by name for your own — never guess a name to save time re-entering it. Any
+you learn afterwards go in through **who?** › *fill in a pick you missed*, which
+spends no extra pick.
 
 ---
 
@@ -306,8 +315,8 @@ name for your own — never guess a name to save time re-entering it.
 
 1. Do not ship anything after 12:00 without reloading the iPad yourself and telling
    the user to reload theirs. A silent deploy after noon is the same as no deploy.
-2. Do not guess a name you didn't catch. "Missed the name" costs one player.
-   A wrong guess costs the whole board.
+2. Do not guess a name you didn't catch. A nameless pick costs one slot and no
+   player, and it can be filled in later. A wrong guess costs the whole board.
 3. Do not redeploy the Worker mid-draft to fix an AI problem. The board doesn't need
    it; wait for a gap.
 4. Do not run two devices both recording picks. Pick one device of record before

@@ -268,6 +268,7 @@ function loadApp(leagueState, picksState, opts) {
     "summarizePlan: summarizePlan, planNotes: planNotes, " +
     "planFillRounds: planFillRounds, activeKnobs: activeKnobs, " +
     "planWhy: planWhy, impactReport: impactReport, " +
+    "fillUnknown: fillUnknown, openUnknowns: openUnknowns, " +
     "startingSlots: startingSlots, " +
     "briefEyebrow: briefEyebrow, " +
     "supplyBlock: supplyBlock, " +
@@ -2098,11 +2099,38 @@ console.log("\n== the live draft box ==");
   ok("on the clock, it says the pick is yours instead",
      /Your pick — take it off the board/.test(mine.html) &&
      !/goes to /.test(mine.html));
-  // The unknown-pick escape hatch survived the cut — it is the only way to keep
-  // the count level when a name is missed, and losing it would be a data bug.
-  ok("waiting still offers the unknown pick", waiting.html.indexOf('id="tkUnknown"') >= 0);
+  /* The unknown-pick escape hatch survived the cut — it is the only way to keep
+     the count level when a name is missed, and losing it would be a data bug.
+     What changed is that it no longer assumes the team.
+
+     "Missed the name" logged the pick against whoever the snake said was on the
+     clock, which is a guess exactly when you are not watching closely — and a
+     user who then found the player and assigned him recorded a SECOND pick. Two
+     slots spent on one, and a draft log that no longer matched the draft. */
+  ok("the cryptic label is gone", waiting.html.indexOf("Missed the name") < 0 &&
+     app.indexOf("tkUnknown") < 0);
+  ok("waiting still offers a way to log a pick you could not see",
+     waiting.html.indexOf('id="tkPickTeam"') >= 0);
+  ok("and it says what it does rather than what you failed to do",
+     /Pick went to/.test(waiting.html), waiting.html.slice(waiting.html.indexOf("tk-do"), 400));
   ok("but not on your own turn, where there is no name to miss",
-     mine.html.indexOf('id="tkUnknown"') < 0);
+     mine.html.indexOf('id="tkPickTeam"') < 0);
+
+  // It opens the team grid, and the team is chosen rather than assumed.
+  ok("the button opens the team picker", /#tkPickTeam"\)\.onclick[\s\S]{0,90}openPickTeam\(/
+     .test(app));
+  ok("which lists every team in the league",
+     /function openPickTeam[\s\S]{0,900}for \(var i = 1; i <= S\.league\.teams; i\+\+\)/.test(app));
+  ok("marks the team the snake says is up, as a suggestion rather than a default",
+     /function openPickTeam[\s\S]{0,1200}sl === onClock \? " suggest" : ""/.test(app));
+  ok("and records through the same path a named pick takes",
+     /function openPickTeam[\s\S]{0,2200}recordTo\(null, sl\)/.test(app));
+  // The one thing a user must not be left guessing about: whether this consumes
+  // the player as well as the slot.
+  ok("the popover says the player stays on the board",
+     /function openPickTeam[\s\S]{0,1600}player himself stays on the/.test(app));
+  ok("and points at the player list when the name IS known",
+     /function openPickTeam[\s\S]{0,1800}If you know who went, tap him in the player list/.test(app));
 
   // --- the pick order, both sides of now ---------------------------------
   function rows(html) {
@@ -2517,6 +2545,91 @@ console.log("\n== why the plan looks like this ==");
   var keyLine = (app.match(/var key = String\(w\)[^\n]*/) || ["not found"])[0];
   ok("numbers are stripped before counting, or nothing would ever agree",
      keyLine.indexOf('"#"') > 0 && keyLine.indexOf("replace(") > 0, keyLine);
+})();
+
+/* ========================================================================
+   A pick you missed can be named later without spending a second one
+
+   Reported from the live board: "user clicks that and it records they didn't
+   know, and then if they go directly to Gibbs and click the button to assign
+   him to team 1, that's what shows up in the pick list."
+
+   That is one real selection eating two slots. The draft log is what every
+   survival number, every VONA and every suggestion is computed against, so a
+   log with a phantom pick in it is wrong everywhere, quietly.
+   ======================================================================== */
+console.log("\n== naming a pick you missed ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+
+  // Pick 1, logged against team 1 with no name — the "Pick went to…" flow.
+  api.recordTo(null, 1);
+  var picks = api.getState().picks;
+  ok("the missed pick is on the board", picks.length === 1 && picks[0].unknown === true,
+     JSON.stringify(picks));
+  ok("credited to the team that was chosen, not the one the snake assumed",
+     picks[0].slot === 1, JSON.stringify(picks[0]));
+  ok("and the draft has moved on to pick 2", api.currentPick() === 2,
+     String(api.currentPick()));
+  /* The player himself must stay available, or a missed pick would cost the pool
+     a player as well as a slot. Drake Maye is in here legitimately — he is the
+     league's keeper, off the board from pick 1. What must NOT be in here is a
+     "null" key from the nameless pick, which is what draftedNames() used to
+     write and which made the set mean something other than its name. */
+  var drafted = Object.keys(api.draftedNames());
+  ok("the missed pick consumed no player", drafted.length === 1 && drafted[0] === "Drake Maye",
+     JSON.stringify(drafted));
+  ok("and no phantom name entered the drafted set",
+     drafted.indexOf("null") < 0 && drafted.indexOf("undefined") < 0, JSON.stringify(drafted));
+
+  // It is offered as fillable.
+  var open = api.openUnknowns();
+  ok("it is offered as a pick that can still be filled",
+     open.length === 1 && open[0].pick === 1, JSON.stringify(open));
+
+  // --- the fix ------------------------------------------------------------
+  api.fillUnknown("Jahmyr Gibbs", 1);
+  var after = api.getState().picks;
+  ok("naming him does NOT spend a second pick", after.length === 1,
+     JSON.stringify(after));
+  ok("the name lands on the pick that was missed",
+     after[0].pick === 1 && after[0].name === "Jahmyr Gibbs" && after[0].unknown === false,
+     JSON.stringify(after[0]));
+  ok("the team that was credited is untouched — this corrects the name, not the owner",
+     after[0].slot === 1, JSON.stringify(after[0]));
+  ok("the draft is still on the same pick it was", api.currentPick() === 2,
+     String(api.currentPick()));
+  ok("and he is off the board now", !!api.draftedNames()["Jahmyr Gibbs"]);
+  ok("with nothing left to fill", api.openUnknowns().length === 0);
+
+  // --- it refuses the things that would corrupt the log -------------------
+  var b = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+  b.recordTo(null, 1);
+  b.record("Bijan Robinson", false);          // pick 2, named
+  var before = JSON.stringify(b.getState().picks);
+  b.fillUnknown("Bijan Robinson", 1);
+  ok("a player already recorded cannot be used to fill an earlier blank",
+     JSON.stringify(b.getState().picks) === before, b.getState().picks.length + " picks");
+  b.fillUnknown("Jahmyr Gibbs", 2);
+  ok("a pick that already has a name is not overwritten",
+     b.getState().picks[1].name === "Bijan Robinson",
+     JSON.stringify(b.getState().picks[1]));
+  b.fillUnknown("Not A Real Player", 1);
+  ok("a name that is not on the board is refused",
+     b.getState().picks[0].unknown === true, JSON.stringify(b.getState().picks[0]));
+
+  // --- and the popover actually offers it ---------------------------------
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  var oa = app.slice(app.indexOf("function openAssign"));
+  oa = oa.slice(0, oa.indexOf("\nfunction closeAssign"));
+  ok("the who? popover lists the picks that can be filled",
+     /openUnknowns\(\)\.length[\s\S]{0,400}data-fill="/.test(oa), oa.slice(0, 200));
+  ok("only for a player not already drafted — there is nothing to fill for one who is",
+     /!already && openUnknowns\(\)\.length/.test(oa));
+  ok("and filling is a different action from recording a new pick",
+     /if \(b\.dataset\.fill\)[\s\S]{0,80}fillUnknown\(who, \+b\.dataset\.fill\)/.test(oa));
+  ok("the footer says it costs no extra pick",
+     /spends no extra pick/.test(oa), oa.slice(-400));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

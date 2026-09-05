@@ -575,7 +575,21 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   display: block; font-size: 9.5px; color: var(--dim);
   letter-spacing: .04em; text-transform: uppercase;
 }
+/* Picks on the board with no player, offered to a player who is not on the
+   board yet. The two halves of the same missing pick. */
+.ap-fill {
+  margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line-soft);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+}
+.ap-filk {
+  grid-column: 1 / -1; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 2px;
+}
+.ap-fill .ap-t { border-color: rgba(245,158,11,.35); }
+.ap-fill .ap-t:hover { border-color: var(--amber); color: var(--amber); }
+
 .ap-foot { margin-top: 8px; font-size: 11px; line-height: 1.45; color: var(--dim); }
+.ap-foot b { color: var(--muted); }
 
 .srow { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12.5px; }
 .srow .sbar { flex: 1; height: 5px; background: var(--raised); border-radius: 3px; overflow: hidden; }

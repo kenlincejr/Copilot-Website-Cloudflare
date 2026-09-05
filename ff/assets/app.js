@@ -245,7 +245,11 @@ function myUpcoming(from) {
 
 function draftedNames() {
   var set = {};
-  allPicks().forEach(function (p) { set[p.name] = true; });
+  // A pick logged without a name is a spent slot, not a spent player — he is
+  // still on the board. Writing p.name in unfiltered put a literal "null" key in
+  // the set, which nothing ever looked up but which made the set mean something
+  // other than what it is called.
+  allPicks().forEach(function (p) { if (p.name) set[p.name] = true; });
   return set;
 }
 
@@ -908,9 +912,15 @@ function renderTracker() {
       (IS_TOUCH ? "Tap whoever just went in the player list, then tap again to confirm."
                 : "Double-click whoever just went in the player list.") +
       "</span></div>" +
-      '<button class="btn btn-sm btn-ghost" id="tkUnknown" ' +
-        'title="Records the pick against this slot with no name, so the count stays right">' +
-        "Missed the name</button></div>";
+      // The old button here was "Missed the name", and it was two steps
+      // pretending to be one: it logged an unnamed pick against whichever team
+      // the snake said was on the clock, and then naming the player afterwards
+      // recorded a *second* pick. Two slots burned for one real pick, and a
+      // draft log that disagreed with the draft. This does the whole thing in
+      // one action, and the team is chosen rather than assumed.
+      '<button class="btn btn-sm btn-ghost" id="tkPickTeam" ' +
+        'title="Log this pick against a team without a player name">' +
+        "Pick went to…</button></div>";
   }
 
   /* ---- order: three picks ahead, the pick on the clock, four behind. Reading
@@ -1008,7 +1018,9 @@ function renderTracker() {
     S.draftEnded = true; save(); render();
   };
   armOnce($("#tkReset"), "Start over", resetDraft);
-  if ($("#tkUnknown")) $("#tkUnknown").onclick = function () { record(null, false); };
+  if ($("#tkPickTeam")) $("#tkPickTeam").onclick = function (e) {
+    openPickTeam($("#tkPickTeam"), e);
+  };
 
   /* The catch-up field writes into its own message and button rather than
      re-rendering the panel. A re-render on every keystroke is what forced the
@@ -2708,6 +2720,40 @@ function tagBadge(t) {
    guessed wrong or a mis-click three rounds ago. */
 
 /** Move an already-recorded pick to a different team. */
+/**
+ * Put a name on a pick that was logged without one, in place.
+ *
+ * The gap this closes: logging a pick you did not see spends a slot, and until
+ * now finding out who it was afterwards had no way home — recording him
+ * appended a *second* pick, so one real selection ate two slots and the draft
+ * log stopped matching the draft. Every survival number, every VONA and every
+ * suggestion downstream is computed against that log.
+ *
+ * Deliberately does not touch the slot: which team owns pick 27 was decided
+ * when it was logged, and this is a correction to the name, not to the owner.
+ */
+function fillUnknown(name, pickNo) {
+  var pk = S.picks.find(function (q) { return q.pick === pickNo && q.unknown; });
+  if (!pk || !BY_NAME[name]) return;
+  if (draftedNames()[name]) {
+    banner(esc(name) + " is already recorded elsewhere in this draft.", true);
+    return;
+  }
+  pk.name = name;
+  pk.unknown = false;
+  syncKeepers();
+  save();
+  render();
+  banner(esc(name) + " filled in at pick " + pickNo + " for " + esc(teamTitle(pk.slot)) +
+    ". No extra pick was spent.");
+}
+
+/** Picks logged with no name, newest first — the ones that can still be filled. */
+function openUnknowns() {
+  return S.picks.filter(function (p) { return p.unknown; })
+    .slice().reverse().slice(0, 6);
+}
+
 function reassign(name, slot) {
   var pk = S.picks.find(function (q) { return q.name === name; });
   // A keeper the draft has not reached yet is not in the log, so the thing to
@@ -2734,6 +2780,8 @@ function recordTo(name, slot) {
 }
 
 var assignFor = null;
+/** The pick number whose team is being chosen, when the player is unknown. */
+var pickTeamFor = null;
 function openAssign(name, anchorEl, ev) {
   if (ev) ev.stopPropagation();
   if (!isLive()) { record(name, false); return; }   // solo mode has no teams
@@ -2754,12 +2802,26 @@ function openAssign(name, anchorEl, ev) {
         (!already && sl === onClock ? '<span class="ap-hint">on the clock</span>' : "") +
         (isNow ? '<span class="ap-hint">now</span>' : "") + "</button>";
     }).join("") + "</div>" +
+    // A player who is not on the board yet, and picks that are on the board with
+    // no player: the two halves of the same missing pick. Offering them here is
+    // what stops one real selection from eating two slots.
+    (!already && openUnknowns().length
+      ? '<div class="ap-fill"><div class="ap-filk">or fill in a pick you missed</div>' +
+        openUnknowns().map(function (q) {
+          return '<button class="ap-t" data-fill="' + q.pick + '">pick ' + q.pick +
+            '<span class="ap-hint">' + esc(teamTitle(q.slot)) + "</span></button>";
+        }).join("") + "</div>"
+      : "") +
     '<div class="ap-foot">' +
       (already
         ? "Recorded at pick " + already.pick + ". Changing this does not move the pick, " +
           "only who is credited with it."
         : "Records the pick and credits that team. The team on the clock is the " +
-          "safe bet if you are keeping up.") +
+          "safe bet if you are keeping up." +
+          (openUnknowns().length
+            ? " If he is the player behind one of the blank picks above, fill that in " +
+              "instead — it spends no extra pick."
+            : "")) +
     "</div>";
   var r = anchorEl.getBoundingClientRect();
   pop.classList.remove("hidden");
@@ -2770,15 +2832,76 @@ function openAssign(name, anchorEl, ev) {
   $$("#assignPop .ap-t").forEach(function (b) {
     b.onclick = function (e) {
       e.stopPropagation();
+      var who = assignFor;
+      if (b.dataset.fill) { closeAssign(); fillUnknown(who, +b.dataset.fill); return; }
       var sl = +b.dataset.slot;
-      if (already) reassign(assignFor, sl); else recordTo(assignFor, sl);
+      if (already) reassign(who, sl); else recordTo(who, sl);
       closeAssign();
     };
   });
 }
-function closeAssign() { assignFor = null; $("#assignPop").classList.add("hidden"); }
+/**
+ * Which team took the pick on the clock, when you did not catch who they took.
+ *
+ * This replaced a button called "Missed the name", which logged an unnamed pick
+ * against whoever the snake said was up. That was wrong twice over: the team on
+ * the clock is a guess exactly when you are not watching closely, and a user who
+ * then found the player and assigned him recorded a *second* pick — two slots
+ * spent on one, and a draft log that no longer matched the draft.
+ *
+ * One action, and the team is chosen. If you do know who went, the player list
+ * is still the way in: tapping him credits the team on the clock, and "who?" on
+ * his row assigns a different one without spending an extra pick.
+ */
+function openPickTeam(anchorEl, ev) {
+  if (ev) ev.stopPropagation();
+  if (!isLive()) { record(null, false); return; }
+  closePlayerPop();
+  assignFor = null;
+  pickTeamFor = A.cur;
+  var pop = $("#assignPop");
+  var onClock = A.onClock ? A.onClock.slot : null;
+  var rows = [];
+  for (var i = 1; i <= S.league.teams; i++) rows.push(i);
+  pop.innerHTML =
+    '<div class="ap-head">Pick ' + A.cur + "<span>which team took it?</span></div>" +
+    '<div class="ap-grid">' + rows.map(function (sl) {
+      return '<button class="ap-t' + (sl === onClock ? " suggest" : "") +
+        '" data-pt="' + sl + '">' + esc(teamTitle(sl)) +
+        (sl === onClock ? '<span class="ap-hint">on the clock</span>' : "") + "</button>";
+    }).join("") + "</div>" +
+    '<div class="ap-foot">Records pick ' + A.cur + " against that team with <b>no player " +
+      "name</b>. The slot is spent and the count moves on; the player himself stays on the " +
+      "board, so you can record him properly later if you find out who it was. " +
+      "<b>If you know who went, tap him in the player list instead</b> — that credits the " +
+      "team in the same action.</div>";
+  var r = anchorEl.getBoundingClientRect();
+  pop.classList.remove("hidden");
+  var w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
+  pop.style.top = (r.bottom + h + 8 > window.innerHeight && r.top - h - 6 > 0
+    ? r.top - h - 6 : r.bottom + 6) + "px";
+  $$("#assignPop .ap-t").forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation();
+      var sl = +b.dataset.pt;
+      closeAssign();
+      // recordTo writes the pick, then corrects the slot the snake assumed.
+      // A nameless pick goes through the same path as a named one, so there is
+      // exactly one way a pick reaches the log.
+      recordTo(null, sl);
+      banner("Pick " + (S.picks.length) + " logged to " + teamTitle(sl) +
+        " with no name. The player is still on the board.");
+    };
+  });
+}
+
+function closeAssign() {
+  assignFor = null; pickTeamFor = null;
+  $("#assignPop").classList.add("hidden");
+}
 document.addEventListener("click", function (e) {
-  if (assignFor && !e.target.closest("#assignPop")) closeAssign();
+  if ((assignFor || pickTeamFor) && !e.target.closest("#assignPop")) closeAssign();
   // A pinned card is dismissed by clicking away from it — but not by the click
   // on the row that opened it, and not by a click inside the card itself.
   if (popFor && !e.target.closest("#playerPop") && !e.target.closest(".prow")) closePlayerPop();
