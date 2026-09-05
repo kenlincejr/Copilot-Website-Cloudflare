@@ -1011,6 +1011,11 @@ function resetDraft() {
   view.selected = null;
   view.rosterSlot = null;
   briefCache = {};
+  // And the re-ask counters with it. A practice draft that spent both
+  // re-asks at pick 11 was reaching pick 11 of the real draft with the
+  // budget already gone, so the first stale brief of the night went
+  // straight to the "went at pick N" banner without being re-asked.
+  briefTries = {};
   $("#livePick").value = "";
   save();
   syncKeepers();   // a keeper is roster config, not a pick, so it comes straight back

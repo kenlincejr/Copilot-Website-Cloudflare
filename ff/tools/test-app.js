@@ -243,7 +243,9 @@ function loadApp(leagueState, picksState, opts) {
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
-    "marketAdp: marketAdp, " +
+    "marketAdp: marketAdp, resetDraft: resetDraft, " +
+    "briefTries: function () { return briefTries; }, " +
+    "spendBriefTry: function (n) { briefTries[n] = 2; }, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
     "draftedNames: draftedNames, allRosters: allRosters };\n";
@@ -843,6 +845,20 @@ console.log("\n== marketAdp (C1: movement, not the ranking) ==");
   var mo = api.marketAdp(other);
   ok("a player the paste did not cover still reads off the mock",
      mo.adp === other.adp && mo.real === false && mo.pct === null, other.name);
+})();
+
+/* ========================================================================
+   D8 - a fresh draft starts with its re-ask budget intact
+   ======================================================================== */
+console.log("\n== resetDraft clears briefTries (D8) ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  api.spendBriefTry(11);
+  ok("the fixture spent both re-asks at pick 11", api.briefTries()[11] === 2);
+  api.resetDraft();
+  ok("Start over clears the re-ask counters with the cached briefs",
+     Object.keys(api.briefTries()).length === 0,
+     JSON.stringify(api.briefTries()));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
