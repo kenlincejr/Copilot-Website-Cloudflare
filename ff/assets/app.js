@@ -4150,6 +4150,73 @@ function rosterBlock() {
 }
 
 /**
+ * The last eight picks as six numbers, and whether they amount to a run.
+ *
+ * The whole draft log is 180 picks and the payload has never sent it. What the
+ * model actually needs from it is the shape of the last two turns, which is six
+ * integers, plus whether the engine calls it a run.
+ */
+function runLine() {
+  var c = (A.runInfo && A.runInfo.counts) || {};
+  var order = ["QB", "RB", "WR", "TE", "K", "DEF"];
+  var mix = order.map(function (p) { return p + " " + (c[p] || 0); }).join(", ");
+  var runs = Object.keys((A.runInfo && A.runInfo.runs) || {});
+  var unknown = (A.runInfo && A.runInfo.unknown) || 0;
+  return "THE LAST " + ((A.runInfo && A.runInfo.window) || 0) + " PICKS, BY POSITION: " +
+    mix + "." +
+    // Say what we could not see, rather than letting six zeroes imply a quiet
+    // board when the truth is that nobody wrote the names down.
+    (unknown ? " " + unknown + " of those went unrecorded, so the mix is what is " +
+      "known and not the whole window." : "") +
+    (runs.length
+      ? " The board calls that a run at " + runs.join(" and ") + "."
+      : " No run.");
+}
+
+/**
+ * Who picks between now and my turn, one line per team rather than per pick.
+ *
+ * A snake turn hands the same team two picks in a row, and printing a line for
+ * each made one opponent look like two and inflated the block for no
+ * information. Teams are what matter here: a team is short at a position once,
+ * however many picks it holds.
+ *
+ * "Short at" also has to respect the floors. Nobody drafts a kicker before
+ * round 14, so listing every team as short at K on every call from round 1 was
+ * noise that crowded out the positions that were actually in contention.
+ */
+function teamsAheadBlock() {
+  var ahead = teamsAhead();
+  if (!ahead.length) return "TEAMS PICKING BEFORE ME: none, I am on the clock now.";
+
+  var round = A.onClock.round;
+  var floors = { K: A.ctx.kFloorRound, DEF: A.ctx.defFloorRound };
+  var byTeam = {}, order = [];
+  ahead.forEach(function (t) {
+    if (!byTeam[t.slot]) { byTeam[t.slot] = { slot: t.slot, picks: [], roster: t.roster, needs: t.needs }; order.push(t.slot); }
+    byTeam[t.slot].picks.push(t.pick);
+  });
+
+  var lines = order.map(function (slot) {
+    var t = byTeam[slot];
+    var needs = t.needs === "starters full" ? [] : t.needs.split(", ");
+    var live = needs.filter(function (pos) {
+      return !(floors[pos] && round < floors[pos]);
+    });
+    var held = t.picks.length === 1
+      ? "pick " + t.picks[0]
+      : "picks " + t.picks.join(" and ");
+    return "- team " + slot + " (" + held + "): has " + t.roster + ", still needs " +
+      (live.length ? live.join(", ") : "nothing it can take yet");
+  });
+
+  var picks = ahead.length;
+  return "TEAMS PICKING BEFORE ME (" + picks + " pick" + (picks === 1 ? "" : "s") +
+    " across " + order.length + " team" + (order.length === 1 ? "" : "s") + "):\n" +
+    lines.join("\n");
+}
+
+/**
  * The draft style, when there is one, and silence when there is not.
  *
  * The old clause named the style and then asked the model to "say when a pick
@@ -4332,14 +4399,13 @@ function claudeContext() {
         (TAGS[p.tag] ? " (" + TAGS[p.tag] + ")" : "") : "") +
       (p.note ? ". Research note: " + p.note : "");
   }).join("\n");
-  var runs = Object.keys(A.runInfo.runs);
   return [
     "LEAGUE: " + (S.league.rules.name || "custom") + ", " + S.league.teams + " teams, I pick at slot " + S.league.slot + ".",
     "SCORING THAT DIFFERS FROM DEFAULT: " + scoringHighlights(),
     "DRAFT STATE: pick " + A.cur + " of " + (S.league.teams * S.league.rounds) +
       ", round " + A.onClock.round + ". My next pick is " + A.myNext +
       (A.myAfter ? ", then " + A.myAfter + " (" + (A.myAfter - A.myNext) + " picks apart)" : "") + ".",
-    runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
+    runLine(),
     rosterBlock(),
     supplyBlock(),
     styleBlock(),
@@ -4574,15 +4640,7 @@ function briefStale(text) {
  * ADP cannot tell you.
  */
 function briefQuestion() {
-  var ahead = teamsAhead();
-  var aheadLines = ahead.length
-    ? ahead.map(function (t) {
-        return "  pick " + t.pick + " — team " + t.slot + " has " + t.roster +
-               ", still needs " + t.needs;
-      }).join("\n")
-    : "  (you are on the clock now)";
-
-  return claudeContext() + "\n\nTEAMS PICKING BEFORE YOU:\n" + aheadLines +
+  return claudeContext() + "\n\n" + teamsAheadBlock() +
     "\n\nQUESTION: I am about to be on the clock at pick " + A.myNext +
     ". Give me the call before the timer starts.\n" +
     "Answer in exactly this shape, no headings, no bullets:\n" +

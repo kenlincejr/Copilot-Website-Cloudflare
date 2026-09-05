@@ -248,6 +248,8 @@ function loadApp(leagueState, picksState, opts) {
     "briefEyebrow: briefEyebrow, " +
     "supplyBlock: supplyBlock, " +
     "styleBlock: styleBlock, " +
+    "teamsAheadBlock: teamsAheadBlock, runLine: runLine, " +
+    "briefQuestion: briefQuestion, " +
     "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
     "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
@@ -1147,6 +1149,70 @@ console.log("\n== styleBlock ==");
   ok("custom notes are passed on even under Balanced",
      noted.styleBlock().indexOf("I want a second tight end late.") >= 0,
      noted.styleBlock());
+})();
+
+/* ========================================================================
+   teamsAheadBlock and runLine - one line per team, and the log as six numbers
+   ======================================================================== */
+console.log("\n== teamsAheadBlock / runLine ==");
+(function () {
+  // Slot 11 in a 12-team snake: after pick 14 the next own pick is 35, so the
+  // teams in between include one holding two picks across the turn.
+  function at(n) {
+    return loadApp(kindaHighlandersLeague(), Array.from({ length: n }, function (_, i) {
+      return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
+    }));
+  }
+  var api = at(14);              // cur 15, waiting for 35
+  var A = api.getAnalysis();
+  ok("waiting across the turn", A.myNext === 35 && A.cur === 15,
+     "cur " + A.cur + " myNext " + A.myNext);
+
+  var block = api.teamsAheadBlock();
+  var lines = block.split("\n").filter(function (l) { return l.indexOf("- team") === 0; });
+  var slots = lines.map(function (l) { return (l.match(/- team (\d+)/) || [])[1]; });
+  ok("no team is listed twice", slots.length === new Set(slots).size, slots.join(","));
+  ok("there are fewer lines than picks", lines.length < 35 - 15, lines.length + " lines");
+  ok("a team holding two picks says so on one line",
+     lines.some(function (l) { return /picks \d+ and \d+/.test(l); }),
+     lines.filter(function (l) { return /picks/.test(l); })[0] || "(none)");
+  ok("the header states both counts", /\d+ picks across \d+ teams/.test(block),
+     block.split("\n")[0]);
+
+  // Nobody drafts a kicker in round 2. Listing every team as short at K on
+  // every call is noise that crowds out the positions actually in contention.
+  ok("no team is reported short at K this early", block.indexOf("K") < 0 ||
+     !/still needs[^\n]*\bK\b/.test(block), block.slice(0, 300));
+
+  // Late on, the floor has lifted and K is a real need again.
+  var late = at(160);
+  var lateBlock = late.teamsAheadBlock();
+  ok("late on, K can be reported as a need",
+     late.getAnalysis().myNext === null || /\bK\b/.test(lateBlock) || lateBlock.indexOf("none") >= 0,
+     lateBlock.slice(0, 200));
+
+  // On the clock there is nobody in between, and it says so rather than
+  // printing an empty heading.
+  var onClock = at(85);
+  ok("on the clock it says there is nobody in between",
+     /none, I am on the clock now/.test(onClock.teamsAheadBlock()),
+     onClock.teamsAheadBlock());
+
+  // runLine: the whole draft log as six integers plus a verdict.
+  var rl = api.runLine();
+  ok("the run line reports all six positions",
+     ["QB", "RB", "WR", "TE", "K", "DEF"].every(function (p) { return rl.indexOf(p + " ") >= 0; }), rl);
+  ok("and states whether it is a run", /No run.|calls that a run at/.test(rl), rl);
+  ok("it is one line", rl.indexOf("\n") < 0, rl);
+  ok("the payload carries it", api.claudeContext().indexOf("THE LAST") >= 0);
+  ok("and no longer carries the old RUN IN PROGRESS heading",
+     api.claudeContext().indexOf("RUN IN PROGRESS") < 0);
+
+  // The question still reaches the model with the block in it.
+  ok("briefQuestion embeds the teams block",
+     api.briefQuestion().indexOf("TEAMS PICKING BEFORE ME") >= 0);
+  ok("and the old per-pick heading is gone",
+     api.briefQuestion().indexOf("TEAMS PICKING BEFORE YOU") < 0);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
