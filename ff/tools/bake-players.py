@@ -40,7 +40,7 @@ What we take from Sleeper, and what we don't
         difference in a league with boosted D/ST tiers.
 """
 
-import json, math, os, re, sys, unicodedata
+import datetime, json, math, os, re, sys, unicodedata
 from collections import defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -346,9 +346,16 @@ def main():
                           "Sleeper ranks ~2,150 players against this board's 267, so the two "
                           "drift apart with depth for structural reasons (+0.4 picks over the "
                           "first fifty, +37 by 150-200). The residual removes that drift.",
-        "baked": "2026-09-04",
     }
+    baked_today = datetime.date.today().isoformat()
+    meta_out["baked"] = baked_today
+    meta_out["built"] = baked_today
     meta = dict(research.get("meta", {}))
+    # research.meta's own "built" is the research board's build date, not this
+    # bake's — keep it under a different key rather than let it masquerade as
+    # the bake timestamp the freshness check relies on.
+    if "built" in meta:
+        meta["research_built"] = meta["built"]
     meta.update(meta_out)
 
     body = json.dumps({"meta": meta, "players": players}, separators=(",", ":"))

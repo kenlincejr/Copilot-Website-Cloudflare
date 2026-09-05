@@ -156,6 +156,14 @@ if (splits.length) {
   var built = Date.UTC(+builtDateMatch[1], +builtDateMatch[2] - 1, +builtDateMatch[3]);
   var draft = Date.UTC(+draftDateMatch[1], +draftDateMatch[2] - 1, +draftDateMatch[3]);
   var daysBefore = Math.round((draft - built) / 86400000);
+  // meta.built and meta.baked are stamped from the same value by
+  // bake-players.py, in the same run. If they ever disagree, something wrote
+  // one without the other — a hand-edit, a partial bake — and the freshness
+  // read above can no longer be trusted, no matter what daysBefore says.
+  if (meta.baked && meta.baked !== builtStr) {
+    flag("MED", "freshness", "meta.built (" + builtStr + ") and meta.baked (" + meta.baked +
+      ") disagree — the bake did not stamp both fields together, so the freshness check above is not trustworthy");
+  }
   if (daysBefore > 3) {
     flag("MED", "freshness", "the bake (meta.built: " + builtStr + ") is " + daysBefore +
       " days before the draft (meta.draft: " + draftStr + ") — more than the 3-day " +
