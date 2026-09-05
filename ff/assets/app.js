@@ -3811,7 +3811,20 @@ function recCards(pool) {
     if (out.length >= 3 || seen[p.pos]) return;
     seen[p.pos] = true; out.push(p);
   });
-  return out.length === 3 ? out : ranked.slice(0, 3);
+  /* Late on there may not be three positions left to offer — the kicker and
+     defense are taken, the tight end is capped, a backup quarterback is under
+     its floor — and giving up on the whole rule there put three of the same
+     back on screen again. Take the distinct ones first, then fill from the top
+     of what is left, so the third card is the next best player rather than the
+     rule's failure. */
+  if (out.length < 3) {
+    ranked.forEach(function (p) {
+      if (out.length >= 3 || out.indexOf(p) >= 0) return;
+      out.push(p);
+    });
+    out.sort(function (a, b) { return b.comp - a.comp; });
+  }
+  return out;
 }
 
 /**

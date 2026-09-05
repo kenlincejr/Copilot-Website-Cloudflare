@@ -759,6 +759,7 @@
     };
     var value = valueOf(player.pts, marginal);
 
+
     // Value over next available, on the same footing. Scarcity at a position you
     // cannot start is worth nothing. The old VONA was per-position and therefore
     // identical for every tight end however many you already had, so taking one
@@ -827,6 +828,29 @@
               : player.pos === "DEF" ? (ctx.defFloorRound || 7)
               : 1;
     if (round < floor) blocked = "no " + player.pos + " before round " + floor;
+    /* A backup quarterback is a last-rounds pick, and the board has to know it.
+       In a league that starts one, a second quarterback can never enter the
+       lineup except on a bye or an injury — one week a year — and the waiver
+       wire carries startable quarterbacks all season. The board kept
+       recommending one in rounds 9 to 11 anyway, for a reason that has nothing
+       to do with quarterbacks: twelve go in a twelve-team league, so the QB
+       replacement line sits at rank 12 and there are still bodies above it late,
+       while the receiver pool has been drafted forty deep and everyone left
+       scores below its line. Sitting near your own position's replacement is
+       not a virtue; it is a fact about how deeply the position is drafted.
+       This is the same instrument as the kicker and defense floors, pointed at
+       the same problem, and it moves with the roster: a superflex league can
+       start two, so there the second one is a starter and nothing is blocked.
+       The player stays on the board and stays draftable by hand — a floor makes
+       him not-recommended, not forbidden. */
+    var qbSlots = (ctx.rules.roster.QB || 0) +
+      ((ctx.rules.roster.SUPERFLEX || 0) &&
+       (ctx.rules.roster.superflexEligible || ["QB"]).indexOf("QB") >= 0
+        ? (ctx.rules.roster.SUPERFLEX || 0) : 0);
+    var qbFloor = floors.QB != null ? floors.QB : Math.max(1, rounds - 2);
+    if (player.pos === "QB" && qbSlots <= 1 && have >= qbSlots && round < qbFloor) {
+      blocked = "a backup QB is a round " + qbFloor + "+ pick — he plays one week a year";
+    }
 
     // Ceiling/risk weighting shifts across the draft: buy floor early, buy
     // variance late. Six of twelve make the playoffs — late picks should swing.

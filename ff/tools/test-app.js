@@ -3197,5 +3197,86 @@ console.log("\n== the card explains itself ==");
      /plays one week a year/.test(q));
 })();
 
+/* ========================================================================
+   the backup quarterback floor
+   ======================================================================== */
+console.log("\n== a backup QB is a last-rounds pick ==");
+(function () {
+  function ownerSlot(pick, teams) {
+    var r = Math.ceil(pick / teams), idx = pick - (r - 1) * teams;
+    return (r % 2 === 1) ? idx : (teams - idx + 1);
+  }
+  // Round 9, lineup full, Drake Maye kept at QB - the reported state.
+  var MINE = { 11: "Jahmyr Gibbs", 14: "Puka Nacua", 35: "Chase Brown",
+               38: "Jayden Reed", 59: "Drake Maye", 62: "Brock Bowers",
+               83: "Javonte Williams", 86: "Houston Defense" };
+  var byAdp = DATA.players.slice().sort(function (a, b) {
+    return (a.adp || 999) - (b.adp || 999);
+  }).map(function (p) { return p.name; });
+  var used = {};
+  Object.keys(MINE).forEach(function (k) { used[MINE[k]] = true; });
+  var picks = [], feed = 0;
+  for (var i = 1; i <= 106; i++) {
+    var slot = ownerSlot(i, 12), nm = MINE[i];
+    if (!nm) {
+      while (feed < byAdp.length && used[byAdp[feed]]) feed++;
+      nm = byAdp[feed]; used[nm] = true;
+    }
+    picks.push({ pick: i, name: nm, slot: slot, mine: slot === 11, unknown: false });
+  }
+  var api = loadApp(kindaHighlandersLeague(), picks);
+  var A = api.getAnalysis();
+  var qbs = A.avail.filter(function (p) { return p.pos === "QB"; });
+
+  ok("round 9 with a quarterback rostered is inside the floor", A.ctx.round < 13,
+     "round " + A.ctx.round);
+  ok("every spare quarterback is blocked there",
+     qbs.length > 0 && qbs.every(function (p) { return !!p.compDetail.blocked; }),
+     qbs.slice(0, 2).map(function (p) { return p.name + ": " + (p.compDetail.blocked || "NOT BLOCKED"); }).join(" | "));
+  ok("and the block says why, in weeks rather than in jargon",
+     qbs[0] && /plays one week a year/.test(qbs[0].compDetail.blocked || ""),
+     qbs[0] && qbs[0].compDetail.blocked);
+
+  var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
+  ok("so no quarterback is on the board's top three", pool.slice(0, 3)
+     .every(function (p) { return p.pos !== "QB"; }),
+     pool.slice(0, 3).map(function (p) { return p.pos + " " + p.name; }).join(", "));
+  ok("nor on any of the three cards",
+     api.recCards(pool).every(function (p) { return p.pos !== "QB"; }),
+     api.recCards(pool).map(function (p) { return p.pos + " " + p.name; }).join(", "));
+
+  // A floor is not a ban: he stays on the board and stays draftable by hand.
+  ok("but he is still on the board and can be taken by hand",
+     A.avail.some(function (p) { return p.pos === "QB"; }));
+})();
+
+(function () {
+  // Superflex starts two, so there the second one is a starter and nothing is
+  // blocked. The rule has to move with the roster, not with the position.
+  var lg = kindaHighlandersLeague();
+  lg.rules.roster.SUPERFLEX = 1;
+  lg.rules.roster.superflexEligible = ["QB", "RB", "WR", "TE"];
+  var api = loadApp(lg, []);
+  var qbs = api.getAnalysis().avail.filter(function (p) { return p.pos === "QB"; });
+  ok("in a superflex league a second quarterback is never floored",
+     qbs.every(function (p) {
+       return !/plays one week a year/.test(p.compDetail.blocked || "");
+     }), (qbs[0] || {}).name + ": " + ((qbs[0] || {}).compDetail || {}).blocked);
+})();
+
+(function () {
+  // The cards must not fall back to three of the same body when the positions
+  // run out - the third card should be the next best player, not the rule's
+  // failure.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var A = api.getAnalysis();
+  var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
+  var cards = api.recCards(pool);
+  ok("recCards always returns three", cards.length === 3);
+  ok("and they come back in board order",
+     cards[0].comp >= cards[1].comp && cards[1].comp >= cards[2].comp,
+     cards.map(function (p) { return p.comp.toFixed(1); }).join(" >= "));
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail > 0 ? 1 : 0);
