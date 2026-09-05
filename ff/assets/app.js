@@ -4713,8 +4713,6 @@ function playerIn(line) {
   return rivals.length > 1 ? null : hit;
 }
 
-function briefPlayer(text) { return playerIn((text || "").split("\n")[0]); }
-
 /**
  * The fallback the brief named, if it named one.
  *
@@ -4730,6 +4728,36 @@ function briefFallback(text) {
     }
   }
   return null;
+}
+
+/**
+ * The player the brief's first line names, and what the Draft button binds to.
+ *
+ * Measured against thirty real answers from the deployed model, one came back
+ * as "Gibbs" rather than "Jahmyr Gibbs". playerIn() refuses a bare surname on
+ * purpose — two players can share one, and binding the Draft button to the
+ * wrong man is a failure this app has already had once — so that brief arrived
+ * with a button that did nothing, on the clock. The prompt now demands the full
+ * name, and that is the real fix.
+ *
+ * This is the backstop behind it. When the head line does not bind, resolve it
+ * against the eight names the payload actually carried, and only when exactly
+ * one of them matches. That is safe in the way a board-wide surname match is
+ * not: the model was told to name a player from that list, the list is short,
+ * and an ambiguous surname still binds to nobody rather than to a guess.
+ */
+function briefPlayer(text) {
+  var head = (text || "").split("\n")[0];
+  var hit = playerIn(head);
+  if (hit) return hit;
+  var shown = briefCandidateNames[A.myNext] || [];
+  var words = normName(head).split(" ").filter(Boolean);
+  if (!words.length || !shown.length) return null;
+  var matches = shown.filter(function (n) {
+    var parts = normName(n).split(" ");
+    return words.every(function (w) { return parts.indexOf(w) >= 0; });
+  });
+  return matches.length === 1 ? (A.byName[matches[0]] || null) : null;
 }
 
 /**
@@ -4786,7 +4814,11 @@ function briefQuestion() {
     "\n\nQUESTION: I am about to be on the clock at pick " + A.myNext +
     ". Give me the call before the timer starts.\n" +
     "Answer in exactly this shape, no headings, no bullets:\n" +
-    "Line 1 — the player you would take, and nothing else on that line.\n" +
+    "Line 1 — the player you would take, written as his FULL NAME exactly as " +
+    "it appears in the list above, and nothing else on that line. Not a " +
+    "surname on its own and not a shortened form: the app binds its Draft " +
+    "button by matching that line against the board, and a surname alone " +
+    "matches nobody.\n" +
     "Then two or three sentences on why, grounded in my open roster slots, the " +
     "board's numbers and anything the research notes flag.\n" +
     "Last line — start it with \"If gone:\" and name one fallback in a single clause. " +

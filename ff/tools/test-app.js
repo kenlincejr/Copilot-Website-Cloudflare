@@ -243,6 +243,8 @@ function loadApp(leagueState, picksState, opts) {
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, " +
     "briefVoid: briefVoid, briefFallback: briefFallback, " +
+    "briefPlayer: briefPlayer, " +
+    "setShownNames: function (n) { briefCandidateNames[A.myNext] = n; }, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
     "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
@@ -1452,6 +1454,72 @@ console.log("\n== re-ask budget ==");
   ok("nothing in renderBrief disables the draft button while re-asking",
      src.indexOf("disabled") < 0 || !/re-?ask[^\n]*disabled/i.test(src));
 })();
+
+/* ========================================================================
+   The Draft button binds, even when the model shortens the name
+
+   Measured against thirty real answers from the deployed model: twenty-nine
+   gave the full name and one gave "Gibbs". playerIn() refuses a bare surname
+   on purpose, so that brief reached the screen with a dead Draft button.
+   ======================================================================== */
+console.log("\n== briefPlayer binding ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var A = api.getAnalysis();
+  api.claudeContext();                       // records what the payload carried
+  var shown = api.briefCandidates(A.myNext > A.cur, 8);
+  var target = shown.filter(function (p) { return p.name.split(" ").length > 1; })[0];
+  var surname = target.name.split(" ").slice(1).join(" ");
+
+  ok("playerIn still refuses a bare surname, which is the safety property",
+     api.playerIn(surname) === null, surname);
+  ok("but the brief binds it, because the model was told to pick from that list",
+     (api.briefPlayer(surname + ".") || {}).name === target.name,
+     JSON.stringify((api.briefPlayer(surname + ".") || {}).name));
+  ok("a full name still binds the ordinary way",
+     (api.briefPlayer(target.name) || {}).name === target.name);
+
+  // Ambiguity binds to nobody rather than to a guess. The natural candidate
+  // list rarely contains two players sharing a token, so construct the case
+  // rather than wait for one: this is the resolver's logic under test, not the
+  // pipeline that feeds it.
+  var pair = [];
+  var byLast = {};
+  A.avail.forEach(function (pl) {
+    var last = normNameLocal(pl.name).split(" ").pop();
+    (byLast[last] = byLast[last] || []).push(pl.name);
+    if (byLast[last].length === 2 && !pair.length) pair = byLast[last].slice();
+  });
+  ok("the board really does contain two players sharing a surname", pair.length === 2,
+     pair.join(" / "));
+  api.setShownNames(pair);
+  var sharedTok = normNameLocal(pair[0]).split(" ").pop();
+  ok("a surname two shown candidates share binds to nobody, not to the first",
+     api.briefPlayer(sharedTok) === null,
+     sharedTok + " -> " + JSON.stringify((api.briefPlayer(sharedTok) || {}).name));
+  ok("while an unambiguous one still binds",
+     (api.briefPlayer(pair[0]) || {}).name === pair[0]);
+
+  ok("a name nobody on the list has still binds to nobody",
+     api.briefPlayer("Somebody Nonexistent") === null);
+  ok("an empty head line binds to nobody", api.briefPlayer("") === null);
+
+  // The prompt now demands the full name; the backstop is behind it, not
+  // instead of it.
+  var q = api.briefQuestion();
+  ok("the prompt demands the full name exactly as listed",
+     /FULL NAME exactly as/.test(q));
+  ok("and says why, so it reads as a constraint rather than a style note",
+     /a surname alone/.test(q));
+})();
+
+function normNameLocal(n) {
+  return String(n || "").toLowerCase()
+    .replace(/[.']/g, " ").replace(/-/g, " ")
+    .split(/\s+/).filter(function (w) {
+      return w && ["jr", "sr", "ii", "iii", "iv", "v"].indexOf(w) < 0;
+    }).join(" ");
+}
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail > 0 ? 1 : 0);
