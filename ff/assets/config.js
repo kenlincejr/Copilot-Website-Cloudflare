@@ -11,5 +11,5 @@
    past the cache on load and offers a reload when the two disagree. */
 globalThis.DRAFTLINE_CONFIG = {
   claudeProxy: "https://draftline-api.ken-lince.workers.dev",
-  build: "20260904az"
+  build: "20260904ba"
 };
