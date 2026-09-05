@@ -3955,20 +3955,28 @@ function teamsAhead() {
   return out;
 }
 
-/** Everything Claude sees. Numbers only — it never re-derives the scoring. */
-function claudeContext() {
-  // Draw from the same pool the recommendation cards draw from, on the same two
-  // conditions. A player the board caps out has no Draft button anywhere, so
-  // naming him only sends the reader hunting for a control that does not exist.
-  // And the brief is written up to `lead` picks *before* the clock reaches you:
-  // handing over the raw top of the board meant handing over players the teams
-  // in between were about to take, so the advice arrived naming somebody already
-  // gone. Ask instead for the top of the board that is likely to still be there.
-  var waiting = A.myNext > A.cur;
+/**
+ * The players the brief is allowed to name, best first.
+ *
+ * Draw from the same pool the recommendation cards draw from, on the same two
+ * conditions. A player the board caps out has no Draft button anywhere, so
+ * naming him only sends the reader hunting for a control that does not exist.
+ * And the brief is written up to `lead` picks *before* the clock reaches you:
+ * handing over the raw top of the board meant handing over players the teams
+ * in between were about to take, so the advice arrived naming somebody already
+ * gone. Ask instead for the top of the board that is likely to still be there.
+ */
+function briefCandidates(waiting, limit) {
   var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); });
   var live = waiting ? pool.filter(function (p) { return p.surv >= 0.25; }) : pool;
   if (live.length < 6) live = pool;             // late enough that nothing is safe
-  var top = live.sort(function (a, b) { return b.comp - a.comp; }).slice(0, 12);
+  return live.sort(function (a, b) { return b.comp - a.comp; }).slice(0, limit);
+}
+
+/** Everything Claude sees. Numbers only — it never re-derives the scoring. */
+function claudeContext() {
+  var waiting = A.myNext > A.cur;
+  var top = briefCandidates(waiting, 12);
   var lines = top.map(function (p) {
     var extra = [];
     if (p.depth) extra.push("depth chart " + (p.depthPos || p.pos) + p.depth);

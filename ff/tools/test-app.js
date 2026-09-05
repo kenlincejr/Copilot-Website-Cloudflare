@@ -242,7 +242,7 @@ function loadApp(leagueState, picksState, opts) {
     "\nglobalThis.__APP_TEST__ = { analyze: analyze, record: record, undo: undo, " +
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
-    "claudeContext: claudeContext, " +
+    "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
     "draftedNames: draftedNames, allRosters: allRosters };\n";
@@ -657,6 +657,82 @@ console.log("\n== claudeContext survival horizons (D2) ==");
      preFix.indexOf("FOLLOWING pick (179)") >= 0, preFix);
   ok("self-check: and really did claim 100% for it",
      preFix.indexOf("is 100%") >= 0, preFix);
+})();
+
+/* ========================================================================
+   briefCandidates — the extraction from claudeContext() moved nothing
+
+   These names are the output of the pre-extraction inline code, captured
+   before the refactor and pinned here as literals. They are an oracle for one
+   commit only: the next change to candidate selection (D3) is *meant* to move
+   them, and this block moves with it. Do not read it as a lasting claim that
+   these twelve are the right twelve — it only claims the refactor was inert.
+   ======================================================================== */
+console.log("\n== briefCandidates (extraction is inert) ==");
+(function () {
+  // Deterministic states only. Unknown picks advance the clock without removing
+  // anybody from the pool and without calling roomPick(), which falls back to
+  // Math.random() and would make a pinned list meaningless.
+  function atPick(n) {
+    var picks = Array.from({ length: n - 1 }, function (_, i) {
+      return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
+    });
+    return loadApp(kindaHighlandersLeague(), picks);
+  }
+
+  var WAITING_AT_10 = ["James Cook III", "De'Von Achane", "Chase Brown", "Brock Bowers",
+    "Derrick Henry", "Saquon Barkley", "Kenneth Walker", "Omarion Hampton", "CeeDee Lamb",
+    "Ashton Jeanty", "Trey McBride", "Nico Collins"];
+  var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
+    "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
+    "Jaxon Smith-Njigba", "Brock Bowers", "Amon-Ra St. Brown"];
+  var ON_CLOCK_AT_86 = ["Jahmyr Gibbs", "Bijan Robinson", "Puka Nacua", "Ja'Marr Chase",
+    "Brock Bowers", "Christian McCaffrey", "Jonathan Taylor", "Jaxon Smith-Njigba",
+    "Amon-Ra St. Brown", "James Cook III", "De'Von Achane", "Chase Brown"];
+
+  function names(api, waiting) {
+    return api.briefCandidates(waiting, 12).map(function (p) { return p.name; });
+  }
+
+  // The waiting branch: the surv >= 0.25 filter is live here.
+  var a10 = atPick(10), A10 = a10.getAnalysis();
+  ok("at pick 10 the brief is waiting for pick 11", A10.myNext > A10.cur);
+  ok("waiting at 10: the same twelve, in the same order",
+     JSON.stringify(names(a10, true)) === JSON.stringify(WAITING_AT_10),
+     JSON.stringify(names(a10, true)));
+
+  // The on-the-clock branch: no survival filter at all.
+  var a11 = atPick(11), A11 = a11.getAnalysis();
+  ok("at pick 11 the user is on the clock", A11.myNext === A11.cur);
+  ok("on the clock at 11: the same twelve, in the same order",
+     JSON.stringify(names(a11, false)) === JSON.stringify(ON_CLOCK_AT_11),
+     JSON.stringify(names(a11, false)));
+
+  // Mid-draft, where the block-and-unblock behavior has had time to move.
+  var a86 = atPick(86);
+  ok("on the clock at 86: the same twelve, in the same order",
+     JSON.stringify(names(a86, false)) === JSON.stringify(ON_CLOCK_AT_86),
+     JSON.stringify(names(a86, false)));
+
+  // The two branches must actually differ, or the waiting assertion above is
+  // testing nothing: a filter that removes nobody would pass it silently.
+  ok("the waiting and on-the-clock branches return different lists",
+     JSON.stringify(names(a10, true)) !== JSON.stringify(names(a10, false)));
+
+  // Blocked players are excluded on both branches — that is the first of the
+  // two conditions the comment on briefCandidates() defends.
+  var blocked = a86.briefCandidates(false, 12).filter(function (p) {
+    return p.compDetail && p.compDetail.blocked;
+  });
+  ok("no capped-out player is ever a candidate", blocked.length === 0,
+     blocked.map(function (p) { return p.name; }).join(", "));
+
+  // And claudeContext() must be reading the same list it did before, not a
+  // second copy that drifted: every candidate name appears in the payload.
+  var payload = a86.claudeContext();
+  var missing = ON_CLOCK_AT_86.filter(function (n) { return payload.indexOf(n) < 0; });
+  ok("claudeContext() names every candidate briefCandidates() returned",
+     missing.length === 0, "missing: " + missing.join(", "));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
