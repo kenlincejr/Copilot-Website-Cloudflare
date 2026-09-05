@@ -838,6 +838,17 @@ Now:
   element and nothing called `renderTicker()`.)
 - **Live draft box** — everything else.
 
+## Resizable columns
+
+At the 1040px-and-up, three-column layout, the hairline between board/rec and
+between rec/roster is also a drag handle (`.colgrip` in `assets/ff.css`, wired
+in `assets/app.js`). A saved width is stored as a share, not a pixel count —
+`minmax(floor, Nfr)`, same shape the built-in default already uses — so it still
+makes sense after the window resizes or on a different monitor, and it is
+written as a small stylesheet scoped to `@media (min-width:1040px)` rather than
+as inline style, so it can never fight the narrower breakpoints below. Double-
+click a handle to put both back to their built-in widths.
+
 ## iPad
 
 Landscape (1194) keeps all three columns. Portrait (834) drops to board plus

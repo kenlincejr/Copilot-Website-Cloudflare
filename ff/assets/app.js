@@ -35,6 +35,118 @@ if (IS_TOUCH) {
   });
 }
 
+/* ------------------------------------------------------------ column widths */
+
+/* The three-up board/rec/roster layout is a grid; the two hairlines between
+   the columns double as drag handles (see .colgrip in ff.css). Widths are
+   stored as a ratio, not a pixel count — the .cols rule at any given viewport
+   is already "minmax(floor, share)", so persisting the share and letting the
+   floor keep doing its job is what makes a saved layout still make sense after
+   a browser resize or on a different monitor. Only the >=1040px, three-column
+   layout gets a handle: below that the roster becomes a full-width row with
+   nothing left beside it to trade width with, and the built-in breakpoints in
+   ff.css already decide how the other layouts split. */
+var COL_WIDTHS_KEY = "draftline.colWidths";
+var COL_MIN = { a: 420, b: 320, c: 260 };   // matches the minmax() floors below
+
+function colWidthStyleTag() {
+  var el = document.getElementById("colWidthStyle");
+  if (!el) {
+    el = document.createElement("style");
+    el.id = "colWidthStyle";
+    document.head.appendChild(el);
+  }
+  return el;
+}
+
+function applySavedColWidths() {
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || "null"); } catch (e) {}
+  var tag = colWidthStyleTag();
+  if (!saved || !(saved.a > 0) || !(saved.b > 0) || !(saved.c > 0)) {
+    tag.textContent = "";
+    return;
+  }
+  tag.textContent =
+    "@media (min-width:1040px){ .cols { grid-template-columns: " +
+    "minmax(" + COL_MIN.a + "px," + saved.a + "fr) 9px " +
+    "minmax(" + COL_MIN.b + "px," + saved.b + "fr) 9px " +
+    "minmax(" + COL_MIN.c + "px," + saved.c + "fr); } }";
+}
+applySavedColWidths();
+
+function resetColWidths() {
+  try { localStorage.removeItem(COL_WIDTHS_KEY); } catch (e) {}
+  applySavedColWidths();
+  var cols = $(".cols");
+  if (cols) cols.style.gridTemplateColumns = "";
+}
+
+$$(".colgrip").forEach(function (grip) {
+  var which = grip.getAttribute("data-grip");   // "1": board|rec — "2": rec|roster
+  var dragging = false, startX = 0, w1 = 0, w2 = 0;
+
+  grip.addEventListener("pointerdown", function (e) {
+    var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
+    if (!board || !rec || !roster) return;
+    dragging = true;
+    startX = e.clientX;
+    // Only the pair either side of THIS grip moves; the third column is left
+    // alone, same as dragging a splitter in any two-pane editor layout.
+    if (which === "1") { w1 = board.getBoundingClientRect().width; w2 = rec.getBoundingClientRect().width; }
+    else                { w1 = rec.getBoundingClientRect().width;   w2 = roster.getBoundingClientRect().width; }
+    grip.classList.add("dragging");
+    document.body.classList.add("dragging-col");
+    try { grip.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+
+  grip.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var cols = $(".cols"); if (!cols) return;
+    var min1 = which === "1" ? COL_MIN.a : COL_MIN.b;
+    var min2 = which === "1" ? COL_MIN.b : COL_MIN.c;
+    var sum = w1 + w2;
+    var n1 = Math.min(Math.max(w1 + (e.clientX - startX), min1), sum - min2);
+    var n2 = sum - n1;
+    // Applied as literal pixels for a live preview only; the third column's
+    // current rendered width fills the rest of the row exactly as it did
+    // before the drag started, so nothing jumps when the pointer is released.
+    var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
+    var a = which === "1" ? n1 : board.getBoundingClientRect().width;
+    var b = which === "1" ? n2 : n1;
+    var c = which === "1" ? roster.getBoundingClientRect().width : n2;
+    cols.style.gridTemplateColumns = a + "px 9px " + b + "px 9px " + c + "px";
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    grip.classList.remove("dragging");
+    document.body.classList.remove("dragging-col");
+    var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
+    var cols = $(".cols");
+    if (board && rec && roster && cols) {
+      var a = board.getBoundingClientRect().width;
+      var b = rec.getBoundingClientRect().width;
+      var c = roster.getBoundingClientRect().width;
+      // The literal pixels above become fr *shares*, not a pixel record — see
+      // the comment on COL_WIDTHS_KEY above.
+      try {
+        localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify({
+          a: Math.round(a), b: Math.round(b), c: Math.round(c)
+        }));
+      } catch (err) {}
+      cols.style.gridTemplateColumns = "";   // hand back to the persisted rule
+      applySavedColWidths();
+    }
+  }
+  grip.addEventListener("pointerup", endDrag);
+  grip.addEventListener("pointercancel", endDrag);
+  grip.addEventListener("dblclick", function () { resetColWidths(); });
+});
+
+
 /* ---------------------------------------------------------------- session */
 
 var me = AUTH.current();
