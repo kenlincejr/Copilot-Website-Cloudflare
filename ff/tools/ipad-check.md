@@ -1,0 +1,175 @@
+# iPad check — 15 minutes, real device, before draft night
+
+Run this on the actual iPad, in Safari, signed in to the real account, against the
+**deployed** site. No keyboard attached. Portrait first, as you'll actually be
+sitting Monday night.
+
+**Any fail in rows 1–4 stops the draft plan.** Those four are the taps that happen
+on the clock — if they don't work, the paper fallback (`draft-day.md` §7) is the
+plan, not this app, and you need to know that tonight, not at 19:00.
+
+Mark each row pass or fail. Note a screenshot file name where you take one — every
+BLOCKER row should get one either way, pass or fail, so there's a record.
+
+---
+
+## 1. 0:00 — Load, portrait — BLOCKER
+
+Open the deployed site fresh (not a tab you already had open). Land on the board.
+
+Check, without tapping anything:
+- Nothing is focused — no keyboard is up, no autofill accessory bar (key / card /
+  location icons) is floating over anything.
+- **At least 9 player rows are visible** below the sticky column header.
+- The longest names on the board are not clipped: look for "Marvin Harrison Jr.",
+  "Amon-Ra St. Brown", "Kenneth Walker III" and confirm each shows in full with its
+  team code.
+
+Pass = all three true on load, no taps needed. Screenshot: ______________
+
+## 2. 0:02 — Row buttons — BLOCKER
+
+Tap a row in the middle of the visible list, then one at the very top, then one at
+the very bottom (scroll to it first).
+
+Check:
+- Each tap lands on the row you meant, not its neighbor above or below.
+- The row's action buttons (team-initials button, `who?`, `TO ME`) are each at
+  least 44px tall and tappable without zooming in.
+- Tap `who?` on any row — the team-assign picker opens fully inside the screen,
+  not clipped off an edge.
+- With the picker open, tap somewhere outside it — it closes. (There is no Escape
+  key on an iPad; outside-tap is the only way this can close.)
+
+Pass = all four true, at top, middle and bottom of the list. Screenshot: ______
+
+## 3. 0:05 — Search — BLOCKER
+
+Tap the search field.
+
+Check:
+- The page does not zoom in when the field gets focus.
+- Safari does not offer a saved password or email to autofill into it.
+- Type a partial name that includes an accent or special character — e.g. "St.
+  Brown" or "Dobbins" — and confirm the list filters live and diacritics don't
+  break the match.
+- With a result showing, press the keyboard's Go/Enter key: it records the top
+  match to whichever team is on the clock, not to "yourself" by default.
+- After recording, focus returns to the search field on its own.
+- Check whether the keyboard covers the row you'd need to see next — if it does,
+  say so here, don't just note pass/fail: ______________________________
+
+Pass = all of the above except the last, which is informational either way.
+Screenshot: ______________
+
+## 4. 0:07 — Tracker — BLOCKER
+
+Open the live tracker (start or resume a practice draft if one isn't running).
+
+Check, all at once:
+- The record box, "Didn't catch the name", Pause, Stop, Simulate, and Start over
+  are all comfortably tappable — each at least 44px.
+- The pick clock's text is legible held at arm's length, not squinting distance.
+- Tap "Start over" once: it turns red and says "Sure?" — do **not** tap it again.
+  Wait and confirm it disarms back to its normal label after about 4 seconds on
+  its own, with no second tap.
+
+Pass = all three true, and the disarm actually happens without a second tap.
+Screenshot: ______________
+
+---
+
+## 5. 0:09 — Two taps to record, timed
+
+With the tracker or board in front of you, time this: from an idle screen, record
+one pick for the team currently on the clock.
+
+- Count taps: should be **2 or fewer** (e.g. tap search result, tap nothing else —
+  Go/Enter counts as the second "tap").
+- Time it: should take **5 seconds or less**, unhurried.
+- Now undo that pick (Ctrl+Z has no iPad equivalent — use the undo button) and
+  confirm the player is back in the pool, available to record again.
+
+Pass = 2 taps, 5 seconds, and undo genuinely restores the pool.
+
+## 6. 0:11 — Rotate to landscape
+
+Rotate the iPad.
+
+- Confirm the board is now three columns, not two.
+- Confirm the row layout visibly changes (compact mode drops) — row height and
+  button placement should look different from portrait, not identical.
+- Open a modal (any one — League setup is fine), then rotate again with it open:
+  it should still fit on screen, not run off an edge.
+- Open the team-assign popover (`who?` on any row), then rotate with it open: it
+  should re-clamp to the new width, not get stranded partway off screen.
+
+Pass = three columns in landscape, and both open-while-rotating cases stay on
+screen.
+
+## 7. 0:13 — Split View beside Yahoo — BLOCKER for draft-night plan
+
+This is the actual Monday-night arrangement: Draftline and the Yahoo draft client
+open side by side.
+
+- Open Split View with the Yahoo client, at **50/50**. Try recording one pick —
+  is it still 2 taps? Note which layout (2-column / 3-column / 1-column) Draftline
+  renders at this width.
+- Change the split to **30/70** (Draftline the narrow side). Try recording one
+  pick again — is it still 2 taps, or does the narrow width push it to 3+ or make
+  a button too small to hit reliably?
+
+**If only one of the two splits works cleanly, that is the answer** — write down
+which one, and that becomes the arrangement in `draft-day.md`. Note it here:
+
+Split that works: ______________________
+
+## 8. 0:14 — Shell
+
+- Scroll each column (board, middle, roster) — confirm only the columns scroll,
+  never the page itself sideways or as a whole.
+- With Safari's toolbar showing (not hidden), scroll the board to its last row —
+  confirm it's actually reachable and not hidden behind the toolbar.
+
+Pass = no page-level horizontal scroll anywhere, and the last board row is
+reachable with the toolbar up.
+
+---
+
+## What this deliberately does not cover, and why that's safe to cut
+
+This is the 15-minute cut of §E2's ~19-row, 90+ minute matrix. Cut, and why each is
+lower risk than the rows above:
+
+- **All eight modals** (League setup, Draft style, Columns, Save/load, Claude,
+  Report, Start/practice, Catch-up) beyond the one touched in row 6 — these open
+  between picks, not on the clock, so a rough edge here costs seconds, not a pick.
+- **Rosters view** — viewed between picks, not needed to record one.
+- **Columns picker** — a display preference; the default columns are already
+  known to fit (row 1 covers that).
+- **Performance timing** (`analyze()` + render under 250ms) — the emulated pass
+  already measured this; a real-device regression would show up as visible lag in
+  row 5's timed test, which is covered.
+- **Contrast** (teal/amber-on-dark) — a legibility nuisance, not a blocker; row 4
+  already checks the clock is readable at arm's length, which is the one contrast
+  case that matters live.
+- **Background tab behavior** (switching to Yahoo's tab and back) — Split View
+  (row 7) is the actual plan for Monday, which makes this scenario moot; if Split
+  View works, nothing switches tabs.
+- **The 1024-wide overflow probe** — no iPad in this house is 1024 wide in
+  landscape; every current model clears 1040px. Not a live risk for this device.
+
+## Flagged: the one cut we're least comfortable with
+
+**Row 9 (not run here): sleep and return.** Lock the iPad for five minutes
+mid-draft, unlock, and confirm the clock and pick count are still right. This is
+cut for time, but it's a real Monday-night scenario — someone will lock the screen
+to check a phone at some point in three hours. If there's a spare five minutes
+before 19:00, run this one too:
+
+- Mid-practice-draft, lock the iPad. Wait 5 minutes. Unlock.
+- Check: does the clock show correct elapsed time, or did it freeze/reset? Is the
+  pick count still right? If Safari reloaded the page, is the draft state intact
+  and the sync status accurate rather than stuck on "syncing"?
+
+Pass/fail if run: ______________________
