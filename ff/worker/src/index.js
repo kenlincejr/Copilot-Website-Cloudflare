@@ -163,6 +163,18 @@ export default {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: maxTokens,
+        // Effort is GA and defaults to high, which on Sonnet 5 means adaptive
+        // thinking runs freely. Measured over sixty live briefs: the eight that
+        // used thinking averaged 8.5 seconds and the twenty-two that did not
+        // averaged 3.8, with the slowest call at 20.5 seconds against a client
+        // timeout of 30. Thinking was never a token problem here — 81 tokens
+        // mean against 243 of output — it is the entire latency tail, and the
+        // brief is written two picks ahead on a two-minute clock, so a slow
+        // answer is a useless one.
+        //
+        // The task is not the kind that repays deep thinking: name one of eight
+        // candidates, with every number it needs already in the payload.
+        output_config: { effort: "low" },
         // Trimmed only so a bug cannot send an unbounded body, not to ration
         // context. The brief now carries roster points, marginal values and the
         // style's effect on every candidate, and it was brushing the old cap.

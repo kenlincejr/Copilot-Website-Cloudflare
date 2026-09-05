@@ -1,8 +1,9 @@
 # Live AI measurement — the first time this layer met a real model
 
-**Run 2026-09-04, against the deployed Worker.** Sixty calls, $0.62 of the owner's
-Anthropic credit, one second apart, never looped. Approved in advance with a stated call
-count. The Worker's ceiling is 90/IP/minute and the daily stop is $50; neither was
+**Run 2026-09-04, against the deployed Worker.** Ninety-two calls, $0.93 of the owner's
+Anthropic credit, one second apart, never looped: thirty against the prompt as it stood,
+thirty after the naming fix in §3, thirty after the effort change in §1, plus two probes
+and two answers read in full. Approved in advance with a stated call count. The Worker's ceiling is 90/IP/minute and the daily stop is $50; neither was
 approached and nothing was retried.
 
 Everything in `qa-findings-D.md` and `qa-findings-I2.md` was static analysis. This is what
@@ -15,7 +16,8 @@ draft states (rounds 1, 2, 3, 6, 8, 9, 10, 11, 14, 15) across three different ro
 the roster block, the supply block and the reserve rule all vary. Sent through the
 deployed proxy at `claude-sonnet-5` with `max_tokens: 2500`, the same path the app uses.
 
-Run twice: once against the prompt as it stood, once after the fix in §3.
+Run three times: once against the prompt as it stood, once after the naming fix in §3,
+and once after the effort change in §1. Same payloads each time, so the runs compare.
 
 ## 1. Latency — under the timeout, and the tail is thinking
 
@@ -46,11 +48,36 @@ token cost — it is a rounding error against `max_tokens` and does not threaten
 answer. But it is **the whole latency distribution above the median**, and latency is what
 decides whether the brief arrives before the clock.
 
-**Recommendation: set `output_config.effort` to `low` in the Worker.** It is a one-line
-change in `ff/worker/src/index.js`, it is where D said it belonged, and on this evidence it
-would pull p95 toward the 3.8 s no-thinking mean rather than saving tokens. **Not applied
-here**: it changes the deployed API for every client, and a Worker deploy is a separate
-decision from a static-asset deploy. It is the highest-value item left in the AI layer.
+**Applied: `output_config: { effort: "low" }` in the Worker, and re-measured on the same
+thirty payloads.** Effort is GA on Sonnet 5 and defaults to `high`, so the shipped behavior
+had been adaptive thinking at full depth.
+
+| | effort high (default) | effort low |
+|---|---|---|
+| p50 | 3,943 ms | 3,629 ms |
+| **p95** | **12,265 ms** | **4,397 ms** |
+| max | 20,472 ms | 4,437 ms |
+| calls over 12 s | 2 of 30 | **0 of 30** |
+| mean thinking tokens | 81 | **0** |
+| mean output tokens | 243 | 139 |
+| mean answer words | 73 | 61 |
+| named the board's #1 | 29 of 30 | 27 of 30 |
+| named somebody off-list | 0 | **0** |
+| gave a fallback | 30 of 30 | **30 of 30** |
+| head line binds the Draft button | 30 of 30 | **30 of 30** |
+
+p95 fell by a factor of 2.8 and the twenty-second tail disappeared entirely. Nothing that
+matters degraded: every answer still named a player from the list, still bound the Draft
+button, and still carried a fallback.
+
+Answers are shorter — 61 words against 73 — and that reads as tightening rather than loss.
+A spot check at round 10 disagreed with the board's #1 and was right to: it took Houston
+Defense with the DEF slot empty and WR/RB/FLEX full, citing the league's boosted D/ST
+tiers, the four tier-1 defenses left and the 23-point drop to the next tier. Every one of
+those numbers is in the payload. That is the brief earning its cost.
+
+The task never repaid deep thinking. It is: name one of eight candidates, with every
+number it needs already supplied.
 
 ## 2. Advice quality — it agrees with the board almost always
 
@@ -114,9 +141,10 @@ constraint on a runaway loop, which is what it is for.
 
 ## 5. What this did not measure
 
-- **`output_config.effort` head to head.** The Worker sends none and the client cannot
-  inject it, so testing `low` and `medium` requires deploying a Worker change. §1 makes the
-  case; the comparison is still unmade.
+- **`medium` effort.** `low` was measured against the `high` default and won on every axis
+  that matters, so `medium` was never tried. If a future change makes the brief's task
+  harder — a longer candidate list, a question that needs more inference — `medium` is the
+  first thing to reach for, not a return to `high`.
 - **Real draft-night latency.** These ran from one machine against a warm Worker. A cold
   start, a phone tethered in a basement, or twelve league members on one connection are all
   slower.
