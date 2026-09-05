@@ -24,6 +24,7 @@ $("#whoami").textContent = me.name;
 
 var KEY_STATE  = "draftline.state." + me.id;
 var KEY_CLAUDE = "draftline.claude." + me.id;
+var KEY_SEEN   = "draftline.quickstart." + me.id;
 
 var BY_NAME = {};
 DATA.players.forEach(function (p) { BY_NAME[p.name] = p; });
@@ -80,13 +81,21 @@ var MODES = {
   }
 };
 
+/**
+ * What a brand new account starts on. It used to be the author's own league,
+ * keeper and draft slot included, which meant a stranger's first board was
+ * scored in somebody else's rules and was holding a player they had never heard
+ * of. The neutral preset is the scoring consensus ADP is actually built on, so
+ * it is the least wrong thing to be looking at before step one of the quick
+ * start replaces it. Only used when there is no saved state at all.
+ */
 function defaultLeague() {
   return {
-    preset: "kinda_highlanders",
-    rules: JSON.parse(JSON.stringify(PRESETS.kinda_highlanders)),
+    preset: "ppr_standard",
+    rules: JSON.parse(JSON.stringify(PRESETS.ppr_standard)),
     mode: "live",
-    teams: 12, slot: 11, rounds: 15,
-    keepers: [{ name: "Drake Maye", round: 5, slot: 11 }],
+    teams: 12, slot: 1, rounds: 15,
+    keepers: [],
     byeTolerance: 3, defFloorRound: 7
   };
 }
@@ -1329,7 +1338,7 @@ var REPORT_SOLO_SYSTEM =
   "or invent a league context. The points were computed by a scoring engine using this " +
   "league's exact rules; trust them. Write three short paragraphs, no headings, no bullets, " +
   "under 220 words: what this roster actually is; its single biggest weakness and what it " +
-  "will cost; and two concrete waiver or trade moves for the first fortnight. Be direct.";
+  "will cost; and two concrete waiver or trade moves for the first two weeks. Be direct.";
 
 var REPORT_SYSTEM =
   "You are reading a completed or in-progress fantasy football draft for the manager who " +
@@ -1338,7 +1347,7 @@ var REPORT_SYSTEM =
   "Write four short paragraphs, no headings, no bullets, under 300 words total: what their " +
   "draft actually is (the shape of it, not a list of names); the single biggest weakness and " +
   "what it will cost them; which rival team is the real threat and why; and two concrete " +
-  "waiver or trade moves to make in the first fortnight. Be specific and direct. Do not " +
+  "waiver or trade moves to make in the first two weeks. Be specific and direct. Do not " +
   "hedge every sentence.";
 
 $("#reportAsk").addEventListener("click", function () {
@@ -1826,8 +1835,8 @@ $("#btnRosters").addEventListener("click", function () { $("#btnLeague").click()
 // the tracker or the status strip now. Secondary actions go behind one menu so
 // the bar cannot overflow on a tablet.
 (function moreMenu() {
-  var TARGETS = { report: "#btnReport", style: "#btnStyle", cols: "#btnCols",
-                  setup: "#btnSetup", data: "#btnData", out: "#btnOut" };
+  var TARGETS = { start: "#btnStart", report: "#btnReport", style: "#btnStyle",
+                  cols: "#btnCols", setup: "#btnSetup", data: "#btnData", out: "#btnOut" };
   var wrap = $("#moreMenu"), btn = $("#btnMore");
 
   // The app bar scrolls horizontally on a tablet, which means overflow-y:hidden,
@@ -3193,7 +3202,192 @@ function renderModePicker() {
   });
 }
 
-function openSetup() {
+/* --------------------------------------------------------- the quick start
+
+   The first thing a new account sees. It used to be openSetup() cold: forty
+   scoring fields, no statement of what to do first, and no way to tell which of
+   it mattered. Everything here is checked against the state the app is actually
+   in, so it is a checklist rather than a page of instructions — it knows whether
+   the league has been saved, whether the teams have names, whether a keeper is
+   recorded and whether a practice draft has been run.
+
+   Every step carries the two sentences that were missing: what it buys, and what
+   skipping it costs. Skipping is a real choice — the board is fully usable with
+   none of it done — so the cost is stated once, plainly, rather than implied by
+   nagging. */
+
+function goSetup(section) {
+  closeModal("#startModal");
+  openSetup(section);
+}
+
+function quickStartSteps() {
+  var L = S.league;
+  var others = Math.max(0, (L.teams || 12) - 1);
+  var named = (L.teamNames || []).filter(function (n, i) {
+    return String(n || "").trim() && (i + 1) !== L.slot;
+  }).length;
+  var keepers = (L.keepers || []).length;
+  var yahooCount = Object.keys(yahooAdp()).length;
+  var mode = MODES[L.mode || "live"];
+
+  return [
+    {
+      title: "Tell it about your league",
+      need: "required",
+      done: !!L.configured,
+      now: (L.configured ? "Saved — " : "Still on the shipped default — ") +
+        L.teams + " teams, you pick at " + L.slot + ", " + L.rounds + " rounds, " +
+        ((PRESETS[L.preset] || {}).name || "custom scoring"),
+      body: "How many teams, which slot you drew, how many rounds, and the scoring. " +
+        "Paste your league's own settings page in and Draftline reads the rules back out " +
+        "of it — receptions, yardage bonuses, return yards, your defensive tiers, the " +
+        "roster shape — and shows you what it found before anything is saved. Or start " +
+        "from a preset and edit the numbers by hand.",
+      cost: "the board computes every player's points in a league that isn't yours. That " +
+        "is not a rounding error. A point per reception on or off moves real players by " +
+        "whole rounds, and every suggestion moves with them.",
+      acts: [{ label: "Open League setup" }]
+    },
+    {
+      title: "Decide how much you'll track",
+      need: "required",
+      // The mode has a default, so it is never unset — what this asks is whether
+      // you have actually seen the choice, which is the same trip as step one.
+      done: !!L.configured,
+      now: "Currently: " + mode.name + " — " + mode.tagline,
+      body: "<b>Live draft</b> credits every pick to whoever made it, so the board holds " +
+        "all twelve rosters. <b>Just the board</b> tracks only yours — you still mark " +
+        "players off as they go, but nothing is attributed to anyone. Your own points, " +
+        "value over replacement and survival odds are identical either way.",
+      cost: "on Just the board there are no opponent rosters, so there is no graded league " +
+        "table at the end, and Claude cannot tell you what the teams picking ahead of you " +
+        "still need — which is the one thing it knows that no ranking does.",
+      acts: [{ label: "Choose the mode" }]
+    },
+    {
+      title: "Name the other teams",
+      need: "recommended",
+      done: others > 0 && named >= Math.ceil(others / 2),
+      now: named
+        ? named + " of " + others + " other teams named"
+        : "Nobody named yet — they read as team 1 through team " + L.teams,
+      body: "Two minutes, and it changes how the whole night reads. Names show up on the " +
+        "ticker, in the draft log, on the roster switcher and all through the report.",
+      cost: "everything says team 7. The real cost is not cosmetic: the commonest mistake " +
+        "on draft night is putting a pick on the wrong roster, and a list of names is far " +
+        "easier to check at a glance than a column of numbers.",
+      acts: [{ label: "Name the teams", section: "#dTeams" }]
+    },
+    {
+      title: "Add the keepers",
+      need: keepers ? "recommended" : "if your league has them",
+      done: keepers > 0,
+      now: keepers
+        ? keepers + " keeper" + (keepers === 1 ? "" : "s") + " recorded"
+        : "None recorded",
+      body: "A keeper comes off the board before pick 1 and burns that round's pick for " +
+        "whoever owns him. Add your rivals' keepers too if you know them.",
+      cost: "the board keeps offering you players who were never available, and every pick " +
+        "number after the first kept round is wrong — so who is on the clock, and which " +
+        "picks are yours, are both off.",
+      acts: [{ label: "Add keepers", section: "#dKeepers" }]
+    },
+    {
+      title: "Add real draft data from your platform",
+      need: "optional",
+      done: yahooCount > 0,
+      now: yahooCount
+        ? yahooCount + " players carrying your league's real ADP"
+        : "Not added — running on the shipped mock-draft ADP",
+      body: "The ADP baked into this board comes from about 7,800 <em>mock</em> drafts. " +
+        "Yahoo publishes ADP from <b>real completed drafts</b> on its own platform, plus a " +
+        "last-seven-days column that shows which way a player is moving this week. It is " +
+        "free, every league member can see it, and it takes a minute.",
+      cost: "nothing breaks. You are reading a market that was frozen when this data was " +
+        "built rather than the one moving this week.",
+      acts: [{ label: "Add Yahoo draft data", section: "#dYahoo" }]
+    },
+    {
+      title: "Rehearse the whole thing",
+      need: "recommended",
+      // S.simulated only turns on once the modeled room has actually drafted,
+      // which for a manager at slot 1 does not happen until after their own
+      // first pick — so a run that is under way needs to say so on its own.
+      done: !!S.simulated,
+      now: S.simulated
+        ? "You have run a practice draft"
+        : S.draftStarted
+          ? "A draft is under way — hit Simulate and the room drafts to your next pick"
+          : "Not run yet",
+      body: "Practice mode drafts the other eleven teams out and stops the moment the pick " +
+        "is yours — same board, same suggestions, same clock. Hit Simulate and the room " +
+        "runs to your turn, you pick, you hit Simulate again. It never drafts your team " +
+        "for you, nothing is real, and <em>Start over</em> clears the lot.",
+      cost: "you learn the interface for the first time on the night, on a two-minute " +
+        "clock, with eleven people waiting on you.",
+      acts: [{ label: "Start a practice draft", begin: true }]
+    }
+  ];
+}
+
+function renderQuickStart() {
+  var steps = quickStartSteps();
+  var left = steps.filter(function (st) { return !st.done; }).length;
+  $("#qsSub").textContent = left
+    ? left + " of the " + steps.length + " steps still to do — about five minutes for the lot."
+    : "All " + steps.length + " done. The board is set up for your league.";
+
+  $("#qsSteps").innerHTML = steps.map(function (st, i) {
+    return '<div class="qs-step' + (st.done ? " done" : "") + '">' +
+      '<div class="qs-n">' + (st.done ? "✓" : (i + 1)) + "</div>" +
+      "<div>" +
+        '<div class="qs-h"><h3>' + esc(st.title) + "</h3>" +
+          '<span class="badge qs-need' + (st.need === "required" ? " qs-req" : "") + '">' +
+            esc(st.need) + "</span></div>" +
+        '<div class="qs-now">' + esc(st.now) + "</div>" +
+        "<p>" + st.body + "</p>" +
+        '<p class="qs-skip"><b>Skip it and</b> ' + st.cost + "</p>" +
+        '<div class="qs-act">' + st.acts.map(function (a, j) {
+          return '<button class="btn btn-sm" data-qs="' + i + "," + j + '">' +
+            esc(a.label) + "</button>";
+        }).join("") + "</div>" +
+      "</div>" +
+    "</div>";
+  }).join("");
+
+  $$("#qsSteps [data-qs]").forEach(function (b) {
+    var ix = b.dataset.qs.split(","), a = steps[+ix[0]].acts[+ix[1]];
+    b.onclick = function () {
+      if (a.begin) { closeModal("#startModal"); openBegin(); return; }
+      goSetup(a.section);
+    };
+  });
+
+  $("#qsClaudeState").textContent = !claudeReady()
+    ? "needs a key of your own — see Ask Claude"
+    : claudeCfg.auto
+      ? "on, and the brief arrives " + claudeCfg.lead +
+        " pick" + (claudeCfg.lead === 1 ? "" : "s") + " before your turn"
+      : "available, but the automatic brief is switched off";
+}
+
+function openQuickStart() {
+  renderQuickStart();
+  openModal("#startModal");
+  // Shown once per account per device, then it lives in the More menu. Written on
+  // open rather than on close so a user who navigates away mid-guide is not asked
+  // to sit through it again.
+  try { localStorage.setItem(KEY_SEEN, "1"); } catch (e) {}
+}
+
+$("#btnStart").addEventListener("click", openQuickStart);
+$("#startClose").addEventListener("click", function () { closeModal("#startModal"); });
+$("#qsDismiss").addEventListener("click", function () { closeModal("#startModal"); });
+$("#qsGoSetup").addEventListener("click", function () { goSetup(); });
+
+
+function openSetup(section) {
   $("#presetSel").innerHTML = Object.keys(PRESETS).map(function (k) {
     return '<option value="' + k + '"' + (S.league.preset === k ? " selected" : "") + ">" +
       esc(PRESETS[k].name) + "</option>";
@@ -3209,8 +3403,20 @@ function openSetup() {
   buildKeeperSlots(); buildKeeperList();
   renderModePicker();
   openModal("#setupModal");
+  // The quick start sends you at one panel of this modal rather than at the top
+  // of forty scoring fields, so open that panel and put it under the eye.
+  if (section) {
+    var el = $(section);
+    if (el) {
+      el.open = true;
+      setTimeout(function () { el.scrollIntoView({ block: "start", behavior: "smooth" }); }, 30);
+    }
+  }
 }
-$("#btnSetup").addEventListener("click", openSetup);
+// addEventListener hands the click Event to its listener, and an Event is truthy
+// — passing openSetup directly would make every plain click look like a request
+// for a section. Wrap it.
+$("#btnSetup").addEventListener("click", function () { openSetup(); });
 $("#setupClose").addEventListener("click", function () { closeModal("#setupModal"); });
 $("#presetSel").addEventListener("change", function (e) {
   S.league.preset = e.target.value;
@@ -3265,6 +3471,7 @@ $("#setupSave").addEventListener("click", function () {
   var names = [];
   $$("#teamNames input").forEach(function (i) { names[+i.dataset.team - 1] = i.value.trim(); });
   S.league.teamNames = names;
+  S.league.configured = true;   // the quick start checks this, not a guess at the values
   save(); closeModal("#setupModal"); render();
 });
 $("#btnReset").addEventListener("click", function () {
@@ -4120,7 +4327,10 @@ if (S.league.pickSeconds) $("#pickSecs").value = S.league.pickSeconds;
 render();
 tickClock();
 checkForUpdate();
-if (!S.picks.length && !localStorage.getItem(KEY_STATE)) openSetup();
+// A new account used to land on League setup with no context: forty scoring
+// fields and nothing saying what to do first. The guide leads there instead, and
+// it is shown once per account on this device.
+if (!localStorage.getItem(KEY_SEEN)) openQuickStart();
 save();
 $("#search").focus();
 })();

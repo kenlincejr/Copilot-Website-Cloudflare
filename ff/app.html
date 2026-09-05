@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904au">
+<link rel="stylesheet" href="assets/ff.css?v=20260904av">
 </head>
 <body>
 
@@ -24,6 +24,7 @@
       <div class="menuwrap">
         <button class="btn btn-sm" id="btnMore" aria-haspopup="true" aria-expanded="false">More ▾</button>
         <div class="menu hidden" id="moreMenu">
+          <button data-more="start">Quick start guide</button>
           <button data-more="report">Draft report</button>
           <button data-more="style">Draft style</button>
           <button data-more="cols">Columns</button>
@@ -109,9 +110,71 @@
   <button id="btnLeague"></button><button id="btnReport"></button>
   <button id="btnStyle"></button><button id="btnCols"></button>
   <button id="btnSetup"></button><button id="btnData"></button><button id="btnOut"></button>
+  <button id="btnStart"></button>
 </div>
 
 <!-- ============================================================== modals -->
+
+<!-- The first thing a new account sees. It used to be the League setup modal
+     cold: forty scoring fields and no idea which of them mattered or what to do
+     after. This says what to do, in what order, what each step buys, and what
+     skipping it costs — and every step is checked against the actual state, so
+     it is a checklist rather than a page of instructions. -->
+<div class="modal-bg hidden" id="startModal"><div class="modal wide">
+  <div class="modal-head">
+    <div><h2 style="margin:0">Quick start</h2>
+      <span class="muted" id="qsSub">About five minutes now, and nothing is new on the night.</span></div>
+    <button class="btn btn-sm" id="startClose">Close</button>
+  </div>
+
+  <div class="note">
+    Work down this list in order. Only the first step really matters — everything under it
+    is worth doing and can be skipped, and each one says what you lose by skipping it.
+    You can come back here any time from <b>More &rsaquo; Quick start guide</b>.
+  </div>
+
+  <div id="qsSteps" class="mt"></div>
+
+  <div class="panel-head mt"><h3>What Claude does during the draft</h3>
+    <span class="eyebrow" id="qsClaudeState"></span></div>
+  <p class="muted" style="font-size:13px;margin:8px 0 0">
+    Three separate things, and the board is fully usable with all of them switched off.
+  </p>
+  <ul class="beginfacts">
+    <li><b>The on-deck brief.</b> Two picks before your clock starts, Draftline asks one
+      question on its own and puts the answer on screen — a name, why him, and a fallback,
+      each with a button that drafts him. Claude gets the board's own numbers, the research
+      notes on who is left, and what the teams picking ahead of you still need. It is on by
+      default; the lead time is in <b>Ask Claude</b>.</li>
+    <li><b>Ask Claude.</b> Any question, any time, with the live board attached — "should I
+      take the tight end here or wait", "who is the best value left at receiver".</li>
+    <li><b>Reading the report.</b> At the end, Claude reads the finished grade table and
+      writes what your draft actually is, where the hole is, which rival is the real threat,
+      and two moves to make in the first two weeks.</li>
+  </ul>
+
+  <div class="panel-head mt"><h3>When it's over</h3></div>
+  <p class="muted" style="font-size:13px;margin:8px 0 0">
+    <b>More &rsaquo; Draft report</b> scores every roster in the league on the best legal
+    starting lineup it can field in your rules, ranks them, and grades each on a percentile.
+    The grades are computed here, not asked for — Claude only reads them. Tracking the whole
+    league is what buys this; on <b>Just the board</b> you get your own roster measured
+    against replacement level instead, and no table.
+  </p>
+
+  <div class="note warn mt">
+    <b>Want to skip all of it?</b> You can. The board runs out of the box and every number on
+    it — points, value over replacement, survival odds, the suggestions — still works.
+    What you give up is that it is scoring a preset league rather than yours, so the ranking
+    is somebody else's; the report says "team 7" instead of names; and any keeper in your
+    league is a player the board will keep offering you who was never available.
+  </div>
+
+  <div class="mt" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+    <button class="btn" id="qsDismiss">Skip it, take me to the board</button>
+    <button class="btn btn-primary" id="qsGoSetup">Start with League setup</button>
+  </div>
+</div></div>
 
 <div class="modal-bg hidden" id="setupModal"><div class="modal wide">
   <div class="modal-head">
@@ -135,7 +198,7 @@
     <div class="field"><label>Rounds</label><input type="number" id="cfgRounds" min="1" max="30"></div>
   </div>
 
-  <details class="mt" open>
+  <details class="mt" open id="dImport">
     <summary style="cursor:pointer;color:var(--muted)">Import your league's real scoring (recommended)</summary>
 
     <div class="filters" style="margin:12px 0 10px">
@@ -157,7 +220,7 @@
     <div id="parseOut" class="mt"></div>
   </details>
 
-  <details class="mt">
+  <details class="mt" id="dYahoo">
     <summary style="cursor:pointer;color:var(--muted)">Add real Yahoo draft data (optional, free)</summary>
     <p class="muted" style="font-size:13px;margin-top:10px">
       The ADP shipped with this board comes from about 7,800 <em>mock</em> drafts. Yahoo
@@ -204,7 +267,7 @@
     <div id="rosterForm" class="mt"></div>
   </details>
 
-  <details class="mt">
+  <details class="mt" id="dTeams">
     <summary style="cursor:pointer;color:var(--muted)">Who else is in the league</summary>
     <p class="muted" style="font-size:13px;margin-top:10px">
       Optional, and worth two minutes before draft night. Names make the ticker, the
@@ -215,7 +278,7 @@
     <div id="teamNames" class="mt"></div>
   </details>
 
-  <details class="mt" open>
+  <details class="mt" open id="dKeepers">
     <summary style="cursor:pointer;color:var(--muted)">Keepers</summary>
     <p class="muted" style="font-size:13px;margin-top:10px">
       A keeper removes the player from the pool and burns that round's pick for whoever owns
@@ -489,15 +552,15 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904au"></script>
-<script src="data/players.js?v=20260904au"></script>
-<script src="assets/presets.js?v=20260904au"></script>
-<script src="assets/engine.js?v=20260904au"></script>
-<script src="assets/auth.js?v=20260904au"></script>
-<script src="assets/sync.js?v=20260904au"></script>
-<script src="assets/parser.js?v=20260904au"></script>
-<script src="assets/draftanalysis.js?v=20260904au"></script>
-<script src="assets/strategies.js?v=20260904au"></script>
+<script src="assets/config.js?v=20260904av"></script>
+<script src="data/players.js?v=20260904av"></script>
+<script src="assets/presets.js?v=20260904av"></script>
+<script src="assets/engine.js?v=20260904av"></script>
+<script src="assets/auth.js?v=20260904av"></script>
+<script src="assets/sync.js?v=20260904av"></script>
+<script src="assets/parser.js?v=20260904av"></script>
+<script src="assets/draftanalysis.js?v=20260904av"></script>
+<script src="assets/strategies.js?v=20260904av"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -505,7 +568,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260904au";
+    s.src = "assets/app.js?v=20260904av";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }

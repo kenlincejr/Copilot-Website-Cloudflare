@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — a draft room that does the math while the clock runs</title>
-<meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, models the other eleven teams, rehearses the night before it happens, and runs in your browser.">
-<link rel="stylesheet" href="assets/ff.css?v=20260904au">
+<meta name="description" content="A fantasy draft assistant that scores every player in your league's rules, reads live draft results to say who will still be there at your next pick, gets you a Claude briefing before your clock starts, and grades every roster when it's over.">
+<link rel="stylesheet" href="assets/ff.css?v=20260904av">
 </head>
 <body>
 
@@ -21,17 +21,23 @@
     <div>
       <h1>The whole draft, computed while you're on the clock.</h1>
       <p class="lede">
-        Draftline is a full draft room: 267 players scored in <strong>your</strong> league's
-        rules, a live board that re-ranks itself as picks come off, odds on who survives to
-        your next turn, eleven modeled opponents you can rehearse against, and a graded
-        report when it's done.
+        Draftline is a full draft room in your browser: every player scored in
+        <strong>your</strong> league's rules, a board that re-ranks itself on every pick, and
+        odds — from real draft results — on who is still going to be there when your turn
+        comes back around.
       </p>
-      <p class="lede">
-        Two minutes on the clock is not enough time to work any of that out in your head.
-        It is plenty of time to read it off a screen.
-      </p>
+      <ul class="uniq">
+        <li><b>Real drafts, not one average rank.</b> Every player carries the spread of
+            where he actually went across roughly 7,800 mock drafts, so the board answers
+            in probabilities instead of a ranking.</li>
+        <li><b>Claude reads the board with you.</b> A briefing lands before your clock
+            starts, written against the live board and what the teams ahead of you still
+            need.</li>
+        <li><b>A graded report at the end.</b> All twelve rosters scored in your own rules
+            and ranked, then a written read on yours.</li>
+      </ul>
       <p><a href="#signin" class="btn btn-primary">Start a draft</a>
-         <a href="#what" class="btn">See what it does</a></p>
+         <a href="#shots" class="btn">See it working</a></p>
     </div>
 
     <div class="panel" id="signin">
@@ -76,116 +82,157 @@
 
   <hr>
 
-  <section class="sec" id="what">
-    <span class="eyebrow">Draft night, start to finish</span>
-    <h2>Set it up once, then just call out picks.</h2>
-    <p class="sec-lede">Nothing to install, one account that works on every device, and a board that keeps drafting if the network drops.</p>
-    <div class="steps" style="margin-top:26px">
-      <div class="step">
-        <h3>Paste your league settings</h3>
-        <p>Copy the settings page out of Yahoo and paste it in. Draftline reads the scoring,
-           the roster shape, the team count and the draft order out of it, and shows you what
-           it parsed before anything is saved. Or start from a preset and edit the numbers.</p>
-      </div>
-      <div class="step">
-        <h3>Draft</h3>
-        <p>Type a name, hit <span class="kbd">Enter</span> — somebody took him.
-           <span class="kbd">Shift</span>+<span class="kbd">Enter</span> means you did.
-           <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> undoes any depth. Every
-           number on screen re-computes on each pick while the clock runs.</p>
-      </div>
-      <div class="step">
-        <h3>Read the report</h3>
-        <p>Every roster in the league gets scored in your own rules, ranked, and graded on a
-           percentile — computed, not asked for. Then Claude reads the table and names your
-           biggest hole, the rival who is the real threat, and two moves to make.</p>
-      </div>
-    </div>
-  </section>
+  <div id="shots">
 
-  <section class="sec">
-    <span class="eyebrow">What makes it different</span>
-    <h2>Six things a free draft board does not do.</h2>
-
-    <div class="grid-3" style="margin-top:22px">
-      <div class="panel fcard">
-        <span class="kicker">Your rules, not the consensus</span>
-        <h3>Scored in your league's points</h3>
-        <p>Everything else ranks by consensus ADP, which encodes somebody else's scoring.
-           Draftline starts from a stat-level projection and re-scores it — receptions,
-           40-yard bonuses, return yards, your defensive tiers, your roster shape — and
-           derives replacement level from your league instead of a hardcoded list.</p>
-      </div>
-      <div class="panel fcard">
-        <span class="kicker">Survival, not vibes</span>
-        <h3>Who is actually still there at your turn</h3>
-        <p>Every player carries a real draft-position standard deviation from about 7,800
-           mock drafts. Picking back-to-back at the turn, the board tells you who is likely
-           to last one more pick — the difference between a reach and a free roll.</p>
-      </div>
-      <div class="panel fcard">
-        <span class="kicker">A room, not a ranking</span>
-        <h3>Eleven opponents that draft like people</h3>
-        <p>The modeled room draws near each player's own draft position rather than taking
-           the top of a list, obeys roster limits against what every team has actually taken,
-           and leans into a positional run once one starts. Reaches and slides happen at the
-           rate they really happen.</p>
-      </div>
-      <div class="panel fcard">
-        <span class="kicker">Rehearse it</span>
-        <h3>Run the whole night before it counts</h3>
-        <p>Practice mode drafts the room out and stops the moment the pick is yours — same
-           board, same suggestions, same clock. Or run 25 mock drafts forward from wherever
-           you currently stand and see the median roster you end up holding. About 80
-           milliseconds for the lot.</p>
-      </div>
-      <div class="panel fcard">
-        <span class="kicker">Styles that show their work</span>
-        <h3>Nine strategies, each with a receipt</h3>
-        <p>Hero RB, Zero RB, RB-heavy and six more — each a set of real knobs on the same
-           score, not a label. Before one applies you see which players move and by how many
-           places, and every pick afterward carries a line saying what your style did to it.</p>
-      </div>
-      <div class="panel fcard">
-        <span class="kicker">On deck</span>
-        <h3>A briefing waiting when your clock starts</h3>
-        <p>Two picks out, Draftline asks Claude one question and puts the answer on screen
-           before it is your turn. It gets the board's own numbers, the research notes on the
-           players left, and the thing no ADP tool has: what the teams picking ahead of you
-           still need.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <span class="eyebrow">Proof, computed live on this page</span>
-    <h2>One rule change. Players move rounds.</h2>
+  <!-- ==================================================== 1. survival odds -->
+  <section class="shotsec">
+    <span class="eyebrow">Live draft results</span>
+    <h2>Who is actually going to be there at your next pick.</h2>
     <p class="sec-lede">
-      Below is the same projection for the same players, scored two ways: a point per
-      reception, and none. Nothing about anybody changes — only where they belong in your
-      draft. Draftline reads every rule in your league this way, not just this one, and these
-      numbers come off the same engine the draft board runs.
+      Eight players are all going "around pick 38." Read across roughly 7,800 real drafts,
+      one of them is nearly a lock to last that long and one is a long shot, and the board
+      says which is which before you spend the pick.
     </p>
-    <div class="panel mt">
-      <table class="demo-table" id="movers">
-        <thead><tr>
-          <th>Player</th>
-          <th>Pos</th>
-          <th class="right">Full PPR</th>
-          <th class="right">No PPR</th>
-          <th class="right">Where he goes without it</th>
-        </tr></thead>
-        <tbody><tr><td colspan="5" class="dimtext">Computing…</td></tr></tbody>
-      </table>
-      <p class="dimtext mb0" style="font-size:12px;margin-top:12px" id="moversNote"></p>
+
+    <div class="shot">
+      <div class="shot-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="where">draftline &middot; <b>round 4 &middot; pick 38</b> &middot; you're on the clock</span>
+        <span class="spacer"></span>
+        <span class="trail">computed live on this page</span>
+      </div>
+      <div class="shot-body">
+        <div class="panel">
+          <div class="panel-head">
+            <h3 id="survTitle">Who survives to pick 38?</h3>
+            <span class="eyebrow">chance still on the board</span>
+          </div>
+          <div id="survRows"><p class="dimtext mb0">Computing…</p></div>
+          <p class="dimtext mb0" style="font-size:12px;margin-top:12px" id="survNote"></p>
+        </div>
+      </div>
     </div>
+
+    <p class="shot-cap">
+      Real numbers, computed in your browser as this page loaded, from the same engine the
+      draft board runs. A consensus ranking would have listed these eight in a line and told
+      you nothing about the wait.
+    </p>
   </section>
+
+  <!-- ==================================================== 2. the Claude brief -->
+  <section class="shotsec">
+    <span class="eyebrow">Claude, on the clock</span>
+    <h2>A briefing that lands before your clock starts.</h2>
+    <p class="sec-lede">
+      Two picks out, Draftline hands Claude the live board, the research notes on everyone
+      left, and the one thing no ranking has — what the teams picking ahead of you still
+      need. The answer is on screen before it is your turn, with a button on it.
+    </p>
+
+    <div class="shot">
+      <div class="shot-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="where">draftline &middot; <b>on deck</b> &middot; two picks away</span>
+        <span class="spacer"></span>
+        <span class="trail">from a practice draft</span>
+      </div>
+      <div class="shot-body">
+        <div class="rec top">
+          <div class="eyebrow" style="margin-bottom:6px">Claude · on deck for pick 38</div>
+          <div class="rec-head">
+            <span class="pos pos-WR">WR</span>
+            <span class="name">Ladd McConkey</span>
+            <span class="rec-meta">LAC · bye 7 · board #21</span>
+          </div>
+          <div class="claude-out">Both teams picking between you and pick 38 are already three deep at running back and have no second receiver, so the run that empties this tier is at wideout, not back. McConkey is the last player left who profiles as a weekly WR2 in your scoring, where his 81 projected catches are worth a full point each.
+
+Take him here rather than hoping. Neither he nor Etienne is better than a rounding error to last until your next turn at pick 62, so this is the pick where you choose between them, not the one after it.
+
+If gone: Tee Higgins.</div>
+          <div class="rec-actions">
+            <button class="btn btn-sm btn-primary" type="button">I drafted him</button>
+            <button class="btn btn-sm btn-wide" type="button">Fallback: Tee Higgins</button>
+            <button class="btn btn-sm btn-ghost" type="button">Why?</button>
+            <button class="btn btn-sm btn-ghost" type="button">Ask again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="shot-cap">
+      An example brief from a practice draft. Claude gets the board's own numbers rather than
+      inventing its own, and if the pick it named goes before your turn, the card says so and
+      the fallback is still one click.
+    </p>
+  </section>
+
+  <!-- ==================================================== 3. the report card -->
+  <section class="shotsec">
+    <span class="eyebrow">The report card</span>
+    <h2>Every roster in the league, graded when it's over.</h2>
+    <p class="sec-lede">
+      Draftline knows all twelve rosters because it tracked every pick, so the grade is a
+      percentile of projected starting-lineup points in your rules — computed here, not asked
+      for. Then Claude reads the finished table and tells you what you actually built.
+    </p>
+
+    <div class="shot">
+      <div class="shot-head">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="where">draftline &middot; <b>draft report</b> &middot; 180 of 180 picks</span>
+        <span class="spacer"></span>
+        <span class="trail">from a practice draft</span>
+      </div>
+      <div class="shot-body">
+        <div class="note"><b>You finished 3 of 12</b> on projected starting-lineup points in
+          your own scoring. Grades are a percentile of that, computed here rather than asked
+          for.</div>
+
+        <div class="mt shot-scroll"><table>
+          <tr><th>#</th><th>Team</th><th class="right">Grade</th><th class="right">Starters</th>
+              <th class="right">Proj pts</th><th>Best pick</th><th>Bye risk</th></tr>
+          <tr><td>1</td><td>team 4</td><td class="right"><b>A+</b></td><td class="right num">10/10</td><td class="right num">2,118</td><td><span class="pos pos-RB">RB</span> Jahmyr Gibbs</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>2</td><td>team 9</td><td class="right"><b>A</b></td><td class="right num">10/10</td><td class="right num">2,074</td><td><span class="pos pos-WR">WR</span> Puka Nacua</td><td><span class="dimtext">ok</span></td></tr>
+          <tr style="background:rgba(45,212,191,.07)"><td>3</td><td>you</td><td class="right"><b>A-</b></td><td class="right num">10/10</td><td class="right num">2,051</td><td><span class="pos pos-WR">WR</span> Ladd McConkey</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>4</td><td>team 1</td><td class="right"><b>B+</b></td><td class="right num">10/10</td><td class="right num">2,009</td><td><span class="pos pos-RB">RB</span> Bijan Robinson</td><td><span style="color:var(--amber)">3 in wk 11</span></td></tr>
+          <tr><td>5</td><td>team 7</td><td class="right"><b>B</b></td><td class="right num">10/10</td><td class="right num">1,988</td><td><span class="pos pos-TE">TE</span> Brock Bowers</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>6</td><td>team 2</td><td class="right"><b>B</b></td><td class="right num">10/10</td><td class="right num">1,961</td><td><span class="pos pos-WR">WR</span> Malik Nabers</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>7</td><td>team 12</td><td class="right"><b>B-</b></td><td class="right num">10/10</td><td class="right num">1,940</td><td><span class="pos pos-RB">RB</span> Breece Hall</td><td><span style="color:var(--amber)">4 in wk 8</span></td></tr>
+          <tr><td>8</td><td>team 5</td><td class="right"><b>C+</b></td><td class="right num">10/10</td><td class="right num">1,912</td><td><span class="pos pos-WR">WR</span> Tee Higgins</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>9</td><td>team 10</td><td class="right"><b>C</b></td><td class="right num">10/10</td><td class="right num">1,884</td><td><span class="pos pos-RB">RB</span> Kyren Williams</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>10</td><td>team 6</td><td class="right"><b>C-</b></td><td class="right num">10/10</td><td class="right num">1,857</td><td><span class="pos pos-QB">QB</span> Josh Allen</td><td><span style="color:var(--amber)">3 in wk 10</span></td></tr>
+          <tr><td>11</td><td>team 3</td><td class="right"><b>D+</b></td><td class="right num">10/10</td><td class="right num">1,830</td><td><span class="pos pos-RB">RB</span> Bucky Irving</td><td><span class="dimtext">ok</span></td></tr>
+          <tr><td>12</td><td>team 8</td><td class="right"><b>D</b></td><td class="right num">9/10</td><td class="right num">1,772</td><td><span class="pos pos-TE">TE</span> Trey McBride</td><td><span style="color:var(--amber)">4 in wk 11</span></td></tr>
+        </table></div>
+
+        <div class="rec top mt">
+          <div class="eyebrow" style="margin-bottom:6px">Claude · reading your draft</div>
+          <div class="claude-out">You drafted a receiving corps and rented a backfield. Three of your top four picks catch passes in a league that pays a point for every one, and that is why you are third rather than eighth — but it means your RB2 slot is being filled by a player nobody else in this league would start.
+
+The cost shows up in week 8. Your two most likely running-back starters are both idle, and your bench at the position is a handcuff you took in the fourteenth round.
+
+Team 4 is the real threat, not team 9. Team 9 is top-heavy and thin behind it; team 4 has the best starting lineup and the two best benches at running back and receiver.
+
+Two moves in the first two weeks: put a waiver claim in on the backup behind team 4's starting back before week 1, and offer your third receiver into team 12's obvious hole at wideout for their RB2.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="shot-cap">
+      An example report from a practice draft. Points and grades come from the scoring engine
+      using your league's exact rules; Claude reads the finished table rather than
+      re-ranking it.
+    </p>
+  </section>
+
+  </div>
 
   <section class="sec">
     <div class="cta">
       <h2>It takes about a minute to set up.</h2>
-      <p>Make an account, paste your league settings, and run a practice draft tonight so
-         nothing about the interface is new on the night that counts.</p>
+      <p>Paste your league settings out of Yahoo, or start from a preset. Then run a practice
+         draft tonight so nothing about the interface is new on the night that counts.</p>
       <a href="#signin" class="btn btn-primary">Start a draft</a>
     </div>
   </section>
@@ -197,15 +244,15 @@
   </div>
 </div>
 
-<script src="assets/config.js?v=20260904au"></script>
-<script src="data/players.js?v=20260904au"></script>
-<script src="assets/presets.js?v=20260904au"></script>
-<script src="assets/engine.js?v=20260904au"></script>
-<script src="assets/auth.js?v=20260904au"></script>
+<script src="assets/config.js?v=20260904av"></script>
+<script src="data/players.js?v=20260904av"></script>
+<script src="assets/presets.js?v=20260904av"></script>
+<script src="assets/engine.js?v=20260904av"></script>
+<script src="assets/auth.js?v=20260904av"></script>
 <script>
 (function () {
   "use strict";
-  var E = DRAFTLINE_ENGINE, P = DRAFTLINE_PRESETS, D = DRAFTLINE_DATA;
+  var E = DRAFTLINE_ENGINE, D = DRAFTLINE_DATA;
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) {
     return String(s).replace(/[&<>"]/g, function (c) {
@@ -213,52 +260,57 @@
     });
   };
 
-  /* ------------------------------------------------------ live movers table
-     The old version of this section argued about boosted defensive scoring
-     tiers, which is a quirk of one league and reads as one. A point per
-     reception is the rule every visitor already has an opinion about, so it
-     proves the same thing without a paragraph of setup in front of it. */
-  var TEAMS = P.ppr_standard.teams || 12;
-  var roundOf = function (rank) { return Math.ceil(rank / TEAMS); };
+  /* --------------------------------------------------- live survival panel
+     The old proof on this page was a PPR-versus-standard rankings diff. It was
+     true but it argued about scoring, which is the part every other tool at
+     least gestures at. The thing nothing else has is the *spread* of where a
+     player actually went across thousands of real drafts, so that is what the
+     screenshot shows: eight players a consensus list would have printed one
+     after another, with wildly different odds of lasting to the same pick.
 
-  var ppr = E.buildBoard(D.players, P.ppr_standard);
-  var flat = E.buildBoard(D.players, P.standard_non_ppr);
-  var flatRank = {};
-  flat.players.forEach(function (p) { flatRank[p.name] = p.vorRank; });
+     Everything below is computed from the baked ADP distribution at load, so
+     it is the draft board's own arithmetic and not a picture of it. */
+  var PICK = 38;          // fourth round, a real turn in a 12-team league
+  var NEXT = 62;          // and the pick it comes back around to
 
-  // Movement only means anything where somebody is actually being drafted, so
-  // the pool is the first six rounds of either board.
-  var pool = ppr.players.filter(function (p) {
-    var b = flatRank[p.name];
-    return b && (p.vorRank <= TEAMS * 6 || b <= TEAMS * 6);
-  });
-  var moved = pool.filter(function (p) {
-    return roundOf(p.vorRank) !== roundOf(flatRank[p.name]);
-  });
-  var top = moved.slice().sort(function (a, b) {
-    return Math.abs(flatRank[b.name] - b.vorRank) - Math.abs(flatRank[a.name] - a.vorRank);
-  }).slice(0, 6);
+  var pool = D.players.filter(function (p) { return p.adp && p.adp_sd; });
+  // "The eight players going around pick 38" — nearest by ADP, which is the
+  // same set a consensus board would have stacked in a row at that spot.
+  var near = pool.slice().sort(function (a, b) {
+    return Math.abs(a.adp - PICK) - Math.abs(b.adp - PICK);
+  }).slice(0, 8);
 
-  $("movers").querySelector("tbody").innerHTML = top.map(function (p) {
-    var b = flatRank[p.name], dr = roundOf(b) - roundOf(p.vorRank);
-    return "<tr>" +
-      "<td>" + esc(p.name) + ' <span class="dimtext">' + esc(p.team) + "</span></td>" +
-      '<td><span class="pos pos-' + p.pos + '">' + p.pos + "</span></td>" +
-      '<td class="right num">#' + p.vorRank + " · rd " + roundOf(p.vorRank) + "</td>" +
-      '<td class="right num">#' + b + " · rd " + roundOf(b) + "</td>" +
-      // dr > 0 means he falls without the reception point; dr < 0 means he rises.
-      // Neither is good or bad, so the color is direction, not verdict.
-      '<td class="right num ' + (dr > 0 ? "down" : "up") + '">' +
-        Math.abs(dr) + " round" + (Math.abs(dr) === 1 ? "" : "s") +
-        (dr > 0 ? " later" : " earlier") + "</td>" +
-    "</tr>";
+  var rows = near.map(function (p) {
+    return { p: p, s: E.survival(p, PICK), next: E.survival(p, NEXT) };
+  }).sort(function (a, b) { return b.s - a.s; });
+
+  $("survTitle").textContent = "Who survives to pick " + PICK + "?";
+  $("survRows").innerHTML = rows.map(function (r) {
+    var pct = Math.round(r.s * 100);
+    var col = pct >= 70 ? "var(--green)" : pct >= 35 ? "var(--amber)" : "var(--red)";
+    return '<div class="srow">' +
+      '<span class="pos pos-' + r.p.pos + '">' + r.p.pos + "</span>" +
+      '<span class="nm">' + esc(r.p.name) +
+        ' <span class="dimtext">' + esc(r.p.team) + "</span></span>" +
+      '<span class="adp">adp ' + r.p.adp.toFixed(1) + "</span>" +
+      '<span class="sbar"><span style="width:' + Math.max(pct, 2) + "%;background:" + col +
+        '"></span></span>' +
+      '<span class="pct">' + pct + "%</span>" +
+    "</div>";
   }).join("");
 
-  $("moversNote").textContent =
-    moved.length + " of the " + pool.length + " players inside the first six rounds land in a " +
-    "different round between the two, and the six that move furthest are shown. A league that " +
-    "pays for catches is not drafting the same board as one that doesn't — and receptions are " +
-    "one rule out of the dozens Draftline reads back out of your settings.";
+  var best = rows[0], worst = rows[rows.length - 1];
+  var bestNext = Math.round(Math.max.apply(null, rows.map(function (r) { return r.next; })) * 100);
+  $("survNote").innerHTML =
+    "All eight are drafted within " +
+    (Math.max.apply(null, near.map(function (p) { return Math.abs(p.adp - PICK); })) < 5
+      ? "five picks" : "a round") + " of each other on average, and " +
+    esc(best.p.name) + " is " + Math.round(best.s * 100) + "% to still be sitting there while " +
+    esc(worst.p.name) + " is " + Math.round(worst.s * 100) + "%. " +
+    "Wait for your next turn at pick " + NEXT + " instead and " +
+    (bestNext < 5
+      ? "not one of them survives it."
+      : "the best of them is down to " + bestNext + "%.");
 
   /* -------------------------------------------------------------------- auth */
   var A = DRAFTLINE_AUTH, mode = "login";
