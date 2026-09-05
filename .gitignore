@@ -2,3 +2,7 @@
 .wrangler/
 __pycache__/
 *.pyc
+
+# Agent scratch and local session config — machine-local, not shared state
+.buildtmp/
+.claude/

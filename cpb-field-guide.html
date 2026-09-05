@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The CPB Field Guide</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — matches copilotplaybook.com system of record
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1200px; margin: 0 auto;
+  padding: 32px 28px; line-height: 1.7; background: #fff;
+}
+h2 { color: var(--navy); margin: 3.2rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--navy); }
+
+/* TOC */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.back-to-toc a:hover { text-decoration: underline; }
+
+/* CALLOUTS */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; border-left-color: var(--teal); }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+.callout-body ul { margin: .4rem 0 0 1.1rem; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 20px 0; }
+.metric { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .8rem; margin-top: 2px; }
+
+/* HERO STATEMENT */
+.hero-statement { background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin: 24px 0; text-align: center; box-shadow: var(--shadow-md); }
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+
+/* TABLES */
+.tablewrap { overflow-x: auto; margin: 18px 0; }
+table { width: 100%; border-collapse: collapse; font-size: .89rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); white-space: nowrap; }
+tr:nth-child(even) td { background: #fafbfc; }
+td:first-child { font-weight: 600; color: var(--text); }
+table.dense th, table.dense td { font-size: .78rem; padding: 8px 10px; }
+table.dense td:first-child { font-weight: 400; color: #6b7280; }
+td.n { text-align: right; font-family: 'Consolas','Monaco',monospace; }
+
+/* STAT BAR */
+.statbar { background: var(--teal); color: #fff; border-radius: var(--radius); padding: 18px 24px; margin: 18px 0; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; box-shadow: var(--shadow-sm); }
+.statbar .big { font-weight: 700; font-size: 1.4rem; white-space: nowrap; letter-spacing: -.3px; }
+.statbar .small { opacity: .92; font-size: .9rem; max-width: 720px; line-height: 1.55; }
+
+/* TIER LADDER */
+.tier-ladder { display: flex; flex-direction: column; gap: 14px; margin: 18px 0; }
+.tier-card { border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+.tier-card .tc-bar { height: 4px; background: var(--teal); }
+.tier-card .tc-body { padding: 18px 22px; background: #fff; }
+.tier-card .tc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.tier-card .tc-num { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82rem; color: #fff; flex: 0 0 auto; background: var(--teal); }
+.tier-card .tc-name { font-weight: 700; font-size: .98rem; color: var(--navy); flex: 1; }
+.tier-card .tc-tag { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); }
+.tier-card .tc-desc { font-size: .9rem; color: var(--text); line-height: 1.6; margin: 0; }
+.tier-card.alt .tc-bar, .tier-card.alt .tc-num { background: #6d28d9; }
+.tier-card.alt .tc-tag { color: #6d28d9; }
+.tier-card.sec .tc-bar, .tier-card.sec .tc-num { background: #0f766e; }
+.tier-card.sec .tc-tag { color: #0f766e; }
+.tier-card.warn-t .tc-bar, .tier-card.warn-t .tc-num { background: #d97706; }
+.tier-card.warn-t .tc-tag { color: #92400e; }
+
+/* CARDS / GRID */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 800px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .grid.cols-4, .grid.cols-2 { grid-template-columns: 1fr; } }
+.card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; background: #fff; box-shadow: var(--shadow-sm); }
+.card-h { font-weight: 700; color: var(--navy); font-size: .95rem; margin-bottom: 6px; }
+.card-b { font-size: .88rem; color: #374151; margin: 0; }
+.card-eyebrow { display: inline-block; font-size: .55rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: 2px 8px; border-radius: 3px; background: var(--navy); color: #a8ecf5; margin-bottom: 8px; }
+.card-link { display: inline-block; margin-top: 10px; font-size: .8rem; font-weight: 700; }
+
+/* TAG */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.tag.alt { background: #ede9fe; color: #5b21b6; }
+.tag.ok { background: #dcfce7; color: #166534; }
+
+/* CHECK / CROSS */
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.dodont { list-style: none; margin: .6rem 0 1rem; padding: 0; }
+.dodont li { padding-left: 1.6rem; position: relative; margin: .5rem 0; font-size: .93rem; }
+.dodont .check, .dodont .cross { position: absolute; left: 0; top: 1px; }
+
+/* CHECKLIST */
+.checklist { list-style: none; margin: .6rem 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.checklist li { padding-left: 1.7rem; position: relative; font-size: .93rem; color: #374151; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 3px; width: 15px; height: 15px; border: 1.5px solid var(--teal); border-radius: 3px; background: #fff; }
+.checklist li strong { color: var(--navy); }
+
+/* RUNGS */
+.rungs { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+.rung { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; background: #fff; box-shadow: var(--shadow-sm); }
+.rung .rn { width: 32px; height: 32px; border-radius: 50%; background: var(--muted-2); color: var(--teal); font-weight: 700; font-size: .85rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--teal); }
+.rung .rname { font-weight: 700; color: var(--navy); font-size: .95rem; }
+.rung .rdesc { font-size: .84rem; color: #6b7280; font-weight: 400; margin-top: 2px; }
+.rung .rprice { font-family: 'Consolas','Monaco',monospace; font-size: .85rem; color: var(--teal); font-weight: 700; white-space: nowrap; }
+.rung.recur { background: #f3fbfc; border-color: #c8e6eb; }
+.rung.hinge { background: linear-gradient(135deg, #004a55 0%, var(--teal) 100%); border-color: var(--teal); }
+.rung.hinge .rn { background: #fff; }
+.rung.hinge .rname, .rung.hinge .rprice { color: #fff; }
+.rung.hinge .rdesc { color: rgba(255,255,255,.85); }
+
+/* RESOURCE LIST */
+.reslist-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 14px 0; }
+.reslist-group .rg-head { background: var(--muted-2); padding: 8px 16px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy); }
+.reslist-item { padding: 12px 16px; border-top: 1px solid var(--border); background: #fff; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.reslist-item .t { font-weight: 700; font-size: .9rem; }
+.reslist-item .d { font-size: .82rem; color: #6b7280; margin-top: 2px; flex-basis: 100%; }
+
+/* SOURCE LINE */
+.srcline { margin-top: 6px; font-size: .68rem; color: #9ca3af; font-style: italic; }
+
+@media (max-width: 720px) { body { padding: 20px 14px; } }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see DESIGN.md §3 ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy,#003057) 45%,var(--teal,#005F6B) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar { margin: -20px -14px 0; }
+  .mh-bar-in { padding: 0 14px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -14px 20px; }
+  .masthead-inner { padding: 20px 14px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal,#005F6B); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy,#003057); }
+  .masthead .sub { color: var(--text,#1a2330); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal,#005F6B); }
+  .mh-eyebrow .lbl { color: var(--teal,#005F6B); }
+}
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="cpb.html">The Frontier Partner Playbook</a><span class="sep">/</span><span class="cur">Field Guide</span></div>
+    <div class="mh-date">Updated August 28, 2026</div>
+  </div>
+</div>
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Practitioner Field Guide &middot; CPB, Condensed</div></div>
+    <h1>The CPB Field Guide</h1>
+    <p class="sub">Every load-bearing idea in the Copilot Practice Playbook, compressed to what you need to act on &mdash; with a link back to the full explanation every time you need the story, the source, or the granular math.</p>
+    <p class="mh-meta">For partners who want the shape of the playbook in fifteen minutes, not ninety &middot; Companion to <a href="cpb.html" style="color:#a8ecf5;">cpb.html</a></p>
+  </div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Table of Contents</p>
+    <ul>
+      <li><a href="#thesis">The Core Thesis</a></li>
+      <li><a href="#assets">Your Four Assets</a></li>
+      <li><a href="#failure-modes">Why Adoption Stalls &mdash; 7 Mistakes</a></li>
+      <li><a href="#champions">Champion Profiles</a></li>
+      <li><a href="#show-and-tell">The Show-and-Tell Motion</a></li>
+      <li><a href="#maturity-sku">Maturity Model &amp; SKU Ladder</a></li>
+      <li><a href="#revenue">The Revenue Runway</a></li>
+      <li><a href="#outcome-based">Outcome-Based Engagements</a></li>
+      <li><a href="#competitive">Competitive Battle Card</a></li>
+      <li><a href="#workbook-ops">Workbook &amp; Ops Guide Map</a></li>
+      <li><a href="#frontier-path">The Frontier Partner Path</a></li>
+      <li><a href="#proof">Proof It Works</a></li>
+      <li><a href="#first-30">Your First 30 Days</a></li>
+      <li><a href="#resources">Key Resources</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="hero-statement">
+  <p>The playbook is <em>90 minutes</em>. This is <em>15</em>.</p>
+  <div class="hero-sub">Everything below is a compression, not a replacement &mdash; every section links back to the full argument, the sourcing, and the storytelling in <a href="cpb.html" style="color:#fff;text-decoration:underline;">cpb.html</a>. Read this first. Open the playbook exactly where this guide sends you.</div>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: THESIS ═══════════════════════════════════ -->
+<h2 id="thesis">1. The Core Thesis</h2>
+<p>Full version: <a href="cpb.html#the-bottom-line-the-ai-frontier-is-open">&sect; The Bottom Line: The AI Frontier Is Open &rarr;</a> and <a href="cpb.html#section-00-agentops">&sect; Introducing AgentOps &rarr;</a></p>
+
+<div class="statbar">
+  <div class="big">93% of M365 seats still have no Copilot</div>
+  <div class="small">30M+ paid seats &divide; ~450M M365 commercial seats &asymp; 6.6% penetration (Microsoft FY26 Q4 earnings, Jul 29 2026; denominator not restated since Jan 28 2026). Net seat adds more than doubled quarter-over-quarter &mdash; this is not a market that won't buy, it's one buying fast, through somebody else.</div>
+</div>
+
+<p><strong>Three doors.</strong> Two are closed, one is open &mdash; and the open one is the whole playbook:</p>
+<div class="grid cols-4">
+  <div class="card"><div class="card-eyebrow" style="background:#7f1d1d;">Door 1 &middot; Closed</div><div class="card-h">&ldquo;Copilot isn&rsquo;t worth it&rdquo;</div><p class="card-b">Independent studies converge on 20&ndash;60 min saved/user/day where it's deployed properly. The product works.</p></div>
+  <div class="card"><div class="card-eyebrow" style="background:#7f1d1d;">Door 2 &middot; Closed</div><div class="card-h">&ldquo;Customers can't find $1/day&rdquo;</div><p class="card-b">At $18/mo promo pricing, break-even is under 8 minutes&mdash;<em>a week</em>. Price isn't the obstacle.</p></div>
+  <div class="card" style="border-top:3px solid var(--teal);"><div class="card-eyebrow">Door 3 &middot; Open</div><div class="card-h">&ldquo;We're selling it wrong&rdquo;</div><p class="card-b">Same product, same trial &mdash; the variable that moves outcomes is how the rollout is run. That variable lives in this room.</p></div>
+  <div class="card" style="border-top:3px solid var(--teal);background:#f8fcfd;"><div class="card-eyebrow">The Thesis</div><div class="card-h">Not a product problem</div><p class="card-b">It's a use-case problem, and the fix sits squarely on the partner channel's shoulders.</p></div>
+</div>
+
+<h3>Two Markets, One Playbook</h3>
+<div class="grid cols-2">
+  <div class="card"><div class="card-h">Acquisition &mdash; 93.4%</div><p class="card-b">Customers who haven't bought yet. They already have free Copilot Chat &mdash; the sale is &ldquo;AI that reads your data, governed properly.&rdquo; That's your conversation, not Microsoft's.</p></div>
+  <div class="card"><div class="card-h">Rescue &mdash; 6.6%</div><p class="card-b">Customers who bought but aren't using it. Weekly active use runs just 20&ndash;30% of purchased seats &mdash; without intervention, the usage report writes the &ldquo;don't renew&rdquo; conversation for them.</p></div>
+</div>
+<p>Both markets are served by the <strong>same five services: Readiness &rsaquo; Activation &rsaquo; Integration &rsaquo; Measurement &rsaquo; Managed AI.</strong></p>
+
+<div class="callout dark">
+  <div class="callout-title">The number that changes everything</div>
+  <div class="callout-body"><p>For every $1 of Copilot licensing sold, partners running this playbook generate <strong style="color:#a8ecf5;">$8.45</strong> in services revenue on top &mdash; a floor, not a ceiling, and only for partners who wrap every license in readiness, adoption, agent builds, and managed services. <em>IDC #US52483124, 638 partners surveyed.</em> The license-only partner captures zero of it.</p></div>
+</div>
+
+<h3>The Vocabulary You'll Use for the Rest of This Guide</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Term</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td>AgentOps</td><td>The work. The ongoing practice of keeping a customer's agents accurate, grounded, governed, and valuable.</td></tr>
+<tr><td>AgentCare</td><td>The offer. The wrapped, priced, deliverable monthly service the customer buys.</td></tr>
+<tr><td>Managed AgentOps</td><td>The packaging. Three tiers &mdash; <strong>Essentials / Operations / Transformation</strong> &mdash; detailed in &sect;7.</td></tr>
+</tbody>
+</table></div>
+<p class="callout-body" style="font-style:italic;">Not a Microsoft SKU, not a certification track, not analyst-defined. &ldquo;The word is negotiable. The practice underneath it isn't.&rdquo; The reason it has to be recurring revenue: an unmanaged agent degrades &mdash; hallucinations creep in, grounding goes stale, permissions drift &mdash; and a build-and-bill SOW leaves that gap wide open.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: ASSETS ═══════════════════════════════════ -->
+<h2 id="assets">2. Your Four Assets, One Practice</h2>
+<p>Full version: <a href="cpb.html#your-toolkit">&sect; Four Assets, One Practice &rarr;</a> and <a href="cpb.html#cpb-workbook">&sect; The CPB Workbook &amp; Engagement Ops Guide &rarr;</a></p>
+<p>The reader's journey: <strong>Build Belief &rarr; Model the Practice &rarr; Run the Engagement &rarr; Showing the Work.</strong> Four pieces, each doing one job.</p>
+
+<div class="grid cols-4">
+  <div class="card" style="border-top:3px solid var(--navy);">
+    <div class="card-eyebrow">The Narrative</div>
+    <div class="card-h">Copilot Practice Playbook</div>
+    <p class="card-b"><em>You're reading the field guide to it now.</em> The data, models, and motions behind a real Copilot practice. Read first &mdash; builds the belief and the business case.</p>
+    <a class="card-link" href="cpb.html">Open the full Playbook &rarr;</a>
+  </div>
+  <div class="card" style="border-top:3px solid #107c41;">
+    <div class="card-eyebrow" style="background:#107c41;color:#fff;">The Model</div>
+    <div class="card-h">Practice Builder Workbook</div>
+    <p class="card-b">9-tab Excel. The bottom-up P&amp;L behind every number in the playbook, plus live engagement trackers on Tabs 8&ndash;9. Open when you're ready to enter your own numbers.</p>
+    <a class="card-link" style="color:#107c41;" href="https://kenwebsite.blob.core.windows.net/$web/CPBWorkbook.xlsx">Download .xlsx &rarr;</a>
+  </div>
+  <div class="card" style="border-top:3px solid var(--teal);">
+    <div class="card-eyebrow" style="background:var(--teal);color:#fff;">The Delivery Manual</div>
+    <div class="card-h">Engagement Ops Guide</div>
+    <p class="card-b">The <em>why</em> behind every gate and phase on Workbook Tabs 8&ndash;9, with real customer stories mapped to each checkpoint. Read once before your first Activation Sprint.</p>
+    <a class="card-link" href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">Open Ops Guide &rarr;</a>
+  </div>
+  <div class="card" style="border-top:3px solid #6b46c1;">
+    <div class="card-eyebrow" style="background:#6b46c1;color:#fff;">The Ecosystem</div>
+    <div class="card-h">Frontier Partner Playbook</div>
+    <p class="card-b">What &ldquo;Frontier Firm&rdquo; and &ldquo;Frontier Partner&rdquo; mean, badge criteria, and where TD SYNNEX fits as a Frontier Distributor. Open when thinking 12&ndash;24 months out.</p>
+    <a class="card-link" style="color:#6b46c1;" href="https://copilotplaybook.com/frontier.html" target="_blank" rel="noopener">Open Frontier &rarr;</a>
+  </div>
+</div>
+<p style="font-size:.84rem;color:#6b7280;"><strong style="color:var(--navy);">How they fit:</strong> Read the playbook to build conviction. Open the Workbook to model your practice. Follow the Ops Guide when you run a live engagement. Use the Frontier Playbook to aim at the badge.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: FAILURE MODES ═══════════════════════════════════ -->
+<h2 id="failure-modes">3. Why Adoption Stalls &mdash; 7 Mistakes to Avoid</h2>
+<p>Full version: <a href="cpb.html#4-the-market-reality-why-copilot-adoption-is-struggling-in-smb">&sect; The Market Reality &rarr;</a> and <a href="cpb.html#5-the-partner-failure-playbook-mistakes-to-avoid">&sect; The Partner Failure Playbook &rarr;</a></p>
+
+<div class="metrics">
+  <div class="metric"><div class="k">72%</div><div class="l">of AI deployments stuck in pilot mode</div><div class="s">Gartner AI Adoption Survey, 2025</div></div>
+  <div class="metric"><div class="k">6%</div><div class="l">achieve org-wide rollout</div><div class="s">Gartner AI Adoption Survey, 2025</div></div>
+  <div class="metric"><div class="k">80%</div><div class="l">of AI proofs-of-concept never scale</div><div class="s">Cited in the Playbook, &sect;5</div></div>
+  <div class="metric"><div class="k">9%</div><div class="l">of MSP-served SMBs using AI have moved to agents</div><div class="s">Inforcer MSP AI Report, 2026</div></div>
+</div>
+
+<p>Adoption struggles are not a technology problem &mdash; it's how partners position and deliver it. Seven patterns recur, every one correctable without new headcount or certifications:</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Mistake</th><th>The Fix</th></tr></thead>
+<tbody>
+<tr><td>1. Leading with the plumbing</td><td><strong>Value first, architecture second.</strong> Open with a live scenario (meeting summary, contract review in 30 sec), get &ldquo;I want that,&rdquo; <em>then</em> introduce backend work as protection, not prerequisite.</td></tr>
+<tr><td>2. Treating Copilot like a license sale</td><td><strong>Build a practice, not a transaction.</strong> Package Discovery &rarr; Pilot &rarr; Adoption Sprint &rarr; Renewal/Expand as billable phases.</td></tr>
+<tr><td>3. Piloting with the wrong people</td><td><strong>Seed champions, not administrators.</strong> A 30-min conversation to find 5&ndash;10 &ldquo;Day 1 Champions&rdquo; &mdash; power users in high-friction roles (see &sect;4).</td></tr>
+<tr><td>4. Dropping licenses with no change plan</td><td><strong>Adoption is a deliverable.</strong> A billed 30-60-90 day plan: champion kickoff, role-specific prompt guides, 30-day check-in, 60-day ROI conversation.</td></tr>
+<tr><td>5. Selling &ldquo;AI for AI's sake&rdquo;</td><td><strong>Scenarios before speeds and feeds.</strong> Walk in with 2&ndash;3 role-specific use cases from Microsoft's Scenario Library, not a TED Talk.</td></tr>
+<tr><td>6. Can't defend the price</td><td><strong>Lead with the business case, not the bill.</strong> Use Microsoft's Business Case Builder / Value Envisioning Tool; articulate the service layer Microsoft-direct can't provide &mdash; never compress margin.</td></tr>
+<tr><td>7. Passing licensing confusion to customers</td><td><strong>Own the clarity.</strong> Build a one-page SKU map for your customer (see &sect;6's SKU ladder) and stay fluent on the promo landscape.</td></tr>
+</tbody>
+</table></div>
+
+<div class="callout subtle">
+  <div class="callout-title">Independently corroborated</div>
+  <div class="callout-body"><p>Kloudify's Feb 2026 audit named 8 industry-wide failure modes, corroborated by a Microsoft Principal CSA and the Microsoft Learn rollout playbook. All 8 map directly onto the 7 mistakes above plus the Revenue Runway's Managed AgentOps tier (governance/compliance). See the full cross-walk table in <a href="cpb.html#5-the-partner-failure-playbook-mistakes-to-avoid">&sect;5 of the playbook &rarr;</a></p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: CHAMPIONS ═══════════════════════════════════ -->
+<h2 id="champions">4. Champion Profiles &mdash; Who Wins Fast with Copilot</h2>
+<p>Full version: <a href="cpb.html#5a-the-champion-profiles-who-wins-fast-with-copilot">&sect; The Champion Profiles &rarr;</a></p>
+<p>Seven roles deliver the fastest time-to-value. Identify one before your first training session &mdash; and use the demo tip live.</p>
+
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Role</th><th>Why they win fast</th><th>30-second demo</th></tr></thead>
+<tbody>
+<tr><td>Account Manager / Outside Sales</td><td><strong>&#9733; Highest-impact.</strong> 85% feel more confident as advisors; 45% less time composing email.</td><td>Generate a follow-up email + action items live from a recent Teams transcript.</td></tr>
+<tr><td>Project Manager / Ops Lead</td><td>Meeting prep: 30 min &rarr; 10 min.</td><td>Meeting summary + action items by person + status email from a recorded standup, under 60 sec.</td></tr>
+<tr><td>Office Manager / Exec Assistant</td><td>Cross-functional impact; turns a brain-dump into a polished message.</td><td>Turn a messy note into a professional email.</td></tr>
+<tr><td>HR Manager / People Ops</td><td>25% of time on policy/JD drafting; often a 1&ndash;2 person shop.</td><td>Draft a job description, then an onboarding checklist, from one 3-sentence brief.</td></tr>
+<tr><td>Finance Manager / Controller</td><td>35% increase in Excel formula use; fast trend analysis.</td><td>Ask Copilot to find top 3 trends and flag outliers in an anonymized sheet.</td></tr>
+<tr><td>Marketing Coordinator</td><td>67% use Copilot in Word for content; 26% less editing time.</td><td>Turn one product description into 3 formats in 30 seconds.</td></tr>
+<tr><td>Meeting-Heavy Middle Manager</td><td>60&ndash;70% of the week in meetings &mdash; #1 wish-list item across 30+ orgs.</td><td>Ask about a missed meeting's decisions and follow-ups &mdash; &ldquo;the moment the deal closes.&rdquo;</td></tr>
+</tbody>
+</table></div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: SHOW AND TELL ═══════════════════════════════════ -->
+<h2 id="show-and-tell">5. The &ldquo;Show and Tell&rdquo; Sales Motion</h2>
+<p>Full version: <a href="cpb.html#6-the-show-and-tell-sales-motion">&sect; The Show and Tell Sales Motion &rarr;</a></p>
+<p>Replace the slide deck. <strong>Show first, prove second, protect third.</strong> Tagline: &ldquo;Give Us an Hour Today &mdash; We'll Give You an Hour Back Every Day.&rdquo;</p>
+
+<div class="tier-ladder">
+  <div class="tier-card">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">1</div><div class="tc-name">The Hook</div><div class="tc-tag">Flip the laptop &mdash; your story, not a script</div></div>
+      <p class="tc-desc">If your own team isn't using Copilot internally, that's the first problem to solve. Three ready demos: <strong>The Breakfast Briefing</strong> (voice triage of email/Teams before the office), <strong>The Information Hunter</strong> (kill the search tax with 3 no-setup prompts), and <strong>The Meeting Prep Agent</strong> (the one you built for yourself &mdash; the &ldquo;laptop-flip&rdquo; moment). Revenue unlocked: credibility no competitor can match.</p>
+    </div>
+  </div>
+  <div class="tier-card sec">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">2</div><div class="tc-name">The Personal Agent</div><div class="tc-tag">Show the ceiling &mdash; open the Studio conversation</div></div>
+      <p class="tc-desc">Personal agents ground in SharePoint/OneDrive/Teams with no admin ticket &mdash; until the customer asks &ldquo;can it pull from our CRM?&rdquo; That question, typically surfaced within 60&ndash;90 days, is the Copilot Studio opportunity. Revenue unlocked: <strong>$1.5K&ndash;$3K enablement workshops + Studio pipeline.</strong></p>
+    </div>
+  </div>
+  <div class="tier-card alt">
+    <div class="tc-bar"></div>
+    <div class="tc-body">
+      <div class="tc-header"><div class="tc-num">3</div><div class="tc-name">The Pivot to Plumbing</div><div class="tc-tag">Sell the foundation &mdash; not the compliance</div></div>
+      <p class="tc-desc">&ldquo;If anyone can build an agent grounded in our company data, we need to know our data is locked down first.&rdquo; Not a separate conversation &mdash; the natural conclusion of the demo you just ran. Revenue unlocked: <strong>$10K&ndash;$15K data governance &amp; security project.</strong> That project funds the agent builds; the agent builds fund the managed retainer.</p>
+    </div>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: MATURITY + SKU ═══════════════════════════════════ -->
+<h2 id="maturity-sku">6. The Agent Maturity Model &amp; the SKU Ladder</h2>
+<p>Full version: <a href="cpb.html#9-the-agent-maturity-model-a-staircase-to-frontier-partner">&sect; The Agent Maturity Model &rarr;</a> and <a href="cpb.html#7-the-copilot-sku-ladder-what-to-show-what-to-sell">&sect; The Copilot SKU Ladder &rarr;</a></p>
+
+<div class="callout subtle">
+  <div class="callout-title">You don't need the Frontier badge to win</div>
+  <div class="callout-body"><p>It's a destination, not a prerequisite &mdash; you only need to be one step ahead of your local market. Anchor customer conversations around <em>progression</em>, not products.</p></div>
+</div>
+
+<h3>Six-Stage Agent Maturity Model</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Stage</th><th>Licensing</th><th>Where you bill</th></tr></thead>
+<tbody>
+<tr><td>1. Copilot Chat</td><td>Included with M365</td><td>One-time readiness assessment &amp; prompt training</td></tr>
+<tr><td>2. Copilot Studio Basic</td><td>Copilot license required</td><td>Adoption workshops + first agent build (project + early retainer)</td></tr>
+<tr><td>3. Studio + Connectors</td><td>Power Platform add-on</td><td>Integration build + agent governance (recurring retainer begins)</td></tr>
+<tr><td>4. Studio + Custom Code</td><td>Azure Functions</td><td>Custom dev project + expanded managed AI services</td></tr>
+<tr><td>5. Azure AI Agent Service</td><td>Azure AI Foundry</td><td>Full AI estate management &mdash; highest-value managed tier</td></tr>
+<tr><td>6. Custom SaaS Platform</td><td>Azure OpenAI / Partner IP</td><td>Recurring platform licensing &mdash; own IP, own revenue stream</td></tr>
+</tbody>
+</table></div>
+
+<h3>The SKU Ladder &mdash; What to Show, What to Sell</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Stage</th><th>SKU</th><th>Price</th><th>Partner Revenue</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Copilot Chat</td><td class="n">Free</td><td>Conversation starter only</td></tr>
+<tr><td>2</td><td>M365 Copilot Business</td><td class="n">$21/user/mo</td><td>Margin + $5K&ndash;$10K Data Readiness</td></tr>
+<tr><td>2.5</td><td>Personal Agent Creation</td><td class="n">Included</td><td>$1.5K&ndash;$3K Enablement Workshops</td></tr>
+<tr><td>3</td><td>M365 Business Premium</td><td class="n">$22/user/mo</td><td>Margin + $10K&ndash;$15K Security Deployment</td></tr>
+<tr><td>3.5</td><td>Copilot Cowork (Agentic)</td><td class="n">Included</td><td>Accelerates Premium/Purview + AgentOps pipeline</td></tr>
+<tr><td>4</td><td>Copilot Studio</td><td class="n">$200/mo (25K msgs)</td><td>$15K&ndash;$50K+ Custom Agent Development</td></tr>
+<tr><td>5&ndash;6</td><td>E3+Copilot / E5</td><td class="n">$66 / $57/user/mo</td><td>Licensing uplift + $50K+ Enterprise Migration</td></tr>
+<tr><td>7</td><td>M365 E7 (Frontier)</td><td class="n">$99/user/mo</td><td>Managed AgentOps retainer opportunity</td></tr>
+<tr><td>Add-on</td><td>Agent 365</td><td class="n">$15/user/mo (or in E7)</td><td>Managed governance retainer; pairs with AgentOps tier</td></tr>
+</tbody>
+</table></div>
+<p style="font-size:.82rem;color:#6b7280;">300-seat hard cap on Copilot Business and all Business SKUs. Agent 365 (GA May 1, 2026) is the governance control plane &mdash; not included in E3 or E5. Always name the next stage before you leave the room.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: REVENUE RUNWAY ═══════════════════════════════════ -->
+<h2 id="revenue">7. The Revenue Runway &mdash; Stages, Tiers, and Pricing Dials</h2>
+<p>Full version: <a href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">&sect; The Revenue Runway &rarr;</a></p>
+<p>Of the $8.45 generated per $1 of licensing: <strong>~$3 is one-time project work; ~$5.45 is ongoing Managed AgentOps.</strong> Two frameworks, kept deliberately distinct &mdash; a customer can be at Stage 2 of their journey while you're still selling at Tier 1.</p>
+
+<h3>4 Customer Stages</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Stage</th><th>Timeline</th><th>Pro Services Revenue</th><th>Managed Tier</th></tr></thead>
+<tbody>
+<tr><td>1. Deployment &amp; Adoption</td><td>Months 1&ndash;3</td><td class="n">$8K&ndash;$23K</td><td>Tier 1: $10&ndash;15/user/mo</td></tr>
+<tr><td>2. Agent Creation &amp; Automation</td><td>Months 3&ndash;9</td><td class="n">$3.5K&ndash;$8K+/agent</td><td>Tier 2: $20&ndash;25/user/mo</td></tr>
+<tr><td>3. Power Platform Integration</td><td>Months 6&ndash;18</td><td class="n">$15K&ndash;$50K+</td><td>Tier 2 (expanded)</td></tr>
+<tr><td>4. Azure AI Custom Solutions</td><td>Month 12+</td><td class="n">$30K&ndash;$75K+</td><td>Tier 3: $45&ndash;55/user/mo</td></tr>
+</tbody>
+</table></div>
+<div class="callout">
+  <div class="callout-title">Worked example &mdash; a 75-person SMB bank</div>
+  <div class="callout-body"><p>Modeled &mdash; not a documented case study, validated against Forrester/IDC benchmarks (see <a href="cpb.html#11-showing-our-work">&sect; Showing Our Work &rarr;</a>). <strong>3-Year engagement value from a single SMB customer at the Stage 3 level: $75,000&ndash;$110,000</strong> &mdash; more if the customer reaches Stage 4.</p></div>
+</div>
+
+<h3>3 Partner Pricing Tiers</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Tier</th><th>Price</th><th>Who it's for</th><th>Margin</th></tr></thead>
+<tbody>
+<tr><td>Tier 1 &mdash; AI Essentials</td><td class="n">$10&ndash;$15/user/mo</td><td>10&ndash;50 users, just licensed, no agents yet</td><td class="n">~48%</td></tr>
+<tr><td>Tier 2 &mdash; AI Operations</td><td class="n">$20&ndash;$25/user/mo</td><td>20&ndash;100 users, &ge;1 active agent</td><td class="n">~35%</td></tr>
+<tr><td>Tier 3 &mdash; AI Transformation</td><td class="n">$45&ndash;$55/user/mo</td><td>50&ndash;200 users, fully committed to AI</td><td class="n">~32%</td></tr>
+</tbody>
+</table></div>
+<p style="font-size:.84rem;">Start at Tier 1 for 6&ndash;12 months. Tier 2 enters once you've built a stable base and certified your first AI Specialist. It's fine to start as a broker via <strong>TD SYNNEX ServiceSolv</strong> (see &sect;10).</p>
+
+<h3>4 Pricing Dials (Stacked Default model)</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Component</th><th>Rate</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>A. Per-User Base</td><td class="n">$10&ndash;15/user/mo</td><td>Floor in every tier &mdash; governance, adoption monitoring, QBR, helpdesk</td></tr>
+<tr><td>B. AgentCare</td><td class="n">$350&ndash;400/agent/mo, ~55% GM</td><td>Core MRR from Tier 2 on. Never absorbs the build fee ($3,500&ndash;$8,000+/agent, billed separately)</td></tr>
+<tr><td>C. Credit Wrap</td><td class="n">25&ndash;35% markup, ~85% GM</td><td>Azure/Copilot Studio consumption markup at CSP cost &mdash; near-pure-margin add-on</td></tr>
+<tr><td>D. Agent 365 Overlay</td><td class="n">$10/user/mo surfaced (list $15)</td><td>Optional at Tier 2, default at Tier 3 &mdash; governance control plane</td></tr>
+</tbody>
+</table></div>
+
+<div class="rungs">
+  <div class="rung"><div class="rn">$</div><div><div class="rname">MCI &mdash; Microsoft Commerce Incentives</div><div class="rdesc">Claimed directly through Microsoft (not your distributor). Requires Solutions Partner designation, &ge;$25K trailing CSP revenue, net-new/upsell CSP Copilot purchase.</div></div><div class="rprice">$1,750&ndash;$10,000+ per deployment</div></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: OUTCOME-BASED ═══════════════════════════════════ -->
+<h2 id="outcome-based">8. Outcome-Based Engagements &mdash; A Primer</h2>
+<p>Full version: <a href="cpb.html#outcome-based-primer">&sect; Outcome-Based Project Work &rarr;</a></p>
+<p>Fee tied to a measurable change in a business metric, not delivery of a system. A finite sprint (60&ndash;120 days): one KPI agreed in advance, a documented baseline, a fixed base fee + 10&ndash;25% success kicker, five gates, and a pre-agreed conversion path into MRR.</p>
+
+<div class="grid cols-2">
+  <div class="card"><div class="card-h">Use it when&hellip;</div><p class="card-b">The customer can name one measurable number; the baseline is accessible before you quote; the sponsor personally cares; the MRR conversion path is signed before the sprint starts.</p></div>
+  <div class="card"><div class="card-h">Don't use it when&hellip;</div><p class="card-b">No baseline and no time to build one; the KPI depends on variables you don't control; the sponsor is director-or-below; it's really ongoing managed work that should be retainer-priced.</p></div>
+</div>
+
+<h3>The Five Gates</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Gate</th><th>When</th><th>What clears it</th></tr></thead>
+<tbody>
+<tr><td>1. Scoping</td><td>Week 2</td><td>KPI agreed, baseline captured, counter-metric named, scope locked with a Plan B clause</td></tr>
+<tr><td>2. Build</td><td>Week 6</td><td>Agent live in tenant, weekly regression eval set (50&ndash;150 prompts), pilot cohort scheduled</td></tr>
+<tr><td>3. Midpoint</td><td>Day 45</td><td>KPI trending; trigger Plan B openly if &gt;25% behind</td></tr>
+<tr><td>4. Measurement</td><td>Day 75</td><td>Cohort read, counter-metric read, KPI certified or not</td></tr>
+<tr><td>5. Close-Out</td><td>Day 90</td><td>Kicker invoiced, MRR conversion signed, runbook handed over</td></tr>
+</tbody>
+</table></div>
+
+<h3>Three Sprint Types</h3>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Sprint</th><th>Tier</th><th>Pricing</th><th>Converts into</th></tr></thead>
+<tbody>
+<tr><td>Activation Sprint</td><td>Tier 1</td><td class="n">$15&ndash;25K + 15% kicker</td><td>Tier 1 retainer on day 91</td></tr>
+<tr><td>Workflow Sprint</td><td>Tier 2</td><td class="n">$7,500 + 20% kicker/agent</td><td>$350/agent/mo AgentCare</td></tr>
+<tr><td>Quarterly Business Impact Commitment</td><td>Tier 3</td><td class="n">$15&ndash;25K/qtr + 20% kicker</td><td>Layers alongside AgentCare, not instead of it</td></tr>
+</tbody>
+</table></div>
+<p style="font-size:.82rem;color:#6b7280;">Failure mode to avoid: treating &ldquo;the agent is live&rdquo; as the outcome. The outcome is the KPI moving.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: COMPETITIVE ═══════════════════════════════════ -->
+<h2 id="competitive">9. The Competitive Battle Card</h2>
+<p>Full version: <a href="cpb.html#12-the-competitive-battle-card-and-the-monetization-gap">&sect; The Competitive Battle Card &rarr;</a></p>
+<div class="callout warn">
+  <div class="callout-title">The stance</div>
+  <div class="callout-body"><p>Don't argue model quality &mdash; Gemini, ChatGPT, and Claude are capable platforms and the gap is narrowing. Argue <strong>data gravity, governance inheritance, and channel economics.</strong></p></div>
+</div>
+
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Platform</th><th>Partner resale margin</th><th>SMB channel readiness</th></tr></thead>
+<tbody>
+<tr><td>Microsoft Copilot (CSP)</td><td>Recurring, stacked FY26 incentives: 3.75% core + 7% strategic + 7.5% growth accelerator</td><td>Built for the channel</td></tr>
+<tr><td>Google Gemini Enterprise</td><td>~40% Y1 net-new, 50&ndash;70% managed services, but renewal margin compressed ~20%&rarr;~12%</td><td>Hunter-weighted, not farmer-weighted</td></tr>
+<tr><td>Anthropic Claude</td><td>None for SMB &mdash; $100M Claude Partner Network anchored to Accenture/Cognizant/Infosys/Deloitte</td><td>No volume SMB program</td></tr>
+<tr><td>OpenAI ChatGPT Enterprise</td><td>None published for SMB &mdash; narrow reseller list, mostly direct</td><td>No SMB channel</td></tr>
+</tbody>
+</table></div>
+
+<div class="callout subtle">
+  <div class="callout-title">Claude Cowork vs. Copilot Cowork</div>
+  <div class="callout-body"><p>Same underlying Claude agentic model &mdash; Microsoft built Copilot Cowork in partnership with Anthropic. <strong>Claude Cowork</strong> runs locally, no tenant context, no governance: a transactional sale. <strong>Copilot Cowork</strong> runs in the M365 tenant, powered by Work IQ, inherits Purview/DLP/audit: a practice-builder. The $100M Anthropic just invested is going to Accenture and Infosys &mdash; the CSP model was built for you.</p></div>
+</div>
+
+<h3>The Short SOW Ladder &mdash; Governing Whatever AI Tool Is Already in the Building</h3>
+<p style="font-size:.85rem;">Almost no SMB runs an all-Microsoft AI stack. Your Microsoft stack (Defender for Cloud Apps, Purview, Entra ID) is the governance layer for <em>every</em> AI tool in the building &mdash; ChatGPT and Claude included.</p>
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Rung</th><th>Timeline</th><th>Price</th></tr></thead>
+<tbody>
+<tr><td>1. Shadow AI Discovery Sprint</td><td>2&ndash;3 wks</td><td class="n">$3.5K&ndash;$7.5K</td></tr>
+<tr><td>2. AI Acceptable-Use Policy &amp; Enablement</td><td>1 wk</td><td class="n">$1.5K&ndash;$3.5K</td></tr>
+<tr><td>3. ChatGPT or Claude Enterprise Cutover</td><td>2&ndash;4 wks</td><td class="n">$5K&ndash;$12K</td></tr>
+<tr><td>4. Custom GPT / Claude Project Pack</td><td>3&ndash;5 wks</td><td class="n">$6K&ndash;$18K</td></tr>
+<tr><td>5. DLP-for-AI Deploy</td><td>2&ndash;4 wks</td><td class="n">$4K&ndash;$10K</td></tr>
+<tr><td>6. AgentCare Managed Retainer</td><td>Ongoing</td><td>Per Ops Guide</td></tr>
+</tbody>
+</table></div>
+<p style="font-size:.82rem;color:#6b7280;">Rungs 1&ndash;5 stack to $20K&ndash;$51K in fixed-fee work before the retainer even starts, sized for a 10&ndash;100 seat SMB.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: WORKBOOK/OPS ═══════════════════════════════════ -->
+<h2 id="workbook-ops">10. Workbook &amp; Ops Guide &mdash; Tab-by-Tab Map</h2>
+<p>Full version: <a href="cpb.html#cpb-workbook">&sect; The CPB Workbook &amp; Engagement Ops Guide &rarr;</a></p>
+
+<h3>Practice Builder Workbook &mdash; 9 Tabs</h3>
+<div class="reslist-group">
+  <div class="rg-head">Financial Engine &mdash; Tabs 1&ndash;5 (Plan the practice)</div>
+  <div class="reslist-item"><span class="t">Tab 1 &mdash; Your Business Today</span><span class="d">Current customers, seats, revenue, headcount &rarr; live P&amp;L, benchmarked against Service Leadership / Worklyn data.</span></div>
+  <div class="reslist-item"><span class="t">Tab 2 &mdash; Design Your Copilot Practice</span><span class="d">The core design tool &mdash; target counts and pricing per tier; models Stacked Default, flat-tier, AgentCare, Credit Wrap, Agent 365, AI Specialist ROI.</span></div>
+  <div class="reslist-item"><span class="t">Tab 3 &mdash; Before vs. After</span><span class="d">Side-by-side P&amp;L, today vs. designed practice, with a 3-year projection. &ldquo;The tab you share with leadership.&rdquo;</span></div>
+  <div class="reslist-item"><span class="t">Tab 4 &mdash; Executive Summary</span><span class="d">Print-ready one-pager, auto-populated 90-day action plan.</span></div>
+  <div class="reslist-item"><span class="t">Tab 5 &mdash; Scenario Analysis</span><span class="d">Bear/Base/Bull across close rate, tier progression, AI Specialist utilization, labor inflation, churn.</span></div>
+</div>
+<div class="reslist-group">
+  <div class="rg-head">Execution Engine &mdash; Tabs 6&ndash;9 (Run the engagement)</div>
+  <div class="reslist-item"><span class="t">Tab 6 &mdash; Engagement Mechanics</span><span class="d">Four AI/LLM non-negotiables, RACI reference, live kicker calculator (10% floor, 25% ceiling).</span></div>
+  <div class="reslist-item"><span class="t">Tab 7 &mdash; Sprint Templates</span><span class="d">Full Tier 1 service menu (16 items) + Activation Sprint / Workflow Sprint / QBIC templates.</span></div>
+  <div class="reslist-item"><span class="t">Tab 8 &mdash; Activation Worklist</span><span class="d">50+ task, phase-gated checklist for a Tier 1 Activation Sprint &mdash; Pre-Gate through the five gates and into ongoing Tier 1 MRR.</span></div>
+  <div class="reslist-item"><span class="t">Tab 9 &mdash; Agent Build Worklist</span><span class="d">Five-phase worklist for any Studio agent build: Discovery &rarr; Design &rarr; Build &amp; Test &rarr; Deploy &amp; Train &rarr; AgentOps.</span></div>
+</div>
+
+<h3>Engagement Ops Guide &mdash; 4 Sections</h3>
+<div class="reslist-group">
+  <div class="reslist-item"><span class="t">1. Research Grounding</span><span class="d">The evidence base behind every phase and gate.</span></div>
+  <div class="reslist-item"><span class="t">2. The Five Activation Gates</span><span class="d">Gate-by-gate: what &ldquo;ready to advance&rdquo; looks like, common failure modes.</span></div>
+  <div class="reslist-item"><span class="t">3. The Five Agent-Build Phases</span><span class="d">Where simple and complex builds diverge, typical time budgets.</span></div>
+  <div class="reslist-item"><span class="t">4. Real Customer Examples &amp; References</span><span class="d">Published Microsoft stories mapped to Tab 8/9 line items, plus the full citation list.</span></div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">How the two work together</div>
+  <div class="callout-body"><p><strong>Plan the practice:</strong> open the Workbook (Tabs 1&ndash;3, 5). <strong>Onboard a Delivery Lead:</strong> send the Ops Guide first, then hand over Tabs 8&ndash;9. <strong>Run a live engagement:</strong> keep the Workbook open as tracker; pop to the matching Ops Guide section when a gate decision stalls. &ldquo;The Workbook is the tool. The Ops Guide is the manual. You want both.&rdquo;</p></div>
+</div>
+<p><a href="https://kenwebsite.blob.core.windows.net/$web/CPBWorkbook.xlsx">Download Workbook (.xlsx) &rarr;</a> &nbsp;&middot;&nbsp; <a href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">Open Ops Guide (HTML) &rarr;</a></p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: FRONTIER ═══════════════════════════════════ -->
+<h2 id="frontier-path">11. The Frontier Partner Path</h2>
+<p>Full version: <a href="https://copilotplaybook.com/frontier.html" target="_blank" rel="noopener">The Frontier Partner Playbook &rarr;</a></p>
+
+<div class="tablewrap"><table class="dense">
+<thead><tr><th>Tier</th><th>What it unlocks</th></tr></thead>
+<tbody>
+<tr><td>1. MAICPP Membership</td><td>CSP/NCE transaction rights, Partner Center access &mdash; &ldquo;keeps the lights on,&rdquo; no differentiation</td></tr>
+<tr><td>2. Solutions Partner</td><td>Meaningful IUR licensing, CSP Deployment Accelerator eligibility, Copilot SMB funding &mdash; the first economically rational tier</td></tr>
+<tr><td>3. Advanced Specialization</td><td>Larger funding tranches, priority engagements &mdash; where services credibility replaces price pressure</td></tr>
+<tr><td>4. Frontier Partner Badge</td><td>Front-of-line access to early tooling, new funding motions pre-GA, E7-tier customer alignment</td></tr>
+<tr><td>5. Frontier Distributor</td><td>Distributors only &mdash; 83-point third-party audit (TD SYNNEX holds this, since March 2026)</td></tr>
+</tbody>
+</table></div>
+
+<ul class="checklist">
+  <li><strong>Frontier Partner Badge requires all four:</strong></li>
+  <li>Three Solutions Partner designations (typically Modern Work or Business Apps, plus Security)</li>
+  <li>Microsoft 365 Copilot Advanced Specialization</li>
+  <li>AI Apps on Microsoft Azure Specialization</li>
+  <li>Data Security Advanced Specialization</li>
+</ul>
+
+<div class="callout subtle">
+  <div class="callout-title">Operator reality check</div>
+  <div class="callout-body"><p>Most SMB-focused partners should <strong>not</strong> chase the Frontier badge immediately. Path: Solutions Partner &rarr; Advanced Specialization first (fastest ROI). Pursue Frontier only once you're ready to run Copilot Studio at scale and make AgentOps a real revenue line. &ldquo;The goal is not to reach the top &mdash; it's to be one tier ahead of every competitor in your market.&rdquo;</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: PROOF ═══════════════════════════════════ -->
+<h2 id="proof">12. Proof It Works</h2>
+<p>Full version: <a href="cpb.html#11-showing-our-work">&sect; Showing Our Work &rarr;</a> and <a href="cpb.html#14-real-partners-real-results">&sect; Real Partners, Real Results &rarr;</a></p>
+
+<div class="statbar">
+  <div class="big">+$44K EBITDA swing on a nearly fixed cost base</div>
+  <div class="small">The playbook's own baseline partner (&ldquo;Hero Partner&rdquo; &mdash; $2.4M revenue, 50 customers, 9 staff) modeled before/after building a real Copilot practice: revenue $2.38M &rarr; $3.01M (+26%), Copilot/AI revenue $92K (5%, ad hoc) &rarr; $459K (15%, structured), EBITDA +5.4% &rarr; +5.8%. Grounded in Forrester TEI FY2025 (215+ partner interviews) and IDC #US52483124 (638 partners).</div>
+</div>
+
+<h3>Four Named Case Studies</h3>
+<div class="grid cols-4">
+  <div class="card"><div class="card-h">Newman's Own</div><p class="card-b"><strong>3&times; campaigns per month.</strong> Campaign briefs: 3 hrs &rarr; 30&ndash;60 min. Legal team uses Copilot as a &ldquo;junior associate.&rdquo;</p></div>
+  <div class="card"><div class="card-h">Mike Morse Law Firm</div><p class="card-b">Built an entire internal LMS &mdash; slides, scripts, process docs &mdash; without contracting an outside vendor.</p></div>
+  <div class="card"><div class="card-h">Morula Health</div><p class="card-b">Scientific content creation dropped from <strong>weeks to days</strong>; staff time shifted from formatting to analysis and QA.</p></div>
+  <div class="card"><div class="card-h">Supergood</div><p class="card-b">Flatter org &mdash; senior-level strategic input on every brief without adding headcount.</p></div>
+</div>
+<p class="srcline">Source: Microsoft Customer Stories, customers.microsoft.com. &ldquo;A food company, a law firm, a health agency, and a creative shop. Four different industries. One story.&rdquo; None waited for a perfect environment or a six-month readiness assessment.</p>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: FIRST 30 DAYS ═══════════════════════════════════ -->
+<h2 id="first-30">13. Your First 30 Days</h2>
+<p>Synthesized from &sect;1 (&ldquo;Why This Conversation Is Worth Having&rdquo;), the Tier 1 prerequisites, and the MCI program. Full detail: <a href="cpb.html#1-why-this-conversation-is-worth-having">&sect; Why This Conversation Is Worth Having &rarr;</a></p>
+
+<ol class="checklist">
+  <li><strong>Become Customer Zero.</strong> Build 2&ndash;3 internal agents (ticket summarization, proposal drafting, QBR prep) before you pitch anyone else. Partners who use Copilot internally close 3&times; faster &mdash; Microsoft FY26 Partner Data.</li>
+  <li><strong>Name the AI Lead, with real authority.</strong> A title, a budget line, and decision authority this quarter &mdash; not evangelism.</li>
+  <li><strong>Lead with a posture assessment</strong> (&ldquo;the Land Motion&rdquo;). A productized 1&ndash;2 week engagement, <strong>$3K&ndash;$10K for SMB</strong>: SharePoint permissions, Shadow AI inventory, tenant readiness, remediation roadmap.</li>
+  <li><strong>Name it and price it.</strong> One tier, one price, one committed customer by end of quarter &mdash; not three tiers and a pricing calculator.</li>
+  <li><strong>Get certified for Tier 1.</strong> Copilot Adoption Specialist certification (free, ~8 hrs on Microsoft Learn) plus your own internal deployment running 60+ days.</li>
+  <li><strong>Claim your MCI funds.</strong> $1,750&ndash;$10,000+ per qualifying deployment, claimed directly through Microsoft &mdash; enrollment and eligibility at <a href="cpb.html#10-the-revenue-runway-from-first-deployment-to-managed-agentops">&sect;7 of this guide / &sect;10 of the playbook</a>.</li>
+  <li><strong>Open the Workbook</strong> and run your own numbers on Tab 1 before you promise anything to leadership.</li>
+</ol>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+<hr>
+
+<!-- ═══════════════════════════════════ SECTION: RESOURCES ═══════════════════════════════════ -->
+<h2 id="resources">14. Key Resources</h2>
+<p>Full sourcing: <a href="cpb-earn-the-badge.html#11-showing-our-work">&sect; Showing Our Work &rarr;</a></p>
+
+<div class="reslist-group">
+  <div class="rg-head">The Four Companion Assets</div>
+  <div class="reslist-item"><span class="t">The Frontier Partner Playbook (this guide's source)</span><span class="d"><a href="cpb.html">cpb.html</a></span></div>
+  <div class="reslist-item"><span class="t">Practice Builder Workbook (.xlsx)</span><span class="d"><a href="https://kenwebsite.blob.core.windows.net/$web/CPBWorkbook.xlsx">Download</a></span></div>
+  <div class="reslist-item"><span class="t">Engagement Ops Guide</span><span class="d"><a href="https://copilotplaybook.com/cpbops.html" target="_blank" rel="noopener">cpbops.html</a></span></div>
+  <div class="reslist-item"><span class="t">Frontier Partner Playbook</span><span class="d"><a href="https://copilotplaybook.com/frontier.html" target="_blank" rel="noopener">frontier.html</a></span></div>
+</div>
+
+<div class="reslist-group">
+  <div class="rg-head">Microsoft Partner Tools</div>
+  <div class="reslist-item"><span class="t">Microsoft Partner Center</span><span class="d"><a href="https://partner.microsoft.com" target="_blank" rel="noopener">partner.microsoft.com</a></span></div>
+  <div class="reslist-item"><span class="t">Microsoft AI Cloud Partner Program</span><span class="d"><a href="https://partner.microsoft.com/partnership/solutions-partner" target="_blank" rel="noopener">Solutions Partner details</a></span></div>
+  <div class="reslist-item"><span class="t">Microsoft Copilot Specialization Requirements</span><span class="d"><a href="https://partner.microsoft.com/partnership/specialization/microsoft-copilot" target="_blank" rel="noopener">Specialization requirements</a></span></div>
+  <div class="reslist-item"><span class="t">Microsoft CloudAscent (Propensity Data)</span><span class="d"><a href="https://cloudascent.microsoft.com" target="_blank" rel="noopener">cloudascent.microsoft.com</a></span></div>
+</div>
+
+<div class="reslist-group">
+  <div class="rg-head">TD SYNNEX Enablement</div>
+  <div class="reslist-item"><span class="t">ServiceSolv&trade; (white-label AI delivery)</span><span class="d">Contact your TD SYNNEX account team &mdash; ServiceBD@tdsynnex.com</span></div>
+  <div class="reslist-item"><span class="t">Channel Academy (skilling)</span><span class="d">Contact your TD SYNNEX account team</span></div>
+  <div class="reslist-item"><span class="t">StreamOne&reg; (marketplace)</span><span class="d">Contact your TD SYNNEX account team</span></div>
+</div>
+
+<div class="reslist-group">
+  <div class="rg-head">Primary Research</div>
+  <div class="reslist-item"><span class="t">Forrester TEI: Impact of AI on Modern Work Partner Revenue (Jul 2025)</span><span class="d"><a href="https://tei.forrester.com/go/Microsoft/ModernWorkPartner" target="_blank" rel="noopener">tei.forrester.com</a></span></div>
+  <div class="reslist-item"><span class="t">Microsoft 2025 Work Trend Index</span><span class="d"><a href="https://www.microsoft.com/en-us/worklab/work-trend-index" target="_blank" rel="noopener">microsoft.com/worklab</a></span></div>
+  <div class="reslist-item"><span class="t">TD SYNNEX Frontier Distributor announcement</span><span class="d"><a href="https://news.tdsynnex.com" target="_blank" rel="noopener">news.tdsynnex.com</a></span></div>
+</div>
+
+<div class="callout dark" style="margin-top:28px;">
+  <div class="callout-title">The frontier is open</div>
+  <div class="callout-body"><p>The partners who move first, build credibility through their own deployments, and wrap AI into a structured services practice will own the next decade of SMB IT. This guide gets you the shape in fifteen minutes. <a href="cpb.html" style="color:#a8ecf5;">The full playbook &rarr;</a> gets you the rest.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&uarr; Back to Table of Contents</a></div>
+
+</body>
+</html>
