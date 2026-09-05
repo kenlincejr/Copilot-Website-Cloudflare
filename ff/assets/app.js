@@ -1042,14 +1042,27 @@ function armOnce(btn, label, run) {
  * The best draft position we have for a player, and how much to trust it.
  *
  * Yahoo's number comes from real completed drafts on the platform this league
- * actually runs on; the baked number is mock drafts. Where the user has pasted
- * the real one we use it, leaned halfway toward where the market has moved in
- * the last seven days, and we carry how often he is drafted at all \u2014 a player
- * taken in 40% of leagues is not reliably taken at his ADP.
+ * actually runs on, which is why it is worth pasting. But Yahoo computes it
+ * under STANDARD scoring — its own page says so in the first line the fixture
+ * captured — and this league is full PPR. Measured against that fixture,
+ * receivers sit a mean 3.15 picks later than the full-PPR mock ADP, up to 11.9
+ * for Chris Olave and 7.3 for A.J. Brown, while pass-catching backs move the
+ * other way (Achane +5.5) from volume backs (Barkley -7.1). This function used
+ * to return Yahoo's number outright, so pasting the page imported the wrong
+ * scoring system into the room model — and at slot 11 the whole night is "does
+ * he last the twenty-one picks from 14 to 35", which is a question about ADP.
+ *
+ * So the level comes from the full-PPR mock, and Yahoo supplies only movement.
+ * A player drifting five picks earlier over seven days is drifting earlier in
+ * any scoring system; where he sits is not. draftanalysis.js says the same
+ * thing in its own docstring: use them for movement, not as a ranking.
+ *
+ * We still carry how often he is drafted at all — a player taken in 40% of
+ * leagues is not reliably taken at his ADP, and that is scoring-agnostic.
  */
 function marketAdp(p) {
   if (p.yadp != null) {
-    return { adp: p.yadp - (p.ytrend || 0) * 0.5, sd: p.adp_sd,
+    return { adp: p.adp - (p.ytrend || 0) * 0.5, sd: p.adp_sd,
              pct: p.ypct != null ? p.ypct : null, real: true };
   }
   return { adp: p.adp, sd: p.adp_sd, pct: null, real: false };

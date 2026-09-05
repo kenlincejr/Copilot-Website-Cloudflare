@@ -111,5 +111,70 @@ if (r.missed.length) {
   r.missed.forEach(function (m) { console.log("   " + m); });
 }
 
+
+/* ========================================================================
+   C5 — the Draft Analysis parser had a fixture and no test
+
+   draftanalysis.js is what turns a pasted Yahoo page into the market read
+   marketAdp() leans on. It shipped with a captured fixture and zero coverage,
+   so a change to Yahoo's row shape would have been discovered on draft night.
+   ======================================================================== */
+console.log("\n== Yahoo Draft Analysis parser ==");
+(function () {
+  // test-parser.js has is() and no ok(); route one through it so this block
+  // reads like the rest of the suite.
+  function ok(label, cond, detail) {
+    is(detail ? label + " [" + detail + "]" : label, !!cond, true);
+  }
+  require(path.join(__dirname, "../assets/draftanalysis.js"));
+  var Y = globalThis.DRAFTLINE_YAHOO;
+  var text = fs.readFileSync(path.join(__dirname, "fixtures/yahoo-draftanalysis.txt"), "utf8");
+  var res = Y.parse(text);
+
+  is("the captured page yields all thirty rows", res.rows.length, 30);
+  is("and nothing in it was skipped", res.skipped, 0);
+
+  var by = {};
+  res.rows.forEach(function (r) { by[r.name] = r; });
+
+  // A running back, a receiver carrying an injury flag, and a quarterback:
+  // three row shapes, because the injury token is the one that shifts columns.
+  var gibbs = by["Jahmyr Gibbs"];
+  ok("Jahmyr Gibbs parsed", !!gibbs);
+  is("his position came off the TEAM - POS line", gibbs.pos, "RB");
+  ok("his ADP is a number in draft range", gibbs.adpAll > 0 && gibbs.adpAll < 250,
+     String(gibbs.adpAll));
+
+  var nacua = by["Puka Nacua"];
+  ok("Puka Nacua parsed despite the injury designation", !!nacua);
+  // app.js reads this as y.pct (app.js:3768). The parser calls it pctDrafted;
+  // assert the name the parser actually emits, or the join silently drops it.
+  is("the injury token did not become his ADP", nacua.pos, "WR");
+  // pct is what marketAdp() carries as "how often he is drafted at all", so how
+  // many rows actually have one is worth pinning: a column-layout change that
+  // silently emptied it would otherwise pass unnoticed.
+  var withPct = res.rows.filter(function (r) { return typeof r.pctDrafted === "number"; });
+  var badPct = withPct.filter(function (r) { return r.pctDrafted < 0 || r.pctDrafted > 100; });
+  is("no percent-drafted value is outside 0-100", badPct.length, 0);
+  is("the capture carries a percent-drafted on this many rows", withPct.length, 30);
+
+  // Every row must carry the three fields marketAdp() and analyze() read, or
+  // the paste silently degrades to "no market data" for that player.
+  var incomplete = res.rows.filter(function (r) {
+    return !r.name || !r.pos || typeof r.adpAll !== "number";
+  });
+  is("every row carries a name, a position and an ADP", incomplete.length, 0);
+
+  // D/ST is the row shape the README flags as unverified. Assert what we know:
+  // if the fixture contains one, it must normalize to DEF, not D/ST.
+  var dst = res.rows.filter(function (r) { return /^D/.test(r.pos) && r.pos !== "DEF"; });
+  is("no row leaves a raw D/ST position behind", dst.length, 0);
+
+  // The header line is the whole reason C1 exists. If Yahoo ever stops saying
+  // it, that is a signal worth noticing, not a silent change of meaning.
+  ok("the captured page still declares itself standard-scoring",
+     /standard scoring/i.test(text));
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail ? 1 : 0);

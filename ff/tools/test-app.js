@@ -243,6 +243,7 @@ function loadApp(leagueState, picksState, opts) {
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
+    "marketAdp: marketAdp, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
     "draftedNames: draftedNames, allRosters: allRosters };\n";
@@ -769,6 +770,79 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
   fn = fn.slice(0, fn.indexOf("\n}"));
   ok("the under-six fallback constant is gone from briefCandidates()",
      fn.indexOf("length < 6") < 0);
+})();
+
+/* ========================================================================
+   C1 — a pasted Yahoo ADP moves the market read, it does not become it
+
+   Yahoo computes Draft Analysis ADP under STANDARD scoring; this league is
+   full PPR. marketAdp() used to return that number outright, which imported
+   the wrong scoring system into the room model. The level now comes from the
+   full-PPR mock and Yahoo supplies only the seven-day movement.
+   ======================================================================== */
+console.log("\n== marketAdp (C1: movement, not the ranking) ==");
+(function () {
+  // normName() is app.js's own key function; mirror it exactly, because a key
+  // that does not match means yadp is never set and every assertion below
+  // passes vacuously.
+  function normName(n) {
+    return String(n || "").toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[.']/g, " ").replace(/-/g, " ")
+      .split(/\s+/)
+      .filter(function (w) { return w && ["jr", "sr", "ii", "iii", "iv", "v"].indexOf(w) < 0; })
+      .join(" ");
+  }
+
+  // Yahoo has him 12 picks later than the full-PPR mock and drifting 4 picks
+  // earlier over the last week: the shape of a PPR receiver on a standard board.
+  var TARGET = "Chris Olave";
+  var base = DATA.players.filter(function (p) { return p.name === TARGET; })[0];
+  ok("the fixture player is on the board", !!base, TARGET);
+
+  var yahooAdp = {};
+  yahooAdp[normName(TARGET)] = { all: base.adp + 12, recent: base.adp + 16, pct: 88, rank: 40 };
+  var api = loadApp(kindaHighlandersLeague({ yahooAdp: yahooAdp }), []);
+  var A = api.getAnalysis();
+  var p = A.byName[TARGET];
+
+  ok("the paste reached the player", p && p.yadp === base.adp + 12, "yadp " + (p && p.yadp));
+  ok("the seven-day movement is carried", p.ytrend === -4, "ytrend " + p.ytrend);
+
+  var m = api.marketAdp(p);
+  ok("the market read is flagged real once a paste exists", m.real === true);
+  ok("how often he is drafted at all survives — that is scoring-agnostic",
+     m.pct === 88, "pct " + m.pct);
+
+  // The claim itself. The level is the PPR mock; the only movement is Yahoo's.
+  ok("the market ADP is built off the full-PPR mock, not Yahoo's standard number",
+     Math.abs(m.adp - (base.adp - (-4) * 0.5)) < 1e-9,
+     "got " + m.adp + ", ppr " + base.adp);
+  ok("it is NOT Yahoo's standard-scoring number",
+     Math.abs(m.adp - (p.yadp - (-4) * 0.5)) > 1,
+     "got " + m.adp + ", the old answer would have been " + (p.yadp + 2));
+  ok("the 12-pick standard-scoring gap does not reach the room model at all",
+     Math.abs(m.adp - base.adp) === 2, "shift " + (m.adp - base.adp).toFixed(2));
+
+  // Self-check: the pre-C1 expression, kept verbatim, must actually differ.
+  var preFix = p.yadp - (p.ytrend || 0) * 0.5;
+  ok("self-check: the shipped code really did return a number 14 picks later " +
+     "(twelve of standard-scoring gap, two of movement)",
+     Math.round(preFix - base.adp) === 14, "was " + preFix + " vs ppr " + base.adp);
+
+  // With no movement to report, a paste must not move the number one pick.
+  var flat = {};
+  flat[normName(TARGET)] = { all: base.adp + 12, recent: base.adp + 12, pct: 88, rank: 40 };
+  var api2 = loadApp(kindaHighlandersLeague({ yahooAdp: flat }), []);
+  var p2 = api2.getAnalysis().byName[TARGET];
+  ok("a paste with no seven-day drift leaves the market ADP exactly at the mock",
+     api2.marketAdp(p2).adp === base.adp, "got " + api2.marketAdp(p2).adp);
+
+  // And a player with no paste is untouched, as before.
+  var other = A.avail.filter(function (q) { return q.yadp == null; })[0];
+  var mo = api.marketAdp(other);
+  ok("a player the paste did not cover still reads off the mock",
+     mo.adp === other.adp && mo.real === false && mo.pct === null, other.name);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
