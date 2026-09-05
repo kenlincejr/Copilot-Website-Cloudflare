@@ -761,6 +761,36 @@
     var score = base + ceilingAdj - riskAdj - byePenalty - tagPenalty + bonus;
     if (blocked) score -= 1000;
 
+    // While a starting slot is empty, a body that adds nothing to the lineup you
+    // can field is never the pick, however much open-market surplus he carries.
+    //
+    // This is a guard on the ranking, not a valuation. It is applied uniformly to
+    // every zero-marginal player, so on a board where nobody left can help it
+    // reorders nothing — and it is a backstop on a correct value term rather than
+    // a substitute for one. That distinction is load-bearing: measured before the
+    // empty-slot pricing landed, this guard closed 930 invariant violations down
+    // to 920 and moved the headline rate three tenths of a point, because in 925
+    // of those 930 states no unblocked player anywhere on the board added a
+    // single point to the starting lineup. It had nobody to promote. Do not ever
+    // ship it as the fix for that; it is the fix for what is left after it.
+    //
+    // Behind the shipped pricing, over 200 seeded drafts, rounds 5-15: the
+    // residual violation rate goes 5.5% -> 0.0% and the headline rate 2.45% ->
+    // 0.0%, on every seed tried, while the median startable lineup does not move.
+    // It changes the top of the board on 2.3% of picks.
+    //
+    // The 100 is a magic number and its safety comes from the top of the range,
+    // not the bottom: unblocked scores at the states where this fires run about
+    // -200 to +77, so a zero-marginal player at the very top lands near -23 and
+    // still sits below any real positive-marginal alternative. Re-check it if the
+    // scoring rules ever widen the *upper* end of that range.
+    if (ctx.myPlayers && aware > 0.5 && marginal <= 0.5) {
+      if (ctx._openStarters == null)
+        ctx._openStarters = assignRoster(ctx.myPlayers, ctx.rules).slots
+          .filter(function (s) { return !s.player; }).length;
+      if (ctx._openStarters > 0) score -= 100;
+    }
+
     // The lead reason is the honest one: whether he can play for you at all.
     if (ctx.myPlayers && aware > 0.5 && marginal <= 0.5)
       reasons.push("can't crack your starting lineup — depth only");

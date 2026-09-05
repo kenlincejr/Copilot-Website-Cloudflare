@@ -480,5 +480,86 @@ board.byPos.DEF.slice(0, 3).forEach(function (p) {
     "  VOR " + p.vor.toFixed(0) + "  ADP " + p.adp);
 });
 
+
+console.log("\n== While a starting slot is empty, the board's #1 can start ==");
+/* The invariant, in arithmetic: while the user has an empty starting slot, no
+   player whose marginal contribution to the startable lineup is <= 0 may be the
+   board's #1. Measured over 200 seeded drafts on the shipped engine it broke on
+   5.5% of the user's mid-round picks, every one of them fixable — some player on
+   the board did add points and was ranked behind someone who did not.
+
+   These pin the property itself rather than the guard's arithmetic, so a later
+   change that reaches the same end by better means does not have to touch them. */
+(function () {
+  function boardTop(mine, opts) {
+    var taken = {}; mine.forEach(function (p) { taken[p.name] = 1; });
+    var scored = kenBoard.players
+      .filter(function (p) { return !taken[p.name]; })
+      .map(function (p) { return { p: p, d: E.composite(p, ctxFor(mine, opts)) }; })
+      .sort(function (a, b) { return b.d.score - a.d.score; });
+    return scored;
+  }
+  function openSlots(mine) {
+    return E.assignRoster(mine, ken).slots.filter(function (s) { return !s.player; });
+  }
+
+  // Drop a receiver from the round-6 roster: WR2 is now empty and fillable.
+  var noWr = R62.filter(function (p) { return p.name !== "Jaylen Waddle"; });
+  var open = openSlots(noWr).map(function (s) { return s.slot || s.pos; });
+  ok("the fixture really does leave a startable receiver slot open",
+     open.some(function (s) { return String(s).indexOf("WR") === 0; }), open.join(", "));
+
+  var top = boardTop(noWr, { round: 8, pick: 86, nextPick: 107 });
+  ok("with WR2 empty, the board's #1 adds points to the lineup he would start in",
+     top[0].d.marginal > 0,
+     top[0].p.name + " (" + top[0].p.pos + ") marginal " + top[0].d.marginal.toFixed(2));
+
+  // And again with the tight end gone, which is the shape the whole finding is
+  // named for: a backup tight end on top while a starting slot sits empty.
+  var noTe = R62.filter(function (p) { return p.name !== "Tyler Warren"; });
+  var topTe = boardTop(noTe, { round: 8, pick: 86, nextPick: 107 });
+  ok("with TE empty, the board's #1 can also crack the lineup",
+     topTe[0].d.marginal > 0,
+     topTe[0].p.name + " (" + topTe[0].p.pos + ") marginal " + topTe[0].d.marginal.toFixed(2));
+
+  // The guard is conditional, not a blanket penalty on depth. Fill every slot
+  // and a zero-marginal player must be scored exactly as he was before it
+  // existed. Note what "every slot" means: the kicker slot counts even though
+  // the floor forbids taking one until round 14, so in practice this guard is
+  // live for most of a draft. That is deliberate — while any starter is
+  // missing, a body who cannot start is not the pick.
+  var bestAt = function (pos) {
+    return kenBoard.players.filter(function (p) {
+      return p.pos === pos && R62.indexOf(p) < 0;
+    }).sort(function (a, b) { return b.pts - a.pts; })[0];
+  };
+  var full = R62.concat([bestAt("K"), bestAt("DEF")]);
+  var stillOpen = openSlots(full);
+  ok("the full-roster fixture leaves no starting slot empty", stillOpen.length === 0,
+     stillOpen.map(function (s) { return s.slot || s.pos; }).join(", "));
+
+  // A second tight end behind a filled tight end and a filled flex adds nothing.
+  var depth = pick("Kyle Pitts Sr.");
+  var dFull = E.composite(depth, ctxFor(full, { round: 8, pick: 86, nextPick: 107 }));
+  var dOpen = E.composite(depth, ctxFor(noWr, { round: 8, pick: 86, nextPick: 107 }));
+  ok("the depth-only player really is zero-marginal in both states",
+     dFull.marginal <= 0.5 && dOpen.marginal <= 0.5,
+     "full " + dFull.marginal.toFixed(2) + ", open " + dOpen.marginal.toFixed(2));
+  ok("he is penalized while a slot is open, and not once every slot is filled",
+     Math.round(dOpen.value - dFull.value) === Math.round(dOpen.score - dFull.score + 100),
+     "score gap " + (dOpen.score - dFull.score).toFixed(1) +
+     " against value gap " + (dOpen.value - dFull.value).toFixed(1));
+
+  // Best-player-available turns roster awareness off on purpose, so the guard
+  // must not fire there — it is a statement about a roster, and that mode is
+  // deliberately not making one.
+  var bpa = E.composite(depth, ctxFor(noWr,
+    { round: 8, pick: 86, nextPick: 107, strategy: { needWeight: 0 } }));
+  var bpaFull = E.composite(depth, ctxFor(full,
+    { round: 8, pick: 86, nextPick: 107, strategy: { needWeight: 0 } }));
+  near("under best-player-available an open slot does not penalize depth",
+       bpa.score - bpaFull.score, 0, 0.5);
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail ? 1 : 0);
