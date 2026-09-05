@@ -10,9 +10,9 @@
 #   - test-sync.js and test-app.js do NOT need it — they run against fake
 #     fetch/localStorage, never a real network call.
 #
-# Everything else (test-engine, test-parser, test-app, test-sync, test-config,
-# audit, test-playerin if present) is pure Node against the repo's own files
-# and always runs.
+# Everything else (test-engine, test-parser, test-impact, test-app, test-sync,
+# test-config, audit, test-playerin if present) is pure Node against the repo's
+# own files and always runs.
 
 cd "$(dirname "$0")/.."   # run from ff/, regardless of where this was invoked
 
@@ -58,6 +58,7 @@ echo
 echo "-- pure Node suites (no server needed) --"
 run_node "test-engine.js    (engine.js math, 99 checks against independently derived numbers)" tools/test-engine.js
 run_node "test-parser.js    (Yahoo settings-page parser, 112 checks)" tools/test-parser.js
+run_node "test-impact.js    (scoring-impact analysis: the claims it makes about a league)" tools/test-impact.js
 run_node "test-app.js       (app.js: analyze/record/undo/keeperAt/myPickNumbers/" tools/test-app.js
 run_node "test-sync.js      (sync.js: the 12-cell conflict matrix, against a fake fetch)" tools/test-sync.js
 run_node "test-config.js    (loopback proxy guard + build-stamp guard)" tools/test-config.js

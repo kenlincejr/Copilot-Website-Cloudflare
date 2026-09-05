@@ -138,6 +138,7 @@ function save() {
     league: S.league, picks: S.picks,
     draftStarted: S.draftStarted, startedAt: S.startedAt, pickStartedAt: S.pickStartedAt,
     paused: S.paused, pausedAt: S.pausedAt, draftEnded: S.draftEnded, simulated: S.simulated,
+    practice: S.practice,
     reportShown: S.reportShown
   });
   try { localStorage.setItem(KEY_STATE, raw); }
@@ -661,6 +662,9 @@ function openBegin() {
 
 function startLive(practice) {
   S.draftStarted = true;
+  // Which of the two doors was used. Simulate is a rehearsal control and the
+  // tracker has no other way to know it is not wanted on the night.
+  S.practice = !!practice;
   S.startedAt = Date.now();
   S.pickStartedAt = Date.now();
   if (!S.league.pickSeconds) { S.league.pickSeconds = 120; $("#pickSecs").value = 120; }
@@ -937,8 +941,13 @@ function renderTracker() {
         '<span class="tk-ctl">' +
           '<button class="btn btn-sm btn-ghost" id="tkPause">' +
             (S.paused ? "Resume" : "Pause") + "</button>" +
-          '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
-            'can practice the flow">Simulate</button>' +
+          // Simulate drafts the room for you. In a rehearsal that is the point; in
+          // a real draft it silently invents picks that never happened, and it
+          // was sitting between Pause and Stop where a thumb goes.
+          (S.practice
+            ? '<button class="btn btn-sm btn-ghost" id="tkSim" title="Fill in opponent picks so you ' +
+              'can practice the flow">Simulate</button>'
+            : "") +
           '<button class="btn btn-sm btn-ghost" id="tkStop">Stop</button>' +
           '<button class="btn btn-sm btn-ghost btn-danger" id="tkReset" ' +
             'title="Clear every pick and go back to pick 1. Settings are kept.">Start over</button>' +
@@ -1064,7 +1073,7 @@ function renderTracker() {
   });
 
   $("#tkPause").onclick = togglePause;
-  $("#tkSim").onclick = simulateToMyPick;
+  if ($("#tkSim")) $("#tkSim").onclick = simulateToMyPick;
   $("#tkStop").onclick = function () {
     S.draftEnded = true; S.paused = false; save(); render();
   };
@@ -1090,6 +1099,7 @@ function resetDraft() {
   S.pausedAt = null;
   S.pickStartedAt = null;
   S.simulated = false;
+  S.practice = false;
   S.reportShown = false;          // a fresh draft earns its ending again
   view.selected = null;
   view.rosterSlot = null;
@@ -2855,7 +2865,12 @@ function rowHtml(p, i) {
           (myTurn()
             ? ""   // your pick: "someone else took him" isn't a thing that can happen
             : '<button data-act="gone" title="' + esc(onClockLabel()) +
-              ' took him — off the board">' + esc(onClockShort()) + "</button>" +
+              ' took him — off the board">' +
+              // On touch this button is the row's armed action and it has a full
+              // line to sit on, so it names the team instead of abbreviating it
+              // to "T1". Which team is on the clock is the thing the drafter
+              // most needs to be sure of before the tap lands.
+              esc(IS_TOUCH ? onClockLabel() + " took him" : onClockShort()) + "</button>" +
               (isLive()
                 ? '<button data-act="assign" title="Somebody else took him — name which team">' +
                   "who?</button>" : "")) +
@@ -2887,6 +2902,16 @@ function renderList() {
       if (taken) { if (IS_TOUCH && isLive()) openAssign(name, el, e); return; }
       if (e.shiftKey) return record(name, true);
       if (e.altKey || e.metaKey || e.ctrlKey) return record(name, false);
+      // Two taps, on the row, and the second one records him to whoever is on
+      // the clock — which on your own turn is you. iOS does not fire dblclick
+      // reliably, so the desktop double-click below never reached the device,
+      // and the only way left to record an opponent's pick was to type his name.
+      // A hundred and sixty-five times.
+      //
+      // The first tap arms it and the row grows its buttons, so the second tap
+      // is aimed at something visible that says whose pick it is. Undo is in the
+      // appbar and one press deep.
+      if (IS_TOUCH && view.selected === name) return record(name, false);
       view.selected = name; renderList(); renderDetail(name);
     };
     if (!taken) el.ondblclick = function () { record(name, false); };
@@ -3383,6 +3408,204 @@ function closeModal(id) { $(id).classList.add("hidden"); }
 var HUMAN = IMPACT.LABELS;
 var GROUPS = IMPACT.GROUPS;
 
+/* ------------------------------------------- what your scoring does to it
+
+   The question this answers is the one every league asks and nothing answers:
+   my scoring is not the scoring ADP was drafted under, so what actually changes
+   about how I should draft? impact.js does the measuring — six boards, and one
+   more for every rule that differs. This renders it.
+
+   Two things it deliberately does not do. It does not read saved state: this
+   panel sits in the same modal as the scoring form, and somebody who has just
+   typed a number into that form and not yet saved expects the analysis to be
+   about the number they can see. And it does not recompute on every open —
+   forty boards is not free, so the report is cached against a signature of the
+   rules it was built from and rebuilt only when that signature moves. */
+var IMPACT_CACHE = { sig: null, report: null };
+
+/** The rules as the form currently shows them, saved or not. */
+function pendingRules() {
+  var r = JSON.parse(JSON.stringify(S.league.rules || {}));
+  $$("#scoringForm input").forEach(function (i) {
+    r[i.dataset.grp] = r[i.dataset.grp] || {};
+    r[i.dataset.grp][i.dataset.key] = parseFloat(i.value) || 0;
+  });
+  $$("#rosterForm input").forEach(function (i) {
+    r.roster = r.roster || {};
+    r.roster[i.dataset.roster] = parseInt(i.value, 10) || 0;
+  });
+  var teamsBox = $("#cfgTeams");
+  r.teams = (teamsBox && parseInt(teamsBox.value, 10)) || S.league.teams;
+  return r;
+}
+
+function impactReport() {
+  var rules = pendingRules();
+  var roundsBox = $("#cfgRounds");
+  var rounds = (roundsBox && parseInt(roundsBox.value, 10)) || S.league.rounds || 15;
+  var sig = JSON.stringify(rules) + "|" + rounds;
+  if (IMPACT_CACHE.sig !== sig) {
+    IMPACT_CACHE = { sig: sig, report: IMPACT.analyze(DATA.players, rules, { rounds: rounds }) };
+  }
+  return IMPACT_CACHE.report;
+}
+
+function posChip(pos) {
+  return '<span class="pos pos-' + esc(pos) + '">' + esc(pos) + "</span>";
+}
+
+/** A rank move, written the way the detail panel writes one. */
+function moveHtml(delta) {
+  if (!delta) return '<span class="dimtext">no move</span>';
+  return '<span style="color:var(--' + (delta > 0 ? "green" : "red") + ')">' +
+    (delta > 0 ? "up " : "down ") + Math.abs(delta) +
+    (Math.abs(delta) === 1 ? " place" : " places") + "</span>";
+}
+
+function renderImpact() {
+  var out = $("#impactOut");
+  if (!out || !IMPACT) return;
+  var rep;
+  try { rep = impactReport(); }
+  catch (err) { out.innerHTML = '<div class="note warn">' + esc(err.message) + "</div>"; return; }
+
+  var html = [];
+
+  // ---- the sentences ----------------------------------------------------
+  html.push('<div class="impact-lead">' + rep.headlines.map(function (h, i) {
+    return "<p" + (i === 0 ? ' class="impact-first"' : "") + ">" + esc(h) + "</p>";
+  }).join("") + "</div>");
+
+  /* ---- what each position is worth --------------------------------------
+     Edge, not projected points. A position's projected total says nothing on
+     its own — quarterbacks outscore everyone every year and go in the eighth
+     round anyway. What decides a draft is the drop from the best one to the
+     last one you can start, which is what this column is. */
+  var rows = IMPACT.POSITIONS.map(function (pos) {
+    var a = rep.scoring.positions.league[pos], b = rep.scoring.positions.base[pos];
+    if (!a || !b) return "";
+    var rel = (rep.scoring.relative.rel || {})[pos];
+    var relCell = rel === undefined || Math.abs(rel) < 0.02
+      ? '<span class="dimtext">even</span>'
+      : '<span style="color:var(--' + (rel > 0 ? "green" : "red") + ')">' +
+        (rel > 0 ? "+" : "−") + Math.round(Math.abs(rel) * 100) + "%</span>";
+    return "<tr><td>" + posChip(pos) + "</td>" +
+      '<td class="right num">' + n0(a.edge) + "</td>" +
+      '<td class="right num dimtext">' + n0(b.edge) + "</td>" +
+      '<td class="right num">' + relCell + "</td>" +
+      '<td class="right num">#' + (a.bestRank || "—") +
+        (a.bestRank && b.bestRank && a.bestRank !== b.bestRank
+          ? ' <span class="dimtext">was #' + b.bestRank + "</span>" : "") + "</td>" +
+      '<td class="right num">' + a.inPool +
+        (a.inPool !== b.inPool ? ' <span class="dimtext">was ' + b.inPool + "</span>" : "") +
+      "</td></tr>";
+  }).join("");
+  html.push('<div class="eyebrow impact-h">What each position is worth here</div>' +
+    '<div class="impact-scroll"><table><thead><tr>' +
+      "<th>Pos</th>" +
+      '<th class="right" title="Points from the best player at the position down to the last ' +
+        'one you can start. The number that decides when a position is worth reaching for.">' +
+        "Edge</th>" +
+      '<th class="right" title="The same figure under full PPR, standard everything else — ' +
+        'the scoring consensus ADP was drafted under.">Baseline</th>' +
+      '<th class="right" title="Ground gained or lost against the other positions, after ' +
+        'dividing out what your scoring does to every position at once. This is the column ' +
+        'that changes a draft order.">Ground</th>' +
+      '<th class="right" title="Where the best player at the position sits in the overall ' +
+        'board order.">Best</th>' +
+      '<th class="right" title="How many of the position are inside the ' + rep.poolSize +
+        ' players a draft this size actually reaches.">In pool</th>' +
+    "</tr></thead><tbody>" + rows + "</tbody></table></div>");
+
+  // ---- the rules that did it --------------------------------------------
+  var knobs = rep.scoring.knobs;
+  if (!knobs.length) {
+    html.push('<div class="note mt">Every scoring rule in your league matches the baseline. ' +
+      "There is nothing here to arbitrage — which is itself worth knowing before you " +
+      "spend draft night hunting an edge that is not in the rules.</div>");
+  } else {
+    var shown = knobs.slice(0, 10);
+    html.push('<div class="eyebrow impact-h">The rules that did it</div>' +
+      '<p class="dimtext impact-note">Each one reverted to the baseline on its own, everything ' +
+      "else left at your values, so a rule is credited with what it did rather than with how " +
+      "large it looks. Ordered by how much of the draftable board it moved.</p>" +
+      '<div class="impact-scroll"><table><thead><tr><th>Rule</th>' +
+      '<th class="right">Yours</th><th class="right">Baseline</th>' +
+      '<th class="right" title="Players inside the pool whose score this rule changes.">Hits</th>' +
+      "<th>Biggest single move</th></tr></thead><tbody>" +
+      shown.map(function (k) {
+        var m = k.biggestMove;
+        return "<tr><td>" + esc(k.label) + "</td>" +
+          '<td class="right num">' + k.league + "</td>" +
+          '<td class="right num dimtext">' + (k.hasBase ? k.base : "—") + "</td>" +
+          '<td class="right num">' + k.touchedCount + "</td>" +
+          "<td>" + (m
+            ? posChip(m.pos) + " " + esc(m.name) + " " + moveHtml(m.delta)
+            : '<span class="dimtext">nobody in the pool moved</span>') + "</td></tr>";
+      }).join("") + "</tbody></table></div>");
+    if (knobs.length > shown.length) {
+      html.push('<details class="mt"><summary class="dimtext impact-note">The other ' +
+        (knobs.length - shown.length) + " rules that differ, which moved less</summary>" +
+        '<div class="impact-scroll mt"><table><tbody>' +
+        knobs.slice(shown.length).map(function (k) {
+          return "<tr><td>" + esc(k.label) + '</td><td class="right num">' + k.league +
+            '</td><td class="right num dimtext">' + (k.hasBase ? k.base : "—") +
+            '</td><td class="right num dimtext">' + k.touchedCount + " hit" +
+            (k.touchedCount === 1 ? "" : "s") + "</td></tr>";
+        }).join("") + "</tbody></table></div></details>");
+    }
+  }
+
+  // ---- who moves --------------------------------------------------------
+  var c = rep.scoring.churn;
+  if (c.up.length || c.down.length) {
+    var col = function (title, list, sign) {
+      return '<div class="impact-col"><div class="eyebrow">' + title + "</div>" +
+        (list.length
+          ? '<ul class="knoblist">' + list.slice(0, 6).map(function (m) {
+              return '<li class="k-' + sign + '">' + esc(m.name) + " " + posChip(m.pos) +
+                ' <span class="dimtext">#' + m.from + " → #" + m.to + "</span></li>";
+            }).join("") + "</ul>"
+          : '<div class="dimtext impact-note">Nobody.</div>') + "</div>";
+    };
+    html.push('<div class="eyebrow impact-h">Who your scoring moves</div>' +
+      '<p class="dimtext impact-note">Board rank under the baseline against board rank under ' +
+      "your rules. Somebody near the top of the left column is a player the rest of your " +
+      "league, drafting off consensus, will let slide.</p>" +
+      '<div class="impact-cols">' +
+        col("Worth more here", c.up, "up") +
+        col("Worth less here", c.down, "down") +
+      "</div>");
+  }
+
+  html.push('<p class="dimtext impact-foot">Baseline: ' + esc(rep.baselineName) +
+    ", the scoring the shipped ADP was drafted under — the same baseline the VS STD " +
+    "column uses. Compared over the " + rep.poolSize + " players a " + rep.teams + "-team, " +
+    rep.rounds + "-round draft actually reaches, because a rule that reorders the bottom of " +
+    "the file has changed nobody's draft.</p>");
+
+  out.innerHTML = html.join("");
+}
+
+/* Rebuilt lazily. The panel is closed until somebody asks for it, and forty
+   boards on every open of League setup would be paid by every user for a panel
+   most of them read once. `open` is set before this fires when the parse flow
+   opens the panel itself, so the toggle handler covers that route too. */
+function wireImpact() {
+  var d = $("#dImpact");
+  if (!d) return;
+  d.addEventListener("toggle", function () { if (d.open) renderImpact(); });
+}
+
+/** Show it, and make sure it is showing the rules that were just applied. */
+function showImpact() {
+  var d = $("#dImpact");
+  if (!d) return;
+  IMPACT_CACHE.sig = null;
+  if (d.open) renderImpact(); else d.open = true;   // the toggle handler renders
+  setTimeout(function () { d.scrollIntoView({ block: "start", behavior: "smooth" }); }, 30);
+}
+
 function buildScoringForm() {
   var r = S.league.rules;
   $("#scoringForm").innerHTML = GROUPS.map(function (g) {
@@ -3690,6 +3913,10 @@ function openSetup(section) {
   buildScoringForm(); buildRosterForm(); buildTeamNames();
   buildKeeperSlots(); buildKeeperList();
   renderModePicker();
+  // Reopening setup after a rules change has to re-measure, not show the last
+  // answer: the panel stays open between visits, and a stale one is worse than
+  // a closed one.
+  if ($("#dImpact") && $("#dImpact").open) { IMPACT_CACHE.sig = null; renderImpact(); }
   openModal("#setupModal");
   // The quick start sends you at one panel of this modal rather than at the top
   // of forty scoring fields, so open that panel and put it under the eye.
@@ -3705,6 +3932,11 @@ function openSetup(section) {
 // — passing openSetup directly would make every plain click look like a request
 // for a section. Wrap it.
 $("#btnSetup").addEventListener("click", function () { openSetup(); });
+/* Wired once, at load, and not from inside openSetup(). It lived there first,
+   which meant anything that threw earlier in that function — a corrupted
+   teamNames in saved state was enough — left the panel attached to nothing and
+   silently blank, with no error at the point of failure to explain it. */
+wireImpact();
 $("#setupClose").addEventListener("click", function () { closeModal("#setupModal"); });
 $("#presetSel").addEventListener("change", function (e) {
   S.league.preset = e.target.value;
@@ -3714,6 +3946,7 @@ $("#presetSel").addEventListener("change", function (e) {
   $("#presetBlurb").textContent = PRESETS[e.target.value].blurb || "";
   buildScoringForm(); buildRosterForm(); buildTeamNames();
   buildKeeperSlots(); buildKeeperList();
+  if ($("#dImpact").open) { IMPACT_CACHE.sig = null; renderImpact(); }
 });
 // The team count and your own slot both decide what the keeper picker can offer
 // and which entry says "(you)", so both have to repaint it.
@@ -3895,7 +4128,12 @@ $("#parseBtn").addEventListener("click", function () {
     if (res.draft.fractional !== undefined) S.league.rules.fractional = res.draft.fractional;
     if (res.draft.playoffWeeks) S.league.rules.playoffWeeks = res.draft.playoffWeeks;
     buildScoringForm(); buildRosterForm();
-    flash("#parseOut", "Applied. Review the scoring section, then Save league.");
+    /* The moment the settings land is the moment "so what does that do to my
+       draft?" is the live question, so answer it here rather than waiting for
+       somebody to go looking for a panel they have no reason to know exists. */
+    showImpact();
+    flash("#parseOut", "Applied — and analyzed below. Review the scoring section, " +
+      "then Save league.");
   };
 });
 

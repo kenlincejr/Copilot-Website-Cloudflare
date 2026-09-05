@@ -642,7 +642,30 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
    fixes. One flag, read once, and both sides describe the same grid. It also
    means an emulator that stops reporting hover: none above a certain width
    still gets the layout the device would get. */
+/* Hidden until the row is chosen, then shown on the row itself.
+
+   Tapping a player used to do nothing you could see: it opened the detail
+   card, and the card is far enough down the column that on a 744px screen
+   it is off the bottom. The board read as untouchable and the only way to
+   record an opponent's pick was to type his name, a hundred and sixty-five
+   times, on a clock.
+
+   So the chosen row grows its own actions, on a full-width line of its own
+   so it disturbs no column track, at 44px. The first tap arms, the second
+   tap anywhere on the row records to whoever is on the clock, and these
+   buttons are what says who that is and offer the two exceptions. */
 body.touch .rowacts { display: none; }
+body.touch .prow.sel .rowacts {
+  display: flex; position: static; transform: none; grid-column: 1 / -1;
+  gap: 8px; padding: 4px 0 2px; margin-top: 2px;
+  background: none; box-shadow: none; opacity: 1; pointer-events: auto;
+}
+body.touch .prow.sel .rowacts button {
+  flex: 1 1 auto; min-height: 44px; font-size: 13px; border-radius: 8px;
+}
+body.touch .prow.sel .rowacts button[data-act="gone"] {
+  flex: 2 1 auto; color: var(--text); border-color: var(--line);
+}
 /* A row is one line and you act on a player by tapping him. The rule this
    replaces made .rowacts position: static, which turned it into a grid item —
    and the generated template is written with !important and has no track for
@@ -1096,3 +1119,41 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
 }
 .cta h2 { margin-bottom: 8px; }
 .cta p { color: var(--muted); margin: 0 auto 18px; }
+
+/* --------------------------------------------- the scoring-impact panel
+
+   Prose first, then the evidence. The lead paragraphs are the answer to
+   "what does my scoring do to my draft?" and the tables underneath are what
+   they were derived from, so the paragraphs get the reading measure and the
+   type size, and the tables get the small numeric treatment used everywhere
+   else on the board. */
+.impact-lead p {
+  margin: 0 0 10px; font-size: 13.5px; line-height: 1.62; color: var(--muted);
+}
+.impact-lead p:last-child { margin-bottom: 0; }
+.impact-first { color: var(--text) !important; font-size: 14.5px !important; }
+
+.impact-h { margin: 18px 0 6px; }
+.impact-note { font-size: 12px; margin: 0 0 8px; }
+.impact-foot { font-size: 11.5px; margin-top: 14px; line-height: 1.5; }
+
+/* Six numeric columns will not fit an iPad in portrait, and a table that sets
+   its own minimum drags the whole modal into a horizontal scroll — the one
+   thing the page body must never do. Scroll the table inside its own box. */
+.impact-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.impact-scroll table { min-width: 460px; }
+.impact-scroll th {
+  font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--dim); font-weight: 600; padding-bottom: 4px; white-space: nowrap;
+}
+.impact-scroll td { padding: 3px 0; }
+.impact-scroll th:not(:first-child), .impact-scroll td:not(:first-child) { padding-left: 10px; }
+
+/* Two columns where there is room for two, one where there is not. Not a
+   three-up grid: there are exactly two directions a player can move, and a
+   third cell would have nothing to put in it. */
+.impact-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.impact-col .knoblist { margin-top: 4px; }
+@media (max-width: 620px) {
+  .impact-cols { grid-template-columns: 1fr; }
+}

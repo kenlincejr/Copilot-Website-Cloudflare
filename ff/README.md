@@ -789,6 +789,98 @@ scoring settings"*, so these are not this league's PPR numbers. They are for
 market behavior and movement, not ranking — the board keeps using its own
 scoring for that.
 
+## What your scoring does to the draft
+
+League setup → **What your scoring does to the draft**, and it opens itself the
+moment a settings paste is applied, because that is the moment the question is
+live.
+
+Consensus ADP is drafted under full PPR with standard everything else. Your
+league is not that, and the board already knows it — the `VS STD` column has
+always shown, player by player, what your rules are worth to him. What it never
+did was answer the question a player actually has, which is not "what is Ja'Marr
+Chase worth here" but **"so what changes about how I draft?"**
+
+This panel answers it by measurement rather than by assertion. It does not know
+anything about PPR or six-point passing touchdowns. It builds the board twice —
+once under your rules, once under the baseline — and reports what moved.
+
+### Three comparisons, kept apart
+
+Conflating them produces nonsense in exactly the leagues that most need the
+answer: a 14-team superflex league would otherwise have its superflex slot
+reported as a scoring effect.
+
+| | what varies | what is held |
+|---|---|---|
+| **scoring** | your scoring vs the baseline's | your roster and team count |
+| **shape** | your lineup vs a plain 12-team one | your scoring |
+| **knobs** | one rule reverted to the baseline | every other rule at your values |
+
+The knob pass is the one worth understanding. Each differing rule is reverted on
+its own, the board rebuilt, and the disturbance measured — so a rule is credited
+with what it *did*, not with how large its number looks. In `kinda_highlanders`
+that ranking puts the boosted points-allowed tiers at the top and the 40-yard
+bonuses near the bottom, which is the opposite of how they read on the settings
+page.
+
+### Ground, not points
+
+The first version of this compared each position's edge against its own baseline
+edge. In a no-PPR league it told the reader to take running backs later,
+receivers later *and* tight ends later. Every one of those was true in absolute
+points — stripping receptions out shrinks every position's edge — and the advice
+was useless, because a draft is nothing but positions in an order and you cannot
+take all of them later.
+
+So the **Ground** column divides out what your scoring does to every position at
+once, by measuring each position's edge ratio against the median ratio across
+positions. What is left is the reordering. The same numbers now say receivers and
+tight ends come down the board and quarterbacks come up, which is both the
+correct read and one somebody can act on.
+
+**Edge** itself is the drop from the best player at a position to the last one
+you can start — not projected points. A position's projected total says nothing
+on its own: quarterbacks outscore everyone every year and go in the eighth round
+anyway.
+
+Deliberately *not* in that table: where the **last** starter at a position sits
+in the board order. It looks like the natural companion to **Best** and it is
+worthless, because VOR is zero at replacement level by construction — every
+position's last starter lands in the same handful of slots no matter what the
+scoring says. It moved by one place across every league tried, which is a metric
+reporting on its own definition rather than on the league.
+
+### It is allowed to say there is nothing here
+
+A league scored like the baseline is told exactly that, and gets one sentence
+instead of a report. A tool that always finds an edge is not measuring anything,
+and `test-impact.js` pins that case first.
+
+### One thing it admits it cannot do
+
+`replacementRanks()` in `engine.js` shares out the `FLEX` slot and **ignores
+`SUPERFLEX` entirely**, so a superflex league's quarterback replacement level
+comes out identical to a one-quarterback league's. `parser.js` maps Yahoo's
+`Q/W/R/T` to `SUPERFLEX`, so a real league can reach this.
+
+Rather than quietly report a wrong QB number as a finding, the panel says so out
+loud whenever the lineup has the slot, and tells the reader to treat every QB
+figure as a floor. `test-impact.js` asserts both the gap and the warning — if the
+engine is ever taught to price the slot, that test is the one that should fail
+and send somebody to delete the caveat.
+
+### Cost
+
+Six boards, plus one per differing rule — about 40 in a heavily customized
+league, and roughly a second in a browser. The panel is closed until asked for,
+and its report is cached against a signature of the rules it was built from, so
+it is paid for once and only by the people who open it.
+
+It reads the scoring form as it currently stands, **saved or not**: it sits in
+the same modal as those inputs, and somebody who has just typed a number into one
+expects the analysis to be about the number they can see.
+
 ## The audit
 
 `node ff/tools/audit.js` hunts the class of bug the tiering had: numbers that
@@ -817,6 +909,16 @@ point totals against figures derived independently in the research digest.
 Settings page. The last block cross-checks every parsed value against the
 hand-built `kinda_highlanders` preset: two independently produced paths must
 agree on all forty-odd scoring keys.
+
+`node ff/tools/test-impact.js` — 101 assertions against `assets/impact.js`.
+Weighted toward the *claims* rather than the plumbing, because this is the one
+file that produces prose and prose is believed: a wrong number in a column gets
+squinted at, while a wrong sentence saying "take quarterbacks earlier than ADP"
+gets acted on in the third round and cannot be taken back. It pins that a league
+scored like the baseline is told there is nothing there; that a no-PPR league is
+told receivers come down rather than that everything does; that reverting a
+D/ST rule changes no offensive player's score; and that the superflex caveat is
+present exactly while the engine still cannot price the slot.
 
 Three things about that page break a reasonable-looking parser, all covered in
 `assets/parser.js`:

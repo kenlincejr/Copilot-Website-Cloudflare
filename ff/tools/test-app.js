@@ -197,7 +197,10 @@ function loadApp(leagueState, picksState, opts) {
   sandbox.AbortController.prototype.abort = function () {};
 
   var seed = {};
-  seed["draftline.state." + me.id] = JSON.stringify({ league: leagueState, picks: picksState || [] });
+  seed["draftline.state." + me.id] = JSON.stringify({
+    league: leagueState, picks: picksState || [],
+    draftStarted: !!opts.draftStarted, practice: !!opts.practice
+  });
   seed["draftline.quickstart." + me.id] = "1";   // skip the first-run guide
   sandbox.localStorage = makeFakeLocalStorage(seed);
 
@@ -1882,6 +1885,90 @@ console.log("\n== the middle column's order on touch ==");
   rt = rt.slice(0, rt.indexOf("\nfunction "));
   ok("renderTracker is the thing that writes the on-the-clock heading",
      rt.indexOf("You're on the clock") > 0 && rt.indexOf('$("#tracker")') > 0);
+})();
+
+/* ========================================================================
+   Draft day on a touch device: two taps, and no rehearsal controls
+
+   Reported from the iPad, on the Saturday before the draft: "there's no touch
+   action at all in the player section and they'd have to literally type in any
+   player that gets drafted each time." A hundred and sixty-five opponent picks,
+   typed, on a clock.
+
+   Tapping a row did do something - it opened the detail card - but the card
+   sits far enough down the middle column that on a 744px screen it is off the
+   bottom, so the board read as untouchable. And ondblclick, which has recorded
+   to the team on the clock on desktop all along, does not fire reliably on iOS.
+   ======================================================================== */
+console.log("\n== draft day on touch ==");
+(function () {
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+
+  // --- the second tap ----------------------------------------------------
+  // The handler is bound to real DOM nodes, which the fake document does not
+  // build, so this reads the source. The behavior it delegates to - record()
+  // crediting the team on the clock, and crediting you on your own turn - is
+  // covered against real state by the record and catch-up blocks above.
+  var handler = app.slice(app.indexOf("el.onclick = function (e) {"));
+  handler = handler.slice(0, handler.indexOf("ondblclick"));
+  ok("a second tap on the armed row records him",
+     /IS_TOUCH && view.selected === name\) return record\(name, false\)/.test(handler),
+     handler.slice(handler.indexOf("IS_TOUCH"), handler.indexOf("IS_TOUCH") + 70));
+  ok("and it is the SECOND tap, not the first - the first only arms the row",
+     handler.indexOf("view.selected === name") <
+     handler.indexOf("view.selected = name; renderList()"));
+  ok("record(name, false) is what credits the team on the clock, not a new path",
+     handler.indexOf("record(name, false)") > 0);
+  ok("desktop keeps double-click, which is what this mirrors",
+     app.indexOf("ondblclick = function () { record(name, false); }") > 0);
+
+  // The armed row has to show what the next tap will do, or the second tap is
+  // aimed at nothing. The buttons are hidden on touch until the row is chosen.
+  var css = require("fs").readFileSync(
+    require("path").join(__dirname, "../assets/ff.css"), "utf8");
+  ok("row actions are hidden on touch until a row is chosen",
+     /body\.touch \.rowacts \{ display: none; \}/.test(css));
+  ok("and shown on the chosen row",
+     /body\.touch \.prow\.sel \.rowacts \{[^}]*display: flex/.test(css));
+  ok("laid out across the whole row so no column track is disturbed",
+     /body\.touch \.prow\.sel \.rowacts \{[^}]*grid-column: 1 \/ -1/.test(css));
+  ok("at a thumb-sized 44px",
+     /body\.touch \.prow\.sel \.rowacts button \{[^}]*min-height: 44px/.test(css));
+
+  // On touch the armed button names the team rather than abbreviating it, so
+  // the drafter can be sure whose pick it is before the tap lands.
+  ok("the armed button names the team on the clock on touch",
+     /IS_TOUCH \? onClockLabel\(\) \+ " took him" : onClockShort\(\)/.test(app));
+
+  // --- rehearsal controls ------------------------------------------------
+  function tracker(opts) {
+    var api = loadApp(kindaHighlandersLeague(), [], opts);
+    return (api._sandbox.document.getElementById("tracker") || {}).innerHTML || "";
+  }
+  var real = tracker({ draftStarted: true, practice: false });
+  var prac = tracker({ draftStarted: true, practice: true });
+
+  ok("the tracker renders once a draft has started", real.indexOf("tk-head") >= 0,
+     real.slice(0, 80));
+  ok("a real draft has no Simulate button", real.indexOf('id="tkSim"') < 0);
+  ok("a practice run still has one", prac.indexOf('id="tkSim"') >= 0);
+  ok("both keep Pause, Stop and Start over",
+     ["tkPause", "tkStop", "tkReset"].every(function (id) {
+       return real.indexOf(id) >= 0 && prac.indexOf(id) >= 0;
+     }));
+
+  // The flag has to survive a reload or the button comes back mid-draft.
+  ok("practice is persisted with the rest of the draft state",
+     /practice: S\.practice,/.test(app));
+  ok("startLive records which door was used",
+     /S\.practice = !!practice;/.test(app));
+  ok("and Start over clears it, so the next draft is what it says it is",
+     /S\.practice = false;/.test(app));
+
+  // The handler must tolerate the button being absent, or a real draft throws
+  // on every render.
+  ok("the Simulate handler is guarded",
+     /if \(\$\("#tkSim"\)\) \$\("#tkSim"\)\.onclick/.test(app));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
