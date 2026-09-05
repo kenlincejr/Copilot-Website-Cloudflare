@@ -4415,6 +4415,7 @@ function claudeContext() {
   // the supply block are worth more per token than candidates nine through
   // twelve, which were never the answer.
   var top = briefCandidates(waiting, 8);
+  briefCandidateNames[A.myNext] = top.map(function (p) { return p.name; });
   // What each candidate would actually add to the lineup the user can field
   // today. This is the number the old prose was gesturing at when it told the
   // model to compare against "the man already in that slot", except it is
@@ -4653,6 +4654,9 @@ var briefTries = {};   // re-asks per pick, so a bad answer cannot bill in a loo
 // keeps drafting — and a plan written before two other teams picked reads
 // exactly like one written for the board in front of you.
 var briefWrittenAt = {};
+// The names the payload actually carried, per pick, so a change at the top of
+// the board can be told apart from a player the brief chose not to name.
+var briefCandidateNames = {};
 
 /**
  * The player named in a line of a brief. The prompt asks for the name alone on
@@ -4712,21 +4716,63 @@ function playerIn(line) {
 function briefPlayer(text) { return playerIn((text || "").split("\n")[0]); }
 
 /**
- * The brief is written up to `lead` picks before you are on the clock, and those
- * are exactly the picks that can take the player it names. Cached against the
- * pick number alone it went on recommending him afterwards — including, in one
- * practice run, a back the user had already drafted himself two picks earlier.
+ * The fallback the brief named, if it named one.
  *
- * So the cache is keyed by the pick but valid only while its answer still is:
- * the moment the named player is off the board the advice is void and it is
- * asked again. Nothing else invalidates it, so a quiet board still costs one
- * call, and briefTries caps the re-asks in case an answer never names anyone
- * available.
+ * The answer's last line starts with "If gone:" by instruction, and that clause
+ * is a plan the user acts on when the first name is taken. It is worth exactly
+ * as much as the first name and was never checked.
  */
-function briefStale(text) {
-  if (!text || text.charAt(0) === "!") return false;
-  var p = briefPlayer(text);
-  return !!(p && p.takenBy);
+function briefFallback(text) {
+  var lines = (text || "").split("\n");
+  for (var i = lines.length - 1; i >= 0; i--) {
+    if (/^\s*if gone\s*:/i.test(lines[i])) {
+      return playerIn(lines[i].replace(/^\s*if gone\s*:/i, ""));
+    }
+  }
+  return null;
+}
+
+/**
+ * Whether the plan on screen has been overtaken by the board.
+ *
+ * briefStale() re-asked on exactly one condition: the player it named being
+ * drafted. A brief written two picks out therefore survived its own fallback
+ * being taken, a run starting at the position it argued about, and a startable
+ * body falling to the user — and was still on screen, word for word, when the
+ * clock started. At slot 11 the long gaps are twenty-one picks. A great deal
+ * happens in twenty-one picks.
+ *
+ * Four tests, all local. No API call is needed to evaluate any of them, which
+ * is the point: the expensive thing is asking again, so deciding whether to ask
+ * has to be free.
+ */
+function briefVoid(text) {
+  if (!text || text.charAt(0) === "!") return null;
+
+  var named = briefPlayer(text);
+  if (named && named.takenBy) return "the player it named has gone";
+
+  var fb = briefFallback(text);
+  if (fb && fb.takenBy) return "the fallback it named has gone";
+
+  // Someone now leads the board who was not among the players it was shown. It
+  // did not pass him over; it never saw him.
+  var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
+                    .sort(function (a, b) { return b.comp - a.comp; });
+  if (pool.length && text.indexOf(pool[0].name) < 0) {
+    var wasShown = briefCandidateNames[A.myNext];
+    if (wasShown && wasShown.indexOf(pool[0].name) < 0) {
+      return "the board's top player has changed to one it was not shown";
+    }
+  }
+
+  // A run at a position the brief actually discussed. A run somewhere it never
+  // mentioned is not a reason to spend money re-asking.
+  var runs = Object.keys((A.runInfo && A.runInfo.runs) || {});
+  for (var i = 0; i < runs.length; i++) {
+    if (text.indexOf(runs[i]) >= 0) return "a run has started at " + runs[i];
+  }
+  return null;
 }
 
 /**
@@ -4779,7 +4825,13 @@ function renderBrief() {
   if (gap > (claudeCfg.lead || 2)) { el.innerHTML = ""; return; }
 
   var cached = briefCache[A.myNext];
-  if (cached && briefStale(cached) && (briefTries[A.myNext] || 0) < 2) {
+  // One re-ask, and only across a gap long enough for the answer to arrive and
+  // matter. On a three-pick gap two calls collide inside ninety seconds and the
+  // second lands after the clock has started; the plan two picks old is better
+  // than a spinner where a recommendation was.
+  var gap = A.myNext - A.cur;
+  var why = cached ? briefVoid(cached) : null;
+  if (why && gap >= 8 && (briefTries[A.myNext] || 0) < 1) {
     briefTries[A.myNext] = (briefTries[A.myNext] || 0) + 1;
     delete briefCache[A.myNext];
     cached = undefined;

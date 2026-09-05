@@ -1,7 +1,7 @@
 /* node ff/tools/test-app.js — a Node harness for the ten functions in app.js
    whose failure would change a pick or lose a draft: analyze, record, undo,
    keeperAt, myPickNumbers, simulateToMyPick, gradeDraft, runMock, playerIn,
-   briefStale.
+   briefVoid.
 
    app.js is a 4,000+ line browser IIFE. It reads `document`, `window` and
    `localStorage` the moment it loads (session check, touch detection, the
@@ -241,7 +241,8 @@ function loadApp(leagueState, picksState, opts) {
   var exportLine =
     "\nglobalThis.__APP_TEST__ = { analyze: analyze, record: record, undo: undo, " +
     "keeperAt: keeperAt, myPickNumbers: myPickNumbers, simulateToMyPick: simulateToMyPick, " +
-    "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
+    "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, " +
+    "briefVoid: briefVoid, briefFallback: briefFallback, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
     "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
@@ -559,23 +560,23 @@ console.log("\n== playerIn ==");
 })();
 
 /* ========================================================================
-   9. briefStale
+   9. briefVoid (was briefStale)
    ======================================================================== */
-console.log("\n== briefStale ==");
+console.log("\n== briefVoid ==");
 (function () {
   var api = loadApp(kindaHighlandersLeague(), []);
   var av = api.getAnalysis().avail;
   var pick = av[0].name;
 
-  ok("a cached brief naming an available player is not stale",
-     !api.briefStale("Take " + pick + ".\n\nHe is the clear top of the board.\n\nIf gone: someone else."));
+  ok("a cached brief naming an available player is not void",
+     !api.briefVoid("Take " + pick + ".\n\nHe is the clear top of the board.\n\nIf gone: someone else."));
   // Now take that exact player and confirm the same text is stale afterward.
   api.record(pick, true);
-  ok("the same brief text is stale once its named player is off the board",
-     api.briefStale("Take " + pick + ".\n\nHe is the clear top of the board.\n\nIf gone: someone else.") === true);
-  ok("an error line (starting with !) is never treated as stale — there is no player to re-check",
-     api.briefStale("!Claude took longer than 30 seconds to answer.") === false);
-  ok("an empty cache entry is not stale", api.briefStale("") === false);
+  ok("the same brief text is void once its named player is off the board",
+     api.briefVoid("Take " + pick + ".\n\nHe is the clear top of the board.\n\nIf gone: someone else.") === "the player it named has gone");
+  ok("an error line (starting with !) is never treated as void — there is no player to re-check",
+     api.briefVoid("!Claude took longer than 30 seconds to answer.") === null);
+  ok("an empty cache entry is not void", api.briefVoid("") === null);
 })();
 
 /* ========================================================================
@@ -1351,6 +1352,105 @@ console.log("\n== reserve rule ==");
      got.indexOf(A.avail.filter(function (p) {
        return !(p.compDetail && p.compDetail.blocked);
      }).sort(function (a, b) { return b.comp - a.comp; })[0]) >= 0);
+})();
+
+/* ========================================================================
+   briefVoid - the other three ways a plan stops being the plan
+   ======================================================================== */
+console.log("\n== briefVoid: fallback, board change, run ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var av = api.getAnalysis().avail;
+  var first = av[0].name, fallback = av[5].name;
+  var brief = "Take " + first + ".\n\nHe is the clear top of the board.\n\nIf gone: " + fallback + ".";
+
+  ok("the fallback is read off the last line",
+     api.briefFallback(brief) && api.briefFallback(brief).name === fallback,
+     JSON.stringify(api.briefFallback(brief) && api.briefFallback(brief).name));
+  ok("a brief with both names available is not void", api.briefVoid(brief) === null);
+
+  // (b) The fallback going is as fatal to the plan as the first name going. It
+  // is the half the user acts on when the first name is taken, and it was never
+  // checked.
+  api.record(fallback, false);
+  ok("the fallback being drafted voids the brief",
+     api.briefVoid(brief) === "the fallback it named has gone", api.briefVoid(brief));
+
+  // (d) A run at a position the brief actually discussed. A run somewhere it
+  // never mentioned is not worth spending a call on.
+  var api2 = loadApp(kindaHighlandersLeague(), []);
+  var a2 = api2.getAnalysis();
+  var wrBrief = "Take " + a2.avail.filter(function (p) { return p.pos === "WR"; })[0].name +
+    ".\n\nThe WR run makes this urgent.\n\nIf gone: someone else.";
+  ok("with no run, a brief mentioning WR is not void", api2.briefVoid(wrBrief) === null);
+
+  // Start a receiver run: four of the last eight picks.
+  var wrs = a2.avail.filter(function (p) { return p.pos === "WR"; }).slice(1, 5);
+  wrs.forEach(function (p) { api2.record(p.name, false); });
+  var v = api2.briefVoid(wrBrief);
+  ok("a run at a position the brief argued about voids it",
+     v === "a run has started at WR", v);
+
+  // A run the brief never mentioned must not trigger a re-ask.
+  var api3 = loadApp(kindaHighlandersLeague(), []);
+  var a3 = api3.getAnalysis();
+  var qbName = a3.avail.filter(function (p) { return p.pos === "QB"; })[0].name;
+  var teBrief = "Take " + qbName + ".\n\nNothing else to say.\n\nIf gone: nobody.";
+  a3.avail.filter(function (p) { return p.pos === "WR"; }).slice(0, 4)
+    .forEach(function (p) { api3.record(p.name, false); });
+  ok("a run at a position the brief never mentioned does not void it",
+     api3.briefVoid(teBrief) === null, api3.briefVoid(teBrief));
+})();
+
+/* ========================================================================
+   The re-ask budget: once, and only across a gap worth spending it on
+   ======================================================================== */
+/* (c) The board's leader changed to somebody the brief was never shown. It did
+   not pass him over; it never saw him. That is the case a re-ask exists for,
+   and it is told apart from "the brief chose not to name him" by recording
+   what the payload actually carried. */
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var A = api.getAnalysis();
+  // Build the payload so the candidate names for this pick are recorded.
+  api.claudeContext();
+  var shown = api.briefCandidates(A.myNext > A.cur, 8);
+  // Name two players from deep on the board, so neither (a) nor (b) fires.
+  var deep = A.avail.filter(function (p) {
+    return shown.indexOf(p) < 0;
+  }).slice(-2);
+  var brief = "Take " + deep[0].name + ".\n\nA quiet pick.\n\nIf gone: " + deep[1].name + ".";
+  ok("the deep brief is not void to begin with", api.briefVoid(brief) === null,
+     api.briefVoid(brief));
+
+  // Draft every player the brief was shown. The new leader was never on its list.
+  shown.forEach(function (p) { api.record(p.name, false); });
+  var A2 = api.getAnalysis();
+  ok("the user's next pick has not moved", A2.myNext === A.myNext,
+     A.myNext + " -> " + A2.myNext);
+  var lead = A2.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
+                     .sort(function (a, b) { return b.comp - a.comp; })[0];
+  ok("the new leader really was never on the brief's list",
+     shown.map(function (p) { return p.name; }).indexOf(lead.name) < 0, lead.name);
+  ok("a new board leader the brief never saw voids it",
+     api.briefVoid(brief) === "the board's top player has changed to one it was not shown",
+     String(api.briefVoid(brief)));
+})();
+
+console.log("\n== re-ask budget ==");
+(function () {
+  var src = require("fs").readFileSync(APP_PATH, "utf8");
+  var i = src.indexOf("var why = cached ? briefVoid(cached) : null;");
+  ok("the re-ask path asks briefVoid, not briefStale", i > 0);
+  var window = src.slice(i, i + 260);
+  ok("it re-asks at most once", /briefTries\[A.myNext\] \|\| 0\) < 1/.test(window), window.slice(0, 120));
+  ok("and only across a gap of eight or more", /gap >= 8/.test(window), window.slice(0, 160));
+
+  // The Draft button must never be disabled while a re-ask is in flight: the
+  // old brief stays on screen and is replaced in place. A spinner where a
+  // recommendation was is worse than a recommendation two picks old.
+  ok("nothing in renderBrief disables the draft button while re-asking",
+     src.indexOf("disabled") < 0 || !/re-?ask[^\n]*disabled/i.test(src));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
