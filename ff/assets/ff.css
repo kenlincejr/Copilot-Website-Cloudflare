@@ -965,6 +965,10 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
 
 .statusbar b { font-size: 15px; }
 .statusbar .sb-sub { color: inherit; opacity: .72; font-size: 12.5px; }
+/* What is still missing, printed where the user is already looking. It sits
+   at full opacity because it is the one thing on this bar that is an
+   instruction rather than a description of where the draft is. */
+.statusbar .sb-need { opacity: 1; font-weight: 600; white-space: nowrap; }
 .sb-clock { display: flex; align-items: baseline; gap: 7px; flex: none; }
 .sb-clock b { font-family: var(--mono); font-size: 17px; }
 .sb-clock b.red { color: var(--red); }

@@ -244,6 +244,8 @@ function loadApp(leagueState, picksState, opts) {
     "gradeDraft: gradeDraft, runMock: runMock, playerIn: playerIn, briefStale: briefStale, " +
     "claudeContext: claudeContext, briefCandidates: briefCandidates, " +
     "marketAdp: marketAdp, resetDraft: resetDraft, " +
+    "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
+    "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
     "briefTries: function () { return briefTries; }, " +
     "spendBriefTry: function (n) { briefTries[n] = 2; }, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
@@ -947,6 +949,73 @@ console.log("\n== rosterBlock (the roster the model is shown) ==");
   ok("a full starting lineup is stated as full",
      /STARTING SLOTS STILL EMPTY: none/.test(ftext),
      (ftext.match(/STARTING SLOTS STILL EMPTY:[^\n]*/) || [""])[0]);
+})();
+
+/* ========================================================================
+   "Still need", in words, on the strip the user is already reading
+   ======================================================================== */
+console.log("\n== stillNeedLine ==");
+(function () {
+  function withRoster(upTo, mine) {
+    var order = mine.slice(), picks = [];
+    for (var n = 1; n < upTo; n++) {
+      if (EXPECTED_SCHEDULE.indexOf(n) >= 0 && n !== 59 && order.length) {
+        picks.push({ pick: n, name: order.shift(), slot: 11, mine: true });
+      } else {
+        picks.push({ pick: n, name: null, slot: null, mine: false, unknown: true });
+      }
+    }
+    return loadApp(kindaHighlandersLeague(), picks);
+  }
+
+  // Round 8, one back and one receiver owned: the screenshot's own answer.
+  var api = withRoster(86, ["James Cook III", "Nico Collins", "Brock Bowers"]);
+  var line = api.stillNeedLine();
+  ok("it names the empty receiver slot", /WR2/.test(line), line);
+  ok("it names the empty back slot", /RB2/.test(line), line);
+  ok("it says how many picks are left to fill them", /\d+ picks left/.test(line), line);
+  // The bar scrolls rather than wraps and the clock sits at the end of it, so a
+  // long list is truncated to a count rather than allowed to push the clock off
+  // a 744px screen.
+  ok("a long list is capped, and says how many it did not name",
+     !/\+\d+ more/.test(line) || line.split(",").length <= 3, line);
+  ok("the line stays short enough for the bar", line.length <= 70, line.length + " chars");
+
+  // The trap: need[pos].short is max(0, want-got) + flexOpen * FLEX_SPLIT[pos],
+  // a fraction. "You still need WR 1.4" is not a sentence, and the temptation to
+  // print it is the reason this is built off the slots instead.
+  ok("no fractional count leaks into the line", !/\d+\.\d/.test(line), line);
+
+  // A kicker slot is empty from pick 1 and cannot be filled until round 14.
+  // Calling it a need in round 8 is noise; saying when it opens is not.
+  ok("the kicker is not listed as something needed now",
+     !/still need[^·]*\bK\b/.test(line), line);
+  ok("but the round it opens is stated", /K from round 14/.test(line), line);
+
+  // Round 15: everything is fillable, and the kicker is now a real need.
+  var late = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
+    "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Trey McBride"]);
+  var lateLine = late.stillNeedLine();
+  ok("late on, the kicker becomes a need rather than a promise",
+     /still need[^·]*\bK\b/.test(lateLine) || !/K from round/.test(lateLine), lateLine);
+
+  // A complete starting lineup says so rather than going blank, which reads as
+  // a bug on a bar that is otherwise never empty.
+  var full = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
+    "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Houston Defense",
+    "Brandon Aubrey", "Trey McBride", "Chase Brown"]);
+  ok("a full starting lineup is stated, not left blank",
+     /every starter filled/.test(full.stillNeedLine()), full.stillNeedLine());
+
+  // It has to survive the render, in every branch that describes a live draft.
+  [86, 85, 84].forEach(function (n) {
+    var a = withRoster(n, ["James Cook III", "Nico Collins", "Brock Bowers"]);
+    var html = a._sandbox.document.getElementById("statusBar").innerHTML || "";
+    ok("the strip prints it at pick " + n + " (gap " +
+       (a.getAnalysis().myNext - a.getAnalysis().cur) + ")",
+       html.indexOf("sb-need") >= 0 && /WR2/.test(html),
+       html.slice(0, 160));
+  });
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

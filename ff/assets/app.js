@@ -470,6 +470,83 @@ function drift() {
   return live - A.cur;                       // >0 = we are behind reality
 }
 
+/**
+ * The starting lineup as labeled slots, with who is in each and whether an
+ * empty one can actually be filled this round.
+ *
+ * assignRoster() returns slots tagged only by position, so two running back
+ * slots are both "RB" and an empty one cannot be named. Everything that has to
+ * talk about a hole — the status strip, the payload's roster block — needs the
+ * same three answers, and they were being derived separately in each place.
+ *
+ * "Blocked" is the floor, not the cap: a kicker slot is empty from pick 1 and
+ * cannot be filled until round 14, so calling it a need in round 8 is noise.
+ */
+function startingSlots() {
+  var roster = (S.league.rules.roster) || {};
+  var round = A.onClock ? A.onClock.round : 1;
+  var seen = {};
+  return A.roster.slots.map(function (s) {
+    var n = (seen[s.pos] = (seen[s.pos] || 0) + 1);
+    var many = (s.pos === "FLEX" ? 1 : (roster[s.pos] || 1)) > 1;
+    var floor = s.pos === "K" ? A.ctx.kFloorRound
+              : s.pos === "DEF" ? A.ctx.defFloorRound : 0;
+    return {
+      pos: s.pos,
+      label: s.pos + (many ? String(n) : ""),
+      player: s.player || null,
+      floor: floor || 0,
+      blocked: !!(floor && round < floor)
+    };
+  });
+}
+
+/** The slots still empty that the board would let you fill right now. */
+function openStartingSlots() {
+  return startingSlots().filter(function (s) { return !s.player && !s.blocked; });
+}
+
+/**
+ * What is still missing, in words, for the status strip.
+ *
+ * positionalNeed() has computed this on every render since the beginning and
+ * the strip never printed it. In the round-8 screenshot the answer was "WR2 and
+ * K" and nothing on screen said so — it had to be read off the roster panel one
+ * slot at a time, while the clock ran.
+ *
+ * Deliberately not built from need[pos].short: that is
+ * max(0, want - got) + flexOpen * FLEX_SPLIT[pos], a fraction, and "you still
+ * need WR 1.4" is not a sentence. The slots themselves are the honest source.
+ */
+function stillNeedLine() {
+  if (!A.myNext) return "";
+  var slots = startingSlots();
+  var open = [], later = [];
+  slots.forEach(function (s) {
+    if (s.player) return;
+    if (s.blocked) later.push(s.label + " from round " + s.floor);
+    else open.push(s.label);
+  });
+  var picks = (A.upcoming || []).length;
+  var parts = [];
+  if (open.length) {
+    // The bar scrolls horizontally rather than wrapping, and the pick clock
+    // lives at the far end of it. Four or more open slots is early enough in a
+    // draft that naming them all costs the clock its place on a 744px screen,
+    // and the count is the useful half of that sentence anyway.
+    parts.push("still need " + (open.length > 3
+      ? open.slice(0, 3).join(", ") + " +" + (open.length - 3) + " more"
+      : open.join(", ")));
+  } else if (!later.length) {
+    parts.push("every starter filled");
+  }
+  if (later.length) parts.push(later.join(", "));
+  if (open.length && picks) {
+    parts.push(picks + " pick" + (picks === 1 ? "" : "s") + " left");
+  }
+  return parts.join(" · ");
+}
+
 function renderStatus() {
   var el = $("#statusBar"), total = S.league.teams * S.league.rounds;
   // The way in stays visible until a draft is actually running, and comes back
@@ -504,24 +581,29 @@ function renderStatus() {
 
   var gap = A.myNext ? A.myNext - A.cur : null;
   var clock = '<span class="sb-clock" id="sbClock"></span>';
+  // Built once, printed by every branch below that describes a live draft. Not
+  // by the drift branch, which is a warning and must not be diluted, and not by
+  // "draft complete", which needs nothing.
+  var sn = stillNeedLine();
+  var need = sn ? '<span class="sb-sub sb-need">' + esc(sn) + "</span>" : "";
 
   if (gap === 0) {
     el.className = "statusbar up";
     el.innerHTML = "<b>You're on the clock</b>" +
       '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round + "</span>" +
-      "<span class='grow'></span>" + clock;
+      need + "<span class='grow'></span>" + clock;
   } else if (gap !== null && gap <= 3) {
     el.className = "statusbar soon";
     el.innerHTML = "<b>" + gap + " pick" + (gap === 1 ? "" : "s") + " until you're up</b>" +
       '<span class="sb-sub">you pick at ' + A.myNext + " · round " + A.ctx.round + "</span>" +
-      "<span class='grow'></span>" + clock;
+      need + "<span class='grow'></span>" + clock;
   } else {
     el.className = "statusbar waiting";
     el.innerHTML = "<b>" + (isLive() ? esc(teamLabel(A.onClock.slot)) + " on the clock"
                                      : "Pick " + A.cur) + "</b>" +
       '<span class="sb-sub">pick ' + A.cur + " · round " + A.onClock.round +
         (A.myNext ? " · you pick at " + A.myNext : "") + "</span>" +
-      "<span class='grow'></span>" + clock;
+      need + "<span class='grow'></span>" + clock;
   }
   tickClock();
 }
@@ -3991,14 +4073,8 @@ function teamsAhead() {
  * without a sentence that can contradict the roster printed above it.
  */
 function rosterBlock() {
-  var rules = S.league.rules, roster = rules.roster || {};
-  var seen = {}, lines = [], open = [];
-  var round = A.onClock.round;
-  var floorFor = function (pos) {
-    if (pos === "K") return A.ctx.kFloorRound;
-    if (pos === "DEF") return A.ctx.defFloorRound;
-    return 0;
-  };
+  var rules = S.league.rules;
+  var lines = [], open = [];
   // Best available at a position by projected points, not composite: this line
   // answers "who would go in the hole", and the hole is filled with points.
   var bestLeft = function (pos) {
@@ -4011,10 +4087,8 @@ function rosterBlock() {
     return best;
   };
 
-  A.roster.slots.forEach(function (s) {
-    var n = (seen[s.pos] = (seen[s.pos] || 0) + 1);
-    var many = (s.pos === "FLEX" ? 1 : (roster[s.pos] || 1)) > 1;
-    var label = s.pos + (many ? String(n) : "");
+  startingSlots().forEach(function (s) {
+    var label = s.label;
     if (s.player) {
       var pl = s.player;
       var line = "- " + label + ": " + pl.name + ", " + Math.round(pl.pts) +
@@ -4031,8 +4105,7 @@ function rosterBlock() {
       }
       lines.push(line);
     } else {
-      var floor = floorFor(s.pos);
-      var blocked = floor && round < floor;
+      var floor = s.floor, blocked = s.blocked;
       // Nobody's position is "FLEX", so ask the positions that can fill it.
       var b = s.pos === "FLEX"
         ? (rules.roster.flexEligible || ["RB", "WR", "TE"])
