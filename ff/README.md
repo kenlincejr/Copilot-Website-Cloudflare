@@ -45,17 +45,37 @@ normal way reads three paragraphs and a table about a rule they do not have, and
 finds out the app has a draft room, a clock, a modeled field of eleven opponents, a
 practice mode, nine strategies or a graded report.
 
-So the page sells the whole product now, in four moves:
+The version after that sold the whole product, but sold it in *prose* — three steps, six
+feature cards and a table, which is a lot of reading before you see anything the app
+actually does. So the page is now a short pitch and three pictures of the product:
 
-1. **Hero** — what it is in one sentence, then the sign-in panel beside it.
-2. **Three steps** — paste your settings, draft, read the report. The shape of a night.
-3. **Six cards** — one per thing a free board does not do: your scoring, survival odds,
-   the modeled room, rehearsal, styles with receipts, the on-deck brief.
-4. **One live table** — the same proof, moved to the back and re-cut around **a point per
-   reception** instead of defensive tiers, because that is the rule every reader already
-   has an opinion about. It reports how many of the first six rounds' players change round
-   between full PPR and none (48 of 79 at the time of writing) and shows the six that move
-   furthest. Still computed live by `engine.js`, so it cannot drift from the app.
+1. **Hero** — one paragraph on what it is, three one-line claims about what makes it
+   different, and the sign-in panel beside it.
+2. **Three framed shots**, each the app's own markup rendered by the app's own
+   stylesheet inside a `.shot` frame, with a caption under it:
+   - **Live draft results** — the eight players whose ADP sits nearest pick 38, and the
+     chance each is still on the board when you get there. Computed on page load by
+     `engine.js` from the baked ADP spread, so it cannot drift from the app. The spread
+     runs about 78% down to 25% for players a consensus list prints in a row, which is the
+     whole argument for carrying a distribution instead of an average.
+   - **The on-deck brief** — a `rec top` card exactly as `renderBrief()` builds one.
+     Static, and captioned as an example from a practice draft.
+   - **The report card** — the twelve-row grade table and Claude's read of it. Also static
+     and captioned as such.
+3. **Close** — the call to action and the sources footer.
+
+The three shots are one continuous story on purpose: the survival math argues for
+McConkey at 38, the brief takes him, and he turns up as the best pick on the graded
+roster. Keep them consistent if you edit any of them.
+
+The **live** shot is the one that has to stay honest. It reads `DRAFTLINE_DATA` and calls
+`E.survival()` — the same function the board's survival column uses — so if the ADP data
+is rebuilt, the page changes with it and nothing needs re-writing. The two static shots
+are labeled *from a practice draft* in the frame chrome and again in the caption, because
+they are illustrations rather than live output and the page should not pretend otherwise.
+
+Removed with the rewrite: the numbered three-step strip, the six feature cards, and the
+PPR-versus-standard movers table. Their CSS went with them.
 
 **Sign in vs. create is a segmented control, not a corner link.** The old panel put
 "Create a profile" as a small text link in the header, which is the one control a
@@ -243,6 +263,42 @@ straight back because a keeper is roster configuration, not a pick.
 It is destructive, so it asks with itself rather than with a browser dialog:
 first press arms the button and turns it red, second press does it, and it
 disarms after four seconds on its own. `armOnce()` in `app.js`.
+
+## The quick start
+
+A brand new account used to land on `openSetup()` cold: forty scoring fields, no
+statement of what to do first, and no way to tell which of it mattered. Worse, the
+default league was the author's own — `kinda_highlanders`, slot 11, Drake Maye kept in
+round 5 — so a stranger's first board was scored in somebody else's rules and holding a
+player they had never heard of. `defaultLeague()` is neutral now (`ppr_standard`, slot 1,
+no keepers), and it is only ever used when there is no saved state at all, so nobody's
+existing league moves.
+
+In its place, **Quick start** opens once per account per device and lives permanently at
+**More › Quick start guide**. It is a checklist, not a page of instructions: every step is
+checked against the state the app is actually in, and says so in its own line.
+
+| # | Step | Done when |
+|---|------|-----------|
+| 1 | Tell it about your league | `league.configured`, set by **Save league** |
+| 2 | Decide how much you'll track | same trip — the mode has a default, so what this asks is whether you have seen the choice |
+| 3 | Name the other teams | half the other slots carry a name |
+| 4 | Add the keepers | at least one keeper recorded |
+| 5 | Add real draft data from your platform | `yahooAdp()` is non-empty |
+| 6 | Rehearse the whole thing | `S.simulated` — a run that is under way but has not simulated yet says so separately |
+
+Two things make it worth the space. **Each step says what skipping it costs**, in its own
+sentence, because skipping is a real choice — the board is fully usable with none of it
+done, and a guide that only nags is a guide people close. And **each step's button opens
+the exact panel it is about**: `openSetup(section)` takes a `<details>` selector, opens it
+and scrolls it into view, so "Name the teams" lands on the team-name grid rather than at
+the top of the scoring form.
+
+Under the checklist, two things that are explanation rather than a task: what the three
+Claude features do during a draft (with a live status line saying whether the automatic
+brief is on and how far ahead it fires), and what the report gives you at the end. Then
+one warning panel that states the whole bypass in four lines — you can skip all of it,
+here is exactly what you lose.
 
 ## Two ways in
 
