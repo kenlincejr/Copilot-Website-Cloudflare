@@ -415,15 +415,23 @@ function benchFraction(player, mine) {
   var beyond = (player.pts - kenBoard.replacement[player.pos].points) - d.marginal;
   return beyond > 0.01 ? (d.value - d.marginal) / beyond : null;
 }
-function doorsFor(pos) {
+/* This used to read the flex straight off the rules, which is a verbatim copy
+   of the line in composite() it was checking — so it asserted the formula
+   against itself and could not catch a wrong flex count by construction. Worse,
+   its own fixture is R62, whose inline comment reads "flex taken": it was
+   pinning the wrong answer in exactly the state the bug is about. It now asks
+   how many flex doors are actually open, which is what positionalNeed() has
+   asked all along. */
+function doorsFor(pos, mine) {
   var r = ken.roster;
-  return (r[pos] || 0) + (r.flexEligible.indexOf(pos) >= 0 ? (r.FLEX || 0) : 0);
+  return (r[pos] || 0) +
+    (r.flexEligible.indexOf(pos) >= 0 ? E.openFlexSlots(mine, ken) : 0);
 }
 [["QB", pick("Trevor Lawrence"), 1],       // 301, cannot beat Maye's 320
  ["TE", pick("Kyle Pitts Sr."), 1],        // behind Tyler Warren, flex taken
  ["RB", pick("Jaylen Warren"), 3]          // behind Cook, Henry and Barkley
 ].forEach(function (c) {
-  var pos = c[0], player = c[1], have = c[2], doors = doorsFor(pos);
+  var pos = c[0], player = c[1], have = c[2], doors = doorsFor(pos, R62);
   var want = Math.min(0.45, 0.14 * doors) * Math.pow(0.55, Math.max(0, have - doors + 1));
   var got = benchFraction(player, R62);
   near(pos + (have + 1) + " keeps the fraction his " + doors + " door" +

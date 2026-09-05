@@ -605,8 +605,17 @@
     // has none worth counting — you stream those — which is why a backup D/ST
     // was being priced like a real pick.
     var flexEl2 = (ctx.rules.roster.flexEligible || ["RB", "WR", "TE"]);
+    // The flex is a door only while it is still open. positionalNeed() was
+    // fixed to ask openFlexSlots(); this line kept the old arithmetic and added
+    // roster.FLEX for every flex-eligible position unconditionally, so a second
+    // tight end sitting behind a filled flex was priced as though he had two
+    // ways into the lineup when he has one. That is 0.280 where 0.077 is earned,
+    // 3.6 times too high, and 2.7 times too high for a third receiver and a
+    // fourth back. A player cannot walk through a door somebody is standing in.
     var lineupSpots = (ctx.rules.roster[player.pos] || 0) +
-      (flexEl2.indexOf(player.pos) >= 0 ? (ctx.rules.roster.FLEX || 0) : 0);
+      (flexEl2.indexOf(player.pos) >= 0 && ctx.myPlayers
+        ? openFlexSlots(ctx.myPlayers, ctx.rules)
+        : (flexEl2.indexOf(player.pos) >= 0 ? (ctx.rules.roster.FLEX || 0) : 0));
     // Depth is counted against doors into the lineup, not against starting
     // slots. A backup reaches the field through injury, bye or the flex, and the
     // number of those doors is roster[pos] plus the flex if he is eligible for
