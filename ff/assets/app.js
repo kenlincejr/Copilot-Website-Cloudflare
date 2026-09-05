@@ -607,7 +607,7 @@ function openCatchup() {
   $("#catchupRows").innerHTML = rows.map(function (r, i) {
     return '<div class="catchup-row">' +
       '<span class="slotlbl">pick ' + r.pick + "<br>" +
-        (r.mine ? '<span class="mine">you</span>' : teamLabel(r.slot, true)) + "</span>" +
+        (r.mine ? '<span class="mine">you</span>' : esc(teamLabel(r.slot, true))) + "</span>" +
       '<input type="text" list="allPlayers" data-cu="' + i + '" value="" placeholder="who went here?">' +
       '<button class="btn btn-sm btn-ghost" data-cuguess="' + i + '">' +
         (r.guess ? "ADP" : "—") + "</button>" +
@@ -681,8 +681,8 @@ function renderTicker() {
     seg("round", A.onClock.round + " of " + S.league.rounds) +
     '<span class="sep"></span>' +
     (isLive()
-      ? seg("on the clock", teamLabel(A.onClock.slot, true), A.onClock.slot === S.league.slot) +
-        (onDeck ? seg("on deck", teamLabel(onDeck, true), onDeck === S.league.slot) : "")
+      ? seg("on the clock", esc(teamLabel(A.onClock.slot, true)), A.onClock.slot === S.league.slot) +
+        (onDeck ? seg("on deck", esc(teamLabel(onDeck, true)), onDeck === S.league.slot) : "")
       : seg("pick", String(A.cur))) +
     '<span class="sep"></span>' +
     seg("your pick", A.myNext ? "#" + A.myNext : "none left", true) +
@@ -1497,6 +1497,13 @@ var KNOB_MEANING = {
   tagPenalty:    "extra penalty on research flags"
 };
 
+/** Empty the diff panel and drop the selection highlight with it. */
+function clearStyleDiff() {
+  var d = $("#styleDiff");
+  d.innerHTML = ""; d.className = "";
+  $$("#styleList .stylecard").forEach(function (o) { o.classList.remove("sel"); });
+}
+
 /** Board top-N under a given knob set, without disturbing the live analysis. */
 function boardUnder(knobs, n) {
   var ctx = Object.assign({}, A.ctx, { strategy: knobs });
@@ -1536,7 +1543,9 @@ function renderStyleDiff(newStyleKey, customKnobs) {
       "</span> " + esc(p.name) + '</td><td class="right">' + arrow + "</td></tr>";
   }).join("");
 
-  $("#styleDiff").innerHTML =
+  var host = $("#styleDiff");
+  host.className = "panel mt styleopen";
+  host.innerHTML =
     '<div class="note"><b>' + esc((STRATS[newStyleKey] || {}).name || "Custom") + "</b> \u2014 " +
       esc((STRATS[newStyleKey] || {}).detail || "") + "</div>" +
     '<div class="grid-auto mt">' +
@@ -1554,10 +1563,10 @@ function renderStyleDiff(newStyleKey, customKnobs) {
     S.league.stylePrev = { style: S.league.style, custom: S.league.styleCustom };
     S.league.style = newStyleKey;
     S.league.styleCustom = customKnobs || null;
-    save(); renderStyleList(); $("#styleDiff").innerHTML = ""; render();
+    save(); renderStyleList(); clearStyleDiff(); render();
     banner("Draft style is now " + styleName() + ". The board has re-ranked.");
   };
-  $("#styleCancel").onclick = function () { $("#styleDiff").innerHTML = ""; };
+  $("#styleCancel").onclick = clearStyleDiff;
 }
 
 /* ------------------------------------------------------------ mock drafts
@@ -1822,7 +1831,16 @@ function renderStyleList() {
     "</div>";
   }).join("");
   $$("#styleList .stylecard").forEach(function (el) {
-    el.onclick = function () { renderStyleDiff(el.getAttribute("data-style"), null); };
+    el.onclick = function () {
+      // The card has to answer the click where the click happened. The diff
+      // used to render below the mock-draft panel, a full screen down, so
+      // picking a style looked like it did nothing at all.
+      $$("#styleList .stylecard").forEach(function (o) { o.classList.remove("sel"); });
+      el.classList.add("sel");
+      renderStyleDiff(el.getAttribute("data-style"), null);
+      var d = $("#styleDiff");
+      if (d.scrollIntoView) d.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
   });
   $("#styleCurrent").textContent = "Current: " + styleName();
 }
@@ -1868,13 +1886,13 @@ $("#btnRosters").addEventListener("click", function () { $("#btnLeague").click()
 
 $("#btnStyle").addEventListener("click", function () {
   renderStyleList(); fillMockSelects();
-  $("#styleDiff").innerHTML = ""; $("#mockOut").innerHTML = "";
+  clearStyleDiff(); $("#mockOut").innerHTML = "";
   openModal("#styleModal");
 });
 $("#styleClose").addEventListener("click", function () { closeModal("#styleModal"); });
 $("#styleRevert").addEventListener("click", function () {
   S.league.style = "balanced"; S.league.styleCustom = null; S.league.stylePrev = null;
-  save(); renderStyleList(); $("#styleDiff").innerHTML = ""; render();
+  save(); renderStyleList(); clearStyleDiff(); render();
   banner("Back to the default weighting.");
 });
 
@@ -2565,7 +2583,7 @@ function rowHtml(p, i) {
   var cls = "prow" + (view.selected === p.name ? " sel" : "") +
             (t ? " taken" + (t.mine ? " by-me" : "") : "");
   var who = t ? '<span class="sub">' +
-        (isLive() || t.mine ? teamLabel(t.slot, true) + " \u00b7 " : "") +
+        (isLive() || t.mine ? esc(teamLabel(t.slot, true)) + " \u00b7 " : "") +
         // A keeper is owned, but the pick he will burn has not happened yet —
         // printing its number reads as a pick that already went. The round it
         // will cost is a fact rather than a claim, and it is the thing you
@@ -3021,7 +3039,7 @@ function renderLog() {
     var pl = BY_NAME[p.name] || {};
     return '<div style="padding:2px 0;' + (p.mine ? "color:var(--teal)" : "color:var(--dim)") + '">' +
       '<span class="mono">' + p.pick + "</span> " +
-      (isLive() || p.mine ? teamLabel(p.slot, true) + " · " : "") +
+      (isLive() || p.mine ? esc(teamLabel(p.slot, true)) + " · " : "") +
       (p.unknown ? "<i>unknown</i>" : esc(p.name)) +
       ' <span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span>" +
       (p.keeper ? ' <span class="dimtext">keeper</span>' : "") + "</div>";
