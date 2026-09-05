@@ -2824,7 +2824,14 @@ function rowHtml(p, i) {
         // actually want to know about a name you just searched for.
         (t.keeper ? "kept R" + ownerOfPick(t.pick).round : t.pick) + "</span>" : "";
   return '<div class="' + cls + '" data-name="' + esc(p.name) + '">' +
-    (document.body.classList.contains("compact") ? "" :
+    // Must be the SAME condition renderColumnHeads() uses to decide whether to
+    // lay down a rank track — body.norank, which is compact OR touch. Keying
+    // this on compact alone meant an iPad in landscape (touch, but 1133px so
+    // not compact) emitted a rank cell the template had no track for: every
+    // value shifted one column left, the name landed in the 44px points track
+    // and read "RB J...", and the last cell wrapped onto a second row. The two
+    // sides describe one grid, so they read one flag.
+    (document.body.classList.contains("norank") ? "" :
       '<span class="rank">' + (i + 1) + "</span>") +
     '<span class="nm"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) +
       '<span class="sub">' + p.team + "</span>" + inj + tag + who + "</span>" +

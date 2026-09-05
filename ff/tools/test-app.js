@@ -176,7 +176,12 @@ function loadApp(leagueState, picksState, opts) {
   sandbox.navigator = { userAgent: "node-test-harness" };
   sandbox.location = { href: "", pathname: "/app.html", search: "", replace: function () {}, reload: function () {} };
   sandbox.document = makeFakeDocument();
-  sandbox.matchMedia = function () { return { matches: false }; };
+  // A real iPad answers "(hover: none) and (pointer: coarse)" yes at every width.
+  // The emulator stops answering yes above 768px, which is why the landscape
+  // rank-track bug survived the emulated pass and had to be found on the device.
+  sandbox.matchMedia = function () { return { matches: !!opts.touch }; };
+  sandbox.innerWidth = opts.innerWidth || 1400;
+  sandbox.innerHeight = opts.innerHeight || 900;
   // app.js binds window-level listeners at load (resize, beforeunload, and the
   // rest). Without these the sandbox throws on the first one and the whole
   // suite never gets as far as its first assertion.
@@ -1735,6 +1740,83 @@ function normNameLocal(n) {
       return w && ["jr", "sr", "ii", "iii", "iv", "v"].indexOf(w) < 0;
     }).join(" ");
 }
+
+/* ========================================================================
+   The row and the header describe ONE grid, at every viewport
+
+   Found on the real iPad, in landscape, at 12:05 on the Saturday before the
+   draft: every name read "RB J...", every value sat one column left of its
+   header, and the last cell wrapped onto a second row. The row emitted a rank
+   cell whenever the board was not compact; the template laid down a rank track
+   only when it was neither compact NOR touch. An iPad in landscape is touch and
+   1133px wide, so it fell in the gap between those two conditions.
+
+   The emulated pass could not have caught it: the in-app browser stops
+   answering "(hover: none)" above 768px, so in emulation an iPad in landscape
+   is not a touch device and both sides agreed.
+
+   These assert the invariant directly - cells emitted equals tracks declared -
+   across all four states, so the two sides cannot drift apart again.
+   ======================================================================== */
+console.log("\n== the row and the header are one grid ==");
+(function () {
+  var STATES = [
+    { name: "desktop, wide",        touch: false, innerWidth: 1400 },
+    { name: "desktop, narrow",      touch: false, innerWidth: 900 },
+    { name: "iPad landscape",       touch: true,  innerWidth: 1133 },
+    { name: "iPad landscape, big",  touch: true,  innerWidth: 1376 },
+    { name: "iPad portrait",        touch: true,  innerWidth: 744 },
+    { name: "phone",                touch: true,  innerWidth: 390 }
+  ];
+
+  STATES.forEach(function (st) {
+    var api = loadApp(kindaHighlandersLeague(), [],
+      { touch: st.touch, innerWidth: st.innerWidth });
+    var doc = api._sandbox.document;
+
+    // The template the header wrote, as a track count.
+    var style = doc.getElementById("colStyle");
+    ok(st.name + ": a column template was written", !!style && !!style.textContent,
+       style && style.textContent);
+    var tpl = (style.textContent.match(/grid-template-columns:([^!]+)!/) || [])[1] || "";
+    // minmax(0,1fr) is one track but contains a comma, so collapse it first.
+    var tracks = tpl.replace(/minmax\([^)]*\)/g, "X").trim().split(/\s+/).filter(Boolean).length;
+
+    // The cells a row actually emits.
+    var html = doc.getElementById("plist").innerHTML || "";
+    var firstRow = (html.match(/<div class="prow[^"]*"[^>]*>([\s\S]*?)<\/div>/) || [])[1] || "";
+    // Count only top-level spans: rank, nm, and one per data column. .rowacts is
+    // never a grid item (absolute off touch, display:none on it), so it is
+    // excluded exactly as the template excludes it.
+    var cells = 0;
+    var depth = 0;
+    firstRow.replace(/<span[^>]*class="([^"]*)"[^>]*>|<span[^>]*>|<\/span>/g, function (m, cls) {
+      if (m.indexOf("</span") === 0) { depth--; return m; }
+      if (depth === 0 && String(cls || "").indexOf("rowacts") < 0) cells++;
+      depth++;
+      return m;
+    });
+
+    ok(st.name + ": the row emits exactly as many cells as the template has tracks",
+       cells === tracks, cells + " cells vs " + tracks + " tracks  [" + tpl.trim() + "]");
+  });
+
+  // And the specific regression, stated as the thing the user saw: on a touch
+  // device in landscape there is no rank cell, so the name is not pushed into
+  // the points track.
+  var pad = loadApp(kindaHighlandersLeague(), [], { touch: true, innerWidth: 1133 });
+  var padHtml = pad._sandbox.document.getElementById("plist").innerHTML || "";
+  ok("iPad landscape: no rank cell is emitted at all",
+     padHtml.indexOf('<span class="rank">') < 0);
+  ok("iPad landscape: body carries norank", pad._sandbox.document.body.classList.contains("norank"));
+  ok("iPad landscape: body is NOT compact at 1133px",
+     !pad._sandbox.document.body.classList.contains("compact"));
+
+  // Desktop keeps its rank column - the fix must not have removed it everywhere.
+  var desk = loadApp(kindaHighlandersLeague(), [], { touch: false, innerWidth: 1400 });
+  var deskHtml = desk._sandbox.document.getElementById("plist").innerHTML || "";
+  ok("desktop still numbers the board", deskHtml.indexOf('<span class="rank">') >= 0);
+})();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail > 0 ? 1 : 0);
