@@ -902,12 +902,20 @@
 
   /** \u22654 of the last 8 picks at one position. */
   function detectRuns(recentPicks) {
-    var last = recentPicks.slice(-8), counts = {}, runs = {};
-    last.forEach(function (p) { counts[p.pos] = (counts[p.pos] || 0) + 1; });
+    var last = recentPicks.slice(-8), counts = {}, runs = {}, unknown = 0;
+    last.forEach(function (p) {
+      // A pick recorded as "didn't catch the name" has no position. Counting
+      // those together made four of them in eight picks a run at "?", which put
+      // a banner on screen announcing a run at a position that does not exist
+      // — on the one flow the draft-day runbook tells the user to reach for when
+      // they fall behind. An unknown pick is a gap in what we know, not evidence.
+      if (!p.pos || p.pos === "?") { unknown++; return; }
+      counts[p.pos] = (counts[p.pos] || 0) + 1;
+    });
     Object.keys(counts).forEach(function (pos) {
       if (counts[pos] >= 4) runs[pos] = counts[pos];
     });
-    return { runs: runs, counts: counts, window: last.length };
+    return { runs: runs, counts: counts, window: last.length, unknown: unknown };
   }
 
   var API = {

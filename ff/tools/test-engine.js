@@ -569,5 +569,41 @@ console.log("\n== While a starting slot is empty, the board's #1 can start ==");
        bpa.score - bpaFull.score, 0, 0.5);
 })();
 
+
+console.log("\n== A pick nobody caught is not a run ==");
+/* "Didn't catch the name" records a pick with no player, and analyze() hands
+   detectRuns a { pos: "?" } placeholder for it. Counting those together made
+   four unknowns in eight picks a run at "?", and renderRunBanner then put
+   "? run in progress - 5 of the last 8 picks" on screen. That is the one flow
+   the draft-day runbook tells the user to reach for when they fall behind, so
+   the bug fired exactly when they were already under pressure. */
+(function () {
+  var unknown8 = [];
+  for (var i = 0; i < 8; i++) unknown8.push({ pos: "?" });
+  var r = E.detectRuns(unknown8);
+  ok("eight uncaught picks are not a run at anything",
+     Object.keys(r.runs).length === 0, JSON.stringify(r.runs));
+  ok("and they are counted as unknown rather than as a position",
+     r.unknown === 8, "unknown " + r.unknown);
+  ok("no phantom position appears in the counts",
+     Object.keys(r.counts).indexOf("?") < 0, JSON.stringify(r.counts));
+
+  // A real run still fires, and unknowns beside it do not mask it.
+  var mixed = [{ pos: "WR" }, { pos: "WR" }, { pos: "?" }, { pos: "WR" },
+               { pos: "RB" }, { pos: "?" }, { pos: "WR" }, { pos: "TE" }];
+  var m = E.detectRuns(mixed);
+  ok("four receivers in eight picks is still a run", m.runs.WR === 4,
+     JSON.stringify(m.runs));
+  ok("the two uncaught picks are reported separately", m.unknown === 2);
+  ok("the window is still the last eight picks", m.window === 8);
+
+  // Three real plus an unknown is not four. We do not guess the missing one.
+  var three = [{ pos: "WR" }, { pos: "WR" }, { pos: "WR" }, { pos: "?" },
+               { pos: "RB" }, { pos: "TE" }, { pos: "QB" }, { pos: "RB" }];
+  ok("three receivers and an uncaught pick is not promoted to a run",
+     Object.keys(E.detectRuns(three).runs).length === 0,
+     JSON.stringify(E.detectRuns(three).runs));
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail ? 1 : 0);
