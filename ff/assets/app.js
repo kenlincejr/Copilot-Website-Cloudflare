@@ -5288,27 +5288,41 @@ function teamsAheadBlock() {
  * So on a style with no knobs this block says nothing at all. On a style with
  * knobs it names them as the numbers they are, and the scores below already
  * have them applied.
+ *
+ * The values are read from `activeKnobs()`, not from the preset. `styleCustom`
+ * is a sanitized knob object — the style editor and the Claude-tuning flow both
+ * write one — so the block used to describe a Hero RB the user had already
+ * edited away from and then append the overrides as prose: "My own notes on it:
+ * [object Object]". The model was told the preset and shown scores computed from
+ * something else. `activeKnobs()` is the merge the board itself ranks on, so its
+ * numbers are the only ones this sentence can honestly quote.
+ *
+ * The keys, though, are the style's own — the preset's plus the user's. The
+ * league's bye tolerance is a league setting that `activeKnobs()` backfills for
+ * the engine's benefit, and listing it here would give Balanced a knob to talk
+ * about when the whole point above is that it has none.
  */
 function styleBlock() {
   var key = S.league.style || "balanced";
   var st = STRATS[key] || STRATS.balanced;
-  var knobs = st.knobs || {};
-  var names = Object.keys(knobs);
-  // Custom notes are the user's own words and always worth passing on, even
-  // when the preset behind them is neutral.
   var custom = S.league.styleCustom;
-  if (!names.length && !custom) return "";
+  var knobs = activeKnobs();
+  var names = Object.keys(st.knobs || {});
+  Object.keys(custom || {}).forEach(function (k) {
+    if (names.indexOf(k) < 0) names.push(k);
+  });
+  if (!names.length) return "";
 
   var out = "MY DRAFT STYLE: " + styleName() +
     (st.tagline ? " — " + st.tagline.replace(/\.\s*$/, "") : "") +
     ". The scores below already have it applied.";
-  if (names.length) {
-    out += " It changes the board by: " + names.map(function (k) {
-      var v = knobs[k];
-      return k + " " + (v && typeof v === "object" ? JSON.stringify(v) : v);
-    }).join("; ") + ".";
-  }
-  if (custom) out += " My own notes on it: " + custom;
+  out += " It changes the board by: " + names.map(function (k) {
+    var v = knobs[k];
+    // A knob the user set themselves outranks the preset's own reasoning, and
+    // the model should weigh it that way rather than as one more house number.
+    return k + " " + (v && typeof v === "object" ? JSON.stringify(v) : v) +
+      (custom && custom[k] !== undefined ? " (my own tweak)" : "");
+  }).join("; ") + ".";
   return out;
 }
 

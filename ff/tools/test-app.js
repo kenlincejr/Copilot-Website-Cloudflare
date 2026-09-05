@@ -1216,13 +1216,36 @@ console.log("\n== styleBlock ==");
   });
   ok("the payload carries it", hero.claudeContext().indexOf("MY DRAFT STYLE") >= 0);
 
-  // The user's own notes are their words and survive a neutral preset.
+  // styleCustom is a sanitized knob object, never prose. The old fixture here
+  // set it to a sentence, which is a shape the app cannot produce - the style
+  // editor and the Claude-tuning flow both write sanitizeKnobs() output - and
+  // that wrong fixture is why "My own notes on it: [object Object]" reached a
+  // live payload with the suite green.
   var lg = kindaHighlandersLeague();
-  lg.styleCustom = "I want a second tight end late.";
+  lg.styleCustom = { ceilingWeight: 1.4, posBias: { TE: 1.3 } };
   var noted = loadApp(lg, []);
-  ok("custom notes are passed on even under Balanced",
-     noted.styleBlock().indexOf("I want a second tight end late.") >= 0,
-     noted.styleBlock());
+  var nb = noted.styleBlock();
+  ok("a knob object never reaches the model as prose", nb.indexOf("[object") < 0, nb);
+  ok("the user's own knob is named, with its number", nb.indexOf("ceilingWeight 1.4") >= 0, nb);
+  ok("and it is marked as theirs rather than the preset's",
+     /ceilingWeight 1\.4 \(my own tweak\)/.test(nb), nb);
+  ok("a tweak carries even when the preset behind it is neutral",
+     nb.indexOf("MY DRAFT STYLE") === 0, nb.slice(0, 60));
+  ok("the league's own bye tolerance is not passed off as a style knob",
+     nb.indexOf("byeTolerance") < 0, nb);
+
+  // On a preset that has knobs of its own, the block has to separate the two:
+  // the merged value is what the board ranked on, and the marker says who set it.
+  var lg2 = kindaHighlandersLeague();
+  lg2.style = "hero_rb";
+  lg2.styleCustom = { posBias: { TE: 1.3 } };
+  var both = loadApp(lg2, []).styleBlock();
+  ok("an untouched preset knob is stated without a marker",
+     /earlyRounds 5(?! \(my own)/.test(both), both);
+  ok("a knob the user moved is marked",
+     /posBias [^;]*\(my own tweak\)/.test(both), both);
+  ok("and the number quoted is the merged one the board ranked on",
+     /"TE":1\.3/.test(both), both);
 })();
 
 /* ========================================================================
