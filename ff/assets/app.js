@@ -3967,10 +3967,29 @@ function teamsAhead() {
  * gone. Ask instead for the top of the board that is likely to still be there.
  */
 function briefCandidates(waiting, limit) {
-  var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); });
-  var live = waiting ? pool.filter(function (p) { return p.surv >= 0.25; }) : pool;
-  if (live.length < 6) live = pool;             // late enough that nothing is safe
-  return live.sort(function (a, b) { return b.comp - a.comp; }).slice(0, limit);
+  var byComp = function (a, b) { return b.comp - a.comp; };
+  var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
+                    .sort(byComp);
+  pool.forEach(function (p) { p.briefPastAdp = false; });
+  if (!waiting) return pool.slice(0, limit);
+
+  // survival() is a normal CDF on ADP and nothing else. It does not know the
+  // player is still on the board, so a man who outlived his ADP by twenty picks
+  // scores near zero for the next two and the filter deletes him — exactly when
+  // he is the bargain. At 177 waiting for 179 that dropped eleven of the board's
+  // own top twelve, and the best answer the prompt then permitted was the
+  // board's #8, twenty-two composite points behind the #1 on the cards the user
+  // was looking at while reading it.
+  //
+  // So the filter may narrow the field, but it may never hide a player the board
+  // rates above every player it kept. That is a statement about when this filter
+  // is wrong, not about when the ranking is: comp is still printed on every line
+  // and nothing here tells the reader to doubt it.
+  var live = pool.filter(function (p) { return p.surv >= 0.25; });
+  var bestLive = live.length ? live[0].comp : -Infinity;
+  var out = pool.filter(function (p) { return p.surv >= 0.25 || p.comp > bestLive; });
+  out.forEach(function (p) { p.briefPastAdp = p.surv < 0.25; });
+  return out.slice(0, limit);
 }
 
 /** Everything Claude sees. Numbers only — it never re-derives the scoring. */
@@ -4012,6 +4031,10 @@ function claudeContext() {
       Math.round(p.pts) + " pts in this league, VOR " + Math.round(p.vor) +
       (extra.length ? ", " + extra.join(", ") : "") +
       ", ADP " + p.adp +
+      // He is only on this list because the board rates him above everyone the
+      // survival filter kept. Say why he looks unlikely, as a fact about ADP.
+      (p.briefPastAdp ? " (which he is " + Math.max(1, Math.round(A.cur - p.adp)) +
+        " picks past, and he is still on the board)" : "") +
       // Two horizons, and conflating them is what produced advice like "only a
       // 5% chance he lasts, so take him now" about a player who would not last
       // to "now" either. The first number is whether he reaches the pick this
@@ -4068,10 +4091,11 @@ function claudeContext() {
       ". The scores below already have it applied. Say when a pick is only on top " +
       "because of the style, and say so too when the style is steering me wrong here.",
     (waiting
-      ? "LIKELY AVAILABLE WHEN MY TURN COMES, BY THE BOARD'S OWN SCORE. Every " +
-        "player here has a real chance of reaching pick " + A.myNext + "; the ones " +
-        "the teams in between will almost certainly take are already removed. Name " +
-        "a player from this list and nobody else."
+      ? "LIKELY AVAILABLE WHEN MY TURN COMES, BY THE BOARD'S OWN SCORE. Most of " +
+        "the players the teams in between will take are already removed. Anyone " +
+        "marked as past his ADP is here because the board rates him above every " +
+        "player that filter kept, and the filter reads ADP only — it does not know " +
+        "he is still available. Name a player from this list and nobody else."
       : "AVAILABLE RIGHT NOW, BY THE BOARD'S OWN SCORE. I am on the clock, so " +
         "every player here is takeable this second. Name a player from this list " +
         "and nobody else.") + "\n" + lines

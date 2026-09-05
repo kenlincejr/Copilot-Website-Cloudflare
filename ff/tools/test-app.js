@@ -660,79 +660,115 @@ console.log("\n== claudeContext survival horizons (D2) ==");
 })();
 
 /* ========================================================================
-   briefCandidates — the extraction from claudeContext() moved nothing
+   briefCandidates — the survival filter may narrow, but it may not hide
 
-   These names are the output of the pre-extraction inline code, captured
-   before the refactor and pinned here as literals. They are an oracle for one
-   commit only: the next change to candidate selection (D3) is *meant* to move
-   them, and this block moves with it. Do not read it as a lasting claim that
-   these twelve are the right twelve — it only claims the refactor was inert.
+   D3: `surv >= 0.25` is a normal CDF on ADP that does not know the player is
+   still on the board, so it deletes anyone who outlived his ADP — exactly the
+   players worth naming late. The rule under test is that no player the board
+   rates above every player the filter kept can be missing from the list.
    ======================================================================== */
-console.log("\n== briefCandidates (extraction is inert) ==");
+console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) ==");
 (function () {
-  // Deterministic states only. Unknown picks advance the clock without removing
+  // Deterministic states. Unknown picks advance the clock without removing
   // anybody from the pool and without calling roomPick(), which falls back to
-  // Math.random() and would make a pinned list meaningless.
+  // Math.random() and would make a pinned list meaningless. Note the flip side:
+  // because nobody leaves the pool, elite players stay "available" long past
+  // their ADP here, which is an artifact of the fixture and not a claim about a
+  // real draft. It exercises the mechanism, not the magnitude.
   function atPick(n) {
     var picks = Array.from({ length: n - 1 }, function (_, i) {
       return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
     });
     return loadApp(kindaHighlandersLeague(), picks);
   }
+  function names(api, waiting) {
+    return api.briefCandidates(waiting, 12).map(function (p) { return p.name; });
+  }
+  // The pre-D3 selection, kept verbatim as the oracle these assertions are
+  // measured against. It is the code that shipped, not a restatement of the fix.
+  function oldSelection(A, limit) {
+    var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
+                      .sort(function (a, b) { return b.comp - a.comp; });
+    var live = pool.filter(function (p) { return p.surv >= 0.25; });
+    if (live.length < 6) live = pool;
+    return live.slice(0, limit);
+  }
 
-  var WAITING_AT_10 = ["James Cook III", "De'Von Achane", "Chase Brown", "Brock Bowers",
-    "Derrick Henry", "Saquon Barkley", "Kenneth Walker", "Omarion Hampton", "CeeDee Lamb",
-    "Ashton Jeanty", "Trey McBride", "Nico Collins"];
+  // The on-the-clock branch has no survival filter and must not have moved.
   var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
     "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
     "Jaxon Smith-Njigba", "Brock Bowers", "Amon-Ra St. Brown"];
   var ON_CLOCK_AT_86 = ["Jahmyr Gibbs", "Bijan Robinson", "Puka Nacua", "Ja'Marr Chase",
     "Brock Bowers", "Christian McCaffrey", "Jonathan Taylor", "Jaxon Smith-Njigba",
     "Amon-Ra St. Brown", "James Cook III", "De'Von Achane", "Chase Brown"];
+  ok("on the clock at 11: unchanged by D3, the filter never applied here",
+     JSON.stringify(names(atPick(11), false)) === JSON.stringify(ON_CLOCK_AT_11),
+     JSON.stringify(names(atPick(11), false)));
+  ok("on the clock at 86: unchanged by D3",
+     JSON.stringify(names(atPick(86), false)) === JSON.stringify(ON_CLOCK_AT_86),
+     JSON.stringify(names(atPick(86), false)));
 
-  function names(api, waiting) {
-    return api.briefCandidates(waiting, 12).map(function (p) { return p.name; });
-  }
-
-  // The waiting branch: the surv >= 0.25 filter is live here.
+  // The waiting branch. The board's top six were withheld here before D3.
   var a10 = atPick(10), A10 = a10.getAnalysis();
-  ok("at pick 10 the brief is waiting for pick 11", A10.myNext > A10.cur);
-  ok("waiting at 10: the same twelve, in the same order",
+  var WAITING_AT_10 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
+    "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
+    "Brock Bowers", "Derrick Henry", "Saquon Barkley"];
+  ok("waiting at 10: the list now leads with the board's own #1",
      JSON.stringify(names(a10, true)) === JSON.stringify(WAITING_AT_10),
      JSON.stringify(names(a10, true)));
 
-  // The on-the-clock branch: no survival filter at all.
-  var a11 = atPick(11), A11 = a11.getAnalysis();
-  ok("at pick 11 the user is on the clock", A11.myNext === A11.cur);
-  ok("on the clock at 11: the same twelve, in the same order",
-     JSON.stringify(names(a11, false)) === JSON.stringify(ON_CLOCK_AT_11),
-     JSON.stringify(names(a11, false)));
+  // Self-check: the oracle must actually disagree, or the assertion above is
+  // asserting nothing. Six names the shipped filter withheld at this state.
+  var oldNames = oldSelection(A10, 12).map(function (p) { return p.name; });
+  var withheld = WAITING_AT_10.filter(function (n) { return oldNames.indexOf(n) < 0; });
+  ok("self-check: the pre-D3 filter really did withhold the board's top six here",
+     withheld.length === 6, withheld.join(", "));
+  ok("self-check: and its best permitted answer was the board's #7",
+     oldNames[0] === "James Cook III", oldNames[0]);
 
-  // Mid-draft, where the block-and-unblock behavior has had time to move.
-  var a86 = atPick(86);
-  ok("on the clock at 86: the same twelve, in the same order",
-     JSON.stringify(names(a86, false)) === JSON.stringify(ON_CLOCK_AT_86),
-     JSON.stringify(names(a86, false)));
+  // The rule itself, stated directly: nobody above the best survivor is missing.
+  [10, 35, 62, 110, 158, 177].forEach(function (n) {
+    var api = atPick(n), A = api.getAnalysis();
+    if (!(A.myNext > A.cur)) return;             // not a waiting state at this pick
+    var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
+                      .sort(function (a, b) { return b.comp - a.comp; });
+    var got = api.briefCandidates(true, 12);
+    ok("waiting at " + n + ": the board's #1 (" + pool[0].name + ") is a candidate",
+       got.indexOf(pool[0]) >= 0);
+    ok("waiting at " + n + ": the list leads with him, rather than burying him",
+       got[0] === pool[0], got[0].name + " vs " + pool[0].name);
+    ok("waiting at " + n + ": the list is never smaller than it was before",
+       got.length >= Math.min(12, oldSelection(A, 12).length),
+       got.length + " vs " + oldSelection(A, 12).length);
+  });
 
-  // The two branches must actually differ, or the waiting assertion above is
-  // testing nothing: a filter that removes nobody would pass it silently.
-  ok("the waiting and on-the-clock branches return different lists",
-     JSON.stringify(names(a10, true)) !== JSON.stringify(names(a10, false)));
+  // Marked entries carry the fact that put them there, and only marked ones do.
+  var late = atPick(177);
+  var marked = late.briefCandidates(true, 12).filter(function (p) { return p.briefPastAdp; });
+  ok("at 177 the list contains players past their ADP and still on the board",
+     marked.length > 0, marked.length + " marked");
+  var payload = late.claudeContext();
+  ok("the payload states the ADP fact for a marked player, as a fact",
+     payload.indexOf("picks past, and he is still on the board") >= 0);
+  ok("the payload no longer claims the list is exhaustive",
+     payload.indexOf("almost certainly take are already removed") < 0);
+  ok("and it explains what the filter actually reads",
+     payload.indexOf("the filter reads ADP only") >= 0);
 
-  // Blocked players are excluded on both branches — that is the first of the
-  // two conditions the comment on briefCandidates() defends.
-  var blocked = a86.briefCandidates(false, 12).filter(function (p) {
+  // Blocked players stay out on both branches. Unchanged, and load-bearing.
+  var blocked = atPick(86).briefCandidates(false, 12).filter(function (p) {
     return p.compDetail && p.compDetail.blocked;
   });
   ok("no capped-out player is ever a candidate", blocked.length === 0,
      blocked.map(function (p) { return p.name; }).join(", "));
 
-  // And claudeContext() must be reading the same list it did before, not a
-  // second copy that drifted: every candidate name appears in the payload.
-  var payload = a86.claudeContext();
-  var missing = ON_CLOCK_AT_86.filter(function (n) { return payload.indexOf(n) < 0; });
-  ok("claudeContext() names every candidate briefCandidates() returned",
-     missing.length === 0, "missing: " + missing.join(", "));
+  // The dead threshold is gone. It fired zero times in 168 sampled waiting
+  // states across twelve simulated drafts; the smallest live list was 14.
+  var src = require("fs").readFileSync(APP_PATH, "utf8");
+  var fn = src.slice(src.indexOf("function briefCandidates"));
+  fn = fn.slice(0, fn.indexOf("\n}"));
+  ok("the under-six fallback constant is gone from briefCandidates()",
+     fn.indexOf("length < 6") < 0);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
