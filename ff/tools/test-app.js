@@ -293,6 +293,7 @@ function loadApp(leagueState, picksState, opts) {
     "lastPickLine: lastPickLine, sortedList: sortedList, " +
     "askQuestions: askQuestions, renderAskQuestions: renderAskQuestions, " +
     "recCards: recCards, pickRole: pickRole, pickTradeoffs: pickTradeoffs, " +
+    "slimPickings: slimPickings, usefulPositions: usefulPositions, " +
     "rosterBlock: rosterBlock, " +
     "renderSpend: renderSpend, setSpend: function (s) { claudeCfg.spend = s; } };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
@@ -3276,6 +3277,57 @@ console.log("\n== a backup QB is a last-rounds pick ==");
   ok("and they come back in board order",
      cards[0].comp >= cards[1].comp && cards[1].comp >= cards[2].comp,
      cards.map(function (p) { return p.comp.toFixed(1); }).join(" >= "));
+  ok("with the lineup still to build, this is a ranking and not the slim mode",
+     api.slimPickings(pool) === false);
+})();
+
+/* ========================================================================
+   the slim rounds - one per position, not a silver bullet
+   ======================================================================== */
+console.log("\n== after the lineup fills, the panel stops ranking ==");
+(function () {
+  function ownerSlot(pick, teams) {
+    var r = Math.ceil(pick / teams), idx = pick - (r - 1) * teams;
+    return (r % 2 === 1) ? idx : (teams - idx + 1);
+  }
+  var MINE = { 11: "Jahmyr Gibbs", 14: "Puka Nacua", 35: "Chase Brown",
+               38: "Jayden Reed", 59: "Drake Maye", 62: "Brock Bowers",
+               83: "Javonte Williams", 86: "Houston Defense" };
+  var byAdp = DATA.players.slice().sort(function (a, b) {
+    return (a.adp || 999) - (b.adp || 999);
+  }).map(function (p) { return p.name; });
+  var used = {};
+  Object.keys(MINE).forEach(function (k) { used[MINE[k]] = true; });
+  var picks = [], feed = 0;
+  for (var i = 1; i <= 106; i++) {
+    var slot = ownerSlot(i, 12), nm = MINE[i];
+    if (!nm) {
+      while (feed < byAdp.length && used[byAdp[feed]]) feed++;
+      nm = byAdp[feed]; used[nm] = true;
+    }
+    picks.push({ pick: i, name: nm, slot: slot, mine: slot === 11, unknown: false });
+  }
+  var api = loadApp(kindaHighlandersLeague(), picks);
+  var pool = api.getAnalysis().avail.filter(function (p) { return !p.compDetail.blocked; });
+
+  ok("round 9 with a full lineup is the slim state", api.slimPickings(pool) === true);
+  var cards = api.recCards(pool);
+  ok("it offers up to four, one per position", cards.length >= 3 && cards.length <= 4,
+     String(cards.length));
+  var poss = cards.map(function (p) { return p.pos; });
+  ok("and no position appears twice", new Set(poss).size === poss.length, poss.join(","));
+  ok("no kicker or defense among them — those are streamed, not depth",
+     poss.every(function (x) { return x !== "K" && x !== "DEF"; }), poss.join(","));
+  ok("nor a backup quarterback, which is under its floor here",
+     poss.indexOf("QB") < 0, poss.join(","));
+  ok("the algorithm's own first choice is still first",
+     cards[0].comp === Math.max.apply(null, cards.map(function (p) { return p.comp; })),
+     cards.map(function (p) { return p.pos + " " + p.comp.toFixed(1); }).join(" | "));
+  cards.forEach(function (p) {
+    ok("the " + p.pos + " card carries its own reasoning",
+       !!api.pickRole(p).label && api.pickTradeoffs(p).cons.length >= 1,
+       api.pickRole(p).label);
+  });
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

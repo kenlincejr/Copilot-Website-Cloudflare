@@ -3800,15 +3800,26 @@ function renderRunBanner() {
  * top-three — so the trace disagreed with the app in exactly the states worth
  * tracing.
  */
+/** True once nothing left on the board can improve the lineup you field. */
+function slimPickings(pool) {
+  return !pool.some(function (p) { return ((p.compDetail || {}).marginal || 0) > 0.5; });
+}
+
 function recCards(pool) {
   var ranked = pool.slice().sort(function (a, b) { return b.comp - a.comp; });
-  var improves = ranked.some(function (p) {
-    return ((p.compDetail || {}).marginal || 0) > 0.5;
-  });
-  if (improves) return ranked.slice(0, 3);
+  if (!slimPickings(ranked)) return ranked.slice(0, 3);
+  /* Slim pickings. In a twelve-team league from about round 10 the board is
+     picked past every position's replacement line and the survivors are inside
+     a point of each other, so there is no silver bullet to find and ranking
+     them 1-2-3 states a confidence the arithmetic does not have. What is still
+     worth saying is which body is the best one available AT EACH POSITION the
+     roster can still use — that is a real question with a real answer, and the
+     choice of which to take is the drafter's, who knows things this board does
+     not. Up to four, one per position, still in board order, with the
+     algorithm's own first choice marked. */
   var seen = {}, out = [];
   ranked.forEach(function (p) {
-    if (out.length >= 3 || seen[p.pos]) return;
+    if (out.length >= 4 || seen[p.pos]) return;
     seen[p.pos] = true; out.push(p);
   });
   /* Late on there may not be three positions left to offer — the kicker and
@@ -3825,6 +3836,22 @@ function recCards(pool) {
     out.sort(function (a, b) { return b.comp - a.comp; });
   }
   return out;
+}
+
+/**
+ * Which positions a body would actually be useful at, right now.
+ *
+ * Not "every position" — a kicker and a defense are streamed, a position at its
+ * depth cap cannot take another, and a backup quarterback under its floor is
+ * not a pick. What is left is the set worth showing one card each for.
+ */
+function usefulPositions(pool) {
+  var seen = {};
+  pool.forEach(function (p) {
+    if (p.pos === "K" || p.pos === "DEF") return;
+    seen[p.pos] = true;
+  });
+  return Object.keys(seen);
 }
 
 /**
@@ -3946,7 +3973,10 @@ function renderRecs() {
   if (!realistic.length) realistic = pool;
   var top = recCards(realistic);
 
-  $("#recTitle").innerHTML = (waiting ? "Target at pick " + A.myNext : "Take one of these") +
+  var slim = slimPickings(realistic);
+  $("#recTitle").innerHTML = (waiting
+      ? (slim ? "Best left at each spot, for pick " + A.myNext : "Target at pick " + A.myNext)
+      : (slim ? "Best left at each spot you can use" : "Take one of these")) +
     ' <span class="stylechip" id="styleChip">' + esc(styleName()) + "</span>";
   $("#recCtx").textContent = waiting
     ? "round " + A.ctx.round + " \u00b7 " + (A.myNext - A.cur) + " away" +
@@ -3967,10 +3997,10 @@ function renderRecs() {
      half a point a week. The confidence bar divides one by the other, so a gap
      of three points on scores of 3 and 0 draws a full bar against an empty one
      and states a 12-to-1 preference that the arithmetic does not support. When
-     the call is this close the bar comes off and the panel says so instead. */
-  var closeCall = top.length === 3 &&
-    !top.some(function (p) { return (p.compDetail.marginal || 0) > 0.5; }) &&
-    Math.abs(top[0].comp - top[2].comp) < 5;
+     the call is this close the bar comes off and the panel says so instead.
+     In the slim rounds the cards are one per position rather than a ranking at
+     all, so the bar has nothing left to represent and always comes off. */
+  var closeCall = slim;
   $("#recs").innerHTML = top.map(function (p, i) {
     var d = p.compDetail;
     var conf = Math.max(8, Math.min(100, Math.round(p.comp / Math.max(best, 1) * 100)));
@@ -3991,7 +4021,12 @@ function renderRecs() {
     var tr = pickTradeoffs(p);
     return '<div class="rec' + (i === 0 ? " top" : "") + '">' +
       '<div class="rec-head">' +
-        '<span class="rec-rank">' + (i + 1) + "</span>" +
+        // In the slim rounds the number is a rank nobody should trust, so the
+        // position label takes its place and only the algorithm's own first
+        // choice is called out.
+        (slim ? '<span class="rec-rank rr-pos">' + p.pos + "</span>"
+              : '<span class="rec-rank">' + (i + 1) + "</span>") +
+        (slim && i === 0 ? '<span class="ourpick">our pick</span>' : "") +
         '<span class="pos pos-' + p.pos + '">' + p.pos + "</span>" +
         '<span class="name">' + esc(p.name) + "</span>" +
         '<span class="rec-meta">' + p.team + " \u00b7 bye " + p.bye + "</span>" +
@@ -4037,13 +4072,18 @@ function renderRecs() {
      finding, and presenting it as one invites the user to read an order that
      is not there. Say so, and hand the choice back with the thing that should
      actually decide it. */
-  if (closeCall) {
+  if (slim) {
+    var spread = Math.abs(top[0].comp - top[top.length - 1].comp);
     $("#recs").insertAdjacentHTML("afterbegin",
-      '<div class="rec-close"><b>This one is yours to call.</b> All three are within ' +
-      n0(Math.abs(top[0].comp - top[2].comp)) + " points of each other across a whole season — " +
-      "under half a point a week — and none of them changes the lineup you can field today. " +
-      "The board cannot separate them, so take the shape you want: the safest week-to-week " +
-      "body, the biggest ceiling, or the position you would least like to lose someone at.</div>");
+      '<div class="rec-close"><b>This one is yours to call.</b> Every starting slot you can ' +
+      "fill is filled, so nothing left changes the lineup you put out this week — these are " +
+      "the best body available at each position you can still use, not a ranking. " +
+      (spread < 5
+        ? "They are within " + n0(spread) + " points of each other across a whole season, " +
+          "which is under half a point a week, so the board genuinely cannot separate them. "
+        : "") +
+      "Take the shape you want: cover the position you would least like to lose someone at, " +
+      "buy the biggest ceiling, or take the safest week-to-week body.</div>");
   }
 
   var chip = $("#styleChip");
