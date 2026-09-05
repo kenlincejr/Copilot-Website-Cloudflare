@@ -4196,18 +4196,56 @@ var briefTries = {};   // re-asks per pick, so a bad answer cannot bill in a loo
 /**
  * The player named in a line of a brief. The prompt asks for the name alone on
  * its own line, but it is a sentence generator, so match against the board
- * rather than trusting the line to be nothing but a name. Longest name wins, so
- * a surname sitting inside a longer name cannot steal the match.
+ * rather than trusting the line to be nothing but a name.
+ *
+ * Earliest match wins, not longest. Longest was guarding against a surname
+ * sitting inside a longer name, and no such pair exists on this board — no one
+ * of the 267 names is a substring of another — so the rule protected against
+ * nothing and cost the thing below it. On a line naming two players, "Take Chase
+ * Brown over Ja'Marr Chase", longest-wins bound the button to Ja'Marr Chase: the
+ * man the sentence is arguing *against*. One tap on the clock then records the
+ * wrong pick, and the head rendered above the button names the wrong player too,
+ * so nothing on screen contradicts it. The recommendation is the subject of the
+ * sentence and comes first in every natural phrasing of it.
+ *
+ * And when the line genuinely names two different players, bind to nobody rather
+ * than guess. No button is a documented outcome; the wrong button is not.
+ *
+ * Matching is on normName(), which is what the Yahoo ADP join already uses and
+ * was never pointed at this. A model writes "James Cook" for James Cook III and
+ * a curly apostrophe in Ja'Marr Chase, and an exact substring scan returns null
+ * for both — 24 of the 267 names carry a suffix or an apostrophe, among them six
+ * top-40 picks. That failed safe (no button) but cost a name typed into search
+ * under the clock. Comparison is padded with spaces so a normalized match has to
+ * land on whole words: "chase brown" must not be found inside "ja marr chase
+ * brown lastname".
  */
 function playerIn(line) {
   var s = (line || "").trim();
   if (!s) return null;
   if (A.byName[s]) return A.byName[s];
-  var hit = null;
+  // normName folds the punctuation that appears *inside* names — the period, the
+  // apostrophe, the hyphen — and nothing else, because the ADP join it was built
+  // for only ever sees bare names. A sentence brings its own: "Take Bijan
+  // Robinson, he is the best back left" leaves "robinson," glued together and
+  // matches nobody. Everything that is not a letter or a digit becomes a space
+  // first, and the word-boundary padding below does the rest.
+  var ns = " " + normName(s.replace(/’/g, "'").replace(/[^\p{L}\p{N}'.\- ]+/gu, " ")) + " ";
+  var hit = null, hitAt = Infinity, rivals = [];
   A.all.forEach(function (p) {
-    if (s.indexOf(p.name) >= 0 && (!hit || p.name.length > hit.name.length)) hit = p;
+    if (!p.name) return;
+    var np = " " + normName(p.name) + " ";
+    var at = ns.indexOf(np);
+    if (at < 0) return;
+    // Two names that contain one another are one reference, not two players.
+    var distinct = rivals.every(function (q) {
+      var nq = normName(q.name), n = normName(p.name);
+      return nq.indexOf(n) < 0 && n.indexOf(nq) < 0;
+    });
+    if (distinct) rivals.push(p);
+    if (at < hitAt) { hit = p; hitAt = at; }
   });
-  return hit;
+  return rivals.length > 1 ? null : hit;
 }
 
 function briefPlayer(text) { return playerIn((text || "").split("\n")[0]); }
