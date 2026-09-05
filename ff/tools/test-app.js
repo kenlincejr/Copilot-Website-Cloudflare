@@ -262,7 +262,8 @@ function loadApp(leagueState, picksState, opts) {
     "spendBriefTry: function (n) { briefTries[n] = 2; }, " +
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
-    "draftedNames: draftedNames, allRosters: allRosters };\n";
+    "draftedNames: draftedNames, allRosters: allRosters, " +
+    "reassign: reassign, recordTo: recordTo, render: render };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
 
   vm.runInContext(src, sandbox, { filename: "app.js (sandboxed copy, test-app.js)" });
@@ -1511,6 +1512,220 @@ console.log("\n== briefPlayer binding ==");
      /FULL NAME exactly as/.test(q));
   ok("and says why, so it reads as a constraint rather than a style note",
      /a surname alone/.test(q));
+})();
+
+/* ========================================================================
+   Catch-up: close the tab mid-draft, reopen, then use catch-up to record
+   six real-world picks you missed while away — one of them unknown.
+
+   openCatchup() (app.js, ~line 692) drives this exact sequence: guess names
+   off the ADP-sorted pool, let the user correct them, then in pick order
+   call record(name-or-null, mine, true) for each row. Reopening the tab is
+   nothing more than loadApp() running again against the same saved picks —
+   there is no separate "resume" code path, so the regression this guards
+   against is catch-up itself: does replaying six picks against a draft
+   that already has real history land the pick count exactly right, leave
+   nothing double-recorded, and correctly leave the unknown pick's player on
+   the board (his slot is spent, but nobody says who he was)?
+   ======================================================================== */
+console.log("\n== catch-up (script 3) ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  // Get to "pick 20" the way a real draft would: 19 real picks recorded.
+  for (var i = 0; i < 19; i++) {
+    var av = api.getAnalysis().avail;
+    api.record(av[0].name, false);
+  }
+  ok("nineteen real picks land the draft on the clock at pick 20",
+     api.currentPick() === 20, "" + api.currentPick());
+  var savedPicks = api.getState().picks;
+  ok("nothing was recorded beyond the 19 real picks", savedPicks.length === 19);
+
+  // "Close the tab." loadApp() is what running the app again from scratch
+  // looks like; feeding it the exact picks just saved is what reopening it
+  // looks like. Nothing about being reopened should change the count.
+  var reopened = loadApp(kindaHighlandersLeague(), savedPicks);
+  ok("reopening the tab leaves the pick count exactly where it was",
+     reopened.currentPick() === 20, "" + reopened.currentPick());
+  ok("reopening does not lose or duplicate any of the real history",
+     reopened.getState().picks.length === 19);
+
+  // "The real draft is at pick 26": six picks happened while the tab was
+  // closed. Build the guesses the way openCatchup() does — off the
+  // ADP-sorted pool, skipping names already guessed for an earlier row in
+  // this same batch — then apply them in pick order. Row index 3 (pick 23)
+  // is the "didn't catch it" case: unknown, name null.
+  var before = reopened.getAnalysis();
+  var availBefore = before.avail.length;
+  var pool = before.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
+  var used = {};
+  var UNKNOWN_ROW = 3;
+  var rows = [];
+  for (var r = 0; r < 6; r++) {
+    var pk = 20 + r;
+    var owner = reopened.ownerOfPick(pk);
+    if (r === UNKNOWN_ROW) { rows.push({ pick: pk, mine: owner.slot === 11, name: null }); continue; }
+    var guess = pool.filter(function (p) { return !used[p.name]; })[0];
+    used[guess.name] = true;
+    rows.push({ pick: pk, mine: owner.slot === 11, name: guess.name });
+  }
+  ok("the fixture really does include one unknown row",
+     rows.filter(function (r) { return r.name === null; }).length === 1);
+  var namedCount = rows.filter(function (r) { return r.name !== null; }).length;
+
+  // record() is called quiet, matching openCatchup()'s own loop exactly —
+  // and, exactly like openCatchup(), one render() afterward is what brings
+  // getAnalysis()'s cached A up to date. Skipping this step does not fail
+  // loudly: currentPick() (computed straight off S.picks) is already right,
+  // and only the avail-pool assertion below would go quietly wrong.
+  rows.forEach(function (r) { reopened.record(r.name, r.mine, true); });
+  reopened.render();
+
+  ok("six catch-up picks land the count exactly on 26",
+     reopened.currentPick() === 26, "" + reopened.currentPick());
+  var afterPicks = reopened.getState().picks;
+  ok("the log holds exactly 25 entries (19 real + 6 catch-up)",
+     afterPicks.length === 25, "" + afterPicks.length);
+  var names = afterPicks.map(function (p) { return p.name; }).filter(function (n) { return n !== null; });
+  ok("no player name was double-recorded across the reopen and the catch-up",
+     new Set(names).size === names.length, names.join(", "));
+
+  var after = reopened.getAnalysis();
+  ok("the pool shrank by exactly the number of NAMED catch-up picks (" + namedCount + "), " +
+     "not by all six — the unknown pick spends the slot but leaves its player available",
+     availBefore - after.avail.length === namedCount,
+     (availBefore - after.avail.length) + " vs " + namedCount);
+
+  // Every roster is consistent: every logged pick (named or unknown) shows up
+  // on exactly one team's roster. allRosters() also carries the round-5
+  // keeper's future claim (pick 59, not reached yet) alongside real picks —
+  // that is allPicks()'s own documented behavior (a keeper occupies its slot
+  // the moment the draft is built, not when the draft reaches it), so the
+  // right check is "every real pick is present", not "the totals match".
+  var rosters = reopened.allRosters();
+  var rosterPickNums = {};
+  Object.keys(rosters).forEach(function (slot) {
+    rosters[slot].forEach(function (p) { rosterPickNums[p.pick] = true; });
+  });
+  var missing = afterPicks.filter(function (p) { return !rosterPickNums[p.pick]; });
+  ok("every real pick (named or unknown) is accounted for on some team's roster",
+     missing.length === 0, missing.map(function (p) { return p.pick; }).join(","));
+  var unknownRow = rows[UNKNOWN_ROW];
+  var unknownOwnerRoster = rosters[unknownRow.mine ? 11 : reopened.ownerOfPick(unknownRow.pick).slot];
+  ok("the unknown pick shows up on its team's roster as an unnamed body, not as a hole",
+     unknownOwnerRoster.some(function (p) { return p.pick === unknownRow.pick && p.name === "unknown"; }));
+})();
+
+/* ========================================================================
+   Mistakes: undo, re-credit with the "move" affordance, and a mis-click
+   recorded to yourself — each is compared against the state the draft would
+   be in if the mistake had never happened at all, byte for byte, on the
+   three things a mistake can actually corrupt: the available pool, every
+   team's roster, and positionalNeed() for the user. A fix that leaves any
+   one of those subtly different from a clean draft is a fix in name only.
+
+   reassign() (app.js, ~line 2272) is the real "move" affordance — the popup
+   opened from a recorded player's row offers "move to" another team, which
+   calls reassign(name, slot). It is driven here directly rather than
+   hand-rolling a re-credit, per the brief: this is the code path an actual
+   fix goes through, not a stand-in for it.
+   ======================================================================== */
+console.log("\n== mistakes: undo and re-credit (script 4) ==");
+(function () {
+  function fillPicks(api, n) {
+    for (var i = 0; i < n; i++) {
+      var av = api.getAnalysis().avail;
+      api.record(av[0].name, false, true);
+    }
+  }
+  function snapshot(api) {
+    var A = api.getAnalysis();
+    var rosters = api.allRosters();
+    var rosterOut = {};
+    Object.keys(rosters).forEach(function (slot) {
+      rosterOut[slot] = rosters[slot].map(function (p) { return p.name + "@" + p.pick; });
+    });
+    return JSON.stringify({
+      avail: A.avail.map(function (p) { return p.name; }).sort(),
+      rosters: rosterOut,
+      need: A.need
+    });
+  }
+
+  // One shared 15-pick history, reused as the starting point for all three
+  // scenarios below so each one is judged against an identical board.
+  var seedApi = loadApp(kindaHighlandersLeague(), []);
+  fillPicks(seedApi, 15);
+  var basePicks = seedApi.getState().picks;
+  ok("the shared fixture puts the draft on the clock at pick 16, owned by " +
+     "someone other than the user (pick 16 is not on the user's schedule)",
+     seedApi.currentPick() === 16 && seedApi.ownerOfPick(16).slot !== 11,
+     "cur " + seedApi.currentPick() + " owner " + seedApi.ownerOfPick(16).slot);
+
+  /* --- (a) Undo a pick --------------------------------------------------
+     Record pick 16 correctly, then an errant extra pick 17 (a double
+     click), then undo(). The board after undo must match the board right
+     after the correct pick 16 — not almost, exactly. */
+  (function () {
+    var api = loadApp(kindaHighlandersLeague(), basePicks);
+    var correctName = api.getAnalysis().avail[0].name;
+    api.record(correctName, false);
+    var preMistake = snapshot(api);
+
+    var mistakeName = api.getAnalysis().avail[0].name;
+    api.record(mistakeName, false);
+    ok("undo fixture: the errant pick really did change the board",
+       snapshot(api) !== preMistake);
+
+    api.undo();
+    ok("undo: pool, every roster, and positionalNeed() match the pre-mistake " +
+       "state exactly, byte for byte", snapshot(api) === preMistake);
+  })();
+
+  /* --- (b) Re-credit a pick to a different team, with "move" ------------
+     Record pick 16 correctly (credited to whoever the clock says), then
+     mis-credit it to the wrong team via the same reassign() the "move"
+     button calls, then move it back. */
+  (function () {
+    var api = loadApp(kindaHighlandersLeague(), basePicks);
+    var name = api.getAnalysis().avail[0].name;
+    var correctSlot = api.ownerOfPick(16).slot;
+    api.record(name, false);
+    var preMistake = snapshot(api);
+
+    var wrongSlot = correctSlot === 1 ? 2 : 1;
+    api.reassign(name, wrongSlot);
+    ok("re-credit fixture: crediting the pick to the wrong team really did " +
+       "change the rosters", snapshot(api) !== preMistake);
+
+    api.reassign(name, correctSlot);
+    ok("re-credit: moving the pick back to the right team matches the " +
+       "pre-mistake state exactly, byte for byte", snapshot(api) === preMistake);
+  })();
+
+  /* --- (c) Recorded to yourself by mistake, fixed with "move" -----------
+     A mis-click credits pick 16 to the user's own team via mine:true even
+     though it is not the user's turn. The fix moves it to whoever the
+     clock actually says was on it. */
+  (function () {
+    var refApi = loadApp(kindaHighlandersLeague(), basePicks);
+    var name = refApi.getAnalysis().avail[0].name;
+    var correctSlot = refApi.ownerOfPick(16).slot;
+    refApi.record(name, false);
+    var preMistake = snapshot(refApi);
+
+    var api = loadApp(kindaHighlandersLeague(), basePicks);
+    api.record(name, true);   // the mis-click: forced mine:true, not your turn
+    ok("mis-click fixture: recording the pick to yourself really did credit " +
+       "the wrong team", snapshot(api) !== preMistake);
+    ok("and it really did land on the user's own roster, which is the bug " +
+       "being fixed", api.getState().picks[api.getState().picks.length - 1].mine === true);
+
+    api.reassign(name, correctSlot);
+    ok("mis-click fix: moving the pick to the team that was actually on the " +
+       "clock matches the pre-mistake state exactly, byte for byte",
+       snapshot(api) === preMistake);
+  })();
 })();
 
 function normNameLocal(n) {

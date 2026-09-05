@@ -113,7 +113,12 @@ function loadSync(user, seed, fetchImpl) {
   SYNC.onNotice = function (kind, info) { notices.push({ kind: kind, info: info }); };
   return { SYNC: SYNC, calls: calls, notices: notices, ls: sandbox.localStorage, fire: function (type, evt) {
     (listeners[type] || []).forEach(function (fn) { fn(evt || {}); });
-  } };
+  },
+  // Flips what DRAFTLINE_AUTH.current() answers, in place — this is the one
+  // thing an actual sign-out/sign-in changes. Used only by the script-12
+  // test below to simulate a session teardown without rebuilding the sandbox
+  // (which would also throw away the localStorage state under test).
+  setUser: function (u) { user = u; } };
 }
 
 function draft(pickCount) {
@@ -436,6 +441,124 @@ function record(name, fn) {
     h.SYNC.flushNow();
     await tick();
     ok("retrying once the network is back succeeds and clears dirty", h.ls.getItem(K_DIRTY) === "0" && h.SYNC.status === "saved");
+  });
+
+  /* ===================================================================
+     Script 9 — offline. Ten picks recorded while the network is down (the
+     whole draft keeps running on localStorage regardless), then the network
+     comes back. Every push() call replaces `pending` with the FULL current
+     draft snapshot — this is a whole-state sync, not a per-pick queue — so
+     "no loss and no duplication" here means the final successful PUT must
+     carry all ten picks, in order, and none of the ten failed attempts in
+     between is allowed to silently drop the growing state back to an
+     earlier one. flushNow() stands in for the retry timer the same way the
+     other network-failure test above does.
+     =================================================================== */
+  await record("script 9: ten saves offline, then the network returns", async function () {
+    var seed = {}; seed[K_STATE] = draft(0); seed[K_REV] = "1"; seed[K_DIRTY] = "0";
+    var netUp = false, puts = 0, lastPutBody = null;
+    var h = loadSync(USER, seed, function (url, opts) {
+      if (opts && opts.method === "PUT") {
+        puts++;
+        lastPutBody = opts.body ? JSON.parse(opts.body) : null;
+        if (!netUp) return Promise.reject(new Error("network down"));
+        return Promise.resolve(fakeResponse(true, { rev: 2, updatedAt: Date.now() }));
+      }
+      return Promise.resolve(fakeResponse(true, { rev: 1, state: draft(0) }));
+    });
+    await h.SYNC.hydrate();
+
+    // Ten picks, each one an autosave attempt while the network is down.
+    // Every attempt fails, and the draft must never stop growing underneath
+    // the failures — each push carries the state as it stood after THAT
+    // pick, ten names deep by the last one.
+    for (var i = 1; i <= 10; i++) {
+      h.SYNC.push(draft(i));
+      h.SYNC.flushNow();
+      await tick();
+      ok("script 9: after failed save " + i + ", status reads offline (the UI's " +
+         "\"offline\" state)", h.SYNC.status === "offline");
+    }
+    ok("script 9: all ten saves really did attempt a PUT while the network was down",
+       puts === 10, "" + puts);
+    ok("script 9: the draft is not lost — dirty stays set through every failure",
+       h.ls.getItem(K_DIRTY) === "1");
+    ok("script 9: onNotice('offline') fired at least once, the way the sync banner reads it",
+       h.notices.some(function (n) { return n.kind === "offline"; }));
+
+    // The network returns. The next flush — the same retry path the backoff
+    // timer would eventually take on its own — must succeed and carry the
+    // full ten-pick state, not a partial or stale one.
+    netUp = true;
+    h.SYNC.flushNow();
+    await tick();
+    ok("script 9: the queue actually flushed once the network came back",
+       puts === 11, "" + puts);
+    ok("script 9: sync status transitions to saved, the way the UI reports success",
+       h.SYNC.status === "saved");
+    ok("script 9: dirty clears now that the save went through",
+       h.ls.getItem(K_DIRTY) === "0");
+    ok("script 9: onNotice('saved') fired", h.notices.some(function (n) { return n.kind === "saved"; }));
+
+    var sentPicks = lastPutBody && JSON.parse(lastPutBody.state).picks;
+    ok("script 9: the payload that finally reached the server carries all ten picks",
+       !!sentPicks && sentPicks.length === 10, sentPicks && sentPicks.length);
+    ok("script 9: in order, first to last, with none lost or duplicated",
+       sentPicks && JSON.stringify(sentPicks.map(function (p) { return p.pick; })) ===
+       JSON.stringify([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+       sentPicks && sentPicks.map(function (p) { return p.pick; }).join(","));
+  });
+
+  /* ===================================================================
+     Script 12 — sign out and back in mid-draft. Signing out does not touch
+     localStorage (app.js's own sign-out never clears the saved draft key —
+     only "Start over" does that), so the draft the user was on is still
+     sitting there; what has to be proven is that hydrate() running again
+     under the same account, against a server that has not moved, hands the
+     board back exactly what it had before the session tore down. This is
+     the CURRENT x CLEAN branch, exercised explicitly across a simulated
+     sign-out rather than as a single steady-state call.
+     =================================================================== */
+  await record("script 12: sign out and back in mid-draft", async function () {
+    var midDraft = draft(23);
+    var seed = {}; seed[K_STATE] = midDraft; seed[K_REV] = "7"; seed[K_DIRTY] = "0";
+    var h = loadSync(USER, seed, function () {
+      return Promise.resolve(fakeResponse(true, { rev: 7, state: midDraft, device: "Mac · Safari" }));
+    });
+
+    var before = await h.SYNC.hydrate();
+    ok("script 12: signed in, the draft hydrates as current", before.mode === "current");
+    var stateBeforeTeardown = h.ls.getItem(K_STATE);
+
+    // "Sign out": the account context goes away (DRAFTLINE_AUTH.current()
+    // starts answering null, exactly what it does after the app's own
+    // logout — see app.js ~line 3357, AUTH.logout()). hydrate() run in that
+    // state must not touch, let alone clear, the draft already on disk: the
+    // whole point of local-first storage is that closing the session cannot
+    // lose the board underneath it.
+    h.setUser(null);
+    var duringSignedOut = await h.SYNC.hydrate();
+    ok("script 12: hydrate() with no session reports local, not empty or an error",
+       duringSignedOut.mode === "local");
+    ok("script 12: the draft is still on disk while signed out — nothing in " +
+       "sign-out touches the saved draft key",
+       h.ls.getItem(K_STATE) === stateBeforeTeardown);
+    ok("script 12: the revision counter also survives the teardown untouched",
+       h.ls.getItem(K_REV) === "7");
+
+    // Sign back in, same account, server unchanged: hydrate() again must
+    // reproduce the exact same draft, not merely "a" draft.
+    h.setUser(USER);
+    var after = await h.SYNC.hydrate();
+    ok("script 12: signing back in mid-draft re-hydrates as current, not as a " +
+       "fresh empty draft or a false conflict", after.mode === "current");
+    ok("script 12: the draft state after rehydrating is byte-identical to what " +
+       "it was before the session tore down",
+       h.ls.getItem(K_STATE) === stateBeforeTeardown && h.ls.getItem(K_STATE) === midDraft);
+    ok("script 12: the revision counter is unchanged — nothing was silently " +
+       "renegotiated", h.ls.getItem(K_REV) === "7");
+    ok("script 12: no conflict was raised over a session teardown with nothing " +
+       "actually different on either side", !h.SYNC.hasConflict());
   });
 
   console.log("\n" + pass + " passed, " + fail + " failed\n");
