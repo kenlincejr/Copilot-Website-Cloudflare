@@ -247,6 +247,7 @@ function loadApp(leagueState, picksState, opts) {
     "stillNeedLine: stillNeedLine, startingSlots: startingSlots, " +
     "briefEyebrow: briefEyebrow, " +
     "supplyBlock: supplyBlock, " +
+    "styleBlock: styleBlock, " +
     "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
     "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
@@ -1100,6 +1101,52 @@ console.log("\n== supplyBlock ==");
   // Six lines, one per position, however deep the draft is.
   ok("it is six lines and a heading",
      text.split("\n").length === 7, text.split("\n").length + " lines");
+})();
+
+/* ========================================================================
+   styleBlock - on a style with no knobs, say nothing
+   ======================================================================== */
+console.log("\n== styleBlock ==");
+(function () {
+  function at(style) {
+    var lg = kindaHighlandersLeague();
+    if (style) lg.style = style;
+    return loadApp(lg, Array.from({ length: 85 }, function (_, i) {
+      return { pick: i + 1, name: null, slot: null, mine: false, unknown: true };
+    }));
+  }
+
+  // Balanced is knobs: {} - literally no overrides - so no pick is ever on top
+  // because of it, and a sentence saying one is cannot be checked from outside.
+  var bal = at("balanced");
+  ok("Balanced really does carry no knobs",
+     Object.keys(STRATS.balanced.knobs || {}).length === 0);
+  ok("so the style block says nothing at all", bal.styleBlock() === "",
+     JSON.stringify(bal.styleBlock()));
+  var text = bal.claudeContext();
+  ok("and no style section reaches the payload", text.indexOf("MY DRAFT STYLE") < 0);
+  ok("the invitation to explain a style effect is gone",
+     !/only on top because of the style/.test(text));
+  ok("as is the invitation to say the style is steering wrong",
+     !/steering me wrong/.test(text));
+
+  // A style with real knobs is named, with the knobs, as numbers.
+  var hero = at("hero_rb");
+  var hb = hero.styleBlock();
+  ok("a style with knobs is still declared", hb.indexOf("MY DRAFT STYLE") === 0, hb.slice(0, 60));
+  ok("and it names what the knobs actually are", /It changes the board by:/.test(hb), hb);
+  Object.keys(STRATS.hero_rb.knobs || {}).forEach(function (k) {
+    ok("knob " + k + " is stated rather than described", hb.indexOf(k) >= 0);
+  });
+  ok("the payload carries it", hero.claudeContext().indexOf("MY DRAFT STYLE") >= 0);
+
+  // The user's own notes are their words and survive a neutral preset.
+  var lg = kindaHighlandersLeague();
+  lg.styleCustom = "I want a second tight end late.";
+  var noted = loadApp(lg, []);
+  ok("custom notes are passed on even under Balanced",
+     noted.styleBlock().indexOf("I want a second tight end late.") >= 0,
+     noted.styleBlock());
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

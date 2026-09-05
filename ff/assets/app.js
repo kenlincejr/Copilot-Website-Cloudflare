@@ -4150,6 +4150,44 @@ function rosterBlock() {
 }
 
 /**
+ * The draft style, when there is one, and silence when there is not.
+ *
+ * The old clause named the style and then asked the model to "say when a pick
+ * is only on top because of the style, and say so too when the style is
+ * steering me wrong here." On Balanced that is an invitation to invent. Balanced
+ * is `knobs: {}` — literally no overrides — so no pick is ever on top because
+ * of it, and any sentence claiming one is cannot be checked from outside the
+ * app. Asking a model to explain the influence of something with no influence
+ * reliably produces an explanation.
+ *
+ * So on a style with no knobs this block says nothing at all. On a style with
+ * knobs it names them as the numbers they are, and the scores below already
+ * have them applied.
+ */
+function styleBlock() {
+  var key = S.league.style || "balanced";
+  var st = STRATS[key] || STRATS.balanced;
+  var knobs = st.knobs || {};
+  var names = Object.keys(knobs);
+  // Custom notes are the user's own words and always worth passing on, even
+  // when the preset behind them is neutral.
+  var custom = S.league.styleCustom;
+  if (!names.length && !custom) return "";
+
+  var out = "MY DRAFT STYLE: " + styleName() +
+    (st.tagline ? " — " + st.tagline.replace(/\.\s*$/, "") : "") +
+    ". The scores below already have it applied.";
+  if (names.length) {
+    out += " It changes the board by: " + names.map(function (k) {
+      var v = knobs[k];
+      return k + " " + (v && typeof v === "object" ? JSON.stringify(v) : v);
+    }).join("; ") + ".";
+  }
+  if (custom) out += " My own notes on it: " + custom;
+  return out;
+}
+
+/**
  * How much is left at each position, as counts rather than as a list.
  *
  * The candidate block already spends most of the payload naming individual
@@ -4304,11 +4342,7 @@ function claudeContext() {
     runs.length ? "RUN IN PROGRESS: " + runs.join(", ") : "",
     rosterBlock(),
     supplyBlock(),
-    "MY DRAFT STYLE: " + styleName() +
-      (STRATS[S.league.style || "balanced"]
-        ? " — " + STRATS[S.league.style || "balanced"].tagline : "") +
-      ". The scores below already have it applied. Say when a pick is only on top " +
-      "because of the style, and say so too when the style is steering me wrong here.",
+    styleBlock(),
     (waiting
       ? "LIKELY AVAILABLE WHEN MY TURN COMES, BY THE BOARD'S OWN SCORE. Most of " +
         "the players the teams in between will take are already removed. Anyone " +
