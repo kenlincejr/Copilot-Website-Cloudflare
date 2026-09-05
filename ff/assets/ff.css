@@ -995,8 +995,70 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
 .tk-do.bad b { color: #fecaca; }
 .tk-do.bad span { color: #fca5a5; opacity: .85; }
 
-/* order — three picks ahead, the clock, four behind ----------------------- */
+/* A team in its own color. Hue is the slot walked round the wheel by the
+   golden angle; saturation and lightness are fixed, so every chip weighs the
+   same against the panel and none is told apart by hue alone — the name is
+   always in it, and the color only makes it findable at a glance. */
+.tk-who {
+  display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 99px;
+  font-size: .92em; font-weight: 600; white-space: nowrap;
+  color: hsl(var(--tc, 200) 62% 70%);
+  background: hsl(var(--tc, 200) 40% 17%);
+  border: 1px solid hsl(var(--tc, 200) 35% 32%);
+}
+.tk-who.me { color: var(--teal); background: rgba(45,212,191,.14); border-color: var(--teal-dim); }
+
+/* last pick — the line checked against Yahoo after every pick, so it sits
+   directly under the head and never needs a scroll to read. */
+.tk-last {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  padding: 6px 0 8px; margin-bottom: 8px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12.5px; color: var(--muted);
+}
+.tk-lastlab {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--dim);
+}
+.tk-lastpk { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+.tk-lastwho { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-last .tk-undo { margin-left: auto; flex: 0 0 auto; padding: 3px 9px; font-size: 11px; }
+.tk-name {
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  color: var(--amber); text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* the three the room is most likely to take ------------------------------ */
+.tk-tgtcap {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--dim); margin: 2px 0 5px;
+}
+.tk-targets { display: grid; gap: 5px; flex: 1 1 100%; }
+/* From round 12 the top three are noise by measurement, so they are dimmed to
+   the same weight the panel already uses for context rather than news. */
+.tk-targets.ghost { opacity: .55; }
+.tk-tgt {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  justify-content: flex-start; text-align: left; padding: 7px 9px;
+  font-size: 12.5px; font-weight: 500;
+}
+.tk-tgt .tk-tname { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tk-tgt .tk-tmeta { margin-left: auto; font-size: 11px; color: var(--dim); white-space: nowrap; }
+.tk-key {
+  font-family: var(--mono); font-size: 10px; color: var(--dim);
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; flex: 0 0 auto;
+}
+.tk-fall { flex: 1 1 100%; }
+.tk-fall span { font-size: 11.5px; color: var(--dim); line-height: 1.45; }
+
+/* order — three picks ahead, the clock, the recent past ------------------- */
 .tk-order { margin-bottom: 10px; }
+/* One rollout of the room, not a prediction with a number behind it. */
+.tk-guess { color: var(--dim); font-style: italic; }
+.tk-rc {
+  font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--amber); margin-left: 4px;
+}
 .tk-row {
   display: grid; grid-template-columns: 30px minmax(52px, 88px) 1fr; gap: 9px;
   align-items: baseline; padding: 3px 0; font-size: 12.5px;
@@ -1187,12 +1249,22 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
   /* The box is read at arm's length on a tablet. Everything in it that carries
      a fact rather than a label goes up a size, and the fold toggles get a row
      a thumb can actually land on. */
-  .tk-head b { font-size: 19px; }
+  /* The head carries a color chip now, which does the standing-out the extra
+     two points of type used to do — and those two points cost a wrapped line
+     in a tablet column that has to fit the whole panel. */
+  .tk-head b { font-size: 17px; }
   .tk-sub { font-size: 12.5px; }
   .tk-do b { font-size: 15px; }
   .tk-do span { font-size: 12.5px; }
   .tk-row { font-size: 14px; padding: 5px 0; }
   .tk-row .tk-n { font-size: 12px; }
+  /* The target chips are the primary action on 165 of the 180 picks, so they
+     get the 44px floor from the rule above and a size that can be read at
+     arm's length. The keyboard hints go: there is no keyboard. */
+  .tk-last { font-size: 13.5px; }
+  .tk-tgt { font-size: 14px; padding: 9px 11px; }
+  .tk-tgt .tk-tmeta { font-size: 12px; }
+  .tk-key { display: none; }
   .tk-row.now { padding: 8px 8px; }
   .tk-keepbtn { min-height: 44px; font-size: 12.5px; }
   .modal { padding: 18px 16px; }

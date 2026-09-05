@@ -275,7 +275,7 @@ function record(name, mine, quiet) {
   syncKeepers();
   S.lastPickAt = Date.now();
   save();
-  if (!quiet) render();
+  if (!quiet) { openUndoWindow(); render(); }
 }
 
 function undo() {
@@ -847,6 +847,108 @@ var tkKeepOpen = false, tkMoreOpen = false;
 /** Minutes of silence on a hand-kept board before it is worth asking about. */
 var TK_STALE_MIN = 8;
 
+/**
+ * A team, in its own color.
+ *
+ * The hue is the slot walked around the wheel by the golden angle, so any team
+ * count spreads as far apart as it can with no table to keep in step. Saturation
+ * and lightness are fixed, which means every chip weighs the same against the
+ * panel and none of them is legible only by hue — the chip always carries the
+ * team's own name, and the color is a way to find it fast across a room, not the
+ * information itself. Your own seat stays teal, because that is what teal means
+ * everywhere else in this app.
+ */
+function teamChip(slot) {
+  var mine = slot === S.league.slot;
+  return '<span class="tk-who' + (mine ? " me" : "") + '"' +
+    (mine ? "" : ' style="--tc:' + Math.round((slot * 137.508) % 360) + '"') +
+    ">" + esc(teamLabel(slot, true)) + "</span>";
+}
+
+/**
+ * The line the user checks against Yahoo after every pick.
+ *
+ * It is one line, directly under the head, because it is read more often than
+ * anything else on the panel and reading it must never mean scrolling. For four
+ * seconds after a record it carries its own Undo — see openUndoWindow.
+ */
+function lastPickLine() {
+  var p = S.picks[S.picks.length - 1];
+  if (!p) return "";
+  var pl = BY_NAME[p.name] || {};
+  return '<div class="tk-last">' +
+    '<span class="tk-lastlab">Last</span>' +
+    '<span class="tk-lastpk">pick ' + p.pick + "</span>" + teamChip(p.slot) +
+    (p.unknown
+      ? '<button type="button" class="tk-name" id="tkNameIt">name not recorded — name him</button>'
+      : '<span class="tk-lastwho">' + (pl.pos ? posChip(pl.pos) + " " : "") + esc(p.name) + "</span>") +
+    (undoWindowOpen()
+      ? '<button class="btn btn-sm btn-ghost tk-undo" id="tkUndo">Undo</button>' : "") +
+    "</div>";
+}
+
+/**
+ * Four past picks is the right number on a screen with room for it, and two is
+ * the right number on a tablet, where the panel has to fit its column: in
+ * portrait the pick-to-pick loop above has to stay above the fold, and in
+ * landscape E1 requires the whole tracker visible without scrolling. The
+ * last-pick line carries the most recent one either way, so the rows below it
+ * are history rather than the thing being checked.
+ */
+function tkPastCount() {
+  try {
+    return window.matchMedia("(max-width: 1200px)").matches ? 2 : 4;
+  } catch (e) { return 4; }
+}
+
+/** Three picks ahead, the pick on the clock, and the recent past under it. */
+function orderRows() {
+  var total = S.league.teams * S.league.rounds;
+  function row(pk, slot, what, cls) {
+    return '<div class="tk-row ' + cls + (slot === S.league.slot ? " mine" : "") + '">' +
+      '<span class="tk-n">' + pk + "</span>" +
+      '<span class="tk-t">' + esc(teamLabel(slot, true)) + "</span>" +
+      '<span class="tk-w">' + what + "</span></div>";
+  }
+  var guess = {};
+  if (!S.draftEnded && A.cur <= total) {
+    (roomTargets().ahead || []).forEach(function (g) {
+      if (g.player) guess[g.pick] = g.player;
+    });
+  }
+  var rows = [];
+  for (var pk = Math.min(total, A.cur + 3); pk > A.cur; pk--) {
+    var kp = keeperAt(pk), owner = ownerOfPick(pk).slot;
+    var g = guess[pk];
+    rows.push(row(pk, owner,
+      kp ? '<span class="tk-kp">keeper</span> ' + esc(kp.name)
+         : owner === S.league.slot ? "your pick"
+         // One rollout of the room, not a prediction with a number on it — dim,
+         // and never a tap target. It is here so a run is visible forming.
+         : g ? '<span class="tk-guess">maybe ' + esc(g.name) + "</span>"
+         : "", "up"));
+  }
+  rows.push(row(A.cur, A.onClock.slot, "on the clock", "now"));
+  S.picks.slice(-tkPastCount()).reverse().forEach(function (p) {
+    var pl = BY_NAME[p.name] || {};
+    // The snake says whose pick it was; p.slot says who was credited with it.
+    // When they differ the row used to just show the credited team, which reads
+    // as a defect rather than as the re-credit it is.
+    var moved = !p.keeper && p.slot !== ownerOfPick(p.pick).slot;
+    rows.push(row(p.pick, p.slot, (p.unknown
+      ? "<i>name not recorded</i>"
+      : posChip(pl.pos || "K") + " " + esc(p.name)) +
+      (moved ? ' <span class="tk-rc">re-credited</span>' : ""), "past"));
+  });
+  return rows.join("");
+}
+
+/** One tap: the player the room was going to take anyway, to the team on it. */
+function takeTarget(name) {
+  if (!name || !A.onClock) return;
+  recordTo(name, A.onClock.slot);
+}
+
 function renderTracker() {
   var el = $("#tracker"), total = S.league.teams * S.league.rounds;
   if (!isLive()) { el.innerHTML = ""; return; }
@@ -880,17 +982,26 @@ function renderTracker() {
   var gap = A.myNext ? A.myNext - A.cur : null;
   var plural = function (c, one) { return c === 1 ? one : one + "s"; };
 
-  /* ---- head: where YOU are. Where the draft is goes on the line under it —
-     the bold line is the only thing on this panel worth a glance from across
-     the room, and it should answer the question you actually have. */
-  var state = onMe ? "You're on the clock"
+  /* ---- head: where the DRAFT is, and where you are under it.
+     It used to lead with "You're up in 8 picks" and bury the team on the clock
+     in a sentence three bands down. But for 165 of the 180 picks the question
+     the user has is not about them — it is "whose pick is this, and did the
+     last one land". So the clock leads, and your own turn takes the line back
+     the moment it is yours. */
+  var mine = onMe ? "You're on the clock"
     : gap === null ? "Your picks are all in"
     : gap === 1 ? "You're up next"
     : "You're up in " + gap + " picks";
+  // No "on the clock" after the chip: the pick number and the team are the
+  // whole sentence, and on a tablet column the extra three words are a third
+  // line the panel cannot spare.
+  var clock = "Pick " + A.cur + " · Round " + A.onClock.round + " · " +
+    teamChip(A.onClock.slot);
 
-  var sub = "round " + A.onClock.round + " of " + S.league.rounds +
-    " · pick " + A.cur + " of " + total +
-    (gap ? " · you pick at " + A.myNext + (A.myAfter ? ", then " + A.myAfter : "") : "");
+  var state = onMe ? mine : clock;
+  var sub = onMe
+    ? clock
+    : mine + (A.myNext ? " · picks " + A.myNext + (A.myAfter ? " and " + A.myAfter : "") : "");
   var done = Math.round(S.picks.length / total * 100);
 
   /* ---- do: one instruction, one button. The branches are exclusive, so there
@@ -907,10 +1018,37 @@ function renderTracker() {
                 : "Double-click a name in the player list, or use Draft on his card.") +
       "</span></div></div>";
   } else {
+    /* The pick-to-pick loop. Three names the room is most likely to take, each
+       one tap; the head advances and the next team's three render in the same
+       place, so recording an opponent's pick costs a tap and no scrolling.
+       Every chip carries the position, the NFL team and the ADP as well as the
+       name, because the tap is confirmed against the Yahoo panel by eye and a
+       bare name is not enough to do that with. The caption is computed from the
+       round, so the confidence on screen falls off with the measurement instead
+       of outliving it. */
+    var tg = roomTargets();
+    var caption = targetCaption(A.onClock.round);
+    var chips = tg.list.map(function (t, i) {
+      var p = t.player;
+      return '<button class="btn tk-tgt" data-name="' + esc(p.name) + '">' +
+        '<kbd class="tk-key">' + (i + 1) + "</kbd>" +
+        '<span class="tk-tname">' + esc(p.name) + "</span>" +
+        posChip(p.pos) +
+        '<span class="tk-tmeta">' + esc(p.team || "") +
+          " · adp " + (Math.round(marketAdp(p).adp * 10) / 10) + "</span></button>";
+    }).join("");
+
     doHtml = '<div class="tk-do">' +
-      "<div><b>Pick " + A.cur + " goes to " + esc(teamLabel(A.onClock.slot)) + ".</b><span>" +
-      (IS_TOUCH ? "Tap whoever just went in the player list, then tap again to confirm."
-                : "Double-click whoever just went in the player list.") +
+      // The head above already leads with the pick and the team, so repeating
+      // it here is a third line saying the same thing on a column this narrow.
+      // It earns its place only when there are no chips under it to explain.
+      (chips
+        ? '<div class="tk-tgtcap">' + caption + '</div><div class="tk-targets' +
+          (caption === "long shots" ? " ghost" : "") + '">' + chips + "</div>"
+        : "<div><b>Pick " + A.cur + " goes to " + esc(teamLabel(A.onClock.slot)) + ".</b></div>") +
+      '<div class="tk-fall"><span>' +
+      (IS_TOUCH ? "Took someone else? Tap him in the player list."
+                : "Took someone else? Double-click him in the player list.") +
       "</span></div>" +
       // The old button here was "Missed the name", and it was two steps
       // pretending to be one: it logged an unnamed pick against whichever team
@@ -923,32 +1061,12 @@ function renderTracker() {
         "Pick went to…</button></div>";
   }
 
-  /* ---- order: three picks ahead, the pick on the clock, four behind. Reading
-     down the column is going back in time, which is the direction the numbers
-     already run. It replaces both the on-the-clock / on-deck grid and the
-     recent list — those were the same handful of facts, printed twice, in two
-     different shapes, and neither one showed both sides of now. */
-  function orderRow(pk, slot, what, cls) {
-    return '<div class="tk-row ' + cls + (slot === S.league.slot ? " mine" : "") + '">' +
-      '<span class="tk-n">' + pk + "</span>" +
-      '<span class="tk-t">' + esc(teamLabel(slot, true)) + "</span>" +
-      '<span class="tk-w">' + what + "</span></div>";
-  }
-  var rows = [];
-  for (var pk = Math.min(total, A.cur + 3); pk > A.cur; pk--) {
-    var kp = keeperAt(pk);
-    rows.push(orderRow(pk, ownerOfPick(pk).slot,
-      kp ? '<span class="tk-kp">keeper</span> ' + esc(kp.name)
-         : ownerOfPick(pk).slot === S.league.slot ? "your pick" : "", "up"));
-  }
-  rows.push(orderRow(A.cur, A.onClock.slot, "on the clock", "now"));
-  S.picks.slice(-4).reverse().forEach(function (p) {
-    var pl = BY_NAME[p.name] || {};
-    rows.push(orderRow(p.pick, p.slot, p.unknown
-      ? "<i>name not recorded</i>"
-      : '<span class="pos pos-' + (pl.pos || "K") + '">' + (pl.pos || "") + "</span> " + esc(p.name),
-      "past"));
-  });
+  /* ---- order: three picks ahead, the pick on the clock, and the past under
+     it. Reading down the column is going back in time, which is the direction
+     the numbers already run. It replaces both the on-the-clock / on-deck grid
+     and the recent list — those were the same handful of facts, printed twice,
+     in two different shapes, and neither one showed both sides of now. Built by
+     orderRows(). */
 
   /* ---- keep: the step-away band.
      This board only knows what has been typed into it, so the failure that
@@ -976,6 +1094,7 @@ function renderTracker() {
       '<div class="tk-sub">' + sub + "</div>" +
       '<div class="tk-bar" title="' + S.picks.length + " of " + total +
         ' picks recorded"><i style="width:' + done + '%"></i></div>' +
+      lastPickLine() +
       (S.simulated
         ? '<div class="tk-sim">Includes simulated picks — this is not a record of a ' +
           "real draft.</div>"
@@ -992,7 +1111,7 @@ function renderTracker() {
       "</div>" +
 
       doHtml +
-      '<div class="tk-order">' + rows.join("") + "</div>" +
+      '<div class="tk-order">' + orderRows() + "</div>" +
 
       '<div class="tk-keep' + (stale ? " stale" : "") + '">' +
         '<button type="button" class="tk-keepbtn" id="tkKeepT" aria-expanded="' + keepOpen + '">' +
@@ -1021,6 +1140,17 @@ function renderTracker() {
   if ($("#tkPickTeam")) $("#tkPickTeam").onclick = function (e) {
     openPickTeam($("#tkPickTeam"), e);
   };
+  if ($("#tkUndo")) $("#tkUndo").onclick = undo;
+  // Naming a blank pick already has a path — find the player, and his assign
+  // popover offers to fill the blank rather than spend a second slot. This is
+  // the first step of it, so the line that reports the problem also starts the
+  // fix instead of describing it.
+  if ($("#tkNameIt")) $("#tkNameIt").onclick = function () { $("#search").focus(); };
+  // One delegated handler: the chips are rewritten on every record, and this
+  // block re-binds after each innerHTML write like everything else here.
+  $$("#tracker .tk-tgt").forEach(function (b) {
+    b.onclick = function () { takeTarget(b.dataset.name); };
+  });
 
   /* The catch-up field writes into its own message and button rather than
      re-rendering the panel. A re-render on every keystroke is what forced the
@@ -1107,6 +1237,31 @@ function armOnce(btn, label, run) {
   };
 }
 
+/* ------------------------------------------------- the four-second window
+
+   armOnce above is press-to-arm, because what it guards cannot be taken back.
+   This is the other shape: recording a pick is one tap by design, so the
+   confirmation has to come after it. For four seconds the last-pick line
+   carries an Undo, and that window is the whole safety net for a mis-tap.
+
+   State is a timestamp and nothing else. undo() already means "pop the last
+   real pick", so there is no stack to keep in step: record again inside the
+   window and it simply re-opens against the new last pick. Batched records —
+   catch-up, Simulate — pass quiet and arm nothing, which is right, because
+   nobody is watching those go by one at a time. */
+var TK_UNDO_MS = 4000;
+var tkUndoUntil = 0, tkUndoTimer = null;
+
+function undoWindowOpen() { return Date.now() < tkUndoUntil; }
+
+function openUndoWindow() {
+  tkUndoUntil = Date.now() + TK_UNDO_MS;
+  // Without this, three fast records leave three pending re-renders behind and
+  // the band flickers as each one fires.
+  clearTimeout(tkUndoTimer);
+  tkUndoTimer = setTimeout(function () { renderTracker(); }, TK_UNDO_MS + 20);
+}
+
 /**
  * The best draft position we have for a player, and how much to trust it.
  *
@@ -1145,6 +1300,99 @@ function marketCoverage() {
            pct: avail.length ? Math.round(real / avail.length * 100) : 0 };
 }
 
+/* --------------------------------------------------- the room, per pick */
+
+/** Every team's position counts so far, keyed by slot. */
+function slotCounts() {
+  var rosters = allRosters(), counts = {};
+  Object.keys(rosters).forEach(function (slot) {
+    counts[slot] = {};
+    rosters[slot].forEach(function (q) { counts[slot][q.pos] = (counts[slot][q.pos] || 0) + 1; });
+  });
+  return counts;
+}
+
+/* roomPick() draws once. Ranking by how often a name wins the draw needs many
+   draws, and the pool is truncated by ADP first because a player forty picks
+   past the current one never wins one. measure-roompick.js runs 150 over 70
+   offline; 120 over 60 holds the top two steady at a few milliseconds, and the
+   third chip is a coin toss from round 9 by measurement, so the sampling
+   precision beyond this would be describing noise more precisely. */
+var TARGET_TRIALS = 120, TARGET_POOL = 60;
+var TARGET_CACHE = { a: null, out: null };
+
+/**
+ * The three players the team on the clock is most likely to take, by frequency.
+ *
+ * Deliberately not ordered by the board's own score: the question here is what
+ * the room will do, not what it should do. Same roomPick() and marketAdp() the
+ * practice room and Simulate use, so a pasted Yahoo draft-analysis file sharpens
+ * these the way it sharpens everything else, and the rehearsal drafts the room
+ * the night will.
+ *
+ * The seed is fixed to the pick number, so re-rendering the panel cannot
+ * re-order the chips. On a touch screen a list that re-sorts between the eye
+ * and the finger is a wrong-tap generator, and a wrong tap here is a silently
+ * wrong board.
+ */
+function roomTargets() {
+  if (TARGET_CACHE.a === A) return TARGET_CACHE.out;
+
+  var slot = A.onClock.slot, counts = slotCounts();
+  var runs = (A.runInfo || {}).runs || {};
+  var roster = S.league.rules.roster;
+  var pool = A.avail.slice().sort(function (x, y) { return marketAdp(x).adp - marketAdp(y).adp; })
+    .slice(0, TARGET_POOL)
+    .map(function (p) { var m = marketAdp(p); return { player: p, adp: m.adp, sd: m.sd, pct: m.pct }; });
+
+  var rnd = mulberry32(A.cur * 7919 + 20260908);
+  var tally = Object.create(null), byName = Object.create(null);
+  for (var t = 0; t < TARGET_TRIALS; t++) {
+    var got = E.roomPick(pool, rnd, { counts: counts[slot] || {}, roster: roster, runs: runs });
+    if (!got) continue;
+    tally[got.name] = (tally[got.name] || 0) + 1;
+    byName[got.name] = got;
+  }
+  var list = Object.keys(tally).sort(function (x, y) { return tally[y] - tally[x]; })
+    .slice(0, 3)
+    .map(function (n) { return { player: byName[n], freq: tally[n] / TARGET_TRIALS }; });
+
+  /* The upcoming rows want one name each, not three more simulations: this is
+     one rollout of the next few picks off the same draw, so a run forming is
+     visible before it lands. One sample, so it renders dim and is never a tap
+     target. */
+  var ahead = [], gone = Object.create(null), total = S.league.teams * S.league.rounds;
+  for (var k = 1; k <= 3 && A.cur + k <= total; k++) {
+    var aslot = ownerOfPick(A.cur + k).slot;
+    var left = pool.filter(function (c) { return !gone[c.player.name]; });
+    var pick = left.length
+      ? E.roomPick(left, rnd, { counts: counts[aslot] || {}, roster: roster, runs: runs })
+      : null;
+    if (pick) {
+      gone[pick.name] = true;
+      counts[aslot] = counts[aslot] || {};
+      counts[aslot][pick.pos] = (counts[aslot][pick.pos] || 0) + 1;
+    }
+    ahead.push({ pick: A.cur + k, slot: aslot, player: pick });
+  }
+
+  TARGET_CACHE = { a: A, out: { slot: slot, round: A.onClock.round, list: list, ahead: ahead } };
+  return TARGET_CACHE.out;
+}
+
+/**
+ * How much weight to put on those three, in the user's own words.
+ *
+ * From the measurement in tools/measure-roompick.js: three predictions cover
+ * the actual pick 88% of the time in round 1 and 52% in round 8, then fall to a
+ * coin toss by round 9 and to noise by round 12. The caption is computed from
+ * the round so the confidence on screen degrades with the number rather than
+ * outliving it.
+ */
+function targetCaption(round) {
+  return round <= 8 ? "likely" : round <= 11 ? "maybe" : "long shots";
+}
+
 /**
  * Fills in opponent picks so the flow can be practiced before it matters.
  *
@@ -1159,12 +1407,7 @@ function simulateToMyPick() {
   if (!A.myNext) return;
   var target = A.myNext, taken = draftedNames(), added = 0, guard = 0;
   var pool = A.avail.slice();
-  var counts = {};                       // per-slot position counts, as we go
-  var rosters = allRosters();
-  Object.keys(rosters).forEach(function (slot) {
-    counts[slot] = {};
-    rosters[slot].forEach(function (q) { counts[slot][q.pos] = (counts[slot][q.pos] || 0) + 1; });
-  });
+  var counts = slotCounts();             // per-slot position counts, as we go
   var recent = S.picks.slice(-8).map(function (pk) { return A.byName[pk.name] || { pos: "?" }; });
 
   while (currentPick() < target && guard++ < 120) {
@@ -1214,6 +1457,9 @@ function allRosters() {
   var out = {};
   for (var i = 1; i <= S.league.teams; i++) out[i] = [];
   allPicks().forEach(function (pk) {
+    // A pick with no slot belongs to no team and cannot be put on one. State
+    // saved before the board credited every pick still carries them.
+    if (!out[pk.slot]) return;
     var pl = pk.name && A.byName[pk.name];
     if (pl) out[pk.slot].push(Object.assign({}, pl, { pick: pk.pick }));
     else if (pk.unknown) out[pk.slot].push({ name: "unknown", pos: "?", pick: pk.pick, pts: 0, bye: 0 });
@@ -4198,6 +4444,31 @@ $("#btnUndo").addEventListener("click", undo);
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); }
   if (e.key === "/" && document.activeElement !== $("#search")) { e.preventDefault(); $("#search").focus(); }
+
+  /* The draft board's three targets, on a keyboard. Digits only when nothing
+     has focus — otherwise typing a 2 into the search box drafts somebody. */
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  var el = document.activeElement, tag = el ? el.tagName : "";
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" ||
+      (el && el.isContentEditable)) return;
+
+  if (e.key === "1" || e.key === "2" || e.key === "3") {
+    if (IS_TOUCH || !isLive() || !S.draftStarted || S.draftEnded) return;
+    if (!A.onClock || A.onClock.slot === S.league.slot) return;
+    if (A.cur > S.league.teams * S.league.rounds) return;
+    var t = roomTargets().list[+e.key - 1];      // the cache, never a fresh roll
+    if (!t) return;
+    e.preventDefault();
+    takeTarget(t.player.name);
+  }
+
+  /* No Escape-to-undo here, though the spec for this band asked for one. Escape
+     already closes the assign popover, a pinned player card and the detail
+     modal, and the search box holds focus by default on a desktop — so the key
+     is either taken or unreachable at every moment it would be pressed, and the
+     one way to make it fire from the search box is to make Escape-to-clear-the-
+     search delete a pick instead. Ctrl+Z undoes from anywhere already, and the
+     Undo on the last-pick line is one press with no keyboard at all. */
 });
 $("#btnOut").addEventListener("click", function () {
   // Get the last autosave up to the account before dropping the token that

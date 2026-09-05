@@ -286,7 +286,11 @@ function loadApp(leagueState, picksState, opts) {
     "getState: function () { return S; }, getAnalysis: function () { return A; }, " +
     "currentPick: currentPick, ownerOfPick: ownerOfPick, pickNumberFor: pickNumberFor, " +
     "draftedNames: draftedNames, allRosters: allRosters, " +
-    "reassign: reassign, recordTo: recordTo, render: render };\n";
+    "reassign: reassign, recordTo: recordTo, render: render, " +
+    "roomTargets: roomTargets, targetCaption: targetCaption, takeTarget: takeTarget, " +
+    "orderRows: orderRows, slotCounts: slotCounts, tkPastCount: tkPastCount, " +
+    "undoWindowOpen: undoWindowOpen, renderTracker: renderTracker, " +
+    "lastPickLine: lastPickLine, sortedList: sortedList };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
 
   vm.runInContext(src, sandbox, { filename: "app.js (sandboxed copy, test-app.js)" });
@@ -2168,8 +2172,15 @@ console.log("\n== the live draft box ==");
      String(bands(waiting.html)));
   ok("on the clock shows exactly one too", bands(mine.html) === 1,
      String(bands(mine.html)));
+  // This used to look for "Pick 9 goes to team 9" in the do band. The head now
+  // leads with the pick, the round and the team's own chip, so that sentence
+  // would be the same fact a third time in a column three inches wide — it is
+  // kept only for the late rounds where there are no target chips under it to
+  // explain. The fact being checked has not changed: waiting, the panel says
+  // whose pick this is.
   ok("waiting, it names the team the pick belongs to",
-     /Pick 9 goes to /.test(waiting.html), waiting.html.slice(0, 200));
+     /class="tk-head"[\s\S]{0,200}Pick 9 · Round 1 ·[\s\S]{0,120}team 9/.test(waiting.html),
+     waiting.html.slice(0, 240));
   ok("on the clock, it says the pick is yours instead",
      /Your pick — take it off the board/.test(mine.html) &&
      !/goes to /.test(mine.html));
@@ -2704,6 +2715,186 @@ console.log("\n== naming a pick you missed ==");
      /if \(b\.dataset\.fill\)[\s\S]{0,80}fillUnknown\(who, \+b\.dataset\.fill\)/.test(oa));
   ok("the footer says it costs no extra pick",
      /spends no extra pick/.test(oa), oa.slice(-400));
+})();
+
+/* ========================================================================
+   the live draft board - the three targets, the loop, and the undo window
+   ======================================================================== */
+console.log("\n== the live draft board ==");
+(function () {
+  // Pick 1: nothing recorded, team 1 on the clock, the user at slot 11.
+  function board(picks) { return loadApp(kindaHighlandersLeague(), picks || []); }
+
+  var api = board();
+  var tg = api.roomTargets();
+
+  ok("three targets are offered", tg.list.length === 3,
+     tg.list.map(function (t) { return t.player.name; }).join(", "));
+  ok("they are ordered by how often the room takes them",
+     tg.list[0].freq >= tg.list[1].freq && tg.list[1].freq >= tg.list[2].freq,
+     tg.list.map(function (t) { return t.freq.toFixed(2); }).join(" "));
+  ok("the targets belong to the team actually on the clock",
+     tg.slot === api.getAnalysis().onClock.slot);
+
+  // The whole point of this list is that it is not the board's own ranking.
+  // If it came out in composite order it would be answering the wrong question.
+  var byComp = api.getAnalysis().avail.slice(0, 40)
+    .sort(function (x, y) { return y.comp - x.comp; })
+    .slice(0, 3).map(function (p) { return p.name; }).join("|");
+  ok("and not by the board's own score",
+     tg.list.map(function (t) { return t.player.name; }).join("|") !== byComp,
+     "room: " + tg.list.map(function (t) { return t.player.name; }).join("|") +
+     "  board: " + byComp);
+
+  // A re-render must not re-roll the chips: a list that re-sorts under a thumb
+  // records the wrong player.
+  var again = api.roomTargets();
+  ok("two calls give the same three names, in the same order",
+     again.list.map(function (t) { return t.player.name; }).join("|") ===
+     tg.list.map(function (t) { return t.player.name; }).join("|"));
+
+  ok("the caption is computed from the round, not hard-coded",
+     api.targetCaption(1) === "likely" && api.targetCaption(8) === "likely" &&
+     api.targetCaption(9) === "maybe" && api.targetCaption(11) === "maybe" &&
+     api.targetCaption(12) === "long shots" && api.targetCaption(15) === "long shots");
+})();
+
+(function () {
+  // depthCap: a team that already has its kicker and defense cannot be offered
+  // another, and roomPick has to be the thing refusing them.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var A0 = api.getAnalysis();
+  var pool = A0.avail;
+  function firstAt(pos) {
+    return (pool.filter(function (p) { return p.pos === pos; })[0] || {}).name;
+  }
+  var k = firstAt("K"), d = firstAt("DEF"), q1 = firstAt("QB");
+  // Fill slot 1's roster by recording at picks that belong to it, then come
+  // back round to slot 1 again.
+  api.recordTo(k, 1); api.recordTo(d, 1); api.recordTo(q1, 1);
+  var q2 = (api.getAnalysis().avail.filter(function (p) { return p.pos === "QB"; })[0] || {}).name;
+  api.recordTo(q2, 1);
+  var counts = api.slotCounts()[1];
+  ok("the counts see what that team took",
+     counts.K === 1 && counts.DEF === 1 && counts.QB === 2, JSON.stringify(counts));
+
+  // Put slot 1 back on the clock and ask again.
+  var st = api.getState();
+  st.picks = st.picks.map(function (p, i) { return Object.assign({}, p, { slot: 1 }); });
+  api.render();
+  var names = api.roomTargets().list.map(function (t) { return t.player.pos; });
+  ok("no target is a position that team has already capped",
+     names.indexOf("K") < 0 && names.indexOf("DEF") < 0, names.join(","));
+})();
+
+(function () {
+  // The loop itself: one tap records to the team on the clock and the panel
+  // moves to the next team, and undo puts the board back exactly as it was.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var before = api.currentPick();
+  var onClock = api.getAnalysis().onClock.slot;
+  var target = api.roomTargets().list[0].player.name;
+
+  function snapshot() {
+    var A0 = api.getAnalysis();
+    return JSON.stringify({
+      picks: api.getState().picks,
+      avail: A0.avail.map(function (p) { return p.name; }),
+      surv: A0.avail.map(function (p) { return Math.round((p.survNext || 0) * 1e6); }),
+      roster: api.allRosters()[onClock]
+    });
+  }
+  var pre = snapshot();
+
+  api.takeTarget(target);
+  var last = api.getState().picks[api.getState().picks.length - 1];
+  ok("a tapped target is credited to the team on the clock", last.slot === onClock);
+  ok("and is not recorded as one of yours", last.mine === false && last.unknown === false);
+  ok("and it is the player who was tapped", last.name === target);
+  ok("the clock moves on by exactly one pick", api.currentPick() === before + 1);
+  ok("and the next call targets the next team",
+     api.roomTargets().slot === api.ownerOfPick(before + 1).slot);
+  ok("recording a pick opens the four-second window", api.undoWindowOpen() === true);
+
+  api.undo();
+  ok("undo puts the board back to the byte", snapshot() === pre);
+})();
+
+(function () {
+  // A batch - catch-up, Simulate - arms nothing: nobody is watching those go by
+  // one at a time, and a window that is always open is not a window.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var pool = api.getAnalysis().avail;
+  api.record(pool[0].name, false, true);
+  api.record(pool[1].name, false, true);
+  ok("a quiet batch leaves the undo window shut", api.undoWindowOpen() === false);
+  api.record(pool[2].name, false);
+  ok("a single recorded pick opens it", api.undoWindowOpen() === true);
+  ok("and the last-pick line offers the undo while it is open",
+     /id="tkUndo"/.test(api.lastPickLine()), api.lastPickLine());
+})();
+
+(function () {
+  // A re-credited pick is a fact the order band could not previously state:
+  // it showed the credited team with no sign the snake disagreed.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var pool = api.getAnalysis().avail;
+  var a = pool[0].name, b = pool[1].name;
+  api.record(a, false);
+  api.record(b, false);
+  var owner = api.ownerOfPick(1).slot;
+  api.reassign(a, owner === 12 ? 1 : owner + 1);
+  var rows = api.orderRows();
+  ok("the moved pick says so", /re-credited/.test(rows), rows.slice(-500));
+  var perRow = rows.split('<div class="tk-row').filter(function (r) { return r.indexOf(b) >= 0; });
+  ok("and the untouched pick beside it does not",
+     perRow.length === 1 && perRow[0].indexOf("re-credited") < 0, perRow[0]);
+})();
+
+(function () {
+  // A blank pick is the one thing on this line that needs a way out of itself.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  api.record(null, false);
+  var line = api.lastPickLine();
+  ok("a nameless pick says so on the last-pick line", /name not recorded/.test(line), line);
+  ok("and offers the way to fix it", /id="tkNameIt"/.test(line));
+})();
+
+(function () {
+  // Solo - "Just the board" - has no opponent rosters, so slotCounts is empty
+  // and the pool is the whole question. The tracker itself stays hidden there,
+  // which is what it has always done; this pins the model behind it.
+  var lg = kindaHighlandersLeague({ mode: "solo" });
+  var api = loadApp(lg, []);
+  var tg = api.roomTargets();
+  var pool = {};
+  api.getAnalysis().avail.forEach(function (p) { pool[p.name] = true; });
+  ok("targets are still computed with no teams to model", tg.list.length === 3);
+  ok("and every one of them is really on the board",
+     tg.list.every(function (t) { return pool[t.player.name]; }));
+})();
+
+(function () {
+  // Source checks: the fake DOM dispatches no key events and reports no
+  // orientation, so these two are read off the source or not at all.
+  var src = require("fs").readFileSync(APP_PATH, "utf8");
+  ok("the digit keys bail out when a field has focus",
+     /tag === "INPUT" \|\| tag === "TEXTAREA"/.test(src));
+  // Escape is not bound to undo: it is already taken by the popovers and the
+  // modal, and the search box holds focus by default, so binding it would mean
+  // Escape-to-clear-the-search deletes a pick. Ctrl+Z is the undo key.
+  ok("Escape is not wired to undo a pick",
+     !/e\.key === "Escape"[\s\S]{0,120}undo\(\)/.test(src));
+  ok("and Ctrl+Z still is",
+     /e\.key\.toLowerCase\(\) === "z"[\s\S]{0,40}undo\(\)/.test(src));
+  ok("the targets are read from the cache rather than re-rolled on a keypress",
+     /roomTargets\(\)\.list\[\+e\.key - 1\]/.test(src));
+  ok("the target cache is identity on the analysis object",
+     /TARGET_CACHE\.a === A/.test(src));
+  ok("the past-pick count drops on a tablet-sized column",
+     /matchMedia\("\(max-width: 1200px\)"\)\.matches \? 2 : 4/.test(src));
+  ok("the undo window clears its own timer before re-arming",
+     /clearTimeout\(tkUndoTimer\)/.test(src));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");
