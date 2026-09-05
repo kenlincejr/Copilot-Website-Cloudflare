@@ -1818,5 +1818,65 @@ console.log("\n== the row and the header are one grid ==");
   ok("desktop still numbers the board", deskHtml.indexOf('<span class="rank">') >= 0);
 })();
 
+/* ========================================================================
+   On touch, the clock leads the middle column
+
+   Reported from the iPad: "You're on the clock" was pushed under the tapped
+   player's card and the advisory panels. #detail carried order:-1 so its draft
+   buttons were reachable without scrolling, and a card with a full scoring
+   breakdown is tall enough to bury the tracker, the pick count, the record box
+   and the on-deck list beneath it.
+
+   The order is a property of the stylesheet, not of the DOM, so this reads the
+   stylesheet. Weaker than a rendered layout assertion and worth having anyway:
+   the failure it guards against is somebody adding a third order rule.
+   ======================================================================== */
+console.log("\n== the middle column's order on touch ==");
+(function () {
+  var css = require("fs").readFileSync(
+    require("path").join(__dirname, "../assets/ff.css"), "utf8");
+
+  function orderOf(id) {
+    var re = new RegExp("body\\.touch\\s+\\.col-rec\\s*>\\s*#" + id +
+                        "\\s*\\{[^}]*order:\\s*(-?\\d+)", "m");
+    var m = css.match(re);
+    return m ? parseInt(m[1], 10) : null;
+  }
+
+  var tracker = orderOf("tracker");
+  var detail = orderOf("detail");
+
+  ok("the tracker is given an explicit order on touch", tracker !== null, String(tracker));
+  ok("so is the detail card", detail !== null, String(detail));
+  ok("the tracker comes before the detail card",
+     tracker !== null && detail !== null && tracker < detail,
+     "tracker " + tracker + " vs detail " + detail);
+
+  // Everything else in that column keeps the DOM order, which already puts the
+  // brief, the run banner and the suggestions after the tracker. Both explicit
+  // orders must be negative or those would jump ahead of them.
+  ok("both are negative, so nothing with the default order can precede them",
+     tracker < 0 && detail < 0, "tracker " + tracker + ", detail " + detail);
+
+  // Only these two may be reordered. A third rule would silently change what
+  // the drafter sees first while a timer runs.
+  var rules = css.match(/body\.touch\s+\.col-rec\s*>\s*#[A-Za-z-]+\s*\{[^}]*order:/g) || [];
+  ok("exactly two panels in this column are reordered", rules.length === 2,
+     rules.length + ": " + rules.join(" | "));
+
+  // The column has to be a flex container for order to mean anything at all.
+  ok("the column is a flex column on touch",
+     /body\.touch\s+\.col-rec\s*\{[^}]*display:\s*flex/.test(css) &&
+     /body\.touch\s+\.col-rec\s*\{[^}]*flex-direction:\s*column/.test(css));
+
+  // And the tracker is what actually says it, so the rule is aimed at the right
+  // element: renderTracker writes "You're on the clock" into #tracker.
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  var rt = app.slice(app.indexOf("function renderTracker"));
+  rt = rt.slice(0, rt.indexOf("\nfunction "));
+  ok("renderTracker is the thing that writes the on-the-clock heading",
+     rt.indexOf("You're on the clock") > 0 && rt.indexOf('$("#tracker")') > 0);
+})();
+
 console.log("\n" + pass + " passed, " + fail + " failed\n");
 process.exit(fail > 0 ? 1 : 0);

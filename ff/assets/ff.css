@@ -689,6 +689,16 @@ body.touch .filters .pill { flex: none; }
    land off the bottom of an iPad. Order, not a DOM move: desktop keeps the
    markup and the reading order it has. */
 body.touch .col-rec { display: flex; flex-direction: column; }
+/* The clock outranks everything else in this column. #detail was floated to
+   the top so a tapped player's draft buttons were reachable without
+   scrolling, and with a tall card — a scoring breakdown runs eight rows —
+   that buried "You're on the clock", the pick count, the record box and the
+   on-deck list underneath it. The one panel you must never have to hunt for
+   while a timer runs is the one telling you the timer is running.
+
+   So the tracker leads and the card follows it. The draft buttons are still
+   the second thing in the column, above the brief and the suggestions. */
+body.touch .col-rec > #tracker { order: -2; }
 body.touch .col-rec > #detail { order: -1; }
 
 body.touch .detail-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
