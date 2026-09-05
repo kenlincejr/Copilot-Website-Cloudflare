@@ -203,6 +203,161 @@
     return out;
   }
 
+
+  // --------------------------------------------------- ceiling and risk
+
+  /* Ceiling and risk arrive from the research layer, which covers the players
+     analysts write about — 74 of 267 here, and only 3 of the top 24. Every
+     other player carried no grade at all, and a missing grade is not a neutral
+     one: `player.ceiling ? ... : 0` made the whole ceiling/risk term vanish.
+     Styles built on positional bias worked; Upside hunter and Floor first,
+     which are nothing but a ceiling weight and a risk weight, moved nobody in
+     the part of the board that decides a draft. Both were decoration.
+
+     So every ungraded player gets a modeled grade, from data the board already
+     carries. None of it is a substitute for someone having watched the tape —
+     which is why a research grade always wins where one exists, and why the
+     modeled ones sit in a deliberately narrower band around neutral than the
+     annotated ones do. They are a tilt, not a verdict.
+
+     The five signals, and why each is one:
+
+       spread       How much the drafting public disagrees about where he goes,
+                    measured against the disagreement normal at his cost — the
+                    raw spread widens with ADP for structural reasons, so it is
+                    read against a fitted norm. Genuine disagreement is upside
+                    and risk at once.
+       markets      Sleeper's price against this board's, drift removed. One
+                    market reaching earlier than the other is a real opinion;
+                    the size of the gap either way is uncertainty.
+       role         Depth-chart slot. An entrenched starter is the safe kind of
+                    boring. A player behind someone is contingent: his good
+                    outcome is better than his price and his likely one is
+                    worse. Skipped for kickers and defenses, who have no depth
+                    chart worth reading.
+       availability Injury designation and projected games. This is risk and
+                    nothing else — a player on IR has no ceiling in September.
+       td share     What fraction of his projection is touchdowns. Touchdowns
+                    are the least repeatable thing a player does, so a
+                    projection leaning on them is a wider distribution than the
+                    same total built out of catches and yards.
+
+     Neutral is ceiling 70 and risk 50 because those are the composite's own
+     zero points — a player with nothing to say for himself gets no push in
+     either direction, so filling the board in does not shift the board. */
+
+  var GRADE_BOUNDS = { ceiling: [45, 93], risk: [30, 95] };
+
+  function median(list) {
+    if (!list.length) return 0;
+    var a = list.slice().sort(function (x, y) { return x - y; });
+    return a[Math.floor(a.length / 2)];
+  }
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  /** Share of a scored player's projection that comes from touchdowns. */
+  function tdShare(p) {
+    var c = p.byCategory || {}, total = 0, td = 0;
+    Object.keys(c).forEach(function (k) {
+      total += Math.abs(c[k]);
+      if (/TDs?$/.test(k)) td += c[k];
+    });
+    return total > 0 ? td / total : 0;
+  }
+
+  /**
+   * Write `ceiling`, `risk` and `gradeSource` onto every scored player.
+   * Research grades pass through untouched; everything else is modeled.
+   */
+  function modelGrades(scored) {
+    // The spread the market normally shows at a given cost. A fixed threshold
+    // cannot work here — an adp_sd of 6 is enormous at pick 3 and unremarkable
+    // at pick 120 — so what matters is a player's spread against the spread
+    // normal at his price.
+    //
+    // That norm is a power law and is fitted as one: on this board
+    // log(sd) = -1.26 + 0.81·log(adp) leaves a residual whose 10th and 90th
+    // percentiles sit at ±0.33 in log terms, which is a tight fit for one
+    // straight line through 267 players. A rolling median over each player's
+    // ADP neighborhood was the first attempt and it fails at the ends of the
+    // board, where a symmetric window has nothing on one side: at the top it
+    // could only look forward, into spread that rises fast, so the whole first
+    // round read as unusually agreed-upon. A fitted law extrapolates instead of
+    // running out of neighbors.
+    var n = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    scored.forEach(function (p) {
+      if (!(p.adp > 0) || !(p.adp_sd > 0)) return;
+      var x = Math.log(p.adp), y = Math.log(p.adp_sd);
+      n++; sx += x; sy += y; sxx += x * x; sxy += x * y;
+    });
+    var slope = 0, intercept = 0;
+    if (n > 2 && n * sxx - sx * sx !== 0) {
+      slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+      intercept = (sy - slope * sx) / n;
+    }
+    var expectedSd = function (p) {
+      return n > 2 && p.adp > 0 ? Math.exp(intercept + slope * Math.log(p.adp)) : 0;
+    };
+
+    // Touchdown reliance is only meaningful against the position's own norm:
+    // a running back's share is structurally higher than a receiver's.
+    var shares = {}, posMedian = {};
+    scored.forEach(function (p) { (shares[p.pos] = shares[p.pos] || []).push(tdShare(p)); });
+    Object.keys(shares).forEach(function (pos) { posMedian[pos] = median(shares[pos]); });
+
+    scored.forEach(function (p) {
+      var researched = p.ceiling != null && p.risk != null;
+      if (researched) { p.gradeSource = "research"; return; }
+
+      var ceiling = 70, risk = 50;
+
+      // Spread, on a log scale so twice the normal disagreement and half of it
+      // are the same distance from neutral in opposite directions.
+      var exp = expectedSd(p);
+      if (exp > 0 && p.adp_sd > 0) {
+        // Divided by 0.5 rather than by the residual's own spread: the fit's
+        // 10th and 90th percentiles land near ±0.33, so this puts a genuinely
+        // contested player around two-thirds of the way to the cap without
+        // letting one loud outlier reach it.
+        var u = clamp(Math.log(p.adp_sd / exp) / 0.5, -1, 1);
+        ceiling += 9 * u; risk += 7 * u;
+      }
+
+      // Cross-market. A negative residual is Sleeper reaching earlier than this
+      // board's price predicts — one room is higher on him than the other.
+      if (p.adpResid != null) {
+        var z = clamp(p.adpResid / 14, -1.5, 1.5);
+        ceiling += -5 * z;
+        risk += 4 * Math.abs(z);
+      }
+
+      // Role security.
+      if (p.pos !== "K" && p.pos !== "DEF" && p.depth) {
+        if (p.depth <= 1) risk -= 4;
+        else if (p.depth === 2) { ceiling += 5; risk += 6; }
+        else { ceiling += 7; risk += 10; }
+      }
+
+      // Availability. A designation is risk; the serious ones take the ceiling
+      // with them, because a player who is not on the field has no good week.
+      var inj = p.injury || "";
+      if (inj === "Questionable") risk += 4;
+      else if (inj === "NA" || inj === "PUP") { risk += 10; ceiling -= 5; }
+      else if (inj === "IR") { risk += 16; ceiling -= 9; }
+      var gp = (p.proj && p.proj.gp) || 17;
+      if (gp < 17) risk += Math.min(9, (17 - gp) * 1.2);
+
+      // Touchdown dependence.
+      var s = tdShare(p) - (posMedian[p.pos] || 0);
+      ceiling += clamp(40 * s, -8, 8);
+      risk += clamp(34 * s, -8, 8);
+
+      p.ceiling = Math.round(clamp(ceiling, GRADE_BOUNDS.ceiling[0], GRADE_BOUNDS.ceiling[1]));
+      p.risk = Math.round(clamp(risk, GRADE_BOUNDS.risk[0], GRADE_BOUNDS.risk[1]));
+      p.gradeSource = "modeled";
+    });
+  }
+
   /**
    * Score every player, attach `pts`, `vor`, `posRank`, and the replacement
    * baseline used. Returns { players, replacement:{pos:{rank,points,name}} }.
@@ -226,6 +381,7 @@
       repl[pos] = { rank: ranks[pos] || 12, points: r ? r.pts : 0, name: r ? r.name : null };
     });
     scored.forEach(function (p) { p.vor = p.pts - (repl[p.pos] ? repl[p.pos].points : 0); });
+    modelGrades(scored);
 
     // Tiers.
     //
@@ -509,11 +665,22 @@
     // Ceiling/risk weighting shifts across the draft: buy floor early, buy
     // variance late. Six of twelve make the playoffs — late picks should swing.
     var t = Math.min(1, Math.max(0, (round - 3) / (rounds - 5)));
-    var wCeiling = 0.20 + 0.80 * t, wRisk = 1.00 - 0.70 * t;
+    var cw = st.ceilingWeight != null ? st.ceilingWeight : 1;
+    var rw = st.riskWeight != null ? st.riskWeight : 1;
+    // "Buy floor early" is Balanced's opinion, and a style is entitled to
+    // disagree with it. The style weight only scaled the schedule's output,
+    // which could never lift round one far above the 0.20 the schedule starts
+    // at — so Upside hunter, whose entire content is a ceiling weight, was
+    // nearly inert exactly where a draft is decided. Asking for more ceiling
+    // now moves the schedule forward as well as scaling it, so the style is
+    // heard in round one and not only in round twelve. At weight 1 both terms
+    // vanish and the arithmetic is what it always was, so Balanced does not
+    // move.
+    var tc = cw >= 1 ? t + (Math.min(cw, 2) - 1) * (1 - t) : t;
+    var wCeiling = (0.20 + 0.80 * tc) * cw;
+    var wRisk = (1.00 - 0.70 * t) * rw;
     var ceilingAdj = player.ceiling ? ((player.ceiling - 70) / 100) * 26 * wCeiling : 0;
     var riskAdj = player.risk ? ((player.risk - 50) / 100) * 26 * wRisk : 0;
-    ceilingAdj *= (st.ceilingWeight != null ? st.ceilingWeight : 1);
-    riskAdj *= (st.riskWeight != null ? st.riskWeight : 1);
 
     // Bye penalty: only counts starters already parked on that week.
     var conflicts = ctx.byeCounts[player.bye] || 0;
@@ -595,7 +762,7 @@
       reasons.push(Math.round((player.adp - ctx.currentPick) / (ctx.rules.teams || 12) * 10) / 10 +
                    " rounds ahead of ADP");
 
-    return { score: score, value: value, marginal: marginal, aware: aware,
+    return { score: score, base: base, value: value, marginal: marginal, aware: aware,
              vona: vona, mult: mult, ceilingAdj: ceilingAdj,
              riskAdj: riskAdj, byePenalty: byePenalty, tagPenalty: tagPenalty,
              bonus: bonus, bias: bias, blocked: blocked, reasons: reasons };
@@ -673,7 +840,7 @@
     pickSchedule: pickSchedule, scheduleWithKeepers: scheduleWithKeepers,
     survival: survival, expectedBestAvailable: expectedBestAvailable,
     assignRoster: assignRoster, positionalNeed: positionalNeed,
-    composite: composite, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
+    composite: composite, modelGrades: modelGrades, tdShare: tdShare, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,
     gauss: gauss, roomPick: roomPick, TAG_LABEL: TAG_LABEL,
     lineupPoints: lineupPoints, marginalVor: marginalVor, openFlexSlots: openFlexSlots,
     FLEX_SPLIT: FLEX_SPLIT

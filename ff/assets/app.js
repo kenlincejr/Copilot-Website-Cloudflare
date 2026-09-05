@@ -16,6 +16,24 @@ var esc = function (s) {
 };
 var n0 = function (v) { return (v >= 0 ? "" : "-") + Math.abs(Math.round(v)); };
 
+/* Touch is a device fact, not a width. Read it once, put it on the body, and let
+   both the stylesheet and the generated row template key on the same flag —
+   they describe one grid between them, and a media query on one side with a
+   width test on the other is how the row actions ended up with no track to sit
+   in. An iPad in landscape is 1133px wide and still has no hover. */
+var IS_TOUCH = false;
+try {
+  IS_TOUCH = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+} catch (e) {}
+document.body.classList.toggle("touch", IS_TOUCH);
+if (IS_TOUCH) {
+  // "Sort: least likely to last" does not fit a select sized to a phone at the
+  // 16px font iOS insists on. The label above it already says what it is.
+  $$("#sortBy option").forEach(function (o) {
+    o.textContent = o.textContent.replace(/^Sort:\s*/, "");
+  });
+}
+
 /* ---------------------------------------------------------------- session */
 
 var me = AUTH.current();
@@ -1520,6 +1538,12 @@ function renderStyleDiff(newStyleKey, customKnobs) {
   var afterBase = (STRATS[newStyleKey] || STRATS.balanced).knobs || {};
   var after = JSON.parse(JSON.stringify(afterBase));
   if (customKnobs) Object.keys(customKnobs).forEach(function (k) { after[k] = customKnobs[k]; });
+  // activeKnobs() falls the league's own bye tolerance in behind whatever the
+  // style says, so the "after" side has to do it too. Without this every style
+  // that stays silent on bye tolerance reported it as a change to nothing —
+  // a row in the diff for something that does not move.
+  if (S.league.byeTolerance && after.byeTolerance == null)
+    after.byeTolerance = S.league.byeTolerance;
 
   var keys = Object.keys(KNOBS).filter(function (k) {
     return JSON.stringify(before[k]) !== JSON.stringify(after[k]);
@@ -1641,7 +1665,13 @@ function runMock(knobs, iterations, seed) {
       var k = keeperAt(pk);
       if (k) {
         taken[k.name] = true;
-        if (ownerOfPick(pk).slot === S.league.slot && byName[k.name]) mine.push(byName[k.name]);
+        // seededMine came from A.mine, which already holds a pending keeper —
+        // he is off the board from pick 1, not when the draft reaches him. Adding
+        // him again here gave every simulated roster two Drake Mayes: the style
+        // card reported QB 2, and depthCap("QB") = 2 then blocked the mock from
+        // ever taking a real backup, so it could not show what one would cost.
+        if (ownerOfPick(pk).slot === S.league.slot && byName[k.name] &&
+            !mine.some(function (q) { return q.name === k.name; })) mine.push(byName[k.name]);
         continue;
       }
       if (ownerOfPick(pk).slot === S.league.slot) {
@@ -1706,8 +1736,9 @@ function runMock(knobs, iterations, seed) {
 }
 
 function summarizeMock(runs, rules) {
-  var slotCounts = [], totals = [], posCounts = {};
+  var slotCounts = [], totals = [], posCounts = {}, own = {};
   runs.forEach(function (mine) {
+    mine.forEach(function (q) { own[q.name] = (own[q.name] || { pos: q.pos, n: 0 }); own[q.name].n++; });
     var r = E.assignRoster(mine, rules);
     var pts = 0;
     r.slots.forEach(function (sl, i) {
@@ -1749,7 +1780,7 @@ function summarizeMock(runs, rules) {
     comp[pos] = arr[Math.floor(arr.length / 2)];
   });
 
-  return { slots: slots, median: median, comp: comp, runs: runs.length,
+  return { slots: slots, median: median, comp: comp, runs: runs.length, own: own,
            low: totals[0] || 0, high: totals[totals.length - 1] || 0 };
 }
 
@@ -1770,6 +1801,58 @@ function mockCard(key, res) {
     '<div class="dimtext" style="font-size:11px;margin-top:7px">Starting lineup ' +
       n0(res.low) + "–" + n0(res.high) + " across " + res.runs + " drafts. The percentage is " +
       "how often that player filled the slot.</div></div>";
+}
+
+/* What the two styles actually disagree about.
+   The card above each roster shows the modal starting lineup — the name that
+   filled a slot most often across the runs — and that is the view least likely
+   to separate two styles: they can differ in a third of their picks and still
+   share nine modal starters, because the picks they differ on are the ones
+   further down the board. It made two genuinely different styles read as the
+   same draft, which was the complaint and was not a fair summary of the runs.
+   This reads the whole roster rather than the starting nine and names the
+   players one style ends up holding and the other does not. */
+function mockDivergence(keyA, resA, keyB, resB) {
+  var names = {};
+  Object.keys(resA.own).forEach(function (n) { names[n] = true; });
+  Object.keys(resB.own).forEach(function (n) { names[n] = true; });
+
+  var rows = Object.keys(names).map(function (n) {
+    var a = resA.own[n], b = resB.own[n];
+    return { name: n, pos: (a || b).pos,
+             a: a ? a.n / resA.runs : 0, b: b ? b.n / resB.runs : 0 };
+  }).filter(function (r) {
+    // A name either style lands on almost every time is common ground, however
+    // the arithmetic rounds. Only a real split is worth a line.
+    return Math.abs(r.a - r.b) >= 0.25;
+  }).sort(function (x, y) {
+    return Math.abs(y.a - y.b) - Math.abs(x.a - x.b);
+  }).slice(0, 8);
+
+  var nameA = esc((STRATS[keyA] || {}).name || "A"), nameB = esc((STRATS[keyB] || {}).name || "B");
+  if (!rows.length)
+    return '<div class="note mt">On this board, from where you are sitting, <b>' + nameA +
+      "</b> and <b>" + nameB + "</b> build the same team. The early picks are decided by " +
+      "value gaps neither style is large enough to overturn, and the two agree on the rest. " +
+      "That is a real answer: on this board the choice between them does not matter.</div>";
+
+  return '<div class="panel mt" style="padding:12px"><div class="eyebrow" ' +
+    'style="margin-bottom:7px">Where they actually part company</div>' +
+    '<table class="mk-tbl mk-diff"><tr><th>player</th><th class="right">' + nameA +
+      '</th><th class="right">' + nameB + "</th></tr>" +
+    rows.map(function (r) {
+      var pa = Math.round(r.a * 100), pb = Math.round(r.b * 100);
+      var lead = pa > pb ? "a" : "b";
+      return '<tr><td><span class="pos pos-' + r.pos + '">' + r.pos + "</span> " +
+        esc(r.name) + "</td>" +
+        '<td class="right' + (lead === "a" ? '"><b>' : ' dimtext">') + pa + "%" +
+          (lead === "a" ? "</b>" : "") + "</td>" +
+        '<td class="right' + (lead === "b" ? '"><b>' : ' dimtext">') + pb + "%" +
+          (lead === "b" ? "</b>" : "") + "</td></tr>";
+    }).join("") + "</table>" +
+    '<div class="dimtext" style="font-size:11px;margin-top:7px">How often each style ' +
+    "ended up holding him, across the runs. Players both styles take at the same rate are " +
+    "left out — the two agree about them.</div></div>";
 }
 
 function fillMockSelects() {
@@ -1796,6 +1879,7 @@ $("#mockRun").addEventListener("click", function () {
     var resB = b ? runMock((STRATS[b] || {}).knobs || {}, 25, seed) : null;
     $("#mockOut").innerHTML =
       '<div class="mockgrid">' + mockCard(a, resA) + (resB ? mockCard(b, resB) : "") + "</div>" +
+      (resB ? mockDivergence(a, resA, b, resB) : "") +
       '<p class="dimtext" style="font-size:11.5px;margin-top:9px">' +
       (resB ? "Both styles got the identical sequence of opponent picks, so the difference " +
               "between them is the style rather than the dice. " : "") +
@@ -1957,6 +2041,18 @@ $("#styleAsk").addEventListener("click", function () {
  * with no like-for-like replacement. A *week overload* is simply too many of
  * your starters idle in one week, whatever they play.
  */
+/* Where a player's ceiling and risk grades came from. Worth saying on the
+   panel that shows the arithmetic: a grade someone wrote after watching him and
+   a grade inferred from the market's own disagreement are not the same claim,
+   and the panel is the one place a reader is asking exactly how the number was
+   arrived at. */
+function gradeNote(p) {
+  if (!p.ceiling && !p.risk) return "";
+  return p.gradeSource === "modeled"
+    ? ' <span class="dimtext">(grades modeled)</span>'
+    : ' <span class="dimtext">(grades from research)</span>';
+}
+
 function byeRisk(p) {
   if (!p || !A) return null;
   var w = p.bye;
@@ -2009,7 +2105,12 @@ function renderFilters() {
 
   var lg = $("#rowLegend");
   if (lg) {
+    // Enter and Shift+Enter mean nothing on a device with no keyboard until you
+    // tap a field, and the row buttons they describe are not on the row there.
     lg.innerHTML = A.cur > S.league.teams * S.league.rounds ? ""
+      : IS_TOUCH
+        ? "Tap a player to draft him or mark him taken. Search, then <b>Go</b>, records the " +
+          "top match to <b>" + esc(myTurn() ? "you" : onClockLabel()) + "</b>."
       : myTurn()
         ? "Your pick — <b>DRAFT</b> puts him on your roster. Enter drafts the top match."
         : "<b>" + esc(onClockShort()) + "</b> = " + esc(onClockLabel()) +
@@ -2404,48 +2505,80 @@ var COLUMNS = {
     }
   },
   risk: {
-    short: "RISK", label: "Risk grade from the research layer", w: "44px",
-    desc: "0-100, where high means the analysts flagged him: age, injury history, a role that " +
-          "may not hold. Blank when nobody wrote him up.",
+    short: "RISK", label: "Risk grade — research where there is one, modeled otherwise", w: "44px",
+    desc: "0-100, where high means age, injury history, or a role that may not hold. Written " +
+          "by an analyst for the players who were written up; modeled from the market's own " +
+          "disagreement, depth chart and injury designation for everybody else. A modeled " +
+          "grade is shown in italics.",
     render: function (p) {
       if (!p.risk) return { v: "—", cls: "dimtext" };
-      return { v: String(p.risk), style: "color:" +
+      return { v: String(p.risk), cls: p.gradeSource === "modeled" ? "modeled" : "",
+        style: "color:" +
         (p.risk >= 70 ? "var(--red)" : p.risk >= 55 ? "var(--amber)" : "var(--dim)") };
     }
   },
   ceiling: {
-    short: "CEIL", label: "Ceiling grade from the research layer", w: "44px",
-    desc: "0-100 for upside. High means somebody has made a case that he finishes far above " +
-          "his price. Blank when nobody wrote him up.",
+    short: "CEIL", label: "Ceiling grade — research where there is one, modeled otherwise", w: "44px",
+    desc: "0-100 for upside. High means he could finish far above his price. Written by an " +
+          "analyst for the players who were written up; modeled from the market's own " +
+          "disagreement, depth chart and how much of his projection is touchdowns for " +
+          "everybody else. A modeled grade is shown in italics.",
     render: function (p) {
       if (!p.ceiling) return { v: "—", cls: "dimtext" };
-      return { v: String(p.ceiling),
+      return { v: String(p.ceiling), cls: p.gradeSource === "modeled" ? "modeled" : "",
                style: "color:" + (p.ceiling >= 85 ? "var(--green)" : "var(--muted)") };
     }
   }
 };
 
 var DEFAULT_COLS = ["pts", "bye", "tier", "wait"];
+/* A touch device in portrait fits three. Bye is the one to lose: it is a
+   tiebreaker, and the detail card still carries it. */
+var TOUCH_COLS = ["pts", "tier", "wait"];
 
 function activeCols() {
   var c = S.league.columns;
-  if (!c || !c.length) return DEFAULT_COLS.slice();
-  var ok = c.filter(function (k) { return COLUMNS[k]; }).slice(0, 4);
-  return ok.length ? ok : DEFAULT_COLS.slice();
+  // Three columns on a touch device in portrait, four everywhere else. At 744px
+  // the board column is about 400px; four data columns, the gaps and the padding
+  // leave the name around 150px, which is where "Christian McC..." comes from.
+  // Landscape is not compact, so it keeps the fourth.
+  var narrow = IS_TOUCH && document.body.classList.contains("compact");
+  var cap = narrow ? 3 : 4;
+  // Not DEFAULT_COLS.slice(0, 3): that would drop "wait", which is the one
+  // column the whole board is for on the clock, and keep "bye".
+  var fallback = narrow ? TOUCH_COLS.slice() : DEFAULT_COLS.slice();
+  if (!c || !c.length) return fallback;
+  var ok = c.filter(function (k) { return COLUMNS[k]; }).slice(0, cap);
+  return ok.length ? ok : fallback;
 }
 
 function renderColumnHeads() {
-  var cols = activeCols();
   // The grid template is generated here, so it has to decide the narrow layout
   // too — a media query that hides the rank cell cannot remove its track, and
   // the content then shifts one column left and squeezes the player's name to
   // nothing. Drop the track itself instead.
+  //
+  // This has to be set before activeCols() is asked anything, because how many
+  // columns fit is a function of it.
   var compact = window.innerWidth < 1000;
   document.body.classList.toggle("compact", compact);
-  var tpl = (compact ? "" : "22px ") + "minmax(0,1fr) " +
+  // The rank cell is the row's position in a list you are already reading top
+  // down, and on touch it is 22px the name needs more: in landscape it is the
+  // difference between "Christian McCaffrey SF" and a truncation. Dropped on
+  // touch in both orientations, which is why this is its own flag rather than
+  // part of compact — landscape still gets its fourth data column.
+  var norank = compact || IS_TOUCH;
+  document.body.classList.toggle("norank", norank);
+  var cols = activeCols();
+  // On touch the row actions are gone from the row entirely — you act on a
+  // player by tapping him — so there is no track for them and the name keeps
+  // everything the columns do not take. Off touch they stay an absolutely
+  // positioned hover overlay, which also needs no track. Either way the
+  // template below is the whole row, and .rowacts is never a grid item.
+  var tpl = (norank ? "" : "22px ") + "minmax(0,1fr) " +
     cols.map(function (k) { return COLUMNS[k].w; }).join(" ");
   var head = $(".phead");
-  head.innerHTML = (compact ? "" : '<span class="c-rank"></span>') + "<span>Player</span>" +
+  head.innerHTML = (norank ? "" : '<span class="c-rank"></span>') + "<span>Player</span>" +
     cols.map(function (k) {
       var c = COLUMNS[k];
       // The column asks a different question on and off the clock, and the answers
@@ -2639,7 +2772,10 @@ function renderList() {
       };
     });
     el.onclick = function (e) {
-      if (taken) return;
+      // A taken player has one action — re-credit him — and on touch there is no
+      // row button left to carry it, so the row itself is the button. Off touch
+      // the "move" overlay still does this and the row stays inert.
+      if (taken) { if (IS_TOUCH && isLive()) openAssign(name, el, e); return; }
       if (e.shiftKey) return record(name, true);
       if (e.altKey || e.metaKey || e.ctrlKey) return record(name, false);
       view.selected = name; renderList(); renderDetail(name);
@@ -2801,10 +2937,26 @@ function renderDetail(name) {
   var swing = std ? p.pts - std.pts : 0;
   var rankSwing = std ? std.posRank - p.posRank : 0;
 
+  /* On touch this card is how a player is drafted, so it opens with the same
+     three actions the row used to carry on desktop — the same data-act values,
+     bound by the same handler below, so record() and openAssign() are reached
+     by a different route and not by different code. The card sits at the top of
+     the column on touch (CSS order), which is why the buttons come first. */
+  var acts = !IS_TOUCH ? "" :
+    '<div class="detail-acts">' +
+      (myTurn()
+        ? '<button class="btn btn-primary" data-dact="mine">Draft him</button>'
+        : '<button class="btn" data-dact="gone">' + esc(onClockLabel()) + " took him</button>" +
+          (isLive() ? '<button class="btn" data-dact="assign">who?</button>' : "") +
+          '<button class="btn btn-teal" data-dact="mine">TO ME</button>') +
+      '<button class="btn detail-x" data-dact="close" aria-label="Close">×</button>' +
+    "</div>";
+
   $("#detail").innerHTML =
     '<div class="panel mt"><div class="panel-head">' +
       "<h3>" + esc(p.name) + ' <span class="pos pos-' + p.pos + '">' + p.pos + "</span></h3>" +
       '<span class="eyebrow">' + p.pos + String(p.posRank) + " · ADP " + p.adp + "</span></div>" +
+    acts +
 
     '<div class="note" style="margin-bottom:12px">' +
       "<b>" + n0(p.pts) + " points in your scoring</b>" +
@@ -2835,7 +2987,7 @@ function renderDetail(name) {
           p.pos + ')</span></td><td class="right num"><b>' + n0(d.marginal) + "</b></td></tr>" +
         '<tr><td>Value over next available</td><td class="right num">' + n0(d.vona) + "</td></tr>" +
         '<tr><td>Bias multiplier</td><td class="right num">×' + d.mult.toFixed(2) + "</td></tr>" +
-        '<tr><td>Ceiling adjustment</td><td class="right num">' + (d.ceilingAdj ? "+" + d.ceilingAdj.toFixed(1) : "—") + "</td></tr>" +
+        '<tr><td>Ceiling adjustment' + gradeNote(p) + '</td><td class="right num">' + (d.ceilingAdj ? "+" + d.ceilingAdj.toFixed(1) : "—") + "</td></tr>" +
         '<tr><td>Risk adjustment</td><td class="right num">' + (d.riskAdj ? "-" + d.riskAdj.toFixed(1) : "—") + "</td></tr>" +
         '<tr><td>Bye penalty</td><td class="right num">' + (d.byePenalty ? "-" + d.byePenalty.toFixed(0) : "—") + "</td></tr>" +
         '<tr><td><b>Composite</b></td><td class="right num"><b>' + n0(p.comp) + "</b></td></tr>" +
@@ -2868,6 +3020,17 @@ function renderDetail(name) {
 
   $$("#detail [data-take2]").forEach(function (b) { b.onclick = function () { record(b.dataset.take2, true); }; });
   $$("#detail [data-gone2]").forEach(function (b) { b.onclick = function () { record(b.dataset.gone2, false); }; });
+
+  // The touch action bar. Same three actions the row carries on desktop, same
+  // two functions underneath — only the thing you tapped to get here differs.
+  $$("#detail [data-dact]").forEach(function (b) {
+    b.onclick = function (e) {
+      var act = b.dataset.dact;
+      if (act === "close") { view.selected = null; $("#detail").innerHTML = ""; renderList(); return; }
+      if (act === "assign") { openAssign(p.name, b, e); return; }
+      record(p.name, act === "mine");
+    };
+  });
 }
 
 /**
@@ -2959,9 +3122,18 @@ function renderRoster() {
   var bench = r.bench.map(function (p) {
     return '<div class="slot"><span class="lbl">BN</span>' +
       '<span class="who"><span class="pos pos-' + p.pos + '">' + p.pos + "</span> " + esc(p.name) + "</span>" +
-      '<span class="bye">' + p.bye + "</span></div>";
+      '<span class="bye" title="' + esc("bye week " + p.bye) + '">' + p.bye + "</span>" +
+      '<span class="num dimtext" style="font-size:11px">' + n0(p.pts) + "</span></div>";
   }).join("");
-  $("#roster").innerHTML = html + (bench ? '<div class="eyebrow" style="margin:8px 0 4px">Bench</div>' + bench : "");
+
+  // Two bare numbers on the right of every row, and nothing anywhere saying
+  // which is the bye week and which is the projection.
+  var head = '<div class="slot-head"><span class="lbl">Slot</span>' +
+    '<span class="who">Player</span>' +
+    '<span class="bye" title="Week this player is on bye">Bye</span>' +
+    '<span class="num" title="Projected season points in your league’s scoring">Proj</span></div>';
+  $("#roster").innerHTML = head + html +
+    (bench ? '<div class="eyebrow" style="margin:8px 0 4px">Bench</div>' + bench : "");
 
   renderByeLine(counts, onBye, tol, r.slots.length - empties);
 }
@@ -4350,5 +4522,10 @@ checkForUpdate();
 // it is shown once per account on this device.
 if (!localStorage.getItem(KEY_SEEN)) openQuickStart();
 save();
-$("#search").focus();
+/* Not on touch. Focusing this at boot raises the iOS keyboard and Chrome's
+   autofill accessory bar — key, card, location — over the roster strip before
+   the user has tapped anything, and guardSearch()'s readonly trick cannot stop
+   it because it lifts itself on the focus event. The keyboard is one tap away
+   and the board is what the user came for. Desktop keeps it, and so does "/". */
+if (!IS_TOUCH) $("#search").focus();
 })();

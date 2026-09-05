@@ -222,7 +222,11 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 
 /* --------------------------------------------------------------- the app */
 
-.app { display: flex; flex-direction: column; height: 100vh; overflow-x: hidden; }
+/* 100vh on iPad Safari and Chrome is the window without the browser chrome
+   subtracted, so the bottom of every column sits under the toolbar and the last
+   row cannot be reached. dvh is the visible height and shrinks with the toolbar
+   and the keyboard; the vh line stays first as the fallback. */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow-x: hidden; }
 .appbar {
   display: flex; align-items: center; gap: 14px; padding: 0 16px; height: 52px;
   border-bottom: 1px solid var(--line); background: var(--panel); flex: none;
@@ -269,15 +273,34 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   flex: 1; display: grid; grid-template-columns: minmax(420px,1.35fr) minmax(320px,1fr) 300px;
   gap: 1px; background: var(--line); min-height: 0;
 }
-.col { background: var(--bg); overflow: auto; min-height: 0; }
+/* A column at the end of its scroll must not hand the gesture to the page —
+   on iOS that is the rubber-band that reveals a gap under the whole app. */
+.col {
+  background: var(--bg); overflow: auto; min-height: 0;
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
 .col-pad { padding: 14px; }
-/* iPad landscape (1194 / 1180) keeps three columns; portrait (834 / 820) drops the
-   roster to a full-width row underneath rather than collapsing to one column,
-   which would bury the recommendation under 200 player rows. */
-@media (max-width: 1150px) {
+/* Three columns need 1040px: minmax(420) + minmax(320) + 300. Every current iPad
+   in landscape clears that — 9th gen 1080, mini 1133, Air and 10th gen 1180, Pro
+   11 1194 — so the cut is at 1039 and they all keep three columns and lose the
+   roster strip. The old 1150 put the mini and the 9th gen into two columns plus a
+   46vh strip on a screen only 744 or 810 tall, which spent half of a short screen
+   on the roster.
+   Portrait (744 to 1032) drops the roster to a full-width row underneath rather
+   than collapsing to one column, which would bury the recommendation under 200
+   player rows. */
+@media (max-width: 1039px) {
   .cols { grid-template-columns: minmax(360px, 1.25fr) minmax(300px, 1fr); }
   .col-roster { grid-column: 1 / -1; max-height: 46vh; }
   .col-roster .panel-head { margin-top: 10px; }
+}
+/* Portrait on a tablet is tall, but the strip is spending that height on rows
+   the board needs. The board has to keep nine players visible under the sticky
+   head on an iPad mini (744x1133), and measuring it there is what set this
+   number: 46vh gave seven, 38vh gave eight, 32vh gives ten. The roster still
+   shows the whole starting lineup before it scrolls. */
+@media (max-width: 1039px) and (orientation: portrait) {
+  .col-roster { max-height: 32vh; }
 }
 @media (max-width: 700px) {
   .cols { grid-template-columns: 1fr; }
@@ -490,7 +513,22 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 }
 .slot .who { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .slot.bye-clash { border-color: rgba(248,113,113,.5); }
-.slot .bye { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+.slot .bye { font-family: var(--mono); font-size: 11px; color: var(--dim); width: 20px; flex: none; text-align: right; }
+.slot .num { width: 30px; flex: none; text-align: right; }
+
+/* The two numbers on the right of a roster row are a bye week and a
+   projection, which is not something you can read off the digits. The header
+   borrows the row's own padding and column widths so the labels sit over the
+   columns they name. */
+.slot-head {
+  display: flex; align-items: center; gap: 8px; padding: 0 8px 4px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim);
+  border-bottom: 1px solid var(--line-soft); margin-bottom: 6px;
+}
+.slot-head .lbl { width: 54px; flex: none; }
+.slot-head .who { flex: 1; }
+.slot-head .bye { width: 20px; flex: none; text-align: right; }
+.slot-head .num { width: 30px; flex: none; text-align: right; }
 .slot .bye.warn { color: var(--amber); }
 .slot .bye.bad, .slot.bye-clash .bye { color: var(--red); }
 
@@ -590,22 +628,77 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 /* Column widths are generated in renderColumnHeads(), which also decides the
    narrow layout — see the note there on why this cannot be a media query. */
 
-/* Touch. Apple's 44px minimum target, and row actions cannot wait for a hover
-   that never arrives — so on touch they take a real column instead of floating.
-   iOS also zooms any input under 16px on focus, which throws the layout out. */
+/* Touch. Apple's 44px minimum target throughout, and iOS zooms any input under
+   16px on focus, which throws the layout out. Row actions cannot wait for a
+   hover that never arrives — see the note on .rowacts below for where they went
+   instead and why they are not a column.
+
+   These are keyed on body.touch, not on @media (hover: none), and the class is
+   set from that exact media query once at boot. The reason is that the row
+   template is generated in JavaScript: renderColumnHeads() has to know whether
+   the actions take space, and if the stylesheet decides that from a media query
+   while the script decides it from a flag, the two can disagree and the row ends
+   up with content and no track for it — which is the bug this whole section
+   fixes. One flag, read once, and both sides describe the same grid. It also
+   means an emulator that stops reporting hover: none above a certain width
+   still gets the layout the device would get. */
+body.touch .rowacts { display: none; }
+/* A row is one line and you act on a player by tapping him. The rule this
+   replaces made .rowacts position: static, which turned it into a grid item —
+   and the generated template is written with !important and has no track for
+   it, so three 40px buttons auto-placed onto a second grid row inside the name
+   cell, TO ME wrapped to two lines, and the row went to about 170px. Three
+   players on an iPad mini, in landscape too, because it is a touch rule and not
+   a width rule. Tapping the row opens the detail card, which already carries
+   these actions and has room to label them. */
+body.touch .prow { padding: 0 12px; gap: 6px; min-height: 48px; }
+body.touch .prow .nm { font-size: 14px; }
+/* The research tag is a badge of about 60px on a name track of about 200, and it
+   is the difference between "Christian McCaffrey SF" and "Christian McC…". The
+   name is what you are searching for; the tag is shorthand for a note the detail
+   card prints in full a tap away. Injury stays — a Q next to a name changes
+   whether you take him, and it is two characters. */
+body.touch .prow .nm .badge[class*="tag-"] { display: none; }
+
+/* Every pixel here is a player row that is not on screen. The board has to show
+   nine or more under the head on an iPad mini in portrait. */
+body.touch .sticky-head { padding: 9px 12px 5px; }
+body.touch .searchrow { margin-bottom: 6px; }
+body.touch .legendrow { margin-top: 5px; font-size: 11px; line-height: 1.3; }
+body.touch .phead { padding-top: 4px; padding-bottom: 4px; }
+body.touch .pill { padding: 8px 13px; font-size: 13px; }
+body.touch .btn-sm { padding: 8px 12px; font-size: 12px; }
+body.touch .slot { padding: 10px 8px; }
+body.touch .srow { padding: 7px 0; }
+body.touch .appbar { gap: 10px; }
+body.touch .appbar .logo small { display: none; }
+body.touch input[type=text], body.touch input[type=search],
+body.touch input[type=number], body.touch select, body.touch textarea { font-size: 16px; }
+
+/* Nine pills at a 13px touch size do not fit one row under 800px, and wrapping
+   them costs a row of the board. Scroll them the way the appbar does. */
+body.touch .filters {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+body.touch .filters::-webkit-scrollbar { display: none; }
+body.touch .filters .pill { flex: none; }
+
+/* The detail card is the only way to draft on touch, so it goes above the brief
+   and the three recommendation cards rather than below them, where its buttons
+   land off the bottom of an iPad. Order, not a DOM move: desktop keeps the
+   markup and the reading order it has. */
+body.touch .col-rec { display: flex; flex-direction: column; }
+body.touch .col-rec > #detail { order: -1; }
+
+body.touch .detail-acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+body.touch .detail-acts .btn { flex: 1 1 auto; min-height: 44px; font-size: 13px; }
+body.touch .detail-acts .btn-teal { color: var(--teal); border-color: var(--teal-dim); }
+body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height: 1; }
+
+/* The one thing that must stay a media query: a device that reports no hover but
+   somehow never ran the boot line still must not zoom the page on focus. */
 @media (hover: none) {
-  .prow { padding: 11px 14px; }
-  .rowacts {
-    position: static; transform: none; opacity: 1; pointer-events: auto;
-    padding-left: 0; background: none; box-shadow: none; justify-content: flex-end;
-  }
-  .rowacts button { padding: 8px; font-size: 11px; min-height: 40px; }
-  .pill { padding: 8px 13px; font-size: 13px; }
-  .btn-sm { padding: 8px 12px; font-size: 12px; }
-  .slot { padding: 10px 8px; }
-  .srow { padding: 7px 0; }
-  .appbar { gap: 10px; }
-  .appbar .logo small { display: none; }
   input[type=text], input[type=search], input[type=number], select, textarea { font-size: 16px; }
 }
 @supports (-webkit-touch-callout: none) {
@@ -654,6 +747,15 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 }
 .stylecard:hover { border-color: var(--teal-dim); background: var(--raised); }
 .stylecard.on { border-color: var(--teal-dim); background: rgba(45,212,191,.07); }
+/* .on is the style you are drafting under; .sel is the one you are reading
+   about. They are different things and have to look different. */
+.stylecard.sel { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal-dim); }
+#styleDiff.styleopen { padding: 14px; }
+
+/* A modeled ceiling or risk grade, marked apart from one an analyst wrote.
+   Both are real numbers the engine acts on; only one of them had a person
+   behind it, and the board should not pretend otherwise. */
+.num.modeled { font-style: italic; opacity: .82; }
 .stylecard .sc-head { display: flex; align-items: center; gap: 8px; }
 .stylecard .sc-tag { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
 
@@ -937,6 +1039,12 @@ button, .btn, .pill, .prow, .stylecard, .modecard, .colopt, .teamcard,
 .mk-tbl td { padding: 4px 6px; }
 .mk-tbl td:first-child {
   color: var(--dim); font-size: 10px; font-weight: 700; width: 38px;
+}
+/* The divergence table reuses the roster table's type but leads with a player
+   name, not a slot label, so it must not inherit the 38px slot column — a name
+   wrapped over three lines is what that produced. */
+.mk-diff td:first-child {
+  color: inherit; font-size: 12px; font-weight: 400; width: auto; white-space: nowrap;
 }
 
 /* Injury designations, straight from the feed. */

@@ -198,9 +198,17 @@ ok("emphasizing a position still lifts an above-replacement player",
 ok("de-emphasizing still drops him",
    scoreUnder(earlyRB, [], { earlyPosBias: { RB: 0.45 } }, 1) < neutralEarly);
 // Where the old multiply was correct, the new signed shift must be identical.
+// Asserted on `base` — the part the bias multiplier touches. The composite adds
+// ceiling and risk on top of it, and those do not scale with the bias, so the
+// claim was only ever exactly true of the whole score while this player had no
+// grades. He has modeled ones now, and the assertion has to be about the term
+// it is actually a claim about.
+function baseUnder(player, mine, knobs, round) {
+  return E.composite(player, ctxFor(mine, { strategy: knobs, round: round || 10 })).base;
+}
 near("and the arithmetic is unchanged where the old form was already right",
-     scoreUnder(earlyRB, [], { earlyPosBias: { RB: 1.35 } }, 1),
-     neutralEarly * 1.35, 0.01);
+     baseUnder(earlyRB, [], { earlyPosBias: { RB: 1.35 } }, 1),
+     baseUnder(earlyRB, [], {}, 1) * 1.35, 0.01);
 
 var neutralLate = scoreUnder(lateRB, twoTe, {});
 ok("emphasizing a position lifts a BELOW-replacement player too",

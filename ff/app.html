@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260904av">
+<link rel="stylesheet" href="assets/ff.css?v=20260904az">
 </head>
 <body>
 
@@ -51,9 +51,11 @@
           <input type="search" id="search" name="player-filter" autocomplete="off"
                  autocorrect="off" autocapitalize="off" spellcheck="false"
                  data-1p-ignore data-lpignore="true" data-form-type="other"
-                 enterkeyhint="done" inputmode="search"
+                 enterkeyhint="go" inputmode="search"
                  placeholder="Search players…">
-          <select id="sortBy" style="width:150px;flex:none">
+          <!-- No fixed width: at a 16px touch font "Sort: least likely to last"
+               clips to "Sort: suggestec". Let it size to its own content. -->
+          <select id="sortBy" style="flex:none">
             <option value="composite">Sort: suggested</option>
             <option value="pts">Sort: your points</option>
             <option value="vor">Sort: value over repl.</option>
@@ -351,6 +353,8 @@
 
   <div id="styleList"></div>
 
+  <div id="styleDiff"></div>
+
   <div class="panel mt" style="padding:14px">
     <div class="panel-head"><h3 style="margin:0">See what a style actually builds</h3></div>
     <p class="muted" style="font-size:13px;margin-bottom:10px">
@@ -385,8 +389,6 @@
       <span class="dimtext" id="styleAskMsg"></span>
     </div>
   </details>
-
-  <div id="styleDiff" class="mt"></div>
 
   <div class="mt" style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
     <span class="dimtext" id="styleCurrent"></span>
@@ -552,15 +554,15 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260904av"></script>
-<script src="data/players.js?v=20260904av"></script>
-<script src="assets/presets.js?v=20260904av"></script>
-<script src="assets/engine.js?v=20260904av"></script>
-<script src="assets/auth.js?v=20260904av"></script>
-<script src="assets/sync.js?v=20260904av"></script>
-<script src="assets/parser.js?v=20260904av"></script>
-<script src="assets/draftanalysis.js?v=20260904av"></script>
-<script src="assets/strategies.js?v=20260904av"></script>
+<script src="assets/config.js?v=20260904az"></script>
+<script src="data/players.js?v=20260904az"></script>
+<script src="assets/presets.js?v=20260904az"></script>
+<script src="assets/engine.js?v=20260904az"></script>
+<script src="assets/auth.js?v=20260904az"></script>
+<script src="assets/sync.js?v=20260904az"></script>
+<script src="assets/parser.js?v=20260904az"></script>
+<script src="assets/draftanalysis.js?v=20260904az"></script>
+<script src="assets/strategies.js?v=20260904az"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -568,7 +570,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260904av";
+    s.src = "assets/app.js?v=20260904az";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }
