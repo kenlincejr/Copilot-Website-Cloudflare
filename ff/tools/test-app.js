@@ -499,12 +499,18 @@ console.log("\n== playerIn ==");
 (function () {
   var api = loadApp(kindaHighlandersLeague(), []);
 
-  // 1. "Take X over Y": the wrong player's full name is also a substring of
-  // the line, and it is longer, so the longest-name-wins rule binds to the
-  // player being passed over rather than the one actually recommended.
+  // 1. "Take X over Y": two full player names both appear in the line. An
+  // earlier version of playerIn() picked whichever name was longest, which
+  // bound this exact sentence to "Ja'Marr Chase" — the player being passed
+  // over — instead of "Chase Brown", the one actually recommended, or to
+  // nobody. That version is gone (playerIn() now treats two non-overlapping
+  // names in one line as ambiguous and returns null rather than guessing),
+  // but the sentence is kept here as a permanent regression case: it is
+  // exactly the shape of answer a real brief produces, and this must never
+  // go back to resolving it to the wrong player.
   var r1 = api.playerIn("Take Chase Brown over Ja'Marr Chase");
   ok("\"Take Chase Brown over Ja'Marr Chase\" must not bind to Ja'Marr Chase " +
-     "(the player being passed over, whose full name is the longer substring)",
+     "(the player being passed over) — nobody or Chase Brown are both acceptable",
      !r1 || r1.name !== "Ja'Marr Chase",
      r1 ? r1.name : "null");
 

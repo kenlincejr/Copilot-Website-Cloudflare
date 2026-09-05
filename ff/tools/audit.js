@@ -127,6 +127,47 @@ if (splits.length) {
   });
 }
 
+/* --------------------------------------------------------- 8. data freshness */
+// `meta.built` is the date bake-players.py last ran; `meta.draft` is the real
+// draft's date and time. A board baked days before kickoff is running on
+// preseason news that has kept moving — the closer the bake is to draft night,
+// the more of that movement (a role settling, a camp injury, a depth-chart
+// change) actually made it into the projections. Three days is the line: a
+// bake older than that on draft morning is a prompt to re-run
+// tools/bake-players.py, not yet a reason to distrust the board.
+(function checkFreshness() {
+  var meta = D.meta || {};
+  var builtStr = meta.built, draftStr = meta.draft;
+  if (!builtStr || !draftStr) {
+    flag("MED", "freshness", "meta.built or meta.draft is missing — cannot check the bake's age");
+    return;
+  }
+  var draftDateMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(draftStr);
+  var builtDateMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(builtStr);
+  if (!draftDateMatch || !builtDateMatch) {
+    flag("MED", "freshness", "meta.built (" + builtStr + ") or meta.draft (" + draftStr +
+      ") is not in a YYYY-MM-DD-leading format the audit can parse");
+    return;
+  }
+  // Compare at UTC midnight on the calendar dates alone — meta.draft carries a
+  // local kickoff time and time zone (e.g. "19:00 CDT") that Date cannot parse
+  // reliably across runtimes, and the three-day rule is about calendar days,
+  // not hours.
+  var built = Date.UTC(+builtDateMatch[1], +builtDateMatch[2] - 1, +builtDateMatch[3]);
+  var draft = Date.UTC(+draftDateMatch[1], +draftDateMatch[2] - 1, +draftDateMatch[3]);
+  var daysBefore = Math.round((draft - built) / 86400000);
+  if (daysBefore > 3) {
+    flag("MED", "freshness", "the bake (meta.built: " + builtStr + ") is " + daysBefore +
+      " days before the draft (meta.draft: " + draftStr + ") — more than the 3-day " +
+      "freshness window; re-run tools/bake-players.py before draft night");
+  } else if (daysBefore < 0) {
+    flag("HIGH", "freshness", "meta.built (" + builtStr + ") is AFTER meta.draft (" + draftStr +
+      ") — the draft date itself may be wrong, or the bake is stamped with the wrong year");
+  } else {
+    flag("ok", "freshness", "the bake is " + daysBefore + " day(s) before the draft, inside the 3-day window");
+  }
+})();
+
 /* ---------------------------------------------------------------- report */
 var order = { HIGH: 0, MED: 1, LOW: 2, ok: 3 };
 findings.sort(function (a, b) { return order[a.sev] - order[b.sev]; });
