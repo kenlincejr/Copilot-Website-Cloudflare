@@ -33,11 +33,16 @@ var vm = require("vm");
 require(path.join(__dirname, "../data/players.js"));
 require(path.join(__dirname, "../assets/presets.js"));
 var ENGINE = require(path.join(__dirname, "../assets/engine.js"));
+require(path.join(__dirname, "../assets/impact.js"));
 require(path.join(__dirname, "../assets/strategies.js"));
+// app.js reads DRAFTLINE_IMPACT at load for its scoring labels, so the sandbox
+// needs it on globalThis before app.js runs or every suite dies at line 1.
+require(path.join(__dirname, "../assets/impact.js"));
 
 var DATA = globalThis.DRAFTLINE_DATA;
 var PRESETS = globalThis.DRAFTLINE_PRESETS;
 var STRATS = globalThis.DRAFTLINE_STRATEGIES;
+var IMPACT = globalThis.DRAFTLINE_IMPACT;
 var KNOB_SPEC = globalThis.DRAFTLINE_KNOB_SPEC;
 
 var APP_PATH = path.join(__dirname, "../assets/app.js");
@@ -201,6 +206,7 @@ function loadApp(leagueState, picksState, opts) {
   sandbox.DRAFTLINE_DATA = DATA;
   sandbox.DRAFTLINE_STRATEGIES = STRATS;
   sandbox.DRAFTLINE_KNOB_SPEC = KNOB_SPEC;
+  sandbox.DRAFTLINE_IMPACT = IMPACT;
   sandbox.DRAFTLINE_SYNC = undefined;
   // No proxy, no key: claudeReady() is false, so render()'s call into
   // renderBrief() returns immediately and never reaches fetch.

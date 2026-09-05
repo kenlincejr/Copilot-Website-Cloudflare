@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260905b">
+<link rel="stylesheet" href="assets/ff.css?v=20260905c">
 </head>
 <body>
 
@@ -257,6 +257,18 @@
       <button class="btn btn-sm btn-ghost btn-danger" id="yahooClear">Forget it all</button>
       <span class="dimtext" id="yahooMsg"></span>
     </div>
+  </details>
+
+  <details class="mt" id="dImpact">
+    <summary style="cursor:pointer;color:var(--muted)">What your scoring does to the draft</summary>
+    <p class="muted" style="font-size:13px;margin-top:10px">
+      Consensus ADP is drafted under full PPR with standard everything else. Yours is not that,
+      and this is the difference — measured, not asserted. Draftline builds the board twice,
+      once under your rules and once under the baseline, and reports what moved. Every rule is
+      then reverted on its own, so each one is credited with what it actually did rather than
+      with what it looks like it should do.
+    </p>
+    <div id="impactOut" class="mt"></div>
   </details>
 
   <details class="mt" id="scoringDetails">
@@ -554,15 +566,16 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260905b"></script>
-<script src="data/players.js?v=20260905b"></script>
-<script src="assets/presets.js?v=20260905b"></script>
-<script src="assets/engine.js?v=20260905b"></script>
-<script src="assets/auth.js?v=20260905b"></script>
-<script src="assets/sync.js?v=20260905b"></script>
-<script src="assets/parser.js?v=20260905b"></script>
-<script src="assets/draftanalysis.js?v=20260905b"></script>
-<script src="assets/strategies.js?v=20260905b"></script>
+<script src="assets/config.js?v=20260905c"></script>
+<script src="data/players.js?v=20260905c"></script>
+<script src="assets/presets.js?v=20260905c"></script>
+<script src="assets/engine.js?v=20260905c"></script>
+<script src="assets/impact.js?v=20260905c"></script>
+<script src="assets/auth.js?v=20260905c"></script>
+<script src="assets/sync.js?v=20260905c"></script>
+<script src="assets/parser.js?v=20260905c"></script>
+<script src="assets/draftanalysis.js?v=20260905c"></script>
+<script src="assets/strategies.js?v=20260905c"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -570,7 +583,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260905b";
+    s.src = "assets/app.js?v=20260905c";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }

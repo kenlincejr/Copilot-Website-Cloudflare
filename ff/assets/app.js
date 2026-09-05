@@ -4,6 +4,7 @@
 
 var E = DRAFTLINE_ENGINE, PRESETS = DRAFTLINE_PRESETS, DATA = DRAFTLINE_DATA, AUTH = DRAFTLINE_AUTH;
 var SYNC = globalThis.DRAFTLINE_SYNC || null;
+var IMPACT = globalThis.DRAFTLINE_IMPACT;
 var STRATS = globalThis.DRAFTLINE_STRATEGIES, KNOBS = globalThis.DRAFTLINE_KNOB_SPEC;
 var $  = function (s) { return document.querySelector(s); };
 var $$ = function (s, root) {
@@ -3375,23 +3376,12 @@ function closeModal(id) { $(id).classList.add("hidden"); }
 
 /* ----------------------------------------------------------- setup modal */
 
-var HUMAN = {
-  yardsPerPoint: "Yards per point", td: "Touchdown", int: "Interception", twoPt: "2-pt conversion",
-  bonus400: "Bonus at 400 yds", bonus500: "Bonus at 500 yds", bonus150: "Bonus at 150 yds",
-  bonus200: "Bonus at 200 yds", comp40plus: "40+ yard completion", run40plus: "40+ yard run",
-  rec40plus: "40+ yard reception", td40plus: "40+ yard TD", perReception: "Per reception",
-  fumbleLost: "Fumble lost", offFumbleRetTd: "Fumble return TD",
-  returnYardsPerPoint: "Return yards per point", returnTd: "Return TD",
-  sack: "Sack", fumRec: "Fumble recovery", safety: "Safety", blockKick: "Blocked kick",
-  extraPointReturned: "XP returned", pa0: "0 points allowed", pa1_6: "1-6 allowed",
-  pa7_13: "7-13 allowed", pa14_20: "14-20 allowed", pa21_27: "21-27 allowed",
-  pa28_34: "28-34 allowed", pa35plus: "35+ allowed",
-  fg0_19: "FG 0-19", fg20_29: "FG 20-29", fg30_39: "FG 30-39", fg40_49: "FG 40-49",
-  fg50plus: "FG 50+", miss0_19: "Miss 0-19", miss20_29: "Miss 20-29", miss30_39: "Miss 30-39",
-  miss40_49: "Miss 40-49", miss50plus: "Miss 50+", pat: "Extra point", patMiss: "Missed XP"
-};
-var GROUPS = [["passing", "Passing"], ["rushing", "Rushing"], ["receiving", "Receiving"],
-              ["misc", "Miscellaneous"], ["kicking", "Kicking"], ["dst", "Defense / special teams"]];
+/* The scoring label map and group order live in impact.js, which needs them to
+   name a rule in its own report. Two copies drifted apart the first time one of
+   them was corrected, so there is one, and it is owned by the file that has the
+   most to say about each key. */
+var HUMAN = IMPACT.LABELS;
+var GROUPS = IMPACT.GROUPS;
 
 function buildScoringForm() {
   var r = S.league.rules;
