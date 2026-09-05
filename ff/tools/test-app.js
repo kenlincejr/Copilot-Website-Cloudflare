@@ -292,7 +292,8 @@ function loadApp(leagueState, picksState, opts) {
     "undoWindowOpen: undoWindowOpen, renderTracker: renderTracker, " +
     "lastPickLine: lastPickLine, sortedList: sortedList, " +
     "askQuestions: askQuestions, renderAskQuestions: renderAskQuestions, " +
-    "recCards: recCards, " +
+    "recCards: recCards, pickRole: pickRole, pickTradeoffs: pickTradeoffs, " +
+    "rosterBlock: rosterBlock, " +
     "renderSpend: renderSpend, setSpend: function (s) { claudeCfg.spend = s; } };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
 
@@ -3100,6 +3101,100 @@ console.log("\n== picks with the starting lineup already full ==");
      "got " + (d.ceilingAdj || 0).toFixed(2) + ", full strength is " + starterCeiling.toFixed(2));
   ok("and he improves the lineup, so nothing here applies to him",
      (d.marginal || 0) > 0.5, String((d.marginal || 0).toFixed(1)));
+})();
+
+/* ========================================================================
+   what a card says, and what the payload knows about depth
+   ======================================================================== */
+console.log("\n== the card explains itself ==");
+(function () {
+  function ownerSlot(pick, teams) {
+    var r = Math.ceil(pick / teams), idx = pick - (r - 1) * teams;
+    return (r % 2 === 1) ? idx : (teams - idx + 1);
+  }
+  var MINE = { 11: "Jahmyr Gibbs", 14: "Puka Nacua", 35: "Chase Brown",
+               38: "Jayden Reed", 59: "Drake Maye", 62: "Brock Bowers",
+               83: "Javonte Williams", 86: "Houston Defense" };
+  var byAdp = DATA.players.slice().sort(function (a, b) {
+    return (a.adp || 999) - (b.adp || 999);
+  }).map(function (p) { return p.name; });
+  var used = {};
+  Object.keys(MINE).forEach(function (k) { used[MINE[k]] = true; });
+  var picks = [], feed = 0;
+  for (var i = 1; i <= 106; i++) {
+    var slot = ownerSlot(i, 12), nm = MINE[i];
+    if (!nm) {
+      while (feed < byAdp.length && used[byAdp[feed]]) feed++;
+      nm = byAdp[feed]; used[nm] = true;
+    }
+    picks.push({ pick: i, name: nm, slot: slot, mine: slot === 11, unknown: false });
+  }
+  var api = loadApp(kindaHighlandersLeague(), picks);
+  var A = api.getAnalysis();
+  var pool = A.avail.filter(function (p) { return !p.compDetail.blocked; });
+  var cards = api.recCards(pool);
+
+  // The old card led with "+0 · to your lineup" on every candidate from round 8
+  // on, which is a number with no interpretation and identical across the three.
+  cards.forEach(function (p) {
+    var role = api.pickRole(p);
+    ok("card for " + p.name + " says what the pick is, in words",
+       !!role.label && role.label.length > 12 && !/^\+?\d/.test(role.label), role.label);
+  });
+  var roles = cards.map(function (p) { return api.pickRole(p).label; });
+  ok("and the three do not all say the same thing",
+     new Set(roles).size === roles.length, roles.join(" | "));
+
+  // The single most useful fact the card never carried: you already have one.
+  var qb = pool.filter(function (p) { return p.pos === "QB"; })[0];
+  if (qb) {
+    var tr = api.pickTradeoffs(qb);
+    ok("a spare quarterback's card says you already start one",
+       tr.cons.some(function (c) { return /already start Drake Maye at QB/.test(c); }),
+       tr.cons.join(" | "));
+    ok("and says what that costs him — a week, not a season",
+       tr.cons.some(function (c) { return /only plays if he is hurt or on bye/.test(c); }));
+  }
+  cards.forEach(function (p) {
+    var tr = api.pickTradeoffs(p);
+    ok("card for " + p.name + " gives both sides of the case",
+       tr.pros.length >= 1 && tr.cons.length >= 1,
+       tr.pros.length + " for, " + tr.cons.length + " against");
+  });
+
+  // The payload could not tell the model how often a backup would actually play.
+  var rb = api.rosterBlock();
+  ok("the payload states depth per position, not just \"bench: empty\"",
+     /HOW DEEP I AM/.test(rb), rb.slice(0, 80));
+  ok("and says a one-slot position buys one week of a backup",
+     /QB: I start 1[\s\S]{0,120}plays about 1 week/.test(rb),
+     (rb.match(/- QB:[^\n]*/) || [""])[0]);
+  // The point of the block is the ratio, not a fixed number: a body behind three
+  // started slots is worth strictly more weeks than one behind a single slot,
+  // and that is the fact the board itself cannot express. Two of these backs
+  // share a bye, so three starters buy two weeks here — which is exactly why
+  // this counts distinct weeks rather than starters.
+  function weeksFor(pos) {
+    var m = new RegExp("- " + pos + ": I start \\d+[^\\n]*plays about (\\d+) week").exec(rb);
+    return m ? +m[1] : null;
+  }
+  ok("a multi-slot position buys strictly more weeks than a one-slot one",
+     weeksFor("RB") > weeksFor("QB"),
+     "RB " + weeksFor("RB") + " vs QB " + weeksFor("QB"));
+  // Two starters sharing a bye is one week with a hole in it, not two.
+  var wk = (rb.match(/plays about (\d+) weeks? on byes alone \(weeks? ([\d, ]+)\)/g) || []);
+  ok("the weeks it names are distinct ones", wk.every(function (line) {
+    var m = /about (\d+) weeks? on byes alone \(weeks? ([\d, ]+)\)/.exec(line);
+    var list = m[2].split(",").map(function (s) { return s.trim(); });
+    return +m[1] === new Set(list).size && list.length === new Set(list).size;
+  }), wk.join(" | "));
+
+  // And the brief must ask for something the user can overrule.
+  var q = api.briefQuestion ? api.briefQuestion() : "";
+  ok("the brief asks for a real alternative, not just a fallback",
+     /Instead:/.test(q) && /overrule you on my own taste/.test(q));
+  ok("and tells the model to price a backup by weeks played",
+     /plays one week a year/.test(q));
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

@@ -3814,6 +3814,114 @@ function recCards(pool) {
   return out.length === 3 ? out : ranked.slice(0, 3);
 }
 
+/**
+ * What this pick actually is, in the words a drafter would use.
+ *
+ * The card used to lead with "+0 · to your lineup", which is a number with no
+ * interpretation attached: it does not say whether zero is normal, whether it
+ * is bad, or what to do about it. By round 8 every candidate reads +0 and the
+ * three cards become indistinguishable. This says the role instead — what job
+ * the player would do on THIS roster — and the number goes in the tooltip where
+ * anyone who wants it can still find it.
+ */
+function pickRole(p) {
+  var d = p.compDetail || {};
+  var starters = startingSlots();
+
+  if ((d.marginal || 0) > 0.5) {
+    var slot = null;
+    for (var i = 0; i < starters.length; i++) {
+      if (!starters[i].player && !starters[i].blocked &&
+          (starters[i].pos === p.pos || starters[i].pos === "FLEX")) { slot = starters[i].label; break; }
+    }
+    // Nothing is empty, so he is better than a body you are already starting.
+    if (!slot) {
+      var worst = null;
+      starters.forEach(function (s) {
+        if (s.player && (s.pos === p.pos || s.pos === "FLEX") &&
+            (!worst || s.player.pts < worst.player.pts)) worst = s;
+      });
+      return worst
+        ? { k: "upgrade", label: "Upgrades " + worst.label + " over " + worst.player.name,
+            tone: "good" }
+        : { k: "starter", label: "Starts for you right away", tone: "good" };
+    }
+    return { k: "fills", label: "Fills your open " + slot, tone: "good" };
+  }
+
+  // A bench body. Say the most specific true thing about why he might matter.
+  var mine = A.mine || [];
+  var sameTeamRb = p.pos === "RB" && mine.some(function (q) {
+    return q.pos === "RB" && q.team === p.team && q.name !== p.name;
+  });
+  if (sameTeamRb) return { k: "handcuff", label: "Handcuff — steps in if your " + p.team + " back goes down", tone: "warn" };
+
+  // Does he cover a week your own starters are away?
+  var holes = [];
+  starters.forEach(function (s) {
+    if (s.player && s.player.pos === p.pos && s.player.bye !== p.bye) holes.push(s.player);
+  });
+  if (holes.length) {
+    return { k: "bye", label: "Covers week " + holes[0].bye + ", when " + holes[0].name + " is on bye",
+             tone: "warn" };
+  }
+  if (p.tierLeft <= 1) {
+    return { k: "cliff", label: "Last of tier " + p.tier + " at " + p.pos, tone: "warn" };
+  }
+  if (p.ceiling >= 85) {
+    return { k: "upside", label: "Upside stash — one of the highest ceilings left", tone: "warn" };
+  }
+  return { k: "depth", label: "Bench depth at " + p.pos + " — nothing more", tone: "dim" };
+}
+
+/**
+ * The case for and against, from facts the app already holds.
+ *
+ * Three cards headed "take one of these" are only a choice if the differences
+ * between them are on screen. Ranking them and stopping there asks the user to
+ * trust a number they cannot interpret; this gives them the two or three things
+ * that would actually change their mind, so the preference can be theirs.
+ * Every line traces to a number in the app — nothing here is generated prose.
+ */
+function pickTradeoffs(p) {
+  var d = p.compDetail || {}, pros = [], cons = [];
+  var surv = Math.round(survShown(p) * 100);
+  var mine = A.mine || [];
+
+  if ((d.marginal || 0) > 0.5) pros.push("Adds " + n0(d.marginal) + " points to the lineup you can field today");
+  if (surv <= 25 && A.survTarget) pros.push("Almost certainly gone by " + A.survTarget + " — " + surv + "% he lasts");
+  else if (surv <= 50 && A.survTarget) pros.push("Only " + surv + "% he lasts to " + A.survTarget);
+  if (p.tierLeft <= 1) pros.push("Last one in tier " + p.tier + " at " + p.pos);
+  else if (p.tierLeft <= 3) pros.push("Only " + p.tierLeft + " left in tier " + p.tier);
+  if (p.adp && A.cur > p.adp + 6) pros.push("Fell " + Math.round(A.cur - p.adp) + " picks past his draft position");
+  if (p.ceiling >= 85) pros.push("Ceiling grade " + p.ceiling + " — top of what is left");
+  if (p.tag && p.tag !== "AVOID" && p.tag !== "LANDMINE" && p.tag !== "FALLER") {
+    pros.push("Research flag: " + (TAGS[p.tag] || p.tag));
+  }
+
+  // The single most useful thing the old card never said: you already have one.
+  if ((d.marginal || 0) <= 0.5) {
+    var ahead = mine.filter(function (q) { return q.pos === p.pos; })
+      .sort(function (a, b) { return b.pts - a.pts; })[0];
+    if (ahead) {
+      cons.push("You already start " + ahead.name + " at " + p.pos +
+                " — this one only plays if he is hurt or on bye");
+    } else {
+      cons.push("Cannot crack your starting lineup as it stands");
+    }
+  }
+  if (d.byePenalty) {
+    cons.push((A.byeCounts[p.bye] || 0) + " of your starters are already out in week " + p.bye);
+  }
+  if (p.injury) cons.push("Injury designation: " + p.injury);
+  if (p.risk >= 60) cons.push("Risk grade " + p.risk + " — the projection is a wide one");
+  if (p.vor < 0) cons.push("Below replacement — a freely available " + p.pos + " scores about the same");
+  if (p.tag === "AVOID" || p.tag === "LANDMINE" || p.tag === "FALLER") {
+    cons.push("Research flag: " + (TAGS[p.tag] || p.tag));
+  }
+  return { pros: pros.slice(0, 3), cons: cons.slice(0, 3) };
+}
+
 function renderRecs() {
   if (!A.myNext) { $("#recs").innerHTML = '<div class="note">Your draft is finished.</div>'; return; }
 
@@ -3840,6 +3948,16 @@ function renderRecs() {
      once per card, which is a lot of column for a number that barely separates
      them. Prose says the one thing a number cannot; the numbers stay numbers. */
   var best = top[0] ? top[0].comp : 1;
+  /* Is the order real, or is it inside its own noise?
+     Once nothing can improve the lineup the composite collapses toward zero and
+     the three survivors sit within a few season points of each other — under
+     half a point a week. The confidence bar divides one by the other, so a gap
+     of three points on scores of 3 and 0 draws a full bar against an empty one
+     and states a 12-to-1 preference that the arithmetic does not support. When
+     the call is this close the bar comes off and the panel says so instead. */
+  var closeCall = top.length === 3 &&
+    !top.some(function (p) { return (p.compDetail.marginal || 0) > 0.5; }) &&
+    Math.abs(top[0].comp - top[2].comp) < 5;
   $("#recs").innerHTML = top.map(function (p, i) {
     var d = p.compDetail;
     var conf = Math.max(8, Math.min(100, Math.round(p.comp / Math.max(best, 1) * 100)));
@@ -3848,15 +3966,16 @@ function renderRecs() {
     var surv = Math.round(survShown(p) * 100);
     var survCls = surv >= 70 ? "good" : surv >= 35 ? "warn" : "bad";
     var stats = [
-      { k: "to your lineup", v: (d.marginal > 0 ? "+" : "") + n0(d.marginal),
-        cls: d.marginal > 0 ? "good" : "dim",
-        t: "Points he adds to the best starting lineup you can field, over a freely available " + p.pos },
       { k: A.survTarget ? "reaches " + A.survTarget : "survives", v: surv + "%", cls: survCls,
         t: "Chance he is still on the board the next time you choose" },
       { k: "tier " + p.tier, v: p.tierLeft + " left", cls: p.tierLeft <= 1 ? "warn" : "dim",
         t: p.tierLeft + " players left in tier " + p.tier + " at " + p.pos +
-           ". Inside a tier they are close enough to be interchangeable." }
+           ". Inside a tier they are close enough to be interchangeable." },
+      { k: "your points", v: n0(p.pts), cls: "dim",
+        t: "Projected season points under your league's exact scoring rules" }
     ];
+    var role = pickRole(p);
+    var tr = pickTradeoffs(p);
     return '<div class="rec' + (i === 0 ? " top" : "") + '">' +
       '<div class="rec-head">' +
         '<span class="rec-rank">' + (i + 1) + "</span>" +
@@ -3865,17 +3984,29 @@ function renderRecs() {
         '<span class="rec-meta">' + p.team + " \u00b7 bye " + p.bye + "</span>" +
         tagBadge(p.tag) +
       "</div>" +
+      '<div class="rec-role rr-' + role.tone + '" title="' +
+        esc("Adds " + n0(d.marginal) + " points to the best starting lineup you can field, " +
+            "against a freely available " + p.pos) + '">' + esc(role.label) + "</div>" +
       '<div class="rec-stats">' + stats.map(function (st) {
         return '<span class="rs" title="' + esc(st.t) + '">' +
           '<b class="rs-' + st.cls + '">' + st.v + "</b>" +
           '<span class="rs-k">' + esc(st.k) + "</span></span>";
       }).join("") + "</div>" +
+      (tr.pros.length || tr.cons.length
+        ? '<ul class="rec-tr">' +
+          tr.pros.map(function (s) { return '<li class="pro">' + esc(s) + "</li>"; }).join("") +
+          tr.cons.map(function (s) { return '<li class="con">' + esc(s) + "</li>"; }).join("") +
+          "</ul>"
+        : "") +
       '<div class="rec-why">' + esc(why) + "</div>" +
       styleChipHtml(p) +
       '<div class="rec-foot">' +
-        '<div class="bar" title="' + esc("Board score " + n0(p.comp) +
-          (i ? ", against " + n0(best) + " for the top pick" : ", the top of the board")) +
-          '"><span style="width:' + conf + '%"></span></div>' +
+        (closeCall
+          ? '<div class="bar-none" title="' + esc("Board score " + n0(p.comp) +
+              ". Too close to the others to draw a preference.") + '">too close to call</div>'
+          : '<div class="bar" title="' + esc("Board score " + n0(p.comp) +
+              (i ? ", against " + n0(best) + " for the top pick" : ", the top of the board")) +
+            '"><span style="width:' + conf + '%"></span></div>') +
         '<div class="rec-actions">' +
           '<button class="btn btn-sm btn-primary" data-take="' + esc(p.name) + '">' +
             (myTurn() ? "Draft" : "I drafted him") + "</button>" +
@@ -3888,6 +4019,19 @@ function renderRecs() {
         "</div>" +
       "</div></div>";
   }).join("") || '<div class="note">Nothing left that clears the position caps.</div>';
+
+  /* When the three are inside a point of each other the ranking is not a
+     finding, and presenting it as one invites the user to read an order that
+     is not there. Say so, and hand the choice back with the thing that should
+     actually decide it. */
+  if (closeCall) {
+    $("#recs").insertAdjacentHTML("afterbegin",
+      '<div class="rec-close"><b>This one is yours to call.</b> All three are within ' +
+      n0(Math.abs(top[0].comp - top[2].comp)) + " points of each other across a whole season — " +
+      "under half a point a week — and none of them changes the lineup you can field today. " +
+      "The board cannot separate them, so take the shape you want: the safest week-to-week " +
+      "body, the biggest ceiling, or the position you would least like to lose someone at.</div>");
+  }
 
   var chip = $("#styleChip");
   if (chip) chip.onclick = function () { $("#btnStyle").click(); };
@@ -5614,6 +5758,45 @@ function rosterBlock() {
 
   var out = ["MY ROSTER, SLOT BY SLOT:\n" + lines.join("\n")];
   out.push("MY BENCH: " + (bench.length ? bench.join("; ") : "empty"));
+
+  /* Depth, said per position rather than as one list.
+     "MY BENCH: empty" is true and useless: it does not say where the hole would
+     open, how many weeks a body there would actually play, or which of my
+     starters has nobody behind him. Those are the facts that decide every pick
+     from the round the lineup fills onward, and they were the ones the payload
+     did not carry — so the model was left to argue from a candidate list that
+     said nothing but "he CANNOT crack my starting lineup" twelve times. */
+  var startersBy = {}, benchBy = {};
+  startingSlots().forEach(function (s) {
+    if (s.player) startersBy[s.player.pos] = (startersBy[s.player.pos] || 0) + 1;
+  });
+  (A.roster.bench || []).forEach(function (p) {
+    (benchBy[p.pos] = benchBy[p.pos] || []).push(p);
+  });
+  var depth = ["QB", "RB", "WR", "TE"].map(function (pos) {
+    var st = startersBy[pos] || 0, bn = (benchBy[pos] || []);
+    if (!st && !bn.length) return null;
+    // Distinct weeks, not one per starter: two of my backs sharing a bye is one
+    // week with a hole in it, not two, and a single backup can only cover it once.
+    var weeks = {};
+    startingSlots().forEach(function (s) {
+      if (s.player && s.player.pos === pos) weeks[s.player.bye] = true;
+    });
+    var wk = Object.keys(weeks).sort(function (a, b) { return a - b; });
+    return "- " + pos + ": I start " + st + ", with " + (bn.length
+        ? bn.length + " behind (" + bn.map(function (q) { return q.name; }).join(", ") + ")"
+        : "NOBODY behind them") +
+      ". A body here plays about " + wk.length + " week" + (wk.length === 1 ? "" : "s") +
+      " on byes alone (week" + (wk.length === 1 ? " " : "s ") + wk.join(", ") +
+      "), plus whatever injuries cost me.";
+  }).filter(Boolean);
+  if (depth.length) {
+    out.push("HOW DEEP I AM, AND HOW OFTEN A BACKUP HERE WOULD ACTUALLY PLAY:\n" +
+      depth.join("\n") +
+      "\nThat last number is the honest ceiling on what a backup is worth to me: a body " +
+      "behind a one-slot position plays a single week a year unless somebody gets hurt, " +
+      "and one behind three started slots plays three. Weigh depth picks by it.");
+  }
   out.push(open.length
     ? "STARTING SLOTS STILL EMPTY: " + open.join(", ") + "."
     : "STARTING SLOTS STILL EMPTY: none — every starter is filled, so anything " +
@@ -6393,11 +6576,24 @@ function briefQuestion() {
     "matches nobody.\n" +
     "Then two or three sentences on why, grounded in my open roster slots, the " +
     "board's numbers and anything the research notes flag.\n" +
+    "Then one line starting \"Instead:\" naming ONE alternative with a different " +
+    "shape to it — a different position, or the same position bought for a " +
+    "different reason — and the single thing that would make me prefer it. This " +
+    "is the line that lets me overrule you on my own taste, so make it a real " +
+    "alternative and not a near-copy of the first.\n" +
     "Last line — start it with \"If gone:\" and name one fallback in a single clause. " +
     "Do not quote survival percentages on that line; a fallback is by definition " +
     "the player you take when the first one is already gone.\n" +
-    "Under 110 words total. If the board's top pick is right, say so plainly and " +
+    "Under 130 words total. If the board's top pick is right, say so plainly and " +
     "spend your words on what it cannot see.\n" +
+    "When every starting slot of mine is filled, say so and price the pick as " +
+    "what it is: depth. Weigh it by how many weeks that body would actually " +
+    "play for me — the depth block above gives that number per position — and " +
+    "not by how far he sits above replacement on a board that does not know I " +
+    "already own a starter there. A second quarterback behind a healthy starter " +
+    "in a one-quarterback league plays one week a year; say that plainly rather " +
+    "than dressing it up, and only recommend him if nothing else on the list is " +
+    "worth more than one week of a backup.\n" +
     "Every player listed above is ON THE BOARD right now — nobody has taken them. " +
     "A survival percentage is the chance he lasts until my pick, not a report that " +
     "he has gone. Never describe an available player as gone, taken or off the " +

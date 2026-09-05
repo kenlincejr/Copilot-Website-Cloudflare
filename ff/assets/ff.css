@@ -396,6 +396,40 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .rec.top { border-color: var(--teal-dim); background: linear-gradient(180deg, rgba(45,212,191,.07), var(--panel) 60%); }
 .rec-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
 .rec-head .name { font-size: 16px; font-weight: 650; }
+/* What the pick IS, in a line, where a bare "+0 to your lineup" used to be. */
+.rec-role {
+  font-size: 13px; font-weight: 620; line-height: 1.4; margin: 7px 0 2px;
+}
+.rec-role.rr-good { color: var(--teal); }
+.rec-role.rr-warn { color: var(--amber); }
+.rec-role.rr-dim  { color: var(--dim); }
+
+/* The case for and against. Three cards are only a choice if the differences
+   between them are on screen; ranking them and stopping there asks the reader
+   to trust a number they cannot interpret. */
+.rec-tr { list-style: none; margin: 7px 0 4px; padding: 0; display: grid; gap: 3px; }
+.rec-tr li {
+  font-size: 12px; line-height: 1.45; padding-left: 16px; position: relative;
+  color: var(--muted);
+}
+.rec-tr li::before { position: absolute; left: 0; top: 0; font-weight: 700; }
+.rec-tr li.pro::before { content: "+"; color: var(--green); }
+.rec-tr li.con::before { content: "\2212"; color: var(--red); }
+
+/* Where the confidence bar goes when there is no confidence to draw. */
+.bar-none {
+  flex: 1; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase;
+  color: var(--dim); align-self: center;
+}
+
+/* Said once, above the cards, when the ranking is inside its own noise. */
+.rec-close {
+  font-size: 12px; line-height: 1.5; color: var(--muted);
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius); padding: 9px 11px; margin-bottom: 10px;
+}
+
 .rec-why { color: var(--muted); font-size: 12.5px; margin: 6px 0 8px; }
 .rec-why b { color: var(--text); font-weight: 600; }
 
