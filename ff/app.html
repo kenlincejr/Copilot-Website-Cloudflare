@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260905n">
+<link rel="stylesheet" href="assets/ff.css?v=20260905p">
 </head>
 <body>
 
@@ -554,7 +554,33 @@
   </div>
 
   <div id="claudeAsk" class="hidden">
-    <div class="panel" style="padding:12px;margin-bottom:12px">
+    <!-- Where you are, so the questions under it read as being about this pick
+         rather than about fantasy football in general. -->
+    <p class="askwhere" id="askWhere"></p>
+
+    <!-- Built at open time from the live board: real names, real slots, real
+         pick numbers. A question with "Bijan Robinson" in it is one the user
+         can tell they want the answer to; "Compare my top two" is not. -->
+    <div class="askqs" id="askQs"></div>
+
+    <div class="field">
+      <textarea id="claudeQ" rows="2"
+        placeholder="…or ask in your own words — a player, a position, a trade-off"></textarea>
+    </div>
+    <div class="askbar">
+      <button class="btn btn-primary" id="claudeGo">Ask</button>
+      <span class="dimtext" id="claudeCost"></span>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn btn-sm btn-ghost" id="keyEdit">Change key</button>
+    </div>
+
+    <div class="note mt hidden" id="claudeOut">
+      <div class="eyebrow" id="claudeOutHead"></div>
+      <div class="claude-out"></div>
+    </div>
+
+    <details class="askset">
+      <summary>Automatic brief, and what this has cost</summary>
       <label style="display:flex;align-items:center;gap:9px;margin:0;font-size:13px;color:var(--text)">
         <input type="checkbox" id="autoBrief" style="width:auto">
         Brief me before I'm on the clock
@@ -570,36 +596,20 @@
         including what the teams picking ahead of you still need.
       </p>
       <p class="dimtext mb0" style="font-size:12px;margin:8px 0 0" id="spendLine"></p>
-    </div>
-    <div class="filters" style="margin-bottom:10px">
-      <span class="pill" data-q="brief">Brief me on this pick</span>
-      <span class="pill" data-q="compare">Compare my top two</span>
-      <span class="pill" data-q="roster">Read my roster</span>
-      <span class="pill" data-q="risk">What am I missing?</span>
-    </div>
-    <div class="field">
-      <textarea id="claudeQ" rows="2" placeholder="Ask anything about the board, your roster, or a player…"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn btn-primary" id="claudeGo">Ask</button>
-      <span class="dimtext" id="claudeCost"></span>
-      <span class="spacer" style="flex:1"></span>
-      <button class="btn btn-sm btn-ghost" id="keyEdit">Change key</button>
-    </div>
-    <div class="note mt hidden" id="claudeOut"><div class="claude-out"></div></div>
+    </details>
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260905n"></script>
-<script src="data/players.js?v=20260905n"></script>
-<script src="assets/presets.js?v=20260905n"></script>
-<script src="assets/engine.js?v=20260905n"></script>
-<script src="assets/impact.js?v=20260905n"></script>
-<script src="assets/auth.js?v=20260905n"></script>
-<script src="assets/sync.js?v=20260905n"></script>
-<script src="assets/parser.js?v=20260905n"></script>
-<script src="assets/draftanalysis.js?v=20260905n"></script>
-<script src="assets/strategies.js?v=20260905n"></script>
+<script src="assets/config.js?v=20260905p"></script>
+<script src="data/players.js?v=20260905p"></script>
+<script src="assets/presets.js?v=20260905p"></script>
+<script src="assets/engine.js?v=20260905p"></script>
+<script src="assets/impact.js?v=20260905p"></script>
+<script src="assets/auth.js?v=20260905p"></script>
+<script src="assets/sync.js?v=20260905p"></script>
+<script src="assets/parser.js?v=20260905p"></script>
+<script src="assets/draftanalysis.js?v=20260905p"></script>
+<script src="assets/strategies.js?v=20260905p"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -607,7 +617,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260905n";
+    s.src = "assets/app.js?v=20260905p";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }

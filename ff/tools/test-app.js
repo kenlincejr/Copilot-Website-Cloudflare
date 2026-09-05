@@ -290,7 +290,9 @@ function loadApp(leagueState, picksState, opts) {
     "roomTargets: roomTargets, targetCaption: targetCaption, takeTarget: takeTarget, " +
     "orderRows: orderRows, slotCounts: slotCounts, tkPastCount: tkPastCount, " +
     "undoWindowOpen: undoWindowOpen, renderTracker: renderTracker, " +
-    "lastPickLine: lastPickLine, sortedList: sortedList };\n";
+    "lastPickLine: lastPickLine, sortedList: sortedList, " +
+    "askQuestions: askQuestions, renderAskQuestions: renderAskQuestions, " +
+    "renderSpend: renderSpend, setSpend: function (s) { claudeCfg.spend = s; } };\n";
   src = src.slice(0, closeIdx) + exportLine + src.slice(closeIdx);
 
   vm.runInContext(src, sandbox, { filename: "app.js (sandboxed copy, test-app.js)" });
@@ -2895,6 +2897,98 @@ console.log("\n== the live draft board ==");
      /matchMedia\("\(max-width: 1200px\)"\)\.matches \? 2 : 4/.test(src));
   ok("the undo window clears its own timer before re-arming",
      /clearTimeout\(tkUndoTimer\)/.test(src));
+})();
+
+/* ========================================================================
+   Ask Claude - the quick questions, and the brief that used to vanish
+   ======================================================================== */
+console.log("\n== Ask Claude ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), []);
+  var qs = api.askQuestions();
+  var labels = qs.map(function (q) { return q.label; });
+
+  ok("there are questions to press", qs.length >= 5, labels.join(" | "));
+  ok("every one of them carries the full question behind the label",
+     qs.every(function (q) { return q.q && q.q.length > 30; }));
+
+  // The old four were fixed strings - "Compare my top two" made the user work
+  // out what their top two were before they knew if they wanted the answer.
+  var top = api.getAnalysis().avail.slice(0, 2);
+  var cmp = qs.filter(function (q) { return q.k === "compare"; })[0];
+  ok("the compare question names the two players by name",
+     cmp && cmp.label.indexOf(top[0].name) >= 0 && cmp.label.indexOf(top[1].name) >= 0,
+     cmp && cmp.label);
+  ok("and asks about them, not about \"my top two\"",
+     cmp && cmp.q.indexOf(top[0].name) >= 0 && !/top two/.test(cmp.q));
+
+  var surv = qs.filter(function (q) { return q.k === "survive"; })[0];
+  ok("the survival question names the pick it is asking about",
+     surv && surv.label.indexOf(String(api.getAnalysis().myAfter)) >= 0, surv && surv.label);
+
+  // Round 1 with an empty lineup: "fill RB1 or WR1 first" is not the question.
+  var need = qs.filter(function (q) { return q.k === "need"; })[0];
+  ok("with a whole lineup open it asks about the shape of the next few picks",
+     need && /next three picks/.test(need.label), need && need.label);
+
+  ok("no question is offered that the board cannot answer",
+     qs.every(function (q) { return q.label.indexOf("undefined") < 0 &&
+                                    q.q.indexOf("undefined") < 0; }),
+     labels.join(" | "));
+})();
+
+(function () {
+  // Late in a draft with one hole left, the need question changes shape.
+  var picks = [];
+  for (var i = 1; i <= 100; i++) {
+    picks.push({ pick: i, name: null, slot: ((i - 1) % 12) + 1, mine: false, unknown: true });
+  }
+  var api = loadApp(kindaHighlandersLeague(), picks);
+  var need = api.askQuestions().filter(function (q) { return q.k === "need"; })[0];
+  var open = api.openStartingSlots().map(function (s) { return s.label; });
+  if (open.length && open.length < 4) {
+    ok("with a nearly full lineup it asks which hole to fill first",
+       need && /first\?|now\?/.test(need.label), need && need.label);
+  } else {
+    ok("the need question tracks how many slots are actually open",
+       !!need || open.length === 0, "open: " + open.join(","));
+  }
+})();
+
+(function () {
+  // The bug: "Brief me on this pick" closed the dialog, switched the automatic
+  // brief on behind the user's back, and handed to renderBrief() - which draws
+  // nothing unless the pick is already inside the auto-brief's lead window. Out
+  // past that window the dialog simply vanished and nothing was answered.
+  var src = require("fs").readFileSync(APP_PATH, "utf8");
+  var block = src.slice(src.indexOf("function renderAskQuestions"),
+                        src.indexOf("$(\"#claudeGo\").addEventListener"));
+  ok("pressing a question no longer closes the dialog",
+     block.indexOf("closeModal") < 0, block.slice(0, 200));
+  ok("and no longer turns the automatic brief on as a side effect",
+     block.indexOf("claudeCfg.auto = true") < 0);
+  ok("the brief is asked and answered in the panel it was asked from",
+     /askClaude\(pick\.label/.test(block), block.slice(-300));
+  ok("and it sends the brief's own payload rather than a bare sentence",
+     /pick\.k === "brief" \? briefQuestion\(\)/.test(block));
+  ok("the answer is headed by the question that was pressed",
+     /claudeOutHead"\)\.textContent = head/.test(src));
+  // "Failed to fetch" is the browser's words, not an answer to anyone on a
+  // two-minute clock.
+  ok("a dropped connection says what it means and what still works",
+     /err instanceof TypeError[\s\S]{0,240}board, the scores and every pick/.test(src));
+})();
+
+(function () {
+  // The running total was five facts wide, two of them token counts.
+  var api = loadApp(kindaHighlandersLeague(), []);
+  api.setSpend({ calls: 40, in: 137903, out: 6669 });
+  api.renderSpend();
+  var line = api._sandbox.document.querySelector("#spendLine").textContent;
+  ok("the spend line says how many questions and what they cost",
+     /40 questions this draft/.test(line) && /\$/.test(line), line);
+  ok("and no longer prints raw token counts at the drafter",
+     line.indexOf("137,903") < 0 && line.indexOf("in /") < 0, line);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

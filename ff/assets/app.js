@@ -5298,16 +5298,24 @@ function renderSpend() {
   // Must match the prices the Worker pins, or the running total quietly lies.
   var usd = PROXY ? (s.in / 1e6) * 2.0 + (s.out / 1e6) * 10.0
                   : (s.in / 1e6) * 1.0 + (s.out / 1e6) * 5.0;
-  $("#spendLine").textContent = s.calls + " question" + (s.calls === 1 ? "" : "s") + " so far · " +
-    s.in.toLocaleString() + " in / " + s.out.toLocaleString() + " out · about $" + usd.toFixed(3) +
-    (PROXY ? " against the shared budget" : " on your key") +
-    (claudeCfg.budget ? " · shared spend today $" + claudeCfg.budget.spentToday.toFixed(3) +
-      " of $" + claudeCfg.budget.dailyBudget.toFixed(2) : "");
+  // The token counts were in this line too. Nobody drafting has a use for
+  // "137,903 in / 6,669 out" — the two numbers that answer a question anyone
+  // actually has are how many times you have asked and what it has cost.
+  $("#spendLine").textContent = s.calls + " question" + (s.calls === 1 ? "" : "s") +
+    " this draft · about $" + usd.toFixed(2) + (PROXY ? " of the shared budget" : " on your key") +
+    (claudeCfg.budget ? " · $" + claudeCfg.budget.spentToday.toFixed(2) + " of $" +
+      claudeCfg.budget.dailyBudget.toFixed(0) + " spent across everyone today" : "");
 }
 $("#btnClaude").addEventListener("click", function () {
   $("#apiKey").value = claudeCfg.key || "";
   $("#modelSel").value = claudeCfg.model || "claude-haiku-4-5";
-  claudePanes(); openModal("#claudeModal");
+  claudePanes();
+  // The board has moved since the last time this was open, so the questions and
+  // the line above them are rebuilt rather than left as they were.
+  if (claudeReady()) renderAskQuestions();
+  $("#claudeOut").classList.add("hidden");
+  $("#claudeQ").value = "";
+  openModal("#claudeModal");
 });
 $("#autoBrief").addEventListener("change", function (e) {
   claudeCfg.auto = e.target.checked; claudeSaveCfg(); render();
@@ -5332,24 +5340,137 @@ $("#keyClear").addEventListener("click", function () {
 $("#keyEdit").addEventListener("click", function () {
   $("#claudeSetup").classList.remove("hidden"); $("#claudeAsk").classList.add("hidden");
 });
-$$("#claudeAsk .pill").forEach(function (el) {
-  el.onclick = function () {
-    var q = {
-      brief: "__BRIEF__",
-      compare: "Compare the top two available players for my situation. Which one, and why?",
-      roster: "Look at my roster and tell me what shape it's in and what I should be hunting for.",
-      risk: "What is this board's blind spot right now? What would a sharp opponent do that I'm not seeing?"
-    }[el.dataset.q];
-    if (q === "__BRIEF__") {
-      closeModal("#claudeModal");
-      delete briefCache[A.myNext];
-      claudeCfg.auto = true; claudeSaveCfg();
-      return renderBrief();
-    }
-    $("#claudeQ").value = q; askClaude();
-  };
-});
-$("#claudeGo").addEventListener("click", askClaude);
+/**
+ * The questions worth asking at this exact pick, in the user's own words.
+ *
+ * The four that used to sit here were fixed strings — "Compare my top two",
+ * "Read my roster" — which read as menu items rather than as anything the
+ * drafter was already wondering. They also made the user do the translation:
+ * you had to know that "my top two" meant the two names at the top of the board
+ * to know whether you wanted the answer.
+ *
+ * These carry the names, the slots and the pick numbers the board already
+ * holds, so the chip says the thing and the payload behind it is a full
+ * question. The label is short enough for a chip; `q` is what actually gets
+ * asked and what lands in the box, so the user can see what was asked and edit
+ * it rather than wondering what the chip did.
+ *
+ * Everything here degrades: with no roster, no next pick or nothing left on the
+ * board, the question that needed that fact is simply not offered.
+ */
+function askQuestions() {
+  var out = [];
+  var top = (A.avail || []).slice(0, 3);
+  var open = (typeof openStartingSlots === "function" ? openStartingSlots() : [])
+    .map(function (s) { return s.label; });
+  var onMe = A.onClock && A.onClock.slot === S.league.slot;
+
+  if (A.myNext && top.length) {
+    out.push({
+      k: "brief",
+      label: onMe ? "Who do I take right now?" : "Who do I take at " + A.myNext + "?",
+      // Shown in the box so the user can see and edit what was asked. The wire
+      // payload is briefQuestion() — see askBrief — which carries the answer
+      // shape the Draft button binds against.
+      q: "Give me the call for pick " + A.myNext + " before the timer starts: the player, " +
+         "why him against my open slots, and one fallback if he is gone."
+    });
+  }
+  if (top.length >= 2) {
+    out.push({
+      k: "compare",
+      label: top[0].name + " or " + top[1].name + "?",
+      q: "Take " + top[0].name + " or " + top[1].name + " here? Give me the one you would " +
+         "take and the single reason it is not the other, against my open slots."
+    });
+  }
+  // Early on, everything is open and "fill RB1 or WR1 first" is not the question
+  // anybody has — the shape of the next few rounds is. Late, with one or two
+  // holes left, it is exactly the question.
+  if (open.length >= 4) {
+    out.push({
+      k: "need",
+      label: "What should my next three picks be?",
+      q: "My starting lineup is still mostly empty — " + open.join(", ") + " open, with " +
+         ((A.upcoming || []).length) + " picks left. What do the next three picks have to " +
+         "accomplish, in order, and which position gets scarce first?"
+    });
+  } else if (open.length) {
+    out.push({
+      k: "need",
+      label: open.length > 1 ? "Fill " + open.slice(0, 2).join(" or ") + " first?"
+                             : "Do I have to fill " + open[0] + " now?",
+      q: "My starting lineup still has " + open.join(", ") + " open and " +
+         ((A.upcoming || []).length) + " picks left to fill them. Which of those do I " +
+         "solve at this pick and which can wait, and what does it cost me if I wait wrong?"
+    });
+  }
+  if (A.myAfter) {
+    out.push({
+      k: "survive",
+      label: "Who lasts to " + A.myAfter + "?",
+      q: "Of the players I would actually want, who is most likely to still be there at " +
+         "pick " + A.myAfter + ", and who will certainly not be? I want to know what I can " +
+         "afford to wait on."
+    });
+  }
+  if (top.length) {
+    out.push({
+      k: "reach",
+      label: "Is " + top[0].name + " a reach?",
+      q: "The board has " + top[0].name + " first. Is taking him here a reach against where " +
+         "the room is actually drafting, and is there someone the board is underrating who " +
+         "goes ahead of him?"
+    });
+  }
+  out.push({
+    k: "risk",
+    label: "What am I missing?",
+    q: "What is this board's blind spot right now? What would a sharp opponent at this table " +
+       "do in the next few picks that I am not seeing — a run, a positional squeeze, a player " +
+       "whose situation the numbers have not caught up with?"
+  });
+  if (S.picks.length) {
+    out.push({
+      k: "roster",
+      label: "How is my team shaping up?",
+      q: "Look at the roster I have built so far. What shape is it in, what is its one real " +
+         "weakness, and what should I be hunting for over my next two picks?"
+    });
+  }
+  return out;
+}
+
+/** The chips, rebuilt every time the panel opens — the board has moved since. */
+function renderAskQuestions() {
+  var host = $("#askQs"); if (!host) return;
+  var qs = askQuestions();
+  host.innerHTML = qs.map(function (q, i) {
+    return '<button type="button" class="askq" data-i="' + i + '">' + esc(q.label) + "</button>";
+  }).join("");
+  $$("#askQs .askq").forEach(function (b) {
+    b.onclick = function () {
+      var pick = qs[+b.dataset.i];
+      $("#claudeQ").value = pick.q;
+      // The brief is the one question with a purpose-built payload behind it.
+      askClaude(pick.label, pick.k === "brief" ? briefQuestion() : null);
+    };
+  });
+
+  var where = $("#askWhere");
+  if (!where) return;
+  if (!A.myNext) {
+    where.textContent = "Your picks are all in. Ask anything about the board or the rosters.";
+  } else {
+    var open = openStartingSlots().map(function (s) { return s.label; });
+    where.textContent = "Pick " + A.cur + " of " + (S.league.teams * S.league.rounds) +
+      ", round " + A.onClock.round + ". You pick at " + A.myNext +
+      (A.myAfter ? " and " + A.myAfter : "") + ". " +
+      (open.length ? "Still open: " + open.join(", ") + "." : "Your starting lineup is full.");
+  }
+}
+
+$("#claudeGo").addEventListener("click", function () { askClaude(); });
 
 /**
  * What every other team has drafted. Each recorded pick is attributed to the
@@ -5992,28 +6113,47 @@ function claudeOnce(question, systemOverride, maxTokens) {
         throw new Error("Claude took longer than " + Math.round(CLAUDE_TIMEOUT_MS / 1000) +
                         " seconds to answer.");
       }
+      // "Failed to fetch" is what the browser says when the request never left
+      // or never landed, and it is no use to somebody on a two-minute clock.
+      // Say what it means and what still works, which is everything else.
+      if (err instanceof TypeError) {
+        throw new Error("Couldn't reach Claude — the connection dropped or the service is " +
+                        "down. The board, the scores and every pick you record are unaffected.");
+      }
       throw err;
     })
     .then(function (text) { if (timer) clearTimeout(timer); return text; },
           function (err) { if (timer) clearTimeout(timer); throw err; });
 }
 
-function askClaude() {
+/**
+ * Ask, and answer in the panel the question was asked from.
+ *
+ * `head` is what the user pressed, printed over the answer — with several
+ * chips in play, an answer with no question above it is an orphan by the time
+ * it arrives. `payload` lets a chip send a purpose-built prompt (the brief's)
+ * while the box still shows the plain-English version of what was asked.
+ */
+function askClaude(head, payload) {
   var q = $("#claudeQ").value.trim();
   if (!q) return;
   if (!claudeReady()) { claudePanes(); return; }
   var out = $("#claudeOut");
   out.classList.remove("hidden"); out.classList.remove("err");
-  out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> thinking…';
+  $("#claudeOutHead").textContent = head || q;
+  out.querySelector(".claude-out").innerHTML = '<span class="spinner"></span> reading the board…';
   $("#claudeGo").disabled = true;
+  // The answer can be taller than the panel that was on screen when it was
+  // asked, and on a tablet the button is under a thumb at the bottom.
+  try { out.scrollIntoView({ block: "nearest" }); } catch (e) {}
 
-  claudeCall(claudeContext() + "\n\nQUESTION: " + q)
+  claudeCall(payload || (claudeContext() + "\n\nQUESTION: " + q))
     .then(function (text) { out.querySelector(".claude-out").textContent = text; })
     .catch(function (err) {
       out.classList.add("err");
       out.querySelector(".claude-out").textContent = err.message;
     })
-    .then(function () { $("#claudeGo").disabled = false; });
+    .then(function () { $("#claudeGo").disabled = false; renderSpend(); });
 }
 
 /* ------------------------------------------------------- the on-deck brief */
