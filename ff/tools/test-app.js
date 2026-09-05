@@ -251,6 +251,7 @@ function loadApp(leagueState, picksState, opts) {
     "teamsAheadBlock: teamsAheadBlock, runLine: runLine, " +
     "briefQuestion: briefQuestion, " +
     "lineupPoints: E.lineupPoints, " +
+    "applyReserveRule: applyReserveRule, " +
     "writeBriefAt: function (forPick, cur) { briefWrittenAt[forPick] = cur; }, " +
     "briefWrittenAt: function () { return briefWrittenAt; }, " +
     "openStartingSlots: openStartingSlots, renderStatus: renderStatus, " +
@@ -711,9 +712,13 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
   var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
     "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
     "Jaxon Smith-Njigba", "Brock Bowers", "Amon-Ra St. Brown"];
+  // The last entry is the coverage rule, not the composite: at pick 86 the DEF
+  // slot has been fillable since round 7 and no defense was in the top twelve,
+  // so the best one displaces the weakest candidate. Chase Brown was that
+  // twelfth name before the rule landed.
   var ON_CLOCK_AT_86 = ["Jahmyr Gibbs", "Bijan Robinson", "Puka Nacua", "Ja'Marr Chase",
     "Brock Bowers", "Christian McCaffrey", "Jonathan Taylor", "Jaxon Smith-Njigba",
-    "Amon-Ra St. Brown", "James Cook III", "De'Von Achane", "Chase Brown"];
+    "Amon-Ra St. Brown", "James Cook III", "De'Von Achane", "Houston Defense"];
   ok("on the clock at 11: unchanged by D3, the filter never applied here",
      JSON.stringify(names(atPick(11), false)) === JSON.stringify(ON_CLOCK_AT_11),
      JSON.stringify(names(atPick(11), false)));
@@ -1246,9 +1251,9 @@ console.log("\n== candidate block ==");
      lines.filter(function (l) { return !/to my starting lineup/.test(l); })[0] || "");
   ok("and each says which of the three cases he is",
      lines.every(function (l) {
-       return /fills an open .. slot|beats the .. in my slot|depth only/.test(l);
+       return /fills an open [A-Z]{2,3} slot|beats the [A-Z]{2,3} in my slot|depth only/.test(l);
      }), lines.filter(function (l) {
-       return !/fills an open .. slot|beats the .. in my slot|depth only/.test(l);
+       return !/fills an open [A-Z]{2,3} slot|beats the [A-Z]{2,3} in my slot|depth only/.test(l);
      })[0] || "");
 
   // The number has to be right, not just present: check one against the engine.
@@ -1278,6 +1283,74 @@ console.log("\n== candidate block ==");
      Math.round(100 * candChars / text.length) + "% of " + text.length + " chars, was 73%");
   ok("the whole payload is well under the 2,541 tokens it was",
      text.length / 3.7 < 2000, Math.round(text.length / 3.7) + " tokens");
+})();
+
+/* ========================================================================
+   The reserve rule: a list that can answer the question it is asked
+   ======================================================================== */
+console.log("\n== reserve rule ==");
+(function () {
+  function withRoster(upTo, mine) {
+    var order = mine.slice(), picks = [];
+    for (var n = 1; n < upTo; n++) {
+      if (EXPECTED_SCHEDULE.indexOf(n) >= 0 && n !== 59 && order.length) {
+        picks.push({ pick: n, name: order.shift(), slot: 11, mine: true });
+      } else { picks.push({ pick: n, name: null, slot: null, mine: false, unknown: true }); }
+    }
+    return loadApp(kindaHighlandersLeague(), picks);
+  }
+
+  // The measured failure: WR2 empty and not one receiver among the candidates,
+  // under "name a player from this list and nobody else".
+  var api = withRoster(110, ["James Cook III", "Derrick Henry", "Brock Bowers",
+    "Saquon Barkley", "Drake Maye"]);
+  var A = api.getAnalysis();
+  var openPos = api.openStartingSlots().map(function (s) { return s.pos; });
+  ok("the fixture leaves a receiver slot open", openPos.indexOf("WR") >= 0, openPos.join(","));
+
+  var got = api.briefCandidates(A.myNext > A.cur, 8);
+  var positions = got.map(function (p) { return p.pos; });
+  ok("a receiver is on the list", positions.indexOf("WR") >= 0, positions.join("/"));
+
+  // Every open, fillable position must be represented, not just receivers.
+  api.openStartingSlots().forEach(function (sl) {
+    if (sl.pos === "FLEX") return;
+    ok("the open " + sl.pos + " slot has a candidate who could fill it",
+       positions.indexOf(sl.pos) >= 0, positions.join("/"));
+  });
+
+  // Coverage, not a quota. The report proposed reserving half the list for
+  // startable bodies, which floods it with defenses the moment DEF opens in
+  // round 7, and leading it with the best body by projected points, which put a
+  // 336-point defense ahead of a 335-point back. Points are not comparable
+  // across positions. So: the board still orders the list.
+  var comps = got.map(function (p) { return p.comp; });
+  var leadIsBest = got[0].comp === Math.max.apply(null, comps);
+  ok("the board's own order still decides who leads", leadIsBest,
+     got[0].name + " " + Math.round(got[0].comp));
+  ok("no more than half the list is there for coverage",
+     got.filter(function (p) { return p.briefCoverage; }).length <= 4,
+     got.filter(function (p) { return p.briefCoverage; })
+        .map(function (p) { return p.name; }).join(", "));
+
+  // With every startable slot filled the rule is a no-op and the list is the
+  // board's top eight, untouched.
+  var full = withRoster(158, ["James Cook III", "Nico Collins", "Brock Bowers",
+    "Derrick Henry", "Jaylen Waddle", "Saquon Barkley", "Houston Defense",
+    "Brandon Aubrey", "Trey McBride", "Chase Brown"]);
+  var fa = full.getAnalysis();
+  ok("the full-roster fixture has no open startable slot",
+     full.openStartingSlots().length === 0,
+     full.openStartingSlots().map(function (s) { return s.label; }).join(","));
+  var fgot = full.briefCandidates(fa.myNext > fa.cur, 8);
+  ok("with nothing open, nobody is added for coverage",
+     fgot.every(function (p) { return !p.briefCoverage; }));
+
+  // It must not break what came before it: the board's #1 is still present.
+  ok("the board's #1 by composite is still on the list",
+     got.indexOf(A.avail.filter(function (p) {
+       return !(p.compDetail && p.compDetail.blocked);
+     }).sort(function (a, b) { return b.comp - a.comp; })[0]) >= 0);
 })();
 
 console.log("\n" + pass + " passed, " + fail + " failed\n");

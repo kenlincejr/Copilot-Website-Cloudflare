@@ -4297,6 +4297,78 @@ function supplyBlock() {
 }
 
 /**
+ * Guarantee the list can answer the question, when a starting slot is open.
+ *
+ * This is a rule about what the model is allowed to SEE, in code. It is not a
+ * rule about what to believe and it must never become one. Every candidate
+ * still carries its composite, unqualified; nothing in the payload says the
+ * ranking may be wrong or that a player who fills a hole should be preferred.
+ * That sentence was drafted three times during the review and cut three times.
+ * If the board ranks a second tight end over a startable receiver, the fix is
+ * the board — which is what the empty-slot pricing, the invariant guard and the
+ * flex-door correction were for.
+ *
+ * What this fixes is narrower and measured: at pick 110 with WR2 empty, the
+ * twelve candidates were 5 TE, 4 QB and 3 RB — no receivers at all — under an
+ * instruction reading "name a player from this list and nobody else." The model
+ * could not have filled the hole if it had wanted to. So: for every starting
+ * slot that is open and fillable this round, the best candidate who can
+ * actually go into it is on the list. One per open position, not a quota.
+ *
+ * The report proposed two stronger forms and both are wrong on this board.
+ * Reserving half the list for startable bodies floods it with defenses the
+ * moment the DEF slot opens in round 7, because every defense "can start" into
+ * an empty slot. Leading the list with the best body by projected points does
+ * the same and worse: it put Houston Defense at 336 points ahead of Jahmyr
+ * Gibbs at 335 in round 8, since raw points are not comparable across positions
+ * — which is the entire reason the board computes VOR and a composite at all.
+ * Coverage is the part that fixes the measured defect. Ordering is the board's
+ * job and stays the board's job.
+ *
+ * Once the engine ranks correctly this should mostly stop firing, and that is
+ * the test of whether the line was drawn in the right place.
+ */
+function applyReserveRule(ranked, limit) {
+  var open = openStartingSlots();
+  if (!open.length) return ranked.slice(0, limit);
+
+  var rules = S.league.rules;
+  var flexEl = rules.roster.flexEligible || ["RB", "WR", "TE"];
+  var openPos = {};
+  open.forEach(function (sl) {
+    if (sl.pos === "FLEX") flexEl.forEach(function (q) { openPos[q] = true; });
+    else openPos[sl.pos] = true;
+  });
+
+  var out = ranked.slice(0, limit);
+  var have = {};
+  out.forEach(function (p) { have[p.name] = true; });
+  var covered = {};
+  out.forEach(function (p) { if (openPos[p.pos]) covered[p.pos] = true; });
+
+  var missing = Object.keys(openPos).filter(function (pos) { return !covered[pos]; });
+  if (!missing.length) return out;
+
+  // At most half the list may be given over to coverage. Early in a draft every
+  // slot is open, and a list that is all coverage is not a list of candidates.
+  var room = Math.floor(limit / 2);
+  missing.slice(0, room).forEach(function (pos) {
+    var best = null;
+    ranked.forEach(function (p) {
+      if (p.pos !== pos || have[p.name]) return;
+      if (!best || p.comp > best.comp) best = p;
+    });
+    if (!best) return;
+    have[best.name] = true;
+    best.briefCoverage = pos;          // he is here because the slot is open
+    out.pop();                          // displace the weakest by composite
+    out.push(best);
+    out.sort(function (a, b) { return b.comp - a.comp; });
+  });
+  return out;
+}
+
+/**
  * The players the brief is allowed to name, best first.
  *
  * Draw from the same pool the recommendation cards draw from, on the same two
@@ -4312,7 +4384,7 @@ function briefCandidates(waiting, limit) {
   var pool = A.avail.filter(function (p) { return !(p.compDetail && p.compDetail.blocked); })
                     .sort(byComp);
   pool.forEach(function (p) { p.briefPastAdp = false; });
-  if (!waiting) return pool.slice(0, limit);
+  if (!waiting) return applyReserveRule(pool, limit);
 
   // survival() is a normal CDF on ADP and nothing else. It does not know the
   // player is still on the board, so a man who outlived his ADP by twenty picks
@@ -4330,7 +4402,7 @@ function briefCandidates(waiting, limit) {
   var bestLive = live.length ? live[0].comp : -Infinity;
   var out = pool.filter(function (p) { return p.surv >= 0.25 || p.comp > bestLive; });
   out.forEach(function (p) { p.briefPastAdp = p.surv < 0.25; });
-  return out.slice(0, limit);
+  return applyReserveRule(out, limit);
 }
 
 /** Everything Claude sees. Numbers only — it never re-derives the scoring. */
