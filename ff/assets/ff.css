@@ -282,7 +282,10 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
   align-items: center; padding: 5px 0; border-bottom: 1px solid var(--line-soft);
 }
 .catchup-row .slotlbl { font-family: var(--mono); font-size: 12px; color: var(--dim); }
-.catchup-row input { padding: 6px 9px; font-size: 13px; }
+/* No font-size here: the touch/WebKit catch-all further down forces 16px on
+   every input to stop iOS zooming the page on focus, and a class-scoped
+   override here would win the specificity fight against it and undo that. */
+.catchup-row input { padding: 6px 9px; }
 .catchup-row .mine { color: var(--teal); font-weight: 600; }
 
 .cols {
@@ -1233,7 +1236,8 @@ body.touch .detail-acts .detail-x { flex: 0 0 44px; font-size: 18px; line-height
   font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
   color: var(--dim); margin: 0;
 }
-.tk-field input { width: 96px; padding: 6px 8px; font-size: 14px; text-align: center; }
+/* No font-size here — see the comment on .catchup-row input above. */
+.tk-field input { width: 96px; padding: 6px 8px; text-align: center; }
 
 /* The done / stopped panel still uses this row of buttons. */
 .tk-entry { display: flex; gap: 6px; margin: 11px 0 8px; flex-wrap: wrap; }

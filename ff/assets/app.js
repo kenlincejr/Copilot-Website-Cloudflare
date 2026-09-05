@@ -82,70 +82,93 @@ function resetColWidths() {
   if (cols) cols.style.gridTemplateColumns = "";
 }
 
+/* A drag in progress, or null. Kept as one shared object rather than a closure
+   per grip so pointermove/up/cancel can be handled at the *document* level —
+   see the comment below on why the grip's own listeners are not enough. */
+var colDrag = null;
+
+function moveColDrag(e) {
+  if (!colDrag) return;
+  var cols = $(".cols"); if (!cols) return;
+  var which = colDrag.which;
+  var min1 = which === "1" ? COL_MIN.a : COL_MIN.b;
+  var min2 = which === "1" ? COL_MIN.b : COL_MIN.c;
+  var sum = colDrag.w1 + colDrag.w2;
+  var n1 = Math.min(Math.max(colDrag.w1 + (e.clientX - colDrag.startX), min1), sum - min2);
+  var n2 = sum - n1;
+  // Applied as literal pixels for a live preview only; the third column's
+  // current rendered width fills the rest of the row exactly as it did
+  // before the drag started, so nothing jumps when the pointer is released.
+  var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
+  var a = which === "1" ? n1 : board.getBoundingClientRect().width;
+  var b = which === "1" ? n2 : n1;
+  var c = which === "1" ? roster.getBoundingClientRect().width : n2;
+  cols.style.gridTemplateColumns = a + "px 9px " + b + "px 9px " + c + "px";
+}
+
+function endColDrag() {
+  if (!colDrag) return;
+  var grip = colDrag.grip;
+  colDrag = null;
+  grip.classList.remove("dragging");
+  document.body.classList.remove("dragging-col");
+  var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
+  var cols = $(".cols");
+  if (board && rec && roster && cols) {
+    var a = board.getBoundingClientRect().width;
+    var b = rec.getBoundingClientRect().width;
+    var c = roster.getBoundingClientRect().width;
+    // The literal pixels above become fr *shares*, not a pixel record — see
+    // the comment on COL_WIDTHS_KEY above.
+    try {
+      localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify({
+        a: Math.round(a), b: Math.round(b), c: Math.round(c)
+      }));
+    } catch (err) {}
+    cols.style.gridTemplateColumns = "";   // hand back to the persisted rule
+    applySavedColWidths();
+  }
+}
+
 $$(".colgrip").forEach(function (grip) {
   var which = grip.getAttribute("data-grip");   // "1": board|rec — "2": rec|roster
-  var dragging = false, startX = 0, w1 = 0, w2 = 0;
 
   grip.addEventListener("pointerdown", function (e) {
     var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
     if (!board || !rec || !roster) return;
-    dragging = true;
-    startX = e.clientX;
+    var w1, w2;
     // Only the pair either side of THIS grip moves; the third column is left
     // alone, same as dragging a splitter in any two-pane editor layout.
     if (which === "1") { w1 = board.getBoundingClientRect().width; w2 = rec.getBoundingClientRect().width; }
     else                { w1 = rec.getBoundingClientRect().width;   w2 = roster.getBoundingClientRect().width; }
+    colDrag = { grip: grip, which: which, startX: e.clientX, w1: w1, w2: w2 };
     grip.classList.add("dragging");
     document.body.classList.add("dragging-col");
     try { grip.setPointerCapture(e.pointerId); } catch (err) {}
     e.preventDefault();
   });
 
-  grip.addEventListener("pointermove", function (e) {
-    if (!dragging) return;
-    var cols = $(".cols"); if (!cols) return;
-    var min1 = which === "1" ? COL_MIN.a : COL_MIN.b;
-    var min2 = which === "1" ? COL_MIN.b : COL_MIN.c;
-    var sum = w1 + w2;
-    var n1 = Math.min(Math.max(w1 + (e.clientX - startX), min1), sum - min2);
-    var n2 = sum - n1;
-    // Applied as literal pixels for a live preview only; the third column's
-    // current rendered width fills the rest of the row exactly as it did
-    // before the drag started, so nothing jumps when the pointer is released.
-    var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
-    var a = which === "1" ? n1 : board.getBoundingClientRect().width;
-    var b = which === "1" ? n2 : n1;
-    var c = which === "1" ? roster.getBoundingClientRect().width : n2;
-    cols.style.gridTemplateColumns = a + "px 9px " + b + "px 9px " + c + "px";
-  });
-
-  function endDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-    grip.classList.remove("dragging");
-    document.body.classList.remove("dragging-col");
-    var board = $(".col-board"), rec = $(".col-rec"), roster = $(".col-roster");
-    var cols = $(".cols");
-    if (board && rec && roster && cols) {
-      var a = board.getBoundingClientRect().width;
-      var b = rec.getBoundingClientRect().width;
-      var c = roster.getBoundingClientRect().width;
-      // The literal pixels above become fr *shares*, not a pixel record — see
-      // the comment on COL_WIDTHS_KEY above.
-      try {
-        localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify({
-          a: Math.round(a), b: Math.round(b), c: Math.round(c)
-        }));
-      } catch (err) {}
-      cols.style.gridTemplateColumns = "";   // hand back to the persisted rule
-      applySavedColWidths();
-    }
-  }
-  grip.addEventListener("pointerup", endDrag);
-  grip.addEventListener("pointercancel", endDrag);
   grip.addEventListener("dblclick", function () { resetColWidths(); });
 });
 
+/* pointermove/up/cancel are handled here, on document, instead of on the grip
+   that started the drag. Pointer capture is supposed to make that redundant —
+   the captured element keeps receiving the stream wherever the finger goes —
+   but a 9px drag strip sitting beside two scrollable columns is exactly the
+   gesture iOS's own scroll recognizer competes for, and a touch that gets
+   awarded to page-scroll instead can drop the up/cancel event before it
+   reaches the grip. When that happened here, body.dragging-col — and the
+   pointer-events:none it puts on every column (ff.css) — never cleared, and
+   the whole board was stuck until the tab was reloaded. A document-level
+   listener still catches the event even when capture never took, so the drag
+   can no longer outlive the touch that started it. */
+document.addEventListener("pointermove", moveColDrag);
+document.addEventListener("pointerup", endColDrag);
+document.addEventListener("pointercancel", endColDrag);
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) endColDrag();
+});
+window.addEventListener("blur", endColDrag);
 
 /* ---------------------------------------------------------------- session */
 
