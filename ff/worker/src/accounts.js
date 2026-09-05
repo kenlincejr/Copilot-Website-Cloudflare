@@ -181,11 +181,20 @@ export async function handleAccounts(request, env, path, json) {
     const name = String(body.name || "").trim();
     const password = String(body.password || "");
     const buckets = [`ip:${ip}`, `nm:${name.toLowerCase()}`];
-    for (const b of buckets) {
-      if ((await attempts(env, b)).over) {
-        return json({ error: { message:
-          "Too many sign-in attempts. Wait fifteen minutes and try again." } }, 429);
-      }
+
+    /* Only the IP bucket can refuse a sign-in. Both buckets are still counted
+       below, because the name count is what tells you afterwards that someone
+       was working on one account rather than sweeping — but a bucket keyed on
+       the account name must never be the thing that turns a *correct* password
+       away. Names on this board are the names of a dozen friends, so anyone who
+       knows one could spend twenty requests from any address that is not the
+       owner's and lock the owner out for fifteen minutes. At 18:50 on draft
+       night that is the whole app. Rate-limiting the address is the half that
+       actually costs an attacker something: it cannot be aimed at a chosen
+       victim, and multiplying it means multiplying IPs. */
+    if ((await attempts(env, `ip:${ip}`)).over) {
+      return json({ error: { message:
+        "Too many sign-in attempts. Wait fifteen minutes and try again." } }, 429);
     }
     const id = await env.USERS.get(nameKey(name));
     const rec = id ? await env.USERS.get(userKey(id), "json") : null;
