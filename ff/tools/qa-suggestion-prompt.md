@@ -307,6 +307,53 @@ each position is first taken under each, across seeds. Then give the strategist'
 *this* league — full PPR, 2 WR + FLEX — on whether RB-RB-TE-RB from slot 11 is the draft
 the user wants, and cite the projections that make it so or not.
 
+**B5a — measured 2026-09-05, and the cause is narrower than B5 assumed.** Not the choice of
+baseline: a hardcoded constant that contradicts the scoring. `FLEX_SPLIT = {RB .55, WR .40,
+TE .05}` in `engine.js` is applied to every league. Deriving the split from the points instead
+— mandatory starters off the top of each position, then the flex slots to the best bodies
+left — gives, per preset:
+
+| preset | measured flex share | RB / WR replacement rank |
+|---|---|---|
+| standard_non_ppr | RB .58, WR .42 | 31 / 29 |
+| yahoo_default | RB .25, WR .75 | 27 / 33 |
+| ppr_standard | WR 1.00 | 24 / 36 |
+| kinda_highlanders | **WR 1.00** | **24 / 36** |
+
+The shipped constant reproduces `standard_non_ppr` to two decimals, which is where it came
+from. This league is full PPR, where a point per reception moves receivers past backs at
+every depth beyond the top two dozen — RB32 scores 156 against WR32's 189, and by rank 48 it
+is 88 against 168 — so every flex slot goes to a receiver and the constant is 12 ranks wrong
+in each direction. That is the 44-point baseline gap B5 describes, and it is an artifact.
+
+**Measured with `tools/measure-roster.js`** (25 seeded drafts, bye-adjusted season points —
+for each of 17 weeks, drop everyone on bye, field the best legal lineup, sum):
+
+| | lineup pts | bye-adjusted | shape |
+|---|---|---|---|
+| shipped | 2177 | 2122 | 6.0 RB / 3.0 WR |
+| measured flex split | 2190 | 2132 | 3.1 RB / 5.9 WR |
+| + symmetric bench scaling | 2199 | 2134 | 3.0 RB / 6.0 WR |
+| the ADP-driven room, same sims | — | — | **4.9 RB / 5.4 WR** |
+
+**Not landed, deliberately, four days out.** The fix is right and the gain is real but small
+(+0.5% on the objective), and it swaps one corner solution for its mirror image: 3.0 backs in
+a league that starts two plus a flex, against a market that rosters 4.9. Both corners come
+from the same place — `valueOf()` keeps a below-replacement deficit whole while scaling
+surplus to `benchWeight`, so whichever position currently sits above its own line wins every
+full-lineup pick. Symmetric scaling does not break the corner on its own (measured above),
+because in full PPR receivers genuinely do outscore backs at depth; what is missing is the
+injury premium on running backs, which is why the market holds five. It also breaks one
+engine assertion and five in `test-impact.js`, the latter because the panel's relative measure
+silently assumed replacement ranks are constant between a league and its baseline.
+
+**What the review has to decide**, with the tool above to hand: whether to land the measured
+split (it is a straightforward bug fix), and what supplies the RB depth premium the points
+cannot see. The honest candidates are a games-missed prior per position (B9's data), or an
+explicit depth target per position — the market's own 4.9/5.4 is an empirical one. Do not
+land the split alone without answering the second half; a board that builds three backs is
+not obviously better than one that builds six.
+
 **B6. The floors are patches over B1.** `defFloorRound: 7` and `kFloorRound: rounds − 1` are
 hard blocks. With the boosted D/ST tiers, Houston Defense is the **#22 player on this board
 by VOR** (round 2 value), with ADP 97 and 94% survival to pick 83. The correct behavior —
