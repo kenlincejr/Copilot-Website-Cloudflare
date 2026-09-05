@@ -4,7 +4,8 @@ Run this on the actual iPad, in Safari, signed in to the real account, against t
 **deployed** site. No keyboard attached. Portrait first, as you'll actually be
 sitting Monday night.
 
-**Any fail in rows 1–4 stops the draft plan.** Those four are the taps that happen
+**Any fail in rows 1–4 stops the draft plan.** Row 10 needs a second person and
+is run with Claude driving a browser; do it in the same sitting. Those four are the taps that happen
 on the clock — if they don't work, the paper fallback (`draft-day.md` §7) is the
 plan, not this app, and you need to know that tonight, not at 19:00.
 
@@ -173,3 +174,52 @@ before 19:00, run this one too:
   and the sync status accurate rather than stuck on "syncing"?
 
 Pass/fail if run: ______________________
+
+---
+
+## Row 10: two devices — run this with me, once, on Saturday
+
+**This one needs both of us and it is the only test on the list where failing
+means a draft is *destroyed* rather than degraded.** Everything else on this page
+is recoverable at the table. This is not.
+
+The mechanism: `PUT /api/state` reads the current revision, compares it, and
+writes revision + 1. KV is eventually consistent, so two devices saving inside the
+propagation window can each read the same revision, each pass the check, and each
+write — and the second physical write wins silently, with no conflict shown to
+either device. That is finding **F5**, it is a known and deliberate non-fix (the
+proper answer is a Durable Object, which is not a four-days-out change), and
+`test-accounts.sh` **cannot** exercise it: the local emulator is a single
+in-process store with strict read-after-write consistency, so it only ever proves
+the optimistic logic is right when reads are consistent.
+
+So the point of this test is not to prove the race is fixed. It is to find out
+what it looks like on your screen if it happens, so you recognise it at 19:40
+instead of discovering it afterwards.
+
+**Setup.** iPad signed in, on the deployed site. I drive a browser signed in to the
+same account. Neither reloads until told.
+
+1. On the **iPad**, record five picks. Do not reload.
+2. On the **browser**, without reloading it first, record three *different* picks.
+3. Reload the **iPad**.
+
+**What must happen.** A conflict banner appears naming both devices, with two
+buttons — "Use that one" and "Keep this one".
+
+Check, and write down what you see:
+
+- Does the banner name **both** devices in a way you can tell apart at a glance?
+  "iPad" vs "Chrome on Windows" is usable; two identical labels is not.
+- Press one. Does it do **exactly** what the label says?
+- **Then confirm the losing draft is really gone** — not recoverable, not hiding
+  in Save/load. It is destroyed, and the app should have made that clear *before*
+  you pressed, not after.
+- If **no banner appears at all** and one device's picks have simply vanished,
+  that is F5 firing. Write down which device won, and how many picks were lost.
+
+Pass/fail: ______________________  Banner appeared: Y / N
+
+**Whatever the result, the mitigation is the same and it goes in `draft-day.md`
+§6: draft from one device.** If the laptop is open on Monday, do not record on it.
+This test tells you what a mistake looks like; it does not make the mistake safe.
