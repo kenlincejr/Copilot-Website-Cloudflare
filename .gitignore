@@ -9,3 +9,7 @@ __pycache__/
 
 # Local Worker secrets for `wrangler dev` — real values, never commit
 .dev.vars
+
+# Yahoo probe: real credentials and cached OAuth tokens — never commit
+ff/tools/.yahoo-creds.json
+ff/tools/.yahoo-token.json
