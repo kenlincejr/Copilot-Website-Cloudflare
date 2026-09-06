@@ -269,7 +269,7 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 .sb-left b { color: var(--text); font-size: 13px; }
 
 /* A short-lived message, dropped in under the strip. It used to reuse the
-   strip's own state colours; the strip has none now. */
+   strip's own state colors; the strip has none now. */
 .flashbar {
   flex: none; padding: 9px 16px; font-size: 13px;
   border-bottom: 1px solid var(--line);
@@ -285,8 +285,20 @@ td { padding: 7px 8px; border-bottom: 1px solid var(--line-soft); }
 /* No font-size here: the touch/WebKit catch-all further down forces 16px on
    every input to stop iOS zooming the page on focus, and a class-scoped
    override here would win the specificity fight against it and undo that. */
-.catchup-row input { padding: 6px 9px; }
+.catchup-row input { padding: 6px 9px; width: 100%; }
 .catchup-row .mine { color: var(--teal); font-weight: 600; }
+
+/* The field and the reason it is wrong, stacked, so the middle grid column
+   stays one column and the row height grows only when there is something to
+   say. */
+.catchup-row .cu-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.catchup-row .cu-msg { font-size: 11px; color: var(--amber); min-height: 0; }
+.catchup-row .cu-msg:empty { display: none; }
+.catchup-row input.cu-bad { border-color: var(--red); }
+.catchup-row input.cu-bad:focus { box-shadow: 0 0 0 3px rgba(248,113,113,.12); }
+/* Your own slot left blank is the one row the sheet refuses to guess at. */
+.catchup-row.needs-you { border-left: 2px solid var(--amber); padding-left: 8px; }
+.catchup-row.needs-you .cu-msg { color: var(--amber); font-weight: 600; }
 
 .cols {
   flex: 1; display: grid;

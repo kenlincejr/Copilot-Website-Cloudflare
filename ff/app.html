@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Draftline — draft board</title>
-<link rel="stylesheet" href="assets/ff.css?v=20260905w">
+<link rel="stylesheet" href="assets/ff.css?v=20260906a">
 </head>
 <body>
 
@@ -422,6 +422,10 @@
     computed against a pool that still contains them. The names below are a guess from
     ADP — the point is that they are <em>gone</em>, and roughly the right players being
     gone beats the right players still sitting there. Fix any you know, then record.
+    A row left blank records as <b>unknown</b> — the slot is spent, the player stays on
+    the board, and you can fill the pick in later by tapping him in the player list.
+    Your own pick is the one row that cannot be a guess: the board scores your roster
+    against it.
   </div>
   <div id="catchupRows" class="mt" style="max-height:44vh;overflow:auto"></div>
   <div class="mt" style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
@@ -604,16 +608,16 @@
   </div>
 </div></div>
 
-<script src="assets/config.js?v=20260905w"></script>
-<script src="data/players.js?v=20260905w"></script>
-<script src="assets/presets.js?v=20260905w"></script>
-<script src="assets/engine.js?v=20260905w"></script>
-<script src="assets/impact.js?v=20260905w"></script>
-<script src="assets/auth.js?v=20260905w"></script>
-<script src="assets/sync.js?v=20260905w"></script>
-<script src="assets/parser.js?v=20260905w"></script>
-<script src="assets/draftanalysis.js?v=20260905w"></script>
-<script src="assets/strategies.js?v=20260905w"></script>
+<script src="assets/config.js?v=20260906a"></script>
+<script src="data/players.js?v=20260906a"></script>
+<script src="assets/presets.js?v=20260906a"></script>
+<script src="assets/engine.js?v=20260906a"></script>
+<script src="assets/impact.js?v=20260906a"></script>
+<script src="assets/auth.js?v=20260906a"></script>
+<script src="assets/sync.js?v=20260906a"></script>
+<script src="assets/parser.js?v=20260906a"></script>
+<script src="assets/draftanalysis.js?v=20260906a"></script>
+<script src="assets/strategies.js?v=20260906a"></script>
 <script>
 /* app.js reads localStorage synchronously the moment it parses, so the account's
    saved draft has to be in there before it loads. hydrate() always resolves —
@@ -621,7 +625,7 @@
 (function () {
   var boot = function () {
     var s = document.createElement("script");
-    s.src = "assets/app.js?v=20260905w";
+    s.src = "assets/app.js?v=20260906a";
     document.body.appendChild(s);
   };
   if (!DRAFTLINE_AUTH.current()) { location.href = "index.html"; return; }

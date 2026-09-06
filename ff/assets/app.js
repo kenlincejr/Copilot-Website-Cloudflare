@@ -873,25 +873,86 @@ $("#beginLive").addEventListener("click", function () { startLive(false); });
 function openCatchup(d) {
   if (!d || d < 1) return;
   var pool = A.avail.slice().sort(function (a, b) { return a.adp - b.adp; });
-  var rows = [], used = {};
+  var rows = [];
   for (var i = 0; i < d; i++) {
     var pk = A.cur + i, o = ownerOfPick(pk);
     if (pk > S.league.teams * S.league.rounds) break;
-    var guess = pool.find(function (p) { return !used[p.name]; });
-    if (guess) used[guess.name] = true;
-    rows.push({ pick: pk, slot: o.slot, mine: o.slot === S.league.slot,
-                guess: guess ? guess.name : "" });
+    rows.push({ pick: pk, slot: o.slot, mine: o.slot === S.league.slot });
   }
+  // The loop can break on its first pass at the end of the draft, and reading
+  // rows[0] on an empty sheet throws before anything renders.
+  if (!rows.length) return;
+
+  var fields = function () { return $$("#catchupRows input[data-cu]"); };
+
+  /** What is typed into the sheet right now, excluding one row. */
+  function typedNames(except) {
+    var t = {};
+    fields().forEach(function (el) {
+      var v = el.value.trim();
+      if (v && +el.dataset.cu !== except) t[v] = true;
+    });
+    return t;
+  }
+
+  /**
+   * The ADP guess for a row, resolved when the button is pressed rather than
+   * when the sheet opened. Precomputing them meant a name you had typed could
+   * still be offered to a later row, and taking that offer spent the slot on an
+   * unknown — the button costing you the thing it exists to prevent.
+   */
+  function guessFor(i) {
+    var typed = typedNames(i), drafted = draftedNames();
+    var p = pool.find(function (q) { return !typed[q.name] && !drafted[q.name]; });
+    return p ? p.name : "";
+  }
+
+  /**
+   * Everything the old apply step computed and then reported through a banner
+   * after the sheet had closed. Said here instead, while it can still be acted
+   * on — and your own row is a refusal rather than a warning, because a guess
+   * about your own team is scored against your roster for the rest of the draft.
+   */
+  function validate() {
+    var drafted = draftedNames(), seen = {};
+    var named = 0, blanks = 0, invalid = 0, mineBlank = 0;
+    fields().forEach(function (el) {
+      var i = +el.dataset.cu, nm = el.value.trim(), msg = "";
+      if (!nm) {
+        if (rows[i].mine) { msg = "your pick — required"; mineBlank++; }
+        else blanks++;
+      }
+      else if (!BY_NAME[nm]) msg = "not on the board";
+      else if (drafted[nm])  msg = "already drafted";
+      else if (seen[nm])     msg = "already used above";
+      else { seen[nm] = true; named++; }
+      if (nm && msg) invalid++;
+      el.classList.toggle("cu-bad", !!(nm && msg));
+      el.closest(".catchup-row").classList.toggle("needs-you", !nm && rows[i].mine);
+      $('#catchupRows [data-cumsg="' + i + '"]').textContent = msg;
+    });
+    var go = $("#catchupApply");
+    go.disabled = mineBlank > 0 || invalid > 0;
+    go.textContent =
+      mineBlank ? "Your own pick is required"
+      : invalid  ? "Fix " + invalid + " name" + (invalid > 1 ? "s" : "")
+      : "Record " + rows.length + " picks — " + named + " by name" +
+        (blanks ? ", " + blanks + " unknown" : "");
+  }
+
   $("#catchupSub").textContent = "Picks " + rows[0].pick + " to " + rows[rows.length - 1].pick +
     " happened while you weren't looking.";
   $("#catchupCount").textContent = rows.length + " picks";
   $("#catchupRows").innerHTML = rows.map(function (r, i) {
-    return '<div class="catchup-row">' +
+    return '<div class="catchup-row' + (r.mine ? " is-mine" : "") + '">' +
       '<span class="slotlbl">pick ' + r.pick + "<br>" +
         (r.mine ? '<span class="mine">you</span>' : esc(teamLabel(r.slot, true))) + "</span>" +
-      '<input type="text" list="allPlayers" data-cu="' + i + '" value="" placeholder="who went here?">' +
-      '<button class="btn btn-sm btn-ghost" data-cuguess="' + i + '">' +
-        (r.guess ? "ADP" : "—") + "</button>" +
+      '<div class="cu-field">' +
+        '<input type="text" list="allPlayers" data-cu="' + i + '" value="" placeholder="' +
+          (r.mine ? "who did you take?" : "who went here?") + '">' +
+        '<span class="cu-msg" data-cumsg="' + i + '"></span>' +
+      "</div>" +
+      '<button class="btn btn-sm btn-ghost" data-cuguess="' + i + '">ADP</button>' +
     "</div>";
   }).join("");
   $("#allPlayers").innerHTML = A.avail.map(function (p) {
@@ -900,30 +961,45 @@ function openCatchup(d) {
 
   $$("#catchupRows [data-cuguess]").forEach(function (b) {
     b.onclick = function () {
-      var i = +b.dataset.cuguess;
-      $('#catchupRows [data-cu="' + i + '"]').value = rows[i].guess;
+      var i = +b.dataset.cuguess, g = guessFor(i);
+      if (!g) return;
+      $('#catchupRows [data-cu="' + i + '"]').value = g;
+      validate();
     };
   });
+  // Empty rows only. This used to overwrite every field unconditionally, which
+  // threw away the names you were sure of in favor of a guess.
   $("#catchupGuess").onclick = function () {
-    rows.forEach(function (r, i) { $('#catchupRows [data-cu="' + i + '"]').value = r.guess; });
+    rows.forEach(function (r, i) {
+      var el = $('#catchupRows [data-cu="' + i + '"]');
+      if (el.value.trim()) return;
+      var g = guessFor(i);
+      if (g) el.value = g;
+    });
+    validate();
   };
+  // Assigned, not added: the sheet's rows are rebuilt on every open, but this
+  // container element is not, so a listener would stack once per catch-up.
+  $("#catchupRows").oninput = validate;
   $("#catchupApply").onclick = function () {
-    var named = 0, unknown = 0, bad = [];
-    // In pick order, so each recorded name lands on the right team.
+    if ($("#catchupApply").disabled) return;
+    var named = 0, unknown = 0;
+    // In pick order, so each recorded name lands on the right team. Nothing
+    // invalid can reach here any more, but draftedNames() is still re-read per
+    // row: it is what stops one name being recorded against two slots.
     rows.forEach(function (r, i) {
       var nm = $('#catchupRows [data-cu="' + i + '"]').value.trim();
       var ok = nm && BY_NAME[nm] && !draftedNames()[nm];
-      if (nm && !ok) bad.push(nm);
       record(ok ? nm : null, r.mine, true);
       ok ? named++ : unknown++;
     });
     closeModal("#catchupModal");
     render();
-    var msg = "Recorded " + rows.length + " picks — " + named + " by name" +
-      (unknown ? ", " + unknown + " as unknown (the slot is spent, the player stays available)" : "") +
-      (bad.length ? ". Not on the board or already drafted: " + bad.join(", ") : ".");
-    banner(msg, bad.length > 0);
+    banner("Recorded " + rows.length + " picks — " + named + " by name" +
+      (unknown ? ", " + unknown + " as unknown (the slot is spent, the player stays " +
+                 "available — tap him later to fill the pick in)" : "") + ".");
   };
+  validate();
   openModal("#catchupModal");
 }
 $("#catchupClose").addEventListener("click", function () { closeModal("#catchupModal"); });
@@ -3125,6 +3201,11 @@ function tagBadge(t) {
  * Deliberately does not touch the slot: which team owns pick 27 was decided
  * when it was logged, and this is a correction to the name, not to the owner.
  */
+/* How many blank picks the assign popover draws. The list is scrollable, so this
+   is about keeping the popover inside a phone viewport, not about how many
+   unknowns are repairable — see openUnknowns(). */
+var AP_FILL_SHOWN = 8;
+
 function fillUnknown(name, pickNo) {
   var pk = S.picks.find(function (q) { return q.pick === pickNo && q.unknown; });
   if (!pk || !BY_NAME[name]) return;
@@ -3141,10 +3222,16 @@ function fillUnknown(name, pickNo) {
     ". No extra pick was spent.");
 }
 
-/** Picks logged with no name, newest first — the ones that can still be filled. */
+/**
+ * Picks logged with no name, newest first — the ones that can still be filled.
+ *
+ * All of them. This used to stop at six, which is a sensible number of buttons
+ * to draw in a popover and a poor limit on the data: a catch-up of eight blanks
+ * creates eight unknowns, and the two oldest fell off the end of the only
+ * mechanism that repairs them. The cap belongs where the drawing happens.
+ */
 function openUnknowns() {
-  return S.picks.filter(function (p) { return p.unknown; })
-    .slice().reverse().slice(0, 6);
+  return S.picks.filter(function (p) { return p.unknown; }).slice().reverse();
 }
 
 function reassign(name, slot) {
@@ -3200,10 +3287,14 @@ function openAssign(name, anchorEl, ev) {
     // what stops one real selection from eating two slots.
     (!already && openUnknowns().length
       ? '<div class="ap-fill"><div class="ap-filk">or fill in a pick you missed</div>' +
-        openUnknowns().map(function (q) {
+        openUnknowns().slice(0, AP_FILL_SHOWN).map(function (q) {
           return '<button class="ap-t" data-fill="' + q.pick + '">pick ' + q.pick +
             '<span class="ap-hint">' + esc(teamTitle(q.slot)) + "</span></button>";
-        }).join("") + "</div>"
+        }).join("") +
+        (openUnknowns().length > AP_FILL_SHOWN
+          ? '<div class="ap-filk">+' + (openUnknowns().length - AP_FILL_SHOWN) +
+            " older, in Rosters</div>"
+          : "") + "</div>"
       : "") +
     '<div class="ap-foot">' +
       (already

@@ -2732,6 +2732,83 @@ console.log("\n== naming a pick you missed ==");
 })();
 
 /* ========================================================================
+   The repair cap. openUnknowns() used to stop at six, which is a fine number
+   of buttons to draw and a bad limit on the data: a catch-up of ten blanks
+   creates ten unknowns and the four oldest fell off the end of the only
+   mechanism that can ever fix them. The cap now lives at the drawing site.
+   ======================================================================== */
+console.log("\n== every blank pick stays fillable ==");
+(function () {
+  var api = loadApp(kindaHighlandersLeague(), [], { draftStarted: true });
+  for (var i = 0; i < 10; i++) api.record(null, false, true);
+  api.render();
+  ok("ten blank picks were logged", api.getState().picks.length === 10,
+     String(api.getState().picks.length));
+
+  var open = api.openUnknowns();
+  ok("all ten are still offered for repair — the old cap stopped at six",
+     open.length === 10, open.length + " offered");
+  ok("newest first, so the pick you just missed reads first",
+     open[0].pick === 10 && open[9].pick === 1, open[0].pick + ".." + open[9].pick);
+
+  // Pick 1 is exactly the row the six-cap made permanently unreachable.
+  api.fillUnknown("Jahmyr Gibbs", 1);
+  var p1 = api.getState().picks[0];
+  ok("and the oldest one can actually be filled",
+     p1.name === "Jahmyr Gibbs" && p1.unknown === false, JSON.stringify(p1));
+  ok("still without spending an extra pick", api.getState().picks.length === 10,
+     String(api.getState().picks.length));
+
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  var oa = app.slice(app.indexOf("function openAssign"));
+  oa = oa.slice(0, oa.indexOf("\nfunction closeAssign"));
+  ok("the popover pages the list rather than drawing every one of them",
+     /openUnknowns\(\)\.slice\(0, AP_FILL_SHOWN\)/.test(oa));
+  ok("and says how many older ones it did not draw",
+     /openUnknowns\(\)\.length > AP_FILL_SHOWN/.test(oa));
+})();
+
+/* ========================================================================
+   What the catch-up sheet refuses to record.
+
+   openCatchup() builds its rows, binds its handlers and validates against
+   live DOM nodes, which the fake document here does not provide — the same
+   reason the openAssign coverage above reads the source. These pin the three
+   rules that decide what reaches record(): your own pick is never a guess, an
+   invalid name never becomes an unknown, and the ADP button cannot offer a
+   name you have already typed somewhere else on the sheet.
+   ======================================================================== */
+console.log("\n== catch-up: what the sheet will not record ==");
+(function () {
+  var app = require("fs").readFileSync(APP_PATH, "utf8");
+  var oc = app.slice(app.indexOf("function openCatchup"));
+  oc = oc.slice(0, oc.indexOf('\n$("#catchupClose")'));
+
+  ok("your own slot left blank stops the sheet rather than guessing at it",
+     /mineBlank\+\+/.test(oc) && /go\.disabled = mineBlank > 0/.test(oc));
+  ok("and the row says so where the row is",
+     /your pick — required/.test(oc));
+  ok("a name that is not on the board is named as such, inside the sheet",
+     /not on the board/.test(oc));
+  ok("so is one that is already drafted", /already drafted/.test(oc));
+  ok("so is one used twice on the same sheet", /already used above/.test(oc));
+  ok("the button states what it is about to record",
+     /by name[\s\S]{0,120}unknown/.test(oc));
+  ok("validation runs on input, not only when apply is pressed",
+     /\$\("#catchupRows"\)\.oninput = validate/.test(oc));
+  ok("the input listener is assigned, not added — the container outlives the rows",
+     !/#catchupRows"\)\.addEventListener\("input/.test(oc));
+  ok("the ADP guess resolves at click time against what is typed",
+     /function guessFor[\s\S]{0,240}typedNames\(i\)/.test(oc));
+  ok("Fill from ADP leaves a field you have already filled alone",
+     /if \(el\.value\.trim\(\)\) return;/.test(oc));
+  ok("an empty sheet returns before it reads rows[0]",
+     /if \(!rows\.length\) return;/.test(oc));
+  ok("and the apply loop still records in pick order, unchanged",
+     /rows\.forEach\(function \(r, i\)[\s\S]{0,400}record\(ok \? nm : null, r\.mine, true\)/.test(oc));
+})();
+
+/* ========================================================================
    the live draft board - the three targets, the loop, and the undo window
    ======================================================================== */
 console.log("\n== the live draft board ==");
