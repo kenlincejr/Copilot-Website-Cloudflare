@@ -9,7 +9,7 @@
 
      - the roster as the engine sees it (starting slots, bench, byes)
      - the top eight candidates by composite, with EVERY term of the score
-       broken out (marginal, value, vona, bias, ceiling, risk, bye, bonus,
+       broken out (marginal, value, vona, bias, ceiling, risk, price, bye, bonus,
        blocked), plus the inputs those terms were fed (tier and tier-left,
        ADP, survival to the pick and to the one after, injury, depth chart,
        grade source, 7-day trend)
@@ -101,11 +101,14 @@ function candidateRow(p, A) {
     "| marg " + lpad(n(d.marginal), 4), "val " + lpad(n(d.value), 4), "vona " + lpad(n(d.vona), 3),
     "bias " + lpad(n(d.bias, 2), 4), "mult " + lpad(n(d.mult, 2), 4),
     "ceil " + lpad(n(d.ceilingAdj, 1), 5), "risk " + lpad(n(d.riskAdj, 1), 5),
+    "price " + lpad(n(d.priceAdj, 1), 5),
     "bye " + lpad(n(d.byePenalty), 2), "bon " + lpad(n(d.bonus), 3),
     d.blocked ? "BLOCKED(" + d.blocked + ")" : "",
     "| pts " + lpad(n(p.pts), 3), "vor " + lpad(n(p.vor), 4),
     "T" + p.tier + "(" + p.tierLeft + ")",
     "adp " + lpad(n(p.adp, 1), 5) + "±" + n(p.adp_sd, 1),
+    "adpE " + lpad(n(p.adpEff, 1), 5),
+    "gap " + lpad(p.priceGapPicks == null ? "-" : n(p.priceGapPicks), 4),
     "surv " + lpad(n(p.surv * 100), 3) + "%/" + lpad(n(p.survNext * 100), 3) + "%",
     "grade " + n(p.ceiling) + "/" + n(p.risk) + "(" + (p.gradeSource || "?").slice(0, 3) + ")",
     "bye" + p.bye,

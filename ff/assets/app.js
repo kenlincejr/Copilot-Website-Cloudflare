@@ -442,6 +442,33 @@ function analyze() {
   var avail = board.players.filter(function (p) { return !taken[p.name]; });
   var byName = {}; board.players.forEach(function (p) { byName[p.name] = p; });
 
+  // Real-draft telemetry has to land on the board BEFORE anything is scored.
+  // It used to be attached in the same loop that scores, a dozen lines below
+  // the composite() call, so every player was priced against his grade as it
+  // stood before his own trend was known — the signal was on screen in the
+  // TREND column and reached the score for nobody. Attaching it here, and
+  // re-deriving the grades off it, is the whole difference between showing the
+  // market moving and acting on it.
+  //
+  // It also has to land before expectedBestAvailable(), which is further up
+  // this function than it looks: VONA is computed from survival, survival now
+  // reads an effective ADP built out of this very telemetry, and a VONA
+  // computed before the attach would be the same bug one storey higher — and a
+  // far nastier one, because surv/survNext run after the attach, so the WAIT?
+  // column would read correctly while every score built on VONA was wrong.
+  var ya = yahooAdp();
+  board.players.forEach(function (p) {
+    var y = ya[normName(p.name)];
+    if (!y) return;
+    p.yadp = y.all;
+    // Positive means the room is taking him earlier this week than it has all
+    // preseason — the market moving toward him in real drafts.
+    p.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
+    p.ypct = y.pct;
+  });
+  E.applyMarketSignals(board.players);
+  E.applyTiming(board.players);
+
   var picks = allPicks();
   var mine = picks.filter(function (p) { return p.mine; })
                   .map(function (p) { return byName[p.name]; })
@@ -489,7 +516,6 @@ function analyze() {
   // Score everyone, not just the pool. Drafted players stay in the list struck
   // through, which is what makes the shape of a run visible — the gaps in the
   // ranking are themselves the information.
-  var ya = yahooAdp();
   var survTarget = (myNext && myNext > cur) ? myNext : (myAfter || myNext);
   var pickOf = {};
   picks.forEach(function (pk) { if (pk.name) pickOf[pk.name] = pk; });
@@ -498,24 +524,6 @@ function analyze() {
   // answer "how much of this is the style I chose?". It is only worth doing when
   // a style is actually active — on Balanced the two boards are the same board.
   var nctx = styled ? Object.assign({}, ctx, { strategy: {} }) : null;
-
-  // Real-draft telemetry has to land on the board BEFORE anything is scored.
-  // It used to be attached in the same loop that scores, a dozen lines below
-  // the composite() call, so every player was priced against his grade as it
-  // stood before his own trend was known — the signal was on screen in the
-  // TREND column and reached the score for nobody. Attaching it here, and
-  // re-deriving the grades off it, is the whole difference between showing the
-  // market moving and acting on it.
-  board.players.forEach(function (p) {
-    var y = ya[normName(p.name)];
-    if (!y) return;
-    p.yadp = y.all;
-    // Positive means the room is taking him earlier this week than it has all
-    // preseason — the market moving toward him in real drafts.
-    p.ytrend = (y.recent != null && y.all != null) ? +(y.all - y.recent).toFixed(1) : null;
-    p.ypct = y.pct;
-  });
-  E.applyMarketSignals(board.players);
 
   board.players.forEach(function (p) {
     var c = E.composite(p, ctx);
@@ -1420,11 +1428,14 @@ function openUndoWindow() {
  * leagues is not reliably taken at his ADP, and that is scoring-agnostic.
  */
 function marketAdp(p) {
-  if (p.yadp != null) {
-    return { adp: p.adp - (p.ytrend || 0) * 0.5, sd: p.adp_sd,
-             pct: p.ypct != null ? p.ypct : null, real: true };
-  }
-  return { adp: p.adp, sd: p.adp_sd, pct: null, real: false };
+  // One effective ADP, shared. This used to carry its own -(ytrend)*0.5
+  // correction while the user's own survival column read the raw baked ADP —
+  // so the room was rehearsing a different draft than the WAIT? number beside
+  // it predicted. E.adpEff() is that same correction, generalised, in one place.
+  var at = p.adpEff != null ? p.adpEff : E.adpEff(p);
+  return { adp: at, sd: p.adp_sd,
+           pct: (p.yadp != null && p.ypct != null) ? p.ypct : null,
+           real: p.yadp != null };
 }
 
 /** How much of the board the user's own real-draft data covers. */
@@ -2108,6 +2119,7 @@ function runMock(knobs, iterations, seed) {
   // that already know what the market did this week, or a rehearsal is scored
   // on different information than the live board beside it.
   E.applyMarketSignals(board.players);
+  E.applyTiming(board.players);
   var total = S.league.teams * S.league.rounds;
   var startPick = currentPick();
   var seededTaken = draftedNames();
@@ -4355,17 +4367,61 @@ function closePlayerPop() {
  * The ordering is deliberate: things that change whether you take him at all
  * come before things that change how you feel about it. An injury outranks a
  * market move; running out of a tier outranks a depth chart.
+ *
+ * Each line also carries a `rung`, which says what KIND of evidence it is —
+ * confirmed (a transaction, a depth chart), reported (a beat writer), modeled
+ * (a mechanism we computed) or priced (the market disagreeing with itself).
+ * A player standing on three rungs is a different bet from one standing on a
+ * single soft one, and that distinction is most of what a manager needs in
+ * order to decide whether to reach a round early for him.
  */
+/* What each kind of evidence is worth, in one hover. Ordered softest to
+   hardest, which is also the order in which you should be willing to reach on
+   it. */
+var RUNG_TITLE = {
+  priced:    "Priced: the markets disagree with each other. The softest kind of evidence here — the fast market may simply be wrong.",
+  modeled:   "Modeled: a mechanism we computed from real usage or real odds. A reason, but not a confirmation.",
+  reported:  "Reported: somebody watched it and wrote it down. Strong, and perishable — check the date.",
+  confirmed: "Confirmed: a transaction or a depth chart. It has already happened."
+};
+
 function standoutLines(p) {
   var out = [];
   var std = standardBoard()[p.name];
+  var d = p.compDetail || {};
 
   if (p.injury) {
-    out.push({ cls: "bad", t: p.injury + (p.injuryPart ? " — " + p.injuryPart : "") });
+    out.push({ cls: "bad", rung: "confirmed",
+      t: p.injury + (p.injuryPart ? " — " + p.injuryPart : "") });
   }
   if (p.tierLeft <= 1) {
-    out.push({ cls: "warn", t: "Last of tier " + p.tier + " at " + p.pos +
+    out.push({ cls: "warn", rung: "modeled", t: "Last of tier " + p.tier + " at " + p.pos +
       " — the next one is a step down." });
+  }
+
+  // What the wider market pays for him against what this board charges. High in
+  // the order because it changes whether you take him now, not how you feel
+  // about him — and it is stated in picks, never in points, because picks are
+  // the unit the decision is actually made in.
+  if (Math.abs(d.priceAdj || 0) >= 2 && p.priceGapPicks) {
+    out.push({ cls: d.priceAdj > 0 ? "good" : "dim", rung: "priced",
+      t: d.priceAdj > 0
+        ? "The wider market takes him " + Math.abs(p.priceGapPicks) + " picks earlier " +
+          "than this board prices him — experts and two other draft pools agree."
+        : "This board prices him " + Math.abs(p.priceGapPicks) + " picks higher than " +
+          "the experts and the other draft pools do." });
+  }
+  if (p.woprZ != null && p.woprZ >= 1 && p.wopr != null) {
+    out.push({ cls: "good", rung: "modeled",
+      t: "He earned " + Math.round(100 * p.wopr) + "% weighted opportunity last season — " +
+         "top of what is left at " + p.pos + ". Opportunity repeats; touchdowns do not." });
+  }
+  if (p.psosZ != null && Math.abs(p.psosZ) >= 1 && p.psosWks === 3) {
+    var easy = (p.pos === "DEF") ? p.psosZ < 0 : p.psosZ > 0;
+    out.push({ cls: easy ? "good" : "dim", rung: "modeled",
+      t: "Weeks 15-17, the ones that decide it: his opponents are priced at " +
+         p.psos + " points a game, " + (easy ? "among the softest" : "among the hardest") +
+         " playoff runs on the board." });
   }
   if (std) {
     var swing = Math.round(p.pts - std.pts);
@@ -4375,18 +4431,30 @@ function standoutLines(p) {
            (swing > 0 ? "likes him more than the room does." : "likes him less than the room does.") });
     }
   }
+  // Says what the board DID with the movement, not merely that it happened.
+  // The old line stated a fact the score did not act on; now survival reads
+  // adpEff, so the honest sentence is the pick we actually expect him to go at.
   if (p.ytrend != null && Math.abs(p.ytrend) >= 1.5) {
-    out.push({ cls: p.ytrend > 0 ? "warn" : "good",
+    var moved = p.adpEff != null && Math.abs(p.adpEff - (p.adp || 200)) >= 1;
+    out.push({ cls: p.ytrend > 0 ? "warn" : "good", rung: "priced",
       t: "Yahoo drafters have moved him " + Math.abs(p.ytrend).toFixed(1) + " picks " +
-         (p.ytrend > 0 ? "earlier" : "later") + " in the last seven days." });
+         (p.ytrend > 0 ? "earlier" : "later") + " in the last seven days" +
+         (moved ? ", so we treat him as going around " + Math.round(p.adpEff) +
+                  " rather than " + Math.round(p.adp) + "." : ".") });
   }
   if (p.depth >= 3) {
-    out.push({ cls: "warn", t: (p.depthPos || p.pos) + p.depth +
+    out.push({ cls: "warn", rung: "confirmed", t: (p.depthPos || p.pos) + p.depth +
       " on his own depth chart — he needs an injury in front of him." });
   } else if (p.depth === 1 && (p.pos === "RB" || p.pos === "WR" || p.pos === "TE")) {
-    out.push({ cls: "good", t: (p.depthPos || p.pos) + "1 on his own depth chart." });
+    out.push({ cls: "good", rung: "confirmed", t: (p.depthPos || p.pos) + "1 on his own depth chart." });
   }
-  if (p.note) out.push({ cls: "dim", t: p.note + (p.source ? " — " + p.source : "") });
+  if (p.capital != null && p.capital <= 64 && p.depth != null && p.depth <= 2) {
+    out.push({ cls: "good", rung: "confirmed",
+      t: "Round " + p.draftRound + " draft capital and already " +
+         (p.depthPos || p.pos) + p.depth + " — the team is paying him to play." });
+  }
+  if (p.note) out.push({ cls: "dim", rung: "reported",
+    t: p.note + (p.source ? " — " + p.source : "") });
   return out.slice(0, 4);
 }
 
@@ -4451,7 +4519,9 @@ function playerPopHtml(p) {
 
     (lines.length
       ? '<div class="pp-lines">' + lines.map(function (l) {
-          return '<div class="pp-line ' + l.cls + '">' + esc(l.t) + "</div>";
+          return '<div class="pp-line ' + l.cls +
+                 (l.rung ? " rung-" + l.rung : "") + '" title="' +
+                 esc(RUNG_TITLE[l.rung] || "") + '">' + esc(l.t) + "</div>";
         }).join("") + "</div>"
       : "") +
 
@@ -6329,9 +6399,31 @@ function claudeContext() {
             (p.ytrend > 0 ? "earlier" : "later") + " in the last seven days"
           : ""));
     }
-    if (p.adpResid != null && Math.abs(p.adpResid) >= 25) {
+    // The price clause REPLACES the old single-market one rather than joining
+    // it: they are the same latent variable, and adpResid is now one of the
+    // three inputs to this number. Saying both would be the payload telling the
+    // model one fact twice and inviting it to treat that as corroboration.
+    if (p.priceZ != null && Math.abs((p.compDetail || {}).priceAdj || 0) >= 2 &&
+        p.priceGapPicks) {
+      extra.push("expert consensus and the other draft pools take him " +
+        Math.abs(p.priceGapPicks) + " picks " +
+        (p.priceGapPicks > 0 ? "EARLIER" : "LATER") + " than this board prices him" +
+        (p.ecr != null ? " (experts rank him " + Math.round(p.ecr) + ")" : ""));
+    } else if (p.adpResid != null && Math.abs(p.adpResid) >= 25) {
       extra.push("the other ADP market is " + Math.abs(Math.round(p.adpResid)) + " picks " +
         (p.adpResid < 0 ? "higher" : "lower") + " on him than players of his price here");
+    }
+    // Opportunity, not production — the thing ADP has not already priced.
+    if (p.woprZ != null && Math.abs(p.woprZ) >= 1 && p.wopr != null) {
+      extra.push("he ran a " + Math.round(100 * p.wopr) + "% weighted opportunity share last " +
+        "season, " + (p.woprZ > 0 ? "high" : "low") + " for this position");
+    }
+    if (p.psosZ != null && Math.abs(p.psosZ) >= 1.2 && p.psosWks === 3) {
+      extra.push("his weeks 15-17 opponents are priced at " + p.psos +
+        " points a game, " + (p.psosZ > 0 ? "a soft" : "a hard") + " fantasy playoff run");
+    }
+    if (p.capital != null && p.capital <= 64) {
+      extra.push("a round " + p.draftRound + " NFL pick (#" + p.capital + " overall)");
     }
     // The marginal number is the one that stops a model rationalizing a
     // downgrade: it says in points whether he can play for this roster at all.
@@ -6460,9 +6552,15 @@ var SYSTEM =
   "opponent might do next. Depth-chart slots and injury designations come straight from " +
   "the league feed as of " + BAKED_ON + "; if that is more than a couple of days old, a " +
   "designation may have moved since, and saying so is more use than repeating it. " +
-  "Where two ADP sources are given and they disagree, that " +
-  "is a disagreement between markets and often just means one has not absorbed a piece of " +
-  "news yet — say which you think it is rather than assuming an edge. " +
+  "Some candidates carry a price signal: the gap between what expert consensus and the " +
+  "wider draft pools pay for a player and what this board charges. In a Yahoo league that " +
+  "gap is a real discount — but it is the SOFTEST evidence in this payload, because the " +
+  "outside market can simply be wrong, or the gap can be one piece of news the slower pool " +
+  "has not absorbed yet. Say which you think it is rather than assuming an edge. " +
+  "Where several facts about one player point the same way, say whether they are " +
+  "independent evidence or the same fact restated — a price gap, an ADP move and an expert " +
+  "ranking are frequently one thing wearing three hats, and treating them as three is the " +
+  "commonest way to talk yourself into a bad pick. " +
   "Be direct and brief — under 150 words unless asked for more. " +
   "No preamble, no bullet-point sprawl, no restating the question. If the board looks right, " +
   "say so in a sentence and add the one thing it doesn't know.";

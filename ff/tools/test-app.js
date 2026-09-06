@@ -745,16 +745,25 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
   }
 
   // The on-the-clock branch has no survival filter and must not have moved.
-  var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
-    "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
-    "Jaxon Smith-Njigba", "Brock Bowers", "Amon-Ra St. Brown"];
+  //
+  // These three lists are snapshots of composite order, not statements about the
+  // filter, so a new scoring term legitimately reshuffles them. They last moved
+  // when priceAdj landed, and every move is attributable to it: De'Von Achane
+  // (-21 picks against the wider market) and Amon-Ra St. Brown slid, Brock
+  // Bowers (+19, and all three outside markets agree) and Saquon Barkley rose.
+  // The rule these were written to protect is asserted directly below, against a
+  // live oracle rather than a snapshot — that is the assertion to trust if these
+  // ever disagree.
+  var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey",
+    "Ja'Marr Chase", "Puka Nacua", "Jonathan Taylor", "James Cook III", "Chase Brown",
+    "Jaxon Smith-Njigba", "De'Von Achane", "Brock Bowers", "Saquon Barkley"];
   // The last entry is the coverage rule, not the composite: at pick 86 the DEF
   // slot has been fillable since round 7 and no defense was in the top twelve,
   // so the best one displaces the weakest candidate. Chase Brown was that
   // twelfth name before the rule landed.
-  var ON_CLOCK_AT_86 = ["Jahmyr Gibbs", "Bijan Robinson", "Puka Nacua", "Ja'Marr Chase",
+  var ON_CLOCK_AT_86 = ["Jahmyr Gibbs", "Bijan Robinson", "Ja'Marr Chase", "Puka Nacua",
     "Brock Bowers", "Christian McCaffrey", "Jonathan Taylor", "Jaxon Smith-Njigba",
-    "Amon-Ra St. Brown", "James Cook III", "De'Von Achane", "Houston Defense"];
+    "Amon-Ra St. Brown", "James Cook III", "Trey McBride", "Houston Defense"];
   ok("on the clock at 11: unchanged by D3, the filter never applied here",
      JSON.stringify(names(atPick(11), false)) === JSON.stringify(ON_CLOCK_AT_11),
      JSON.stringify(names(atPick(11), false)));
@@ -764,9 +773,9 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
 
   // The waiting branch. The board's top six were withheld here before D3.
   var a10 = atPick(10), A10 = a10.getAnalysis();
-  var WAITING_AT_10 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey", "Puka Nacua",
-    "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "De'Von Achane", "Chase Brown",
-    "Brock Bowers", "Derrick Henry", "Saquon Barkley"];
+  var WAITING_AT_10 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey",
+    "Ja'Marr Chase", "Puka Nacua", "Jonathan Taylor", "James Cook III", "Chase Brown",
+    "De'Von Achane", "Brock Bowers", "Saquon Barkley", "Omarion Hampton"];
   ok("waiting at 10: the list now leads with the board's own #1",
      JSON.stringify(names(a10, true)) === JSON.stringify(WAITING_AT_10),
      JSON.stringify(names(a10, true)));

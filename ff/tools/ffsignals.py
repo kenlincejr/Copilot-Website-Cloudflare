@@ -151,10 +151,28 @@ def knot_residual(pairs, min_pairs=20, bands=10, min_band=8, min_chunk=4):
     def expected(x):
         if not knots or x is None:
             return None
+        # Linear extrapolation past the end knots, not a flat clamp.
+        #
+        # The flat form is wrong in a way that looks exactly like signal, and it
+        # is worst precisely where the board is most valuable. Each knot sits at
+        # the median of a band of about two dozen players, so the first knot is
+        # around pick 12 — and a flat clamp compares every one of the top twelve
+        # players against that median instead of against himself. Jahmyr Gibbs,
+        # taken 1.4 here and 2.4 on the expert list, came out with a ten-pick
+        # "discount" that was nothing but the shape of the extrapolation. Two
+        # ranked lists both start at 1, so near the top the honest expectation
+        # is close to the identity, and a line through the first two knots gets
+        # there while a horizontal one cannot.
         if x <= knots[0][0]:
-            return knots[0][1]
+            if len(knots) < 2 or knots[1][0] == knots[0][0]:
+                return knots[0][1]
+            sl = (knots[1][1] - knots[0][1]) / (knots[1][0] - knots[0][0])
+            return knots[0][1] + sl * (x - knots[0][0])
         if x >= knots[-1][0]:
-            return knots[-1][1]
+            if len(knots) < 2 or knots[-1][0] == knots[-2][0]:
+                return knots[-1][1]
+            sl = (knots[-1][1] - knots[-2][1]) / (knots[-1][0] - knots[-2][0])
+            return knots[-1][1] + sl * (x - knots[-1][0])
         for i in range(len(knots) - 1):
             x0, y0 = knots[i]
             x1, y1 = knots[i + 1]

@@ -130,6 +130,67 @@ allNames.forEach(function (n) {
 });
 if (!any3) console.log("  (no injury/depth/projSource changes, no board additions or drops)");
 
+/* ------------------------------------------------ 6. signal movers ------- */
+/* Whether a re-bake actually changed anything, per signal. Without this a
+   refetch that quietly returned yesterday's file looks exactly like one that
+   worked. */
+console.log("\n== 6. Signal movers (|delta z| >= 0.5) ==");
+(function () {
+  var sb = (before.data.meta || {}).signals || {};
+  var sa = (after.data.meta || {}).signals || {};
+  var fields = Object.keys(sa).filter(function (f) { return sa[f].zfield; });
+  if (!fields.length) { console.log("  (no signal layer in these bakes)"); return; }
+  var pb = {}, any = false;
+  before.data.players.forEach(function (p) { pb[p.name] = p; });
+  fields.forEach(function (f) {
+    var zf = sa[f].zfield, rows = [];
+    after.data.players.forEach(function (p) {
+      var q = pb[p.name];
+      if (!q) return;
+      var a = p[zf], b = q[zf];
+      if (a == null && b == null) return;
+      var d = (a || 0) - (b || 0);
+      if (Math.abs(d) >= 0.5) rows.push({ n: p.name, d: d, a: a, b: b });
+    });
+    if (!rows.length) return;
+    any = true;
+    rows.sort(function (x, y) { return Math.abs(y.d) - Math.abs(x.d); });
+    console.log("  " + f + ": " + rows.length + " moved");
+    rows.slice(0, 15).forEach(function (r) {
+      console.log("    " + r.n.padEnd(24) +
+        (r.b == null ? "  —  " : String(r.b).padStart(6)) + " -> " +
+        (r.a == null ? "  —  " : String(r.a).padStart(6)) +
+        "   (" + (r.d > 0 ? "+" : "") + r.d.toFixed(2) + ")");
+    });
+  });
+  if (!any) console.log("  (no signal moved by half a standard deviation)");
+})();
+
+/* ------------------------------- 7. signal coverage and provenance ------- */
+/* A signal that was present on Sunday and refused on Monday is the single most
+   important line this tool can print, and until now it printed nothing at all. */
+console.log("\n== 7. Signal coverage and provenance ==");
+(function () {
+  var sb = (before.data.meta || {}).signals || {};
+  var sa = (after.data.meta || {}).signals || {};
+  var names = Object.keys(sa).concat(Object.keys(sb).filter(function (f) { return !sa[f]; }));
+  if (!names.length) { console.log("  (no signal layer in these bakes)"); return; }
+  var said = false;
+  names.sort().forEach(function (f) {
+    var a = sa[f], b = sb[f];
+    if (!a) { console.log("  " + f.padEnd(14) + "GONE — present before, absent now"); said = true; return; }
+    if (!b) { console.log("  " + f.padEnd(14) + "NEW"); said = true; return; }
+    if (!!a.refused !== !!b.refused) {
+      console.log("  " + f.padEnd(14) + (a.refused ? "NOW REFUSED: " + a.refused
+                                                   : "no longer refused (was: " + b.refused + ")"));
+      said = true;
+    }
+    if (a.n !== b.n) { console.log("  " + f.padEnd(14) + "coverage " + b.n + " -> " + a.n); said = true; }
+    if (a.asof !== b.asof) { console.log("  " + f.padEnd(14) + "as-of " + b.asof + " -> " + a.asof); said = true; }
+  });
+  if (!said) console.log("  (every signal has the same coverage, freshness and verdict)");
+})();
+
 /* ---------------------------------------------- 4. headline counts ------- */
 console.log("\n== 4. Headline counts (before | after) ==");
 function headline(x) {

@@ -140,6 +140,7 @@ globalThis.DRAFTLINE_KNOB_SPEC = {
   needWeight:    { type: "num",  min: 0,   max: 2 },
   ceilingWeight: { type: "num",  min: 0,   max: 2 },
   riskWeight:    { type: "num",  min: 0,   max: 2 },
+  priceWeight:   { type: "num",  min: 0,   max: 2 },
   byeTolerance:  { type: "int",  min: 2,   max: 6 },
   stackBonus:    { type: "num",  min: 0,   max: 25 },
   handcuffBonus: { type: "num",  min: 0,   max: 25 },

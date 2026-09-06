@@ -442,6 +442,96 @@ ok("a player the market is moving toward scores higher than the same player flat
    E.composite(rise, ctxM).score > E.composite(flat, ctxM).score,
    E.composite(flat, ctxM).score.toFixed(1) + " -> " + E.composite(rise, ctxM).score.toFixed(1));
 
+console.log("\n== Price reaches the score, and stays where it belongs ==");
+/* What the wider market pays for a player against what this board charges.
+   The properties below are the eight the market-signal section above asserts,
+   plus one specific to this term: it is NOT trust-weighted. MARKET_TRUST halves
+   a signal on a hand-graded player because a person reasoned about that grade
+   and the signal is only updating a prior. Nobody hand-wrote a price, so there
+   is no prior to defer to — and this assertion is what stops somebody "fixing"
+   that later. */
+
+function priced(over) {
+  return graded(Object.assign({ ecrResidStdZ: null, adpResid3StdZ: null,
+                                adpResid: null, ytrend: null }, over));
+}
+var ctxP = ctxFor(CORE, { round: 6, pick: 62, nextPick: 83 });
+var sc = function (p) { return E.composite(p, ctxP); };
+
+var pNone  = priced({});
+var pCheap = priced({ ecrResidStdZ: -2 });   // the market ranks him ABOVE his price
+var pDear  = priced({ ecrResidStdZ:  2 });
+
+ok("with no market data at all there is no price signal",
+   pNone.priceZ === null && sc(pNone).priceAdj === 0, "priceZ " + pNone.priceZ);
+ok("a player the wider market likes more than this board gets a positive term",
+   sc(pCheap).priceAdj > 0, "priceAdj " + sc(pCheap).priceAdj.toFixed(2));
+ok("and one it likes less gets a negative one",
+   sc(pDear).priceAdj < 0, "priceAdj " + sc(pDear).priceAdj.toFixed(2));
+ok("the sign is symmetric",
+   Math.abs(sc(pCheap).priceAdj + sc(pDear).priceAdj) < 1e-9);
+ok("it is capped: ten standard deviations buys no more than two",
+   Math.abs(sc(priced({ ecrResidStdZ: -10 })).priceAdj -
+            sc(priced({ ecrResidStdZ: -2 })).priceAdj) < 1e-9,
+   sc(priced({ ecrResidStdZ: -10 })).priceAdj.toFixed(2));
+ok("and the cap is the size of a maxed ceiling grade, never more",
+   Math.abs(sc(priced({ ecrResidStdZ: -10 })).priceAdj) <= 6.001,
+   Math.abs(sc(priced({ ecrResidStdZ: -10 })).priceAdj).toFixed(2));
+ok("price does not touch the ceiling or the risk grade — different claims",
+   pCheap.ceiling === pNone.ceiling && pCheap.risk === pNone.risk,
+   pNone.ceiling + "/" + pNone.risk + " vs " + pCheap.ceiling + "/" + pCheap.risk);
+ok("nor the projection: signals never move pts, which is what insulates impact.js",
+   pCheap.pts === pNone.pts && pCheap.vor === pNone.vor);
+
+var wRes = sc(graded({ ceiling: 80, risk: 40, ecrResidStdZ: -2, adpResid3StdZ: null,
+                       adpResid: null, ytrend: null })).priceAdj;
+var wMod = sc(priced({ ecrResidStdZ: -2 })).priceAdj;
+ok("a price lands at full weight on a researched player, unlike a market grade",
+   Math.abs(wRes - wMod) < 1e-9, wRes.toFixed(2) + " vs " + wMod.toFixed(2));
+
+ok("one source alone carries the whole family budget — no penalty for missing data",
+   Math.abs(sc(priced({ ecrResidStdZ: -2 })).priceAdj -
+            sc(priced({ ecrResidStdZ: -2, adpResid3StdZ: -2 })).priceAdj) < 1e-9,
+   "one " + sc(priced({ ecrResidStdZ: -2 })).priceAdj.toFixed(2) + ", two agreeing " +
+   sc(priced({ ecrResidStdZ: -2, adpResid3StdZ: -2 })).priceAdj.toFixed(2));
+/* Two sources pulling opposite ways damp each other rather than compounding —
+   but they do not cancel to nothing, and should not. Expert consensus carries
+   0.55 of the family budget against ESPN's 0.30, so a straight disagreement
+   leans toward the experts by design. What matters is that contradiction is
+   worth a fraction of corroboration. */
+var agree = Math.abs(sc(priced({ ecrResidStdZ: -2, adpResid3StdZ: -2 })).priceAdj);
+var fight = Math.abs(sc(priced({ ecrResidStdZ: -2, adpResid3StdZ:  2 })).priceAdj);
+ok("two sources that disagree are worth well under half of two that agree",
+   fight < 0.5 * agree, "agreeing " + agree.toFixed(2) + " vs fighting " + fight.toFixed(2));
+ok("and the disagreement still leans toward the experts, who carry the larger weight",
+   sc(priced({ ecrResidStdZ: -2, adpResid3StdZ: 2 })).priceAdj > 0);
+ok("a bargain outscores the same player at a fair price",
+   sc(pCheap).score > sc(pDear).score,
+   sc(pDear).score.toFixed(1) + " -> " + sc(pCheap).score.toFixed(1));
+
+console.log("\n== Timing: one effective ADP, read by survival and the room alike ==");
+/* survival() read the baked ADP while the opponent model read a trend-corrected
+   one, so the room rehearsed a different draft than the WAIT? column beside it
+   predicted. Both now come through adpEff. */
+var tBase = { adp: 40, adp_sd: 8 };
+ok("with no telemetry the effective ADP is the baked one",
+   E.adpEff(tBase) === 40, String(E.adpEff(tBase)));
+ok("and survival is then bit-identical to the old arithmetic",
+   E.survival(tBase, 50) === 1 - E.normCdf((50 - 40) / 8), String(E.survival(tBase, 50)));
+ok("a player the room is moving toward is expected earlier",
+   E.adpEff({ adp: 40, ytrend: 4 }) < 40, String(E.adpEff({ adp: 40, ytrend: 4 })));
+ok("and is therefore less likely to last",
+   E.survival({ adp: 40, adp_sd: 8, adpEff: E.adpEff({ adp: 40, ytrend: 4 }) }, 45) <
+   E.survival(tBase, 45));
+ok("the plus-or-minus eight pick cap holds against an absurd trend",
+   E.adpEff({ adp: 40, ytrend: 400 }) === 32, String(E.adpEff({ adp: 40, ytrend: 400 })));
+ok("price deliberately does NOT move the timing — it changes whether he is worth " +
+   "taking, not when eleven Yahoo managers will take him",
+   E.adpEff({ adp: 40, priceZ: 1.5 }) === 40);
+ok("applyTiming is idempotent",
+   (function () { var q = { adp: 40, ytrend: 2 };
+     E.applyTiming([q]); var a = q.adpEff; E.applyTiming([q]); return a === q.adpEff; })());
+
 console.log("\n== The board must not stack a position it is already full at ==");
 /* The bug these cover: at pick 62, one pick after taking Drake Maye (320) at
    quarterback, the board's top recommendation was Lamar Jackson (328) — an

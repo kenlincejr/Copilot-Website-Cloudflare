@@ -176,6 +176,142 @@ if (splits.length) {
   }
 })();
 
+/* ------------------------------------ 9. signal coverage and centering */
+/* The failure this is written against: a signal present on forty players
+   silently outranking two hundred whose only sin is missing data. Coverage,
+   centering and clipping are the three things that go wrong quietly, so each
+   gets an assertion rather than a glance. */
+(function () {
+  var sig = (D.meta || {}).signals;
+  if (!sig) { flag("MED", "signals", "no signal layer in this bake — meta.signals is absent"); return; }
+  var names = Object.keys(sig);
+  flag("ok", "signals", names.length + " signal fields declared");
+
+  names.forEach(function (f) {
+    var reg = sig[f];
+    if (reg.refused) {
+      flag("HIGH", "signals", f + " was REFUSED by the bake: " + reg.refused);
+      return;
+    }
+    var have = D.players.filter(function (p) { return p[f] != null; }).length;
+    if (reg.n != null && reg.n !== have) {
+      flag("HIGH", "signals", f + " carries " + have + " values but its registry claims " +
+        reg.n + " — the bake and its own metadata disagree");
+    }
+    // `sparse` fields have no coverage they are supposed to reach — an injury
+    // designation exists only for injured players, so measuring its absence
+    // against a floor would flag a perfectly healthy feed as broken.
+    if (!reg.sparse && reg.eligible && reg.floor && have / reg.eligible < reg.floor) {
+      flag("HIGH", "signals", f + " covers " + have + " of " + reg.eligible +
+        " eligible (" + Math.round(100 * have / reg.eligible) + "%), below its " +
+        Math.round(100 * reg.floor) + "% floor, and was applied anyway");
+    }
+    var zf = reg.zfield;
+    if (!zf) return;
+    var zs = D.players.map(function (p) { return p[zf]; })
+                      .filter(function (v) { return v != null; });
+    if (!zs.length) {
+      if (have) flag("HIGH", "signals", f + " has values but no z-scores were written");
+      return;
+    }
+    var mean = zs.reduce(function (a, c) { return a + c; }, 0) / zs.length;
+    var sd = Math.sqrt(zs.reduce(function (a, c) { return a + (c - mean) * (c - mean); }, 0) / zs.length);
+    // Centring is done per position, so the pooled mean is a sum of several
+    // zero-mean groups and only approximately zero. A tenth of a standard
+    // deviation is generous; anything past it means the centring did not centre.
+    if (Math.abs(mean) > 0.10) {
+      flag("HIGH", "signals", zf + " has mean " + mean.toFixed(3) +
+        " — the centring did not centre");
+    }
+    if (Math.abs(sd - 1) > 0.25) {
+      flag("MED", "signals", zf + " has sd " + sd.toFixed(2) +
+        " — expected about 1 for a centred signal");
+    }
+    var over = zs.filter(function (v) { return Math.abs(v) > 3.01; }).length;
+    if (over) flag("HIGH", "signals", zf + ": " + over + " value(s) past the ±3 clip");
+    if (reg.clipped && reg.clipped > 0.10 * zs.length) {
+      flag("MED", "signals", f + " clipped " + reg.clipped + " of " + zs.length +
+        " — that is an outlier problem worth looking at, not a scaling choice");
+    }
+  });
+
+  // The price term is the one signal that is a composite of others, so it gets
+  // its own line: if it covers nobody, every market source failed at once.
+  var priced = board.players.filter(function (p) { return p.priceZ != null; }).length;
+  if (!priced) {
+    flag("HIGH", "signals", "no player carries a price signal — every market source is missing");
+  } else {
+    var top = board.players.filter(function (p) { return p.priceZ != null; })
+      .sort(function (a, b) { return Math.abs(b.priceGapPicks) - Math.abs(a.priceGapPicks); })
+      .slice(0, 5)
+      .map(function (p) { return p.name + " " + (p.priceGapPicks > 0 ? "+" : "") + p.priceGapPicks; });
+    flag("ok", "signals", "price signal on " + priced + " players");
+    flag("LOW", "signals", "largest price gaps, worth eyeballing: " + top.join(" · "));
+  }
+})();
+
+/* ------------------------------------------- 10. per-signal freshness */
+/* meta.built dates the bake as a whole. A signal carries its own as-of, which
+   is the date the SOURCE published — not the date we downloaded it. The ECR
+   mirror is the standing example: it can hand you a four-day-old scrape the
+   instant you fetch it, and a signal that reports its download time as its
+   freshness is lying about the only thing that matters here. */
+(function () {
+  var sig = (D.meta || {}).signals;
+  if (!sig) return;
+  var MAX_AGE = { ecr: 4, espn: 2, velocity: 1, vegas: 3 };
+  var today = new Date();
+  Object.keys(sig).forEach(function (f) {
+    var reg = sig[f];
+    if (reg.refused || !reg.asof) return;
+    var d = new Date(reg.asof + "T00:00:00Z");
+    if (isNaN(d)) { flag("MED", "freshness", f + " has an unparseable as-of: " + reg.asof); return; }
+    var age = Math.floor((today - d) / 86400000);
+    if (age < 0) {
+      flag("HIGH", "freshness", f + " claims an as-of in the future (" + reg.asof +
+        ") — that is a parse bug, not a fresh feed");
+      return;
+    }
+    var cap = 3;
+    Object.keys(MAX_AGE).forEach(function (k) { if (f.toLowerCase().indexOf(k) === 0) cap = MAX_AGE[k]; });
+    if (age > 2 * cap) {
+      flag("HIGH", "freshness", f + " is " + age + " days old (source as-of " + reg.asof +
+        ", limit " + cap + ") — re-run tools/fetch-sources.py");
+    } else if (age > cap) {
+      flag("MED", "freshness", f + " is " + age + " days old (source as-of " + reg.asof + ")");
+    }
+  });
+})();
+
+/* --------------------------------------------- 11. crosswalk integrity */
+/* Two board players resolving onto one person is the silent-sleeper-disappears
+   failure, and it is invisible everywhere else. */
+(function () {
+  var xw;
+  try { xw = require("./crosswalk.json"); }
+  catch (e) { flag("MED", "crosswalk", "no crosswalk.json — signals joined by name only"); return; }
+  var players = xw.players || {}, seen = {}, dupes = [];
+  Object.keys(players).forEach(function (k) {
+    var g = players[k].gsis_id;
+    if (!g) return;
+    if (seen[g]) dupes.push(seen[g] + " and " + k);
+    seen[g] = k;
+  });
+  dupes.forEach(function (d) {
+    flag("HIGH", "crosswalk", "two board players resolve to one person: " + d);
+  });
+  var weak = Object.keys(players).filter(function (k) { return players[k].tier === "name"; });
+  if (weak.length) {
+    flag("LOW", "crosswalk", weak.length + " player(s) matched on a bare name: " + weak.join(", "));
+  }
+  var xb = xw.meta && xw.meta.built, mb = (D.meta || {}).built;
+  if (xb && mb && xb < mb) {
+    flag("LOW", "crosswalk", "the crosswalk was built " + xb + " and the board " + mb +
+      " — a roster move since then would not be reflected");
+  }
+  flag("ok", "crosswalk", (xw.meta && xw.meta.resolved) + " players resolved to stable ids");
+})();
+
 /* ---------------------------------------------------------------- report */
 var order = { HIGH: 0, MED: 1, LOW: 2, ok: 3 };
 findings.sort(function (a, b) { return order[a.sev] - order[b.sev]; });

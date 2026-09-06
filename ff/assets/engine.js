@@ -176,6 +176,11 @@
    */
   var VONA_WEIGHT = 0.5;
 
+  // Points per unit of priceZ. priceZ is clamped to ±1.5, so this caps the
+  // price term at ±6.0 — the same size as a maxed ceiling grade, which is the
+  // largest a term with unfitted weights has any business being.
+  var PRICE_SCALE = 4;
+
   /**
    * Fisher's optimal 1-D clustering. Partitions `list` (already sorted by points,
    * descending) into `k` contiguous tiers that minimize total within-tier
@@ -343,22 +348,36 @@
   function marketSignals(p) {
     var dCeiling = 0, dRisk = 0;
 
+    // Only the uncertainty half of adpResid lives here now. Its *direction* —
+    // "the other market is higher on him than his price" — has moved into
+    // priceZ, where it sits alongside ECR and ESPN saying the same thing and
+    // shares one budget with them. Leaving it on the ceiling as well would be
+    // the three-restatements-of-one-fact failure in miniature: one meaning,
+    // one place. What stays is disagreement-as-risk, which is a genuinely
+    // different claim and belongs to no other term.
     if (p.adpResid != null) {
       var z = clamp(p.adpResid / 14, -1.5, 1.5);
-      dCeiling += -5 * z;
       dRisk += 4 * Math.abs(z);
     }
 
     // Scaled by 3 picks: the board calls movement under 0.3 picks "flat" and
     // flags a full pick as worth mentioning, so three picks in a week is a
     // decisive move and lands at the cap.
+    //
+    // The ceiling coefficient dropped from 5 to 3 when survival started reading
+    // adpEff. Movement now reaches the score through two doors — this grade, and
+    // the timing model via VONA — and paying full price at both would double-
+    // count the one fact. These two changes ship together or neither does.
     if (p.ytrend != null) {
       var t = clamp(p.ytrend / 3, -1.5, 1.5);
-      dCeiling += 5 * t;
-      dRisk += -3 * t;
+      dCeiling += 3 * t;
+      dRisk += -2 * t;
     }
 
-    return { ceiling: dCeiling, risk: dRisk };
+    // A fixed budget for the whole family. Per-signal weights stay put and an
+    // absent signal contributes exactly zero, so coverage is safe; this cap is
+    // what stops a seventh signal inflating the family rather than diluting it.
+    return { ceiling: clamp(dCeiling, -12, 12), risk: clamp(dRisk, -10, 10) };
   }
 
   /**
@@ -507,6 +526,7 @@
       repl[pos] = { rank: ranks[pos] || 12, points: r ? r.pts : 0, name: r ? r.name : null };
     });
     scored.forEach(function (p) { p.vor = p.pts - (repl[p.pos] ? repl[p.pos].points : 0); });
+    priceSignals(scored);
     modelGrades(scored);
 
     // Tiers.
@@ -552,10 +572,130 @@
     });
   }
 
+  /* --------------------------------------------------------- price signals
+   *
+   * What the wider market pays for a player, against what this board's own ADP
+   * says he costs. Three sources feed it and they are emphatically NOT three
+   * pieces of evidence:
+   *
+   *   ecrResid   ~130 experts, de-drifted against board ADP
+   *   adpResid3  ESPN's whole user base, de-drifted the same way
+   *   adpResid   Sleeper's, which the bake has computed all along
+   *
+   * ECR, ESPN and Sleeper are largely one latent variable wearing three hats.
+   * Adding them would triple the weight of consensus, which is the exact
+   * opposite of what this layer is for — the point is to find where the market
+   * is wrong, not to count how many times it said the same thing. So they share
+   * ONE budget, renormalised over whichever sources actually cover the player:
+   * a player seen only by ECR gets the full budget on ECR (no penalty for
+   * missing data), and a player seen by all three gets the same total budget
+   * (no inflation). Adding a fourth market changes the mix inside a constant.
+   *
+   * The weights are a prior, not a measurement. They encode the belief that
+   * expert consensus is the most independent of the three and Sleeper's stale,
+   * mock-heavy pool the least — and until the backtest in the spec exists, that
+   * is all they are. They are small for that reason.
+   *
+   * A word on naming, since this repo already has two meanings for "edge"
+   * (impact.js's best-minus-replacement, and the dead DEEP_THREAT tag): this is
+   * `price`. Ceiling is a claim about the player. Price is a claim about what
+   * he costs. A manager deciding whether to reach needs to know which of the
+   * two he is being sold, so they never get summed into one grade.
+   */
+  var PRICE_W = { ecrResidStdZ: 0.55, adpResid3StdZ: 0.30, adpResidZ: 0.15 };
+  var PRICE_PICKS = 14;   // picks per unit of z, for the number the UI quotes
+
+  function priceSignals(scored) {
+    // adpResid is baked in picks, not as a z-score. Centre it here over the
+    // board so it shares a scale with the two that arrive pre-centred.
+    var xs = scored.filter(function (p) { return p.adpResid != null; });
+    var mean = 0, sd = 0;
+    if (xs.length > 1) {
+      xs.forEach(function (p) { mean += p.adpResid; });
+      mean /= xs.length;
+      xs.forEach(function (p) { sd += (p.adpResid - mean) * (p.adpResid - mean); });
+      sd = Math.sqrt(sd / xs.length);
+    }
+
+    scored.forEach(function (p) {
+      // Kickers and defenses are out. Both are drafted on logic this signal does
+      // not describe — the board already governs when to take them with floor
+      // rounds — and kicker ADP is close to noise, so a wide market disagreement
+      // about a kicker is a fact about nobody caring rather than about value.
+      if (p.pos === "K" || p.pos === "DEF") {
+        p.priceZ = null; p.priceGapPicks = null; return;
+      }
+      var z = {
+        ecrResidStdZ: p.ecrResidStdZ,
+        adpResid3StdZ: p.adpResid3StdZ,
+        adpResidZ: (p.adpResid != null && sd > 1e-9)
+          ? clamp((p.adpResid - mean) / sd, -3, 3) : null
+      };
+      var num = 0, den = 0;
+      Object.keys(PRICE_W).forEach(function (k) {
+        if (z[k] == null) return;
+        num += PRICE_W[k] * z[k];
+        den += PRICE_W[k];
+      });
+      if (den <= 0) { p.priceZ = null; p.priceGapPicks = null; return; }
+      // Negative residuals mean the wider market takes him EARLIER than his
+      // board price — that is the discount, so the sign flips to make "positive
+      // is good for you" true everywhere downstream.
+      p.priceZ = clamp(-(num / den), -1.5, 1.5);
+      p.priceGapPicks = Math.round(p.priceZ * PRICE_PICKS);
+    });
+    return scored;
+  }
+
+  /* -------------------------------------------------------- effective ADP
+   *
+   * The pick we actually expect him to go at, as against the pick he was baked
+   * at. The level stays the board's own full-PPR ADP; the one correction is the
+   * thing a stored level cannot know — that the room has been moving on him
+   * this week.
+   *
+   * The price signal deliberately does NOT enter here, and the distinction is
+   * the whole reason these are two terms rather than one. The room drafts to
+   * the market the room reads. That a hundred and thirty analysts rate a player
+   * above his price changes whether he is worth taking; it does not change when
+   * eleven Yahoo managers will take him. Movement is the opposite case — it is
+   * not an opinion about him, it is those managers already moving — so it is
+   * the only thing with any business predicting them.
+   *
+   * Level and movement are treated differently on purpose, and marketAdp() in
+   * app.js established the reason with a measurement before this existed:
+   * Yahoo computes its ADP under standard scoring, so importing its *level*
+   * would import the wrong scoring system, while its *movement* is
+   * scoring-agnostic and safe to borrow. This generalises that finding.
+   *
+   * Capped hard at ±8 picks. At a typical adp_sd of 8 that is at most about one
+   * standard deviation of survival probability, so a bad scrape costs a player
+   * a few spots and can never reach the first round.
+   *
+   * Idempotent: reads `adp` and never its own output.
+   */
+  var ADPEFF_VEL = 0.5;      // the coefficient marketAdp() already used
+  var ADPEFF_CAP = 8;        // picks; two thirds of a round in a 12-team league
+
+  function adpEff(p) {
+    var base = p.adp || 200;
+    return base + clamp(-ADPEFF_VEL * (p.ytrend || 0), -ADPEFF_CAP, ADPEFF_CAP);
+  }
+
+  function applyTiming(players) {
+    players.forEach(function (p) { p.adpEff = adpEff(p); });
+    return players;
+  }
+
   /** P(player is still on the board when pick N comes around). */
   function survival(player, pickNumber) {
     var sd = Math.max(player.adp_sd || 6, 1.5);
-    return 1 - normCdf((pickNumber - (player.adp || 200)) / sd);
+    // One chokepoint: surv, survNext, survShown and expectedBestAvailable (and
+    // therefore VONA, and therefore every score) all come through here, so the
+    // effective ADP only has to be injected once. With no telemetry and no
+    // price signal, adpEff === adp and this is bit-identical to what it was.
+    var at = player.adpEff != null ? player.adpEff : (player.adp || 200);
+    return 1 - normCdf((pickNumber - at) / sd);
   }
 
   /**
@@ -892,6 +1032,39 @@
     var ceilingAdj = player.ceiling ? ((player.ceiling - 70) / 100) * 26 * wCeiling * reaches : 0;
     var riskAdj = player.risk ? ((player.risk - 50) / 100) * 26 * wRisk * reaches : 0;
 
+    /* What the wider market pays for him against what this board says he costs.
+     *
+     * `!= null`, not truthiness. A priceZ of exactly zero is a real, mean-centred
+     * "the market agrees with his price", and it is the single most common value
+     * a centred signal takes — the bug recorded above at the top of modelGrades
+     * was precisely this check, and ceiling only survives it because ceiling is
+     * never 0.
+     *
+     * Multiplied by `reaches`, and the argument is worth writing down because
+     * the other way is tempting: you capture a discount by *taking* him, not by
+     * starting him, so a case exists for paying it in full. Three reasons not to.
+     * There is no trade model here, so the only way a rostered player becomes
+     * value is by scoring in your lineup — a bargain on a body who plays 8% of
+     * the weeks is worth 8% of the bargain. The comment above about units is a
+     * measured finding, not a preference: last time a full-strength points-scale
+     * term sat beside a discounted `value`, a backup quarterback came out first
+     * in the middle rounds. And the errors are asymmetric — multiplying
+     * under-credits a real edge on a bench stash by a couple of spots in rounds
+     * where outcomes are nearly flat, while not multiplying resurrects a
+     * board-breaking bug across rounds 7-13, which is most of a draft.
+     *
+     * No round schedule, unlike ceiling and risk. Those ramp because you buy
+     * floor early and variance late. A discount is worth the same in round 2 as
+     * in round 12, and the flatness is the statement.
+     *
+     * PRICE_SCALE 4 against a clamp of ±1.5 maxes this at ±6.0 points —
+     * deliberately equal to a maxed ceiling grade, and never more.
+     */
+    var priceAdj = player.priceZ != null
+      ? clamp(player.priceZ, -1.5, 1.5) * PRICE_SCALE *
+        (st.priceWeight != null ? st.priceWeight : 1) * reaches
+      : 0;
+
     // Bye penalty: only counts starters already parked on that week.
     var conflicts = ctx.byeCounts[player.bye] || 0;
     var byePenalty = conflicts >= (ctx.byeTolerance || 3) ? 5 * (conflicts - (ctx.byeTolerance || 3) + 1) : 0;
@@ -937,7 +1110,7 @@
     // wherever the old form was right, and correct where it was not.
     var raw = value + VONA_WEIGHT * vona;
     var base = raw + (mult - 1) * Math.abs(raw);
-    var score = base + ceilingAdj - riskAdj - byePenalty - tagPenalty + bonus;
+    var score = base + ceilingAdj - riskAdj + priceAdj - byePenalty - tagPenalty + bonus;
     if (blocked) score -= 1000;
 
     // While a starting slot is empty, a body that adds nothing to the lineup you
@@ -1021,6 +1194,17 @@
     }
     if (ceilingAdj > 6) reasons.push("ceiling grade " + player.ceiling);
     if (riskAdj > 6) reasons.push("risk grade " + player.risk);
+    // Gated on the computed adjustment rather than the raw signal, like every
+    // other reason here. Unlike them, it fires on both sides: a player the
+    // market prices ABOVE this board is a fact worth saying out loud, and the
+    // threshold is lower than ceiling's 6 because `reaches` keeps this term
+    // small everywhere except the early rounds.
+    if (priceAdj > 2.5 && player.priceGapPicks)
+      reasons.push("the wider market takes him " + Math.abs(player.priceGapPicks) +
+                   " picks earlier than this board prices him");
+    if (priceAdj < -2.5 && player.priceGapPicks)
+      reasons.push("this board prices him " + Math.abs(player.priceGapPicks) +
+                   " picks higher than the wider market does");
     if (byePenalty) reasons.push(conflicts + " starters already on bye " + player.bye);
     if (player.adp && ctx.currentPick && player.adp - ctx.currentPick > 12)
       reasons.push(Math.round((player.adp - ctx.currentPick) / (ctx.rules.teams || 12) * 10) / 10 +
@@ -1028,7 +1212,8 @@
 
     return { score: score, base: base, value: value, marginal: marginal, aware: aware,
              vona: vona, mult: mult, ceilingAdj: ceilingAdj,
-             riskAdj: riskAdj, byePenalty: byePenalty, tagPenalty: tagPenalty,
+             riskAdj: riskAdj, priceAdj: priceAdj,
+             byePenalty: byePenalty, tagPenalty: tagPenalty,
              bonus: bonus, bias: bias, blocked: blocked, reasons: reasons };
   }
 
@@ -1111,6 +1296,7 @@
     customPoints: customPoints, replacementRanks: replacementRanks, buildBoard: buildBoard,
     pickSchedule: pickSchedule, scheduleWithKeepers: scheduleWithKeepers,
     survival: survival, expectedBestAvailable: expectedBestAvailable,
+    adpEff: adpEff, applyTiming: applyTiming, priceSignals: priceSignals,
     assignRoster: assignRoster, positionalNeed: positionalNeed,
     composite: composite, modelGrades: modelGrades,
     applyMarketSignals: applyMarketSignals, marketSignals: marketSignals, tdShare: tdShare, detectRuns: detectRuns, depthCap: depthCap, assignTiers: assignTiers,

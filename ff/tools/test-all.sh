@@ -38,6 +38,25 @@ run_node() {
   fi
 }
 
+run_py() {
+  local label="$1" file="$2"
+  if [[ ! -f "$file" ]]; then return; fi
+  if ! command -v python >/dev/null 2>&1; then
+    LINES+=("  SKIP  $label — no python on PATH")
+    TOTAL_SKIP=$((TOTAL_SKIP + 1))
+    return
+  fi
+  local out
+  if out=$(python "$file" 2>&1); then
+    LINES+=("  ok    $label")
+    TOTAL_OK=$((TOTAL_OK + 1))
+  else
+    LINES+=("  FAIL  $label")
+    echo "$out" | sed 's/^/         /'
+    TOTAL_FAIL=$((TOTAL_FAIL + 1))
+  fi
+}
+
 run_sh() {
   local label="$1" file="$2"
   if [[ ! -f "$file" ]]; then return; fi
@@ -63,6 +82,8 @@ run_node "test-app.js       (app.js: analyze/record/undo/keeperAt/myPickNumbers/
 run_node "test-sync.js      (sync.js: the 12-cell conflict matrix, against a fake fetch)" tools/test-sync.js
 run_node "test-config.js    (loopback proxy guard + build-stamp guard)" tools/test-config.js
 run_node "test-playerin.js  (playerIn() against the full 267-name board, if present)" tools/test-playerin.js
+run_node "test-signals.js   (signal layer: coverage, centring, crosswalk, payload size)" tools/test-signals.js
+run_py   "test-signals.py   (CSV quoting, norm(), the residual fit, centring, Vegas sign)" tools/test-signals.py
 
 echo
 echo "-- audit.js (a findings report, not pass/fail — always shown in full) --"

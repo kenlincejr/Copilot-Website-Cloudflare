@@ -140,18 +140,78 @@ def load_ecr(raw_dir, xwalk, board):
 
 
 def _add_residual(vals, board, field, out_field):
-    """How far he sits from where players of his board price normally sit."""
+    """How far he sits from where players of his board price normally sit.
+
+    Two fits, not one, and the second is the one that keeps this honest.
+
+    The first removes the drift in the *level*: two ranked lists of different
+    depths pull apart as you go deeper, so a raw difference measures the depth
+    of the lists as much as it measures the player.
+
+    The second removes the drift in the *spread*, and without it this signal is
+    close to worthless. Measured on this board, the standard deviation of the
+    ECR residual runs 7.5 picks inside the top 24 and 42.4 picks past 140 — five
+    and a half times wider. Ranks are simply noisier at depth. So a residual
+    z-scored against the whole board hands almost every extreme value to
+    late-round players, and it does that whether or not the market disagrees
+    about them at all: it is measuring the depth of the board and calling it an
+    edge. Dividing by the spread expected at his own price is what makes
+    "twenty picks of disagreement" mean the same thing in round two as in round
+    thirteen.
+
+    Same sliding-band median as the level fit, so there is one method here, not
+    two. The raw residual is kept in picks for display and audit — a number a
+    person can eyeball — while the studentised one is what gets scored.
+    """
     adp = {F.key(p["name"], p["pos"]): p.get("adp") for p in board}
     pairs = [(adp[k], v[field]) for k, v in vals.items()
              if adp.get(k) is not None and v.get(field) is not None]
     expected = F.knot_residual(pairs)
+
+    raw = {}
     for k, v in vals.items():
         if v.get(field) is None or adp.get(k) is None:
             continue
         e = expected(adp[k])
         if e is not None:
             # Negative = this market takes him earlier than his board-price peers.
-            v[out_field] = round(v[field] - e, 1)
+            r = round(v[field] - e, 1)
+            v[out_field] = r
+            raw[k] = r
+
+    # Floored, because at the very top of the board the expected spread collapses
+    # toward zero and dividing by it turns a one-pick difference into a screaming
+    # edge. Jahmyr Gibbs went 1.4 here, 2.4 on ECR and 1.3 on ESPN — three
+    # markets in violent agreement that he is the first player off the board —
+    # and an unfloored denominator scored that as the largest discount available.
+    # Two picks is about the sampling noise in an ADP built from thousands of
+    # drafts, so nothing tighter than that is a real disagreement.
+    # Two tests, and a disagreement has to pass both.
+    #
+    # Studentising alone answers "is this unusual for a player at his price",
+    # and on its own it promotes trivia at the top of the board: Gibbs went 1.4
+    # here, 2.4 on ECR and 1.3 on ESPN, three markets agreeing he is the first
+    # player off the board, and a purely statistical reading scored that as the
+    # largest discount available. It is unusual and it is worth nothing, because
+    # nobody drafting at pick 11 can convert a one-pick disagreement about the
+    # first overall player.
+    #
+    # The raw gap alone answers "is this worth acting on" and fails the other
+    # way, handing every extreme to the late rounds where ranks are noisy.
+    #
+    # So: studentise for significance, then shrink by the raw gap against half a
+    # round. A disagreement must be both larger than normal at his price AND big
+    # enough in picks to move when you actually pick.
+    SPREAD_FLOOR = 2.0
+    MEANINGFUL_PICKS = 6.0
+    spread = F.knot_residual((adp[k], abs(r)) for k, r in raw.items())
+    for k, r in raw.items():
+        sc = spread(adp[k])
+        if sc is None:
+            continue
+        std = r / max(sc, SPREAD_FLOOR)
+        vals[k][out_field + "Std"] = round(
+            std * min(1.0, abs(r) / MEANINGFUL_PICKS), 3)
 
 
 # =================================================================== ESPN
@@ -541,8 +601,17 @@ LOADERS = [
                            "Wide means high risk in both directions."},
          "ecrSpread": {"label": "Expert best-to-worst", "unit": "ranks", "z": False,
                        "source": "FantasyPros ECR best/worst"},
+         "ecrResidStd": {"label": "Expert consensus residual, studentised",
+                         "unit": "local sd", "z": True, "center": "pos",
+                         "scores": "priceZ",
+                         "source": "derived from ECR against board ADP",
+                         "note": "The residual divided by the residual spread "
+                                 "normal at his own price. Without this the "
+                                 "signal measures the depth of the board rather "
+                                 "than the market: raw residual sd runs 7.5 "
+                                 "picks in the top 24 and 42.4 past pick 140."},
          "ecrResid": {"label": "Expert consensus residual", "unit": "ranks",
-                      "z": True, "center": "pos", "scores": "priceZ",
+                      "z": False,
                       "source": "derived from ECR against board ADP",
                       "note": "ECR rank minus what a player at this board price "
                               "normally ranks at on ECR. The raw difference is "
@@ -555,8 +624,13 @@ LOADERS = [
      "registry": {
          "adp3": {"label": "ESPN ADP", "unit": "picks", "z": False,
                   "source": "ESPN kona_player_info ownership.averageDraftPosition"},
-         "adpResid3": {"label": "ESPN ADP residual", "unit": "picks", "z": True,
-                       "center": "pos", "scores": "priceZ",
+         "adpResid3Std": {"label": "ESPN ADP residual, studentised",
+                          "unit": "local sd", "z": True, "center": "pos",
+                          "scores": "priceZ",
+                          "source": "derived from ESPN ADP against board ADP",
+                          "note": "Scaled by the residual spread normal at his "
+                                  "own price; see ecrResidStd."},
+         "adpResid3": {"label": "ESPN ADP residual", "unit": "picks", "z": False,
                        "source": "derived from ESPN ADP against board ADP",
                        "note": "Negative means ESPN's population takes him "
                                "earlier than players of his board price."},
@@ -569,7 +643,11 @@ LOADERS = [
                      "source": "ESPN ownership.percentOwned"},
          "espnSF": {"label": "ESPN superflex rank", "unit": "rank", "z": False,
                     "source": "ESPN draftRanksByRankType.SUPERFLEX"},
+         # Sparse by nature: only a hurt player carries a designation, so there
+         # is no coverage number this field is supposed to hit and the audit's
+         # floor check does not apply to it.
          "injury2": {"label": "ESPN injury designation", "unit": "text", "z": False,
+                     "sparse": True,
                      "source": "ESPN injuryStatus",
                      "note": "A second opinion beside Sleeper's. Where the two "
                              "disagree, that disagreement is itself the news."}}},

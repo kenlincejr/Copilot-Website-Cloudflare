@@ -596,6 +596,17 @@ body.dragging-col .col { pointer-events: none; }
   content: ""; position: absolute; left: 0; top: 6px;
   width: 4px; height: 4px; border-radius: 50%; background: currentColor;
 }
+/* The confidence ladder, drawn in the bullet the line already had.
+   A hollow ring means the only evidence is that two markets disagree, which is
+   the softest thing on this card and may just mean one of them is wrong. It
+   fills in and squares off as the evidence hardens, ending at a transaction or
+   a depth chart — something that has already happened. Deliberately quiet: it
+   reads at a glance without a legend and disappears when you are not looking
+   for it, and the hover on each line says which rung it is. */
+.pp-line.rung-priced::before    { background: transparent; box-shadow: inset 0 0 0 1px currentColor; }
+.pp-line.rung-modeled::before   { opacity: .55; }
+.pp-line.rung-confirmed::before { border-radius: 1px; width: 5px; height: 5px; top: 5px; }
+
 .pp-line.good { color: var(--green); }
 .pp-line.warn { color: var(--amber); }
 .pp-line.bad  { color: var(--red); }
