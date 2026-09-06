@@ -2,3 +2,7 @@
 players_nfl.json
 sleeper.json
 traces/
+
+# Raw external feeds: large, and fetch-sources.py re-downloads them on demand.
+raw/
+reports/

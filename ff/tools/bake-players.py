@@ -47,14 +47,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "data", "players.js")
 
 # ---------------------------------------------------------------- name keys
+# `norm` now lives in ffsignals so that the bake, apply-ffc.py and every signal
+# loader share one definition rather than three that agree today. It is
+# re-exported here under its original name because apply-ffc.py imports it from
+# this module by path, on purpose, and that arrangement should keep working
+# without that file changing.
 
-SUFFIXES = {"jr", "sr", "ii", "iii", "iv", "v"}
-
-def norm(name):
-    s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
-    s = s.lower().replace(".", " ").replace("'", "").replace("-", " ")
-    parts = [p for p in re.split(r"\s+", s) if p and p not in SUFFIXES]
-    return " ".join(parts)
+import ffsignals
+from ffsignals import norm, SUFFIXES
 
 # ------------------------------------------------------- big-play estimators
 # Rates below are league-average shares, applied to each player's own volume and
@@ -167,12 +167,134 @@ def load_player_meta(path):
     return out
 
 
+# Keys a signal loader may never write. The hand research layer and the
+# projection are the two things in this file that a scrape must not be able to
+# overwrite, and an assert is what turns a mis-keyed loader into a loud failure
+# instead of a quiet one.
+RESERVED_KEYS = frozenset((
+    "name", "pos", "team", "bye", "adp", "adp_sd", "adp_rank", "proj", "pts",
+    "tag", "ceiling", "risk", "note", "source", "edge", "dst_tier",
+    "projSource", "sleeperPPR", "depth", "depthPos", "injury", "injuryPart",
+    "adp2", "adpResid", "returner",
+))
+
+
+def apply_signals(players, strict=False):
+    """Join every external signal onto the board, then centre them.
+
+    Refusal is per signal and soft. Below its coverage floor a signal is dropped
+    for EVERY player and recorded as refused — never applied to the subset it
+    happens to cover, because a signal present on forty players outranks two
+    hundred whose only sin is missing data. And the bake still completes:
+    apply-ffc.py hard-exits and should, but the thing that produces the board
+    must not, or a malformed feed at 16:00 on draft day leaves you with no board
+    at all instead of a board with one fewer column.
+    """
+    try:
+        import ffsignals as _F
+        import sig_sources
+    except Exception as e:
+        print("  (no signal layer: %s)" % e)
+        return {}, []
+
+    xw_path = os.path.join(HERE, "crosswalk.json")
+    if not os.path.exists(xw_path):
+        print("  (no crosswalk.json — run build-crosswalk.py --write; signals skipped)")
+        return {}, []
+    xwalk = json.load(open(xw_path, encoding="utf-8"))["players"]
+    raw = os.path.join(HERE, "raw")
+
+    by_key = {_F.key(p["name"], p["pos"]): p for p in players}
+    sig_meta, reports = {}, []
+    print("  -- signals --")
+
+    for L in sig_sources.LOADERS:
+        try:
+            vals, rep = L["load"](raw, xwalk, players)
+        except Exception as e:
+            print("  %-9s FAILED: %s" % (L["name"], e))
+            for f, r in L["registry"].items():
+                sig_meta[f] = dict(r, refused="loader raised %s" % type(e).__name__)
+            continue
+        reports.append(rep)
+
+        if not rep.passed:
+            why = "coverage %.0f%% below %.0f%% floor" % (100 * rep.rate,
+                                                          100 * L["floor"])
+            for f, r in L["registry"].items():
+                sig_meta[f] = dict(r, refused=why)
+            print("  %-9s REFUSED — %s" % (L["name"], why))
+            if strict:
+                sys.exit(1)
+            continue
+
+        n = 0
+        for k, d in vals.items():
+            pl = by_key.get(k)
+            if pl is None:
+                continue
+            for f, v in d.items():
+                assert f not in RESERVED_KEYS, (
+                    "signal %s tried to write reserved key %r" % (L["name"], f))
+                pl[f] = v
+            n += 1
+        for f, r in L["registry"].items():
+            sig_meta[f] = dict(r)
+            sig_meta[f]["asof"] = rep.asof
+            sig_meta[f]["floor"] = L["floor"]
+            sig_meta[f]["eligible"] = rep.eligible
+        print("  %-9s %3d players  (%.0f%% of %d eligible)"
+              % (L["name"], n, 100 * rep.rate, rep.eligible))
+
+    _centre(players, sig_meta)
+    return sig_meta, reports
+
+
+def _centre(players, sig_meta):
+    """Turn raw signal values into z-scores, once, over the board population.
+
+    Within position where the position is big enough to have a stable spread,
+    because a running back's target share and a receiver's do not share a scale.
+    Over the board rather than the source's own 3,000 rows, because the board is
+    a selected population — the players actually in play — and a z against
+    everyone in the league would compress them all into a narrow band and throw
+    away the discrimination that makes the signal useful.
+
+    A player with no data gets no key. Absent means "we do not know"; zero means
+    "average"; the engine's null guards depend on the difference.
+    """
+    import ffsignals as _F
+    for field, reg in list(sig_meta.items()):
+        if not reg.get("z") or reg.get("refused"):
+            continue
+        vals = {}
+        groups = {}
+        for p in players:
+            v = p.get(field)
+            if v is None:
+                continue
+            k = _F.key(p["name"], p["pos"])
+            vals[k] = -v if reg.get("invert") else v
+            groups[k] = p["pos"] if reg.get("center") == "pos" else "board"
+        z, stats = _F.center(vals, groups)
+        zf = field + "Z"
+        assert zf not in RESERVED_KEYS, zf
+        for p in players:
+            k = _F.key(p["name"], p["pos"])
+            if k in z:
+                p[zf] = z[k]
+        reg["n"] = stats["n"]
+        reg["clipped"] = stats["clipped"]
+        reg["stats"] = stats["groups"]
+        reg["zfield"] = zf
+
+
 def main():
     research_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "players.json")
     sleeper_path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "sleeper.json")
     research = json.load(open(research_path, encoding="utf-8"))
     sleeper = json.load(open(sleeper_path, encoding="utf-8"))
-    meta = load_player_meta(os.path.join(HERE, "players_nfl.json"))
+    depth_meta = load_player_meta(os.path.join(HERE, "players_nfl.json"))
 
     # index sleeper by (normname, pos) and by (normname) for fallback
     by_np, by_n = {}, defaultdict(list)
@@ -268,9 +390,13 @@ def main():
             rec["proj"] = {"gp": 17}
             rec["projSource"] = "none"
 
-        m = meta.get(nm)
+        # Explicit, not rec.update(m): a blind merge lets a loader key collide
+        # with a research key and clobber hand-written work with no warning.
+        m = depth_meta.get(nm)
         if m:
-            rec.update(m)
+            for _k in ("depth", "depthPos", "injury", "injuryPart", "sleeperTeam"):
+                if _k in m:
+                    rec[_k] = m[_k]
         sadp = sleeper_adp.get((nm, pos))
         if sadp:
             rec["adp2"] = round(sadp, 1)
@@ -281,6 +407,16 @@ def main():
             rec["proj"]["ret_td"] = r["ret_td"]
             rec["returner"] = r["src"]
         players.append(rec)
+
+    # ---- signal layer ------------------------------------------------------
+    #
+    # This runs as its own pass, after the assembly loop rather than inside it,
+    # and that is not a style choice. The loop `continue`s early for DEF and K,
+    # so anything joined inside it never reaches the fifty defenses and kickers
+    # on this board — and the Vegas implied total is, among other things, a
+    # D/ST signal. Joining it in the loop would have silently excluded every
+    # defense from the one number that most describes its week.
+    sig_meta, sig_reports = apply_signals(players, strict="--strict" in sys.argv)
 
     meta = dict(research.get("meta", {}))
     # ---- correct the two ADP sources for a structural difference ----------
@@ -297,32 +433,12 @@ def main():
     # (median within sliding bands, linearly interpolated), and report only the
     # residual — how far he sits from where players of his own ADP normally sit
     # on the other list.
-    pairs = sorted((p["adp"], p["adp2"]) for p in players if p.get("adp2"))
-    knots = []
-    if len(pairs) >= 20:
-        step = max(8, len(pairs) // 10)
-        for i in range(0, len(pairs), step):
-            chunk = pairs[i:i + step]
-            if len(chunk) < 4:
-                continue
-            xs = sorted(c[0] for c in chunk)
-            ys = sorted(c[1] for c in chunk)
-            knots.append((xs[len(xs) // 2], ys[len(ys) // 2]))
-
-    def expected_adp2(x):
-        if not knots:
-            return None
-        if x <= knots[0][0]:
-            return knots[0][1]
-        if x >= knots[-1][0]:
-            return knots[-1][1]
-        for i in range(len(knots) - 1):
-            x0, y0 = knots[i]
-            x1, y1 = knots[i + 1]
-            if x0 <= x <= x1:
-                t = 0 if x1 == x0 else (x - x0) / (x1 - x0)
-                return y0 + t * (y1 - y0)
-        return knots[-1][1]
+    # The fit itself now lives in ffsignals.knot_residual, so that every "how far
+    # is he from where players of his price normally sit" signal shares one
+    # implementation. Behaviour here is unchanged, and bake-diff.js against the
+    # previous artifact is the proof of that.
+    expected_adp2 = ffsignals.knot_residual(
+        (p["adp"], p["adp2"]) for p in players if p.get("adp2"))
 
     for pl in players:
         if pl.get("adp2"):
@@ -356,6 +472,14 @@ def main():
     # the bake timestamp the freshness check relies on.
     if "built" in meta:
         meta["research_built"] = meta["built"]
+    if sig_meta:
+        meta_out["signals"] = sig_meta
+        meta_out["signals_note"] = (
+            "External signals joined by ID through tools/crosswalk.json. Values "
+            "are in natural units; the matching <field>Z is the mean-centred "
+            "z-score the engine scores against, centred within position over "
+            "this board only. A player with no data carries no key at all, "
+            "which is not the same thing as a zero.")
     meta.update(meta_out)
 
     body = json.dumps({"meta": meta, "players": players}, separators=(",", ":"))
