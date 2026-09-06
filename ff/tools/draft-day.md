@@ -19,10 +19,61 @@ Print this Sunday night. Read it with a phone in the other hand.
 
 ---
 
+## 0b. Every day until the draft — 60 seconds, and it cannot be caught up later
+
+```powershell
+python "C:\Copilot Website Cloudflare\ff\tools\fetch-sources.py"
+```
+
+Do this **Saturday, Sunday and Monday**. Not because the board goes stale — the
+Monday bake handles that — but because velocity is the one signal that cannot be
+fetched retroactively. No source on the list publishes a historical ADP series,
+so "he is being taken nine picks earlier than he was on Saturday" exists only if
+somebody wrote down Saturday. The tool archives a snapshot to
+`tools/snapshots/adp-YYYY-MM-DD.json` on every run, and those files are committed
+to git precisely because a `git clean` would take back a day you cannot re-fetch.
+
+Two snapshots are the minimum. Three is better. Miss all of them and the velocity
+signal is simply absent on draft night — which is handled cleanly, and is still
+a loss.
+
+The same run also re-pulls the ESPN week 15-17 odds. Books sometimes pull
+season-long lines close to kickoff; if they vanish before Monday, the copy you
+already have on disk is what playoff strength of schedule is computed from.
+
+Expected output: eleven sources, mostly `skip (fresh)` after the first run, and a
+line reading `snapshot   adp-<today>.json  (espn 1035, ffc 263, sleeper 3287)`.
+If a source says FAIL, that is fine — the bake refuses that signal on its own and
+still produces a board.
+
+---
+
 ## 1. Monday morning
 
 Run these in order. Each has its expected output next to it. If your terminal doesn't
 match, stop and fix it — do not draft on a red suite.
+
+**Before the existing steps**, refresh the outside data and rebuild the board:
+
+```powershell
+cd "C:\Copilot Website Cloudflare\ff\tools"; python fetch-sources.py; python build-crosswalk.py --write; python bake-players.py
+```
+
+Expected: the crosswalk resolves 217 of 217 skill players; the bake prints a
+`-- signals --` block with `ecr`, `espn`, `usage`, `vegas`, `capital` and
+`velocity` and a coverage percentage for each. A signal printed as `REFUSED` has
+been dropped for every player rather than applied to some of them, and the board
+is still good — it just has one fewer column. `velocity 0 players` means you have
+only one snapshot; see §0b.
+
+Then diff the new board against the old one before trusting it:
+
+```powershell
+node "C:\Copilot Website Cloudflare\ff\tools\bake-diff.js" <old players.js> "C:\Copilot Website Cloudflare\ff\data\players.js"
+```
+
+Section 7 of that output is the one to read first. A signal that was present
+yesterday and refused today is the most important line the tool can print.
 
 1. **Start the Worker**, in its own terminal, and leave it running all day:
    ```
