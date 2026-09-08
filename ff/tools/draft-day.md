@@ -261,15 +261,21 @@ Do it as late as you reasonably can, and after the deploy — it is stored in
 league state in the browser, not baked, so a re-deploy does not carry it and a
 re-bake does not overwrite it.
 
-Two caveats, both real:
+Three caveats, all measured against a real paste on 2026-09-08:
 
-- **Yahoo's ADP is standard scoring, not your PPR.** Use it for *movement* and
-  for where the room takes people. Do not read it as a ranking — that is what the
-  board's own composite is for.
-- Defenses and kickers are reachable only through the position chip and their row
-  shape is unproven. If a DEF paste reports a count that looks wrong, clear it and
-  skip them; the D/ST edge in this league comes from the scoring tiers, which the
-  board already knows about.
+- **Yahoo's ADP is standard scoring, not your PPR**, and the tilt is big enough to
+  read as market intelligence when it is only a scoring difference: TE **-20**,
+  QB **-13**, RB **-3**, WR **+5** picks on average. Compare a player against *his
+  own position's* tilt, never against the raw gap. Do not read it as a ranking.
+- **The "Last 7 Days" column is padlocked on a free account**, along with Pos Rank,
+  CER and every "Plus ADP" column. A locked cell pastes as nothing, so each row
+  gives two numbers — **Preseason and All Drafts** — and there is no live movement
+  signal to be had. `ytrend` is therefore preseason drift: median 0.10 picks, max
+  1.6 across 87 rows. It moves nothing. Paste for the *level*, not the movement.
+- **Skip the DEF and K pages.** Kickers join fine, but Yahoo names defenses
+  "Seahawks" where the board says "Seattle Defense", so none of the 27 will attach
+  — six for six failed to join in testing. No harm done, but no value either. The
+  D/ST edge here comes from the scoring tiers, which the board already knows.
 
 If none of this happens, nothing breaks. `yadp` simply stays empty and the board
 runs on FFC alone, which is what it did all preseason.

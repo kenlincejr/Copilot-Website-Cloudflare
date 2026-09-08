@@ -170,6 +170,65 @@ console.log("\n== Yahoo Draft Analysis parser ==");
   var dst = res.rows.filter(function (r) { return /^D/.test(r.pos) && r.pos !== "DEF"; });
   is("no row leaves a raw D/ST position behind", dst.length, 0);
 
+  /* Row shapes the captured fixture does not contain, found by pasting the real
+     page on 2026-09-08. Each of these was dropped silently before -- the row did
+     not appear and nothing said so, which on draft night reads as "Yahoo has no
+     number for him" rather than "the parser could not cope". */
+  var ODD = [
+    "Photo of Jordyn Tyson", "Jordyn Tyson", "NO - WR", "IR-R", "129", "51%", "106.3", "105.3",
+    "Photo of Zach Charbonnet", "Zach Charbonnet", "Sea - RB", "PUP-R", "148", "24%", "131.1", "131.0",
+    "Photo of Tyler Bass", "Tyler Bass", "Buf - K", "2529", "4%", "131.3", "131.8",
+    "Photo of Josh Jacobs", "Josh Jacobs", "GB - RB", "CEL", "126", "87%", "64.7", "63.1",
+    "Photo of Rams", "Rams", "LAR - DEF", "155", "100%", "86.9", "87.1",
+    "Photo of Najee Harris", "Najee Harris", "NYG - RB", "201", "-", "-", "-"
+  ].join(String.fromCharCode(10));
+  var odd = Y.parse(ODD);
+  var oby = {}; odd.rows.forEach(function (r) { oby[r.name] = r; });
+
+  // Hyphenated status tokens. Yahoo uses these for players who can return, so
+  // they sit on exactly the fringe names a late pick is deciding between.
+  ok("a player on IR-R still parses", !!oby["Jordyn Tyson"]);
+  is("and his ADP is not the status token", oby["Jordyn Tyson"].adpAll, 106.3);
+  ok("a player on PUP-R still parses", !!oby["Zach Charbonnet"]);
+  is("and his ADP survives too", oby["Zach Charbonnet"].adpAll, 131.1);
+
+  // CEL is the Commissioner's Exempt List -- the token on Josh Jacobs tonight.
+  ok("a player on the exempt list still parses", !!oby["Josh Jacobs"]);
+  is("and carries the percent-drafted that says he is not universally taken",
+     oby["Josh Jacobs"].pctDrafted, 87);
+
+  // Rank is not an ADP and does not share its range.
+  ok("a four-digit overall rank does not drop the row", !!oby["Tyler Bass"]);
+  is("the rank is read as the rank", oby["Tyler Bass"].rank, 2529);
+  is("and the ADP is still the ADP", oby["Tyler Bass"].adpAll, 131.3);
+
+  // A team defense: the row shape draftanalysis.js flags as unproven.
+  ok("a team defense row parses", !!oby["Rams"]);
+  is("and normalizes to DEF", oby["Rams"].pos, "DEF");
+
+  // Undrafted players carry "-" for every number. Dropping them is correct --
+  // there is no ADP to have -- so this pins the skip rather than the row.
+  ok("a row with no ADP at all is not invented", !oby["Najee Harris"]);
+  is("it is counted as skipped instead", odd.skipped, 1);
+
+  /* Which two columns a free-tier row actually carries. Yahoo's header is
+     Rank | Pos Rank | CER | %Drafted | Preseason | All Drafts | Last 7 Days
+     (plus three locked "Plus ADP" repeats), and on a free account Pos Rank, CER
+     and Last 7 Days are padlocked -- a locked cell pastes as nothing. So two
+     numbers follow the percentage and they are Preseason and All Drafts. The
+     parser read them as All Drafts and Last 7 Days for months, which is why
+     ytrend was believed to be weekly movement when it is preseason drift. */
+  var gibbsRow = ["Photo of Jahmyr Gibbs", "Jahmyr Gibbs", "Det - RB",
+                  "1", "100%", "1.4", "1.3"].join(String.fromCharCode(10));
+  var g2 = Y.parse(gibbsRow).rows[0];
+  is("the first number after the percentage is the preseason ADP", g2.adpAll, 1.4);
+  is("the second is the all-drafts ADP", g2.adpRecent, 1.3);
+  // app.js computes ytrend as adpAll - adpRecent. Positive has to keep meaning
+  // "the room takes him earlier now than it did in the preseason", or the grade
+  // and the timing model both push the wrong way.
+  ok("a player drifting earlier yields a positive trend", (g2.adpAll - g2.adpRecent) > 0,
+     String(+(g2.adpAll - g2.adpRecent).toFixed(2)));
+
   // The header line is the whole reason C1 exists. If Yahoo ever stops saying
   // it, that is a signal worth noticing, not a silent change of meaning.
   ok("the captured page still declares itself standard-scoring",
