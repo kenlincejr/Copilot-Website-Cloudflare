@@ -1,0 +1,220 @@
+Sam LaPorta
+Det - TE
+Q
+70
+100%
+62.8
+63.0
+Photo of Josh Jacobs
+Josh Jacobs
+GB - RB
+CEL
+126
+87%
+64.7
+63.1
+Photo of Jameson Williams
+Jameson Williams
+Det - WR
+49
+100%
+64.7
+64.7
+Photo of Caleb Williams
+Caleb Williams
+Chi - QB
+72
+100%
+65.6
+65.8
+Photo of Rome Odunze
+Rome Odunze
+Chi - WR
+Q
+51
+100%
+67.1
+67.1
+Photo of TreVeyon Henderson
+TreVeyon Henderson
+NE - RB
+O
+65
+100%
+69.8
+69.1
+Photo of Harold Fannin Jr.
+Harold Fannin Jr.
+Cle - TE
+78
+100%
+70.0
+70.1
+Photo of Kyle Pitts Sr.
+Kyle Pitts Sr.
+Atl - TE
+79
+100%
+71.4
+71.6
+Photo of George Kittle
+George Kittle
+SF - TE
+Q
+87
+100%
+80.2
+80.6
+Photo of MarShawn Lloyd
+MarShawn Lloyd
+GB - RB
+71
+51%
+85.4
+85.1
+Photo of Rams
+Rams
+LAR - DEF
+155
+100%
+86.9
+87.1
+Photo of Brandon Aubrey
+Brandon Aubrey
+Dal - K
+153
+100%
+88.3
+88.7
+Photo of Texans
+Texans
+Hou - DEF
+150
+100%
+95.3
+95.5
+Photo of Travis Kelce
+Travis Kelce
+KC - TE
+118
+100%
+95.0
+95.2
+Photo of Dalton Kincaid
+Dalton Kincaid
+Buf - TE
+106
+100%
+95.4
+96.1
+Photo of Broncos
+Broncos
+Den - DEF
+163
+100%
+103.7
+104.0
+Photo of Jordyn Tyson
+Jordyn Tyson
+NO - WR
+IR-R
+129
+51%
+106.3
+105.3
+Photo of Seahawks
+Seahawks
+Sea - DEF
+165
+100%
+110.2
+110.6
+Photo of Jayden Reed
+Jayden Reed
+GB - WR
+94
+97%
+113.2
+113.6
+Photo of Ricky Pearsall
+Ricky Pearsall
+SF - WR
+IR
+358
+17%
+115.0
+115.0
+Photo of Makai Lemon
+Makai Lemon
+Phi - WR
+102
+87%
+119.8
+119.4
+Photo of Isiah Pacheco
+Isiah Pacheco
+Det - RB
+IR
+197
+6%
+124.2
+124.9
+Photo of Zach Charbonnet
+Zach Charbonnet
+Sea - RB
+PUP-R
+148
+24%
+131.1
+131.0
+Photo of Tyreek Hill
+Tyreek Hill
+Mia - WR
+NA
+353
+2%
+126.4
+127.3
+Photo of Tyler Bass
+Tyler Bass
+Buf - K
+2529
+4%
+131.3
+131.8
+Photo of Eagles
+Eagles
+Phi - DEF
+170
+100%
+123.8
+124.5
+Photo of Vikings
+Vikings
+Min - DEF
+189
+98%
+132.2
+132.6
+Photo of Adonai Mitchell
+Adonai Mitchell
+NYJ - WR
+145
+-
+-
+-
+Photo of Najee Harris
+Najee Harris
+NYG - RB
+201
+-
+-
+-
+Photo of Michael Penix Jr.
+Michael Penix Jr.
+Atl - QB
+O
+250
+-
+-
+-
