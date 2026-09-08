@@ -87,10 +87,10 @@ yesterday and refused today is the most important line the tool can print.
    ```
    Expected, exactly:
    ```
-   7 suite(s) passed, 0 suite(s) failed, 0 suite(s) skipped
+   10 suite(s) passed, 0 suite(s) failed, 0 suite(s) skipped
    ```
-   Seven, not six: the six Node suites plus `test-accounts.sh`, which only runs when
-   step 1 took. If you see `6 passed, 1 skipped` you are looking at a
+   Ten, not nine: the nine Node/Python suites plus `test-accounts.sh`, which only runs
+   when step 1 took. If you see `9 passed, 1 skipped` you are looking at a
    **`SKIP  test-accounts.sh` line, and a skip is not a pass.** **A `SKIP test-accounts.sh` line is not a pass.** It means
    step 1 didn't take; go back and fix the Worker before doing anything else.
 
