@@ -91,12 +91,19 @@ console.log("\n== Scoring engine vs Sleeper's own PPR totals (full-PPR preset) =
 });
 
 console.log("\n== Survival probabilities vs the digest ==");
-[["Drake London", 11, 0.90], ["Chase Brown", 11, 0.80], ["Justin Jefferson", 11, 0.61],
- ["James Cook III", 11, 0.56], ["CeeDee Lamb", 11, 0.34],
- ["Kenneth Walker", 14, 0.97], ["Ashton Jeanty", 14, 0.96], ["Rashee Rice", 14, 0.90],
- ["Saquon Barkley", 14, 0.90], ["A.J. Brown", 14, 0.85], ["Derrick Henry", 14, 0.79],
- ["Seattle Defense", 83, 0.43], ["Seattle Defense", 86, 0.29],
- ["Denver Defense", 83, 0.70], ["Denver Defense", 86, 0.55]
+/* Digest as of the 2026-09-08 bake (FFC Sep 1-8, 5,144 drafts). These are
+   survival probabilities read off the live board, so they move when ADP moves:
+   a player sitting within a couple of picks of the pick number has a steep
+   curve there, and a 0.2-1.1 ADP shift swings survival by 4-5 points. Each
+   value below was cross-checked against 1 - normCdf((pick - adp)/adp_sd)
+   derived independently of engine.js before being written down. Re-derive
+   the same way after a re-bake; do not widen the tolerance instead. */
+[["Drake London", 11, 0.93], ["Chase Brown", 11, 0.80], ["Justin Jefferson", 11, 0.64],
+ ["James Cook III", 11, 0.54], ["CeeDee Lamb", 11, 0.38],
+ ["Kenneth Walker", 14, 0.97], ["Ashton Jeanty", 14, 0.96], ["Rashee Rice", 14, 0.92],
+ ["Saquon Barkley", 14, 0.90], ["A.J. Brown", 14, 0.82], ["Derrick Henry", 14, 0.74],
+ ["Seattle Defense", 83, 0.38], ["Seattle Defense", 86, 0.26],
+ ["Denver Defense", 83, 0.70], ["Denver Defense", 86, 0.53]
 ].forEach(function (t) {
   var s = E.survival(find(t[0]), t[1]);
   near(t[0] + " @ " + t[1], s * 100, t[2] * 100, 4);

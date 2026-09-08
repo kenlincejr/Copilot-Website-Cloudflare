@@ -754,9 +754,11 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
   // The rule these were written to protect is asserted directly below, against a
   // live oracle rather than a snapshot — that is the assertion to trust if these
   // ever disagree.
+  // Refreshed at the 2026-09-08 bake: same twelve names, reordered by the
+  // velocity signal landing (Nacua/Chase and JSN/Achane/Bowers swap places).
   var ON_CLOCK_AT_11 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey",
-    "Ja'Marr Chase", "Puka Nacua", "Jonathan Taylor", "James Cook III", "Chase Brown",
-    "Jaxon Smith-Njigba", "De'Von Achane", "Brock Bowers", "Saquon Barkley"];
+    "Puka Nacua", "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "Chase Brown",
+    "De'Von Achane", "Brock Bowers", "Jaxon Smith-Njigba", "Saquon Barkley"];
   // The last entry is the coverage rule, not the composite: at pick 86 the DEF
   // slot has been fillable since round 7 and no defense was in the top twelve,
   // so the best one displaces the weakest candidate. Chase Brown was that
@@ -773,9 +775,13 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
 
   // The waiting branch. The board's top six were withheld here before D3.
   var a10 = atPick(10), A10 = a10.getAnalysis();
+  // Refreshed at the 2026-09-08 bake. De'Von Achane drops out and Kenneth Walker
+  // takes the twelfth spot: Achane's ADP tightened to 9.6 +/- 1.6, so a pick at 10
+  // now sits half a standard deviation past his consensus and he is a worse bet to
+  // still be there — a survival move, not a value one.
   var WAITING_AT_10 = ["Jahmyr Gibbs", "Bijan Robinson", "Christian McCaffrey",
-    "Ja'Marr Chase", "Puka Nacua", "Jonathan Taylor", "James Cook III", "Chase Brown",
-    "De'Von Achane", "Brock Bowers", "Saquon Barkley", "Omarion Hampton"];
+    "Puka Nacua", "Ja'Marr Chase", "Jonathan Taylor", "James Cook III", "Chase Brown",
+    "Brock Bowers", "Saquon Barkley", "Omarion Hampton", "Kenneth Walker"];
   ok("waiting at 10: the list now leads with the board's own #1",
      JSON.stringify(names(a10, true)) === JSON.stringify(WAITING_AT_10),
      JSON.stringify(names(a10, true)));
@@ -784,8 +790,11 @@ console.log("\n== briefCandidates (D3: the filter cannot hide the board's best) 
   // asserting nothing. Six names the shipped filter withheld at this state.
   var oldNames = oldSelection(A10, 12).map(function (p) { return p.name; });
   var withheld = WAITING_AT_10.filter(function (n) { return oldNames.indexOf(n) < 0; });
+  // The point is that the oracle disagrees at all — the exact count is a property
+  // of the day's ADP, not of the filter, so assert the floor rather than re-pinning
+  // a number that moves with every bake.
   ok("self-check: the pre-D3 filter really did withhold the board's top six here",
-     withheld.length === 6, withheld.join(", "));
+     withheld.length >= 6, withheld.join(", "));
   ok("self-check: and its best permitted answer was the board's #7",
      oldNames[0] === "James Cook III", oldNames[0]);
 
@@ -3148,6 +3157,13 @@ console.log("\n== picks with the starting lineup already full ==");
 
   // 3. Three cards headed "take one of these" have to be three different ideas.
   var cards = api.recCards(pool);
+  // "The board's own #1" is the highest composite available. A.avail arrives in
+  // baked-board order, not composite order — recCards sorts the pool itself
+  // (app.js), and so does every place the app displays a ranking. The two orders
+  // coincided until the 2026-09-08 bake, when the velocity signal landed and
+  // separated them; compare against the composite, not against avail's first
+  // element, or this asserts a coincidence rather than the rule.
+  var byComp = pool.slice().sort(function (a, b) { return b.comp - a.comp; });
   var poss = {};
   cards.forEach(function (p) { poss[p.pos] = true; });
   var anyImproves = pool.some(function (p) { return (p.compDetail.marginal || 0) > 0.5; });
@@ -3156,10 +3172,10 @@ console.log("\n== picks with the starting lineup already full ==");
        Object.keys(poss).length === 3,
        cards.map(function (p) { return p.pos + " " + p.name; }).join(" | "));
     ok("and the board's own #1 is still the first card",
-       cards[0].name === pool[0].name, cards[0].name + " vs " + pool[0].name);
+       cards[0].name === byComp[0].name, cards[0].name + " vs " + byComp[0].name);
   } else {
     ok("something can still improve the lineup, so the top three stand",
-       cards.length === 3 && cards[0].name === pool[0].name);
+       cards.length === 3 && cards[0].name === byComp[0].name);
   }
 
   // 4. The model was handed a list of one position and told to name a player
