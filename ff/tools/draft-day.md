@@ -235,6 +235,47 @@ Rules for the night:
 
 ---
 
+## 4a. Yahoo's own draft ADP — 6:45, five minutes, do it last
+
+Every ADP on the board comes from FantasyFootballCalculator. Yahoo's **Draft
+Analysis** page is the only free read on where players go in *real completed
+drafts on the platform this league actually runs on*, and it carries a **Last 7
+Days** column beside the all-time one — live market movement no static file has.
+It is worth doing: on the Sep 4 paste, Saquon Barkley went **11.2 on Yahoo
+against 18.3 on FFC**, a seven-pick disagreement about a player who is live at
+your first two picks.
+
+This is a paste, not a fetch. Yahoo's API is still behind its manual-review gate
+(probed again 2026-09-08: `additional_authorization_required`), and the page
+needs your login, so nothing can do this for you.
+
+1. In your league: **Draft** in the top nav, then **Draft Analysis**. The address
+   ends `/draftanalysis`.
+2. Select the table, paste into the **Yahoo draft ADP** box in the app, apply.
+3. **It paginates thirty at a time.** The box clears and the count accumulates —
+   page through and paste again. Six pages covers through pick 180, which is your
+   last. The message after each paste tells you how many of the names landed on
+   this board.
+
+Do it as late as you reasonably can, and after the deploy — it is stored in
+league state in the browser, not baked, so a re-deploy does not carry it and a
+re-bake does not overwrite it.
+
+Two caveats, both real:
+
+- **Yahoo's ADP is standard scoring, not your PPR.** Use it for *movement* and
+  for where the room takes people. Do not read it as a ranking — that is what the
+  board's own composite is for.
+- Defenses and kickers are reachable only through the position chip and their row
+  shape is unproven. If a DEF paste reports a count that looks wrong, clear it and
+  skip them; the D/ST edge in this league comes from the scoring tiers, which the
+  board already knows about.
+
+If none of this happens, nothing breaks. `yadp` simply stays empty and the board
+runs on FFC alone, which is what it did all preseason.
+
+---
+
 ## 4b. Before the first pick
 
 Pressing **Start draft** opens the draft plan on its own, once. Read it — it is
