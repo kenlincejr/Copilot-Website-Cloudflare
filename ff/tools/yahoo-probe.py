@@ -51,12 +51,17 @@ API = "https://fantasysports.yahooapis.com/fantasy/v2"
 # absence of a trailing slash. A mismatch here is the classic invalid_grant.
 REDIRECT = "https://draftline-api.ken-lince.workers.dev/api/yahoo/callback"
 
-# The scope question is the first spike and the docs disagree with the community.
-# Yahoo's own OAuth guide does not list `scope` as an authorize parameter at all
-# and says Fantasy permission is granted on the app; every wrapper library sends
-# `fspt-r`. Empty string here means "send no scope" — try that first, and only
-# fall back if the games call comes back empty.
-SCOPE = os.environ.get("YAHOO_SCOPE", "")
+# Settled by measurement on 2026-09-06, see spec section 4a: an ENTITLED app must
+# send `fspt-r`, and an unentitled one is rejected for asking. Yahoo's own OAuth
+# guide is wrong about this — it does not list `scope` as an authorize parameter
+# at all and implies the permission rides on the app registration.
+#
+# So this now defaults to `fspt-r`, and that default doubles as the entitlement
+# test. If the authorize URL bounces with `error=invalid_scope` BEFORE the login
+# page, Fantasy access has not actually landed on the app yet no matter what the
+# approval mail says — the DocuSign or the confirmation form is still outstanding.
+# Set YAHOO_SCOPE="" to reproduce the old no-scope behaviour.
+SCOPE = os.environ.get("YAHOO_SCOPE", "fspt-r")
 
 
 # ----------------------------------------------------------------- plumbing
@@ -281,6 +286,16 @@ def deep_find(node, needle):
     return hits
 
 
+def scalars(node, needle):
+    """deep_find, minus the container placeholders. Most spikes want values."""
+    return [v for _, v in deep_find(node, needle) if not str(v).startswith("<")]
+
+
+def one(node, needle, default=None):
+    vals = scalars(node, needle)
+    return vals[0] if vals else default
+
+
 # ------------------------------------------------------------- commands
 
 def cmd_url():
@@ -301,9 +316,15 @@ def cmd_url():
     print("   ...\\api\\yahoo\\callback?code=<THIS>&state=...")
     print("\n4. Then run:\n")
     print("   python yahoo-probe.py auth <THIS>\n")
-    if not SCOPE:
-        print("   (Sending no `scope`. If step 5 finds no leagues, retry with")
-        print('    $env:YAHOO_SCOPE="fspt-r" and start over.)\n')
+    if SCOPE:
+        print("   Sending scope=%s. If the browser comes straight back with" % SCOPE)
+        print("   `error=invalid_scope` and never shows a login page, the app")
+        print("   still has no Fantasy entitlement — finish the DocuSign and the")
+        print("   Developer Application Confirmation Form, then try again.\n")
+    else:
+        print("   (Sending no `scope`. That issues a VALID token with no Fantasy")
+        print("    entitlement on it — the failure does not surface until the")
+        print("    first API call. See spec section 4a.)\n")
 
 
 def cmd_auth(code):
@@ -437,22 +458,144 @@ def cmd_probe():
     print("\n  If player projections are absent, an external weekly projection")
     print("  source is a first-class dependency. See spec section 9.")
 
-    # ---- in-season surfaces
-    head("D", "In-season endpoints — do they answer?")
-    for label, path in [
-        ("transactions", "league/%s/transactions;types=add,drop,trade;count=10" % lk),
-        ("free agents (FA)", "league/%s/players;status=FA;start=0;count=5" % lk),
-        ("on waivers (W)", "league/%s/players;status=W;start=0;count=5" % lk),
-        ("all rosters", "league/%s/teams/roster" % lk),
-        ("percent_owned", "league/%s/players;status=A;start=0;count=5/percent_owned" % lk),
-        ("draft_analysis (ADP)", "league/%s/players;status=A;start=0;count=5/draft_analysis" % lk),
-    ]:
-        r = get(path, label.split()[0].replace("(", "").replace(")", ""))
-        if r.get("__error__"):
-            print("  %-22s: ERROR %s" % (label, r["__error__"]))
+    # ---- Phase D/E: the in-season spikes ----------------------------------
+    # The block above answers the draft-shaped questions. Everything below is
+    # what section 10 of the spec actually wants to build — matchup, start/sit,
+    # waivers, cross-league buzz — and each spike is written to answer ONE
+    # design question rather than to prove an endpoint responds. "OK (5
+    # records)" told us nothing: the field either exists on the record or the
+    # feature on top of it is not buildable as written.
+
+    week = one(st, "current_week") or ""
+    print("\n  (current_week reads %s — the weekly calls below use it)" % (week or "?"))
+
+    head("E1", "All rosters in one call — the matchup and start/sit input")
+    ros = get("league/%s/teams/roster%s" % (lk, (";week=" + str(week)) if week else ""),
+              "rosters")
+    if ros.get("__error__"):
+        print("  ERROR %s  <-- blocks E1 and E2 both" % ros["__error__"])
+    else:
+        slots = scalars(ros, "selected_position")
+        slots = [v for v in slots if isinstance(v, str)]
+        elig = deep_find(ros, "eligible_positions")
+        n_teams = len(scalars(ros, "team_key"))
+        n_players = len(scalars(ros, "player_key"))
+        print("  teams in one call      : %d   (never make one call per team)" % n_teams)
+        print("  players across them    : %d" % n_players)
+        print("  selected_position      : %s" % ("YES" if slots else "NO  <-- cannot tell starters from bench"))
+        print("  eligible_positions     : %s" % ("YES" if elig else "NO  <-- start/sit legality becomes a guess"))
+        if slots:
+            bench = len([v for v in slots if v in ("BN", "IR")])
+            print("  starters / bench+IR    : %d / %d" % (len(slots) - bench, bench))
+        mine = scalars(ros, "is_owned_by_current_login")
+        print("  my team identifiable   : %s" % ("YES" if any(str(v) == "1" for v in mine) else "NO — match on team_key by hand"))
+
+    head("E1b", "Scoreboard — who am I playing, and is there a team projection?")
+    sb2 = get("league/%s/scoreboard%s" % (lk, (";week=" + str(week)) if week else ""),
+              "scoreboard-week")
+    if sb2.get("__error__"):
+        print("  ERROR %s" % sb2["__error__"])
+    else:
+        print("  matchups this week     : %d" % len(deep_find(sb2, "matchup")))
+        print("  team_projected_points  : %s" % ("YES" if deep_find(sb2, "team_projected_points") else "NO"))
+        print("  team_points (live)     : %s" % ("YES" if deep_find(sb2, "team_points") else "NO"))
+        print("  win_probability        : %s" % ("YES" if deep_find(sb2, "win_probability") else "NO"))
+
+    head("E2", "Per-player weekly stats — the only per-player numbers on offer")
+    pk = one(ros, "player_key") if not ros.get("__error__") else None
+    if pk and week:
+        ps = get("player/%s/stats;type=week;week=%s" % (pk, week), "player-week-stats")
+        if ps.get("__error__"):
+            print("  ERROR %s" % ps["__error__"])
         else:
-            keys = len(deep_find(r, "player_key")) or len(deep_find(r, "transaction_key"))
-            print("  %-22s: OK (%d records)" % (label, keys))
+            print("  player_points (actual) : %s" % ("YES" if deep_find(ps, "player_points") else "NO"))
+            proj = [h for n in ("projected", "projection", "proj_") for h in deep_find(ps, n)]
+            print("  anything projection-ish: %s" % (proj[:3] if proj else "NONE — confirms spec section 9"))
+            print("  stat lines returned    : %d" % len(deep_find(ps, "stat_id")))
+    else:
+        print("  skipped (no roster player or no current_week)")
+
+    head("E3a", "percent_owned — the cross-league signal, and the delta on it")
+    # This is the one that answers "what is happening in OTHER leagues". Yahoo's
+    # percent_owned is ownership across ALL Yahoo leagues, not this one, so it is
+    # a genuine outside-the-room signal rather than a restatement of our own
+    # rosters. The `delta` sibling is the week-over-week move — the buzz. Sorted
+    # by AR (Yahoo's own actual-rank) so page one is the players that matter.
+    po = get("league/%s/players;status=A;sort=AR;start=0;count=25/percent_owned" % lk,
+             "percent-owned")
+    if po.get("__error__"):
+        print("  ERROR %s  <-- E3's buzz signal is not available" % po["__error__"])
+    else:
+        pct = scalars(po, "value")
+        delta = scalars(po, "delta")
+        print("  percent_owned values   : %d" % len(pct))
+        print("  delta field present    : %s" % ("YES — this is the buzz signal" if delta else "NO  <-- E3 loses its best input"))
+        if delta:
+            print("  delta sample           : %s" % delta[:8])
+            print("  (record the units. A delta of 3 is 3 percentage points or 3 percent —")
+            print("   the spec calls the semantics UNCERTAIN and this is the moment")
+            print("   to settle it against what Yahoo's own UI shows for the player.)")
+
+    head("E3b", "The waiver pool — FA vs W, and whether the split is real")
+    for label, status in (("addable now (FA)", "FA"), ("needs a claim (W)", "W")):
+        r = get("league/%s/players;status=%s;sort=AR;start=0;count=25" % (lk, status),
+                "pool-" + status)
+        if r.get("__error__"):
+            print("  %-20s: ERROR %s" % (label, r["__error__"]))
+            continue
+        n = len(scalars(r, "player_key"))
+        names = [v for v in scalars(r, "full") if isinstance(v, str)][:3]
+        print("  %-20s: %d players   %s" % (label, n, ", ".join(names)))
+    print("  (If W comes back empty mid-week that is normal — the pool clears")
+    print("   overnight. Re-run the morning after a claim day before concluding")
+    print("   the split does not work.)")
+
+    head("E3c", "Waiver budget — is the bid recommendation buildable?")
+    print("  spike 4 above already read the team object; repeated here because")
+    print("  E3's output is a BID, not a name, and a bid needs both numbers:")
+    for key in ("waiver_priority", "faab_balance"):
+        vals = scalars(tm, key)
+        print("    %-17s: %s" % (key, ("YES — %s" % vals[:4]) if vals else "NOT PRESENT"))
+    print("    uses_faab        : %s" % (one(st, "uses_faab") or "?"))
+    print("    waiver_type      : %s" % (one(st, "waiver_type") or "?"))
+
+    head("E3d", "Transactions — what the league actually did, and for how much")
+    tx = get("league/%s/transactions;types=add,drop,trade;count=25" % lk, "transactions")
+    if tx.get("__error__"):
+        print("  ERROR %s" % tx["__error__"])
+    else:
+        types = scalars(tx, "type")
+        print("  transactions returned  : %d" % len(scalars(tx, "transaction_key")))
+        print("  types seen             : %s" % sorted(set(str(t) for t in types))[:6])
+        print("  timestamp              : %s" % ("YES" if scalars(tx, "timestamp") else "NO  <-- cannot window to 'this week'"))
+        print("  source_type            : %s" % (sorted(set(str(v) for v in scalars(tx, "source_type")))[:5] or "NO"))
+        print("  faab_bid               : %s" % ("YES — %s" % scalars(tx, "faab_bid")[:6] if scalars(tx, "faab_bid") else "NOT PRESENT (only appears on FAAB claims)"))
+        print("  (Losing bids are never exposed. Winning bids are the only price")
+        print("   signal this league gives, so collect them from week one.)")
+
+    head("E5", "Other leagues on this account — the wider read")
+    # "What is happening in other leagues" has two meanings and they need
+    # different plumbing. percent_owned (E3a) is the whole-Yahoo signal. This is
+    # the other one: the other leagues KEN is actually in, which are readable at
+    # full depth and are the ones whose scoring rules we can honour.
+    if len(leagues) < 2:
+        print("  Only one league on this account, so the only cross-league")
+        print("  signal available is percent_owned. That is not a blocker — it")
+        print("  is the bigger sample anyway — but E5 as 'compare my leagues'")
+        print("  has nothing to compare.")
+    else:
+        print("  %d leagues readable. Scoring differs per league, so a waiver" % len(leagues))
+        print("  suggestion must be recomputed per league, never shared:")
+        for other in leagues[1:4]:
+            o = get("league/%s/settings" % other, "settings-" + other.replace(".", "_"))
+            print("    %-22s scoring=%-12s teams=%-3s faab=%s"
+                  % (other, one(o, "scoring_type") or "?", one(o, "num_teams") or "?",
+                     one(o, "uses_faab") or "?"))
+
+    head("E-ADP", "draft_analysis — still there in-season?")
+    da = get("league/%s/players;status=A;start=0;count=5/draft_analysis" % lk, "draft-analysis")
+    print("  average_pick present   : %s"
+          % ("YES" if scalars(da, "average_pick") else "NO / not in-season"))
 
     print("\n" + "=" * 66)
     print("Fixtures written to tools/fixtures/yahoo/ - commit these.")

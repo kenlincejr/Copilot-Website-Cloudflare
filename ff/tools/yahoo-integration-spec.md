@@ -1,6 +1,7 @@
 # Yahoo league sync + week-to-week — build spec
 
 Status: design only. Nothing here is built.
+Access: **approved 2026-09-11** — see section 4a. The probe is the next move.
 Written 2026-09-06. Draft is 2026-09-08 19:00 CDT — **none of this ships before it.**
 
 This document is self-contained so it can be handed to a fresh session. It
@@ -58,24 +59,43 @@ written.
 
 | # | Question | Blocks | How |
 |---|---|---|---|
-| ~~1~~ | ~~Does the app have Fantasy scope?~~ | — | **ANSWERED 2026-09-06 — NO. See §4a. This blocks every other spike.** |
+| ~~1~~ | ~~Does the app have Fantasy scope?~~ | — | **2026-09-06: NO. 2026-09-11: approval mail received — re-run the probe to confirm it actually landed. See §4a.** |
 | 2 | **Is `stat_modifiers` present in your league's `settings`?** | Phase B | One GET. Dump and grep. Without it you cannot recompute fantasy points and Phase B is dead. |
 | 3 | **Live-draft latency.** | Phase C | Join a Yahoo mock, poll `draftresults` every 2s, log pick→visible lag and whether `draft_status` reads `drafting`. |
 | 4 | **Is `faab_balance` on the team object?** | Phase E waivers | One GET against a FAAB league. |
 | 5 | **Confirm player projections are absent.** | Phase E, §9 | Dump `players;status=A` and `player/<key>/stats`, grep for anything projection-shaped. |
 | 6 | **The 2026 NFL `game_key`.** | Everything | `GET /game/nfl` |
-| 7 | **Does API access require review approval?** | Everything | See §4. Ken registered an app on 2026-09-06 — try spike 1 and find out. |
+| 7 | **Does API access require review approval?** | Everything | **ANSWERED — yes. Applied 2026-09-06, approved 2026-09-11.** See §4a for the provisioning still outstanding. |
+| 8 | **Is `percent_owned.delta` present, and in what units?** | E3 | `players;status=A;sort=AR/percent_owned`. This is the cross-league buzz signal and the single best thing the API offers in-season. |
+| 9 | **Do `selected_position` and `eligible_positions` come back on `teams/roster`?** | E1, E2 | One GET. Without the first there are no starters; without the second, start/sit legality is a guess. |
+| 10 | **Does `faab_bid` appear on transactions?** | E3 | Winning bids are the only price signal Yahoo exposes — losing bids never are. Collect from week one or lose the season's sample. |
+| 11 | **Does a past-week roster return the lineup as locked, or today's roster retro-applied?** | "who should you have started" | Re-read week N-1 after a lineup change and diff. Build nothing on it until answered. |
+
+Spikes 2, 4, 5, 6 and 8–10 all run in one pass: `python tools/yahoo-probe.py probe`.
 
 ---
 
-## 4a. MEASURED 2026-09-06 — the app has no Fantasy entitlement
+## 4a. Access — measured 2026-09-06 (denied), approval mailed 2026-09-11
 
-This is no longer a risk. It is the current state, established by probe
-(`tools/yahoo-probe.py`) against a real app registered the same day.
+**2026-09-11 — Yahoo mailed an approval.** The table below is what was measured
+*before* it and is kept because it is still the only account of how this fails.
+Do not read it as the current state, and do not read the mail as the current
+state either: approval arrives with three conditions attached, and the
+entitlement does not move until all three are done.
 
-**Nothing in this spec is buildable until Yahoo grants Fantasy API access.**
+1. Sign the API Access and Use Agreement in the DocuSign envelope.
+2. Confirm on the Yahoo Developer app page that Fantasy Sports permissions are
+   attached to the app carrying our Client ID.
+3. Submit the Developer Application Confirmation Form — name, email, Client ID.
+   The mail says to submit it **whether or not** Fantasy permissions are already
+   listed, and to note any second email address used during the application.
 
-What was measured, and what each result means:
+**The only thing that establishes access is a probe run that comes back clean.**
+`python tools/yahoo-probe.py url` now sends `scope=fspt-r` by default precisely
+so that it doubles as the test: an `invalid_scope` bounce before the login page
+means the entitlement is still not there.
+
+What was measured on 2026-09-06, when it was not — and what each result means:
 
 | Sent to `request_auth` | Result | Reading |
 |---|---|---|
@@ -105,19 +125,34 @@ Three conclusions that change how Phase A is written:
    successful token exchange is a lie, and it is the exact bug this would ship
    with if nobody had measured it.
 
-### What unblocks this
+### What unblocks this — done, and what is left
 
-Submit the access application at `https://sports.yahoo.com/developer/access/`,
-referencing the existing Client ID. The form asks for a product description,
-what data is needed, whether use is personal/single-league, and expected users in
-3-6 months. **[DOC]** Yahoo warns that "incomplete or insufficiently detailed
-submissions cannot be evaluated and will be closed without further
-correspondence" — so answer it properly the first time.
+The access application at `https://sports.yahoo.com/developer/access/` was
+submitted against the existing Client ID and came back approved on 2026-09-11.
+What remains is the three-step provisioning in the mail, listed above. None of
+it is engineering work and none of it can be done from a build session — it is
+a signature, a checkbox on the Yahoo app page, and a form.
 
-**[UNC]** Review turnaround is unknown and on Yahoo's clock. Treat every phase
-below as parked until it clears. Re-run `python tools/yahoo-probe.py url` with
-`$env:YAHOO_SCOPE="fspt-r"` to test — the moment `invalid_scope` stops coming
-back, access has been granted.
+Then, on Ken's own machine (the API is unreachable from a build container and
+the OAuth step needs a real browser login):
+
+```
+tools/.yahoo-creds.json      <- Client ID + Secret. gitignored, never printed.
+python tools/yahoo-probe.py url        # sends scope=fspt-r; open the URL
+python tools/yahoo-probe.py auth <code from the address bar>
+python tools/yahoo-probe.py probe      # runs every spike, writes fixtures
+```
+
+Three outcomes, and they are not the same problem:
+
+- **`invalid_scope` before a login page** — entitlement has not landed. Chase
+  the three provisioning steps, not the code.
+- **Login works, then `GET /game/nfl` 401s with
+  `additional_authorization_required`** — the token is fine and the app is not.
+  Same chase. This is the silent-failure mode §4a exists to document.
+- **`probe` prints a game key and a league list** — access is real. Commit
+  everything under `tools/fixtures/yahoo/`; those payloads are what every test
+  in this spec runs against, and this is the only moment they get captured.
 
 ---
 
