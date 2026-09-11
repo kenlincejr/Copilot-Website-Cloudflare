@@ -90,6 +90,14 @@ entitlement does not move until all three are done.
    The mail says to submit it **whether or not** Fantasy permissions are already
    listed, and to note any second email address used during the application.
 
+**MEASURED 2026-09-11, after the approval mail and a completed DocuSign:** the
+app page at `developer.yahoo.com/apps/` shows an **empty API Permissions
+section** — no Fantasy Sports entry, and nothing to tick. Approval and
+entitlement are therefore separate events, and the mail arrives at the first.
+This is the same conclusion as 2026-09-06 reached from the other side: there is
+no self-service Fantasy checkbox to miss. Do not read an empty API Permissions
+section as a misconfiguration.
+
 **The only thing that establishes access is a probe run that comes back clean.**
 `python tools/yahoo-probe.py url` now sends `scope=fspt-r` by default precisely
 so that it doubles as the test: an `invalid_scope` bounce before the login page
