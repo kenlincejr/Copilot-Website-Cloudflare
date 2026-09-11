@@ -83,12 +83,27 @@ Do not read it as the current state, and do not read the mail as the current
 state either: approval arrives with three conditions attached, and the
 entitlement does not move until all three are done.
 
-1. Sign the API Access and Use Agreement in the DocuSign envelope.
-2. Confirm on the Yahoo Developer app page that Fantasy Sports permissions are
-   attached to the app carrying our Client ID.
-3. Submit the Developer Application Confirmation Form — name, email, Client ID.
-   The mail says to submit it **whether or not** Fantasy permissions are already
-   listed, and to note any second email address used during the application.
+1. ~~Sign the API Access and Use Agreement in the DocuSign envelope.~~ **Done 2026-09-11.**
+2. ~~Confirm on the Yahoo Developer app page that Fantasy Sports permissions are
+   attached to the app carrying our Client ID.~~ **Checked 2026-09-11 — they are
+   not; API Permissions is empty. See the measurement below.**
+3. ~~Submit the Developer Application Confirmation Form.~~ **Submitted 2026-09-11**
+   for app `Draftline` / App ID `XZT1OyHK`, on the "Fantasy Sports is not listed"
+   branch. One identity throughout — the developer account, the fantasy account
+   and the DocuSign signature are all the same address, and the notes field says
+   so, because an unanswered "additional email addresses" is what stalls the
+   manual match.
+
+   The form's own submit is flaky: it returns a bare "Submission failed. Please
+   try again or refresh the page" with no detail. A hard refresh and a prompt
+   resubmit cleared it. If it ever does not, replying to
+   `fantasyapiapplications@yahoosports.com` with the same four fields is the
+   documented fallback — that address sent the approval.
+
+**All three are done. The entitlement is now on Yahoo's clock and nothing on our
+side moves it.** Do not delete and recreate the app to chase the empty
+permissions section: the approval is bound to this Client ID, a new app gets a
+new one, and the section would be just as empty.
 
 **MEASURED 2026-09-11, after the approval mail and a completed DocuSign:** the
 app page at `developer.yahoo.com/apps/` shows an **empty API Permissions
