@@ -522,6 +522,12 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 .cv-pill .cv-exit { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#a8ecf5;
   border-radius:16px; padding:4px 12px; font-size:.75rem; font-weight:700; cursor:pointer; font-family:inherit; }
 .cv-pill .cv-exit:hover { background:rgba(255,255,255,.2); }
+/* Embedded in the Copilot Credit Planner hub (?embed=1 inside a frame). The
+   hub supplies the masthead, the footer and the customer-view pill, so the
+   page drops its own. Standalone, none of this applies. */
+body.embedded .mh-bar, body.embedded .masthead, body.embedded footer.pagefoot,
+body.embedded #custViewPill { display:none !important; }
+body.embedded { padding-bottom:24px; }
 </style>
 </head>
 <body>
@@ -2750,6 +2756,15 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   var E = window.CoworkEngine;
   var state = E.defaults();
   var mathOn = false, prevSnap = null, activeRibbon = null;
+
+  /* Embedded in the Copilot Credit Planner hub. Both conditions must hold: a
+     parent frame AND the embed flag, so a stray ?embed=1 on a standalone tab
+     changes nothing. */
+  var EMBEDDED = (function () {
+    try { return window.parent !== window && /(?:^|[?&])embed=1(?:&|$)/.test(location.search); }
+    catch (e) { return false; }
+  })();
+  if (EMBEDDED) document.body.classList.add('embedded');
 
   var $ = function (id) { return document.getElementById(id); };
   function usd(v, dp) { return '$' + Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: dp || 0, maximumFractionDigits: dp || 0 }); }
@@ -5014,6 +5029,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       renderEchoes(r.ctx);
       renderRecap(r);
       flash(r);
+      emitEmbed(r);
       var strip = $('errStrip');
       if (strip) strip.parentNode.removeChild(strip);
       return r;
@@ -5038,6 +5054,28 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     $('capNote').innerHTML = c.employees > 300
       ? '<div class="callout warn"><div class="callout-body"><b>' + c.employees + ' employees</b> &mdash; above the 300-seat cap on every SMB Copilot SKU. We\'ll price the enterprise add-on path.</div></div>'
       : '<div class="ribbon-deriv">Under 300 employees &mdash; the SMB Copilot SKUs and their 300-seat cap apply.</div>';
+  }
+
+  /* Hand the hub this account's Cowork lane. Customer-safe figures only: no
+     margin, PEC, provider rate or cost basis ever leaves this page. Same tab,
+     same origin (targetOrigin is pinned to this page's own origin), and it
+     never runs standalone. Nothing is stored or sent anywhere else. */
+  function emitEmbed(r) {
+    if (!EMBEDDED) return;
+    try {
+      var c = r.ctx, seats = (c.rampSeats || []).slice(0, 12), basis = c.basisSeats, lic = {};
+      Object.keys(c.seatsBySku || {}).forEach(function (k) { lic[k] = c.seatsBySku[k]; });
+      window.parent.postMessage({
+        __type: 'cowork-lane', version: 1, screen: cur,
+        accountName: String(state.meta.accountName || ''),
+        monthlyCredits: c.monthlyCredits, band: c.band, calibrated: !!c.calibrated,
+        annualCredits: c.annualCredits, year1Credits: c.year1Credits,
+        rampSeats: seats,
+        rampCredits: seats.map(function (s) { return basis > 0 ? s * c.monthlyCredits / basis : 0; }),
+        basisSeats: basis, copilotLicensed: c.copilotLicensed, licenses: lic,
+        cspMotion: c.cspMotion, sellMode: !!c.sellMode, creditUsd: c.creditUsd
+      }, location.origin);
+    } catch (e) { /* the hub is optional; the calculator never fails on its account */ }
   }
 
   /* ═══ wiring ═══ */

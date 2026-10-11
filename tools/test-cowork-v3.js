@@ -2298,5 +2298,60 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   eq((ck.light * 125 + ck.medium * 500 + ck.heavy * 1200) * 0.01, 142.5, 'A4: stock corporate knowledge worker is $142.50');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Hub embed hooks — the Copilot Credit Planner shows this page in a frame.
+   Two additive hooks only: an embedded class, and a customer-safe emitter.
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  // Embedded class needs BOTH a parent frame and the embed flag.
+  ok(src.indexOf('return window.parent !== window && /(?:^|[?&])embed=1(?:&|$)/.test(location.search);') >= 0,
+     'EMB: embedded mode requires a parent frame AND ?embed=1');
+  ok(src.indexOf('body.embedded .mh-bar, body.embedded .masthead, body.embedded footer.pagefoot,') >= 0,
+     'EMB: embedded mode hides only the masthead, footer and pill');
+  // Lift emitEmbed and run it against stubs.
+  const start = src.indexOf('  function emitEmbed(');
+  const end = src.indexOf('\n  }\n', start) + 4;
+  ok(start > 0 && end > start, 'EMB: emitEmbed is present');
+  const body = src.slice(start, end);
+  ok(src.indexOf('      flash(r);\n      emitEmbed(r);') >= 0, 'EMB: refresh() emits inside its try, after flash');
+  const run = (embedded, st) => {
+    const sent = [];
+    const win = { parent: { postMessage: (m, o) => sent.push({ m: m, o: o }) } };
+    const fn = new Function('EMBEDDED', 'cur', 'state', 'window', 'location',
+      body + '\nreturn emitEmbed;')(embedded, 'results', st, win, { origin: 'https://copilotplaybook.com' });
+    fn(E.compute(st));
+    return sent;
+  };
+  eq(run(false, E.defaults()).length, 0, 'EMB: nothing is emitted standalone');
+  const sent = run(true, E.defaults());
+  eq(sent.length, 1, 'EMB: one message per refresh when embedded');
+  const m = sent[0].m;
+  eq(sent[0].o, 'https://copilotplaybook.com', 'EMB: targetOrigin is pinned to the page origin, never *');
+  eq(Object.keys(m).sort().join(','),
+     ['__type','accountName','annualCredits','band','basisSeats','calibrated','copilotLicensed',
+       'creditUsd','cspMotion','licenses','monthlyCredits','rampCredits','rampSeats','screen','sellMode','version',
+       'year1Credits'].sort().join(','), 'EMB: payload key set is exact');
+  ['margin','pec','provider','cost','uplift','p3','commit','partner'].forEach(k =>
+    ok(JSON.stringify(m).toLowerCase().indexOf(k) === -1, 'EMB: payload carries nothing named ' + k));
+  eq(m.__type, 'cowork-lane', 'EMB: payload type');
+  eq(m.monthlyCredits, 755000, 'EMB: payload carries the stock anchor');
+  eq(m.rampCredits.length, 12, 'EMB: twelve ramp months');
+  const sum = m.rampCredits.reduce((a, b) => a + b, 0);
+  ok(Math.abs(sum - m.year1Credits) <= 1, 'EMB: ramp months sum to year one (' + Math.round(sum) + ' vs ' + m.year1Credits + ')');
+  eq(m.licenses.cop_biz, 20, 'EMB: licenses are a plain copy');
+  // Partner economics in state never reach the payload.
+  const P = E.defaults();
+  P.channel = { motion: 'direct', providerCreditUsd: 0.0071 };
+  P.pricing = Object.assign(E.defaults().pricing, { mode: 'sell', creditSellUsd: 0.0137, pec: { status: 'yes', pct: 15 } });
+  P.pricing.cost = { bprem_cop: 28.11, cop_biz: 15.17 };
+  const mp = JSON.stringify(run(true, P)[0].m);
+  ['0.0071', '28.11', '15.17', '"pct"'].forEach(v => ok(mp.indexOf(v) === -1, 'EMB: partner value ' + v + ' never emitted'));
+  // A throwing parent never breaks the calculator.
+  const bad = new Function('EMBEDDED', 'cur', 'state', 'window', 'location', body + '\nreturn emitEmbed;')(
+    true, 'results', E.defaults(), { parent: { postMessage: () => { throw new Error('x'); } } }, { origin: 'x' });
+  let threw = false; try { bad(E.compute(E.defaults())); } catch (e) { threw = true; }
+  ok(!threw, 'EMB: a failing parent never throws into refresh()');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
