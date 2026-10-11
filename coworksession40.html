@@ -430,12 +430,12 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 
 <div class="toolcard">
   <div class="tool-head"><span class="tool-name">Copilot Credit Estimator</span><span class="tool-when">Used in Stop 5</span></div>
-  <p>Microsoft's official interactive credit-forecasting tool. Enter agent type, licensing option, and expected feature usage; it returns a monthly Copilot Credit range. This is the tool of record — the Cowork Cost Simulator below is the co-branded, offline version of the same math.</p>
+  <p>Microsoft's current web estimator for Cowork. It prices a working day: credits per user per day for each persona, across 22 working days, assuming Anthropic Opus 4.8. It replaced the original Excel Customer Cowork Estimator, whose persona defaults the Cowork Cost Simulator below still uses &mdash; so the two give different answers for the same people, and the Simulator's step 5 sets them side by side. A 30-day pilot measured with /cost settles which one fits the account.</p>
   <div class="tool-io">
-    <div><b>You feed it</b>Persona mix, light/medium/heavy task counts, model choice</div>
+    <div><b>You feed it</b>Users per persona and a light/medium/heavy split</div>
     <div><b>It returns</b>A monthly credit range and a $ estimate at $0.01/credit</div>
   </div>
-  <a class="tool-link" href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Open the Copilot Credit Estimator</a>
+  <a class="tool-link" href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">Open the Copilot Credit Estimator</a>
 </div>
 
 <div class="toolcard">
@@ -687,7 +687,7 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
             </tbody>
           </table>
         </div>
-        <div style="padding:10px 16px;font-size:.78rem;color:#6b7280;">Formula: credits/user = (Light&times;125) + (Medium&times;500) + (Heavy&times;1,200), billed at $0.01/credit. Role mixes are Microsoft's Frontier-observed defaults — all editable in the room via the Simulator. Your account's real mix is what you plug in live; this table is the arithmetic underneath the tool, not a substitute for running it.</div>
+        <div style="padding:10px 16px;font-size:.78rem;color:#6b7280;">Formula: credits/user = (Light&times;125) + (Medium&times;500) + (Heavy&times;1,200), billed at $0.01/credit. Role mixes are Microsoft's Frontier-observed defaults from its original Customer Cowork Estimator, since replaced by the web Copilot Credit Estimator — all editable in the room via the Simulator. Your account's real mix is what you plug in live; this table is the arithmetic underneath the tool, not a substitute for running it.</div>
       </div>
 
       <div class="segue"><span class="arrow">&rarr;</span><div class="txt"><strong>Segue:</strong> &ldquo;You now have a number the customer will want managed. That management is the actual sale — let's name what you're selling.&rdquo;</div></div>
@@ -987,7 +987,7 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
   <div class="reslist-item"><div class="t"><a href="https://www.microsoft.com/en-us/microsoft-365/blog/2026/06/16/copilot-cowork-is-now-generally-available/" target="_blank" rel="noopener">Copilot Cowork Is Now Generally Available</a></div><div class="d">Charles Lamanna, Microsoft 365 Blog, June 16, 2026 — GA announcement, pricing model, the &ldquo;completed result&rdquo; line</div></div>
   <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/cowork/cowork-admin-governance" target="_blank" rel="noopener">Manage Copilot Cowork for Your Organization</a></div><div class="d">Microsoft Learn — access, discoverability, admin controls</div></div>
   <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits" target="_blank" rel="noopener">Usage-Based Billing and Cost Management for Copilot Credits</a></div><div class="d">Microsoft Learn — the definitive Cost Management reference behind Stop 5</div></div>
-  <div class="reslist-item"><div class="t"><a href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Copilot Credit Estimator</a></div><div class="d">Microsoft's official interactive credit-forecasting tool</div></div>
+  <div class="reslist-item"><div class="t"><a href="https://microsoft.github.io/copilot-studio-estimator/" target="_blank" rel="noopener">Copilot Studio agent usage estimator</a></div><div class="d">Microsoft's estimator for Copilot Studio agent consumption (Cowork has its own web estimator, linked in Stop 5)</div></div>
   <div class="reslist-item"><div class="t"><a href="https://learn.microsoft.com/en-us/purview/deploymentmodels/depmod-data-leak-shadow-ai-intro" target="_blank" rel="noopener">Prevent Data Leak to Shadow AI</a></div><div class="d">Microsoft Learn — the four-step Discover / Block / Protect / Govern model</div></div>
   <div class="reslist-item"><div class="t"><a href="https://www.microsoft.com/en-us/microsoft-365-copilot/copilot-vs-claude-enterprise" target="_blank" rel="noopener">Compare Copilot vs. Claude Enterprise</a></div><div class="d">Microsoft's own comparison page — background for &sect;5</div></div>
 </div>

@@ -980,9 +980,11 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 </table>
 </div>
 
+<p>&ldquo;No charge&rdquo; is Microsoft's column, and it has conditions. The user must hold a Copilot license, be signed in with their own identity, and be using a Microsoft channel (Copilot Chat, Teams or SharePoint) on the standard or Copilot chat harness. A website, WhatsApp or other external channel, the GitHub Copilot harness, computer use, Work IQ API calls and an agent that runs on a trigger under its maker's identity are billed whoever is licensed. The last of those is our reading of Microsoft's billing pages rather than one sentence from Microsoft, so confirm it on the Manage Agents report before you rely on it.</p>
+
 <div class="callout warn">
   <div class="callout-title">Correct the folklore before you quote</div>
-  <div class="callout-body"><p>Several 2026 channel blogs state that an autonomous agent action costs <strong>25 or more credits</strong>. <strong>Microsoft Learn says an agent action is 5.</strong> A partner budgeting on the blog number over-quotes the run rate by a factor of five, loses on price, and never finds out why.</p><p>Check the rate card, not the commentary, and check it again before each quote &mdash; the page carries an ms.date and a 180-day update cycle for a reason.</p></div>
+  <div class="callout-body"><p>Several 2026 channel blogs state that an autonomous agent action costs <strong>25 or more credits</strong>. <strong>Microsoft Learn says an agent action is 5.</strong> The 25 appears to trace to an unused legacy weight left in the code of Microsoft's own Copilot Studio estimator, which never reaches its total. A partner budgeting on the blog number over-quotes the run rate by a factor of five, loses on price, and never finds out why.</p><p>Check the rate card, not the commentary, and check it again before each quote &mdash; the page carries an ms.date and a 180-day update cycle for a reason.</p></div>
 </div>
 
 <h3>Two things that make the arithmetic non-obvious</h3>
@@ -1070,7 +1072,7 @@ table.dense td:first-child { font-weight: 400; color: #6b7280; }
 
 <div class="unver">
   <div class="u-label"><span class="tt">TT-2</span> Open tenant test &mdash; how big is the build burn?</div>
-  <p>Microsoft documents <em>that</em> pre-publish activity consumes credits. <strong>Nobody has published how much.</strong> Without a number, the clause above is a warning rather than a negotiating position, and a partner cannot tell whether the honest answer is &ldquo;a rounding error, absorb it&rdquo; or &ldquo;a material line, cap it at a stated figure.&rdquo;</p>
+  <p>Microsoft documents <em>that</em> pre-publish activity consumes credits, and now publishes a per-session band: 1&ndash;20, 21&ndash;60 and 61+ Copilot Credits for a light, medium and heavy natural-language creation session (<a href="https://go.microsoft.com/fwlink/?linkid=2368800" target="_blank" rel="noopener">Copilot Credits Guide, October 2026</a>). <strong>Nobody has published what a whole build adds up to.</strong> Without that total, the clause above is a per-session warning rather than a negotiating position, and a partner cannot tell whether the honest answer is &ldquo;a rounding error, absorb it&rdquo; or &ldquo;a material line, cap it at a stated figure.&rdquo;</p>
   <p class="u-settle">What would settle it: build one trivial agent on the GitHub Copilot harness in an isolated environment, do a normal amount of previewing, testing and evaluation, and read total credits consumed on the agent&rsquo;s Monitor page before publishing it. One afternoon converts a warning into a number.</p>
 </div>
 
