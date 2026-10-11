@@ -85,9 +85,14 @@ function assertCopyClean(r, m) {
   near(c.commitCccu, 90600, 'commitCccu');
   near(c.year1Credits, 7883942, 'year1Credits');
   near(c.cccuYear1, 78839.42, 'cccuYear1');
-  near(c.p3Annual, 80858.68, 'p3Annual');
-  near(c.p3Saving, 9741.32, 'p3Saving');
-  near(c.p3Exposure, 80858.68, 'p3Exposure');
+  // A1 moved these deliberately (interpolated 10.75% -> 3 x Tier 3 at 7%):
+  // p3Annual 80,858.68 -> 84,300; p3Saving 9,741.32 -> 6,300; p3Exposure 80,858.68 -> 83,700.
+  near(c.p3Annual, 84300, 'p3Annual');
+  near(c.p3Saving, 6300, 'p3Saving');
+  near(c.p3Exposure, 83700, 'p3Exposure');
+  near(c.discount.pct, 7, 'discount.pct');
+  near(c.breakeven, 0.93, 'breakeven');
+  near(c.p3Year1Prepay, 72750, 'p3Year1Prepay');
   eq(wids(r).join(','), 'V-26', 'golden: stock warning list');
   eq(r.assumptions.map(a => a.id).join(','), 'promo-cop_biz,F10,gov-unasked,R2,ramp,motion-unknown,B4',
      'golden: stock assumption list');
@@ -1057,7 +1062,7 @@ function customerSurface(r, L) {
   // none of the partner-economics figures may appear on the customer surface
   [cA.meterMarginAnnual, cA.partnerCostAnnual, cA.paygoPartnerCost, cA.p3PartnerCost,
    cA.coworkAtMsRate, cA.licenseUpliftMonthly, cA.licenseMarginMonthly, cA.licenseList,
-   cA.p3Exposure, cA.p3Annual, cA.paygoAnnual].forEach(function (v, i) {
+   cA.p3Exposure, cA.p3Annual, cA.paygoAnnual, cA.p3Year1Prepay].forEach(function (v, i) {
     ok(sA.indexOf(usd(v)) === -1, 'config A: partner/PEC figure ' + i + ' (' + usd(v) + ') absent from the customer surface');
   });
   // none of finding #1's leaked phrases
@@ -2065,8 +2070,11 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
     s.billing.model = 'p3';
     return E.compute(s).ctx;
   })();
-  const wantUsd = Math.round(stockCtx.cccuYear1 * E.CONST.CCCU.usdPer *
-    (1 - E.p3Discount(stockCtx.cccuYear1).pct / 100));
+  // A1: the year-one order is bought as Microsoft's fixed plans; the dollar is
+  // their prepay (2 x Tier 3 + Tier 2 + Tier 1), the PayGo remainder is named
+  // separately.
+  const wantUsd = Math.round(stockCtx.p3Year1Prepay);
+  eq(wantUsd, 72750, 'V-24 year-one prepay is 2 x T3 + T2 + T1 at Microsoft list');
   const usdM = ramped.match(/\$([\d,]+) lands on their paper/);
   ok(usdM && Number(usdM[1].replace(/,/g, '')) === wantUsd,
      'V-24 dollar is the year-one order $' + wantUsd + ' (got ' + (usdM && usdM[1]) + ')');
@@ -2078,6 +2086,94 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
      'V-24 without a ramp relays the configured commit with no year-one framing');
   // The relay figure agrees with the quote export's ask in both modes.
   ok(/78,839/.test(ramped) && /90,600/.test(flat), 'V-24 and the quote export agree on the ask basis');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Track A · A1 — P3 as the nine fixed sizes Microsoft sells (F-155)
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  const T = E.P3_TIERS;
+  eq(T.length, 9, 'A1: nine P3 tiers');
+  eq(T.map(t => t.cccu).join(','), '3000,15000,30000,150000,300000,750000,1500000,2250000,3000000', 'A1: tier sizes');
+  eq(T.map(t => t.pct).join(','), '5,6,7,8,10,12,14,17,20', 'A1: tier discounts');
+  eq(T.map(t => t.usd).join(','), '2850,14100,27900,138000,270000,660000,1290000,1867500,2400000', 'A1: Microsoft list prices');
+  T.forEach(t => eq(t.usd, t.cccu * (100 - t.pct) / 100, 'A1: tier ' + t.tier + ' price = cccu x (100 - pct) / 100'));
+  ok(E.P3_ANCHORS === undefined && E.p3Discount === undefined, 'A1: the interpolation API is gone');
+  ok(!/interpolated between published anchors/.test(src) && !/tier breakpoints/.test(src),
+     'A1: no copy claims the breakpoints are unpublished');
+
+  // Anchors
+  const P = E.p3Plan;
+  const t2 = P(15000);
+  eq(t2.label, '1 × Tier 2 (15,000 CCCU at 6%)', 'A1: 15,000 CCCU is one Tier 2');
+  eq(t2.prepayUsd, 14100, 'A1: Tier 2 is $14,100 (Microsoft worked example)');
+  const s = P(90600);
+  eq(s.label, '3 × Tier 3 (30,000 CCCU at 7%)', 'A1: 90,600 CCCU buys three Tier 3');
+  eq(s.prepayUsd, 83700, 'A1: three Tier 3 prepay');
+  ok(Math.abs(s.remainderCccu - 600) < 1e-6, 'A1: 600 CCCU left on PayGo');
+  const y = P(78839.42);
+  eq(y.label, '2 × Tier 3 (30,000 CCCU at 7%) + 1 × Tier 2 (15,000 CCCU at 6%) + 1 × Tier 1 (3,000 CCCU at 5%)',
+     'A1: the year-one ask buys 2 x T3 + T2 + T1');
+  eq(y.prepayUsd, 72750, 'A1: year-one prepay');
+  eq(P(1500000).prepayUsd, 1290000, 'A1: 1.5M CCCU is one Tier 7');
+  eq(P(2999).plans, 0, 'A1: below the smallest plan buys nothing');
+  eq(P(3000).prepayUsd, 2850, 'A1: 3,000 CCCU is one Tier 1');
+  eq(P(3000000).label, '1 × Tier 9 (3,000,000 CCCU at 20%)', 'A1: 3M CCCU is one Tier 9');
+
+  // Invariants on hostile and swept input
+  [NaN, -5, 'x', null, undefined, Infinity, -Infinity, 1e308, 0].forEach(function (v) {
+    const p = P(v);
+    ok(isFinite(p.prepayUsd) && isFinite(p.coveredCccu) && isFinite(p.remainderCccu) && isFinite(p.pct),
+       'A1: p3Plan(' + String(v) + ') is finite');
+  });
+  let seed = 11;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let i = 0; i < 400; i++) {
+    const ask = Math.floor(rnd() * 8e6);
+    const p = P(ask);
+    ok(p.coveredCccu <= ask + 1e-9, 'A1: never buys past the ask (' + ask + ')');
+    ok(p.prepayUsd + p.remainderCccu <= ask + 1e-6, 'A1: plan + PayGo never costs more than PayGo (' + ask + ')');
+  }
+
+  // Exhaustive oracle: best discount dollars for every unit count up to 10,000.
+  {
+    const U = T.map(t => t.cccu / 3000), S = T.map(t => t.cccu * t.pct / 100);
+    const best = [0];
+    for (let u = 1; u <= 10000; u++) {
+      let b = best[u - 1];
+      for (let k = 0; k < 9; k++) if (U[k] <= u) b = Math.max(b, best[u - U[k]] + S[k]);
+      best[u] = b;
+    }
+    let mism = 0;
+    for (let u = 0; u <= 10000; u += (u < 4200 ? 1 : 7)) {
+      const p = P(u * 3000);
+      if (p.coveredCccu - p.prepayUsd !== best[u]) mism++;
+    }
+    eq(mism, 0, 'A1: p3Plan matches the exhaustive oracle up to 10,000 units');
+  }
+
+  // The quote export names the plan mix, and only where an order exists.
+  const q = quoteFor(E.defaults());
+  ok(q.text.split('\n').indexOf('Order as (fixed P3 sizes): 2 × Tier 3 (30,000 CCCU at 7%) + 1 × Tier 2 (15,000 CCCU at 6%) + ' +
+     '1 × Tier 1 (3,000 CCCU at 5%) = 78,000 CCCU, $72,750 up front at Microsoft list; the remaining 839 CCCU runs on PayGo. ' +
+     'Confirm the plan mix with your provider.') >= 0,
+     'A1: ramped export orders the year-one plan mix');
+  const flatS = E.defaults(); flatS.ramp.mode = 'none';
+  ok(quoteFor(flatS).text.indexOf('Order as (fixed P3 sizes): 3 × Tier 3 (30,000 CCCU at 7%) = 90,000 CCCU, $83,700 up front') >= 0,
+     'A1: flat export orders the steady-state plan mix');
+  const ncS = E.defaults(); ncS.channel = { motion:'notCsp', providerCreditUsd:null };
+  ok(!/Order as/.test(quoteFor(ncS).text), 'A1: outside CSP there is no order line');
+  const manS = E.defaults(); manS.billing.manualP3Pct = 9;
+  ok(!/Order as/.test(quoteFor(manS).text), 'A1: a manual distributor rate has no fixed-size order line');
+  ['margin', 'partner-earned', 'PEC'].forEach(w =>
+    ok(q.text.indexOf(w) === -1, 'A1: the order line adds no partner economics (' + w + ')'));
+
+  // B4 tells the truth about a multi-plan mix.
+  const b4 = E.compute(E.defaults()).trace.find(x => x.id === 'B4');
+  eq(b4.prov, 'ms-modeled', 'A1: a multi-plan mix is tagged modeled');
+  ok(/confirm the mix with your distributor/.test(b4.note), 'A1: B4 carries the several-plans caveat');
+  const one = E.defaults(); one.ramp.mode = 'none'; one.billing.commitCoveragePct = 15000 / 90600;
+  eq(E.compute(one).trace.find(x => x.id === 'B4').prov, 'ms-verified', 'A1: a single plan is Microsoft-verified');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

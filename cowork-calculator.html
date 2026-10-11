@@ -1149,27 +1149,81 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   // letting the lookup miss and silently reprice the whole session at Medium.
   var EFFORT_RETIRED = { xhigh:'high', max:'high' };
 
-  /* ── P3 anchors (only three points are sourced) ───────────────────────── */
-  var P3_ANCHORS = [
-    { cccu: 3000,     pct: 5,  note:'Entry tier, ~$2,850 pay-in' },
-    { cccu: 15000,    pct: 6,  note:'Documented Tier 2 example, 1,500,000 credits' },
-    { cccu: 3000000,  pct: 20, note:'Top published discount' }
+  /* ── P3: the nine fixed sizes Microsoft sells (F-155) ─────────────────
+     ms-verified: Copilot Credits Guide Oct 2026 p.5, Copilot Studio Licensing
+     Guide p.13, and the Azure portal on Learn's copilot-credit-p3 page.
+     There is no arbitrary quantity and no curve between sizes: a customer
+     buys one or more of these plans, each a year long, each at its own
+     discount. usd is Microsoft's published price, cccu x (100 - pct) / 100. */
+  var P3_TIERS = [
+    { tier:1, cccu:3000,    pct:5,  usd:2850 },
+    { tier:2, cccu:15000,   pct:6,  usd:14100 },
+    { tier:3, cccu:30000,   pct:7,  usd:27900 },
+    { tier:4, cccu:150000,  pct:8,  usd:138000 },
+    { tier:5, cccu:300000,  pct:10, usd:270000 },
+    { tier:6, cccu:750000,  pct:12, usd:660000 },
+    { tier:7, cccu:1500000, pct:14, usd:1290000 },
+    { tier:8, cccu:2250000, pct:17, usd:1867500 },
+    { tier:9, cccu:3000000, pct:20, usd:2400000 }
   ];
 
-  function p3Discount(cccu) {
-    var a = P3_ANCHORS;
-    if (cccu < a[0].cccu) return { pct: 0, prov:'ms-verified', exact:true, tier:'below-entry' };
-    for (var k = 0; k < a.length; k++) if (cccu === a[k].cccu)
-      return { pct: a[k].pct, prov:'ms-verified', exact:true, tier:'anchor' };
-    if (cccu >= a[a.length - 1].cccu)
-      return { pct: a[a.length - 1].pct, prov:'ms-verified', exact:true, tier:'ceiling' };
-    var i = 0; while (a[i + 1] && a[i + 1].cccu < cccu) i++;
-    var lo = a[i], hi = a[i + 1];
-    // Piecewise, not a single fit: one fit across the whole range returns 8.5%
-    // at 15,000 CCCU against the ~6% Microsoft actually documents.
-    var t = Math.log(cccu / lo.cccu) / Math.log(hi.cccu / lo.cccu);
-    return { pct: lo.pct + t * (hi.pct - lo.pct), prov:'ms-modeled', exact:false,
-             tier:'interpolated', bracket:[lo.pct, hi.pct] };
+  /* The cheapest mix of plans that never buys more than the ask. Total cost
+     is ask - discount dollars (the uncovered rest runs on PayGo at list), so
+     cheapest means most discount dollars. Rounding up is not offered: a P3
+     is final, and credit bought past the need expires unused.
+     Holding several plans at once, each at its own tier, is the Azure
+     reservation pattern; Microsoft does not state it for Copilot Credit P3,
+     so a multi-plan answer is tagged ms-modeled where it is shown (B4).
+     Unit: 3,000 CCCU, the smallest plan; every tier is a whole number of
+     units, so the search is an exact integer knapsack. */
+  var P3_UNIT = P3_TIERS[0].cccu;
+  var P3_DP_UNITS = 3999;
+  var P3_DP = (function () {
+    var best = [0], plans = [0], pick = [-1];
+    var units = P3_TIERS.map(function (t) { return t.cccu / P3_UNIT; });
+    var save  = P3_TIERS.map(function (t) { return t.cccu * t.pct / 100; });
+    for (var u = 1; u <= P3_DP_UNITS; u++) {
+      best[u] = best[u - 1]; plans[u] = plans[u - 1]; pick[u] = -1;   // -1: leave a unit on PayGo
+      for (var k = 0; k < P3_TIERS.length; k++) {
+        if (units[k] > u) continue;
+        var b = best[u - units[k]] + save[k], p = plans[u - units[k]] + 1;
+        if (b > best[u] || (b === best[u] && p < plans[u])) { best[u] = b; plans[u] = p; pick[u] = k; }
+      }
+    }
+    return { best:best, pick:pick, units:units };
+  })();
+
+  function p3Plan(cccu) {
+    var ask = (typeof cccu === 'number' && isFinite(cccu) && cccu > 0) ? Math.min(cccu, 1e12) : 0;
+    var counts = P3_TIERS.map(function () { return 0; });
+    var u = Math.floor(ask / P3_UNIT + 1e-9);
+    // Past the table, the top plan carries the volume; the last 3,000 units
+    // are solved exactly.
+    var top = P3_TIERS.length - 1, topUnits = P3_DP.units[top];
+    if (u > P3_DP_UNITS) {
+      var bulk = Math.floor((u - (P3_DP_UNITS - topUnits)) / topUnits);
+      counts[top] += bulk; u -= bulk * topUnits;
+    }
+    while (u > 0) {
+      var k = P3_DP.pick[u];
+      if (k < 0) { u -= 1; continue; }
+      counts[k] += 1; u -= P3_DP.units[k];
+    }
+    var lines = [], covered = 0, prepay = 0, plansN = 0;
+    for (var t = P3_TIERS.length - 1; t >= 0; t--) if (counts[t] > 0) {
+      var T = P3_TIERS[t];
+      lines.push({ tier:T.tier, cccu:T.cccu, pct:T.pct, usd:T.usd, count:counts[t] });
+      covered += counts[t] * T.cccu; prepay += counts[t] * T.usd; plansN += counts[t];
+    }
+    var saving = covered - prepay;
+    return {
+      lines: lines, plans: plansN, coveredCccu: covered, prepayUsd: prepay,
+      remainderCccu: Math.max(0, ask - covered), savingUsd: saving,
+      pct: covered > 0 ? saving * 100 / covered : 0,
+      label: lines.map(function (l) {
+        return l.count + ' × Tier ' + l.tier + ' (' + l.cccu.toLocaleString() + ' CCCU at ' + l.pct + '%)';
+      }).join(' + ')
+    };
   }
 
   /* ── Which CSP motion the partner is in ───────────────────────────
@@ -1811,19 +1865,36 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     // The manual field caps at the input's own 30, and the engine agrees:
     // nothing survives to the arithmetic that could quote a free year.
     var manualPct = num_(state.billing.manualP3Pct);
+    // Microsoft path: the commit is bought as fixed plans (F-155) and whatever
+    // the plans do not cover runs on PayGo. Manual path: the distributor's
+    // own rate applied to the whole commit, unchanged.
+    var plan = manualPct != null ? null : p3Plan(commitCccu);
     var disc = manualPct != null
       ? { pct:clamp(manualPct, 0, 30), prov:'partner', exact:true, tier:'manual' }
-      : p3Discount(commitCccu);
-    if (manualPct != null && disc.pct > P3_ANCHORS[P3_ANCHORS.length - 1].pct)
+      : { pct:plan.pct, prov:plan.plans > 1 ? 'ms-modeled' : 'ms-verified', exact:true,
+          tier:plan.plans ? 'plan' : 'below-entry', plan:plan };
+    var P3_TOP = P3_TIERS[P3_TIERS.length - 1];
+    if (manualPct != null && disc.pct > P3_TOP.pct)
       W('V-28','warn','A manual discount of ' + disc.pct.toFixed(1) + '% is above Microsoft’s top published P3 ' +
-        'anchor of ' + P3_ANCHORS[P3_ANCHORS.length - 1].pct + '%. Confirm it with your distributor before you quote it.', []);
-    var p3Prepay = commitCccu * CONST.CCCU.usdPer * (1 - disc.pct / 100);
+        'tier of ' + P3_TOP.pct + '%. Confirm it with your distributor before you quote it.', []);
     // Capacity packs are consumed first, but they are bought, not free. Netting
     // them out of the commit without charging for them invents a saving.
     var packUsd = n(state.billing.capacityPacksCccu,0) * CONST.CCCU.usdPer;
-    var p3Annual = packUsd + p3Prepay + overageCredits * CONST.CREDIT_USD;
+    var p3Prepay, p3Annual, breakeven;
+    if (plan) {
+      p3Prepay = plan.prepayUsd;
+      p3Annual = packUsd + p3Prepay + Math.max(0, afterPacks / CONST.CCCU.creditsPer - plan.coveredCccu) * CONST.CCCU.usdPer;
+      breakeven = plan.coveredCccu > 0 ? plan.prepayUsd / plan.coveredCccu : 1;
+    } else {
+      p3Prepay = commitCccu * CONST.CCCU.usdPer * (1 - disc.pct / 100);
+      p3Annual = packUsd + p3Prepay + overageCredits * CONST.CREDIT_USD;
+      breakeven = 1 - disc.pct / 100;
+    }
     var p3Saving = paygoAnnual - p3Annual;
-    var breakeven = 1 - disc.pct / 100;
+    // Year one is what the order is sized to on a ramp; price it the same way.
+    var p3PlanYear1 = manualPct != null ? null : p3Plan(cccuYear1);
+    var p3Year1Prepay = packUsd + (p3PlanYear1 ? p3PlanYear1.prepayUsd
+      : cccuYear1 * CONST.CCCU.usdPer * (1 - disc.pct / 100));
 
     /* ── What the meter costs the PARTNER, which is not what it costs the
        customer. Partner-earned credit is the only lever, and Microsoft does
@@ -1958,10 +2029,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       // be the ask \u2014 year one on a ramp \u2014 never the steady-state reference
       // the quote export says not to order.
       var relayCccu = rampApplies ? cccuYear1 : commitCccu;
-      var relayUsd = rampApplies
-        ? packUsd + cccuYear1 * CONST.CCCU.usdPer *
-            (1 - (manualPct != null ? disc.pct : p3Discount(cccuYear1).pct) / 100)
-        : p3Exposure;
+      var relayUsd = rampApplies ? p3Year1Prepay : p3Exposure;
       W('V-24','warn','You cannot place this order yourself. Buying reservations on behalf of a customer is a ' +
         'direct-bill and indirect-provider motion \u2014 as an indirect reseller you hand the ' +
         Math.round(relayCccu).toLocaleString() + ' CCCU' + (rampApplies ? ' year-one' : '') +
@@ -1974,7 +2042,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         Math.round(relayUsd).toLocaleString() + ' lands on their paper before it lands on yours, which changes ' +
         'who you are actually asking to carry it.', []);
     }
-    if (state.billing.model === 'p3' && cccuRequired < P3_ANCHORS[0].cccu)
+    if (state.billing.model === 'p3' && cccuRequired < P3_TIERS[0].cccu)
       W('V-13','warn','At ' + Math.round(cccuRequired).toLocaleString() + ' CCCU you are below the lowest published ' +
         'P3 entry point of 3,000 CCCU. PayGo is the path here.', []);
 
@@ -1982,9 +2050,17 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     T('B2','billing','PayGo annual','annual credits × $0.01','', paygoAnnual,'usd', weakest([f10Prov,'ms-verified']));
     T('B3','billing','P3 commit required','annual credits ÷ 100 credits per CCCU',
       Math.round(annualCredits).toLocaleString() + ' ÷ 100', cccuRequired,'cccu','ms-verified');
-    T('B4','billing','P3 discount', disc.exact ? 'published tier' : 'interpolated between published anchors',
-      disc.bracket ? 'bracketed ' + disc.bracket[0] + '%–' + disc.bracket[1] + '%' : '', disc.pct,'pct', disc.prov,
-      disc.exact ? null : 'Microsoft does not publish P3 tier breakpoints. Present the bracket, not a point price.');
+    if (!plan)
+      T('B4','billing','P3 discount', 'your distributor’s rate', '', disc.pct,'pct', disc.prov, null);
+    else
+      T('B4','billing','P3 discount', 'cheapest mix of Microsoft’s nine fixed P3 sizes, never more than the ask',
+        plan.plans ? plan.label + (plan.remainderCccu > 0
+          ? ' + ' + Math.round(plan.remainderCccu).toLocaleString() + ' CCCU on PayGo' : '')
+          : 'below the smallest plan (' + P3_TIERS[0].cccu.toLocaleString() + ' CCCU)',
+        disc.pct,'pct', disc.prov,
+        plan.plans > 1 ? 'Microsoft publishes the nine plan sizes. Holding several plans at once, each at its own ' +
+          'discount, follows the Azure reservation pattern but is not stated for Copilot Credit P3 — confirm the ' +
+          'mix with your distributor before it is ordered.' : null);
 
     /* Residency + prerequisite gates */
     if (state.org.dataResidency === 'gov_cloud')
@@ -2072,7 +2148,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       paygoPartnerCost:paygoPartnerCost, p3PartnerCost:p3PartnerCost,
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
-      p3Exposure:p3Exposure, p3Holder:p3Holder, billingModel:state.billing.model,
+      p3Exposure:p3Exposure, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -2595,7 +2671,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     PERSONA_DEFAULTS:PERSONA_DEFAULTS, PRESETS:PRESETS, EFFORT_LABELS:EFFORT_LABELS,
     EFFORT_STEP_DEFAULT:EFFORT_STEP_DEFAULT, effortMultipliers:effortMultipliers,
     EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
-    P3_ANCHORS:P3_ANCHORS, p3Discount:p3Discount,
+    P3_TIERS:P3_TIERS, p3Plan:p3Plan,
     MOTIONS:MOTIONS, MOTION_ORDER:MOTION_ORDER, motionOf:motionOf,
     defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
@@ -3909,17 +3985,37 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         'with adoption flat from month one — year one and the steady-state year are the same number. The ' +
         'arithmetic is exact; flat-from-month-one adoption is an assumption, not a measurement.</p>') +
       '<p>' + buyPath + '</p>';
-    var discLine = d.exact
-      ? '<p>At that volume the published tier is <b>' + d.pct + '%</b>.</p>'
-      : '<p>Microsoft does not publish P3 tier breakpoints. Your volume sits <b>between ' + d.bracket[0] + '% and ' + d.bracket[1] + '%</b>, modeled at <b>' + d.pct.toFixed(1) + '%</b>.</p>';
+    /* Microsoft sells P3 in nine fixed sizes (F-155), so the line names the
+       plans to order, not a point discount on an amount nobody can buy. */
+    var plan = d.plan, y1 = c.p3PlanYear1;
+    var discLine = d.tier === 'manual'
+      ? '<p>Priced at <b>your distributor’s rate of ' + d.pct + '%</b> on the whole commit.</p>'
+      : (!plan || !plan.plans)
+        ? '<p>This commit is below Microsoft’s smallest P3 plan (' + num(E.P3_TIERS[0].cccu) + ' CCCU), so there is nothing to pre-purchase.</p>'
+        : '<p>Microsoft sells P3 in nine fixed sizes, not by the CCCU. The cheapest mix that does not buy more than ' +
+          num(Math.round(c.commitCccu)) + ' CCCU is <b>' + plan.label + '</b> &mdash; ' + num(plan.coveredCccu) +
+          ' CCCU for <b>' + usd(plan.prepayUsd) + '</b> up front, an effective <b>' + plan.pct.toFixed(1) + '%</b>' +
+          (plan.remainderCccu >= 1 ? ', with the remaining ' + num(Math.round(plan.remainderCccu)) + ' CCCU on PayGo' : '') +
+          '. Rounding up to a bigger plan would strand credit that expires unused.' +
+          (plan.plans > 1 ? ' Holding several plans at once, each at its own discount, is how Azure reservations work; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
+          (c.rampApplies && y1 && y1.plans
+            ? '<p>Sized to year one instead, the order is <b>' + y1.label + '</b> (' + num(y1.coveredCccu) + ' CCCU, ' +
+              usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') + '.</p>'
+            : '');
     var verdict = c.p3Saving > 0
-      ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round(c.commitCccu * 100)) + '-credit commit.</p>' +
+      ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +
         '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and a commit sized on a model is a commit sized on a guess.</p>'
       : '<p>At this volume PayGo is the right answer.</p>';
     $('billOut').innerHTML =
       '<div class="numgrid">' +
         cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
-        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year', (d.exact ? d.pct : d.pct.toFixed(1)) + '% modeled · saves ' + usd(Math.max(0, c.p3Saving)), num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')', 'alt') +
+        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year',
+          (d.tier === 'manual' ? d.pct + '% your rate' : d.pct.toFixed(1) + '% on ' + num(plan ? plan.coveredCccu : 0) + ' CCCU') +
+          ' · saves ' + usd(Math.max(0, c.p3Saving)),
+          d.tier === 'manual'
+            ? num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')'
+            : (plan && plan.plans ? plan.label : 'no plan') +
+              (plan && plan.remainderCccu >= 1 ? ' + ' + num(Math.round(plan.remainderCccu)) + ' CCCU PayGo' : ''), 'alt') +
       '</div>' +
       '<div class="whybox">' + discLine + sizing + verdict +
       '<p style="font-size:.8rem;color:#6b7280;">The discount does not stack with other discounts. Consumption order is capacity packs, then P3, then PayGo.</p></div>' +
@@ -3996,6 +4092,15 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
                'one and the steady-state year are the same figure.');
         L.push('PayGo fallback: ' + usd(c.paygoAnnual) + ' a year at $0.01 a credit, no commitment.');
       }
+      // The ask is a need; the order is a set of Microsoft's fixed plan sizes.
+      if (c.discount.tier !== 'manual') {
+        var askPlan = E.p3Plan(c.rampApplies ? c.cccuYear1 : c.cccuRequired);
+        if (askPlan.plans)
+          L.push('Order as (fixed P3 sizes): ' + askPlan.label + ' = ' + num(askPlan.coveredCccu) + ' CCCU, ' +
+                 usd(askPlan.prepayUsd) + ' up front at Microsoft list' +
+                 (askPlan.remainderCccu >= 1 ? '; the remaining ' + num(Math.round(askPlan.remainderCccu)) +
+                   ' CCCU runs on PayGo' : '') + '. Confirm the plan mix with your provider.');
+      }
     } else {
       L.push('No CCCU ask. On the customer\'s own subscription the meter runs at $0.01 a credit — ' +
              (c.rampApplies
@@ -4051,7 +4156,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     if (c.rampApplies && c.commitCccu > c.cccuYear1)
       body += '<p>And the commit as configured is <b>' + num(Math.round(c.commitCccu)) + ' CCCU</b> against a ' +
         'year-one need of about ' + num(Math.round(c.cccuYear1)) + ' \u2014 <b>' +
-        usd((c.commitCccu - c.cccuYear1) * E.CONST.CCCU.usdPer * (1 - c.discount.pct / 100)) +
+        usd(Math.max(0, c.p3Exposure - c.p3Year1Prepay)) +
         '</b> of pre-paid credit the ramp says nobody burns in year one. Size the order to the year-one ' +
         'figure, or carry that gap knowingly.</p>';
     return '<div class="whybox partner-only" style="border-left-color:#b45309;">' +
