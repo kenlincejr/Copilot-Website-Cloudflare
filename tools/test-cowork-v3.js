@@ -94,7 +94,9 @@ function assertCopyClean(r, m) {
   near(c.packSteady.annualUsd, 72600, 'packSteady.annualUsd');
   near(c.breakeven, 0.93, 'breakeven');
   near(c.p3Year1Prepay, 72750, 'p3Year1Prepay');
-  eq(wids(r).join(','), 'V-26', 'golden: stock warning list');
+  // A3 added V-31 deliberately: stock carries 80 Copilot Business seats at
+  // about 14,519 credits per active user, over the 4,000 CSP default.
+  eq(wids(r).join(','), 'V-26,V-31', 'golden: stock warning list');
   eq(r.assumptions.map(a => a.id).join(','), 'promo-cop_biz,F10,gov-unasked,R2,ramp,motion-unknown,B4',
      'golden: stock assumption list');
 }
@@ -2204,6 +2206,49 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(/id="packLine"/.test(src) && /never roll over/.test(src), 'A2: the billing card carries the pack comparison');
   ok(src.indexOf("'<p class=\"srcline\" id=\"packLine\">") > src.indexOf('function renderBillOut'),
      'A2: the pack line renders inside the billing card (partner-only)');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Track A · A3 — V-31, the December 1 CSP Copilot Business default
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  eq(E.CONST.CSP_BIZ_UBB.creditsPerUser, 4000, 'A3: default limit is 4,000 credits');
+  eq(E.SKUS.filter(s => s.copilotBusiness).map(s => s.id).sort().join(','), 'bbasic_cop,bprem_cop,bstd_cop,cop_biz',
+     'A3: exactly the four Copilot Business SKUs carry the flag');
+  const v31 = st => (E.compute(st).warnings.find(w => w.id === 'V-31') || {}).message;
+  const m = v31(E.defaults());
+  ok(!!m, 'A3: V-31 fires on stock defaults');
+  ok(m.indexOf('4,000 Copilot Credits per user per month (about $40)') >= 0, 'A3: names the default and its dollar value');
+  ok(/about 14,519 credits per active Cowork user/.test(m), 'A3: names the modeled per-user credits');
+  ok(/around day 8 of the month/.test(m), 'A3: names the cap day');
+  ok(m.indexOf('about 19,000 credits (the top of the band)') >= 0, 'A3: recommends the raised limit');
+  ok(/December 1, 2026/.test(m) && /Not yet in effect in Australia/.test(m), 'A3: names the date and the exclusions');
+  ok(!/7 days|seven days/.test(m), 'A3: the R6.4-banned phrase stays out');
+  // Same across the three CSP motions; silent outside CSP.
+  ['direct', 'indirectReseller', 'unsure'].forEach(mo => {
+    const s = E.defaults(); s.channel = { motion: mo, providerCreditUsd: null };
+    eq(v31(s), m, 'A3: V-31 identical for motion ' + mo);
+  });
+  const nc = E.defaults(); nc.channel = { motion: 'notCsp', providerCreditUsd: null };
+  ok(!v31(nc), 'A3: silent outside CSP');
+  // Silent with no Copilot Business seats.
+  const ent = E.defaults(); ent.licenseInventory = [{ skuId: 'cop_ent', seats: 80 }, { skuId: 'e3', seats: 80 }];
+  ok(!v31(ent), 'A3: silent on enterprise-only licensing');
+  const nobiz = E.defaults(); nobiz.licenseInventory = [{ skuId: 'bstd', seats: 40 }];
+  ok(!v31(nobiz), 'A3: silent with no Copilot seats at all');
+  // Threshold: strictly greater than 4,000 credits per active user.
+  const at = n => { const s = E.defaults(); s.personas.forEach(p => { p.light = n; p.medium = 0; p.heavy = 0; }); return s; };
+  const cpa = s => { const c = E.compute(s).ctx; return c.monthlyCredits / c.basisSeats; };
+  let lo = 0, hi = 200;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (cpa(at(mid)) > 4000) hi = mid; else lo = mid; }
+  ok(cpa(at(lo)) <= 4000 && !v31(at(lo)), 'A3: silent at or under 4,000 credits per user (' + lo + ' light tasks)');
+  ok(cpa(at(hi)) > 4000 && !!v31(at(hi)), 'A3: fires just over 4,000 credits per user (' + hi + ' light tasks)');
+  // Copy stays clean under the hostile sweep used elsewhere in this suite.
+  [NaN, 1e308, -5, 'x'].forEach(v => {
+    const s = E.defaults(); s.personas[0].heavy = v; s.licenseInventory[0].seats = v;
+    const t = v31(s) || '';
+    ok(!/NaN|undefined|Infinity/.test(t), 'A3: V-31 copy clean under ' + String(v));
+  });
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
