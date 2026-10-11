@@ -371,13 +371,27 @@ sec('C');
   eq(JSON.stringify(r2.purchase), JSON.stringify(r1.purchase), 'C what-if leaves the purchase alone');
   eq(JSON.stringify(E.customerView(r2)), JSON.stringify(E.customerView(r1)), 'C what-if leaves the customer view alone');
   ok(E.serializeSession(s2, { customerSafe: true }).indexOf('"autopilots": 50') < 0, 'C what-if never reaches a customer-safe export');
-  // Partner inputs never move the pool, the purchase or the customer view
-  const s3 = J(s1); s3.partner = { motion: 'direct', providerCreditUsd: 0.0071, providerPackUsd: 150, providerP3Pct: 9, pecPct: 12, sellCreditUsd: 0.013, sellPackUsd: 260, seatMarginPct: 14,
-    services: E.defaults().partner.services.map((x) => Object.assign(x, { on: true, cost: 99 })) };
+  // Cost-side partner inputs (motion, provider rates, PEC, seat margin, service
+  // costs and the services list) never move the pool, the purchase or the customer view
+  const s3 = J(s1); s3.partner = { motion: 'direct', providerCreditUsd: 0.0071, providerPackUsd: 150, providerP3Pct: 9, pecPct: 12, seatMarginPct: 14,
+    services: E.defaults().partner.services.map((x) => Object.assign(x, { on: true, cost: 99, price: 777 })) };
   const r3 = E.compute(s3);
-  eq(JSON.stringify(r3.pool), JSON.stringify(r1.pool), 'C partner inputs leave the pool alone');
-  eq(JSON.stringify(r3.purchase), JSON.stringify(r1.purchase), 'C partner inputs leave the purchase alone');
-  eq(JSON.stringify(E.customerView(r3)), JSON.stringify(E.customerView(r1)), 'C partner inputs leave the customer view alone');
+  eq(JSON.stringify(r3.pool), JSON.stringify(r1.pool), 'C cost-side partner inputs leave the pool alone');
+  eq(JSON.stringify(r3.purchase), JSON.stringify(r1.purchase), 'C cost-side partner inputs leave the purchase alone');
+  eq(JSON.stringify(E.customerView(r3)), JSON.stringify(E.customerView(r1)), 'C cost-side partner inputs leave the customer view alone');
+  // Sell-side inputs move only the customer view's dollar fields; credits never move
+  const s3s = J(s1); s3s.partner.sellCreditUsd = 0.013; s3s.partner.sellPackUsd = 260; s3s.partner.sellSeatUsd = { business: 24, enterprise: 36 };
+  const r3s = E.compute(s3s);
+  eq(JSON.stringify(r3s.pool), JSON.stringify(r1.pool), 'C sell-side inputs leave the pool alone');
+  eq(JSON.stringify(r3s.purchase), JSON.stringify(r1.purchase), 'C sell-side inputs leave the purchase alone');
+  function noDollars(v) {
+    if (Array.isArray(v)) return v.filter((x) => !(x && x.label === 'Customer price')).map(noDollars);
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
+    return v;
+  }
+  const cv1 = E.customerView(r1), cv3s = E.customerView(r3s);
+  eq(JSON.stringify(noDollars(cv3s)), JSON.stringify(noDollars(cv1)), 'C sell-side inputs change only dollar fields in the customer view');
+  ok(cv3s.pool.steadyUsd.hi !== cv1.pool.steadyUsd.hi && JSON.stringify(cv3s.pool.steadyCredits) === JSON.stringify(cv1.pool.steadyCredits), 'C sell rate moves dollars, never credits');
   // Licensed users never raise billed credits (total mode: shift; perUser: move a user across)
   const hd = presetState('helpdesk');
   for (let L = 0; L <= 60; L += 10) {
@@ -496,7 +510,8 @@ sec('E');
     const r = E.compute(s), cv = E.customerView(r), txt = JSON.stringify(cv);
     const bad = keysOf(cv, []).filter((k) => BANNED_KEY.test(k));
     ok(bad.length === 0, 'E no banned keys in the customer view (' + i + '): ' + bad.join(','));
-    ['0.00731', '173.37', '7.77', '3.33', '0.0123', '251.11', '17.77', '4321.98', '1234.56', '4,321.98', '1,234.56'].forEach((f) => ok(txt.indexOf(f) < 0, 'E partner figure ' + f + ' absent (' + i + ')'));
+    // Sell prices (0.0123, 251.11) are the customer's own price and may appear; cost-side figures never do.
+    ['0.00731', '173.37', '7.77', '3.33', '17.77', '4321.98', '1234.56', '4,321.98', '1,234.56'].forEach((f) => ok(txt.indexOf(f) < 0, 'E partner figure ' + f + ' absent (' + i + ')'));
     ok(!/CCCU|commit unit|Tier \d|margin|partner-earned|\bPEC\b|AgentCare|Credit Wrap|specialization/i.test(txt), 'E no partner phrases in the customer view (' + i + ')');
     if (r.partner.margin !== null) ok(txt.indexOf(String(Math.round(r.partner.margin))) < 0 || Math.round(r.partner.margin) < 1000, 'E margin value absent (' + i + ')');
     ok(cv.value === null, 'E value hidden until switched on (' + i + ')');
@@ -690,6 +705,93 @@ sec('H');
   ok(E.talk(rr).length > 2 && E.talk(rr).every((l) => !/NaN|undefined|Infinity/.test(l)), 'H talk track clean');
   eq(E.ladder(rr).filter((x) => x.recommended).length, 1, 'H ladder recommends one rung');
   ok(E.nextBestAction(null).primary.id && E.objections('x').length >= 0 && Array.isArray(E.talk(undefined)), 'H text builders are total');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   R · Engine refinements: next rung to sell, the PAYG-link enforcement fix,
+   and the customer's price (sell rate, Cowork rate, seats)
+   ══════════════════════════════════════════════════════════════════════════ */
+sec('R');
+{
+  const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const rec = (st) => E.ladder(E.compute(st)).filter((x) => x.recommended)[0].key;
+  // Ladder: the NEXT rung to sell
+  eq(rec(trio), 'governance', 'R ladder: smb-trio at defaults recommends environment and governance setup');
+  eq(E.nextBestAction(E.compute(trio)).primary.id, 'NBA-01', 'R smb-trio at defaults: next best action is the billing path');
+  eq(rec(E.defaults()), 'assessment', 'R ladder: no agents recommends the assessment');
+  const ready = J(trio);
+  ready.studio.account.azurePayg = 'yes'; ready.combined.enforcement.perAgentCaps = 'yes'; ready.studio.account.tenantBase = 'premium';
+  ready.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: false, tenantDraw: false, managed: false }];
+  eq(rec(ready), 'agent365', 'R ladder: 3 agents + caps + billing path + production allocation + Business Premium → Agent 365');
+  const std = J(ready); std.studio.account.tenantBase = 'standard';
+  eq(rec(std), 'agentcare', 'R ladder: set up, under $1,000 a month, no Agent 365 eligibility → AgentCare');
+  const big = J(std); big.studio.agents[0].traffic.count = 150000;
+  eq(rec(big), 'finops', 'R ladder: set up, $1,000+ a month → credit management');
+  const noCaps = J(ready); noCaps.combined.enforcement.perAgentCaps = 'unsure';
+  eq(rec(noCaps), 'governance', 'R ladder: caps not confirmed → governance first, even with Agent 365 eligibility');
+  const noProd = J(ready); noProd.studio.environments = [];
+  eq(rec(noProd), 'governance', 'R ladder: no production allocation → governance first');
+  const noBill = J(ready); noBill.studio.account.azurePayg = 'unsure';
+  eq(rec(noBill), 'governance', 'R ladder: no billing path → governance first');
+
+  // P-50 / P-51: PAYG overflow needs a PAYG-linked environment
+  const r0 = E.compute(trio);
+  const w50 = r0.warnings.filter((w) => w.id === 'P-50')[0], w51 = r0.warnings.filter((w) => w.id === 'P-51')[0];
+  ok(w50 && /pay-as-you-go billing policy/.test(w50.msg) && /125%/.test(w50.msg), 'R P-50 says the overflow only runs once the environment is linked');
+  ok(w51 && /pay-as-you-go billing policy/.test(w51.msg) && /100%/.test(w51.msg), 'R P-51 says the same for flows');
+  ok(w50 && w50.fixes.length === 2 && w50.fixes[0].path === 'combined.enforcement.defaultEnvPayg' && w50.fixes[0].value === true &&
+     w50.fixes[1].path === 'combined.enforcement.perAgentCaps' && w50.fixes[1].value === 'yes', 'R P-50 offers the default-environment PAYG link and per-agent limits');
+  const linked = E.applyFix(trio, w50.fixes[0]), rl = E.compute(linked);
+  ok(wids(rl).indexOf('P-50') < 0 && wids(rl).indexOf('P-51') < 0, 'R linking the default environment to PAYG clears P-50 and P-51');
+  eq(rl.state.combined.enforcement.perAgentCaps, 'unsure', 'R the PAYG link leaves per-agent limits unconfirmed');
+  ok(wids(rl).indexOf('P-63') > -1, 'R P-63 still asks for per-agent limits after the PAYG link');
+  ok(wids(rl).indexOf('P-41') < 0 && E.nextBestAction(rl).primary.id !== 'NBA-01', 'R a PAYG-linked environment counts as a billing path');
+  eq(rec(linked), 'governance', 'R ladder stays at governance until per-agent limits are set');
+  const capped = E.applyFix(linked, w50.fixes[1]);
+  eq(E.compute(capped).state.combined.enforcement.perAgentCaps, 'yes', 'R the caps fix is what governance and the ladder see');
+  capped.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: true, tenantDraw: false, managed: false }];
+  ok(rec(capped) !== 'governance', 'R with caps, a billing path and a production allocation, the ladder moves past governance');
+  // A named environment gets the environment-level fix
+  const named = J(trio);
+  named.studio.environments = [{ name: 'Production', kind: 'production', allocation: 10000, payg: false, tenantDraw: false, managed: false }];
+  named.studio.agents.forEach((a) => { a.env = 'Production'; });
+  const rn = E.compute(named), wn = rn.warnings.filter((w) => w.id === 'P-50')[0];
+  ok(wn && wn.fixes[0].path === 'studio.environments.0.payg' && wn.fixes[0].value === true, 'R P-50 in a named environment offers that environment’s PAYG link');
+  ok(wids(E.compute(E.applyFix(named, wn.fixes[0]))).indexOf('P-50') < 0, 'R the environment-level PAYG link clears P-50');
+  // No PAYG overflow in the basis option → the original wording, no PAYG fix
+  const held = J(named); held.combined.purchase.current.packs = 3; held.combined.enforcement.basis = 'current';
+  const rh = E.compute(held), wh = rh.warnings.filter((w) => w.id === 'P-50')[0];
+  eq(rh.enforcement.basisPaygOverflow, false, 'R three packs held cover the high scenario');
+  ok(wh && /service-level event/.test(wh.msg) && wh.fixes.length === 0, 'R without PAYG overflow P-50 keeps its original wording');
+
+  // The customer's price
+  const cv0 = E.customerView(r0);
+  ok(cv0.pricing.basis === 'list' && cv0.pricing.usdPerCredit === 0.01 && cv0.pricing.creditSource === 'list', 'R list basis by default');
+  near(cv0.pool.steadyUsd.lo, 406, 'R steady low $406 at list', 1e-9);
+  ok(/Microsoft list prices/.test(cv0.pricing.disclaimer), 'R list disclaimer');
+  const sell = J(trio); sell.partner.sellCreditUsd = 0.0125;
+  const cvS = E.customerView(E.compute(sell));
+  ok(cvS.pricing.basis === 'sell' && cvS.pricing.creditSource === 'partner' && cvS.pricing.usdPerCredit === 0.0125, 'R sell basis from the partner rate');
+  near(cvS.pool.steadyUsd.lo, 40600 * 0.0125, 'R steady low at the sell rate', 1e-9);
+  eq(JSON.stringify(cvS.pool.steadyCredits), JSON.stringify(cv0.pool.steadyCredits), 'R the sell rate never moves credits');
+  ok(/partner’s rates/.test(cvS.pricing.disclaimer) && /\$0\.0125/.test(cvS.pricing.note), 'R sell disclaimer and note carry the rate');
+  near(cvS.buy.paygYearUsd, cvS.pool.yearCredits.mid * 0.0125, 'R pay-as-you-go year at the sell rate', 1e-6);
+  ok(/At our price/.test(E.talk(E.compute(sell))[0]), 'R talk track quotes the customer’s price');
+  const cw = J(trio); cw.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.012 });
+  const cvC = E.customerView(E.compute(cw));
+  ok(cvC.pricing.creditSource === 'cowork' && cvC.pricing.usdPerCredit === 0.012 && cvC.pricing.basis === 'sell' && /Cowork tab/.test(cvC.pricing.note), 'R Cowork sell rate becomes the Studio customer rate');
+  ok(E.compute(cw).assumptions.some((a) => a.id === 'customer-rate' && /Cowork tab/.test(a.note) && a.aud === 'customer'), 'R the planner says so in the assumptions');
+  const cwP = J(cw); cwP.partner.sellCreditUsd = 0.011;
+  eq(E.customerView(E.compute(cwP)).pricing.creditSource, 'partner', 'R a Studio sell rate wins over the Cowork rate');
+  const cwL = J(trio); cwL.coworkSession = PAYLOAD({ sellMode: false, creditUsd: 0.01 });
+  eq(E.customerView(E.compute(cwL)).pricing.basis, 'list', 'R a Cowork tab at list keeps the list basis');
+  const hd = presetState('helpdesk'); hd.partner.sellSeatUsd = { business: 24, enterprise: 36 };
+  const li = E.customerView(E.compute(hd)).licenseInstead;
+  ok(li.seatPrices.business === 24 && li.seatPrices.promo === 24 && li.seatPrices.monthly === 24 && li.seatPrices.enterprise === 36, 'R sell seat prices reach the customer view');
+  ok(li.agents[0].seatUsd > 0 && li.agents[0].savingUsdMonthly < 0, 'R helpdesk: metering beats a seat at the customer’s prices');
+  eq(E.customerView(E.compute(presetState('helpdesk'))).licenseInstead.seatPrices.enterprise, 30, 'R list seat price without a sell price');
+  const pe = E.compute(sell).partner;
+  near(pe.revenue.payg, E.compute(sell).purchase.best.scen.mid.paygCredits * 0.0125, 'R partner revenue uses the same customer rate', 1e-6);
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

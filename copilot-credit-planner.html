@@ -183,7 +183,8 @@ footer.pagefoot a { color:#6b7280; }
    Whole-plan
      compute(state) → Result { version, rateCardVersion, months[], lanes{cowork,studio,github,build,bc},
                      pool, purchase, enforcement, governance, crossover, dataverse, adjacent, value,
-                     specialization, partner, autopilot, trace[], warnings[], assumptions[], state }
+                     specialization, partner, customerRate, autopilot, trace[], warnings[], assumptions[], state }
+       customerRate = { usdPerCredit, creditSource:'partner'|'cowork'|'list', packUsd, seats, basis:'sell'|'list', note, disclaimer }
        Warning = { id:'P-nn', sev:'info'|'warn'|'risk', msg, aud:'partner'|'customer', fixes:[{label,path,value}] }
      customerView(result) → CustomerView     explicit whitelist; no margin, provider cost, PEC,
                                               plan or tier detail, pack counts, services, specialization
@@ -455,6 +456,7 @@ footer.pagefoot a { color:#6b7280; }
     } else out = '$' + fmtInt(x);
     return (neg && out !== '$0' ? '-' : '') + out;
   }
+  function fmtRate(x) { if (typeof x !== 'number' || !isFinite(x)) x = 0; return '$' + String(roundTo(x, 5)); }
   function fmtPct(x, dp) { if (typeof x !== 'number' || !isFinite(x)) x = 0; return String(roundTo(x, dp || 0)) + '%'; }
   function fmtGb(x) { if (typeof x !== 'number' || !isFinite(x)) x = 0; return String(roundTo(x, 2)) + ' GB'; }
   function roundUp(x, step) { if (!(x > 0)) return 0; return Math.ceil(x / step) * step; }
@@ -536,7 +538,8 @@ footer.pagefoot a { color:#6b7280; }
         enforcement: { basis: 'recommended', perUserCap: null, perAgentCaps: 'unsure', defaultEnvPayg: false }
       },
       partner: { motion: 'unsure', providerCreditUsd: null, providerPackUsd: null, providerP3Pct: null,
-                 pecPct: 0, sellCreditUsd: null, sellPackUsd: null, seatMarginPct: null, services: servicesDefault() },
+                 pecPct: 0, sellCreditUsd: null, sellPackUsd: null, sellSeatUsd: { business: null, enterprise: null },
+                 seatMarginPct: null, services: servicesDefault() },
       autopilot: { checklist: { usl: 'unsure', frontier: 'unsure', allowMsAgents: 'unsure', anthropic: 'unsure',
                                 spendingPolicy: 'unsure', autoApplyDecision: 'unsure', perUserLimits: 'unsure' },
                    whatIf: { on: false, autopilots: 0, tasksPerDay: 0 } },
@@ -665,6 +668,8 @@ footer.pagefoot a { color:#6b7280; }
     d.pecPct = cNum(own(p, 'pecPct'), 0, 0, 100, 2);
     d.sellCreditUsd = cNull(own(p, 'sellCreditUsd'), 0, 1, 6);
     d.sellPackUsd = cNull(own(p, 'sellPackUsd'), 0, MAX.usd, 2);
+    var ss = own(p, 'sellSeatUsd');
+    d.sellSeatUsd = { business: cNull(own(ss, 'business'), 0, 10000, 2), enterprise: cNull(own(ss, 'enterprise'), 0, 10000, 2) };
     d.seatMarginPct = cNull(own(p, 'seatMarginPct'), 0, 100, 2);
     var sv = own(p, 'services');
     if (Array.isArray(sv)) {
@@ -1170,6 +1175,36 @@ footer.pagefoot a { color:#6b7280; }
     return studioAgent(a, state);
   }
   function laneOf(a) { return a.type === 'bc' ? 'bc' : (a.harness === 'github' ? 'github' : 'studio'); }
+  /* A way for Microsoft to bill: a pack or pre-purchase plan already held, an
+     Azure subscription for pay-as-you-go, or an environment linked to a
+     pay-as-you-go billing policy (which needs that subscription). */
+  function hasBillingPath(s) {
+    var cur = s.combined.purchase.current;
+    return cur.packs > 0 || sum(cur.p3) > 0 || s.studio.account.azurePayg === 'yes' || s.combined.enforcement.defaultEnvPayg === true ||
+      s.studio.environments.some(function (e) { return e.payg; });
+  }
+  /* The customer's price. A partner sell rate wins; otherwise, when the Cowork
+     tab is pricing at the partner's sell rate, both tabs quote that same meter
+     rate; otherwise Microsoft list. Pack and seat prices use the partner's sell
+     price when one is set. Cost-side partner inputs never reach this. */
+  function customerRateFrom(s) {
+    var p = s.partner, pl = s.coworkSession ? validateCoworkPayload(s.coworkSession).payload : null;
+    var credit = RC.payg.v, source = 'list';
+    if (p.sellCreditUsd !== null && p.sellCreditUsd > 0) { credit = p.sellCreditUsd; source = 'partner'; }
+    else if (pl && pl.sellMode && pl.creditUsd > 0) { credit = pl.creditUsd; source = 'cowork'; }
+    var sb = p.sellSeatUsd.business, se = p.sellSeatUsd.enterprise;
+    var packSell = p.sellPackUsd !== null && p.sellPackUsd > 0;
+    var seats = { enterprise: se !== null && se > 0 ? se : RC.seatEnt.v, business: sb !== null && sb > 0 ? sb : RC.seatBiz.v,
+                  promo: sb !== null && sb > 0 ? sb : RC.seatBizPromo.v, monthly: sb !== null && sb > 0 ? sb : RC.seatBizMonthly.v };
+    var sell = source !== 'list' || packSell || (sb !== null && sb > 0) || (se !== null && se > 0);
+    return { usdPerCredit: credit, creditSource: source, packUsd: packSell ? p.sellPackUsd : RC.pack.v.usd, seats: seats,
+             basis: sell ? 'sell' : 'list',
+             note: source === 'cowork' ? 'Credits priced at the same rate the Cowork tab quotes (' + fmtRate(credit) + ' a credit), so both tools agree.'
+               : source === 'partner' ? 'Credits priced at your partner’s rate of ' + fmtRate(credit) + ' a credit.'
+               : 'Credits priced at Microsoft’s list rate of ' + fmtRate(credit) + ' a credit.',
+             disclaimer: sell ? 'Estimate, not a quote. Figures reflect the inputs shown and are priced at your partner’s rates; Microsoft list prices where noted.'
+               : 'Estimate, not a quote. Figures reflect the inputs shown and Microsoft list prices current at the rate card date.' };
+  }
 
   /* ══ 14 · Autopilot panel (never pooled) ════════════════════════════════ */
   var AUTOPILOT_ITEMS = deepFreeze([
@@ -1521,7 +1556,7 @@ footer.pagefoot a { color:#6b7280; }
       SCEN.forEach(function (sc) { tgt[sc] += a[sc] * f; });
     });
     var events = [], CAL = 30;
-    function cut(scope, cons, cap, payg) {
+    function cut(scope, cons, cap, payg, envIndex) {
       var out = { flowsDay: { mid: null, hi: null }, agentsDay: { mid: null, hi: null } };
       if (payg) return out;
       ['mid', 'hi'].forEach(function (sc) {
@@ -1529,18 +1564,18 @@ footer.pagefoot a { color:#6b7280; }
         if (cons[sc] > cap * RC.enforceFlows.v / 100) out.flowsDay[sc] = dayOf(cap * RC.enforceFlows.v / 100, perDay);
         if (cons[sc] > cap * RC.enforceAgents.v / 100) out.agentsDay[sc] = dayOf(cap * RC.enforceAgents.v / 100, perDay);
       });
-      if (out.flowsDay.hi) events.push({ day: out.flowsDay.hi, kind: 'flows', scope: scope, scen: out.flowsDay.mid ? 'mid' : 'hi',
+      if (out.flowsDay.hi) events.push({ day: out.flowsDay.hi, kind: 'flows', scope: scope, envIndex: envIndex, scen: out.flowsDay.mid ? 'mid' : 'hi',
         text: 'Agent flows in ' + scope + ' are blocked at 100% of ' + fmtInt(cap) + ' credits' + (out.flowsDay.mid ? '' : ' (high end only)') + '.' });
-      if (out.agentsDay.hi) events.push({ day: out.agentsDay.hi, kind: 'agents', scope: scope, scen: out.agentsDay.mid ? 'mid' : 'hi',
+      if (out.agentsDay.hi) events.push({ day: out.agentsDay.hi, kind: 'agents', scope: scope, envIndex: envIndex, scen: out.agentsDay.mid ? 'mid' : 'hi',
         text: 'Custom agents in ' + scope + ' are disabled at 125% (' + fmtInt(cap * RC.enforceAgents.v / 100) + ' credits)' + (out.agentsDay.mid ? '' : ' (high end only)') + '.' });
       return out;
     }
     var envOut = te.environments.map(function (e, k) {
       var c = byEnv[e.name], src = s.studio.environments[k] || {};
       return { name: e.name, kind: src.kind, allocation: e.allocation, payg: e.payg, managed: !!src.managed, tenantDraw: src.tenantDraw !== false,
-               consumption: c, flowsCutoff: e.flowsCutoff, agentsCutoff: e.agentsCutoff, cuts: cut(e.name, c, e.allocation, e.payg || prepaid === 0) };
+               consumption: c, flowsCutoff: e.flowsCutoff, agentsCutoff: e.agentsCutoff, cuts: cut(e.name, c, e.allocation, e.payg || prepaid === 0, k) };
     });
-    var tenantCuts = cut('the default environment and tenant pool', tenantPpac, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0);
+    var tenantCuts = cut('the default environment and tenant pool', tenantPpac, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0, -1);
     var m365 = peak.m365;
     var starvation = { mid: prepaid > 0 && te.allocated > 0 && m365.mid > te.remainder, hi: prepaid > 0 && te.allocated > 0 && m365.hi > te.remainder };
     /* Per-user caps: manual, or the December 1 default when it applies. */
@@ -1569,6 +1604,7 @@ footer.pagefoot a { color:#6b7280; }
     function any(f, sc) { return envOut.some(function (e) { return !!e.cuts[f][sc]; }) || !!tenantCuts[f][sc]; }
     return {
       basis: basis === pu.best ? 'recommended' : 'current', prepaidMonthly: prepaid, allocated: te.allocated, remainder: te.remainder,
+      basisPaygOverflow: basis.scen.hi.paygCredits > 0,
       overAllocated: te.overAllocated, flowsCutoff: te.flowsCutoff, agentsCutoff: te.agentsCutoff,
       environments: envOut, tenantPool: { consumption: tenantPpac, cuts: tenantCuts, payg: s.combined.enforcement.defaultEnvPayg },
       m365: { demand: m365, available: te.remainder, starvation: starvation },
@@ -1737,13 +1773,14 @@ footer.pagefoot a { color:#6b7280; }
       return { key: x.key, label: x.label, basis: x.basis, on: x.on, qty: qty, price: x.price, revenueYear: rev, costYear: cost };
     });
   }
-  function partnerFrom(s, pu, cx, svc) {
+  function partnerFrom(s, pu, cx, svc, rate) {
     var p = s.partner, o = pu.best, mid = o.scen.mid, asks = [];
-    var sellCredit = p.sellCreditUsd !== null ? p.sellCreditUsd : RC.payg.v;
-    var sellPack = p.sellPackUsd !== null ? p.sellPackUsd : RC.pack.v.usd;
+    var cr = isObj(rate) ? rate : customerRateFrom(s);
+    var sellCredit = cr.usdPerCredit;
+    var sellPack = cr.packUsd;
     var on = svc.filter(function (x) { return x.on; });
     var licUsers = sum(cx.agents.filter(function (r) { return r.verdict === 'license'; }).map(function (r) { return r.unlicensedUsers; }));
-    var licRev = sum(cx.agents.filter(function (r) { return r.verdict === 'license'; }).map(function (r) { return r.unlicensedUsers * r.seatUsd * 12; }));
+    var licRev = sum(cx.agents.filter(function (r) { return r.verdict === 'license'; }).map(function (r) { return r.unlicensedUsers * (cr.seats[r.sku] || r.seatUsd) * 12; }));
     var rev = { packs: o.packs.packMonths * sellPack, p3: o.p3.usd, payg: mid.paygCredits * sellCredit, services: sum(on.map(function (x) { return x.revenueYear; })), licenses: licRev };
     var cost = { packs: null, p3: null, payg: null, services: null, licenses: null };
     var need = { packs: o.packs.packMonths > 0, p3: o.p3.units > 0, payg: mid.paygCredits > 0, services: on.length > 0, licenses: licUsers > 0 };
@@ -1832,7 +1869,9 @@ footer.pagefoot a { color:#6b7280; }
     var val = valueFrom(s, agents, pl);
     var sp = specializationFrom(pl);
     var svc = servicesFrom(s, agents, pu);
-    var pe = partnerFrom(s, pu, cx, svc);
+    var rate = customerRateFrom(s);
+    var pe = partnerFrom(s, pu, cx, svc, rate);
+    assume.push(A('customer-rate', 'Customer price', rate.note, rate.creditSource === 'list' ? 'ms-verified' : 'partner', 'customer'));
     var ac = s.studio.account;
 
     trace = trace.concat(cw.trace);
@@ -1867,7 +1906,7 @@ footer.pagefoot a { color:#6b7280; }
     if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year carry their own annual term past this horizon. The planner counts only the months inside it.'));
     if (b.p3ExhaustMonth) warn.push(W('P-38', 'info', 'In the middle scenario the pre-purchase plan runs out in month ' + b.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
     if (!(pl.year.hi > 0)) warn.push(W('P-40', 'info', 'No billable usage modeled yet, so there is nothing to buy.', { aud: 'customer' }));
-    if (pl.year.hi > 0 && P.current.packs === 0 && sum(P.current.p3) === 0 && ac.azurePayg !== 'yes')
+    if (pl.year.hi > 0 && !hasBillingPath(s))
       warn.push(W('P-41', 'risk', 'No billing path yet: no capacity pack, no pre-purchase plan and no Azure subscription for pay-as-you-go. Nothing on this plan runs until one exists.', { aud: 'customer',
         fixes: [{ label: 'An Azure subscription is linked for pay-as-you-go', path: 'studio.account.azurePayg', value: 'yes' }] }));
     assume.push(A('comonotonic', 'Scenarios move together', 'Low, middle and high scenarios move every lane at once (all low or all high); the optimizer weights them 25/50/25.', 'editorial', 'customer'));
@@ -1877,10 +1916,25 @@ footer.pagefoot a { color:#6b7280; }
 
     /* Enforcement and governance */
     var cap = en.userCap;
+    /* When the plan relies on pay-as-you-go overflow, the hard stop is only
+       there because the environment is not linked to a pay-as-you-go billing
+       policy yet; the fix is to link it (and cap each agent at the same time). */
+    function paygFixes(ev) {
+      var f = ev.envIndex >= 0 && s.studio.environments[ev.envIndex]
+        ? { label: 'Link ' + s.studio.environments[ev.envIndex].name + ' to pay-as-you-go', path: 'studio.environments.' + ev.envIndex + '.payg', value: true }
+        : { label: 'Link the default environment to pay-as-you-go', path: 'combined.enforcement.defaultEnvPayg', value: true };
+      return [f, { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }];
+    }
     var evA = en.events.filter(function (e) { return e.kind === 'agents'; })[0];
-    if (evA) warn.push(W('P-50', evA.scen === 'mid' ? 'risk' : 'warn', 'Custom agents go dark at 125% of prepaid capacity: around day ' + evA.day + ' of ' + monthName(en.peakMonth) + '. Treat it as a service-level event and set per-agent limits on day one.', { aud: 'customer' }));
+    if (evA) warn.push(W('P-50', evA.scen === 'mid' ? 'risk' : 'warn', en.basisPaygOverflow
+      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, custom agents go dark at 125% of prepaid capacity, around day ' + evA.day + ' of ' + monthName(en.peakMonth) + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
+      : 'Custom agents go dark at 125% of prepaid capacity: around day ' + evA.day + ' of ' + monthName(en.peakMonth) + '. Treat it as a service-level event and set per-agent limits on day one.',
+      { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evA) : [] }));
     var evF = en.events.filter(function (e) { return e.kind === 'flows'; })[0];
-    if (evF) warn.push(W('P-51', evF.scen === 'mid' ? 'risk' : 'warn', 'Agent flows stop at 100% of prepaid capacity: around day ' + evF.day + ' of ' + monthName(en.peakMonth) + '.', { aud: 'customer' }));
+    if (evF) warn.push(W('P-51', evF.scen === 'mid' ? 'risk' : 'warn', en.basisPaygOverflow
+      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, agent flows stop at 100% of prepaid capacity, around day ' + evF.day + ' of ' + monthName(en.peakMonth) + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
+      : 'Agent flows stop at 100% of prepaid capacity: around day ' + evF.day + ' of ' + monthName(en.peakMonth) + '.',
+      { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evF) : [] }));
     if (en.m365.starvation.hi) warn.push(W('P-52', en.m365.starvation.mid ? 'risk' : 'warn', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits) leave ' + fmtInt(en.remainder) +
       ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.hi) + ' at the high end. Cowork spills to pay-as-you-go sooner.', { aud: 'customer' }));
     if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + monthName(cap.firstMonth) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
@@ -1947,7 +2001,7 @@ footer.pagefoot a { color:#6b7280; }
     };
     return {
       version: VERSION, rateCardVersion: RATECARD_VERSION, schemaVersion: SCHEMA_VERSION, months: iso,
-      lanes: lanes, pool: pl, purchase: pu, enforcement: en, governance: gv, crossover: cx, dataverse: dv, adjacent: adj,
+      lanes: lanes, pool: pl, purchase: pu, enforcement: en, governance: gv, crossover: cx, dataverse: dv, adjacent: adj, customerRate: rate,
       value: val, specialization: sp, partner: pe, autopilot: ap, trace: trace, warnings: w2, assumptions: assume, state: s
     };
   }
@@ -1978,8 +2032,7 @@ footer.pagefoot a { color:#6b7280; }
     try {
       var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
       var hasDemand = r.pool.year.hi > 0;
-      var cur = s.combined.purchase.current;
-      if (hasDemand && cur.packs === 0 && sum(cur.p3) === 0 && ac.azurePayg !== 'yes')
+      if (hasDemand && !hasBillingPath(s))
         out.push(rule('NBA-01', 'Blocker', 'Set up a billing path first', ['Nothing in this plan runs without a capacity pack, a pre-purchase plan or an Azure subscription for pay-as-you-go.'],
           'Before we talk agents, let’s decide how the credits get paid for.', 'Quote a starter pack or set up the Azure plan in the same visit.',
           { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing));
@@ -2029,8 +2082,9 @@ footer.pagefoot a { color:#6b7280; }
     try {
       var lines = [];
       var cv = customerView(r);
-      lines.push('At list price your plan runs about ' + fmtInt(r.pool.steady.lo) + '–' + fmtInt(r.pool.steady.hi) + ' credits a month once it is running, roughly ' +
-        fmtUsd(r.pool.steadyUsd.lo) + '–' + fmtUsd(r.pool.steadyUsd.hi) + ' a month at pay-as-you-go.');
+      var cr = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : { usdPerCredit: RC.payg.v, basis: 'list' };
+      lines.push((cr.basis === 'sell' ? 'At our price' : 'At list price') + ' your plan runs about ' + fmtInt(r.pool.steady.lo) + '–' + fmtInt(r.pool.steady.hi) + ' credits a month once it is running, roughly ' +
+        fmtUsd(r.pool.steady.lo * cr.usdPerCredit) + '–' + fmtUsd(r.pool.steady.hi * cr.usdPerCredit) + ' a month at pay-as-you-go.');
       cv.warnings.forEach(function (w) { lines.push(w.msg); });
       nextBestAction(r).matches.forEach(function (m) { lines.push(m.opener); });
       var seen = {};
@@ -2083,12 +2137,17 @@ footer.pagefoot a { color:#6b7280; }
     var r = isObj(result) ? result : compute(defaults());
     var rec = 'assessment';
     try {
-      var ag = r.lanes.agents.filter(function (a) { return !a.paused; }), base = r.state.studio.account.tenantBase;
-      if (ag.length >= 3 && (base === 'premium' || base === 'e5')) rec = 'agent365';
-      else if (ag.length && r.pool.steadyUsd.mid >= 1000) rec = 'finops';
-      else if (ag.length && r.state.combined.enforcement.perAgentCaps === 'yes') rec = 'agentcare';
-      else if (ag.length) rec = 'governance';
-      else if (r.state.studio.account.totalUsers > 0) rec = 'build';
+      /* The NEXT rung to sell, in sequence: nothing goes live before the
+         environment and governance setup (a billing path, per-agent limits
+         and a production environment with an allocation). */
+      var s = r.state, ag = r.lanes.agents.filter(function (a) { return !a.paused; }), base = s.studio.account.tenantBase;
+      var billing = hasBillingPath(s), caps = s.combined.enforcement.perAgentCaps === 'yes';
+      var prod = s.studio.environments.some(function (e) { return e.kind === 'production' && e.allocation > 0; });
+      if (!ag.length) rec = 'assessment';
+      else if (!billing || !caps || !prod) rec = 'governance';
+      else if (ag.length >= 3 && (base === 'premium' || base === 'e5')) rec = 'agent365';
+      else if (r.pool.steadyUsd.mid >= 1000) rec = 'finops';
+      else rec = 'agentcare';
       var svc = r.state.partner.services;
       return LADDER.map(function (x) {
         var p = svc.filter(function (y) { return y.key === x.key; })[0];
@@ -2116,6 +2175,10 @@ footer.pagefoot a { color:#6b7280; }
                  rateUnit: String(t.rateUnit), credits: num(t.credits), billed: t.billed === true, zeroReason: t.zeroReason || null,
                  scen: String(t.scen), fact: t.fact || null, src: t.src || null, prov: String(t.prov) };
       });
+      var CR = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : customerRateFrom(normalize(r.state));
+      var rc = num(CR.usdPerCredit);
+      function usdBand(o) { var b = band(o); return { lo: b.lo * rc, mid: b.mid * rc, hi: b.hi * rc }; }
+      var best = r.purchase.best, buyYear = num(best.packs.packMonths) * num(CR.packUsd) + num(best.p3.usd) + num(best.scen.mid.paygCredits) * rc;
       var bf = r.purchase && r.purchase.best ? r.purchase.best.family : 'payg';
       var approach = { payg: 'Pay as you go', packs: 'Monthly prepaid capacity sized to steady use, overflow at pay-as-you-go',
                        p3: 'An annual pre-purchase commitment, overflow at pay-as-you-go',
@@ -2129,9 +2192,11 @@ footer.pagefoot a { color:#6b7280; }
                    buildLo: num(a.build.lo), buildHi: num(a.build.hi) };
         }),
         pool: { months: P.months.map(function (m) { return { month: m.iso, lo: num(m.total.lo), mid: num(m.total.mid), hi: num(m.total.hi) }; }),
-                yearCredits: band(P.year), steadyCredits: band(P.steady), yearUsdAtList: band(P.yearUsd), steadyUsdAtList: band(P.steadyUsd) },
+                yearCredits: band(P.year), steadyCredits: band(P.steady), yearUsd: usdBand(P.year), steadyUsd: usdBand(P.steady) },
+        pricing: { basis: CR.basis === 'sell' ? 'sell' : 'list', usdPerCredit: rc, creditSource: String(CR.creditSource), note: String(CR.note), disclaimer: String(CR.disclaimer) },
         buy: { approach: approach, billingOrder: 'Capacity packs first, then any pre-purchase commitment, then pay-as-you-go.',
-               finality: 'Prepaid capacity resets monthly; an annual commitment cannot be canceled and renews unless turned off.' },
+               finality: 'Prepaid capacity resets monthly; an annual commitment cannot be canceled and renews unless turned off.',
+               yearUsd: num(buyYear), paygYearUsd: num(P.year.mid) * rc, scenario: 'middle' },
         adjacent: { w365UsdMonthly: num(J.w365.usdMonthly), agent365UsdMonthly: num(J.agent365.usdMonthly), byomUsdMonthly: num(J.byom.usdMonthly),
                     dataverseUsdMonthly: num(J.dataverse.usdMonthly), premiumFlowsFlag: J.premiumFlowsFlag === true, totalUsdMonthly: num(J.totalMonthlyUsd) },
         dataverse: { entitlement: { db: num(D.entitlement.db), file: num(D.entitlement.file), log: num(D.entitlement.log) },
@@ -2149,7 +2214,12 @@ footer.pagefoot a { color:#6b7280; }
                        userLimit: E.userCap.cap === null ? null : num(E.userCap.cap), peakMonth: E.peakMonth,
                        events: E.events.map(function (e) { return { day: num(e.day), text: String(e.text) }; }) },
         licenseInstead: { breakEvens: { enterprise: num(X.breakEvens.enterprise), business: num(X.breakEvens.business), promo: num(X.breakEvens.promo), monthly: num(X.breakEvens.monthly) },
-                          agents: X.agents.map(function (a) { return { name: a.name, users: num(a.unlicensedUsers), freeIfLicensedPerUser: num(a.freeIfLicensedPerUser), verdict: a.verdict }; }) },
+                          seatPrices: { enterprise: num(CR.seats.enterprise), business: num(CR.seats.business), promo: num(CR.seats.promo), monthly: num(CR.seats.monthly) },
+                          agents: X.agents.map(function (a) {
+                            var seat = num(CR.seats[a.sku]);
+                            return { name: a.name, users: num(a.unlicensedUsers), freeIfLicensedPerUser: num(a.freeIfLicensedPerUser), verdict: a.verdict, sku: String(a.sku),
+                                     breakEven: num(a.breakEven), seatUsd: seat, savingUsdMonthly: num(a.unlicensedUsers) * (num(a.freeIfLicensedPerUser) * rc - seat) };
+                          }) },
         zeroRatedMonthly: num(sum(L.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }))),
         value: V.on ? { hours: num(V.aah), valueUsd: num(V.aavUsd), hourlyUsd: num(V.hourlyUsd), deflectionUsd: V.deflectionUsd === null ? null : num(V.deflectionUsd),
                         eligibleForMsReport: V.eligibleForMsReport === true, reportMin: num(V.reportMin) } : null,
@@ -2160,7 +2230,7 @@ footer.pagefoot a { color:#6b7280; }
         sources: Object.keys(srcUsed).sort().map(function (k) { return { title: SRC[k].title, url: SRC[k].url, date: SRC[k].date }; })
       };
     } catch (e) {
-      return { version: VERSION, rateCardVersion: RATECARD_VERSION, months: [], accountName: '', preparedBy: '', cowork: {}, agents: [], pool: {}, buy: {},
+      return { version: VERSION, rateCardVersion: RATECARD_VERSION, months: [], accountName: '', preparedBy: '', cowork: {}, agents: [], pool: {}, pricing: {}, buy: {},
                adjacent: {}, dataverse: {}, guardrails: {}, enforcement: {}, licenseInstead: {}, zeroRatedMonthly: 0, value: null,
                warnings: [], assumptions: [], provenance: PROV_LABEL, trace: [], sources: [] };
     }
@@ -2412,7 +2482,7 @@ footer.pagefoot a { color:#6b7280; }
     parseSession: parseSession, serializeSession: serializeSession, parsePartnerCard: parsePartnerCard, serializePartnerCard: serializePartnerCard,
     newAgent: newAgent, duplicateAgent: duplicateAgent, renameAgent: renameAgent, deleteAgent: deleteAgent, pauseAgent: pauseAgent,
     applyAgentPreset: applyAgentPreset, applyScenarioPreset: applyScenarioPreset, patch: patch, applyFix: applyFix, defaultsDelta: defaultsDelta,
-    fmtInt: fmtInt, fmtUsd: fmtUsd, fmtPct: fmtPct
+    fmtInt: fmtInt, fmtUsd: fmtUsd, fmtPct: fmtPct, fmtRate: fmtRate, hasBillingPath: hasBillingPath
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 </script>
