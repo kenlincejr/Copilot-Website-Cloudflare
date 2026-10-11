@@ -1026,6 +1026,9 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     TASK_ENVELOPE: { lo: 0.70, hi: 15.00 }, // ms-verified: "a single task typically runs $0.70 to $15"
     PER_USER_RANGE: { lo: 82, hi: 228 },    // ms-verified: MS Customer Cowork Estimator published range
     CCCU: { creditsPer: 100, usdPer: 1.00 },// ms-verified: 1 CCCU = $1 retail = 100 credits
+    // ms-verified F-013: $200 per 25,000 credits a month, billed annually, no
+    // rollover. $0.008 a credit, below every P3 tier except Tier 9.
+    PACK: { usdPerMonth: 200, creditsPerMonth: 25000 },
     BENCHMARK: { ratio: 2.6, anchorUsd: 30 },// editorial (TD SYNNEX) / ms-verified anchor F-090
     BAND: { modeled: 0.30, measured: 0.15 },// editorial: ±30% default, ±15% once calibrated
     SANITY: { ratioLo: 0.5, ratioHi: 6.0 },
@@ -1035,7 +1038,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     // Magnitude ceilings for every count and price the engine multiplies.
     // Values above these are typos or attacks, and both overflow the same way:
     // a finite input times a finite input reaching Infinity on a customer card.
-    MAX: { employees: 1e6, seats: 1e6, tasksPerMonth: 1e4, tierCredits: 1e7, usd: 1e5 }
+    MAX: { employees: 1e6, seats: 1e6, tasksPerMonth: 1e4, tierCredits: 1e7, usd: 1e5, cccu: 1e9 }
   };
 
   /* ── SKU catalog ──────────────────────────────────────────────────────── */
@@ -1443,7 +1446,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     s.personaTasksTouched = s.personaTasksTouched === true;
     s.effort.step = clamp(n(s.effort.step, EFFORT_STEP_DEFAULT), 1, 3); // the slider's own range
     s.model.multiplier = clamp(n(s.model.multiplier, 1), 0, 100);
-    s.billing.capacityPacksCccu = Math.max(0, n(s.billing.capacityPacksCccu, 0));
+    s.billing.capacityPacksCccu = clamp(n(s.billing.capacityPacksCccu, 0), 0, CONST.MAX.cccu);
     // The ramp: mode is a two-value enum and everything else lands inside the
     // engine's own ranges. The pilot's basisSeats ceiling is applied inside
     // compute() — basisSeats is not known until the funnel has run.
@@ -1879,7 +1882,11 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         'tier of ' + P3_TOP.pct + '%. Confirm it with your distributor before you quote it.', []);
     // Capacity packs are consumed first, but they are bought, not free. Netting
     // them out of the commit without charging for them invents a saving.
-    var packUsd = n(state.billing.capacityPacksCccu,0) * CONST.CCCU.usdPer;
+    // Dormant input (no UI): annual pack capacity expressed in CCCU, priced at
+    // the pack rate ($0.80 per CCCU-equivalent), not at the $1 PayGo rate.
+    // Monthly no-rollover is not modeled here; packSteady below is.
+    var PACK_USD_PER_CCCU = CONST.CCCU.creditsPer * CONST.PACK.usdPerMonth / CONST.PACK.creditsPerMonth;
+    var packUsd = clamp(n(state.billing.capacityPacksCccu,0), 0, CONST.MAX.cccu) * PACK_USD_PER_CCCU;
     var p3Prepay, p3Annual, breakeven;
     if (plan) {
       p3Prepay = plan.prepayUsd;
@@ -1891,6 +1898,19 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       breakeven = 1 - disc.pct / 100;
     }
     var p3Saving = paygoAnnual - p3Annual;
+    /* Capacity packs at steady state. Whole packs a month, and a remainder
+       on PayGo whenever the remainder costs less than one more pack: the
+       cheapest monthly mix, priced over twelve identical months. A ramp or a
+       seasonal load wastes pack credit, which is why this is shown as the
+       steady-state comparison and never as the year-one order. */
+    var packSteady = (function () {
+      var m = Math.max(0, monthlyCredits), per = CONST.PACK.creditsPerMonth;
+      var k = Math.floor(m / per), rem = m - k * per;
+      if (rem * CONST.CREDIT_USD > CONST.PACK.usdPerMonth) { k += 1; rem = 0; }
+      var packAnnual = k * CONST.PACK.usdPerMonth * 12, remAnnual = rem * CONST.CREDIT_USD * 12;
+      return { packs: k, packAnnualUsd: packAnnual, paygoRemainderAnnualUsd: remAnnual,
+               annualUsd: packAnnual + remAnnual };
+    })();
     // Year one is what the order is sized to on a ramp; price it the same way.
     var p3PlanYear1 = manualPct != null ? null : p3Plan(cccuYear1);
     var p3Year1Prepay = packUsd + (p3PlanYear1 ? p3PlanYear1.prepayUsd
@@ -2148,7 +2168,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       paygoPartnerCost:paygoPartnerCost, p3PartnerCost:p3PartnerCost,
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
-      p3Exposure:p3Exposure, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
+      p3Exposure:p3Exposure, packSteady:packSteady, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -4027,6 +4047,16 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
           'Microsoft Azure Consumption Commitment: eligible Copilot Credit consumption can count toward an existing MACC when the ' +
           'subscription sits under the billing account holding the commitment. This tool does not model the draw-down &mdash; ' +
           '<a class="docref" href="https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/track-consumption-commitment" target="_blank" rel="noopener">check eligibility on the commitment itself</a>.</p>'
+        : '') +
+      (c.packSteady && c.packSteady.packs > 0 && c.packSteady.annualUsd < c.paygoAnnual
+        ? '<p class="srcline" id="packLine"><b>Capacity packs are cheaper per credit than P3 for a steady load.</b> ' +
+          usd(E.CONST.PACK.usdPerMonth) + ' buys ' + num(E.CONST.PACK.creditsPerMonth) + ' credits a month (' +
+          '$' + (E.CONST.PACK.usdPerMonth / E.CONST.PACK.creditsPerMonth).toFixed(3) + ' a credit), cheaper than every P3 tier but the largest, which only matches it. ' +
+          'At full adoption this account would run on <b>' + num(c.packSteady.packs) + ' packs a month' +
+          (c.packSteady.paygoRemainderAnnualUsd > 0 ? ' plus the remainder on PayGo' : '') + ': ' +
+          usd(c.packSteady.annualUsd) + ' a year</b>, against ' + usd(c.p3Annual) + ' on P3 and ' + usd(c.paygoAnnual) +
+          ' on PayGo. Pack credits reset every month and never roll over, so packs only pay on a load that is steady month ' +
+          'to month: during the ramp, hold fewer and let PayGo carry the rest.</p>'
         : '') +
       p3RiskBlock(c) + partnerCostBlock(c) +
       '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';

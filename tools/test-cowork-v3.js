@@ -91,6 +91,7 @@ function assertCopyClean(r, m) {
   near(c.p3Saving, 6300, 'p3Saving');
   near(c.p3Exposure, 83700, 'p3Exposure');
   near(c.discount.pct, 7, 'discount.pct');
+  near(c.packSteady.annualUsd, 72600, 'packSteady.annualUsd');
   near(c.breakeven, 0.93, 'breakeven');
   near(c.p3Year1Prepay, 72750, 'p3Year1Prepay');
   eq(wids(r).join(','), 'V-26', 'golden: stock warning list');
@@ -2174,6 +2175,35 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(/confirm the mix with your distributor/.test(b4.note), 'A1: B4 carries the several-plans caveat');
   const one = E.defaults(); one.ramp.mode = 'none'; one.billing.commitCoveragePct = 15000 / 90600;
   eq(E.compute(one).trace.find(x => x.id === 'B4').prov, 'ms-verified', 'A1: a single plan is Microsoft-verified');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Track A · A2 — capacity packs at $200 per 25,000 credits a month (F-013)
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  eq(E.CONST.PACK.usdPerMonth, 200, 'A2: pack price');
+  eq(E.CONST.PACK.creditsPerMonth, 25000, 'A2: pack credits');
+  const r0 = E.compute(E.defaults()), c0 = r0.ctx;
+  // Stock: 755,000 a month = 30 packs + 5,000 credits on PayGo ($50 a month).
+  eq(c0.packSteady.packs, 30, 'A2: stock steady state runs on 30 packs');
+  eq(c0.packSteady.annualUsd, 72600, 'A2: 30 packs + PayGo remainder = $72,600 a year');
+  ok(c0.packSteady.annualUsd < c0.p3Annual && c0.p3Annual < c0.paygoAnnual,
+     'A2: packs < P3 < PayGo at stock steady state');
+  // A remainder worth more than a pack buys one more pack instead.
+  const big = E.defaults(); big.personas.forEach(p => { p.light = 0; p.medium = 0; p.heavy = 0; });
+  const cb = E.compute(big).ctx;
+  eq(cb.packSteady.packs, 0, 'A2: no load, no packs');
+  // The dormant input is priced at the pack rate, not the PayGo rate.
+  const s = E.defaults(); s.billing.capacityPacksCccu = 3000;
+  const cs = E.compute(s).ctx;
+  eq(Math.round(cs.p3Exposure - cs.discount.plan.prepayUsd), 2400, 'A2: 3,000 CCCU of packs costs $2,400, not $3,000');
+  const h = E.defaults(); h.billing.capacityPacksCccu = 1e308;
+  const ch = E.compute(h).ctx;
+  ok(isFinite(ch.p3Annual) && isFinite(ch.p3Exposure) && ch.p3Annual >= 0, 'A2: 1e308 packs stays finite');
+  // The partner-only comparison line exists in the billing card source.
+  ok(/id="packLine"/.test(src) && /never roll over/.test(src), 'A2: the billing card carries the pack comparison');
+  ok(src.indexOf("'<p class=\"srcline\" id=\"packLine\">") > src.indexOf('function renderBillOut'),
+     'A2: the pack line renders inside the billing card (partner-only)');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
