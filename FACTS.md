@@ -222,3 +222,18 @@ The **2.6× Cowork-to-license ratio** quoted throughout `cowork-calculator.html`
 **No collection channel.** The calculator no longer offers a way to contribute a ratio; the whybox states the benchmark's methodology and limits without soliciting submissions.
 
 **Methodology caveat, binding on any future re-statement of this figure.** If a real collection channel is ever built, contributed ratios would be **self-selected and unverified**. Nobody would audit the inputs behind a submitted number, and the partners who bother to send one are not a random sample of partners. Accumulated contributions could move the provenance from *"editorial, sample unknown"* to *"partner-sourced, n = X"* — a real improvement, and the honest ceiling. They could **never** reach `ms-verified`, or any `ms-` prefixed tag: no volume of partner submissions makes a figure a Microsoft one. Any restatement of the multiplier must carry the n and the self-selection caveat together; an n without the caveat overstates the evidence more than the bare editorial tag did.
+
+## 13. Copilot Credit facts (F-155 – F-184) — Track A, 2026-10-11
+
+*Added with the Cowork calculator Track A remediation and the Copilot Credit Planner. Research record: `research/cowork-calculator-studio-autopilot-2026-10-11.md`.*
+
+**One allocation, two consumers.** F-155 through F-184 were registered in a single commit so the Cowork calculator fixes and the new planner page could not collide on IDs. Records carry empty `occurrences` until a page first places the number; the commit that places it adds the occurrence.
+
+**What changed in the ledger.**
+
+- **F-155** (P3 tiers) supersedes F-152's "breakpoints are not published" guidance. Microsoft now publishes all nine fixed plan sizes, and the calculator prices the plans rather than a bracket. Holding several plans at once is recorded as LIKELY, not confirmed.
+- **F-150** ($82–228) is **SUPERSEDED**. `aka.ms/CustomerCoworkEstimator` now redirects to Microsoft's web Copilot Credit Estimator, which prices Cowork per user per day (F-158, F-159). The calculator labels $82–228 as the original estimator's range and reconciles the two on step 5. **F-180** records the retired Excel model itself, with `type: "microsoft-retired"`.
+- **F-013** (capacity pack, $200 per 25,000 credits a month) is confirmed against the October 2026 Copilot Studio Licensing Guide. Its occurrences were re-pointed from `cpb.html`, where the value no longer appears after the split into the `cpb-*.html` guides, to those guides and the calculator.
+- **F-182** (autonomous trigger runs are billed for a licensed maker) carries status **LIKELY**: Microsoft's documents imply it in three places but never state it in one sentence.
+
+**Review by 2026-11-24**, the week after Ignite (November 17–20, 2026): Autopilot pricing, the rate card and the P3 tiers are the likeliest to move.

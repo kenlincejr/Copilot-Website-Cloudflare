@@ -3,7 +3,7 @@
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
  "fact_count": 184,
- "occurrence_count": 285,
+ "occurrence_count": 290,
  "facts": [
   {
    "id": "F-001",
@@ -677,35 +677,42 @@
    "source_url": "https://go.microsoft.com/fwlink/?linkid=2320995",
    "as_of": "2026-10-07",
    "verified": true,
-   "notes": "$200 per pack per month, billed annually, 25,000 Copilot Credits a month, no rollover (resets monthly). $0.008 per credit - cheaper than every P3 tier below Tier 9. Shared with Microsoft 365 usage-based billing for the part not pre-allocated to Power Platform environments (F-183). Copilot Studio Licensing Guide Oct 2026 pp.14-15; price unchanged across the Feb, Apr, May and Oct 2026 guides. Metadata filled 2026-10-11.",
+   "notes": "$200 per pack per month, billed annually, 25,000 Copilot Credits a month, no rollover (resets monthly). $0.008 per credit - cheaper than every P3 tier below Tier 9. Shared with Microsoft 365 usage-based billing for the part not pre-allocated to Power Platform environments (F-183). Copilot Studio Licensing Guide Oct 2026 pp.14-15; price unchanged across the Feb, Apr, May and Oct 2026 guides. Metadata filled 2026-10-11; occurrences re-pointed from cpb.html to the split cpb-*.html guides (5c762bd) and the Cowork calculator.",
    "occurrences": [
     {
-     "file": "cpb.html",
-     "line": 5919,
+     "file": "cpb-model-the-practice.html",
+     "line": 4288,
      "anchor_unique": true,
      "anchor": " consumption (priced at $200/month per 25,000 credit",
-     "context": "ways access the most current documents and data sources; Token Cost Management \u2014 monitoring Copilot Studio credit consumption (priced at $200/month per 25,000 credits) and preventing budget overruns; Security & Agent Governance \u2014 deploying Agent 365 ($15/user/month, GA"
+     "context": "At Stage 4, the partner owns the entire AI estate under a Tier 3 retainer. All five core AgentOps components are active: Prompt Optimization &amp; Tuning &mdash; continuously refining agent instructions based on performance data and model updates; Data Grounding Updates &mdash; ensuring agents always access the most cu"
     },
     {
-     "file": "cpb.html",
-     "line": 5926,
+     "file": "cpb-model-the-practice.html",
+     "line": 4295,
      "anchor_unique": true,
      "anchor": "uery can burn through a $200 credit pack in days. Par",
-     "context": "gents consuming Azure OpenAI credits plus Copilot Studio credits. A poorly designed agent that triggers generative responses for every query can burn through a $200 credit pack in days. Partners who build credit monitoring and alerting into their service are delivering a capability that pays for itself \u2014 and this"
+     "context": "A critical note on token cost management: the bank is now running multiple orchestrated agents consuming Azure OpenAI credits plus Copilot Studio credits. A poorly designed agent that triggers generative responses for every query can burn through a $200 credit pack in days. Partners who build credit monitoring and aler"
     },
     {
-     "file": "cpb.html",
-     "line": 6161,
+     "file": "cpb-field-guide.html",
+     "line": 466,
      "anchor_unique": true,
-     "anchor": "owrap;font-weight:700;\">$200/mo (25K msgs)</td>\n  <t",
-     "context": ">Copilot Studio $200/mo (25K msgs) Overage requires add-on message packs <td"
+     "anchor": ">$200/mo (25K msgs)</td>",
+     "context": "4 Copilot Studio $200/mo (25K msgs) $15K&ndash;$50K+ Custom Agent Development"
     },
     {
-     "file": "cpb.html",
-     "line": 6353,
+     "file": "cpb-model-the-practice.html",
+     "line": 4720,
      "anchor_unique": true,
-     "anchor": " <div class=\"sku-price\">$200 / mo</div>\n        <div ",
-     "context": "u-body\"> 4 Copilot Studio $200 / mo Ov"
+     "anchor": "\"sku-price\">$200 / mo</div>",
+     "context": "$200 / mo"
+    },
+    {
+     "file": "cowork-calculator.html",
+     "line": 1038,
+     "anchor_unique": true,
+     "anchor": "PACK: { usdPerMonth: 200, creditsPerMonth: 25000 },",
+     "context": "PACK: { usdPerMonth: 200, creditsPerMonth: 25000 },"
     }
    ],
    "new_value": "$200/25,000 credits/month",
@@ -3966,18 +3973,18 @@
    "source_url": "https://aka.ms/CustomerCoworkEstimator",
    "as_of": "2026-05-27",
    "verified": true,
-   "notes": "Microsoft publishes an official Customer Cowork Estimator using four personas (corporate knowledge worker, customer-facing, technical, manager/senior leader). Its defaults reflect Microsoft Frontier customer usage as of 5/27/2026 and are editable. Published per-user range $82-228/month. This RESOLVES the previously unsourced \"Microsoft Frontier-observed defaults\" attribution for the persona task-mix table used in coworksession40.html and cowork-calculator.html; the site table computes $82.25/$142.50/$146.25/$228.00, which sits exactly inside the published range.",
+   "notes": "Microsoft publishes an official Customer Cowork Estimator using four personas (corporate knowledge worker, customer-facing, technical, manager/senior leader). Its defaults reflect Microsoft Frontier customer usage as of 5/27/2026 and are editable. Published per-user range $82-228/month. This RESOLVES the previously unsourced \"Microsoft Frontier-observed defaults\" attribution for the persona task-mix table used in coworksession40.html and cowork-calculator.html; the site table computes $82.25/$142.50/$146.25/$228.00, which sits exactly inside the published range. SUPERSEDED 2026-10-11: aka.ms/CustomerCoworkEstimator now 301s to Microsoft's web Copilot Credit Estimator, which prices Cowork per user per day (F-158, F-159; corporate knowledge worker $51-91). cowork-calculator.html now labels $82-228 as the original estimator's range, not a published one, and reconciles the two on step 5.",
    "occurrences": [
     {
      "file": "cowork-calculator.html",
-     "line": 551,
+     "line": 999,
      "anchor_unique": true,
-     "anchor": "=\"noopener\">Customer Cowork Estimator</a> (Fronti",
-     "context": "=\"noopener\">Customer Cowork Estimator</a> (Fronti"
+     "anchor": "original Customer Cowork Estimator (an Excel workbook, Frontier-observed, May 27, 2026)",
+     "context": "Nothing you enter here is saved, stored, or transmitted anywhere &mdash; not to a server, not to browser storage. Everything lives in this tab's memory only. Microsoft list prices are current as of the Partner Center July 2026 announcements; the two SMB promotional prices expire 31 December 2026. Persona task-mix defau"
     }
    ],
-   "new_value": "$82-228/user/mo",
-   "status": "CONFIRMED"
+   "new_value": "retired - see notes",
+   "status": "SUPERSEDED"
   },
   {
    "id": "F-151",
@@ -4010,7 +4017,7 @@
    "source_url": "https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/copilot-credit-p3",
    "as_of": "2026-07-17",
    "verified": true,
-   "notes": "One-year term, paid up front. 1 CCCU = $1 of retail usage = 100 Copilot Credits. Discounts run from 5% at approximately 3,000 CCCU to 20% at approximately 3,000,000 CCCU; Microsoft documents a Tier 2 example at 15,000 CCCU giving roughly 6%. Exact tier breakpoints are NOT publicly published - present a bracket, never a point price. Purchases are final (no cancellation or exchange), plans auto-renew by default, and the discount does not stack with other discounts. Consumption order is capacity packs, then P3, then pay-as-you-go.",
+   "notes": "One-year term, paid up front. 1 CCCU = $1 of retail usage = 100 Copilot Credits. Discounts run from 5% at approximately 3,000 CCCU to 20% at approximately 3,000,000 CCCU; Microsoft documents a Tier 2 example at 15,000 CCCU giving roughly 6%. UPDATED 2026-10-11: all nine tiers are now published (F-155) and cowork-calculator.html prices the fixed plans; the bracket guidance is retired. Purchases are final (no cancellation or exchange), plans auto-renew by default, and the discount does not stack with other discounts. Consumption order is capacity packs, then P3, then pay-as-you-go.",
    "occurrences": [
     {
      "file": "cowork-calculator.html",
@@ -4077,7 +4084,15 @@
    "as_of": "2026-10-08",
    "verified": true,
    "notes": "Nine fixed one-year plans, priced in Copilot Credit Commit Units (1 CCCU = $1 retail = 100 credits): T1 3,000 CCCU 5% $2,850; T2 15,000 6% $14,100; T3 30,000 7% $27,900; T4 150,000 8% $138,000; T5 300,000 10% $270,000; T6 750,000 12% $660,000; T7 1,500,000 14% $1,290,000; T8 2,250,000 17% $1,867,500; T9 3,000,000 20% $2,400,000. Sources: Copilot Credits Guide Oct 2026 p.5, Copilot Studio Licensing Guide p.13, Azure portal screenshot on the Learn P3 page (ms.date 2026-07-17); the $14,100 Tier 2 price is Microsoft's own worked example. No arbitrary quantities. Holding several plans at once, each keeping its own tier discount, is LIKELY (Azure pre-purchase pattern) but not stated for Copilot Credit P3 - disclose it as such. Supersedes the \"breakpoints not published\" note on F-152. 2026-10-11 research pass (research/cowork-calculator-studio-autopilot-2026-10-11.md).",
-   "occurrences": [],
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1183,
+     "anchor_unique": true,
+     "anchor": "{ tier:9, cccu:3000000, pct:20, usd:2400000 }",
+     "context": "{ tier:9, cccu:3000000, pct:20, usd:2400000 }"
+    }
+   ],
    "new_value": "9 tiers, 5%-20%",
    "status": "CONFIRMED"
   },
@@ -4091,7 +4106,15 @@
    "as_of": "2026-10-08",
    "verified": true,
    "notes": "Partner Center October 2026 announcements (item dated 2026-10-01): new Copilot Business purchases through CSP, standalone and bundled, get usage-based billing switched on with pay-as-you-go as the default. Moved from the originally announced 2 November. Not available at first in Australia, Belgium, Brazil, France, Germany, India, Italy, Korea, the Netherlands, Poland or Spain. Partner Center sandbox from 2026-11-02. Existing licenses not addressed (LIKELY unaffected). 2026-10-11 research pass (research/cowork-calculator-studio-autopilot-2026-10-11.md).",
-   "occurrences": [],
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 2137,
+     "anchor_unique": true,
+     "anchor": "'New Copilot Business licenses bought through CSP from December 1, 2026 switch usage-based '",
+     "context": "W('V-31','warn','New Copilot Business licenses bought through CSP from December 1, 2026 switch usage-based ' +"
+    }
+   ],
    "new_value": "",
    "status": "CONFIRMED"
   },
@@ -4105,7 +4128,15 @@
    "as_of": "2026-10-08",
    "verified": true,
    "notes": "Adjustable by the admin. About $40 at the F-149 list rate. Microsoft's example: 100 users x 4,000 = 400,000 credits a month. This is a spending limit, not a fair-use limit. 2026-10-11 research pass (research/cowork-calculator-studio-autopilot-2026-10-11.md).",
-   "occurrences": [],
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1042,
+     "anchor_unique": true,
+     "anchor": "CSP_BIZ_UBB: { creditsPerUser: 4000,",
+     "context": "CSP_BIZ_UBB: { creditsPerUser: 4000,"
+    }
+   ],
    "new_value": "",
    "status": "CONFIRMED"
   },
@@ -4119,7 +4150,15 @@
    "as_of": "2026-10-11",
    "verified": true,
    "notes": "Read from the live estimator bundle that aka.ms/CopilotCreditPlanningModel and aka.ms/CustomerCoworkEstimator now redirect to (host names contain \"ppe\"; link only the aka.ms short link). Per-persona ranges at the default 40/40/20 split and 22 working days: corporate knowledge worker $51-91, management and senior leaders $71-127, customer-facing $132-233, technical workers $35-62. Replaces the retired Excel estimator (F-150, F-180). 2026-10-11 research pass (research/cowork-calculator-studio-autopilot-2026-10-11.md).",
-   "occurrences": [],
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1034,
+     "anchor_unique": true,
+     "anchor": "WEB_ESTIMATOR: { ckwLo: 51, ckwHi: 91, days: 22,",
+     "context": "WEB_ESTIMATOR: { ckwLo: 51, ckwHi: 91, days: 22, split: '40/40/20', model: 'Anthropic Opus 4.8' },"
+    }
+   ],
    "new_value": "",
    "status": "CONFIRMED"
   },
