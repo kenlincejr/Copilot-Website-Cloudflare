@@ -996,7 +996,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 </div>
 
 <footer class="pagefoot no-print">
-  <p><b>Nothing you enter here is saved, stored, or transmitted anywhere</b> &mdash; not to a server, not to browser storage. Everything lives in this tab's memory only. Microsoft list prices are current as of the Partner Center July 2026 announcements; the two SMB promotional prices expire 31 December 2026. Persona task-mix defaults come from Microsoft's <a href="https://aka.ms/CustomerCoworkEstimator" target="_blank" rel="noopener">Customer Cowork Estimator</a> (Frontier-observed, 27 May 2026). Effort multipliers, the 2.6&times; benchmark, and partner service rates are modeled or editorial estimates and are labeled as such throughout &mdash; none should be repeated to a customer as a Microsoft-published figure. See <a href="coworksession40.html">The 40-Minute Cowork Session</a> for the conversation this tool serves.</p>
+  <p><b>Nothing you enter here is saved, stored, or transmitted anywhere</b> &mdash; not to a server, not to browser storage. Everything lives in this tab's memory only. Microsoft list prices are current as of the Partner Center July 2026 announcements; the two SMB promotional prices expire 31 December 2026. Persona task-mix defaults come from Microsoft's original Customer Cowork Estimator (an Excel workbook, Frontier-observed, May 27, 2026), since replaced by its <a href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">web Copilot Credit Estimator</a>, which prices a working day rather than a task; the two give different answers, compared on step 5. Effort multipliers, the 2.6&times; benchmark, and partner service rates are modeled or editorial estimates and are labeled as such throughout &mdash; none should be repeated to a customer as a Microsoft-published figure. See <a href="coworksession40.html">The 40-Minute Cowork Session</a> for the conversation this tool serves.</p>
 </footer>
 
 <script>
@@ -1023,8 +1023,15 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   /* ── Constants ────────────────────────────────────────────────────────── */
   var CONST = {
     CREDIT_USD: 0.01,                       // ms-verified
-    TASK_ENVELOPE: { lo: 0.70, hi: 15.00 }, // ms-verified: "a single task typically runs $0.70 to $15"
-    PER_USER_RANGE: { lo: 82, hi: 228 },    // ms-verified: MS Customer Cowork Estimator published range
+    // ms-modeled: both bounds come from Microsoft's original Customer Cowork
+    // Estimator (Excel, Frontier data 27 May 2026), since replaced by the web
+    // Copilot Credit Estimator (F-158/F-159). They are a retired model's
+    // figures, kept as sanity bounds and labeled that way wherever shown.
+    TASK_ENVELOPE: { lo: 0.70, hi: 15.00 }, // ms-modeled: the retired estimator's "$0.70 to $15" per task
+    PER_USER_RANGE: { lo: 82, hi: 228 },    // ms-modeled: the retired estimator's per-user range (F-150)
+    // ms-verified F-158: the current web estimator, corporate knowledge worker,
+    // credits per user per day x 22 working days, 40/40/20 split, Opus 4.8.
+    WEB_ESTIMATOR: { ckwLo: 51, ckwHi: 91, days: 22, split: '40/40/20', model: 'Anthropic Opus 4.8' },
     CCCU: { creditsPer: 100, usdPer: 1.00 },// ms-verified: 1 CCCU = $1 retail = 100 credits
     // ms-verified F-013: $200 per 25,000 credits a month, billed annually, no
     // rollover. $0.008 a credit, below every P3 tier except Tier 9.
@@ -1088,7 +1095,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     both_suites:    { name:'Defender + Purview Suites (combined)', usd:15.00, cap:300, prov:'ms-verified' }
   };
 
-  /* ── Personas (Microsoft Customer Cowork Estimator, Frontier data 5/27/2026) ── */
+  /* ── Personas (Microsoft's original Customer Cowork Estimator, Frontier data
+        5/27/2026; since replaced by the web Copilot Credit Estimator) ── */
   var PERSONA_DEFAULTS = [
     { key:'ckw',  name:'Corporate Knowledge Worker', light:22, medium:11, heavy:5 },
     { key:'cust', name:'Customer-Facing',            light:17, medium:13, heavy:5 },
@@ -1138,14 +1146,14 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   // The ladder stops at High, and not for cosmetic reasons. Microsoft's tier
   // weights are typical costs, not envelope extremes, so the residual cannot
   // actually be spent in both directions: a heavy task already sits at $12.00
-  // against a published $15.00 ceiling, leaving 1.25x of headroom, not 1.83x.
-  // Two independent Microsoft-published guardrails agree on exactly where the
+  // against the retired estimator's $15.00 ceiling, leaving 1.25x of headroom,
+  // not 1.83x. Two independent guardrails from that estimator agree on where the
   // line falls — at the default tier weights, Extra High and Max put a heavy
   // task at $17.93 and $21.91 against the $15.00 per-task ceiling, AND put the
   // heaviest persona mix at $259 and $316 against the $82–$228 per-user range.
   // Light, Medium and High are inside both. A tool whose whole claim is "you
   // can say this in front of a customer" should not ship the two settings that
-  // break every published bound it cites. High is deliberately the ceiling:
+  // break every bound it cites. High is deliberately the ceiling:
   // $14.67 a heavy task, just under Microsoft's $15.00.
   var EFFORT_ORDER = ['light','medium','high'];
   function effortMultipliers(step) {
@@ -1378,7 +1386,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 
   /* Microsoft meters credits at $0.01. A partner reselling the meter may bill
      a different rate — but only the customer-facing meter moves. Microsoft's
-     own economics (the P3 purchase, the published per-task envelope) stay at
+     own economics (the P3 purchase, the retired estimator's per-task envelope) stay at
      $0.01 because those are decisions made against Microsoft, not the customer. */
   function creditUsd(state) {
     if (state.pricing && state.pricing.mode === 'sell') {
@@ -1572,7 +1580,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     if (EFFORT_RETIRED[state.effort.level]) {
       W('V-19','clamp','This session was saved at \u201c' + (state.effort.level === 'max' ? 'Max' : 'Extra High') +
         '\u201d effort. That setting has been retired: at the default tier weights it priced a heavy task above ' +
-        'Microsoft\u2019s published $15 ceiling and a heavy persona mix above the published $228 per-user range. ' +
+        'the $15 ceiling and a heavy persona mix above the $228 per-user range in Microsoft\u2019s original Cowork estimator. ' +
         'The session has been reopened at High, which is the most aggressive setting that stays inside both.', []);
       state.effort.level = EFFORT_RETIRED[state.effort.level];
     }
@@ -1716,7 +1724,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         ? 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
           ' were measured with /cost in Cowork chat, not taken from Microsoft’s model.'
         : 'Tier weights ' + TC.light + '/' + TC.medium + '/' + TC.heavy +
-          ' are this site’s model, validated against Microsoft’s published $0.70–$15 per-task range.');
+          ' are this site’s model, validated against the $0.70–$15 per-task range from Microsoft’s original Cowork ' +
+          'estimator (since replaced by its web Copilot Credit Estimator, which prices a working day instead).');
 
     var monthlyCowork = monthlyCredits * CU;
     var rateLbl = '$' + (CU < 0.01 ? CU.toFixed(4) : CU.toFixed(CU === Math.round(CU * 100) / 100 ? 2 : 4));
@@ -1733,18 +1742,19 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     var perActive = effTotal > 0 ? monthlyCowork / effTotal : 0;
     perActiveModeled = perActive;
     if (perActive > 0 && (perActive < CONST.PER_USER_RANGE.lo || perActive > CONST.PER_USER_RANGE.hi))
-      W('V-09','warn','At $' + perActive.toFixed(2) + ' per active user per month you are outside Microsoft’s own ' +
-        'published estimator range of $' + CONST.PER_USER_RANGE.lo + '–$' + CONST.PER_USER_RANGE.hi +
-        '. Defensible, but say it as a modeled figure.', []);
+      W('V-09','warn','At $' + perActive.toFixed(2) + ' per active user per month you are outside the $' +
+        CONST.PER_USER_RANGE.lo + '–$' + CONST.PER_USER_RANGE.hi + ' range of Microsoft’s original Cowork ' +
+        'estimator (since replaced). Defensible, but say it as a modeled figure.', []);
 
-    // Per-task sanity against the published envelope
+    // Per-task sanity against the retired estimator's envelope
     // Deliberately CONST.CREDIT_USD, not CU: this validates the model against
-    // Microsoft's published $0.70–$15 per-task range, which is quoted at $0.01.
+    // the $0.70–$15 per-task range from Microsoft's original Cowork estimator,
+    // which was quoted at $0.01.
     ['light','medium','heavy'].forEach(function (t) {
       var usd = n(TC[t]) * CONST.CREDIT_USD * effortMult;
       if (usd < CONST.TASK_ENVELOPE.lo || usd > CONST.TASK_ENVELOPE.hi)
         W('V-08','warn','A ' + t + ' task at ' + effortLabel + ' effort models at $' +
-          usd.toFixed(2) + ', outside Microsoft’s published typical range of $0.70–$15.', []);
+          usd.toFixed(2) + ', outside the typical $0.70–$15 per-task range from Microsoft’s original Cowork estimator.', []);
     });
 
     /* License cost */
@@ -2929,7 +2939,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       ' credits for a light / medium / heavy task, at $0.01 a credit. ' +
       (state.personaTasksTouched
         ? 'The task counts below have been <b>edited by hand</b> — they are your estimates now, not Microsoft’s Frontier-observed defaults. Click any preset chip to restore Microsoft’s counts.'
-        : 'Role mixes are Microsoft\'s Frontier-observed defaults (Customer Cowork Estimator, 27 May 2026) &mdash; every cell is editable.');
+        : 'Role mixes are Microsoft\'s Frontier-observed defaults from its original Customer Cowork Estimator (May 27, 2026, since replaced) &mdash; every cell is editable.');
   }
   /* The chip row and its shape note, separately re-renderable: a task-cell
      edit must retire a stale Microsoft attribution without touching the
@@ -3125,7 +3135,36 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       (c.sellMode && CU !== E.CONST.CREDIT_USD
         ? 'your sell rate, set on step 0. Microsoft meters it at $0.01.'
         : 'Microsoft\u2019s published rate.') + '</p>' +
-      '</div></div>';
+      '</div></div>' +
+      reconcileBox(r);
+  }
+
+  /* Two Microsoft estimators, two answers (Track A, A4). The persona defaults
+     on this page come from Microsoft's original Excel estimator, which priced
+     Cowork by the task. Microsoft replaced it with a web estimator that prices
+     a working day, and for the same corporate knowledge worker the two land far
+     apart. A customer may have seen either, so the partner sees both, side by
+     side, with the measurement that settles it. Partner-only: a customer-facing
+     version would be an argument with Microsoft's own tool. */
+  function reconcileBox(r) {
+    var W = E.CONST.WEB_ESTIMATOR, TC = state.tierCredits, ck = null;
+    state.personas.forEach(function (p) { if (!ck && /corporate knowledge/i.test(p.name || '')) ck = p; });
+    if (!ck) ck = state.personas[0];
+    var r0 = r.ctx;
+    var ckUsd = ck ? (ck.light * TC.light + ck.medium * TC.medium + ck.heavy * TC.heavy) *
+      r0.effortMult * r0.modelMult * E.CONST.CREDIT_USD : 0;
+    return '<div class="whybox partner-only"><div class="wb-h">Two Microsoft estimators, two answers ' + provPill('ms-modeled') + '</div>' +
+      '<p>The persona defaults here come from Microsoft\u2019s original Customer Cowork Estimator, an Excel workbook built on ' +
+      'Frontier data from May 27, 2026. It priced Cowork by the task and put a user at $' + E.CONST.PER_USER_RANGE.lo + '&ndash;$' +
+      E.CONST.PER_USER_RANGE.hi + ' a month. On this page\u2019s current settings one ' + esc(ck ? ck.name : 'Corporate Knowledge Worker') +
+      ' comes out at <b>' + usd(ckUsd, 2) + '</b> a month at Microsoft\u2019s $0.01.</p>' +
+      '<p>Microsoft has since replaced it with a <a class="docref" href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">web Copilot Credit Estimator</a> ' +
+      'that prices a working day instead: credits per user per day across ' + W.days + ' working days, a ' + W.split +
+      ' light/medium/heavy split, and ' + W.model + ' as the model. It puts a corporate knowledge worker at <b>$' + W.ckwLo +
+      '&ndash;$' + W.ckwHi + '</b> a month.</p>' +
+      '<p>Neither is a measurement. If the customer has seen Microsoft\u2019s lower figure, raise the gap before they do: it is two ' +
+      'models of the same work, and thirty days of /cost readings from a pilot settle it for this account &mdash; that is what the ' +
+      'calibration below is for.</p></div>';
   }
 
   /* ═══ STEP 5 · effort + calibration ═══ */
@@ -3147,7 +3186,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         return '<button data-eff="' + k + '"' + (shown === k ? ' class="on"' : '') + '>' + E.EFFORT_LABELS[k] + '</button>';
       }).join('') + '</div>' +
       '<div class="ribbon-deriv" id="effDeriv" style="margin-top:12px;">' + effortCopy(shown, mults, base) + '</div>' +
-      '<p class="srcline">Microsoft publishes the levels and that Medium is the default, but <b>no numeric multiplier</b>. These are modeled from Microsoft\'s published $0.70&ndash;$15 per-task range and are editable in the advanced panel.</p>';
+      '<p class="srcline">Microsoft publishes the levels and that Medium is the default, but <b>no numeric multiplier</b>. These are modeled from the $0.70&ndash;$15 per-task range in Microsoft\'s original Cowork estimator and are editable in the advanced panel.</p>';
     Array.prototype.forEach.call($('effortSeg').querySelectorAll('[data-eff]'), function (b) {
       b.addEventListener('click', function () { state.effort.level = b.getAttribute('data-eff'); refresh(); });
     });
@@ -3207,7 +3246,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
     var d = { light:'Cowork does less checking and finishes faster.',
               medium:'The default, and where most tasks should stay.',
               high:'Cowork thinks longer and checks more sources. This is the ceiling the tool will model \u2014 ' +
-                   'a heavy task lands at $14.67, just under Microsoft\u2019s published $15 per-task limit.' };
+                   'a heavy task lands at $14.67, just under the $15 per-task limit in Microsoft\u2019s original Cowork estimator.' };
     var m = mults[level], delta = (m - 1) * 100;
     return d[level] + '\n' + (level === 'medium'
       ? 'This is the number below: ' + usd(base) + '/month.'
@@ -3581,7 +3620,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       '<div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));">' +
         '<div class="field"><label>Effort step multiplier</label><input type="number" step="0.01" min="1" max="3" id="pStep" value="' + state.effort.step.toFixed(4) + '"></div>' +
       '</div>' +
-      '<p class="srcline">Derived: Microsoft\'s published per-task envelope spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across four notional steps, of which the tool exposes three. <b>The ladder stops at High on purpose.</b> Microsoft\'s tier weights are typical costs, not envelope extremes &mdash; a heavy task already sits at $12.00 against a $15.00 ceiling &mdash; so a fourth and fifth step would price a heavy task at $17.93 and $21.91, and push the heaviest persona mix to $259 and $316 a user against Microsoft\'s published $82&ndash;$228. Light, Medium and High stay inside both published bounds. Raise this multiplier above the default and the tool will tell you when you leave them.</p>' +
+      '<p class="srcline">Derived: the per-task envelope in Microsoft\'s original Cowork estimator spans $15.00 &divide; $0.70 = 21.43&times;. The task tiers already consume 1,200 &divide; 125 = 9.6&times;. The residual 2.23&times; is spread geometrically across four notional steps, of which the tool exposes three. <b>The ladder stops at High on purpose.</b> Microsoft\'s tier weights are typical costs, not envelope extremes &mdash; a heavy task already sits at $12.00 against a $15.00 ceiling &mdash; so a fourth and fifth step would price a heavy task at $17.93 and $21.91, and push the heaviest persona mix to $259 and $316 a user against the $82&ndash;$228 in Microsoft\'s original Cowork estimator. Light, Medium and High stay inside both of its bounds. Raise this multiplier above the default and the tool will tell you when you leave them.</p>' +
 
       '<div class="nosave" style="margin:26px 0 0;"><span style="font-size:1.05rem;">&#128190;</span><div class="ns-t">' +
         '<b>Save this rate card and reuse it.</b> Nothing here is stored in this browser, so download it once and load it at the start of every future session \u2014 it carries your prices and service rates, and no customer data at all.' +

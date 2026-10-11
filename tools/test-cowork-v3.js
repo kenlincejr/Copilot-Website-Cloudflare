@@ -2251,5 +2251,52 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   });
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Track A · A4 — the retired estimator's numbers are labeled as retired,
+   and reconciled with Microsoft's current web estimator. Copy only: the
+   math and the anchors do not move.
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  eq(E.CONST.TASK_ENVELOPE.lo, 0.70, 'A4: task envelope low unchanged');
+  eq(E.CONST.TASK_ENVELOPE.hi, 15, 'A4: task envelope high unchanged');
+  eq(E.CONST.PER_USER_RANGE.lo, 82, 'A4: per-user range low unchanged');
+  eq(E.CONST.PER_USER_RANGE.hi, 228, 'A4: per-user range high unchanged');
+  ok(/TASK_ENVELOPE: \{ lo: 0\.70, hi: 15\.00 \}, \/\/ ms-modeled/.test(src), 'A4: envelope constant labeled ms-modeled');
+  ok(/PER_USER_RANGE: \{ lo: 82, hi: 228 \},\s+\/\/ ms-modeled/.test(src), 'A4: per-user constant labeled ms-modeled');
+  ['published $0.70', 'published $15', 'published $82', 'published $228', 'published estimator range',
+   'published per-task envelope', 'published typical range'].forEach(p =>
+    ok(src.indexOf(p) === -1, 'A4: no "' + p + '" claim left in the page'));
+  // The warnings that quote those bounds say whose they are.
+  const tiny = E.defaults(); tiny.personas.forEach(p => { p.light = 1; p.medium = 0; p.heavy = 0; });
+  const v09 = (E.compute(tiny).warnings.find(w => w.id === 'V-09') || {}).message || '';
+  ok(/original Cowork estimator/.test(v09), 'A4: V-09 names the original estimator');
+  const zero = E.defaults(); zero.tierCredits = { light: 1, medium: 1, heavy: 1 };
+  const v08 = (E.compute(zero).warnings.find(w => w.id === 'V-08') || {}).message || '';
+  ok(/original Cowork estimator/.test(v08), 'A4: V-08 names the original estimator');
+  const mx = E.defaults(); mx.effort = { level: 'max', step: E.EFFORT_STEP_DEFAULT };
+  const v19 = (E.compute(mx).warnings.find(w => w.id === 'V-19') || {}).message || '';
+  ok(/original Cowork estimator/.test(v19), 'A4: V-19 names the original estimator');
+  const f10 = E.compute(E.defaults()).assumptions.find(a => a.id === 'F10');
+  ok(f10 && /original Cowork/.test(f10.note) && /web Copilot Credit Estimator/.test(f10.note),
+     'A4: the F10 disclosure names both estimators');
+  // Footer: the retired short link is gone, the current one is linked, F-151's anchor survives.
+  ok(src.indexOf('href="https://aka.ms/CustomerCoworkEstimator"') === -1, 'A4: no link to the retired short link');
+  ok(src.indexOf('href="https://aka.ms/CopilotCreditPlanningModel"') >= 0, 'A4: the current estimator is linked');
+  eq(src.split('pliers, the 2.6&times; benchmark, and partne').length - 1, 1, 'A4: the F-151 anchor occurs exactly once');
+  // The reconciliation box: partner-only, both models, the measurement that settles it.
+  const box = src.slice(src.indexOf('  function reconcileBox('), src.indexOf('\n  }', src.indexOf('  function reconcileBox(')));
+  ok(/whybox partner-only/.test(box), 'A4: the reconciliation box is partner-only');
+  ok(!/cust-ok/.test(box), 'A4: the reconciliation box is not customer-safe');
+  eq(E.CONST.WEB_ESTIMATOR.ckwLo, 51, 'A4: current estimator low (F-158)');
+  eq(E.CONST.WEB_ESTIMATOR.ckwHi, 91, 'A4: current estimator high (F-158)');
+  eq(E.CONST.WEB_ESTIMATOR.days, 22, 'A4: 22 working days');
+  ok(/Opus 4\.8/.test(E.CONST.WEB_ESTIMATOR.model), 'A4: Opus 4.8 assumption');
+  ok(/working days/.test(box) && /\/cost/.test(box) && /W\.ckwLo/.test(box) && /W\.ckwHi/.test(box),
+     'A4: the box names working days, both bounds and /cost');
+  // Stock corporate knowledge worker at $0.01: 22x125 + 11x500 + 5x1,200 = 14,250 credits = $142.50.
+  const ck = E.defaults().personas.find(p => /corporate knowledge/i.test(p.name));
+  eq((ck.light * 125 + ck.medium * 500 + ck.heavy * 1200) * 0.01, 142.5, 'A4: stock corporate knowledge worker is $142.50');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
