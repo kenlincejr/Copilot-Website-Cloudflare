@@ -8,7 +8,8 @@
 */
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const HTML = path.join(__dirname, '..', 'cowork-calculator.html');
-const src = fs.readFileSync(HTML, 'utf8');
+// Normalize line endings: the working copy is CRLF on Windows (core.autocrlf).
+const src = fs.readFileSync(HTML, 'utf8').replace(/\r\n/g, '\n');
 const OPEN = '<scr' + 'ipt>', CLOSE = '</scr' + 'ipt>';
 const a = src.indexOf(OPEN), b = src.indexOf(CLOSE, a);
 if (a < 0 || b < 0) { console.error('no script block found in ' + HTML); process.exit(1); }
@@ -64,11 +65,24 @@ eq(Math.round(base.monthlyCowork), 7550, 'stock defaults monthly');
   eq(c.meterMarginAnnual, null, 'reseller P3 margin null');
 }
 // notCsp likewise
-['direct', 'indirectProvider'].forEach(function (m) {
-  const c = E.compute(withMotion(m, { pec: { status: 'yes', pct: 15 } })).ctx;
-  ok(c.pecKnown === true, m + ' pecKnown true');
-  ok(c.paygoPartnerCost != null, m + ' has a paygo cost basis');
-});
+{
+  const c = E.compute(withMotion('direct', { pec: { status: 'yes', pct: 15 } })).ctx;
+  ok(c.pecKnown === true, 'direct pecKnown true');
+  ok(c.paygoPartnerCost != null, 'direct has a paygo cost basis');
+}
+// Indirect provider was removed on purpose in 9c8be33: this tool serves
+// reselling partners, not the distributor. A legacy session or rate card that
+// still carries it must land on 'unsure' with no cost basis, and the picker
+// must not offer it.
+{
+  const c = E.compute(withMotion('indirectProvider', { pec: { status: 'yes', pct: 15 },
+    channel: { providerCreditUsd: 0.009 } })).ctx;
+  eq(c.cspMotion, 'unsure', 'legacy indirectProvider files as unsure');
+  eq(c.holdsBillingAccount, false, 'legacy indirectProvider does not hold the billing account');
+  eq(c.pecKnown, false, 'legacy indirectProvider pecKnown false');
+  eq(c.paygoPartnerCost, null, 'legacy indirectProvider has no paygo cost basis');
+  eq(E.MOTION_ORDER.indexOf('indirectProvider'), -1, 'indirectProvider not offered in the picker');
+}
 ['indirectReseller', 'notCsp', 'unsure'].forEach(function (m) {
   const c = E.compute(withMotion(m, { pec: { status: 'yes', pct: 15 } })).ctx;
   eq(c.holdsBillingAccount, false, m + ' does not hold billing account');
@@ -136,7 +150,7 @@ eq(Math.round(base.monthlyCowork), 7550, 'stock defaults monthly');
   let r;
   try { r = E.compute(raw); } catch (e) { fail++; console.log('FAIL: threw on garbage ' + i + ': ' + e.message); return; }
   const c = r.ctx;
-  ok(['direct', 'indirectProvider', 'indirectReseller', 'notCsp', 'unsure'].indexOf(c.cspMotion) >= 0, 'garbage ' + i + ' motion valid');
+  ok(['direct', 'indirectReseller', 'notCsp', 'unsure'].indexOf(c.cspMotion) >= 0, 'garbage ' + i + ' motion valid');
   ok(c.paygoPartnerCost === null || isFinite(c.paygoPartnerCost), 'garbage ' + i + ' cost finite or null');
   ok(c.meterMarginAnnual === null || isFinite(c.meterMarginAnnual), 'garbage ' + i + ' margin finite or null');
   const txt = r.warnings.map(w => w.message).join(' ') + r.assumptions.map(a => a.note).join(' ');

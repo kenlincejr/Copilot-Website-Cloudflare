@@ -11,7 +11,9 @@
 */
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const HTML = path.join(__dirname, '..', 'cowork-calculator.html');
-const src = fs.readFileSync(HTML, 'utf8');
+// Normalize line endings: the working copy is CRLF on Windows (core.autocrlf),
+// and every uiSource() end marker below is written with \n.
+const src = fs.readFileSync(HTML, 'utf8').replace(/\r\n/g, '\n');
 const OPEN = '<scr' + 'ipt>', CLOSE = '</scr' + 'ipt>';
 const a = src.indexOf(OPEN), b = src.indexOf(CLOSE, a);
 if (a < 0 || b < 0) { console.error('no script block found in ' + HTML); process.exit(1); }
@@ -61,6 +63,34 @@ function assertCopyClean(r, m) {
   ['V-05','V-27','V-28','V-29','V-30'].forEach(function (id) {
     ok(wids(r).indexOf(id) === -1, 'anchor: ' + id + ' silent on stock defaults');
   });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Golden stock snapshot (Track A, 2026-10-11)
+   Every later slice must move a line here on purpose, and say old -> new in
+   its commit message. A figure that moves without an edit here is a bug.
+   ══════════════════════════════════════════════════════════════════════════ */
+{
+  const r = E.compute(E.defaults()), c = r.ctx;
+  const near = (got, want, label) => ok(Math.abs(got - want) < 0.01, 'golden: ' + label + ' (got ' + got + ', want ' + want + ')');
+  near(c.monthlyCredits, 755000, 'monthlyCredits');
+  near(c.monthlyCowork, 7550, 'monthlyCowork');
+  near(c.licenseMonthly, 2780, 'licenseMonthly');
+  near(c.allInMonthly, 10330, 'allInMonthly');
+  near(c.coworkLo, 5285, 'coworkLo');
+  near(c.coworkHi, 9815, 'coworkHi');
+  near(c.annualCredits, 9060000, 'annualCredits');
+  near(c.paygoAnnual, 90600, 'paygoAnnual');
+  near(c.cccuRequired, 90600, 'cccuRequired');
+  near(c.commitCccu, 90600, 'commitCccu');
+  near(c.year1Credits, 7883942, 'year1Credits');
+  near(c.cccuYear1, 78839.42, 'cccuYear1');
+  near(c.p3Annual, 80858.68, 'p3Annual');
+  near(c.p3Saving, 9741.32, 'p3Saving');
+  near(c.p3Exposure, 80858.68, 'p3Exposure');
+  eq(wids(r).join(','), 'V-26', 'golden: stock warning list');
+  eq(r.assumptions.map(a => a.id).join(','), 'promo-cop_biz,F10,gov-unasked,R2,ramp,motion-unknown,B4',
+     'golden: stock assumption list');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -276,12 +306,26 @@ function assertCopyClean(r, m) {
     pricing: Object.assign(E.defaults().pricing, { pec: { status:'yes', pct: 10 } }) }));
   eq(real.ctx.pecPct, 10, 'a real PEC rate still applies');
 
-  // indirectProvider is a first-class motion on the picker row
-  ok(E.MOTION_ORDER.indexOf('indirectProvider') >= 0, 'MOTION_ORDER carries indirectProvider');
-  const ip = E.compute(st({ channel: { motion:'indirectProvider', providerCreditUsd:null } }));
-  eq(ip.ctx.cspMotion, 'indirectProvider', 'indirectProvider no longer misfiles');
-  eq(ip.ctx.motionLabel, 'Indirect provider', 'indirectProvider prints its own label');
-  eq(ip.ctx.holdsBillingAccount, true, 'indirectProvider holds the billing account');
+  // Indirect provider was removed on purpose in 9c8be33 (this tool serves
+  // reselling partners, not the distributor). The original intent of this
+  // check survives: a legacy value must never misfile as direct bill.
+  eq(E.MOTION_ORDER.join(','), 'direct,indirectReseller,notCsp', 'MOTION_ORDER offers the three reseller motions');
+  ok(!Object.prototype.hasOwnProperty.call(E.MOTIONS, 'indirectProvider'), 'indirectProvider is not a motion');
+  const ip = E.compute(st({ channel: { motion:'indirectProvider', providerCreditUsd:null },
+    pricing: Object.assign(E.defaults().pricing, { pec: { status:'yes', pct: 15 } }) }));
+  eq(ip.ctx.cspMotion, 'unsure', 'legacy indirectProvider files as unsure');
+  eq(ip.ctx.motionLabel, 'Not established', 'legacy indirectProvider prints Not established');
+  eq(ip.ctx.holdsBillingAccount, false, 'legacy indirectProvider does not hold the billing account');
+  eq(ip.ctx.pecKnown, false, 'legacy indirectProvider pecKnown false');
+  eq(ip.ctx.providerCreditUsd, null, 'legacy indirectProvider has no provider rate');
+  ok(ip.warnings.some(w => w.id === 'V-26'), 'legacy indirectProvider raises V-26');
+  // Prototype keys are not motions either (A0c).
+  ['toString', 'constructor', '__proto__', 'hasOwnProperty'].forEach(function (k) {
+    const pk = E.compute(st({ channel: { motion:k, providerCreditUsd:null } }));
+    eq(pk.ctx.cspMotion, 'unsure', 'motion "' + k + '" files as unsure');
+    eq(pk.ctx.motionLabel, 'Not established', 'motion "' + k + '" prints Not established');
+    ok(pk.warnings.some(w => w.id === 'V-26'), 'motion "' + k + '" still raises V-26');
+  });
 
   // unknown effort level labels as Medium instead of undefined
   const unk = E.compute(st({ effort: { level:'zzz', step:E.EFFORT_STEP_DEFAULT } }));
@@ -534,10 +578,10 @@ function assertCopyClean(r, m) {
   ok(!/personaPreset: 'even'/.test(src), 'defaults() no longer claims the even preset');
   ok(!/You have edited the split by hand, so no preset applies/.test(src),
      'the false custom-mix copy is gone');
-  ok(/perActiveMs \/ E\.SKU_BY_ID\['cop_biz'\]\.usd/.test(src),
-     'ratio explainer divides by the cop_biz catalog price');
-  ok(/perActiveMs \/ E\.SKU_BY_ID\['cop_ent'\]\.usd/.test(src),
-     'ratio explainer divides by the cop_ent catalog price');
+  ok(/c\.monthlyCowork \/ \(c\.copilotLicensed \* E\.SKU_BY_ID\['cop_biz'\]\.usd\)/.test(src),
+     'ratio explainer divides by the cop_biz catalog price, per licensed user (A0b)');
+  ok(/usd\(E\.SKU_BY_ID\['cop_ent'\]\.usd\)/.test(src),
+     'ratio explainer names the cop_ent catalog price');
   ok(!/perActiveMs \/ 18/.test(src) && !/perActiveMs \/ 30/.test(src),
      'no bare price literal left in the ratio-explainer math');
   ok(/implied by this E7 a-la-carte arithmetic, not read from a price list/.test(src),
@@ -1478,7 +1522,7 @@ function nextText(pick) {
   ok(rH.ctx.monthlyCowork > 0 && rH.warnings.some(w => w.id === 'V-10'),
      'the V-10 state renders a ratio block (precondition for the checks below)');
   const v10Html = ratioBlockUi(rH.ctx, s);
-  ok(!/isn't wrong and neither are you/.test(v10Html),
+  ok(!/is the whole gap between your ratio and theirs/.test(v10Html),
      'V-10 present: the reassurance does not argue with the warning above it');
   ok(/check the two entries most likely to be behind it/.test(v10Html),
      'V-10 present: the block points at the two entries V-10 names');
@@ -1486,8 +1530,22 @@ function nextText(pick) {
      'the input-check framing mirrors V-10’s own two figures');
   // and on a clean state it is still the reassurance
   const clean = ratioBlockUi(E.compute(E.defaults()).ctx);
-  ok(/isn't wrong and neither are you/.test(clean), 'no V-10: the reassurance survives unchanged');
+  // ba6b007 rewrote the reassurance as plain percentages; assert the new copy.
+  ok(/TD SYNNEX\\u2019s 2\.6&times; is built on roughly <b>\d+% activation<\/b>/.test(clean) ||
+     /TD SYNNEX’s 2\.6&times; is built on roughly <b>\d+% activation<\/b>/.test(clean),
+     'no V-10: the clean block states the benchmark activation');
+  ok(/is the whole gap between your ratio and theirs/.test(clean), 'no V-10: the reassurance closes the gap');
+  ok(!/check the two entries most likely/.test(clean), 'no V-10: no input-check framing');
+  ok(!/wrong and neither are you/.test(src), 'the retired scolding aside is gone');
   ok(/% activation/.test(clean), 'stock defaults still render the implied-activation sentence');
+  // A0b: the two "same usage" ratios share one basis, so biz × 18 equals ent × 30.
+  {
+    const c0 = E.compute(E.defaults()).ctx;
+    const biz = c0.monthlyCowork / (c0.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd);
+    ok(Math.abs(biz * E.SKU_BY_ID['cop_biz'].usd - c0.ratioBench * E.SKU_BY_ID['cop_ent'].usd) < 1e-9,
+       'Business-promo ratio and benchmark ratio share the per-licensed-user basis');
+    ok(clean.indexOf(biz.toFixed(2) + '&times;</b> against the') >= 0, 'the clean block prints the same-basis Business ratio');
+  }
 }
 
 /* ── R7.5 · The value wobble (#23) ──────────────────────────────────────── */
@@ -1611,7 +1669,7 @@ const FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, t
 {
   const cases = {
     direct:           /^To: TD SYNNEX \/ your distributor\. You hold the billing account/m,
-    indirectProvider: /^To: TD SYNNEX \/ your distributor\. You hold the billing account/m,
+    indirectProvider: /^To: TD SYNNEX \/ your distributor\. The CSP motion has not been set/m, // legacy value files as unsure
     indirectReseller: /^To: your indirect provider\./m,
     notCsp:           /^To: your distributor — for reference, not as an order\./m,
     unsure:           /^To: TD SYNNEX \/ your distributor\. The CSP motion has not been set/m

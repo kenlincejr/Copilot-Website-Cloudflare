@@ -1200,7 +1200,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
   var MOTION_ORDER = ['direct','indirectReseller','notCsp'];
   function motionOf(state) {
     var m = state.channel && state.channel.motion;
-    return MOTIONS[m] ? m : 'unsure';
+    // Own keys only: a file carrying "toString" must not resolve to a prototype method.
+    return (typeof m === 'string' && Object.prototype.hasOwnProperty.call(MOTIONS, m)) ? m : 'unsure';
   }
 
   /* ── Default state ────────────────────────────────────────────────────── */
@@ -3598,7 +3599,7 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
         // A card saved before the motion question existed carries no answer.
         // Unknown, not assumed \u2014 the whole point of asking.
         if (c.channel) state.channel = {
-          motion: E.MOTIONS[c.channel.motion] ? c.channel.motion : 'unsure',
+          motion: E.motionOf({ channel: c.channel }),
           providerCreditUsd: (c.channel.providerCreditUsd != null && isFinite(c.channel.providerCreditUsd))
             ? Math.max(0, c.channel.providerCreditUsd) : null };
         // The same deep repair the session loader runs: magnitudes capped,
@@ -3863,7 +3864,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
       'Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>. Priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
       closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
-      (c.perActiveMs / E.SKU_BY_ID['cop_biz'].usd).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
+      // Same basis as ratioBench (per licensed user), only the divisor changes.
+      (c.copilotLicensed > 0 ? c.monthlyCowork / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
       '</div>';
   }
 
