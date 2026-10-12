@@ -10,7 +10,8 @@
    F titleFromUrl · G excerpt and hostile input · H fragmentFor and deepLink ·
    I grouping · J phrase finder · K fixture · M config, requestBody and hash ·
    N server-sent events · O Markdown renderer · P sources and copied answer ·
-   L static checks.
+   Q launcher and Ask about this page · R logging · S Read this next and
+   data/related.json · T shadow-root styles and markup · L static checks.
 */
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
@@ -467,17 +468,23 @@ else {
 }
 
 // ── M: config, requestBody and the URL hash ──
+// The page-type filter chips were removed 2026-10-12 (Ken): search sends no
+// filter, the hash carries the query only, suggestions are { label, query }.
 sec('M');
 const BOOST = '"boost_by":[{"field":"priority","direction":"desc"}]';
 const DEF = C.DEFAULT_CONFIG;
 eq(DEF.endpoint, C.ENDPOINT, 'default endpoint is the constant');
-eq(JSON.stringify(DEF.chips), '["all","playbook","engagement","tool","customer-zero","program"]', 'default chips in spec order');
-eq(DEF.suggested.length, 4, 'four suggested questions by default');
+ok(!('chips' in DEF) && !('CHIPS' in C) && !('CHIP_LABELS' in C), 'no filter chips anywhere in the defaults or core');
+eq(DEF.suggested.length, 4, 'four suggested searches by default');
+eq(JSON.stringify(DEF.suggested.map((s) => s.label)), '["What changes on December 1","Pricing a managed service","Copilot Studio agent engagements","Customer Zero"]', 'suggestion labels exactly as Ken set them');
+eq(JSON.stringify(DEF.suggested.map((s) => s.query)), '["What changes on December 1 for Copilot Business?","How do I price a managed Copilot service?","What does a Copilot Studio agent engagement include?","How do I run Customer Zero in my own tenant?"]', 'suggestion queries are the full questions');
 eq(DEF.boost, true, 'boost on by default');
 eq(DEF.rewriteMinWords, 0, 'rewrite off by default');
 eq(DEF.rerank, false, 'rerank off by default');
 eq(DEF.maxPages, 6, 'maxPages default');
-eq(JSON.stringify(C.CHIPS.map((v) => C.CHIP_LABELS[v])), '["All","Playbook","Engagements","Calculators and tools","Customer Zero","Partner program"]', 'chip labels exactly as spec §3.2');
+eq(DEF.answerMaxResults, 10, 'answers retrieve 10 chunks by default');
+eq(DEF.logEndpoint, 'https://playbook-search-log.ken-lince.workers.dev/', 'log endpoint default');
+eq(JSON.stringify(DEF.pageAskExclude), '["/","/index.html","/frontier-navigator/pages/"]', 'pageAskExclude default (spec D5)');
 {
   const CFG = path.join(ROOT, 'data', 'site-search-config.json');
   ok(fs.existsSync(CFG), 'data/site-search-config.json exists');
@@ -488,7 +495,8 @@ eq(JSON.stringify(C.CHIPS.map((v) => C.CHIP_LABELS[v])), '["All","Playbook","Eng
     if (raw) {
       eq(JSON.stringify(C.mergeConfig(raw)), JSON.stringify(raw), 'config file is valid as written (merge changes nothing)');
       eq(JSON.stringify(raw), JSON.stringify(DEF), 'config file and inline defaults are identical');
-      ['endpoint', 'suggested', 'chips', 'pageAskExclude', 'maxPages', 'boost', 'rewriteMinWords', 'rerank'].forEach((k) => ok(k in raw, 'config has ' + k));
+      ['endpoint', 'logEndpoint', 'suggested', 'pageAskExclude', 'maxPages', 'boost', 'rewriteMinWords', 'rerank', 'answerMaxResults'].forEach((k) => ok(k in raw, 'config has ' + k));
+      ok(!('chips' in raw), 'config has no chips');
     }
   }
 }
@@ -496,35 +504,39 @@ eq(JSON.stringify(C.mergeConfig(null)), JSON.stringify(DEF), 'null config: defau
 eq(JSON.stringify(C.mergeConfig('nonsense')), JSON.stringify(DEF), 'string config: defaults');
 eq(JSON.stringify(C.mergeConfig([1, 2])), JSON.stringify(DEF), 'array config: defaults');
 eq(JSON.stringify(C.mergeConfig({})), JSON.stringify(DEF), 'empty config: defaults');
+ok(!('chips' in C.mergeConfig({ chips: ['all', 'tool'] })), 'a legacy chips key is dropped');
 [['https://evil.example.com/', 'other host'], ['http://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/', 'http'],
   ['https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com', 'no trailing slash'], [42, 'number'],
   ['https://x.search.ai.cloudflare.com.evil.com/', 'suffix trick']].forEach(([e, why]) => eq(C.mergeConfig({ endpoint: e }).endpoint, C.ENDPOINT, 'bad endpoint rejected: ' + why));
 eq(C.mergeConfig({ endpoint: 'https://0123abcd-0000.search.ai.cloudflare.com/' }).endpoint, 'https://0123abcd-0000.search.ai.cloudflare.com/', 'another instance endpoint accepted');
-eq(JSON.stringify(C.mergeConfig({ suggested: ['  One?  ', '', 7, 'Two?'] }).suggested), '["One?","Two?"]', 'suggestions trimmed, empties and non-strings dropped');
-eq(C.mergeConfig({ suggested: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] }).suggested.length, 6, 'at most six suggestions');
+// suggestions
+eq(JSON.stringify(C.mergeConfig({ suggested: [{ label: '  One  ', query: ' One? ' }, { label: '', query: 'x' }, 7, { label: 'Two', query: 'Two?' }] }).suggested),
+  '[{"label":"One","query":"One?"},{"label":"Two","query":"Two?"}]', 'suggestions trimmed, empties and non-objects dropped');
+eq(JSON.stringify(C.mergeConfig({ suggested: ['Plain question?'] }).suggested), '[{"label":"Plain question?","query":"Plain question?"}]', 'a bare string is both label and query');
+eq(C.mergeConfig({ suggested: 'abcdefgh'.split('') }).suggested.length, 6, 'at most six suggestions');
 eq(JSON.stringify(C.mergeConfig({ suggested: [] }).suggested), JSON.stringify(DEF.suggested), 'empty suggestions: defaults');
-eq(C.mergeConfig({ suggested: ['x'.repeat(201)] }).suggested.length, 4, 'over-long suggestion dropped: defaults');
-eq(JSON.stringify(C.mergeConfig({ chips: ['tool', 'playbook'] }).chips), '["all","tool","playbook"]', 'chips without all: all first');
-eq(JSON.stringify(C.mergeConfig({ chips: ['all', 'evil', 'tool', 'tool'] }).chips), '["all","tool"]', 'unknown and duplicate chips dropped');
-eq(JSON.stringify(C.mergeConfig({ chips: ['all'] }).chips), JSON.stringify(DEF.chips), 'only all: defaults');
-eq(JSON.stringify(C.mergeConfig({ chips: 'tool' }).chips), JSON.stringify(DEF.chips), 'chips not an array: defaults');
+eq(C.mergeConfig({ suggested: [{ label: 'x', query: 'x'.repeat(201) }] }).suggested.length, 4, 'over-long query dropped: defaults');
+eq(C.mergeConfig({ suggested: [{ label: 'x'.repeat(81), query: 'x' }] }).suggested.length, 4, 'over-long label dropped: defaults');
+eq(C.mergeConfig({ suggested: [{ label: 'x' }] }).suggested.length, 4, 'label without query dropped: defaults');
+ok(C.mergeConfig(null).suggested !== DEF.suggested && C.mergeConfig(null).suggested[0] !== DEF.suggested[0], 'defaults are copied, not shared');
+eq(C.suggestion(null), null, 'suggestion(null)');
+eq(JSON.stringify(C.suggestion({ label: 'A', query: 'B', extra: 1 })), '{"label":"A","query":"B"}', 'suggestion keeps only label and query');
 [[0, 6], [21, 6], [3.5, 6], ['4', 6], [1, 1], [20, 20], [8, 8]].forEach(([v, w]) => eq(C.mergeConfig({ maxPages: v }).maxPages, w, 'maxPages ' + JSON.stringify(v)));
 [[-1, 0], [2.5, 0], ['4', 0], [4, 4], [0, 0]].forEach(([v, w]) => eq(C.mergeConfig({ rewriteMinWords: v }).rewriteMinWords, w, 'rewriteMinWords ' + JSON.stringify(v)));
 [['yes', true], [0, true], [false, false]].forEach(([v, w]) => eq(C.mergeConfig({ boost: v }).boost, w, 'boost ' + JSON.stringify(v)));
 [['yes', false], [1, false], [true, true]].forEach(([v, w]) => eq(C.mergeConfig({ rerank: v }).rerank, w, 'rerank ' + JSON.stringify(v)));
-eq(C.mergeConfig({ logEndpoint: 'javascript:alert(1)' }).logEndpoint, '', 'logEndpoint must be https');
+[[0, 10], [21, 10], [2.5, 10], ['5', 10], [1, 1], [20, 20], [5, 5]].forEach(([v, w]) => eq(C.mergeConfig({ answerMaxResults: v }).answerMaxResults, w, 'answerMaxResults ' + JSON.stringify(v)));
+eq(C.mergeConfig({ logEndpoint: 'javascript:alert(1)' }).logEndpoint, DEF.logEndpoint, 'logEndpoint must be https');
+eq(C.mergeConfig({ logEndpoint: 'http://x.example/' }).logEndpoint, DEF.logEndpoint, 'http logEndpoint rejected');
 eq(C.mergeConfig({ logEndpoint: 'https://playbook-search-log.example.workers.dev/' }).logEndpoint, 'https://playbook-search-log.example.workers.dev/', 'https logEndpoint kept');
-// requestBody
+eq(C.mergeConfig({ logEndpoint: '' }).logEndpoint, '', 'an empty logEndpoint turns logging off');
+// requestBody: search sends no filter, ever
 const RB = (q, o) => JSON.stringify(C.requestBody(q, o));
-eq(RB('services'), '{"messages":[{"role":"user","content":"services"}],"ai_search_options":{"retrieval":{"max_num_results":20,' + BOOST + '}}}', 'default: boost, no filter');
-eq(RB('services', { type: 'all' }), RB('services'), 'All sends no filter');
-eq(RB('services', { type: 'evil' }), RB('services'), 'unknown type sends no filter');
-eq(RB('services', { type: '' }), RB('services'), 'empty type sends no filter');
-C.CHIPS.slice(1).forEach((v) => eq(RB('services', { type: v }),
-  '{"messages":[{"role":"user","content":"services"}],"ai_search_options":{"retrieval":{"max_num_results":20,"filters":{"page_type":"' + v + '"},' + BOOST + '}}}',
-  'filter for chip ' + v));
+const SEARCH_DEFAULT = '{"messages":[{"role":"user","content":"services"}],"ai_search_options":{"retrieval":{"max_num_results":20,' + BOOST + '}}}';
+eq(RB('services'), SEARCH_DEFAULT, 'default: boost, no filter');
+['all', 'playbook', 'engagement', 'tool', 'customer-zero', 'program', 'evil', ''].forEach((v) => eq(RB('services', { type: v }), SEARCH_DEFAULT, 'no filters are sent from search (legacy type ' + JSON.stringify(v) + ' ignored)'));
+ok(!('filters' in C.requestBody('services', { config: { boost: false } }).ai_search_options.retrieval), 'no filter with boost off either');
 eq(RB('services', { config: { boost: false } }), '{"messages":[{"role":"user","content":"services"}],"ai_search_options":{"retrieval":{"max_num_results":20}}}', 'boost off: v1 body');
-eq(RB('services', { config: { boost: false }, type: 'tool' }), '{"messages":[{"role":"user","content":"services"}],"ai_search_options":{"retrieval":{"max_num_results":20,"filters":{"page_type":"tool"}}}}', 'boost off with a filter');
 {
   const cfg = { rewriteMinWords: 4 };
   ok(!('query_rewrite' in C.requestBody('cowork calculator', { config: cfg }).ai_search_options), 'two words: no rewrite at 4');
@@ -536,41 +548,43 @@ eq(RB('services', { config: { boost: false }, type: 'tool' }), '{"messages":[{"r
 }
 ok(!('reranking' in C.requestBody('x').ai_search_options), 'rerank off: no reranking');
 eq(JSON.stringify(C.requestBody('x', { config: { rerank: true } }).ai_search_options.reranking), '{"enabled":true}', 'rerank on');
-eq(RB('how to price services', { type: 'engagement', stream: true, config: { rewriteMinWords: 4, rerank: true } }),
-  '{"messages":[{"role":"user","content":"how to price services"}],"stream":true,"ai_search_options":{"retrieval":{"max_num_results":20,"filters":{"page_type":"engagement"},' + BOOST + '},"query_rewrite":{"enabled":true},"reranking":{"enabled":true}}}',
-  'everything on, streamed: exact body');
+eq(RB('how to price services', { stream: true, config: { rewriteMinWords: 4, rerank: true } }),
+  '{"messages":[{"role":"user","content":"how to price services"}],"stream":true,"ai_search_options":{"retrieval":{"max_num_results":10,' + BOOST + '},"query_rewrite":{"enabled":true},"reranking":{"enabled":true}}}',
+  'everything on, streamed: exact body, 10 chunks');
 ok(!('stream' in C.requestBody('x')), 'search body has no stream flag');
 {
-  const s = C.requestBody('q', { type: 'tool' }), ch = C.requestBody('q', { type: 'tool', stream: true });
-  eq(JSON.stringify(ch.ai_search_options), JSON.stringify(s.ai_search_options), 'chat sends the same retrieval options as the search');
+  const s = C.requestBody('q'), ch = C.requestBody('q', { stream: true });
+  eq(s.ai_search_options.retrieval.max_num_results, 20, 'search retrieves 20');
+  eq(ch.ai_search_options.retrieval.max_num_results, 10, 'an answer retrieves answerMaxResults (10)');
+  eq(C.requestBody('q', { stream: true, config: { answerMaxResults: 4 } }).ai_search_options.retrieval.max_num_results, 4, 'answerMaxResults from config');
+  eq(C.requestBody('q', { config: { answerMaxResults: 4 } }).ai_search_options.retrieval.max_num_results, 20, 'answerMaxResults does not touch search');
+  const a = JSON.parse(JSON.stringify(s.ai_search_options)), b = JSON.parse(JSON.stringify(ch.ai_search_options));
+  delete a.retrieval.max_num_results; delete b.retrieval.max_num_results;
+  eq(JSON.stringify(b), JSON.stringify(a), 'chat sends the same retrieval options as the search apart from the count');
 }
-['a "quoted" <q>', 'x\ny', '&amp;', ' '].forEach((q) => eq(C.requestBody(q).messages[0].content, q, 'query passes through unchanged: ' + JSON.stringify(q)));
+['a "quoted" <q>', 'x\ny', '&amp;', ' '].forEach((q) => eq(C.requestBody(q).messages[0].content, q, 'query passes through unchanged: ' + JSON.stringify(q)));
 eq(C.wordCount(''), 0, 'wordCount empty');
 eq(C.wordCount('   '), 0, 'wordCount blank');
 eq(C.wordCount('one'), 1, 'wordCount one');
 eq(C.wordCount(' one  two\nthree\tfour '), 4, 'wordCount mixed whitespace');
 eq(C.wordCount(null), 0, 'wordCount null');
-// hash
-eq(C.buildHash('', 'all'), '', 'empty state: no hash');
-eq(C.buildHash('services', 'all'), '#search=services', 'All omitted');
-eq(C.buildHash('services', 'tool'), '#search=services&type=tool', 'type kept');
-eq(C.buildHash('', 'tool'), '#type=tool', 'type without a query');
-eq(C.buildHash('  managed services  ', undefined), '#search=managed%20services', 'query trimmed and encoded');
+// hash: the query only
+eq(C.buildHash(''), '', 'empty state: no hash');
+eq(C.buildHash('services'), '#search=services', 'query hash');
+eq(C.buildHash('services', 'tool'), '#search=services', 'a second argument is ignored');
+eq(C.buildHash('  managed services  '), '#search=managed%20services', 'query trimmed and encoded');
 ['services', 'managed services', 'a&b=c', '#hash?', '100% + more', 'What changes on December 1 for Copilot Business?', '“curly” — dash', 'a+b', 'emoji \u{1F600}', 'x=y&type=tool'].forEach((q) => {
-  C.CHIPS.forEach((t) => {
-    const back = C.parseHash(C.buildHash(q, t));
-    ok(back.query === q && back.type === t, 'hash round-trips ' + JSON.stringify(q) + ' / ' + t + ' (got ' + JSON.stringify(back) + ')');
-  });
+  const back = C.parseHash(C.buildHash(q));
+  ok(back.query === q, 'hash round-trips ' + JSON.stringify(q) + ' (got ' + JSON.stringify(back) + ')');
 });
-eq(JSON.stringify(C.parseHash('')), '{"query":"","type":"all"}', 'no hash');
-eq(JSON.stringify(C.parseHash('#section-3')), '{"query":"","type":"all"}', 'a page anchor is not a search');
-eq(JSON.stringify(C.parseHash('#search=x&type=evil')), '{"query":"x","type":"all"}', 'unknown type: All');
-eq(JSON.stringify(C.parseHash('#type=program')), '{"query":"","type":"program"}', 'type only');
-eq(JSON.stringify(C.parseHash('#search=%20%20')), '{"query":"","type":"all"}', 'blank query');
-eq(JSON.stringify(C.parseHash('search=a+b')), '{"query":"a b","type":"all"}', 'form-encoded plus reads as a space, no leading #');
+eq(JSON.stringify(C.parseHash('')), '{"query":""}', 'no hash');
+eq(JSON.stringify(C.parseHash('#section-3')), '{"query":""}', 'a page anchor is not a search');
+eq(JSON.stringify(C.parseHash('#search=x&type=tool')), '{"query":"x"}', 'legacy &type= ignored gracefully');
+eq(JSON.stringify(C.parseHash('#type=program')), '{"query":""}', 'legacy type alone: no search');
+eq(JSON.stringify(C.parseHash('#search=%20%20')), '{"query":""}', 'blank query');
+eq(JSON.stringify(C.parseHash('search=a+b')), '{"query":"a b"}', 'form-encoded plus reads as a space, no leading #');
 eq(C.parseHash('#search=' + 'x'.repeat(500)).query.length, 300, 'query capped at 300 characters');
-eq(JSON.stringify(C.parseHash('#search=%E0%A4%A')), '{"query":"","type":"all"}', 'malformed escape does not throw');
-eq(JSON.stringify(C.parseHash('#search=x&type=tool', ['all', 'playbook'])), '{"query":"x","type":"all"}', 'type outside the configured chips: All');
+eq(JSON.stringify(C.parseHash('#search=%E0%A4%A')), '{"query":""}', 'malformed escape does not throw');
 
 // ── N: server-sent events ──
 sec('N');
@@ -874,6 +888,364 @@ eq(C.ANSWER_BUSY, 'The assistant is busy right now. The results below are still 
 eq(C.ANSWER_ASK, 'Get an AI answer', 'button label');
 eq(C.ANSWER_WRITING, 'Writing' + ELL, 'writing state');
 
+// ── Q: launcher and Ask about this page (Phase C, F6 and F7) ──
+sec('Q');
+['isTextField', 'shortcutAction', 'trapIndex', 'pathExcluded', 'pageAskAllowed', 'relatedAllowed', 'pageFilter', 'cleanHeading',
+  'askQuestions', 'chatMessages', 'cleanQuery', 'stripQuery', 'canonicalUrl', 'logEvent', 'enqueue', 'takeBatch', 'logUrl',
+  'pathKeys', 'relatedFor', 'truncate', 'relatedHtml', 'shellHtml', 'turnHtml', 'suggestion'].forEach((k) => eq(typeof C[k], 'function', 'core.' + k + ' is a function'));
+// text fields
+const TF = (tagName, type, ce) => C.isTextField({ tagName, type, isContentEditable: !!ce });
+['text', 'search', 'email', 'url', 'number', 'password', 'tel', 'date', '', undefined].forEach((t) => ok(TF('INPUT', t), 'input type ' + t + ' takes typing'));
+['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file', 'image', 'hidden', 'CHECKBOX'].forEach((t) => ok(!TF('INPUT', t), 'input type ' + t + ' does not take typing'));
+ok(TF('TEXTAREA') && TF('textarea') && TF('SELECT'), 'textarea and select are text fields');
+ok(TF('DIV', undefined, true), 'contenteditable is a text field');
+ok(!TF('DIV') && !TF('BUTTON') && !TF('A') && !TF('BODY'), 'other elements are not');
+ok(!C.isTextField(null) && !C.isTextField(undefined) && !C.isTextField('INPUT'), 'non-objects are not');
+// shortcuts
+const K = (key, mods, inField) => C.shortcutAction(Object.assign({ key }, mods || {}), !!inField);
+eq(K('k', { ctrlKey: true }), 'open', 'Ctrl+K opens');
+eq(K('K', { ctrlKey: true }), 'open', 'Ctrl+K with caps lock opens');
+eq(K('k', { metaKey: true }), 'open', 'Cmd+K opens');
+eq(K('k', { ctrlKey: true }, true), 'open', 'Ctrl+K opens even from a text field');
+eq(K('k', { metaKey: true }, true), 'open', 'Cmd+K opens even from a text field');
+eq(K('k', { ctrlKey: true, shiftKey: true }), null, 'Ctrl+Shift+K is left to the browser');
+eq(K('k', { ctrlKey: true, altKey: true }), null, 'Ctrl+Alt+K is left alone');
+eq(K('k'), null, 'plain k does nothing');
+eq(K('/'), 'open', '"/" opens outside a text field');
+eq(K('/', {}, true), null, '"/" types normally inside a text field');
+eq(K('/', { ctrlKey: true }), null, 'Ctrl+/ is left alone');
+eq(K('/', { metaKey: true }), null, 'Cmd+/ is left alone');
+eq(K('/', { altKey: true }), null, 'Alt+/ is left alone');
+eq(K('?', { shiftKey: true }), null, '"?" does nothing');
+eq(K('Escape'), null, 'Escape is not a shortcut');
+eq(C.shortcutAction({ key: 'k', ctrlKey: true, isComposing: true }, false), null, 'IME composition ignored');
+eq(C.shortcutAction({ key: '/', defaultPrevented: true }, false), null, 'an event the page already handled is ignored');
+eq(C.shortcutAction(null, false), null, 'no event');
+// focus trap
+eq(C.trapIndex(5, 4, false), 0, 'Tab on the last wraps to the first');
+eq(C.trapIndex(5, 0, true), 4, 'Shift+Tab on the first wraps to the last');
+eq(C.trapIndex(5, 2, false), null, 'Tab in the middle moves on its own');
+eq(C.trapIndex(5, 2, true), null, 'Shift+Tab in the middle moves on its own');
+eq(C.trapIndex(5, 0, false), null, 'Tab on the first moves on its own');
+eq(C.trapIndex(5, 4, true), null, 'Shift+Tab on the last moves on its own');
+eq(C.trapIndex(5, -1, false), 0, 'focus outside: Tab goes to the first');
+eq(C.trapIndex(5, -1, true), 4, 'focus outside: Shift+Tab goes to the last');
+eq(C.trapIndex(5, 9, false), 0, 'stale index: first');
+eq(C.trapIndex(1, 0, false), 0, 'one focusable: stays');
+eq(C.trapIndex(1, 0, true), 0, 'one focusable, Shift: stays');
+eq(C.trapIndex(0, -1, false), null, 'nothing focusable: no-op');
+for (let n = 1; n <= 8; n++) {
+  for (let i = 0; i < n; i++) {
+    [false, true].forEach((sh) => {
+      const r = C.trapIndex(n, i, sh);
+      const next = r === null ? i + (sh ? -1 : 1) : r;
+      ok(next >= 0 && next < n, 'trap keeps focus inside: n=' + n + ' i=' + i + ' shift=' + sh);
+    });
+  }
+}
+// which pages get Ask about this page (spec D5)
+const EX = C.DEFAULT_CONFIG.pageAskExclude;
+['/', '/index.html', '/frontier-navigator/pages/assessment.html', '/frontier-navigator/pages/results.html'].forEach((p) => ok(!C.pageAskAllowed(p, EX), 'no Ask tab on ' + p));
+['/cpb.html', '/copilot-token-economics.html', '/customer-zero-starter-kit/index.html', '/frontier-navigator/', '/frontier-navigator/index.html', '/use-with-your-ai.html', '/cpb'].forEach((p) => ok(C.pageAskAllowed(p, EX), 'Ask tab on ' + p));
+ok(C.pageAskAllowed('/cpb.html'), 'pageAskAllowed defaults to the config list');
+ok(!C.pageAskAllowed('/', undefined), 'default list excludes home');
+ok(C.pageAskAllowed('/', []), 'an empty list excludes nothing');
+ok(!C.pageAskAllowed('/cpb.html', ['/cpb.html']), 'exact entry');
+ok(C.pageAskAllowed('/cpb.html.bak', ['/cpb.html']), 'an exact entry is not a prefix');
+ok(!C.pageAskAllowed('/a/b/c.html', ['/a/']), 'folder entry is a prefix');
+ok(C.pageAskAllowed('/ab.html', ['/a/']), 'a folder prefix needs the slash');
+ok(C.pageAskAllowed('/x.html', ['', 7, null]), 'junk entries ignored');
+['/', '/index.html', '/frontier-navigator/pages/compare.html'].forEach((p) => ok(!C.relatedAllowed(p), 'no related row on ' + p));
+['/cpb.html', '/customer-zero-starter-kit/index.html', '/frontier-navigator/', '/use-with-your-ai.html'].forEach((p) => ok(C.relatedAllowed(p), 'related row on ' + p));
+// the page filter (verified live 2026-10-12: filename + folder, folder a canonical URL)
+const PF = (p) => JSON.stringify(C.pageFilter(p));
+eq(PF('/copilot-token-economics.html'), '{"filename":"copilot-token-economics.html","folder":"https://copilotplaybook.com/"}', 'root page');
+eq(PF('/customer-zero-starter-kit/index.html'), '{"filename":"index.html","folder":"https://copilotplaybook.com/customer-zero-starter-kit/"}', 'subfolder index');
+eq(PF('/customer-zero-starter-kit/'), PF('/customer-zero-starter-kit/index.html'), 'folder URL is its index.html');
+eq(PF('/frontier-navigator/'), '{"filename":"index.html","folder":"https://copilotplaybook.com/frontier-navigator/"}', 'frontier navigator');
+eq(PF('/cpb'), '{"filename":"cpb.html","folder":"https://copilotplaybook.com/"}', 'pretty URL gets .html');
+eq(PF('/CopilotApp.html'), '{"filename":"CopilotApp.html","folder":"https://copilotplaybook.com/"}', 'case kept');
+eq(PF('/my%20page.html'), '{"filename":"my page.html","folder":"https://copilotplaybook.com/"}', 'percent-decoded');
+eq(PF('/%E0%A4%A.html'), '{"filename":"%E0%A4%A.html","folder":"https://copilotplaybook.com/"}', 'malformed escape kept as is');
+eq(PF(''), '{"filename":"index.html","folder":"https://copilotplaybook.com/"}', 'empty path');
+{
+  const sm = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+  [...sm.matchAll(/<loc>https:\/\/copilotplaybook\.com(\/[^<]*)<\/loc>/g)].map((m) => m[1]).filter((p) => /\.html$|\/$/.test(p)).forEach((p) => {
+    const f = C.pageFilter(p);
+    ok(Buffer.byteLength(f.folder) <= 64 && Buffer.byteLength(f.filename) <= 64, 'filter values fit the 64-byte filter limit: ' + p);
+    eq(f.folder + f.filename, 'https://copilotplaybook.com' + (p.endsWith('/') ? p + 'index.html' : p), 'filter names the page: ' + p);
+  });
+}
+// filters only on request
+{
+  const pf = C.pageFilter('/cpb.html');
+  const b = C.requestBody('Explain: Build Belief', { stream: true, filters: pf });
+  eq(JSON.stringify(b.ai_search_options.retrieval.filters), '{"filename":"cpb.html","folder":"https://copilotplaybook.com/"}', 'ask body carries the page filter');
+  eq(b.ai_search_options.retrieval.max_num_results, 10, 'ask retrieves answerMaxResults');
+  eq(b.stream, true, 'ask streams');
+  eq(JSON.stringify(C.requestBody('q', { filters: { filename: '', folder: 7 } }).ai_search_options.retrieval.filters), undefined, 'empty or non-string filter values dropped');
+  eq(JSON.stringify(C.requestBody('q', { filters: ['x'] }).ai_search_options.retrieval.filters), undefined, 'array filters ignored');
+  eq(JSON.stringify(C.requestBody('q', { filters: { filename: 'a.html' } }).ai_search_options.retrieval.filters), '{"filename":"a.html"}', 'one filter key kept');
+  const conv = [{ role: 'user', content: 'a' }, { role: 'assistant', content: 'b' }, { role: 'user', content: 'c' }];
+  eq(JSON.stringify(C.requestBody('c', { stream: true, messages: conv }).messages), JSON.stringify(conv), 'a conversation is sent as the messages');
+  eq(JSON.stringify(C.requestBody('c', { messages: [] }).messages), '[{"role":"user","content":"c"}]', 'an empty conversation falls back to the query');
+}
+// headings to questions
+eq(C.cleanHeading("3 &middot; The Customer's New Problem".replace('&middot;', '·')), "The Customer's New Problem", 'section number and middle dot stripped');
+eq(C.cleanHeading('2.1 · The 2026 timeline'), 'The 2026 timeline', 'dotted section number');
+eq(C.cleanHeading('1. Introduction'), 'Introduction', 'numbered with a period');
+eq(C.cleanHeading('Step 4: Price it'), 'Price it', 'Step N:');
+eq(C.cleanHeading('Section 11 — Governed growth'), 'Governed growth', 'Section N —');
+eq(C.cleanHeading('2026 Timeline'), '2026 Timeline', 'a year is not a section number');
+eq(C.cleanHeading('10 Ways to price'), '10 Ways to price', 'a number without a separator stays');
+eq(C.cleanHeading('  The   Whiteboard \n ↑ '), 'The Whiteboard', 'whitespace and a trailing back arrow');
+eq(C.cleanHeading(null), '', 'null heading');
+const TOKEN_H2 = ['1 · The Answer, On One Page', '2 · What Changed: Seats Plus Usage', "3 · The Customer's New Problem", '4 · Every Meter in the Tenant',
+  '5 · Nobody Has Packaged It Yet', '6 · The Three Sentences', '7 · The Service in Four Verbs', '8 · The Whiteboard', '9 · Pricing Every Meter',
+  '10 · How the Money Flows Through Distribution', '11 · Governed Growth, Not Cost Cutting', '12 · The Practice Conversation', '13 · The Talk Track',
+  '14 · Objections', '15 · Three Dates, Three Campaigns', '16 · Guardrails: What Never To Say', '17 · Sources, Provenance and Related Guides'];
+{
+  const qs = C.askQuestions(TOKEN_H2);
+  eq(qs.length, 3, 'three questions from the token economics H2s');
+  ok(qs.every((q) => /^Explain: \S/.test(q)), 'each reads "Explain: <heading>" (' + JSON.stringify(qs) + ')');
+  ok(qs.every((q) => !/Sources|Provenance/.test(q)), 'the sources heading is skipped');
+  ok(qs.every((q) => !/^Explain: \d/.test(q)), 'section numbers stripped');
+  eq(qs[0], 'Explain: The Answer, On One Page', 'first heading first');
+  eq(qs[2], 'Explain: Guardrails: What Never To Say', 'last eligible heading last');
+  eq(new Set(qs).size, 3, 'three different questions');
+}
+eq(JSON.stringify(C.askQuestions(["3 · The Customer's New Problem"])), '["Explain: The Customer\'s New Problem"]', 'the spec example');
+eq(JSON.stringify(C.askQuestions(['Contents', 'Table of Contents', 'On this page', 'In this guide', 'Sources', 'References', 'Appendix A', 'Glossary', 'Further reading', 'Related guides', 'Footnotes', 'Notes'])), '[]', 'TOC and reference headings skipped');
+eq(JSON.stringify(C.askQuestions(['Pricing', 'pricing', 'PRICING'])), '["Explain: Pricing"]', 'duplicates dropped, case-insensitive');
+eq(JSON.stringify(C.askQuestions(['Abc', 'x'.repeat(91), 'Real heading'])), '["Explain: Real heading"]', 'too short and too long skipped');
+eq(JSON.stringify(C.askQuestions(['One thing', 'Two things'])), '["Explain: One thing","Explain: Two things"]', 'fewer than three: all of them');
+eq(JSON.stringify(C.askQuestions([])), '[]', 'no headings, no questions');
+eq(JSON.stringify(C.askQuestions(null)), '[]', 'null headings');
+eq(C.askQuestions(['Aaaa', 'Bbbb', 'Cccc', 'Dddd', 'Eeee'], 1).length, 1, 'max 1');
+for (let n = 3; n <= 20; n++) {
+  const hs = Array.from({ length: n }, (_, i) => 'Heading number ' + (i + 1));
+  const qs = C.askQuestions(hs);
+  ok(qs.length === 3 && new Set(qs).size === 3 && qs[0] === 'Explain: Heading number 1' && qs[2] === 'Explain: Heading number ' + n, 'spread over ' + n + ' headings: first, middle, last');
+}
+// multi-turn capping
+{
+  const turns = [];
+  for (let i = 1; i <= 10; i++) turns.push({ role: 'user', content: 'q' + i }, { role: 'assistant', content: 'a' + i });
+  const m = C.chatMessages(turns, 'next');
+  eq(m.length, 7, 'six prior messages plus the new question');
+  eq(JSON.stringify(m.map((x) => x.content)), '["q8","a8","q9","a9","q10","a10","next"]', 'the most recent exchanges are kept, in order');
+  eq(m[0].role, 'user', 'starts with a user turn');
+  eq(m[m.length - 1].role, 'user', 'ends with the new question');
+  for (let cap = 0; cap <= 9; cap++) {
+    const c = C.chatMessages(turns, 'n', cap);
+    ok(c.length <= cap + 1 && c[0].role === 'user' && c[c.length - 1].content === 'n', 'cap ' + cap + ': at most cap prior, user first, question last');
+    ok(c.slice(0, -1).every((x, i, a) => i === 0 || x.role !== a[i - 1].role), 'cap ' + cap + ': roles alternate');
+  }
+  eq(JSON.stringify(C.chatMessages(turns, 'n', 5).map((x) => x.content)), '["q9","a9","q10","a10","n"]', 'odd cap drops the leading assistant turn');
+  eq(JSON.stringify(C.chatMessages([], '  first  ')), '[{"role":"user","content":"first"}]', 'first question alone, trimmed');
+  eq(JSON.stringify(C.chatMessages(null, 'x')), '[{"role":"user","content":"x"}]', 'null history');
+  eq(JSON.stringify(C.chatMessages([{ role: 'system', content: 'evil' }, { role: 'user', content: '' }, null, { role: 'assistant', content: 7 }], 'x')), '[{"role":"user","content":"x"}]', 'system turns, blanks and junk dropped');
+  eq(C.chatMessages([{ role: 'user', content: 'q' }, { role: 'assistant', content: 'y'.repeat(9000) }], 'x')[1].content.length, 4000, 'prior answers cut to 4,000 characters');
+  ok(turns.length === 20, 'history not mutated');
+}
+eq(C.ASK_TURNS, 6, 'six prior messages');
+eq(C.ASK_NONE, "This page doesn't cover that. Try searching the whole playbook.", 'no-chunks line exactly');
+eq(C.LOG_DISCLOSURE, 'Searches are logged without any personal details to improve the playbook.', 'disclosure line exactly');
+
+// ── R: logging (F11) ──
+sec('R');
+eq(JSON.stringify(C.LOG_KINDS), '["search","zero","click","answer","vote","ask_page"]', 'the six event kinds');
+const LE = (k, f, p) => JSON.stringify(C.logEvent(k, f, p));
+const PG = 'https://copilotplaybook.com/cpb.html';
+eq(LE('search', { q: '  cowork  credits ', n: 6 }, PG), '{"kind":"search","q":"cowork credits","n":6,"page":"https://copilotplaybook.com/cpb.html"}', 'search: q, n, page');
+eq(LE('zero', { q: 'nothing here', n: 0 }, PG), '{"kind":"zero","q":"nothing here","n":0,"page":"https://copilotplaybook.com/cpb.html"}', 'zero keeps n=0');
+eq(LE('click', { q: 'x', url: 'https://copilotplaybook.com/cowork.html', rank: 2 }, PG), '{"kind":"click","q":"x","url":"https://copilotplaybook.com/cowork.html","rank":2,"page":"https://copilotplaybook.com/cpb.html"}', 'click: url and rank');
+eq(LE('vote', { q: 'x', n: 1 }), '{"kind":"vote","q":"x","n":1}', 'vote helpful is n=1');
+eq(LE('vote', { q: 'x', n: 0 }), '{"kind":"vote","q":"x","n":0}', 'vote not helpful is n=0');
+eq(LE('answer', { q: 'x', filter: 'tool' }), '{"kind":"answer","q":"x"}', 'filter is never sent');
+eq(LE('ask_page', { q: 'Explain: Pricing' }, PG), '{"kind":"ask_page","q":"Explain: Pricing","page":"https://copilotplaybook.com/cpb.html"}', 'ask_page');
+eq(C.logEvent('hack', { q: 'x' }), null, 'unknown kind: no event');
+eq(C.logEvent('', {}), null, 'empty kind: no event');
+eq(C.logEvent('toString', {}), null, 'prototype names are not kinds');
+eq(LE('search', null), '{"kind":"search"}', 'no fields');
+eq(LE('search', { ip: '1.2.3.4', ua: 'Mozilla', email: 'a@b.co', cookie: 'x', id: 7 }), '{"kind":"search"}', 'nothing outside the fixed fields survives (privacy)');
+{
+  const keys = new Set();
+  [['search', { q: 'a', n: 1, filter: 'tool', url: PG, rank: 1, extra: 1 }], ['click', { q: 'a', url: PG, rank: 3 }], ['vote', { n: 1 }]].forEach(([k, f]) => Object.keys(C.logEvent(k, f, PG)).forEach((x) => keys.add(x)));
+  ok([...keys].every((k) => ['kind', 'q', 'n', 'url', 'rank', 'page'].includes(k)), 'only kind, q, n, url, rank, page are ever produced (' + [...keys].join(',') + ')');
+}
+eq(C.logEvent('search', { q: 'x'.repeat(500) }).q.length, 200, 'query capped at 200 characters');
+ok(!('q' in C.logEvent('search', { q: '   ' })), 'blank query omitted');
+ok(!('q' in C.logEvent('search', { q: 7 })), 'non-string query omitted');
+eq(C.logEvent('search', { q: 'a\u0000b\nc\td\u007f' }).q, 'a b c d', 'control characters collapsed');
+eq(C.cleanQuery('email jane.doe@contoso.com about it'), 'email [email] about it', 'email masked');
+eq(C.cleanQuery('call +1 (555) 123-4567 now'), 'call [number] now', 'phone number masked');
+eq(C.cleanQuery('account 123456789012'), 'account [number]', 'long digit run masked');
+eq(C.cleanQuery('755,000 credits for $7,550'), '755,000 credits for $7,550', 'ordinary figures kept');
+eq(C.cleanQuery('December 1, 2026 pricing'), 'December 1, 2026 pricing', 'dates kept');
+eq(C.cleanQuery('50 users × $21 × 12'), '50 users × $21 × 12', 'arithmetic kept');
+eq(C.cleanQuery(null), null, 'cleanQuery null');
+[[-1, false], [0, true], [100, true], [101, false], [2.5, false], ['3', false], [NaN, false]].forEach(([n, keep]) => eq('n' in C.logEvent('search', { n }), keep, 'n ' + JSON.stringify(n)));
+[[0, false], [1, true], [50, true], [51, false], [1.5, false], ['2', false]].forEach(([r, keep]) => eq('rank' in C.logEvent('click', { rank: r }), keep, 'rank ' + JSON.stringify(r)));
+eq(C.logEvent('click', { url: 'https://copilotplaybook.com/cowork.html?hl=price%20it#x' }).url, 'https://copilotplaybook.com/cowork.html', 'url without ?hl or hash');
+eq(C.logEvent('click', { url: 'https://www.copilotplaybook.com/cowork.html' }).url, 'https://copilotplaybook.com/cowork.html', 'www folded into the canonical host');
+['https://evil.example/x', 'javascript:alert(1)', 'https://copilotplaybook.com.evil.example/', '/relative.html', 'http://copilotplaybook.com/x.html', ''].forEach((u) => ok(!('url' in C.logEvent('click', { url: u })), 'off-site url dropped: ' + u));
+eq(C.logEvent('search', {}, 'https://copilotplaybook.com/cpb.html?hl=x&utm_source=mail#section-3').page, 'https://copilotplaybook.com/cpb.html', 'page without query or hash');
+eq(C.logEvent('search', {}, 'https://www.copilotplaybook.com/').page, 'https://copilotplaybook.com/', 'page on www folded');
+eq(C.stripQuery('https://a/b.html?hl=x#y'), 'https://a/b.html', 'stripQuery');
+eq(C.stripQuery(null), '', 'stripQuery null');
+// queue and batches
+{
+  const q = [];
+  for (let i = 0; i < 130; i++) C.enqueue(q, { kind: 'search', n: i % 100 });
+  eq(q.length, 100, 'queue capped at 100');
+  eq(q[0].n, 30, 'oldest dropped first');
+  C.enqueue(q, null);
+  eq(q.length, 100, 'a null event is not queued');
+  const bodies = [];
+  let b;
+  while ((b = C.takeBatch(q))) bodies.push(b);
+  eq(bodies.length, 5, 'five batches of 20');
+  ok(bodies.every((x) => JSON.parse(x).events.length === 20), 'each batch carries at most 20 events');
+  ok(bodies.every((x) => Buffer.byteLength(x) < 16 * 1024), 'each batch under the Worker 16 KB limit');
+  eq(q.length, 0, 'queue drained');
+  eq(C.takeBatch(q), null, 'empty queue: nothing to send');
+  eq(C.takeBatch(null), null, 'no queue: nothing to send');
+  const q2 = [{ kind: 'search' }, { kind: 'zero' }, { kind: 'click' }];
+  eq(C.takeBatch(q2, 2), '{"events":[{"kind":"search"},{"kind":"zero"}]}', 'batch body shape');
+  eq(q2.length, 1, 'the rest stays queued');
+  const big = [];
+  for (let i = 0; i < 20; i++) C.enqueue(big, C.logEvent('click', { q: 'x'.repeat(500), url: 'https://copilotplaybook.com/' + 'p'.repeat(280), rank: 50 }, 'https://copilotplaybook.com/' + 'y'.repeat(400)));
+  ok(Buffer.byteLength(C.takeBatch(big)) < 16 * 1024, 'twenty worst-case events still fit under 16 KB');
+}
+eq(C.logUrl('https://playbook-search-log.ken-lince.workers.dev/'), 'https://playbook-search-log.ken-lince.workers.dev/e', 'POST /e');
+eq(C.logUrl('https://x.example'), 'https://x.example/e', 'no trailing slash');
+eq(C.logUrl(''), '', 'empty endpoint: nowhere to send');
+eq(C.logUrl('http://x.example/'), '', 'http endpoint: nowhere to send');
+eq(C.logUrl(null), '', 'null endpoint');
+eq(C.LOG_BATCH, 20, 'batch size 20');
+
+// ── S: Read this next (F8) and data/related.json ──
+sec('S');
+eq(JSON.stringify(C.pathKeys('/frontier-navigator/')), '["/frontier-navigator/","/frontier-navigator/index.html"]', 'folder keys');
+eq(JSON.stringify(C.pathKeys('/customer-zero-starter-kit/index.html')), '["/customer-zero-starter-kit/index.html","/customer-zero-starter-kit/"]', 'index keys');
+eq(JSON.stringify(C.pathKeys('/cpb')), '["/cpb","/cpb.html"]', 'pretty URL keys');
+eq(JSON.stringify(C.pathKeys('/cpb.html')), '["/cpb.html"]', 'file keys');
+{
+  const three = [{ url: '/a.html', title: 'A', description: 'a' }, { url: '/b.html', title: 'B', description: 'b' }, { url: '/c.html', title: 'C', description: 'c' }];
+  eq(C.relatedFor({ '/x.html': three }, '/x.html').length, 3, 'three cards');
+  eq(C.relatedFor({ '/x.html': three.concat([{ url: '/d.html', title: 'D' }]) }, '/x.html').length, 3, 'never four');
+  eq(C.relatedFor({ '/x.html': three.slice(0, 2) }, '/x.html'), null, 'two: no row');
+  eq(C.relatedFor({ '/x/': three }, '/x/index.html').length, 3, 'found by the folder spelling');
+  eq(C.relatedFor({ '/x.html': three }, '/y.html'), null, 'unknown page: no row');
+  eq(C.relatedFor({ '/x.html': [three[0], three[0], three[1], three[2]] }, '/x.html').length, 3, 'duplicates skipped');
+  eq(C.relatedFor({ '/x.html': [{ url: '/x.html', title: 'Self' }].concat(three) }, '/x.html')[0].url, '/a.html', 'self link skipped');
+  eq(C.relatedFor({ '/x.html': [{ url: 'javascript:alert(1)', title: 'J' }, { url: 'https://evil.example/', title: 'E' }].concat(three) }, '/x.html')[0].url, '/a.html', 'unsafe links skipped');
+  eq(C.relatedFor({ '/x.html': [{ url: '/n.html', title: '' }, { url: '/m.html' }].concat(three) }, '/x.html')[0].url, '/a.html', 'untitled entries skipped');
+  eq(C.relatedFor(null, '/x.html'), null, 'no data');
+  eq(C.relatedFor({ '/x.html': 'nope' }, '/x.html'), null, 'malformed entry');
+  const html = C.relatedHtml(three);
+  eq((html.match(/<a class="card"/g) || []).length, 3, 'three card links');
+  ok(/Read this next/.test(html), 'labeled Read this next');
+  ok(/grid-template-columns:repeat\(3,1fr\)/.test(C.RELATED_CSS) && /@media \(max-width:640px\)\{\.grid\{grid-template-columns:1fr\}\}/.test(C.RELATED_CSS), 'three across, stacked under 640px');
+  ok(!/auto-fit|auto-fill/.test(C.RELATED_CSS), 'pinned grid, never auto-fit (DESIGN 8b.3)');
+  eq(C.relatedHtml(null), '<style>' + C.RELATED_CSS + '</style>', 'no items: the stylesheet only');
+  const hostile = C.relatedHtml([{ url: '/a.html"><script>', title: '<img src=x onerror=alert(1)>', description: '"><b>x</b>' }, three[1], three[2]]);
+  ok(!/<script|<img|<b>/.test(hostile), 'card text and URL escaped');
+}
+eq(C.truncate('short'), 'short', 'short text untouched');
+{
+  const long = 'The practitioner guide to building a Copilot practice that sells, delivers and renews: belief, model, engagement and the badge, end to end.';
+  const t = C.truncate(long, 120);
+  ok(t.length <= 121 && t.endsWith('…') && long.startsWith(t.slice(0, -1)), 'cut at a word boundary with an ellipsis (' + t + ')');
+  ok(!/[\s,:;]…$/.test(t), 'no dangling punctuation before the ellipsis');
+  eq(C.truncate('x'.repeat(200), 120).length, 121, 'one long word: hard cut');
+}
+{
+  const REL = path.join(ROOT, 'data', 'related.json');
+  ok(fs.existsSync(REL), 'data/related.json exists');
+  if (fs.existsSync(REL)) {
+    let data = null;
+    try { data = JSON.parse(fs.readFileSync(REL, 'utf8')); } catch (e) { data = null; }
+    ok(data && typeof data === 'object' && !Array.isArray(data), 'related.json parses as an object');
+    const sm = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+    const sitemap = [...sm.matchAll(/<loc>https:\/\/copilotplaybook\.com(\/[^<]*)<\/loc>/g)].map((m) => m[1]).filter((p) => /\.html$|\/$/.test(p));
+    const fileOf = (p) => (p.endsWith('/') ? p + 'index.html' : p).slice(1);
+    const metaOf = (p) => {
+      const head = fs.readFileSync(path.join(ROOT, fileOf(p)), 'utf8').split(/<\/head>/i)[0];
+      const get = (n) => { const m = new RegExp('<meta name="' + n + '" content="([^"]*)"').exec(head); return m ? C.decode(m[1]) : null; };
+      return { title: get('title'), description: get('description') };
+    };
+    if (data) {
+      const keys = Object.keys(data);
+      ok(keys.length > 0, 'related.json has entries (' + keys.length + ')');
+      keys.forEach((k) => {
+        ok(sitemap.includes(k), 'key is a sitemap page: ' + k);
+        const list = data[k];
+        ok(Array.isArray(list) && list.length === 3, k + ': exactly three entries');
+        if (!Array.isArray(list)) return;
+        ok(list.every((it) => it && typeof it.url === 'string' && typeof it.title === 'string' && typeof it.description === 'string' && Object.keys(it).sort().join() === 'description,title,url'), k + ': entries are {url, title, description}');
+        ok(list.every((it) => it.url !== k), k + ': no self link');
+        eq(new Set(list.map((it) => it.url)).size, list.length, k + ': three distinct pages');
+        ok(list.every((it) => sitemap.includes(it.url) && it.url !== '/'), k + ': every target is a sitemap page other than home');
+        ok(list.every((it) => it.title.trim() && it.description.trim()), k + ': titles and descriptions present');
+        ok(list.every((it) => { const m = metaOf(it.url); return m.title === it.title && m.description === it.description; }), k + ': card text matches the target page meta tags');
+        ok(list.every((it) => C.safeHref(it.url) === it.url), k + ': links pass safeHref');
+        eq(C.relatedFor(data, k) && C.relatedFor(data, k).length, 3, k + ': the module renders three cards');
+      });
+      sitemap.filter((p) => C.relatedAllowed(p) && p !== '/copilot-credit-planner.html').forEach((p) => ok(keys.includes(p), 'every page that shows the row has an entry: ' + p));
+      const s = fs.readFileSync(REL, 'utf8');
+      ok(!/\r\n/.test(s) && s.endsWith('\n'), 'related.json uses LF and ends with a newline');
+    }
+  }
+}
+
+// ── T: shadow-root styles and markup (spec D3, §6) ──
+sec('T');
+{
+  const ALLOWED_COLORS = ['#005f6b', '#007b8a', '#003057', '#dde1e7', '#f7f8fa', '#1a2330', '#e4f0f3', '#fff', '#374151', '#6b7280', '#9ca3af', '#00474f', '#c5dde3'];
+  const ALLOWED_RGBA = ['rgba(0,0,0,.07)', 'rgba(0,0,0,.09)', 'rgba(72,202,228,.3)', 'rgba(72,202,228,.25)', 'rgba(0,48,87,.35)'];
+  const ALLOWED_SIZES = ['.58rem', '.68rem', '.72rem', '.78rem', '.82rem', '.85rem', '.88rem', '.9rem', '.95rem'];
+  [['PANEL_CSS', C.PANEL_CSS], ['RELATED_CSS', C.RELATED_CSS]].forEach(([name, css]) => {
+    ok(typeof css === 'string' && css.length > 200, name + ' present');
+    ok(!/var\(/.test(css), name + ': literal values only, no var() (the host page tokens never reach it)');
+    (css.match(/#[0-9a-fA-F]{3,8}\b/g) || []).forEach((c) => ok(ALLOWED_COLORS.includes(c.toLowerCase()), name + ': color ' + c + ' is a DESIGN §1/§4 value'));
+    (css.match(/rgba\([^)]*\)/g) || []).forEach((c) => ok(ALLOWED_RGBA.includes(c.replace(/\s/g, '')), name + ': ' + c + ' is a §1 shadow, the v1 focus ring or navy at opacity'));
+    (css.match(/font-size:[^;}]+/g) || []).forEach((f) => ok(ALLOWED_SIZES.includes(f.slice(10).trim()), name + ': ' + f + ' is on the §2.2 scale'));
+    (css.match(/border-radius:[^;}]+/g) || []).forEach((r) => ok(/^(8px|0 8px 8px 0|8px 8px 0 0)$/.test(r.slice(14).trim()), name + ': ' + r + ' uses --radius'));
+    (css.match(/font-family:[^;}]+/g) || []).forEach((f) => eq(f.slice(12).trim(), "'Segoe UI', 'Inter', Georgia, sans-serif", name + ': the §2.1 house stack'));
+    ok(/:host\{all:initial/.test(css), name + ': host resets inherited page styles');
+    ok(!/@import|url\(|font-face/i.test(css), name + ': no external resources, no webfont');
+    ok(/prefers-reduced-motion/.test(css), name + ': respects reduced motion');
+    ok(!/max-width:\s*[\d.]+(ch|em)\b/.test(css), name + ': no capped prose measure (DESIGN 8b.1)');
+  });
+  ok(/\.launcher\{position:fixed;right:16px;bottom:16px/.test(C.PANEL_CSS), 'launcher bottom-right, 16px from the edges');
+  ok(/@media \(max-width:640px\)\{\.dialog\{top:auto;bottom:0;left:0;right:0;width:100%;max-width:100%/.test(C.PANEL_CSS), 'bottom sheet, full width, under 640px');
+  ok(/\.site-search-suggestion\{padding:0;border:0;background:none;color:#005F6B/.test(C.SEARCH_CSS), 'suggestions are plain text links: no box, no border, teal');
+  ok(/\.site-search-try\{[^}]*color:#6b7280/.test(C.SEARCH_CSS), '"Try:" in the muted color');
+  const shell = C.shellHtml({ title: 'The <Meter> & "Conversation"' });
+  ok(/role="dialog" aria-modal="true" aria-labelledby="ps-title"/.test(shell) && /id="ps-title"/.test(shell), 'dialog is modal and labeled');
+  ok(/role="tablist"/.test(shell) && (shell.match(/role="tab"/g) || []).length === 2, 'two tabs');
+  ok(/>Search the playbook<\/button>/.test(shell) && />Ask about this page<\/button>/.test(shell), 'tab names exactly');
+  ok(/aria-controls="ps-pane-search" aria-selected="true"/.test(shell) && /aria-controls="ps-pane-ask" aria-selected="false" tabindex="-1"/.test(shell), 'Search selected first, roving tabindex');
+  ok(/Questions about <em>The &lt;Meter&gt; &amp; &quot;Conversation&quot;<\/em>/.test(shell), 'page title escaped in the Ask header');
+  ok(/<span>Search<\/span><\/button>/.test(shell) && /class="launcher"[^>]*aria-haspopup="dialog" aria-expanded="false"/.test(shell), 'launcher labeled Search, announces its dialog');
+  ok(/<svg[^>]*aria-hidden="true"/.test(shell) && /<circle cx="11" cy="11" r="7"\/>/.test(shell), 'magnifier icon inline and hidden from assistive tech');
+  ok(/aria-label="Close search"/.test(shell), 'close button labeled');
+  ok(shell.indexOf(C.LOG_DISCLOSURE) > 0, 'disclosure in the panel footer');
+  ok(/class="site-search-suggest ps-suggest" role="group"/.test(shell) && !/site-search-chip/.test(shell), 'suggestion line, no chips');
+  ['ps-form', 'ps-q', 'ps-suggest', 'ps-status', 'ps-ask', 'ps-answer', 'ps-state', 'ps-body', 'ps-sources-wrap', 'ps-sources', 'ps-foot', 'ps-actions', 'ps-copy', 'ps-up', 'ps-down', 'ps-results', 'ask-form', 'ask-q', 'ask-suggest', 'ask-log']
+    .forEach((c) => eq((shell.match(new RegExp('class="[^"]*\\b' + c + '\\b')) || []).length, 1, 'panel has .' + c + ' once'));
+  const turn = C.turnHtml();
+  ok(/class="ask-you"/.test(turn) && /site-search-answer-body/.test(turn) && /t-none/.test(turn) && /t-sources/.test(turn), 'turn template parts');
+  ok(turn.indexOf(C.esc(C.ANSWER_FOOT)) > 0 && turn.indexOf(C.ASK_NONE_BUTTON) > 0, 'turn carries the footer line and the search button');
+}
+// The copied answer ends with the disclaimer.
+eq(C.answerText('Answer.', [{ n: 1, title: 'T', url: 'https://copilotplaybook.com/t.html' }], C.ANSWER_FOOT),
+  'Answer.\n\nSources:\n1. T - https://copilotplaybook.com/t.html\n\n' + C.ANSWER_FOOT, 'copy appends the disclaimer after the sources');
+eq(C.answerText('Answer.', [], C.ANSWER_FOOT), 'Answer.\n\n' + C.ANSWER_FOOT, 'copy appends the disclaimer without sources');
+eq(C.answerText('', [], C.ANSWER_FOOT), '', 'nothing to copy: no disclaimer alone');
+
 // ── L: static checks ──
 sec('L');
 ok(!/\blocalStorage\b|\bsessionStorage\b|\bindexedDB\b/i.test(src), 'no browser storage');
@@ -884,11 +1256,12 @@ ok(!/document\.write/.test(src), 'no document.write');
 ok(!/createElement\(\s*['"]textarea/.test(src), 'decode does not use a textarea');
 const assigns = [...src.matchAll(/\.(innerHTML|outerHTML)\s*=(?!=)\s*([^;]*);/g)];
 ok(assigns.length > 0, 'innerHTML assignments found to check (' + assigns.length + ')');
-assigns.forEach((m) => ok(/^''$/.test(m[2].trim()) || /^core\.(resultsHtml|renderMarkdown|sourcesHtml)\(/.test(m[2].trim()), 'innerHTML fed only by \'\' or a core markup builder: ' + m[0]));
+assigns.forEach((m) => ok(/^''$/.test(m[2].trim()) || /^core\.(resultsHtml|renderMarkdown|sourcesHtml|shellHtml|turnHtml|relatedHtml)\(/.test(m[2].trim()), 'innerHTML fed only by \'\' or a core markup builder: ' + m[0]));
 ok(assigns.some((m) => /core\.renderMarkdown\(/.test(m[2])) && assigns.some((m) => /core\.sourcesHtml\(/.test(m[2])), 'answer and sources rendered through the core builders');
 ok(!/\.outerHTML\s*=/.test(src), 'no outerHTML');
-ok(/b\.textContent = it\.label/.test(src), 'chip and suggestion labels set through textContent');
-ok(/ui\.body\.textContent = core\.ANSWER_BUSY/.test(src), 'busy message set through textContent');
+ok(/b\.textContent = it\.label/.test(src), 'suggestion labels set through textContent');
+ok(/ui\.body\.textContent = core\.ANSWER_BUSY/.test(src) && /t\.body\.textContent = core\.ASK_BUSY/.test(src) && /t\.body\.textContent = core\.ASK_NONE/.test(src), 'busy and no-match messages set through textContent');
+ok(/t\.you\.textContent = question/.test(src), 'the asked question set through textContent');
 ok(!/insertAdjacentHTML/.test(src), 'no insertAdjacentHTML');
 {
   const body = /core\.resultsHtml = function[\s\S]*?\n {2}\};/.exec(src);
@@ -898,50 +1271,72 @@ ok(!/insertAdjacentHTML/.test(src), 'no insertAdjacentHTML');
     interp.forEach((x) => ok(/^core\.(esc|excerpt)\(/.test(x) || /^\(p\.text \?/.test(x), 'resultsHtml interpolation goes through esc or excerpt: ' + x));
     ok(/core\.esc\(p\.href\)/.test(body[0]) && /core\.esc\(p\.title\)/.test(body[0]) && /core\.esc\(p\.url/.test(body[0]) && /core\.excerpt\(p\.text/.test(body[0]), 'href, title, url and text are all escaped');
   }
+  const shell = /core\.shellHtml = function[\s\S]*?\n {2}\};/.exec(src);
+  ok(shell && /core\.esc\(opts\.title/.test(shell[0]) && !/\+ opts\.title/.test(shell[0]), 'shellHtml escapes the page title');
+  const rel = /core\.relatedHtml = function[\s\S]*?\n {2}\};/.exec(src);
+  ok(rel && /core\.esc\(it\.url\)/.test(rel[0]) && /core\.esc\(core\.decode\(it\.title\)\)/.test(rel[0]) && /core\.esc\(core\.truncate/.test(rel[0]), 'relatedHtml escapes url, title and description');
 }
 ok(/textContent = core\.statusText/.test(src), 'status set through textContent');
 ok(/if \(typeof module !== 'undefined' && module\.exports\) \{\s*module\.exports\.SiteSearchCore = core;\s*return;/.test(src), 'Node export returns before any browser code');
 ok(src.indexOf('module.exports.SiteSearchCore') < src.indexOf('document.'), 'no document access before the Node export');
 ok(/window\.top !== window/.test(src) && /classList\.contains\('embedded'\)/.test(src), 'embedded guard present');
-ok(!/\b(colour|behaviour|licence|optimis|organis|catalogue|artefact|modelled|cancelled|labelled|centre|favourite|analyse)\w*/i.test(src), 'US English');
-ok(/max_num_results: core\.MAX_RESULTS/.test(src), 'request body built in one place');
+ok(/mount\.run = function \(\) \{\s*if \(mount\.embedded\(\)\) return;/.test(src), 'nothing mounts (launcher, related, logging, jump) inside a frame or when body.embedded');
+ok(!/\b(colour|behaviour|licence|optimis|organis|catalogue|artefact|modelled|cancelled|labelled|centre|favourite|analyse)\w*/i.test(src.replace(/aria-labelledby/g, '')), 'US English (aria-labelledby is the HTML attribute name)');
+ok(/max_num_results: opts\.stream \? cfg\.answerMaxResults : core\.MAX_RESULTS/.test(src), 'request body built in one place; answers use answerMaxResults');
 eq((src.match(/max_num_results/g) || []).length, 1, 'max_num_results appears once');
-eq((src.match(/core\.requestBody\(query, \{ type: opts\.type, config: config/g) || []).length, 2, 'search and chat both build their body with core.requestBody');
-ok(/config: config, stream: true \}\)\)/.test(src), 'chat requests a stream');
-ok(/var log = function \(\) \{\};/.test(src), 'log() is a no-op hook until Phase D');
-ok(/log\(\{ kind: 'vote'/.test(src) && /log\(\{ kind: 'answer'/.test(src), 'votes and answers call log()');
-ok(!/sendBeacon/.test(src), 'nothing sent anywhere yet (Phase D)');
+eq((src.match(/core\.requestBody\(query, \{ config: config/g) || []).length, 2, 'search and chat both build their body with core.requestBody');
+ok(/config: config, stream: true, messages: opts\.messages, filters: opts\.filters \}\)\)/.test(src), 'chat requests a stream, with the conversation and page filter when given');
+ok(!/page_type:/.test(src) && !/opts\.type/.test(src), 'no page-type filter is built anywhere');
+ok(!/site-search-chip/.test(src) && !/CHIP/.test(src), 'no chip code left');
+ok(/log\('vote'/.test(src) && /log\('answer'/.test(src) && /log\('search'/.test(src) && /log\('zero'/.test(src) && /log\('ask_page'/.test(src) && (src.match(/log\('click'/g) || []).length === 2, 'every event kind is logged (click from results, sources and page answers)');
+ok(/navigator\.sendBeacon\(url, body\)/.test(src) && (src.match(/sendBeacon\(/g) || []).length === 1, 'events leave only through one sendBeacon call');
+ok(/if \(!config\.logEndpoint\) return;/.test(src) && /if \(!url\) \{ logQueue\.length = 0; return; \}/.test(src), 'nothing queued or sent while logEndpoint is empty');
+ok(/'pagehide', log\.flush/.test(src) && /visibilityState === 'hidden'\) log\.flush\(\)/.test(src) && /setInterval\(function \(\) \{ if \(logQueue\.length\) log\.flush\(\); \}, 10000\)/.test(src), 'flush on pagehide, on hidden and every 10 s when non-empty');
+ok(!/XMLHttpRequest/.test(src) && (src.match(/fetch\(/g) || []).length === 4, 'four fetches: config, search, chat, related.json');
 ok(/navigator\.clipboard\.writeText\(text\)/.test(src), 'copy uses navigator.clipboard');
+ok(/core\.answerText\(state\.answerText, state\.sources, core\.ANSWER_FOOT\)/.test(src) && /core\.answerText\(text, sources, core\.ANSWER_FOOT\)/.test(src), 'copied answers carry the disclaimer');
 ok(/history\.replaceState\(/.test(src) && !/history\.pushState/.test(src), 'hash kept with replaceState only');
 ok(/streaming\.abort\(\)/.test(src) && /pending\.abort\(\)/.test(src), 'in-flight search and stream are aborted');
-eq(C.VERSION, '4', 'module version');
-eq(C.CONFIG_URL, '/data/site-search-config.json?v=4', 'config fetched with the same ?v as the script');
-ok(/assets\/site-search\.js\?v=4/.test(src.split('\n')[0]), 'header names ?v=4');
+ok(/attachShadow\(\{ mode: 'open' \}\)/.test(src) && (src.match(/attachShadow\(/g) || []).length === 2, 'launcher and related row each in a shadow root');
+ok(/document\.createElement\('playbook-search'\)/.test(src) && /document\.createElement\('playbook-related'\)/.test(src), 'custom host elements, so no page selector matches them by tag');
+ok(/new IntersectionObserver\(/.test(src) && /fetch\(core\.RELATED_URL/.test(src), 'related.json fetched lazily on approach');
+ok(/getElementsByTagName\('footer'\)/.test(src) && /querySelector\('main'\)/.test(src) && /SCRIPT\.parentNode\.insertBefore\(host, SCRIPT\)/.test(src), 'related row: before the last footer, else end of main, else before the script');
+ok(/var panel = home \? null : mount\.launcher\(\);/.test(src), 'no launcher on the home page (it has the inline card)');
+eq(C.VERSION, '5', 'module version');
+eq(C.CONFIG_URL, '/data/site-search-config.json?v=5', 'config fetched with the same ?v as the script');
+eq(C.RELATED_URL, '/data/related.json?v=5', 'related.json fetched with the same ?v');
+ok(/assets\/site-search\.js\?v=5/.test(src.split('\n')[0]), 'header names ?v=5');
 ok(!fs.existsSync(path.join(ROOT, 'assets', 'site-search-jump.js')), 'assets/site-search-jump.js deleted');
-ok(!/launcher\s*=\s*document\.createElement|attachShadow/.test(src), 'no launcher or floating UI yet (Phase C)');
 const IDS = ['site-search-form', 'site-search-q', 'site-search-status', 'site-search-results', 'site-search-open-chat',
-  'site-search-suggest', 'site-search-chips', 'site-search-ask', 'site-search-answer', 'site-search-answer-state', 'site-search-answer-body',
+  'site-search-suggest', 'site-search-ask', 'site-search-answer', 'site-search-answer-state', 'site-search-answer-body',
   'site-search-answer-sources', 'site-search-sources', 'site-search-answer-foot', 'site-search-answer-actions', 'site-search-copy',
   'site-search-vote-up', 'site-search-vote-down'];
 IDS.forEach((id) => ok(src.indexOf("'" + id + "'") > 0, 'mount wires #' + id));
+ok(src.indexOf("'site-search-chips'") < 0, 'mount no longer wires a chip row');
 {
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   IDS.forEach((id) => eq((idx.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1, 'index.html has #' + id + ' once'));
+  ok(idx.indexOf('site-search-chip') < 0, 'index.html has no chip markup or CSS left');
   {
     const at = idx.indexOf('id="site-search"');
     const card = idx.slice(at, idx.indexOf('</section>', at));
     IDS.forEach((id) => ok(card.indexOf('id="' + id + '"') > 0, '#' + id + ' sits inside the search card'));
-    const order = ['site-search-form', 'site-search-suggest', 'site-search-chips', 'site-search-status', 'site-search-answer', 'site-search-results'].map((id) => card.indexOf('id="' + id + '"'));
-    ok(order.every((v, i) => i === 0 || v > order[i - 1]), 'card order: box, suggestions, chips, status, answer panel, results');
+    const order = ['site-search-form', 'site-search-suggest', 'site-search-status', 'site-search-answer', 'site-search-results'].map((id) => card.indexOf('id="' + id + '"'));
+    ok(order.every((v, i) => i === 0 || v > order[i - 1]), 'card order: box, suggestions, status, answer panel, results');
     ok(/id="site-search-answer"[^>]*aria-live="polite"/.test(card), 'answer panel is aria-live polite');
-    ok(/id="site-search-chips"[^>]*role="group"/.test(card), 'chips row is a labeled group');
+    ok(/id="site-search-suggest"[^>]*role="group"/.test(card), 'suggestion line is a labeled group');
     ok(/id="site-search-vote-up"[^>]*aria-pressed="false"/.test(card) && /id="site-search-vote-down"[^>]*aria-pressed="false"/.test(card), 'thumbs carry aria-pressed');
     ok(!/style="/.test(card), 'no inline style in the card (index.html is a pure-class file)');
+    ok(card.indexOf(C.LOG_DISCLOSURE) > 0, 'the logging disclosure sits in the search card');
   }
-  ['.site-search-chip', '.site-search-suggestion', '.site-search-answer', '.site-search-sources', '.site-search-ask'].forEach((c) => ok(idx.indexOf('\n' + c + ' {') >= 0 || idx.indexOf('\n' + c + ',') >= 0 || idx.indexOf('\n' + c + ':') >= 0, 'index.html styles ' + c));
+  ['.site-search-suggestion', '.site-search-try', '.site-search-sep', '.site-search-answer', '.site-search-sources', '.site-search-ask', '.site-search-privacy'].forEach((c) => ok(idx.indexOf('\n' + c + ' {') >= 0 || idx.indexOf('\n' + c + ',') >= 0 || idx.indexOf('\n' + c + ':') >= 0, 'index.html styles ' + c));
+  {
+    const rule = /\n\.site-search-suggestion \{([^}]*)\}/.exec(idx);
+    ok(rule && /border: 0/.test(rule[1]) && /background: none/.test(rule[1]) && /color: var\(--teal\)/.test(rule[1]), 'home suggestions are plain teal text links, no box');
+  }
   ok(idx.indexOf('id="site-search"') > 0, 'index.html still has #site-search');
-  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=4" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=4');
-  ok(idx.indexOf('site-search.js?v=3') < 0, 'index.html no longer loads ?v=3');
+  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=5" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=5');
+  ok(!/site-search\.js\?v=[34]"/.test(idx), 'index.html no longer loads ?v=3 or ?v=4');
   ok(idx.indexOf('site-search-jump.js') < 0, 'index.html no longer loads the jump file');
   ok(idx.indexOf('function fragmentFor') < 0, 'index.html inline search script removed');
   ok(/search-snippet\.es\.js/.test(idx), 'index.html keeps the chat bubble module');

@@ -1,0 +1,597 @@
+{
+  "/": [
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/cpb-earn-the-badge.html",
+      "title": "Showing the Work",
+      "description": "The receipts: exactly where every number in this playbook comes from, and the real customers who already did this work."
+    }
+  ],
+  "/cpb.html": [
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    }
+  ],
+  "/cpb-build-belief.html": [
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/agent-never-done.html",
+      "title": "The Agent Is Never Done",
+      "description": "What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners — the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain."
+    }
+  ],
+  "/cpb-model-the-practice.html": [
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    },
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    }
+  ],
+  "/cpb-run-the-engagement.html": [
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    }
+  ],
+  "/cpb-earn-the-badge.html": [
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/agent-never-done.html",
+      "title": "The Agent Is Never Done",
+      "description": "What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners — the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain."
+    }
+  ],
+  "/cpbops.html": [
+    {
+      "url": "/cpb-run-the-engagement.html",
+      "title": "Run the Engagement",
+      "description": "The live-deal field manual — competitive positioning, the objections you'll actually hear, and the SOW shape that gets a Copilot engagement signed. Then the handoff into delivery."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/frontier.html": [
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/CopilotApp.html": [
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/CopilotIB.html": [
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/agent-never-done.html",
+      "title": "The Agent Is Never Done",
+      "description": "What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners — the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/cowork.html": [
+    {
+      "url": "/cpb-run-the-engagement.html",
+      "title": "Run the Engagement",
+      "description": "The live-deal field manual — competitive positioning, the objections you'll actually hear, and the SOW shape that gets a Copilot engagement signed. Then the handoff into delivery."
+    },
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    }
+  ],
+  "/coworkdemo.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    }
+  ],
+  "/copilot-token-economics.html": [
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/agent-never-done.html",
+      "title": "The Agent Is Never Done",
+      "description": "What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners — the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain."
+    },
+    {
+      "url": "/copilot-credit-planner.html",
+      "title": "Copilot Credit Planner",
+      "description": "TD SYNNEX partner planner for Copilot Credits: Cowork and Copilot Studio agents in one pool, the cheapest way to buy, the guardrails to set, and the conversation to have. Built on Microsoft's published rates."
+    }
+  ],
+  "/copilot-credit-planner.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/coworksession40.html",
+      "title": "The 40-Minute Cowork Session",
+      "description": "A scripted 40-minute Copilot Cowork conversation for partners — the tools, the licensing snapshot, objection handling, and what comes next with a customer."
+    }
+  ],
+  "/cowork-calculator.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/copilot-credit-planner.html",
+      "title": "Copilot Credit Planner",
+      "description": "TD SYNNEX partner planner for Copilot Credits: Cowork and Copilot Studio agents in one pool, the cheapest way to buy, the guardrails to set, and the conversation to have. Built on Microsoft's published rates."
+    }
+  ],
+  "/copilot-readiness-engagement.html": [
+    {
+      "url": "/copilot-readiness-governance.html",
+      "title": "The Copilot Readiness & Governance Engagement",
+      "description": "The Copilot readiness and governance engagement, phase by phase — the decisions, gates, checklists, effort bands and prices a partner needs in the room. For SMB customers on Business Premium who are not buying E5."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/copilot-readiness-governance.html": [
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/shadowai.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/cpb-run-the-engagement.html",
+      "title": "Run the Engagement",
+      "description": "The live-deal field manual — competitive positioning, the objections you'll actually hear, and the SOW shape that gets a Copilot engagement signed. Then the handoff into delivery."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/copilot-adoption-audit.html": [
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    }
+  ],
+  "/agent-never-done.html": [
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-build-belief.html",
+      "title": "Build Belief",
+      "description": "The case for building a Copilot practice now: why the AI frontier is still open, what an hour of AgentOps buys you, and the market reality every partner needs before committing."
+    }
+  ],
+  "/copilot-studio-agent-engagement.html": [
+    {
+      "url": "/agent-never-done.html",
+      "title": "The Agent Is Never Done",
+      "description": "What has to be true before you build a Copilot Studio agent, which tools already exist to do the work, and where the recurring revenue lives once the build is finished. Practice guidance for Microsoft partners — the harness, the governance baseline, the credit meter, the six drifts, and the free toolchain."
+    },
+    {
+      "url": "/copilot-readiness-governance.html",
+      "title": "The Copilot Readiness & Governance Engagement",
+      "description": "The Copilot readiness and governance engagement, phase by phase — the decisions, gates, checklists, effort bands and prices a partner needs in the room. For SMB customers on Business Premium who are not buying E5."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    }
+  ],
+  "/frontier-navigator/": [
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    }
+  ],
+  "/frontier-navigator/pages/assessment.html": [
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    }
+  ],
+  "/frontier-navigator/pages/roadmap.html": [
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/frontier-navigator/pages/resources.html": [
+    {
+      "url": "/frontier-navigator/",
+      "title": "Frontier Navigator",
+      "description": "Take a focused five-minute assessment and get a partner-ready view of your MAICPP stage, estimated PCS score, blockers, and 90-day roadmap."
+    },
+    {
+      "url": "/cpb.html",
+      "title": "The Frontier Partner Playbook",
+      "description": "The practitioner's guide to building a profitable AI practice around Microsoft 365 Copilot for the SMB market, split into four journey-stage guides."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    }
+  ],
+  "/frontier-navigator/pages/compare.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/copilot-readiness-governance.html",
+      "title": "The Copilot Readiness & Governance Engagement",
+      "description": "The Copilot readiness and governance engagement, phase by phase — the decisions, gates, checklists, effort bands and prices a partner needs in the room. For SMB customers on Business Premium who are not buying E5."
+    }
+  ],
+  "/frontier-navigator/pages/export.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/frontier-navigator/pages/results.html": [
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/copilot-readiness-governance.html",
+      "title": "The Copilot Readiness & Governance Engagement",
+      "description": "The Copilot readiness and governance engagement, phase by phase — the decisions, gates, checklists, effort bands and prices a partner needs in the room. For SMB customers on Business Premium who are not buying E5."
+    },
+    {
+      "url": "/cpb-earn-the-badge.html",
+      "title": "Showing the Work",
+      "description": "The receipts: exactly where every number in this playbook comes from, and the real customers who already did this work."
+    }
+  ],
+  "/copilot-specialization.html": [
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/cpbops.html",
+      "title": "CPB Engagement Ops Guide",
+      "description": "The partner's field manual for Copilot activation, agent builds, and managed AgentOps — grounded in Microsoft best practices and built for SMB CSP delivery."
+    },
+    {
+      "url": "/shadowai.html",
+      "title": "The Shadow AI Assessment Guide",
+      "description": "Discovering, governing, and monetizing AI use in Microsoft SMB tenants — a structured Shadow AI assessment as the first conversation with a customer."
+    }
+  ],
+  "/azure-billing-setup.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    }
+  ],
+  "/coworksession40.html": [
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/customer-zero-starter-kit/index.html": [
+    {
+      "url": "/copilot-adoption-audit.html",
+      "title": "The Copilot Adoption Audit",
+      "description": "For executives running SMB-focused Microsoft partners. Seven things the channel believes about Copilot adoption and seven the data doesn't — plus whether the method works at thirty seats, what Microsoft switches off below fifty, how to run it across your whole book, and the nineteen prompts that do the analysis and rebuild both one-pagers."
+    },
+    {
+      "url": "/copilot-readiness-engagement.html",
+      "title": "The Copilot Readiness Engagement",
+      "description": "The Copilot Readiness Engagement — seven phases from the first scan to recurring governance, for SMB customers on Business Premium who are not buying E5. Priced, staffed, and grounded in Microsoft documentation."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    }
+  ],
+  "/customer-zero-starter-kit/become-customer-zero.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    }
+  ],
+  "/customer-zero-starter-kit/build-sellable-services.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-model-the-practice.html",
+      "title": "Model the Practice",
+      "description": "The business model behind the practice: the Show-and-Tell sales motion, the Agent Maturity ladder, and the pricing and revenue architecture from first deployment to Managed AgentOps."
+    }
+  ],
+  "/use-with-your-ai.html": [
+    {
+      "url": "/copilot-token-economics.html",
+      "title": "The Meter Conversation: Token Economics",
+      "description": "Token economics for the SMB Copilot practice. Copilot Credits for people, agents and business apps, and GitHub credits for developers: every Microsoft AI meter in your customer's tenant. The customer's new problem, the three sentences, the four-verb managed service on every meter, what to charge for each, the practice conversation, the talk track and three dated campaigns."
+    },
+    {
+      "url": "/copilot-studio-agent-engagement.html",
+      "title": "The Copilot Studio Agent Engagement",
+      "description": "The Copilot Studio agent engagement, phase by phase — what must be true in the tenant, the rate card, the caps, the drift register and the recurring service. Seven phases, priced and staffed, two of them before any paper. For SMB customers on Business Premium with zero Copilot seats."
+    },
+    {
+      "url": "/cpb-run-the-engagement.html",
+      "title": "Run the Engagement",
+      "description": "The live-deal field manual — competitive positioning, the objections you'll actually hear, and the SOW shape that gets a Copilot engagement signed. Then the handoff into delivery."
+    }
+  ]
+}

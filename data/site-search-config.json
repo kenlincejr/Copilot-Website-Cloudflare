@@ -1,16 +1,16 @@
 {
   "endpoint": "https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/",
-  "logEndpoint": "",
+  "logEndpoint": "https://playbook-search-log.ken-lince.workers.dev/",
   "suggested": [
-    "What changes on December 1 for Copilot Business?",
-    "How do I price a managed Copilot service?",
-    "What does a Copilot Studio agent engagement include?",
-    "How do I run Customer Zero in my own tenant?"
+    { "label": "What changes on December 1", "query": "What changes on December 1 for Copilot Business?" },
+    { "label": "Pricing a managed service", "query": "How do I price a managed Copilot service?" },
+    { "label": "Copilot Studio agent engagements", "query": "What does a Copilot Studio agent engagement include?" },
+    { "label": "Customer Zero", "query": "How do I run Customer Zero in my own tenant?" }
   ],
-  "chips": ["all", "playbook", "engagement", "tool", "customer-zero", "program"],
   "pageAskExclude": ["/", "/index.html", "/frontier-navigator/pages/"],
   "maxPages": 6,
   "boost": true,
   "rewriteMinWords": 0,
-  "rerank": false
+  "rerank": false,
+  "answerMaxResults": 10
 }
