@@ -1192,6 +1192,15 @@ sec('QA-C');
     eq(rows.join(','), order.join(','), 'M-19 the spec table lists the rules in the same order');
   }
 
+  // M-22 · P-77's fix moves the seats above 300 to enterprise, as its message says
+  {
+    const st = helpdesk(4); st.studio.account.seats = { business: 400, enterprise: 25, e7: 3 };
+    const w77 = wOf(E.compute(st), 'P-77');
+    const fx = E.applyFix(st, w77.fixes[0]);
+    ok(fx.studio.account.seats.business === 300 && fx.studio.account.seats.enterprise === 125 && fx.studio.account.seats.e7 === 3, 'M-22 400 Business + 25 enterprise → 300 Business + 125 enterprise, no seats dropped');
+    ok(!wOf(E.compute(fx), 'P-77') && /enterprise/.test(w77.fixes[0].label), 'M-22 the fix clears P-77 and says what it does');
+  }
+
   /* QA-C end */
 }
 

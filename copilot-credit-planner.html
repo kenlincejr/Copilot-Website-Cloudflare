@@ -2845,7 +2845,8 @@ footer.pagefoot p { margin:0 0 10px; }
     if ((ac.seats.business > 0 && iso[0] <= RC.seatBizPromo.ends.slice(0, 7) && iso[HORIZON - 1] > RC.seatBizPromo.ends.slice(0, 7)) || promoRows.length)
       warn.push(W('P-76', 'info', 'The ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price is a ' + PROMO_TXT + ' (annual commitment, first year), inside this plan; renewals and new seats move to ' + fmtUsd(RC.seatBiz.v) + ' (' + fmtUsd(RC.seatBizMonthly.v) + ' on monthly billing).' +
         lateRows.map(function (r) { return ' ' + r.name + ' goes live in ' + monthName(promoBuyMonth(s, r)) + ', after the promo ends, so its seats would be bought at ' + fmtUsd(RC.seatBiz.v) + ' (break-even ' + fmtInt(breakEven(RC.seatBiz.v)) + ' credits a user), not ' + fmtUsd(RC.seatBizPromo.v) + '.'; }).join(''), { aud: 'customer' }));
-    if (ac.seats.business > RC.bizSeatCap.v) warn.push(W('P-77', 'warn', 'Copilot Business is capped at ' + RC.bizSeatCap.v + ' seats; ' + fmtInt(ac.seats.business) + ' entered. Move the rest to the enterprise SKU.', { aud: 'customer', fixes: [{ label: 'Cap Business at ' + RC.bizSeatCap.v, path: 'studio.account.seats.business', value: RC.bizSeatCap.v }] }));
+    if (ac.seats.business > RC.bizSeatCap.v) warn.push(W('P-77', 'warn', 'Copilot Business is capped at ' + RC.bizSeatCap.v + ' seats; ' + fmtInt(ac.seats.business) + ' entered. Move the rest to the enterprise SKU.', { aud: 'customer', fixes: [{ label: 'Move the ' + fmtInt(ac.seats.business - RC.bizSeatCap.v) + ' seats above ' + RC.bizSeatCap.v + ' to enterprise Copilot', path: 'studio.account.seats',
+      value: { business: RC.bizSeatCap.v, enterprise: ac.seats.enterprise + ac.seats.business - RC.bizSeatCap.v, e7: ac.seats.e7 } }] }));
     if (sp.ttmUsd > 0) warn.push(W('P-78', 'info', sp.reached ? 'This deal clears the ' + fmtUsd(sp.thresholdUsd) + ' Copilot Studio deployment bar for the Agentic Business Solutions specialization in month ' + sp.monthReached + '.'
       : 'Copilot Studio spend reaches ' + fmtUsd(sp.ttmUsd) + ' in twelve months, short of the ' + fmtUsd(sp.thresholdUsd) + ' specialization bar.'));
     if (s.partner.motion === 'direct') warn.push(W('P-79', 'info', 'Partner-earned credit on the Copilot Credit meter is not confirmed; the planner uses ' + fmtPct(s.partner.pecPct, 2) + ' until you verify it.'));
@@ -5715,14 +5716,20 @@ footer.pagefoot p { margin:0 0 10px; }
     if (t.id === 'btnQuote') { recompute(); copyText(quoteText(), t); return; }
     if (t.id === 'btnCopyTalk') { copyText(E.talk(R).join('\n\n'), t); return; }
     if (t.hasAttribute('data-copytalk')) { copyText(E.talk(R)[Number(t.getAttribute('data-copytalk'))] || '', t); return; }
+    /* A fix that writes an object (P-77's seats, NBA-11's plan) marks every
+       leaf it sets as touched, so a later Cowork prefill never overwrites it. */
+    function markTouched(path, v) {
+      touched[path] = true;
+      if (v && typeof v === 'object' && !Array.isArray(v)) Object.keys(v).forEach(function (k) { markTouched(path + '.' + k, v[k]); });
+    }
     if (t.hasAttribute('data-fixw')) {
       var w = R.warnings.filter(function (x) { return x.id === t.getAttribute('data-fixw'); })[0], fx = w && w.fixes[Number(t.getAttribute('data-fixi'))];
-      if (fx) { state = E.applyFix(state, fx); touched[fx.path] = true; recompute(); showNotice('Applied: ' + esc(fx.label) + '.'); }
+      if (fx) { state = E.applyFix(state, fx); markTouched(fx.path, fx.value); recompute(); showNotice('Applied: ' + esc(fx.label) + '.'); }
       return;
     }
     if (t.hasAttribute('data-nbafix')) {
       var rule = E.nextBestAction(R).matches.filter(function (x) { return x.id === t.getAttribute('data-nbafix'); })[0];
-      if (rule && rule.fix) { state = E.applyFix(state, rule.fix); touched[rule.fix.path] = true; recompute(); showNotice('Applied: ' + esc(rule.fix.label) + '.'); }
+      if (rule && rule.fix) { state = E.applyFix(state, rule.fix); markTouched(rule.fix.path, rule.fix.value); recompute(); showNotice('Applied: ' + esc(rule.fix.label) + '.'); }
       return;
     }
     var seg = t.closest('[data-seg]');
