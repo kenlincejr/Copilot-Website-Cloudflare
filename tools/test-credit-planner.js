@@ -149,7 +149,7 @@ sec('A');
   // Business Central
   eq(firstAgent(presetState('bcSalesOrder')).lo, 1650, 'A-BC Sales Order [2+5+5+2+(5×0.5)]×100');
   eq(firstAgent(presetState('bcPayables')).lo, 6500, 'A-BC Payables (50+5×3)×100');
-  eq(firstAgent(presetState('bcExpense')).lo, 5000, 'A-BC Expense 50 × 100 receipts');
+  eq(firstAgent(presetState('bcExpense')).lo, 2500, 'A-BC Expense 50 × 50 receipts (spec A15; QA L-28)');
   ok(firstAgent(presetState('bcPayables')).codes.join() === 'Z-BC', 'A-BC billed per use');
   // Microsoft blueprints
   eq(firstAgent(presetState('expense')).perUnit.total, 15, 'A-MS expense 15'); eq(firstAgent(presetState('approval')).perUnit.total, 12, 'A-MS approval 12');
@@ -183,19 +183,20 @@ sec('A');
   const me = E.msEstimatorEquivalent(hd.studio.agents[0], hd);
   eq(me.msTool, 4800, 'A-OBJ Microsoft tool shows 4,800'); eq(me.rateCard, 9600, 'A-OBJ rate card 9,600');
   ok(/4,800/.test(E.objections(E.compute(hd))[1].a) && /9,600/.test(E.objections(E.compute(hd))[1].a), 'A-OBJ objection carries both numbers');
-  // Dataverse transcript growth: 10,240 sessions × 100 KB × 90/30 days = 3,072,000 KB = 2.9296875 GB
-  const dv = E.defaults(); dv.studio.dataverse.kbPerSession = 100;
+  // Dataverse transcript growth: 10,240 sessions × 100 KB × 90/30 days = 3,072,000 KB = 3.072 GB (spec §S4: 1 GB = 1,000,000 KB; QA L-29)
+  // The 15 GB Copilot Studio default needs a billing path (QA L-29): an Azure subscription for pay-as-you-go here.
+  const dv = E.defaults(); dv.studio.dataverse.kbPerSession = 100; dv.studio.account.azurePayg = 'yes';
   const da = E.agentTemplate(); da.audience = 'external'; da.traffic = { mode: 'total', count: 10240, per: 'month' }; da.shape.turns = 1; da.data.retentionDays = 90;
   dv.studio.agents = [da];
   const rdv = E.compute(dv);
-  eq(rdv.dataverse.transcriptGb, 2.9296875, 'A-DV transcript growth');
+  near(rdv.dataverse.transcriptGb, 3.072, 'A-DV transcript growth', 1e-9);
   eq(rdv.dataverse.entitlement.db, 15, 'A-DV Copilot Studio default 15 GB database once a purchase option exists');
   eq(E.dataverse(E.defaults(), [], false).entitlement.db, 3, 'A-DV default environment 3 GB before any purchase');
   const dv2 = J(dv); dv2.studio.dataverse.existingDbGb = 20;
   const rdv2 = E.compute(dv2);
-  near(rdv2.dataverse.overageGb.db, 20 + 2.9296875 - 15, 'A-DV database overage');
-  near(rdv2.dataverse.addOnUsd, (20 + 2.9296875 - 15) * 40, 'A-DV add-on at $40/GB');
-  near(rdv2.dataverse.paygUsd, (20 + 2.9296875 - 15) * 48, 'A-DV PAYG at $48/GB');
+  near(rdv2.dataverse.overageGb.db, 20 + 3.072 - 15, 'A-DV database overage');
+  near(rdv2.dataverse.addOnUsd, (20 + 3.072 - 15) * 40, 'A-DV add-on at $40/GB');
+  near(rdv2.dataverse.paygUsd, (20 + 3.072 - 15) * 48, 'A-DV PAYG at $48/GB');
   // Agent Assisted Hours: 1,000 sessions × 6 + 500 actions × 2.8 = 7,400 min = 123.33 h; × $72 = $8,880
   const vs = E.defaults(); vs.studio.value.on = true;
   const v1 = E.agentTemplate(); v1.audience = 'external'; v1.traffic = { mode: 'total', count: 1000, per: 'month' }; v1.shape.turns = 1;
@@ -386,10 +387,15 @@ sec('C');
   eq(JSON.stringify(r3s.purchase), JSON.stringify(r1.purchase), 'C sell-side inputs leave the purchase alone');
   function noDollars(v) {
     if (Array.isArray(v)) return v.filter((x) => !(x && x.label === 'Customer price')).map(noDollars);
-    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
+    // A per-agent seat-or-meter break-even and verdict are judged at the customer's prices (QA C-03), and the customer's
+    // plan is chosen at the customer's prices (QA C-05), so the plan's approach, its enforcement timeline and the
+    // warnings drawn from them are price fields too. Credits still never move.
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$|^breakEven$|^verdict$|^approach$|^enforcement$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
     return v;
   }
+  const PRICE_W = ['P-50', 'P-51', 'P-52', 'P-59', 'P-75'];
   const cv1 = E.customerView(r1), cv3s = E.customerView(r3s);
+  [cv1, cv3s].forEach((c) => { c.warnings = c.warnings.filter((w) => PRICE_W.indexOf(w.id) < 0); });
   eq(JSON.stringify(noDollars(cv3s)), JSON.stringify(noDollars(cv1)), 'C sell-side inputs change only dollar fields in the customer view');
   ok(cv3s.pool.steadyUsd.hi !== cv1.pool.steadyUsd.hi && JSON.stringify(cv3s.pool.steadyCredits) === JSON.stringify(cv1.pool.steadyCredits), 'C sell rate moves dollars, never credits');
   // Licensed users never raise billed credits (total mode: shift; perUser: move a user across)
@@ -457,7 +463,7 @@ sec('D');
         let exp = 0;
         ['lo', 'mid', 'hi'].forEach((s) => { cost[s] = packUsd + p.usd + Math.max(0, resid[s] - C) / 100; strand[s] = unused[s] * 0.008 + (C > 0 ? Math.max(0, C - resid[s]) * p.usd / C : 0); exp += W[s] * cost[s]; });
         const cap = CAP[appetite];
-        if (cap !== null && strand.lo > cap * cost.lo + 1e-9) return;
+        if (cap !== null && strand.mid > cap * cost.mid + 1e-9) return; // spec §6.2: the middle scenario (QA H-12)
         const family = packUsd > 0 ? (p.units > 0 ? 'mix' : 'packs') : (p.units > 0 ? 'p3' : 'payg');
         const rec = { exp: exp, family: family };
         if (!best || exp < best.exp - 1e-6) best = rec;
@@ -775,7 +781,8 @@ sec('R');
   near(cvS.pool.steadyUsd.lo, 40600 * 0.0125, 'R steady low at the sell rate', 1e-9);
   eq(JSON.stringify(cvS.pool.steadyCredits), JSON.stringify(cv0.pool.steadyCredits), 'R the sell rate never moves credits');
   ok(/partner’s rates/.test(cvS.pricing.disclaimer) && /\$0\.0125/.test(cvS.pricing.note), 'R sell disclaimer and note carry the rate');
-  near(cvS.buy.paygYearUsd, cvS.pool.yearCredits.mid * 0.0125, 'R pay-as-you-go year at the sell rate', 1e-6);
+  // QA H-01: the buy line compares on the rate-card point (A19: 487,200 a year), not the buffered middle scenario.
+  near(cvS.buy.paygYearUsd, 487200 * 0.0125, 'R pay-as-you-go year at the sell rate, on the rate-card point', 1e-6);
   ok(/At our price/.test(E.talk(E.compute(sell))[0]), 'R talk track quotes the customer’s price');
   const cw = J(trio); cw.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.012 });
   const cvC = E.customerView(E.compute(cw));
@@ -866,14 +873,15 @@ sec('S');
   eq(E.recalcAllocations(pg).state.studio.environments[1].allocation, 777, 'S a pay-as-you-go environment keeps its allocation');
   ok(E.setupEnvironments(null).state && E.recalcAllocations('x').state, 'S set-up helpers are total');
   // Storage verdict
-  const v0 = E.compute(trio).dataverse.verdict;
+  const trioPaid = J(trio); trioPaid.studio.account.azurePayg = 'yes'; // the 15 GB default needs a billing path (QA L-29)
+  const v0 = E.compute(trioPaid).dataverse.verdict;
   ok(v0.level === 'ok' && /no extra storage needed/.test(v0.text) && /15 GB/.test(v0.text), 'S trio storage verdict: fine, 15 GB included');
   const vEmpty = E.compute(E.defaults()).dataverse.verdict;
   ok(vEmpty.level === 'ok' && /No transcripts/.test(vEmpty.text) && /default environment/.test(vEmpty.text), 'S empty plan: default environment wording');
-  const big = J(trio); big.studio.dataverse.existingDbGb = 20;
+  const big = J(trioPaid); big.studio.dataverse.existingDbGb = 20;
   const vb = E.compute(big).dataverse;
   ok(vb.verdict.level === 'over' && vb.verdict.text.indexOf(E.fmtUsd(vb.addOnUsd)) > -1 && vb.verdict.text.indexOf(E.fmtUsd(vb.paygUsd)) > -1, 'S overage verdict carries both dollar figures');
-  const near = J(trio); near.studio.dataverse.existingDbGb = 12.5;
+  const near = J(trioPaid); near.studio.dataverse.existingDbGb = 12.5;
   eq(E.compute(near).dataverse.verdict.level, 'watch', 'S above 80% of the database is a watch');
   ok(!/NaN|undefined|Infinity/.test(v0.text + vb.verdict.text + vEmpty.text), 'S verdict copy is clean');
   ok(/No Windows 365/.test(E.compute(trio).adjacent.summary), 'S adjacent summary with nothing entered');
@@ -932,6 +940,387 @@ sec('S');
   });
   ok(src.indexOf("(byMs ? 'Microsoft&rsquo;s example' : 'Worked example on Microsoft&rsquo;s rates')") >= 0,
      'the card label follows exampleBy');
+}
+
+/* ═══ QA-E · engine audit regressions ═══ */
+sec('QA-E');
+/* C-03 + C-04: the seat-or-meter verdict is judged at the customer's prices,
+   monthly billing before the promotion, and P-75, NBA-06 and the customer view
+   read the same row. Helpdesk: 60 users, 20 licensed, 5 grounded turns = 60
+   credits a conversation; count = conversations a user a month. */
+{
+  const hdq = (count, over) => { const s = E.newAgent(E.defaults(), 'helpdesk'); s.combined.horizon.startMonth = '2026-11'; s.studio.agents[0].traffic.count = count; if (over) over(s); return s; };
+  const view = (s) => { const r = E.compute(s); return { r: r, x: r.crossover.agents[0], cv: E.customerView(r), nba: E.nextBestAction(r).matches.some((m) => m.id === 'NBA-06'), p75: r.warnings.filter((w) => w.id === 'P-75')[0] }; };
+  // A: seat sell $25, 2,400 a user: 40 × (24.00 − 25) = −$40 → meter, no P-75, no NBA-06
+  let v = view(hdq(40, (s) => { s.partner.sellSeatUsd.business = 25; }));
+  eq(v.x.verdict, 'meter', 'QA-E C-03 A: seat sell $25 at 2,400 a user meters');
+  near(v.x.savingUsdMonthly, -40, 'QA-E C-03 A: saving −$40', 1e-9);
+  near(v.cv.licenseInstead.agents[0].savingUsdMonthly, -40, 'QA-E C-03 A: customer view shows the same −$40', 1e-9);
+  ok(!v.p75 && !v.nba, 'QA-E C-03 A: no P-75 and no NBA-06');
+  // B: sell credit $0.013 at 28.33 × 60 = 1,699.8 a user: 40 × (22.0974 − 18) = +$163.90 → license
+  v = view(hdq(1700 / 60, (s) => { s.partner.sellCreditUsd = 0.013; }));
+  eq(v.x.verdict, 'license', 'QA-E C-03 B: sell credit $0.013 at 1,700 a user licenses');
+  near(v.x.savingUsdMonthly, 163.9, 'QA-E C-03 B: saving $163.90', 1e-9);
+  near(v.cv.licenseInstead.agents[0].savingUsdMonthly, 163.9, 'QA-E C-03 B: customer view agrees', 1e-9);
+  ok(v.p75 && v.p75.msg.indexOf(E.fmtUsd(163.9)) > -1 && v.nba, 'QA-E C-03 B: P-75 prints the same saving and NBA-06 fires');
+  near(v.x.breakEven, 1384.62, 'QA-E C-03 B: break-even at the customer price = 18 / 0.013', 1e-9);
+  // C-04: monthly billing at 33.34 × 60 = 2,000.4 a user → $25.20, 2,520, meter (the promo is annual only)
+  v = view(hdq(33.34, (s) => { s.studio.account.businessBilling = 'monthly'; }));
+  ok(v.x.sku === 'monthly' && v.x.seatUsd === 25.2 && v.x.breakEven === 2520 && v.x.verdict === 'meter', 'QA-E C-04 monthly billing: $25.20, 2,520, meter');
+  ok(!v.p75 && !v.nba, 'QA-E C-04 monthly billing: no P-75, no NBA-06');
+  v = view(hdq(33.34, (s) => { s.combined.horizon.startMonth = '2027-02'; }));
+  ok(v.x.sku === 'business' && v.x.breakEven === 2100, 'QA-E C-04 annual after the promo: $21, 2,100');
+  // List baseline unchanged: 240 a user against 1,800
+  v = view(hdq(4));
+  ok(v.x.sku === 'promo' && v.x.freeIfLicensedPerUser === 240 && v.x.breakEven === 1800 && v.x.verdict === 'meter' && v.x.listBreakEven === 1800, 'QA-E C-03 list baseline: 240 against 1,800, meter');
+  near(v.x.savingUsdMonthly, -624, 'QA-E C-03 list baseline: 40 × (2.40 − 18)', 1e-9);
+  // Invariant: verdict sign = sign of the customer-view saving, everywhere
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let agree = 0;
+  for (let i = 0; i < 300; i++) {
+    const s = hdq(1 + Math.round(rnd() * 8000) / 100, (st) => {
+      if (rnd() < 0.5) st.partner.sellCreditUsd = Math.round((0.008 + rnd() * 0.01) * 1e5) / 1e5;
+      if (rnd() < 0.5) st.partner.sellSeatUsd.business = Math.round((15 + rnd() * 15) * 100) / 100;
+      if (rnd() < 0.3) st.studio.account.businessBilling = 'monthly';
+      if (rnd() < 0.3) st.combined.horizon.startMonth = '2027-03';
+    });
+    const w = view(s), c = w.cv.licenseInstead.agents[0];
+    if (w.x.verdict === c.verdict && (c.savingUsdMonthly > 0) === (w.x.verdict === 'license') && c.savingUsdMonthly === w.x.savingUsdMonthly && !!w.p75 === (w.x.verdict === 'license') && w.nba === (w.x.verdict === 'license')) agree++;
+  }
+  eq(agree, 300, 'QA-E C-03 verdict, P-75, NBA-06 and the customer-view saving agree in sign over 300 random states');
+}
+/* C-05: with a sell pack or credit price, the customer's "cheapest way to buy
+   it" is chosen at the customer's prices, so it never costs more than
+   pay-as-you-go at those prices. SMB trio, 60 users, 20 Business seats, pack
+   sold at $300: 12 × $300 + 187,200 × $0.01 would be $5,472 against $4,872;
+   the customer run picks pay-as-you-go instead. The list run is kept for the
+   partner's cost view. */
+{
+  const trioS = () => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.account.totalUsers = 60; s.studio.account.seats.business = 20; return s; };
+  const s = trioS(); s.partner.sellPackUsd = 300;
+  const r = E.compute(s), cv = E.customerView(r);
+  ok(cv.buy.yearUsd <= cv.buy.paygYearUsd + 1e-6, 'QA-E C-05 sell pack $300: buy ' + cv.buy.yearUsd + ' ≤ pay-as-you-go ' + cv.buy.paygYearUsd);
+  eq(r.purchase.best.packs.flat, 1, 'QA-E C-05 the list run (partner cost view) still recommends one pack');
+  const pc = r.purchaseCustomer || { prices: {}, best: { packs: {} } };
+  eq(pc.prices.packUsd, 300, 'QA-E C-05 the customer run is priced at the sell pack price');
+  eq(pc.best.packs.packMonths, 0, 'QA-E C-05 at $300 a pack the customer plan holds no packs (Tier 1 + pay-as-you-go is cheaper)');
+  eq(JSON.stringify(E.compute(trioS()).purchaseCustomer), JSON.stringify(E.compute(trioS()).purchase), 'QA-E C-05 at list the two runs are one');
+  // Invariant over random sell prices and random portfolios
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const keys = E.SCENARIO_ORDER;
+  let held = 0, n = 0, worst = '';
+  for (let i = 0; i < 160; i++) {
+    const st = E.applyScenarioPreset(E.defaults(), keys[i % keys.length]);
+    st.studio.agents.forEach((a) => { if (a.traffic) a.traffic.count = Math.round(a.traffic.count * (0.2 + rnd() * 3) * 100) / 100; });
+    if (rnd() < 0.7) st.partner.sellPackUsd = Math.round((150 + rnd() * 250) * 100) / 100;
+    if (rnd() < 0.7) st.partner.sellCreditUsd = Math.round((0.006 + rnd() * 0.01) * 1e5) / 1e5;
+    if (rnd() < 0.3) st.combined.purchase.appetite = ['balanced', 'aggressive'][i % 2];
+    const c = E.customerView(E.compute(st)); n++;
+    if (c.buy.yearUsd <= c.buy.paygYearUsd + 1e-6) held++; else worst = c.buy.yearUsd + ' > ' + c.buy.paygYearUsd;
+  }
+  eq(held, n, 'QA-E C-05 buy.yearUsd ≤ buy.paygYearUsd over ' + n + ' random sell prices ' + worst);
+}
+/* C-07: with no Microsoft 365 (Cowork) lane, the tenant spending limit and its
+   50/80/100% alerts are omitted, never a 0-credit limit. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const r = E.compute(s), cv = E.customerView(r);
+  ok(r.governance.tenantLimit === null && r.governance.alerts.length === 0, 'QA-E C-07 no Cowork lane: no tenant limit, no tenant alerts');
+  ok(cv.guardrails.tenantMonthlyLimit === null && cv.guardrails.alerts.length === 0, 'QA-E C-07 the customer view carries no 0-credit tenant limit');
+  ok(!cv.guardrails.alerts.some((a) => a.credits === 0), 'QA-E C-07 no 0-credit alert');
+  const sc = E.applyScenarioPreset(E.defaults(), 'smb-trio'); sc.coworkSession = PAYLOAD();
+  const g = E.compute(sc).governance;
+  ok(g.tenantLimit && g.tenantLimit.credits === 150000 && g.alerts.length === 3 && g.alerts[1].credits === 120000, 'QA-E C-07 with Cowork: 130,000 × 1.15 → 150,000, alerts 75,000 / 120,000 / 150,000');
+  ok((src.match(/if \(g\.tenantMonthlyLimit !== null\)/g) || []).length === 2, 'QA-E C-07 the governance sheet and the report print the tenant limit only when there is one');
+}
+/* H-01: the customer's buy headline is the rate-card point (A19/A20: 40,600 a
+   month → 1 pack + 15,600 pay-as-you-go = $4,272 against $4,872), with the
+   buffered high scenario beside it as a labeled "up to" figure:
+   1 pack + (48,720 − 25,000) × 12 × $0.01 = $2,400 + $2,846.40 = $5,246.40. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const r = E.compute(s), cv = E.customerView(r);
+  eq(cv.buy.yearUsd, 4272, 'QA-E H-01 SMB trio headline is the rate-card $4,272');
+  eq(cv.buy.paygYearUsd, 4872, 'QA-E H-01 against $4,872 on pay-as-you-go');
+  eq(cv.buy.yearCredits, 487200, 'QA-E H-01 on 487,200 credits a year (A19)');
+  near(cv.buy.upToUsd, 5246.4, 'QA-E H-01 up to $5,246.40 in the high scenario', 1e-6);
+  ok(/buffer/.test(cv.buy.upToLabel || ''), 'QA-E H-01 the up-to figure is labeled as Microsoft’s buffer');
+  eq(r.pool.pointYear, 487200, 'QA-E H-01 pool point year');
+  eq(r.purchase.best.expected.usd, 4759.2, 'QA-E H-01 the optimizer keeps its 25/50/25 weighting (expected $4,759.20)');
+  ok(src.indexOf('in the middle scenario, against') < 0 && (src.match(/at the rate-card estimate, against/g) || []).length === 2, 'QA-E H-01 no buffered figure is called the rate-card result on the page');
+  // With Cowork: the point uses the Cowork tab's own figure
+  const sc = E.applyScenarioPreset(E.defaults(), 'smb-trio'); sc.coworkSession = PAYLOAD();
+  const rc = E.compute(sc);
+  eq(rc.pool.pointYear, 487200 + 1200000, 'QA-E H-01 point = agents itemized + Cowork tab figure');
+  ok(/Cowork tab/.test(E.customerView(rc).buy.upToLabel), 'QA-E H-01 the up-to label names the Cowork band when Cowork is in');
+}
+/* H-02: an environment with allocation 0 and tenant draw on draws from the
+   tenant remainder, so it reports the same stops as unassigned cards (lead-
+   envcheck.js). SMB trio, one pack (25,000), Default 0 / draw on, Production
+   0 / draw off, Sandbox 5,000: remainder 20,000; flows 20,000 ÷ (48,720 ÷ 30)
+   → day 13, agents 25,000 ÷ 1,624 → day 16 at the high end. */
+{
+  const envs = () => [
+    { name: 'Default', kind: 'default', allocation: 0, payg: false, tenantDraw: true, managed: false },
+    { name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false },
+    { name: 'Sandbox', kind: 'sandbox', allocation: 5000, payg: false, tenantDraw: false, managed: false }];
+  const run = (envName) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.environments = envs(); s.studio.agents.forEach((a) => { a.env = envName; }); return E.compute(s); };
+  const dflt = run('Default'), none = run('');
+  const evs = (r) => JSON.stringify(r.enforcement.events.map((e) => [e.kind, e.day, e.scen]));
+  eq(dflt.enforcement.remainder, 20000, 'QA-E H-02 remainder 20,000');
+  eq(evs(dflt), evs(none), 'QA-E H-02 cards in Default (draw on) stop when unassigned cards do');
+  ok(dflt.enforcement.events.every((e) => e.day > 1), 'QA-E H-02 no day-1 stop');
+  const fl = none.enforcement.events.filter((e) => e.kind === 'flows')[0], ag = none.enforcement.events.filter((e) => e.kind === 'agents')[0];
+  ok(fl && ag && fl.dayHigh === 13 && ag.dayHigh === 16 && fl.day === 14 && ag.day === 17, 'QA-E H-02 flows day 13, agents day 16 at the high end (14 and 17 in the middle scenario)');
+  const d = dflt.enforcement.environments[0];
+  ok(d.cuts.flowsDay.hi === 13 && d.cuts.agentsDay.hi === 16, 'QA-E H-02 the Default row is cut against allocation + remainder');
+  eq((dflt.enforcement.m365.drawOnSpill || {}).hi, 48720, 'QA-E H-02 the draw-on spill joins the tenant pool');
+  ok(!dflt.warnings.some((w) => (w.id === 'P-50' || w.id === 'P-51') && /day 1 /.test(w.msg)), 'QA-E H-02 P-50 and P-51 no longer say day 1');
+  // Draw off keeps the hard stop at its own allocation
+  const prod = run('Production');
+  ok(prod.enforcement.events.some((e) => e.scope === 'Production' && e.day === 1), 'QA-E H-02 draw off with no allocation still stops on day 1');
+}
+/* H-06: Copilot Business only for estates that can buy it (total users ≤ 300,
+   no E3/E5 base, no enterprise or E7 seats); otherwise enterprise; split at
+   the 300-seat cap when only part of the unlicensed headcount fits. */
+{
+  const hd6 = (fn) => { const s = E.newAgent(E.defaults(), 'helpdesk'); s.combined.horizon.startMonth = '2026-11'; fn(s); return E.compute(s); };
+  // E5 estate: 500 enterprise seats, 50 unlicensed at 60 × 60 = 3,600 a user → enterprise $30: 50 × (36 − 30) = $300
+  let r = hd6((s) => { const ac = s.studio.account; ac.tenantBase = 'e5'; ac.totalUsers = 550; ac.seats.enterprise = 500; s.studio.agents[0].users = { total: 550, licensed: 500 }; s.studio.agents[0].traffic.count = 60; });
+  let x = r.crossover.agents;
+  ok(x.length === 1 && x[0].sku === 'enterprise' && x[0].seatUsd === 30 && x[0].businessBlocked === true, 'QA-E H-06 an E5 estate is priced on the enterprise seat');
+  near(x[0].savingUsdMonthly, 300, 'QA-E H-06 E5 estate saves 50 × (36 − 30) = $300, not $900', 1e-9);
+  // An E3 base with no Copilot seats is enterprise too
+  r = hd6((s) => { s.studio.account.tenantBase = 'e3'; });
+  eq(r.crossover.agents[0].sku, 'enterprise', 'QA-E H-06 an E3 base is enterprise');
+  // More than 300 users on Business plans: enterprise
+  r = hd6((s) => { s.studio.account.totalUsers = 400; s.studio.account.tenantBase = 'premium'; });
+  eq(r.crossover.agents[0].sku, 'enterprise', 'QA-E H-06 401+ users cannot buy Copilot Business');
+  // Split: 100 Business seats held, 250 unlicensed → 200 on Business (promo), 50 on enterprise
+  r = hd6((s) => { const ac = s.studio.account; ac.totalUsers = 300; ac.seats.business = 100; s.studio.agents[0].users = { total: 270, licensed: 20 }; });
+  x = r.crossover.agents;
+  ok(x.length === 2 && x[0].sku === 'promo' && x[0].unlicensedUsers === 200 && x[1].sku === 'enterprise' && x[1].unlicensedUsers === 50 && x[0].split && x[1].split, 'QA-E H-06 250 unlicensed split 200 Business + 50 enterprise at the cap');
+  eq(E.customerView(r).licenseInstead.agents.length, 2, 'QA-E H-06 the customer view carries both parts');
+  // Default small estate unchanged
+  eq(hd6(() => {}).crossover.agents[0].sku, 'promo', 'QA-E H-06 a 50-user Business Premium estate still gets Copilot Business');
+}
+/* H-11: added packs co-term with the existing NCE subscription, so a step-up
+   schedule commits Σ schedule × $200 and nothing past month 12; P-37 says so. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const ramp = [25, 40, 55, 70, 85, 100, 100, 100, 100, 100, 100, 100];
+  s.coworkSession = PAYLOAD({ rampSeats: ramp, rampCredits: ramp.map((x) => x * 5500), monthlyCredits: 550000, basisSeats: 100 });
+  const r = E.compute(s), b = r.purchase.best;
+  eq(b.packs.schedule.join(), '5,7,10,12,14,17,17,17,17,17,17,17', 'QA-E H-11 the ramp steps up from 5 to 17 packs');
+  eq(b.packs.usd, 167 * 200, 'QA-E H-11 pack spend is the 167 pack-months inside the horizon × $200 = $33,400');
+  eq(b.commitUsd, b.packs.usd + b.p3.usd, 'QA-E H-11 the commitment has no tail past month 12');
+  near(b.scen.mid.packUsd, b.packs.usd, 'QA-E H-11 the simulation bills the same pack-months', 1e-9);
+  const p37 = r.warnings.filter((w) => w.id === 'P-37')[0];
+  ok(p37 && /co-term/.test(p37.msg) && /nothing is committed past this horizon/.test(p37.msg) && !/own annual term/.test(p37.msg), 'QA-E H-11 P-37 says added packs co-term, with no tail');
+}
+/* H-12: the commit appetite tests stranding in the MIDDLE scenario (spec
+   §6.2). Flat 20,000 / 25,000 / 30,000 a month, conservative: 1 pack strands
+   $480 of $2,400 in the low scenario (20%) but $0 in the middle, so it is
+   admissible: 0.25 × 2,400 + 0.5 × 2,400 + 0.25 × 3,000 = $2,550 against
+   $3,000 pay-as-you-go. */
+{
+  const D = { lo: Array(12).fill(20000), mid: Array(12).fill(25000), hi: Array(12).fill(30000) };
+  const o = E.optimize(D, { appetite: 'conservative' });
+  eq(o.best.packs.flat, 1, 'QA-E H-12 conservative buys 1 pack at 20k/25k/30k');
+  near(o.best.expected.usd, 2550, 'QA-E H-12 expected $2,550, not $3,000 pay-as-you-go', 1e-9);
+  eq(o.blocked, null, 'QA-E H-12 nothing cheaper is set aside');
+  // Stranding in the middle scenario still blocks: flat 18,000 / 20,000 / 22,000, 1 pack strands 5,000 × 12 × 0.008 = $480 of $2,400 mid (20%)
+  const D2 = { lo: Array(12).fill(18000), mid: Array(12).fill(20000), hi: Array(12).fill(22000) };
+  const o2 = E.optimize(D2, { appetite: 'balanced' });
+  eq(o2.best.family, 'payg', 'QA-E H-12 20% stranded in the middle scenario is outside the balanced 15%');
+  ok(src.indexOf('in the low scenario') < 0 && /Appetite caps stranded spend in the middle scenario/.test(src), 'QA-E H-12 the page note says middle scenario');
+}
+/* H-13: grounding bills only on generative answers. Helpdesk, 50% generative,
+   100% grounded: 40 × 4 × (2.5 × 1 + 2.5 × 2 + 2.5 × 10) = 5,200, not 9,200. */
+{
+  const s = E.newAgent(E.defaults(), 'helpdesk'); s.studio.agents[0].shape.genPct = 50;
+  eq(firstAgent(s).lo, 5200, 'QA-E H-13 50% generative, 100% grounded = 5,200');
+  const s2 = E.newAgent(E.defaults(), 'helpdesk'); s2.studio.agents[0].shape.genPct = 50; s2.studio.agents[0].shape.groundedPct = 20;
+  eq(firstAgent(s2).lo, 40 * 4 * (2.5 + 5 + 1 * 10), 'QA-E H-13 grounded below the generative share is unchanged (20% of 5 turns = 1)');
+  eq(firstAgent(presetState('helpdesk')).lo, 9600, 'QA-E H-13 the helpdesk anchor stays 9,600');
+  ok(src.indexOf('Generative turns grounded on tenant data (%)') > -1, 'QA-E H-13 the field is relabeled');
+}
+/* H-14: each enforcement day is the day of the scenario it is labeled with;
+   recommended allocations cover the high end plus the buffer; a partner
+   warning when they exceed prepaid capacity; P-54 reads the actual allocation.
+   SMB trio, 1 pack, no environments: tenant pool 25,000; agents at 31,250:
+   44,660 ÷ 30 → day 21 (middle), 48,720 ÷ 30 → day 20 (high); flows 17 / 16. */
+{
+  const r = E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'));
+  const ag = r.enforcement.events.filter((e) => e.kind === 'agents')[0], fl = r.enforcement.events.filter((e) => e.kind === 'flows')[0];
+  ok(ag.scen === 'mid' && ag.day === 21 && ag.dayMid === 21 && ag.dayHigh === 20, 'QA-E H-14 agents: day 21 in the middle scenario (20 at the high end)');
+  ok(fl.scen === 'mid' && fl.day === 17 && fl.dayHigh === 16, 'QA-E H-14 flows: day 17 in the middle scenario (16 at the high end)');
+  ok(/middle scenario/.test(ag.text) && /day 20 at the high end/.test(ag.text), 'QA-E H-14 the event text names both scenarios');
+  const p50 = r.warnings.filter((w) => w.id === 'P-50')[0];
+  ok(p50 && /around day 21 of November 2026 in the middle scenario/.test(p50.msg), 'QA-E H-14 P-50 cites the middle-scenario day and says so');
+  // Allocations ≥ high × buffer; Σ > prepaid warns the partner
+  const envs = (prod) => [{ name: 'Production', kind: 'production', allocation: prod, payg: false, tenantDraw: false, managed: false },
+                          { name: 'Sandbox', kind: 'sandbox', allocation: 5000, payg: false, tenantDraw: false, managed: false }];
+  const st = (prod) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.environments = envs(prod); s.studio.agents.forEach((a) => { a.env = 'Production'; }); return E.compute(s); };
+  let rr = st(50000);
+  const g = rr.governance.allocations.filter((a) => a.name === 'Production')[0];
+  eq(g.credits, 57000, 'QA-E H-14 Production allocation = roundUp(48,720 × 1.15) = 57,000');
+  ok(g.credits >= 48720 && !g.flowsBelowHigh, 'QA-E H-14 flows never block inside the modeled range');
+  ok(rr.governance.overPrepaid && rr.governance.allocatedTotal === 62000 && rr.warnings.some((w) => w.id === 'P-66' && w.aud === 'partner' && /62,000/.test(w.msg) && /25,000/.test(w.msg)), 'QA-E H-14 P-66: 62,000 allocated against 25,000 prepaid');
+  ok(!rr.warnings.some((w) => w.id === 'P-54'), 'QA-E H-14 P-54 stays quiet when the actual allocation (50,000) covers the high end');
+  rr = st(45000);
+  ok(rr.warnings.some((w) => w.id === 'P-54' && /Production/.test(w.msg)), 'QA-E H-14 P-54 fires on an actual allocation of 45,000 under 48,720');
+}
+/* M-06: Cowork's draw shares the tenant remainder (F-183). SMB trio + 755,000
+   Cowork, 30 packs held, basis current: remainder 750,000; middle
+   44,660 + 755,000 = 799,660 → flows day ceil(750,000 ÷ 26,655.3) = 29; high
+   48,720 + 981,500 = 1,030,220 → flows day 22, agents at 937,500 → day 28. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  s.coworkSession = PAYLOAD({ rampCredits: Array(12).fill(755000), monthlyCredits: 755000, basisSeats: 52 });
+  s.combined.purchase.current = { packs: 30, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; s.combined.enforcement.basis = 'current';
+  const en = E.compute(s).enforcement, tc = en.tenantPool.cuts;
+  eq(en.remainder, 750000, 'QA-E M-06 remainder 750,000');
+  ok(tc.flowsDay.mid === 29 && tc.flowsDay.hi === 22, 'QA-E M-06 flows stop day 29 middle, 22 high');
+  ok(tc.agentsDay.mid === null && tc.agentsDay.hi === 28, 'QA-E M-06 agents cut day 28 at the high end only');
+  ok(en.events.some((e) => e.kind === 'flows' && /shared with Cowork/.test(e.text)), 'QA-E M-06 the event says the pool is shared with Cowork');
+  // Cowork only, no agents in the pool: nothing to switch off
+  const c = E.defaults(); c.coworkSession = PAYLOAD({ rampCredits: Array(12).fill(755000), monthlyCredits: 755000 });
+  c.combined.purchase.current = { packs: 30, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; c.combined.enforcement.basis = 'current';
+  eq(E.compute(c).enforcement.events.filter((e) => e.kind !== 'userCap').length, 0, 'QA-E M-06 Cowork alone raises no agent or flow stop');
+}
+/* M-07: Cowork starvation is blamed on the allocations only when they cause
+   it, judged on the middle scenario, with a day. SMB trio in Production (draw
+   off) + Cowork 100,000 mid. */
+{
+  const st = (packs, alloc) => {
+    const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.coworkSession = PAYLOAD();
+    s.studio.environments = [{ name: 'Production', kind: 'production', allocation: alloc, payg: false, tenantDraw: false, managed: false }];
+    s.studio.agents.forEach((a) => { a.env = 'Production'; });
+    s.combined.purchase.current = { packs: packs, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; s.combined.enforcement.basis = 'current';
+    return E.compute(s);
+  };
+  // 10 packs = 250,000; Production allocated 200,000 for 44,660 of use → remainder 50,000 < 100,000,
+  // though 250,000 − 44,660 = 205,340 would cover Cowork: the allocations starve it. Day 50,000 ÷ (100,000 ÷ 30) = 15.
+  let r = st(10, 200000), m = r.enforcement.m365;
+  ok(m.starvation.mid === true && (m.starvationDay || {}).mid === 15, 'QA-E M-07 over-allocation starves Cowork from day 15 (middle scenario)');
+  const p52 = r.warnings.filter((w) => w.id === 'P-52')[0];
+  ok(p52 && /day 15/.test(p52.msg) && /middle scenario/.test(p52.msg) && /155,340 more than the agents/.test(p52.msg), 'QA-E M-07 P-52 gives the day and the over-allocation');
+  // 2 packs = 50,000; Production allocated 10,000 (below its 44,660 use): Cowork's shortfall is the purchase plan
+  r = st(2, 10000); m = r.enforcement.m365;
+  ok(!m.starvation.mid && !m.starvation.hi && !r.warnings.some((w) => w.id === 'P-52'), 'QA-E M-07 a purchase shortfall is not blamed on allocations');
+  // No allocations: never starvation
+  r = st(10, 0);
+  ok(!r.enforcement.m365.starvation.hi && (r.enforcement.m365.starvationDay || {}).mid == null, 'QA-E M-07 no allocations, no starvation');
+}
+/* M-08: autonomous and Business Central cards run at full volume from go-live.
+   Full estate, month 1, low: website 1,500 + helpdesk 960 (10% ramp) + invoice
+   16,000 + Sales Order 1,650 + Payables 6,500 + GitHub build 630 = 27,240. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'full-estate');
+  ok(s.studio.agents.filter((a) => a.type !== 'conversational').every((a) => a.ramped === false), 'QA-E M-08 autonomous and BC cards are not ramped');
+  ok(s.studio.agents.filter((a) => a.type === 'conversational' && a.harness === 'standard').every((a) => a.ramped === true), 'QA-E M-08 conversational cards still ramp');
+  near(E.compute(s).pool.months[0].total.lo, 27240, 'QA-E M-08 full estate month 1 low = 27,240', 1e-6);
+  ok(['invoice', 'bcSalesOrder', 'bcPayables', 'bcExpense', 'order', 'expense'].every((k) => presetState(k).studio.agents[0].ramped === false), 'QA-E M-08 presets');
+  eq(E.normalize({ studio: { agents: [{ type: 'autonomous' }] } }).studio.agents[0].ramped, false, 'QA-E M-08 an autonomous card with no ramp flag defaults to full volume');
+  ok(/if \(a\.type !== 'autonomous'\) (\{ )?a\.ramped = false/.test(src), 'QA-E M-08 switching a card to autonomous turns the ramp off');
+}
+/* M-23 + M-24: the tenant base defaults to 'unsure' (spec §S1), and
+   tenant.suites (Defender + Purview) is an alternative Agent 365 prerequisite. */
+{
+  const d = E.defaults();
+  ok(d.studio.account.tenantBase === 'unsure' && d.studio.account.suites === 'unsure', 'QA-E M-23/M-24 defaults: base unsure, suites unsure');
+  eq(E.normalize({}).studio.account.tenantBase, 'unsure', 'QA-E M-23 normalize defaults the base to unsure');
+  eq(E.normalize({ studio: { account: { suites: 'maybe' } } }).studio.account.suites, 'unsure', 'QA-E M-24 suites is a yes/no/unsure enum');
+  const st = (base, suites) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.account.tenantBase = base; s.studio.account.suites = suites; s.studio.adjacent.agent365Owners = 2; return E.compute(s); };
+  let r = st('unsure', 'unsure');
+  ok(!r.adjacent.agent365.eligible && r.adjacent.agent365.status === 'unsure', 'QA-E M-23 an unconfirmed base is not eligible');
+  ok(r.warnings.some((w) => w.id === 'P-65' && w.aud === 'customer' && /confirm/.test(w.msg)), 'QA-E M-23 P-65 asks to confirm the base');
+  ok(!E.nextBestAction(r).matches.some((m) => m.id === 'NBA-12'), 'QA-E M-23 NBA-12 does not fire on an unconfirmed base');
+  r = st('e3', 'yes');
+  ok(r.adjacent.agent365.eligible && !r.warnings.some((w) => w.id === 'P-65'), 'QA-E M-24 an E3 tenant with the suites qualifies');
+  r = st('standard', 'no');
+  ok(r.adjacent.agent365.status === 'blocked' && r.warnings.some((w) => w.id === 'P-65' && /does not qualify/.test(w.msg)), 'QA-E M-24 Standard without the suites is blocked');
+  ok(st('premium', 'unsure').adjacent.agent365.eligible, 'QA-E M-24 Business Premium qualifies');
+  ok(/data-bind="studio\.account\.suites"/.test(src), 'QA-E M-24 the account form has the suites field');
+}
+/* L-09: AI tools priced per 1K tokens at 0 tokens bill 0 units.
+   L-28: the BC Expense preset is 50 receipts × 50 = 2,500 (spec A15). */
+{
+  const s = presetState('invoice'), a = s.studio.agents[0];
+  a.aiPricing = 'tokens'; a.aiTokensPerCall = 0;
+  eq(E.normalize(s).studio.agents[0].aiTokensPerCall, 0, 'QA-E L-09 0 tokens per response is kept');
+  eq(firstAgent(s).lo, 400 * 30, 'QA-E L-09 premium prompt at 0 tokens adds nothing: 400 × 6 actions × 5 = 12,000');
+  a.aiTokensPerCall = 1500;
+  eq(firstAgent(s).lo, 20000, 'QA-E L-09 1,500 tokens = 2 started units (A18c: 20,000)');
+  eq(firstAgent(presetState('bcExpense')).lo, 2500, 'QA-E L-28 BC Expense preset 50 × 50 = 2,500');
+}
+/* L-29: Dataverse in decimal gigabytes (spec A22: 10,000 sessions × 50 KB ×
+   30/30 = 0.5 GB; at 90 days 1.5 GB), 50 KB a session by default, and the
+   15/20/2 GB default only once a billing path exists. */
+{
+  const st = (days, paid) => {
+    const s = E.defaults(); if (paid) s.studio.account.azurePayg = 'yes';
+    const a = E.agentTemplate(); a.audience = 'external'; a.traffic = { mode: 'total', count: 10000, per: 'month' }; a.shape.turns = 1; a.data.retentionDays = days;
+    s.studio.agents = [a]; return E.compute(s).dataverse;
+  };
+  eq(E.defaults().studio.dataverse.kbPerSession, 50, 'QA-E L-29 50 KB a session by default');
+  near(st(30, true).transcriptGb, 0.5, 'QA-E L-29 A22: 0.5 GB at 30 days', 1e-12);
+  near(st(90, true).transcriptGb, 1.5, 'QA-E L-29 A22: 1.5 GB at 90 days', 1e-12);
+  ok(st(30, false).entitlement.db === 3 && st(30, false).entitlementFact === 'F-189', 'QA-E L-29 no billing path: the default environment 3/3/1');
+  ok(st(30, true).entitlement.db === 15 && st(30, true).entitlementFact === 'F-190', 'QA-E L-29 a billing path: the 15/20/2 Copilot Studio default');
+  const held = E.defaults(); held.combined.purchase.current.packs = 1;
+  eq(E.dataverse(held, [], undefined).entitlement.file, 20, 'QA-E L-29 a pack held is a billing path');
+}
+/* L-30: the per-card perAgentCap (integer or null, spec §S2) feeds the
+   governance sheet's per-agent limits; without one the plan suggests
+   roundUp(hi × 1.15). Website FAQ hi 18,000 → 21,000. */
+{
+  const s = presetState('website');
+  eq(s.studio.agents[0].perAgentCap, null, 'QA-E L-30 perAgentCap defaults to null');
+  eq(E.compute(s).governance.agentLimits[0].credits, 21000, 'QA-E L-30 no card cap: 18,000 × 1.15 → 21,000');
+  s.studio.agents[0].perAgentCap = 16000.4;
+  const n = E.normalize(s).studio.agents[0].perAgentCap;
+  eq(n, 16000, 'QA-E L-30 the cap is an integer');
+  const g = E.compute(s).governance.agentLimits[0];
+  ok(g.credits === 16000 && g.source === 'card' && g.suggested === 21000 && g.belowHigh === true, 'QA-E L-30 the card cap is the governance limit');
+  eq(E.customerView(E.compute(s)).guardrails.agentLimits[0].credits, 16000, 'QA-E L-30 the customer sheet shows the card cap');
+  s.studio.agents[0].perAgentCap = 'x';
+  eq(E.normalize(s).studio.agents[0].perAgentCap, null, 'QA-E L-30 junk is null');
+  ok(/data-k="' \+ k \+ '"/.test(src) && src.indexOf("fld(a, 'perAgentCap'") > -1, 'QA-E L-30 the card has the field');
+}
+/* L-31: spec §S2 card defaults: 5 turns, 2,000 reasoning tokens, 30 days
+   when switched to autonomous, production environment ('' = default for
+   Business Central). A blank card with reasoning on: 5 × 2 + 2 × 10 = 30 a
+   conversation. */
+{
+  const t = E.agentTemplate();
+  ok(t.shape.turns === 5 && t.reasoning.tokens === 2000, 'QA-E L-31 template: 5 turns, 2,000 reasoning tokens');
+  const n = E.normalize({ studio: { agents: [{}] } }).studio.agents[0];
+  ok(n.shape.turns === 5 && n.reasoning.tokens === 2000, 'QA-E L-31 normalize fills the same defaults');
+  const s = E.newAgent(E.defaults()); const a = s.studio.agents[0];
+  a.audience = 'external'; a.traffic.count = 100; a.reasoning.on = true;
+  eq(firstAgent(s).lo, 100 * (5 * 2 + 2 * 10), 'QA-E L-31 reasoning on a blank card adds 20 a conversation');
+  // Microsoft's itemized examples keep their own counts
+  eq(firstAgent(presetState('support')).perPeriod.billed, 7200, 'QA-E L-31 A1 support bot still 7,200 a day');
+  eq(firstAgent(presetState('sales')).perPeriod.billed, 4800, 'QA-E L-31 A2 sales research still 4,800 a day');
+  // Environment: production when the plan has one; Business Central stays on the default environment
+  const se = E.defaults(); se.studio.environments = [{ name: 'Default', kind: 'default' }, { name: 'Prod', kind: 'production' }];
+  eq(E.newAgent(se).studio.agents[0].env, 'Prod', 'QA-E L-31 a new card runs in the production environment');
+  eq(E.newAgent(se, 'bcPayables').studio.agents[0].env, '', 'QA-E L-31 a new Business Central card stays on the default environment');
+  ok(/if \(a\.daysActive === 22\) a\.daysActive = 30;/.test(src), 'QA-E L-31 switching to autonomous moves 22 days to 30');
+}
+/* L-35: year1Credits is the exact sum of the ramp. A rounded figure within
+   1 credit (7,883,942 for 7,883,942.31) is replaced by the exact sum. */
+{
+  const ramp = Array(11).fill(656995).concat([656997.31]);
+  const exact = ramp.reduce((a, b) => a + b, 0);
+  let v = E.validateCoworkPayload(PAYLOAD({ rampCredits: ramp, year1Credits: 7883942 }));
+  ok(v.ok && v.payload.year1Credits === exact && Math.abs(exact - 7883942.31) < 1e-6, 'QA-E L-35 a rounded year one is accepted and replaced by the exact sum');
+  v = E.validateCoworkPayload(Object.assign(PAYLOAD({ rampCredits: ramp }), { year1Credits: undefined }));
+  eq(v.payload.year1Credits, exact, 'QA-E L-35 a missing year one is the ramp sum');
+  v = E.validateCoworkPayload(PAYLOAD({ rampCredits: ramp, year1Credits: 5000000 }));
+  eq(v.payload.year1Credits, 5000000, 'QA-E L-35 a figure further off is kept as sent');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
