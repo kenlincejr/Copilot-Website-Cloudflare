@@ -2238,7 +2238,9 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(m.indexOf('4,000 Copilot Credits per user per month (about $40)') >= 0, 'A3: names the default and its dollar value');
   ok(/about 14,519 credits per active Cowork user/.test(m), 'A3: names the modeled per-user credits');
   ok(/around day 8 of the month/.test(m), 'A3: names the cap day');
-  ok(m.indexOf('about 19,000 credits (the top of the band)') >= 0, 'A3: recommends the raised limit');
+  // QA H-04 moved the raised limit from the average user (19,000) to the
+  // heaviest persona: Technical 22,800 x 1.3 = 29,640 -> 30,000.
+  ok(m.indexOf('about 30,000 credits') >= 0, 'A3: recommends the raised limit');
   ok(/December 1, 2026/.test(m) && /Not yet in effect in Australia/.test(m), 'A3: names the date and the exclusions');
   ok(!/7 days|seven days/.test(m), 'A3: the R6.4-banned phrase stays out');
   // Same across the three CSP motions; silent outside CSP.
@@ -2496,6 +2498,20 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   eq(qaPath(L, 'bprem_cop').feasible, true, 'H-03: a Standard estate can still move up to Premium');
   eq(qaPath(L, 'bbasic_cop').feasible, false, 'H-03: a Standard estate is not moved down to Basic');
   eq(qaPath(L, 'cop_biz').feasible, true, 'H-03: the add-on keeps the owned base, so it stays on the table');
+}
+
+/* ── H-04 · V-31 "raise the limit to" covers the heaviest persona ──────── */
+{
+  const r = E.compute(E.defaults());
+  const m = (r.warnings.find(w => w.id === 'V-31') || {}).message || '';
+  ok(m.indexOf('about 30,000 credits') >= 0, 'H-04: stock raise-to is 30,000 (Technical 22,800 x 1.3)');
+  ok(m.indexOf('19,000') === -1, 'H-04: the average-user 19,000 is gone');
+  ok(m.indexOf('Technical') >= 0, 'H-04: the copy names the persona it is sized on');
+  // Every allocated persona fits under the raised limit at the top of the band.
+  const hit = m.match(/about ([0-9,]+) credits \(/);
+  const lim = hit ? +hit[1].replace(/,/g, '') : 0;
+  const eff = E.defaults().personas.map(p => (p.light * 125 + p.medium * 500 + p.heavy * 1200));
+  ok(eff.every(c => c * 1.3 <= lim), 'H-04: every persona x 1.3 sits under ' + lim);
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

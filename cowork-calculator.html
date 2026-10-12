@@ -2147,14 +2147,25 @@ body.embedded .hub-link { display:none !important; }
     var bizLimit = CONST.CSP_BIZ_UBB.creditsPerUser;
     if (inCsp && bizSeats > 0 && creditsPerActive > bizLimit) {
       var capDay = Math.max(1, Math.round(bizLimit / (creditsPerActive / 30)));
-      var raiseTo = Math.ceil(creditsPerActive * (1 + band) / 500) * 500;
+      /* QA H-04: the per-user limit stops each user, not the average one.
+         Sized on the average (14,519 at stock -> 19,000) a Technical user at
+         22,800 still hit the raised limit around day 25. Size it on the
+         heaviest allocated persona at the top of the band instead. */
+      var heaviestIdx = -1, heaviestCredits = 0;
+      personas.forEach(function (p, i) {
+        var c = effectiveCredits(p);
+        if (effSeats[i] > 0 && c > heaviestCredits) { heaviestCredits = c; heaviestIdx = i; }
+      });
+      var heaviestName = heaviestIdx >= 0 ? String(personas[heaviestIdx].name) : 'the heaviest persona';
+      var raiseTo = Math.ceil(Math.max(heaviestCredits, creditsPerActive) * (1 + band) / 500) * 500;
       W('V-31','warn','New Copilot Business licenses bought through CSP from December 1, 2026 switch usage-based ' +
         'billing on by default, with a default limit of ' + bizLimit.toLocaleString() + ' Copilot Credits per user per ' +
         'month (about $' + Math.round(bizLimit * CONST.CREDIT_USD) + '). This account models about ' +
         Math.round(creditsPerActive).toLocaleString() + ' credits per active Cowork user a month, so a user reaches that ' +
         'default around day ' + capDay + ' of the month and their usage stops until an admin raises it. If these seats ' +
         'are bought on or after that date, raise the per-user limit in Copilot → Cost Management to about ' +
-        raiseTo.toLocaleString() + ' credits (the top of the band) before go-live. Not yet in effect in ' +
+        raiseTo.toLocaleString() + ' credits (the top of the band for the heaviest persona, ' + heaviestName +
+        ', at about ' + Math.round(heaviestCredits).toLocaleString() + ' a month) before go-live. Not yet in effect in ' +
         CONST.CSP_BIZ_UBB.excluded + '.', []);
     }
 
