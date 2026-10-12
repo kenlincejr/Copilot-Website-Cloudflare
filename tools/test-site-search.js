@@ -892,7 +892,8 @@ eq(C.ANSWER_WRITING, 'Writing' + ELL, 'writing state');
 sec('Q');
 ['isTextField', 'shortcutAction', 'trapIndex', 'pathExcluded', 'pageAskAllowed', 'relatedAllowed', 'pageFilter', 'cleanHeading',
   'askQuestions', 'chatMessages', 'cleanQuery', 'stripQuery', 'canonicalUrl', 'logEvent', 'enqueue', 'takeBatch', 'logUrl',
-  'pathKeys', 'relatedFor', 'truncate', 'relatedHtml', 'shellHtml', 'turnHtml', 'suggestion'].forEach((k) => eq(typeof C[k], 'function', 'core.' + k + ' is a function'));
+  'pathKeys', 'relatedFor', 'truncate', 'relatedHtml', 'shellHtml', 'turnHtml', 'suggestion',
+  'shortcutHint', 'panelMode', 'restoreQuery', 'suggestVisible'].forEach((k) => eq(typeof C[k], 'function', 'core.' + k + ' is a function'));
 // text fields
 const TF = (tagName, type, ce) => C.isTextField({ tagName, type, isContentEditable: !!ce });
 ['text', 'search', 'email', 'url', 'number', 'password', 'tel', 'date', '', undefined].forEach((t) => ok(TF('INPUT', t), 'input type ' + t + ' takes typing'));
@@ -1200,6 +1201,76 @@ eq(C.truncate('short'), 'short', 'short text untouched');
   }
 }
 
+// ── H: the home page's hero pill (specs/site-search-v2.1-hero-pill.spec.md) ──
+sec('H');
+{
+  const CMD = '\u2318K';
+  // platform hint: userAgentData.platform, then platform, then the user agent
+  eq(C.shortcutHint({ userAgentData: { platform: 'macOS' } }), CMD, 'userAgentData macOS: Cmd');
+  eq(C.shortcutHint({ userAgentData: { platform: 'Windows' } }), 'Ctrl K', 'userAgentData Windows: Ctrl');
+  eq(C.shortcutHint({ userAgentData: { platform: 'Linux' } }), 'Ctrl K', 'userAgentData Linux: Ctrl');
+  eq(C.shortcutHint({ userAgentData: { platform: 'Chrome OS' } }), 'Ctrl K', 'ChromeOS: Ctrl');
+  eq(C.shortcutHint({ userAgentData: { platform: 'Android' } }), 'Ctrl K', 'Android: Ctrl');
+  eq(C.shortcutHint({ platform: 'MacIntel' }), CMD, 'platform MacIntel: Cmd');
+  eq(C.shortcutHint({ platform: 'iPhone' }), CMD, 'platform iPhone: Cmd');
+  eq(C.shortcutHint({ platform: 'iPad' }), CMD, 'platform iPad: Cmd');
+  eq(C.shortcutHint({ platform: 'Win32' }), 'Ctrl K', 'platform Win32: Ctrl');
+  eq(C.shortcutHint({ platform: 'Linux x86_64' }), 'Ctrl K', 'platform Linux: Ctrl');
+  eq(C.shortcutHint({ userAgentData: { platform: '' }, platform: 'MacIntel' }), CMD, 'empty userAgentData platform falls back to platform');
+  eq(C.shortcutHint({ userAgentData: { platform: 'Windows' }, platform: 'MacIntel' }), 'Ctrl K', 'userAgentData wins over platform');
+  eq(C.shortcutHint({ platform: '', userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5)' }), CMD, 'user agent fallback: Mac');
+  eq(C.shortcutHint({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }), 'Ctrl K', 'user agent fallback: Windows');
+  eq(C.shortcutHint({}), 'Ctrl K', 'nothing known: Ctrl');
+  eq(C.shortcutHint(null), 'Ctrl K', 'no navigator: Ctrl');
+  eq(C.shortcutHint({ platform: 7, userAgentData: { platform: null } }), 'Ctrl K', 'junk values: Ctrl');
+
+  // home-mode panel config
+  eq(JSON.stringify(C.panelMode(true)), '{"launcher":false,"ask":false,"hash":true}', 'home: no floating button, no Ask tab, #search= kept');
+  eq(JSON.stringify(C.panelMode(false)), '{"launcher":true,"ask":true,"hash":false}', 'other pages: floating button and both tabs, no hash');
+  eq(JSON.stringify(C.panelMode()), JSON.stringify(C.panelMode(false)), 'default is the other-pages panel');
+
+  // hash restore
+  eq(C.restoreQuery('#search=copilot%20credits', true), 'copilot credits', 'home restores #search=');
+  eq(C.restoreQuery('#search=copilot+credits&type=tool', true), 'copilot credits', 'legacy &type= ignored');
+  eq(C.restoreQuery('#type=tool&search=agents', true), 'agents', 'search= after a legacy type=');
+  eq(C.restoreQuery('#search=copilot', false), '', 'no restore off the home page');
+  eq(C.restoreQuery('#section-3', true), '', 'a page anchor is not a search');
+  eq(C.restoreQuery('', true), '', 'no hash');
+  eq(C.restoreQuery('#search=', true), '', 'empty query');
+  eq(C.restoreQuery('#search=%E0%A4%A', true), '', 'malformed escape');
+  eq(C.restoreQuery('#search=' + 'x'.repeat(400), true).length, 300, 'capped at 300 characters');
+
+  // "Try:" only while the box is empty
+  ok(C.suggestVisible('') && C.suggestVisible('   ') && C.suggestVisible(null) && C.suggestVisible(undefined), 'empty box: Try line shows');
+  ok(!C.suggestVisible('a') && !C.suggestVisible(' credits '), 'typed box: Try line hidden');
+
+  // the two shells
+  const other = C.shellHtml({ title: 'T' });
+  const home = C.shellHtml({ title: 'T', launcher: false, ask: false });
+  ok(/class="launcher"/.test(other) && !/class="launcher"/.test(home), 'floating button everywhere but home');
+  ok(!/role="tablist"/.test(home) && !/role="tab"/.test(home), 'home: no tab strip');
+  ok(!/ps-pane-ask|ask-form|ask-q|Ask about this page|Questions about/.test(home), 'home: no Ask pane');
+  ok(/<div class="pane" id="ps-pane-search">/.test(home) && !/role="tabpanel"/.test(home), 'home: the Search pane alone, not a tab panel');
+  ['ps-form', 'ps-q', 'ps-suggest', 'ps-status', 'ps-ask', 'ps-answer', 'ps-sources', 'ps-copy', 'ps-up', 'ps-down', 'ps-results']
+    .forEach((c) => eq((home.match(new RegExp('class="[^"]*\\b' + c + '\\b')) || []).length, 1, 'home panel has .' + c + ' once'));
+  ok(/role="dialog" aria-modal="true" aria-labelledby="ps-title"/.test(home) && /aria-label="Close search"/.test(home), 'home dialog is modal, labeled, closable');
+  eq(C.shellHtml({ title: 'T', ask: false }).indexOf('class="launcher"') > 0, true, 'ask and launcher are independent');
+  [other, home].forEach((sh, i) => {
+    const name = i ? 'home' : 'other pages';
+    const foot = /<p class="foot">([\s\S]*?)<\/p>/.exec(sh);
+    ok(foot, name + ': panel footer present');
+    if (!foot) return;
+    const f = foot[1];
+    ok(/<a href="\/ask\.html">Open the full assistant<\/a>/.test(f), name + ': footer links the full assistant');
+    ok(/<a href="\/use-with-your-ai\.html">Use the playbook in your AI assistant<\/a>/.test(f), name + ': footer links the AI-assistant guide');
+    ok(f.indexOf('Open the full assistant') < f.indexOf('Use the playbook in your AI assistant') &&
+      f.indexOf('Use the playbook in your AI assistant') < f.indexOf(C.LOG_DISCLOSURE), name + ': assistant link, then guide link, then the logging notice');
+    ok(/<span class="foot-sep" aria-hidden="true">·<\/span>/.test(f), name + ': middle dot between the links, hidden from assistive tech');
+  });
+  eq(C.FOOT_HTML.indexOf(C.esc(C.LOG_DISCLOSURE)) > 0, true, 'footer notice escaped through esc');
+  ok(/\.foot-links\{display:block/.test(C.PANEL_CSS), 'footer links sit on their own line');
+}
+
 // ── T: shadow-root styles and markup (spec D3, §6) ──
 sec('T');
 {
@@ -1301,45 +1372,68 @@ ok(/attachShadow\(\{ mode: 'open' \}\)/.test(src) && (src.match(/attachShadow\(/
 ok(/document\.createElement\('playbook-search'\)/.test(src) && /document\.createElement\('playbook-related'\)/.test(src), 'custom host elements, so no page selector matches them by tag');
 ok(/new IntersectionObserver\(/.test(src) && /fetch\(core\.RELATED_URL/.test(src), 'related.json fetched lazily on approach');
 ok(/getElementsByTagName\('footer'\)/.test(src) && /querySelector\('main'\)/.test(src) && /SCRIPT\.parentNode\.insertBefore\(host, SCRIPT\)/.test(src), 'related row: before the last footer, else end of main, else before the script');
-ok(/var panel = home \? null : mount\.launcher\(\);/.test(src), 'no launcher on the home page (it has the inline card)');
-eq(C.VERSION, '6', 'module version');
-eq(C.CONFIG_URL, '/data/site-search-config.json?v=6', 'config fetched with the same ?v as the script');
-eq(C.RELATED_URL, '/data/related.json?v=6', 'related.json fetched with the same ?v');
-ok(/assets\/site-search\.js\?v=6/.test(src.split('\n')[0]), 'header names ?v=6');
+ok(/var pill = document\.getElementById\('hero-search'\);\s*var panel = mount\.launcher\(core\.panelMode\(!!pill\), pill\);\s*if \(pill\) mount\.pill\(pill, panel\);\s*mount\.keys\(panel\);/.test(src), 'one panel on every page; the hero pill (home) replaces the floating button');
+ok(!/mount\.inline/.test(src) && src.indexOf("getElementById('site-search')") < 0, 'the inline-card mount is retired');
+ok(!/#site-search\b/.test(src.replace(/site-search-hit/g, '')), 'no #site-search selector left (jump skip, page info)');
+eq(C.JUMP_SKIP, 'nav, footer', 'jump skips nav and footer');
+ok(/key\.textContent = core\.shortcutHint\(navigator\)/.test(src), 'pill hint set from the platform through textContent');
+ok(/core\.restoreQuery\(location\.hash, true\)/.test(src) && /panel\.run\(query, pill\)/.test(src), 'a shared #search= opens the panel with the query run, focus returning to the pill');
+ok(/ui\.input\.addEventListener\('input', syncSuggest\)/.test(src) && /ui\.suggest\.hidden = !core\.suggestVisible\(ui\.input\.value\)/.test(src), 'Try line follows the box');
+ok(/opener\.setAttribute\('aria-expanded', 'true'\)/.test(src) && /else if \(opener\) opener\.focus\(\)/.test(src), 'the opener (pill or button) reports aria-expanded and gets focus back');
+eq(C.VERSION, '7', 'module version');
+eq(C.CONFIG_URL, '/data/site-search-config.json?v=7', 'config fetched with the same ?v as the script');
+eq(C.RELATED_URL, '/data/related.json?v=7', 'related.json fetched with the same ?v');
+ok(/assets\/site-search\.js\?v=7/.test(src.split('\n')[0]), 'header names ?v=7');
 ok(!fs.existsSync(path.join(ROOT, 'assets', 'site-search-jump.js')), 'assets/site-search-jump.js deleted');
-const IDS = ['site-search-form', 'site-search-q', 'site-search-status', 'site-search-results', 'site-search-open-chat',
-  'site-search-suggest', 'site-search-ask', 'site-search-answer', 'site-search-answer-state', 'site-search-answer-body',
-  'site-search-answer-sources', 'site-search-sources', 'site-search-answer-foot', 'site-search-answer-actions', 'site-search-copy',
-  'site-search-vote-up', 'site-search-vote-down'];
-IDS.forEach((id) => ok(src.indexOf("'" + id + "'") > 0, 'mount wires #' + id));
-ok(src.indexOf("'site-search-chips'") < 0, 'mount no longer wires a chip row');
 {
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  IDS.forEach((id) => eq((idx.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1, 'index.html has #' + id + ' once'));
-  ok(idx.indexOf('site-search-chip') < 0, 'index.html has no chip markup or CSS left');
+  ok(idx.indexOf('id="site-search"') < 0 && idx.indexOf('class="site-search') < 0, 'index.html has no #site-search card');
+  ok(!/\n\.site-search[\w-]*[ ,:{]/.test(idx) && !/\n {2}\.site-search/.test(idx), 'index.html has no .site-search* CSS left');
+  ok(idx.indexOf('site-search-open-chat') < 0 && idx.indexOf('site-search-chip') < 0, 'no chat offer or chip markup left');
+  ok(!/Prefer to ask in plain English/.test(idx), 'chat explanation paragraph removed');
+  eq((idx.match(/id="hero-search"/g) || []).length, 1, 'index.html has the hero pill once');
   {
-    const at = idx.indexOf('id="site-search"');
-    const card = idx.slice(at, idx.indexOf('</section>', at));
-    IDS.forEach((id) => ok(card.indexOf('id="' + id + '"') > 0, '#' + id + ' sits inside the search card'));
-    const order = ['site-search-form', 'site-search-suggest', 'site-search-status', 'site-search-answer', 'site-search-results'].map((id) => card.indexOf('id="' + id + '"'));
-    ok(order.every((v, i) => i === 0 || v > order[i - 1]), 'card order: box, suggestions, status, answer panel, results');
-    ok(/id="site-search-answer"[^>]*aria-live="polite"/.test(card), 'answer panel is aria-live polite');
-    ok(/id="site-search-suggest"[^>]*role="group"/.test(card), 'suggestion line is a labeled group');
-    ok(/id="site-search-vote-up"[^>]*aria-pressed="false"/.test(card) && /id="site-search-vote-down"[^>]*aria-pressed="false"/.test(card), 'thumbs carry aria-pressed');
-    ok(!/style="/.test(card), 'no inline style in the card (index.html is a pure-class file)');
-    ok(card.indexOf(C.LOG_DISCLOSURE) > 0, 'the logging disclosure sits in the search card');
+    const hero = idx.slice(idx.indexOf('<header class="hero">'), idx.indexOf('</header>'));
+    const left = hero.slice(hero.indexOf('<div class="hero-left">'), hero.indexOf('<!-- Dual-circle widget -->'));
+    const pill = /<button type="button" class="hero-search" id="hero-search"[^>]*>[\s\S]*?<\/button>/.exec(left);
+    ok(pill, 'the pill is a button inside the hero text column');
+    if (pill) {
+      const tag = /^<button[^>]*>/.exec(pill[0])[0];
+      ok(/aria-haspopup="dialog"/.test(tag) && /aria-expanded="false"/.test(tag), 'pill announces its dialog');
+      ok(/aria-label="Search the playbook"/.test(tag), 'pill accessible name "Search the playbook"');
+      ok(/aria-keyshortcuts="Control\+K Meta\+K \/"/.test(tag), 'pill names its shortcuts');
+      ok(/<span class="hero-search-text">Search the playbook…<\/span>/.test(pill[0]), 'pill text');
+      ok(/<kbd class="hero-search-key" id="hero-search-key" aria-hidden="true">Ctrl K<\/kbd>/.test(pill[0]), 'pill hint, Ctrl K until the module sets it');
+      ok(/<svg class="hero-search-icon"[^>]*aria-hidden="true"/.test(pill[0]), 'magnifier icon hidden from assistive tech');
+      ok(!/style="/.test(pill[0]), 'no inline style on the pill (index.html is a pure-class file)');
+      ok(left.indexOf('hero-presenter') < left.indexOf('id="hero-search"'), 'pill sits at the foot of the text column, right above the Start here strip');
+    }
+    ok(idx.indexOf('<nav class="journey-strip"') > idx.indexOf('</header>'), 'Start here strip still follows the hero');
   }
-  ['.site-search-suggestion', '.site-search-try', '.site-search-sep', '.site-search-answer', '.site-search-sources', '.site-search-ask', '.site-search-privacy'].forEach((c) => ok(idx.indexOf('\n' + c + ' {') >= 0 || idx.indexOf('\n' + c + ',') >= 0 || idx.indexOf('\n' + c + ':') >= 0, 'index.html styles ' + c));
   {
-    const rule = /\n\.site-search-suggestion \{([^}]*)\}/.exec(idx);
-    ok(rule && /border: 0/.test(rule[1]) && /background: none/.test(rule[1]) && /color: var\(--teal\)/.test(rule[1]), 'home suggestions are plain teal text links, no box');
+    const css = (n) => new RegExp('\\n\\' + n + ' \\{([^}]*)\\}').exec(idx);
+    const r = css('.hero-search');
+    ok(r && /background: rgba\(255,255,255,\.1\)/.test(r[1]) && /border: 1px solid rgba\(168,236,245,\.25\)/.test(r[1]) && /border-radius: var\(--radius\)/.test(r[1]) && /color: rgba\(168,236,245,\.88\)/.test(r[1]), 'pill built from hero values: white 10%, ice border, --radius, the .sub text color');
+    ok(r && /font-size: \.9rem/.test(r[1]) && /width: 100%/.test(r[1]), 'pill spans the text column at a §2.2 size');
+    const i = css('.hero-search-icon');
+    ok(i && /color: var\(--cyan\)/.test(i[1]), 'magnifier in --cyan (the hero accent; --teal-light was too faint on the dark hero)');
+    ok(/\.hero-search:focus-visible \{\s*outline: 2px solid var\(--cyan\);/.test(idx), 'focus ring visible on the dark hero');
+    ok(/@media \(max-width: 640px\) \{[^@]*\.hero-search-key \{ display: none; \}/.test(idx), 'hint hidden at 640px and below');
+    const block = idx.slice(idx.indexOf('\n.hero-search {'), idx.indexOf('\n.journey-strip {'));
+    (block.match(/#[0-9a-fA-F]{3,8}\b|rgba\([^)]*\)/g) || []).forEach((c) => ok(['#fff', 'rgba(168,236,245,.25)', 'rgba(255,255,255,.1)', 'rgba(168,236,245,.88)', 'rgba(168,236,245,.62)'].includes(c) && idx.split(c).length > 2, 'pill color ' + c + ' is already used in the hero'));
   }
-  ok(idx.indexOf('id="site-search"') > 0, 'index.html still has #site-search');
-  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=6" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=6');
+  {
+    const foot = idx.slice(idx.indexOf('<footer>'), idx.indexOf('</footer>'));
+    ok(/<a href="\/ask\.html">Open the full assistant<\/a>/.test(foot), 'home footer links the full assistant');
+    ok(/<a href="\/use-with-your-ai\.html">Use the playbook in your AI assistant<\/a>/.test(foot), 'home footer links the AI-assistant guide');
+    ok(/<p class="footer-links">/.test(foot) && /\n\.footer-links \{/.test(idx), 'footer links styled by the page');
+  }
+  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=7" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=7');
+  eq((idx.match(/<script[^>]*site-search\.js/g) || []).length, 1, 'index.html has exactly one script tag for the module');
   ok(!/site-search\.js\?v=[34]"/.test(idx), 'index.html no longer loads ?v=3 or ?v=4');
   ok(idx.indexOf('site-search-jump.js') < 0, 'index.html no longer loads the jump file');
   ok(idx.indexOf('function fragmentFor') < 0, 'index.html inline search script removed');
-  ok(/search-snippet\.es\.js/.test(idx), 'index.html keeps the chat bubble module');
+  ok(/search-snippet\.es\.js/.test(idx) && /<chat-bubble-snippet /.test(idx) && /\nchat-bubble-snippet \{/.test(idx), 'index.html keeps the chat bubble and its theming');
 }
 ok(!/site-search\.js/.test(fs.readFileSync(path.join(ROOT, 'copilot-credit-planner.html'), 'utf8')), 'credit planner stays free of the module');
 

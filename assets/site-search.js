@@ -1,5 +1,6 @@
-/* assets/site-search.js?v=6: the one site search module
-   (specs/site-search-v2.spec.md §3.1). Loaded by every page in sitemap.xml
+/* assets/site-search.js?v=7: the one site search module
+   (specs/site-search-v2.spec.md §3.1, specs/site-search-v2.1-hero-pill.spec.md).
+   Loaded by every page in sitemap.xml
    (see DESIGN.md 8b.5) except copilot-credit-planner.html, which stays free
    of external scripts.
 
@@ -9,10 +10,12 @@
      log    anonymous search events, batched in memory, sent with sendBeacon (F11)
      render results list, status text, the suggestion line
      search one search UI (box, suggestions, results, AI answer, sources),
-            rendered into the home-page card or into the launcher panel
+            rendered into the launcher panel
      jump   ?hl=<phrase>: scroll to and highlight the matching passage
-     mount  the home-page card (when #site-search exists), otherwise the
-            floating launcher; the keyboard shortcuts; "Read this next"; jump
+     mount  the launcher panel on every page: opened by the floating button,
+            or on the home page (v2.1) by the hero pill (#hero-search), which
+            replaces the button there and has no Ask tab; the keyboard
+            shortcuts; "Read this next"; jump
 
    Phase B (spec §4): suggested searches (F2), boosting, rewrite and rerank
    request options from data/site-search-config.json (F4, F5), and the
@@ -29,7 +32,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '6';
+  var VERSION = '7';
   var ENDPOINT = 'https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/';
   var MAX_PAGES = 6;
 
@@ -620,7 +623,7 @@
     '.site-search-hit{background:rgba(72,202,228,.22);outline:2px solid #48cae4;' +
     'outline-offset:3px;border-radius:4px;transition:background .6s,outline-color .6s}';
   core.HIT_BLOCK = 'p, li, td, th, dd, dt, blockquote, figcaption, h1, h2, h3, h4, h5, h6';
-  core.JUMP_SKIP = 'nav, footer, #site-search';
+  core.JUMP_SKIP = 'nav, footer';
 
   /* ── Phase C: launcher, Ask about this page, Read this next ── */
 
@@ -633,6 +636,36 @@
   core.ASK_NONE_BUTTON = 'Search the whole playbook';
   core.ASK_BUSY = 'The assistant is busy right now. Please try again in a minute.';
   core.LOG_DISCLOSURE = 'Searches are logged without any personal details to improve the playbook.';
+
+  // The keyboard hint on the home pill: ⌘K on a Mac, iPad or iPhone, else
+  // Ctrl K. nav is navigator (or a stand-in): userAgentData.platform first,
+  // then platform, then the user agent string.
+  core.shortcutHint = function (nav) {
+    nav = nav && typeof nav === 'object' ? nav : {};
+    var uad = nav.userAgentData && typeof nav.userAgentData.platform === 'string' ? nav.userAgentData.platform : '';
+    var p = uad || (typeof nav.platform === 'string' ? nav.platform : '') || (typeof nav.userAgent === 'string' ? nav.userAgent : '');
+    return /mac|iphone|ipad|ipod/i.test(p) ? '\u2318K' : 'Ctrl K';
+  };
+
+  // The panel on a page. With the hero pill (the home page): no floating
+  // button, no Ask tab or tab strip, and #search= kept in the URL. Elsewhere:
+  // the floating button and both tabs (the Ask tab still follows
+  // pageAskExclude when the panel opens).
+  core.panelMode = function (hasPill) {
+    var home = !!hasPill;
+    return { launcher: !home, ask: !home, hash: home };
+  };
+
+  // The query a shared #search=<query> link runs on load: on the home page
+  // only (a legacy &type= is ignored by parseHash); '' elsewhere or without one.
+  core.restoreQuery = function (hash, home) {
+    return home ? core.parseHash(hash).query : '';
+  };
+
+  // The "Try:" line shows only while the search box is empty.
+  core.suggestVisible = function (value) {
+    return !String(value == null ? '' : value).trim();
+  };
 
   // Where the shortcut keys must not be stolen: anything that takes typing.
   var NON_TEXT_INPUT = ['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file', 'image', 'hidden'];
@@ -859,7 +892,7 @@
   var FONT = "'Segoe UI', 'Inter', Georgia, sans-serif";
   var RING = '0 0 0 3px rgba(72,202,228,.3)';
 
-  // The search UI, shared by the home card's classes and the panel.
+  // The search UI inside the panel.
   core.SEARCH_CSS = [
     '.site-search-form{display:flex;gap:8px}',
     '.site-search-form input{flex:1;min-width:0;padding:11px 14px;border:1px solid #dde1e7;border-radius:8px;background:#fff;color:#1a2330;font:inherit;font-size:.9rem}',
@@ -948,6 +981,8 @@
     '.turn .site-search-answer{margin-top:6px}',
     '.foot{margin:0;padding:8px 16px 12px;border-top:1px solid #dde1e7;color:#6b7280;font-size:.68rem;font-style:italic}',
     '.foot a{color:#005F6B;font-style:normal;font-weight:600}',
+    '.foot-links{display:block;margin:0 0 4px;font-size:.78rem;font-style:normal}',
+    '.foot-sep{margin:0 8px;color:#9ca3af}',
     core.SEARCH_CSS,
     '@media (max-width:640px){',
     '.dialog{top:auto;bottom:0;left:0;right:0;width:100%;max-width:100%;max-height:88vh;border-bottom:0;border-radius:8px 8px 0 0;transform:translateY(8px)}',
@@ -984,22 +1019,33 @@
   core.ICON_UP = SVG + '<path d="M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.3-7.4A1.9 1.9 0 0 1 15 5.9Z"/></svg>';
   core.ICON_DOWN = SVG + '<path d="M17 14V2M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.3 7.4A1.9 1.9 0 0 1 9 18.1Z"/></svg>';
 
-  // The launcher, the backdrop and the dialog with both tabs.
-  //   opts.title  the page's meta title, for "Questions about <title>"
+  // The panel footer, every page: the two links, then the logging notice.
+  core.FOOT_HTML = '<p class="foot"><span class="foot-links">' +
+    '<a href="/ask.html">Open the full assistant</a><span class="foot-sep" aria-hidden="true">·</span>' +
+    '<a href="/use-with-your-ai.html">Use the playbook in your AI assistant</a></span>' +
+    core.esc(core.LOG_DISCLOSURE) + '</p>';
+
+  // The launcher, the backdrop and the dialog.
+  //   opts.title     the page's meta title, for "Questions about <title>"
+  //   opts.launcher  false: no floating button (the home page has the pill)
+  //   opts.ask       false: the Search tab alone, no tab strip, no Ask pane
   core.shellHtml = function (opts) {
     opts = opts || {};
+    var ask = opts.ask !== false;
     return '<style>' + core.PANEL_CSS + '</style>' +
-      '<button type="button" class="launcher" aria-haspopup="dialog" aria-expanded="false" aria-keyshortcuts="Control+K Meta+K /" title="Search the playbook (Ctrl+K)">' + core.ICON_SEARCH + '<span>Search</span></button>' +
+      (opts.launcher === false ? '' :
+        '<button type="button" class="launcher" aria-haspopup="dialog" aria-expanded="false" aria-keyshortcuts="Control+K Meta+K /" title="Search the playbook (Ctrl+K)">' + core.ICON_SEARCH + '<span>Search</span></button>') +
       '<div class="backdrop" hidden></div>' +
       '<div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ps-title" hidden>' +
         '<div class="head"><h2 class="title" id="ps-title">Copilot Playbook search</h2>' +
         '<button type="button" class="close" aria-label="Close search">' + core.ICON_CLOSE + '</button></div>' +
+        (ask ?
         '<div class="tabs" role="tablist" aria-label="Search or ask">' +
           '<button type="button" class="tab" role="tab" id="ps-tab-search" aria-controls="ps-pane-search" aria-selected="true">Search the playbook</button>' +
           '<button type="button" class="tab" role="tab" id="ps-tab-ask" aria-controls="ps-pane-ask" aria-selected="false" tabindex="-1">Ask about this page</button>' +
-        '</div>' +
+        '</div>' : '') +
         '<div class="body">' +
-          '<div class="pane" role="tabpanel" id="ps-pane-search" aria-labelledby="ps-tab-search">' +
+          (ask ? '<div class="pane" role="tabpanel" id="ps-pane-search" aria-labelledby="ps-tab-search">' : '<div class="pane" id="ps-pane-search">') +
             '<form class="site-search-form ps-form" role="search">' +
               '<input type="search" class="ps-q" name="q" placeholder="Search the playbook, e.g. Copilot Credits billing" aria-label="Search the playbook" autocomplete="off">' +
               '<button type="submit">Search</button>' +
@@ -1020,6 +1066,7 @@
             '</div>' +
             '<ol class="site-search-results ps-results"></ol>' +
           '</div>' +
+          (ask ?
           '<div class="pane" role="tabpanel" id="ps-pane-ask" aria-labelledby="ps-tab-ask" hidden>' +
             '<p class="ask-head">Questions about <em>' + core.esc(opts.title || 'this page') + '</em></p>' +
             '<p class="ask-note">Answers come only from this page.</p>' +
@@ -1029,9 +1076,9 @@
             '</form>' +
             '<div class="site-search-suggest ask-suggest" role="group" aria-label="Suggested questions"></div>' +
             '<div class="ask-log" aria-live="polite"></div>' +
-          '</div>' +
+          '</div>' : '') +
         '</div>' +
-        '<p class="foot">' + core.esc(core.LOG_DISCLOSURE) + ' <a href="/ask.html">Open the full assistant</a></p>' +
+        core.FOOT_HTML +
       '</div>';
   };
 
@@ -1224,7 +1271,7 @@
   /* ───────────────────────────── jump ───────────────────────────── */
   var jump = {};
 
-  // Visible text nodes in document order, outside nav, footer and the search card.
+  // Visible text nodes in document order, outside nav and footer.
   jump.textNodes = function () {
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode: function (n) {
@@ -1303,7 +1350,7 @@
   };
 
   /* ───────────────────────────── search ───────────────────────────── */
-  // One search UI, rendered into the home-page card or the launcher panel.
+  // One search UI, rendered into the launcher panel.
   //   ui    the elements: form, input, status, list, suggest, ask, panel,
   //         state, body, sourcesWrap, sources, foot, actions, copy, up, down
   //   opts  hash: keep #search= in the URL (home only)
@@ -1444,6 +1491,7 @@
     /* search */
     function run(query) {
       query = String(query || '').trim();
+      syncSuggest();
       if (!query) return;
       var keep = state.answerKey === query && !streaming;
       if (!keep) clearAnswer();
@@ -1486,13 +1534,18 @@
       run(ui.input.value);
     });
 
-    /* suggested searches (F2) */
+    /* suggested searches (F2): the "Try:" line, only while the box is empty */
+    function syncSuggest() {
+      if (ui.suggest) ui.suggest.hidden = !core.suggestVisible(ui.input.value);
+    }
+    ui.input.addEventListener('input', syncSuggest);
     function drawSuggest() {
       if (!ui.suggest) return;
       render.suggestLine(ui.suggest, config.suggested, function (s) {
         ui.input.value = s.query;
         run(s.query);
       });
+      syncSuggest();
     }
 
     return {
@@ -1622,68 +1675,6 @@
     return framed || !!(document.body && document.body.classList.contains('embedded'));
   };
 
-  // The home-page search card: markup and CSS live in index.html.
-  mount.inline = function () {
-    var $ = function (id) { return document.getElementById(id); };
-    var ui = {
-      form: $('site-search-form'),
-      input: $('site-search-q'),
-      status: $('site-search-status'),
-      list: $('site-search-results'),
-      suggest: $('site-search-suggest'),
-      ask: $('site-search-ask'),
-      panel: $('site-search-answer'),
-      state: $('site-search-answer-state'),
-      body: $('site-search-answer-body'),
-      sourcesWrap: $('site-search-answer-sources'),
-      sources: $('site-search-sources'),
-      foot: $('site-search-answer-foot'),
-      actions: $('site-search-answer-actions'),
-      copy: $('site-search-copy'),
-      up: $('site-search-vote-up'),
-      down: $('site-search-vote-down')
-    };
-    if (!ui.form || !ui.input || !ui.status || !ui.list) return null;
-    var s = searchUI(ui, { hash: true });
-
-    // Open the chat bubble from the search card. Its shadow root is open, so its
-    // own launcher button can be clicked; if the module never loaded, hide the offer.
-    var chatOffer = $('site-search-open-chat');
-    if (chatOffer) {
-      chatOffer.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var bubble = document.querySelector('chat-bubble-snippet');
-        var launcher = bubble && bubble.shadowRoot && bubble.shadowRoot.querySelector('.bubble-button');
-        var win = bubble && bubble.shadowRoot && bubble.shadowRoot.querySelector('.chat-window');
-        // Deferred so the bubble's own outside-click handling does not close it again.
-        if (launcher && !(win && win.classList.contains('expanded'))) setTimeout(function () { launcher.click(); }, 0);
-      });
-      setTimeout(function () {
-        if (!customElements.get('chat-bubble-snippet')) chatOffer.parentElement.hidden = true;
-      }, 8000);
-    }
-
-    // Results and the answer close on Escape or on any click outside the card.
-    ui.input.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') s.clearAll();
-    });
-    document.addEventListener('click', function (e) {
-      if (s.isOpen() && !e.target.closest('#site-search')) s.clearAll();
-    });
-
-    // Restore a shared #search=... once the config is in.
-    var restored = core.parseHash(location.hash);
-    s.drawSuggest();
-    api.loadConfig().then(function () {
-      s.drawSuggest();
-      if (restored.query) {
-        ui.input.value = restored.query;
-        s.run(restored.query);
-      }
-    });
-    return s;
-  };
-
   // The page's own title and H2s, for the Ask tab. A page with fewer than
   // three usable H2s also offers its H3s.
   mount.pageInfo = function () {
@@ -1691,7 +1682,7 @@
     var title = (meta && meta.getAttribute('content')) || document.title || '';
     var texts = function (sel) {
       return Array.prototype.slice.call(document.querySelectorAll(sel))
-        .filter(function (h) { return !h.closest('nav, footer, #site-search, [hidden]'); })
+        .filter(function (h) { return !h.closest('nav, footer, [hidden]'); })
         .map(function (h) { return h.textContent; });
     };
     var questions = core.askQuestions(texts('h2'), 3);
@@ -1703,21 +1694,28 @@
     };
   };
 
-  // The floating launcher and its panel (F6, F7), in a shadow root.
-  mount.launcher = function () {
+  // The launcher panel (F6, F7), in a shadow root.
+  //   mode  core.panelMode: launcher (the floating button), ask (the Ask tab),
+  //         hash (keep #search= in the URL)
+  //   pill  the home page's hero pill, which opens the panel instead of the
+  //         floating button; focus goes back to it on close
+  mount.launcher = function (mode, pill) {
+    mode = mode || core.panelMode(false);
     var info = mount.pageInfo();
     var host = document.createElement('playbook-search');
     var root = host.attachShadow({ mode: 'open' });
-    root.innerHTML = core.shellHtml({ title: info.title });
+    root.innerHTML = core.shellHtml({ title: info.title, launcher: mode.launcher, ask: mode.ask });
     document.body.appendChild(host);
     var q = function (sel) { return root.querySelector(sel); };
     var button = q('.launcher'), backdrop = q('.backdrop'), dialog = q('.dialog');
+    var opener = pill || button;
+    var strip = q('.tabs');
     var tabs = { search: q('#ps-tab-search'), ask: q('#ps-tab-ask') };
     var panes = { search: q('#ps-pane-search'), ask: q('#ps-pane-ask') };
     var inputs = { search: q('.ps-q'), ask: q('.ask-q') };
     var current = 'search', open = false, trigger = null, search = null, asker = null;
 
-    function askAllowed() { return core.pageAskAllowed(location.pathname, config.pageAskExclude); }
+    function askAllowed() { return !!panes.ask && core.pageAskAllowed(location.pathname, config.pageAskExclude); }
 
     function onLink(e, a) {
       if (jump.inPage(a)) { e.preventDefault(); close(false); }
@@ -1730,9 +1728,10 @@
         suggest: q('.ps-suggest'), ask: q('.ps-ask'), panel: q('.ps-answer'), state: q('.ps-state'),
         body: q('.ps-body'), sourcesWrap: q('.ps-sources-wrap'), sources: q('.ps-sources'),
         foot: q('.ps-foot'), actions: q('.ps-actions'), copy: q('.ps-copy'), up: q('.ps-up'), down: q('.ps-down')
-      }, { hash: false, onLink: onLink });
+      }, { hash: !!mode.hash, onLink: onLink });
       search.drawSuggest();
       api.loadConfig().then(function () { search.drawSuggest(); });
+      if (!panes.ask) return;
       asker = askUI({
         form: q('.ask-form'), input: inputs.ask, submit: q('.ask-form button'),
         suggest: q('.ask-suggest'), log: q('.ask-log')
@@ -1748,9 +1747,12 @@
       if (name === 'ask' && !askAllowed()) name = 'search';
       current = name;
       ['search', 'ask'].forEach(function (k) {
+        if (!panes[k]) return;
         var on = k === name;
-        tabs[k].setAttribute('aria-selected', on ? 'true' : 'false');
-        tabs[k].tabIndex = on ? 0 : -1;
+        if (tabs[k]) {
+          tabs[k].setAttribute('aria-selected', on ? 'true' : 'false');
+          tabs[k].tabIndex = on ? 0 : -1;
+        }
         panes[k].hidden = !on;
       });
       if (focus) inputs[name].focus();
@@ -1765,12 +1767,12 @@
 
     function show(name) {
       build();
-      q('.tabs').hidden = !askAllowed();
+      if (strip) strip.hidden = !askAllowed();
       if (!open) {
         open = true;
         backdrop.hidden = false;
         dialog.hidden = false;
-        button.setAttribute('aria-expanded', 'true');
+        if (opener) opener.setAttribute('aria-expanded', 'true');
         // Two frames so the transition runs from the hidden state.
         requestAnimationFrame(function () {
           requestAnimationFrame(function () { backdrop.classList.add('in'); dialog.classList.add('in'); });
@@ -1786,26 +1788,33 @@
       dialog.classList.remove('in');
       backdrop.hidden = true;
       dialog.hidden = true;
-      button.setAttribute('aria-expanded', 'false');
+      if (opener) opener.setAttribute('aria-expanded', 'false');
+      // A closed panel leaves no #search= behind to reopen it on reload.
+      if (mode.hash && core.parseHash(location.hash).query) {
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// or sandboxed */ }
+      }
       var t = trigger;
       trigger = null;
       if (restore === false) return;
       if (t && t !== document.body && t.isConnected && typeof t.focus === 'function') t.focus();
-      else button.focus();
+      else if (opener) opener.focus();
     }
 
-    button.addEventListener('click', function () { trigger = button; show(); });
+    if (button) button.addEventListener('click', function () { trigger = button; show(); });
+    if (pill) pill.addEventListener('click', function () { if (!open) trigger = pill; show('search'); });
     backdrop.addEventListener('click', function () { close(); });
     q('.close').addEventListener('click', function () { close(); });
-    tabs.search.addEventListener('click', function () { select('search', true); });
-    tabs.ask.addEventListener('click', function () { select('ask', true); });
-    q('.tabs').addEventListener('keydown', function (e) {
-      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
-      e.preventDefault();
-      var name = e.key === 'Home' ? 'search' : e.key === 'End' ? 'ask' : current === 'search' ? 'ask' : 'search';
-      select(name, false);
-      tabs[current].focus();
-    });
+    if (strip) {
+      tabs.search.addEventListener('click', function () { select('search', true); });
+      tabs.ask.addEventListener('click', function () { select('ask', true); });
+      strip.addEventListener('keydown', function (e) {
+        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) < 0) return;
+        e.preventDefault();
+        var name = e.key === 'Home' ? 'search' : e.key === 'End' ? 'ask' : current === 'search' ? 'ask' : 'search';
+        select(name, false);
+        tabs[current].focus();
+      });
+    }
 
     // Keep focus inside the dialog while it is open.
     document.addEventListener('focusin', function (e) {
@@ -1821,6 +1830,13 @@
         if (!open) trigger = from || document.activeElement;
         show('search');
       },
+      // Open on the Search tab and run a query (a shared #search= link).
+      run: function (query, from) {
+        if (!open) trigger = from || document.activeElement;
+        show('search');
+        inputs.search.value = query;
+        search.run(query);
+      },
       close: close,
       trap: function (e) {
         var list = focusables();
@@ -1830,27 +1846,29 @@
     };
   };
 
-  // Ctrl+K and Cmd+K (and "/" outside a text field): the launcher panel, or on
-  // the home page the inline box. Escape and Tab while the panel is open.
-  mount.keys = function (home, panel) {
+  // The home page's hero pill: the platform's shortcut in its hint, and a
+  // shared #search=<query> opens the panel with that query run once the
+  // config is in.
+  mount.pill = function (pill, panel) {
+    var key = pill.querySelector('.hero-search-key');
+    if (key) key.textContent = core.shortcutHint(navigator);
+    var query = core.restoreQuery(location.hash, true);
+    if (query) api.loadConfig().then(function () { panel.run(query, pill); });
+  };
+
+  // Ctrl+K and Cmd+K (and "/" outside a text field) open the panel; Escape
+  // and Tab while it is open.
+  mount.keys = function (panel) {
     document.addEventListener('keydown', function (e) {
       var path = e.composedPath ? e.composedPath() : [];
       var target = path[0] || e.target;
-      if (panel && panel.isOpen()) {
+      if (panel.isOpen()) {
         if (e.key === 'Escape') { e.preventDefault(); panel.close(); return; }
         if (e.key === 'Tab') { panel.trap(e); return; }
       }
       if (core.shortcutAction(e, core.isTextField(target)) !== 'open') return;
-      if (home) {
-        e.preventDefault();
-        home.input.focus();
-        home.input.select();
-        var r = home.input.getBoundingClientRect();
-        if (r.top < 0 || r.bottom > window.innerHeight) home.input.scrollIntoView({ block: 'center' });
-      } else if (panel) {
-        e.preventDefault();
-        panel.open(target);
-      }
+      e.preventDefault();
+      panel.open(target);
     });
   };
 
@@ -1903,9 +1921,10 @@
     if (mount.embedded()) return;
     api.loadConfig();
     log.start();
-    var home = document.getElementById('site-search') ? mount.inline() : null;
-    var panel = home ? null : mount.launcher();
-    mount.keys(home, panel);
+    var pill = document.getElementById('hero-search');
+    var panel = mount.launcher(core.panelMode(!!pill), pill);
+    if (pill) mount.pill(pill, panel);
+    mount.keys(panel);
     mount.related();
     jump.run();
   };

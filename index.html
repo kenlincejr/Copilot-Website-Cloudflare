@@ -83,7 +83,7 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   color: #fff;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: 22px 28px 20px;
+  padding: 22px 28px 16px;
   background:
     radial-gradient(ellipse at 90% 10%, rgba(72,202,228,.22) 0%, transparent 50%),
     linear-gradient(135deg, #00151f 0%, #002142 40%, #003057 70%, #005F6B 100%);
@@ -149,8 +149,8 @@ a:hover { text-decoration: underline; }
   font-size: .9rem;
 }
 .hero-presenter {
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid rgba(168,236,245,.25);
 }
 .hero-presenter p { margin: 0; }
@@ -196,6 +196,64 @@ a:hover { text-decoration: underline; }
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1.1;
+}
+/* Home search pill (specs/site-search-v2.1-hero-pill.spec.md §3, §5): a
+   button styled as a field on the dark hero, built from the hero's own
+   values. It opens the site-wide search panel (assets/site-search.js). */
+.hero-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 11px 14px;
+  border: 1px solid rgba(168,236,245,.25);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,.1);
+  color: rgba(168,236,245,.88);
+  font: inherit;
+  font-size: .9rem;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.hero-search:hover,
+.hero-search:focus-visible {
+  border-color: var(--cyan);
+  color: #fff;
+}
+.hero-search:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.hero-search-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--cyan);
+}
+.hero-search-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hero-search-key {
+  flex: none;
+  padding: 1px 7px;
+  border: 1px solid rgba(168,236,245,.25);
+  border-radius: var(--radius);
+  color: rgba(168,236,245,.62);
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  line-height: 1.3;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-search { transition: none; }
 }
 
 .journey-strip {
@@ -309,42 +367,12 @@ a:hover { text-decoration: underline; }
   text-transform: uppercase;
 }
 
-/* ── Site search: Cloudflare AI Search snippets ──────────────────────────
+/* ── Chat bubble: Cloudflare AI Search snippet ───────────────────────────
    The components render in shadow DOM and read only --search-snippet-* and
    --chat-bubble-* custom properties (list: github.com/cloudflare/ai-search-snippet,
    packages/snippet/src/styles/theme.ts). Values set on the host element from
    here override the component's own :host defaults. The page has no dark
    mode, so the components are pinned to theme="light" to match it. */
-.site-search {
-  position: relative;
-  z-index: 2; /* keep the results dropdown above the hover-lifted cards below */
-  margin: 0 0 24px;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, #fff 0%, #f7fbfc 100%);
-  box-shadow: var(--shadow-sm);
-}
-.site-search-kicker {
-  margin: 0 0 7px;
-  color: var(--teal);
-  font-size: .58rem;
-  font-weight: 800;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-}
-.site-search h2 {
-  margin: 0 0 6px;
-  color: var(--navy);
-  font-size: 1.05rem;
-  line-height: 1.25;
-}
-.site-search-note {
-  margin: 0 0 12px;
-  color: #475569;
-  font-size: .88rem;
-  line-height: 1.55;
-}
 chat-bubble-snippet {
   --search-snippet-primary-color: var(--teal);
   --search-snippet-primary-hover: var(--teal-light);
@@ -381,285 +409,12 @@ chat-bubble-snippet {
   --search-snippet-shadow-lg: var(--shadow-md);
   --search-snippet-result-item-shadow: var(--shadow-sm);
 }
-.site-search-form {
-  display: flex;
-  gap: 8px;
-}
-.site-search-form input {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  color: var(--text);
-  font: inherit;
-  font-size: .9rem;
-}
-.site-search-form input:focus {
-  outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(72,202,228,.3);
-}
-.site-search-form button {
-  padding: 0 18px;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--teal);
-  color: #fff;
-  font: inherit;
-  font-size: .88rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.site-search-form button:hover { background: var(--teal-light); }
-.site-search-status {
-  margin: 10px 0 0;
-  color: #6b7280;
-  font-size: .78rem;
-}
-.site-search-status:empty { display: none; }
-.site-search-results {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.site-search-results li + li { margin-top: 8px; }
-.site-search-results a {
-  display: block;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  color: inherit;
-  text-decoration: none;
-  transition: border-color .15s, box-shadow .15s;
-}
-.site-search-results a:hover,
-.site-search-results a:focus-visible {
-  border-color: var(--teal);
-  box-shadow: var(--shadow-sm);
-}
-.site-search-results .r-title {
-  display: block;
-  color: var(--navy);
-  font-size: .95rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-.site-search-results .r-url {
-  display: block;
-  margin-top: 2px;
-  color: var(--teal);
-  font-size: .72rem;
-  overflow-wrap: anywhere;
-}
-.site-search-results .r-text {
-  display: block;
-  margin-top: 6px;
-  color: #374151;
-  font-size: .85rem;
-  line-height: 1.5;
-}
-.site-search-chat {
-  margin: 12px 0 0;
-  color: #475569;
-  font-size: .82rem;
-}
-.site-search-chat button {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--teal);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
-.site-search-results mark {
-  padding: 0 1px;
-  background: rgba(72,202,228,.25);
-  color: inherit;
-}
-/* Phase B (specs/site-search-v2.spec.md §6 sign-offs): the suggested-search
-   line (plain text links), the AI answer panel (C1 callout treatment) and its
-   sources, and the logging disclosure. */
-.site-search [hidden] { display: none; }
-.site-search-suggest {
-  margin: 10px 0 0;
-  color: #6b7280;
-  font-size: .82rem;
-  line-height: 1.6;
-}
-.site-search-suggest:empty { display: none; }
-.site-search-try {
-  margin-right: 6px;
-  color: #6b7280;
-}
-.site-search-sep {
-  margin: 0 8px;
-  color: #9ca3af;
-}
-.site-search-suggestion {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--teal);
-  font: inherit;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-}
-.site-search-suggestion:hover { text-decoration: underline; }
-.site-search-ask,
-.site-search-copy,
-.site-search-vote {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fff;
-  font: inherit;
-  cursor: pointer;
-  transition: border-color .15s, background .15s, color .15s;
-}
-.site-search-copy {
-  padding: 4px 11px;
-  color: var(--teal);
-  font-size: .72rem;
-  font-weight: 700;
-  line-height: 1.35;
-}
-.site-search-copy:hover,
-.site-search-vote:hover { border-color: var(--teal); }
-.site-search-vote[aria-pressed="true"] {
-  border-color: var(--teal);
-  background: var(--teal);
-  color: #fff;
-}
-.site-search-privacy {
-  margin: 6px 0 0;
-  color: #6b7280;
-  font-size: .68rem;
-  font-style: italic;
-}
-.site-search-suggestion:focus-visible,
-.site-search-ask:focus-visible,
-.site-search-copy:focus-visible,
-.site-search-vote:focus-visible {
-  outline: none;
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(72,202,228,.3);
-}
-.site-search-ask {
-  margin: 10px 0 0;
-  padding: 7px 14px;
-  border-color: var(--teal);
-  color: var(--teal);
-  font-size: .82rem;
-  font-weight: 700;
-}
-.site-search-ask:hover {
-  background: var(--teal);
-  color: #fff;
-}
-.site-search-answer {
-  margin: 10px 0 0;
-  padding: 16px 20px;
-  border: 1px solid #c5dde3;
-  border-left: 4px solid var(--teal);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: #e4f0f3;
-}
-.site-search-answer-title {
-  margin: 0 0 6px;
-  color: #00474f;
-  font-size: .85rem;
-  font-weight: 700;
-  letter-spacing: .3px;
-}
-.site-search-answer-state {
-  margin-left: 6px;
-  color: #6b7280;
-  font-size: .72rem;
-  font-weight: 400;
-  letter-spacing: 0;
-  animation: site-search-writing 1.4s ease-in-out infinite;
-}
-@keyframes site-search-writing { 50% { opacity: .45; } }
-.site-search-answer-body {
-  color: var(--text);
-  font-size: .88rem;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-}
-.site-search-answer-body p,
-.site-search-answer-body ul,
-.site-search-answer-body ol { margin: 0 0 8px; }
-.site-search-answer-body ul,
-.site-search-answer-body ol { padding-left: 20px; }
-.site-search-answer-body li + li { margin-top: 2px; }
-.site-search-answer-body > :last-child { margin-bottom: 0; }
-.site-search-answer-body a,
-.site-search-sources a {
-  color: var(--teal);
-  font-weight: 600;
-}
-.site-search-answer-label {
-  margin: 12px 0 4px;
-  color: #00474f;
-  font-size: .58rem;
-  font-weight: 700;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-.site-search-sources {
-  margin: 0;
-  padding-left: 20px;
-  font-size: .82rem;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-.site-search-answer-foot {
-  margin: 8px 0 0;
-  color: #6b7280; /* #9ca3af was 2.2:1 on the callout background; this passes AA */
-  font-size: .68rem;
-  font-style: italic;
-}
-.site-search-answer-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 10px 0 0;
-}
-.site-search-copy,
-.site-search-vote { border-color: #c5dde3; }
-.site-search-vote {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 26px;
-  padding: 0;
-  color: #6b7280;
-}
-.site-search-vote svg {
-  width: 15px;
-  height: 15px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .site-search-answer-state { animation: none; }
-}
 chat-bubble-snippet {
   --search-snippet-border-radius: var(--radius-lg);
   --chat-bubble-button-shadow: var(--shadow-md);
   --chat-bubble-window-shadow: var(--shadow-md);
 }
 @media (max-width: 640px) {
-  .site-search {
-    margin-bottom: 20px;
-    padding: 15px;
-  }
-  .site-search-answer { padding: 14px 15px; }
   chat-bubble-snippet {
     --chat-bubble-button-bottom: 16px;
     --chat-bubble-button-right: 16px;
@@ -690,7 +445,7 @@ chat-bubble-snippet {
   font-size: .88rem;
 }
 
-/* Flex, not grid: a partial last row centres itself instead of hanging
+/* Flex, not grid: a partial last row centers itself instead of hanging
    left. --cols sets the cards-per-row; card width stays identical in
    every section so rows of 2, 3, or 4 all read as the same family. */
 .card-grid {
@@ -952,6 +707,15 @@ chat-bubble-snippet {
   text-align: center;
   text-transform: uppercase;
 }
+.footer-links {
+  margin: 16px 0 0;
+  font-size: .82rem;
+  text-align: center;
+}
+.footer-links-sep {
+  margin: 0 8px;
+  color: #9ca3af;
+}
 
 @media (max-width: 980px) {
   .card-grid,
@@ -967,9 +731,10 @@ chat-bubble-snippet {
 }
 @media (max-width: 640px) {
   body { padding: 10px 12px 34px; }
-  .hero { padding: 17px 18px 16px; }
+  .hero { padding: 17px 18px 12px; }
   .hero h1 { font-size: 1.28rem; }
   .hero-pills { display: none; }
+  .hero-search-key { display: none; }
   .brand-row { gap: 10px; margin-bottom: 14px; }
   .brand-logo { width: 178px; }
   .card-grid,
@@ -1147,6 +912,7 @@ chat-bubble-snippet {
         <p class="hero-presenter-name">Ken Lince - Sr. Director Cloud Engineering, TD SYNNEX</p>
         <p class="hero-presenter-contact"><a href="mailto:ken.lince@tdsynnex.com">ken.lince@tdsynnex.com</a></p>
       </div>
+      <button type="button" class="hero-search" id="hero-search" aria-haspopup="dialog" aria-expanded="false" aria-label="Search the playbook" aria-keyshortcuts="Control+K Meta+K /"><svg class="hero-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="hero-search-text">Search the playbook…</span><kbd class="hero-search-key" id="hero-search-key" aria-hidden="true">Ctrl K</kbd></button>
     </div>
 
     <!-- Dual-circle widget -->
@@ -1250,36 +1016,6 @@ chat-bubble-snippet {
 </nav>
 
 <main>
-  <section class="site-search" id="site-search" aria-labelledby="site-search-heading">
-    <p class="site-search-kicker">Search The Playbook</p>
-    <h2 id="site-search-heading">Ask a question, get an answer from the playbook.</h2>
-    <p class="site-search-note">Results come from the pages on this site. Each one shows the page and the passage that matched, so you can pick the one to open.</p>
-    <form class="site-search-form" id="site-search-form" role="search">
-      <input type="search" id="site-search-q" name="q" placeholder="Search the playbook, e.g. Copilot Credits billing" aria-label="Search the playbook" autocomplete="off">
-      <button type="submit">Search</button>
-    </form>
-    <div class="site-search-suggest" id="site-search-suggest" role="group" aria-label="Suggested searches"></div>
-    <p class="site-search-status" id="site-search-status" role="status" aria-live="polite"></p>
-    <button type="button" class="site-search-ask" id="site-search-ask" hidden>Get an AI answer</button>
-    <div class="site-search-answer" id="site-search-answer" aria-live="polite" hidden>
-      <p class="site-search-answer-title">AI answer <span class="site-search-answer-state" id="site-search-answer-state"></span></p>
-      <div class="site-search-answer-body" id="site-search-answer-body"></div>
-      <div class="site-search-answer-sources" id="site-search-answer-sources" hidden>
-        <p class="site-search-answer-label">Sources</p>
-        <ol class="site-search-sources" id="site-search-sources"></ol>
-      </div>
-      <p class="site-search-answer-foot" id="site-search-answer-foot" hidden>AI-generated from the pages listed. Confirm pricing and licensing with Microsoft before quoting a customer.</p>
-      <div class="site-search-answer-actions" id="site-search-answer-actions" hidden>
-        <button type="button" class="site-search-copy" id="site-search-copy">Copy answer</button>
-        <button type="button" class="site-search-vote" id="site-search-vote-up" aria-pressed="false" aria-label="Helpful answer" title="Helpful"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.3-7.4A1.9 1.9 0 0 1 15 5.9Z"/></svg></button>
-        <button type="button" class="site-search-vote" id="site-search-vote-down" aria-pressed="false" aria-label="Unhelpful answer" title="Not helpful"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 14V2M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.3 7.4A1.9 1.9 0 0 1 9 18.1Z"/></svg></button>
-      </div>
-    </div>
-    <ol class="site-search-results" id="site-search-results"></ol>
-    <p class="site-search-chat">Prefer to ask in plain English? <button type="button" id="site-search-open-chat">Ask the playbook assistant</button> and get an answer with links to its sources, or <a href="/use-with-your-ai.html">use the playbook in your own AI assistant</a>.</p>
-    <p class="site-search-privacy">Searches are logged without any personal details to improve the playbook.</p>
-  </section>
-
   <section class="field-frame" aria-labelledby="field-frame-heading">
     <div>
       <p class="field-frame-kicker">Field-Tested Partner Motion</p>
@@ -1782,15 +1518,16 @@ chat-bubble-snippet {
     <h2>Start with the playbook. Prove it on yourself. Then sell the motion.</h2>
     <p>The point of this hub is not more reading. It is a clean path from executive conviction to internal proof to customer-facing services.</p>
   </div>
+  <p class="footer-links"><a href="/ask.html">Open the full assistant</a><span class="footer-links-sep" aria-hidden="true">·</span><a href="/use-with-your-ai.html">Use the playbook in your AI assistant</a></p>
   <p class="sig">TD SYNNEX - Copilot Practice Builder - Partner Enablement Series</p>
 </footer>
 
 <chat-bubble-snippet api-url="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/" theme="light" hide-branding></chat-bubble-snippet>
 <!-- Cloudflare AI Search chat bubble. If the module fails to load the bubble
-     simply never renders; the search box above does not depend on it. -->
+     simply never renders; the search pill in the hero does not depend on it. -->
 <script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js"></script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script>
-<script src="/assets/site-search.js?v=6" defer></script>
+<script src="/assets/site-search.js?v=7" defer></script>
 </body>
 </html>
