@@ -439,6 +439,9 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 .cv-pill .cv-exit { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#a8ecf5;
   border-radius:20px; padding:4px 12px; font-size:.74rem; font-weight:700; cursor:pointer; font-family:inherit; }
 .cv-pill .cv-exit:hover { background:rgba(255,255,255,.2); }
+/* Phones: a full-width bar with room reserved under the page, so the pill never sits on content (M-32). */
+@media (max-width:720px){ body.customer-view .cv-pill { left:16px; right:16px; transform:none; bottom:12px; justify-content:space-between; gap:10px; padding:8px 12px; font-size:.76rem; border-radius:14px; }
+  body.customer-view { padding-bottom:84px; } }
 
 footer.pagefoot { max-width:1320px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#6b7280; line-height:1.7; }
 footer.pagefoot a { color:#6b7280; }

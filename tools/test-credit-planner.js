@@ -1246,6 +1246,12 @@ sec('QA-C');
     ok(ctl.length > 10 && bad.length === 0, 'M-31 every hub control is labeled (' + bad.map((b) => b.slice(0, 60)).join(' | ') + ')');
   }
 
+  // M-32 · at phone width the Customer view pill is a full-width bar with room reserved under the page
+  {
+    const mq = /@media \(max-width:720px\)\{ body\.customer-view \.cv-pill \{([^}]*)\}\s*body\.customer-view \{ padding-bottom:(\d+)px; \} \}/.exec(src);
+    ok(mq && /left:16px; right:16px; transform:none;/.test(mq[1]) && Number(mq[2]) >= 72, 'M-32 the pill spans the 16px gutters and the page reserves space beneath it at 375 px');
+  }
+
   /* QA-C end */
 }
 
