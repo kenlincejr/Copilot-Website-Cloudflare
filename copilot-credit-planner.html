@@ -2393,8 +2393,21 @@ footer.pagefoot p { margin:0 0 10px; }
       var tgt = envNames.indexOf(a.env) > -1 ? byEnv[a.env] : tenantPpac;
       SCEN.forEach(function (sc) { tgt[sc] += a[sc] * f; });
     });
+    /* Tenant draw (QA H-02): an environment with "draw from the tenant credit
+       pool" on spills its use above its own allocation into the tenant pool.
+       The spill joins the tenant pool's consumption (and so the Microsoft 365
+       remainder), and the environment is cut only when that shared pool runs
+       out: its own row is cut against allocation + remainder and raises no
+       event of its own (the tenant pool's event covers it). */
+    var spill = { lo: 0, mid: 0, hi: 0 };
+    te.environments.forEach(function (e, k) {
+      var src = s.studio.environments[k] || {};
+      if (e.payg || src.tenantDraw === false) return;
+      SCEN.forEach(function (sc) { spill[sc] += Math.max(0, byEnv[e.name][sc] - e.allocation); });
+    });
+    SCEN.forEach(function (sc) { tenantPpac[sc] += spill[sc]; });
     var events = [], CAL = 30;
-    function cut(scope, cons, cap, payg, envIndex) {
+    function cut(scope, cons, cap, payg, envIndex, quiet) {
       var out = { flowsDay: { mid: null, hi: null }, agentsDay: { mid: null, hi: null } };
       if (payg) return out;
       ['mid', 'hi'].forEach(function (sc) {
@@ -2402,6 +2415,7 @@ footer.pagefoot p { margin:0 0 10px; }
         if (cons[sc] > cap * RC.enforceFlows.v / 100) out.flowsDay[sc] = dayOf(cap * RC.enforceFlows.v / 100, perDay);
         if (cons[sc] > cap * RC.enforceAgents.v / 100) out.agentsDay[sc] = dayOf(cap * RC.enforceAgents.v / 100, perDay);
       });
+      if (quiet) return out;
       if (out.flowsDay.hi) events.push({ day: out.flowsDay.hi, kind: 'flows', scope: scope, envIndex: envIndex, scen: out.flowsDay.mid ? 'mid' : 'hi',
         text: 'Agent flows in ' + scope + ' are blocked at 100% of ' + fmtInt(cap) + ' credits' + (out.flowsDay.mid ? '' : ' (high end only)') + '.' });
       if (out.agentsDay.hi) events.push({ day: out.agentsDay.hi, kind: 'agents', scope: scope, envIndex: envIndex, scen: out.agentsDay.mid ? 'mid' : 'hi',
@@ -2409,13 +2423,18 @@ footer.pagefoot p { margin:0 0 10px; }
       return out;
     }
     var envOut = te.environments.map(function (e, k) {
-      var c = byEnv[e.name], src = s.studio.environments[k] || {};
-      return { name: e.name, kind: src.kind, allocation: e.allocation, payg: e.payg, managed: !!src.managed, tenantDraw: src.tenantDraw !== false,
-               consumption: c, flowsCutoff: e.flowsCutoff, agentsCutoff: e.agentsCutoff, cuts: cut(e.name, c, e.allocation, e.payg || prepaid === 0, k) };
+      var c = byEnv[e.name], src = s.studio.environments[k] || {}, draw = src.tenantDraw !== false;
+      return { name: e.name, kind: src.kind, allocation: e.allocation, payg: e.payg, managed: !!src.managed, tenantDraw: draw,
+               consumption: c, flowsCutoff: e.flowsCutoff, agentsCutoff: e.agentsCutoff,
+               spill: draw && !e.payg ? { lo: Math.max(0, c.lo - e.allocation), mid: Math.max(0, c.mid - e.allocation), hi: Math.max(0, c.hi - e.allocation) } : { lo: 0, mid: 0, hi: 0 },
+               cuts: cut(e.name, c, draw ? e.allocation + te.remainder : e.allocation, e.payg || prepaid === 0, k, draw) };
     });
     var tenantCuts = cut('the default environment and tenant pool', tenantPpac, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0, -1);
     var m365 = peak.m365;
-    var starvation = { mid: prepaid > 0 && te.allocated > 0 && m365.mid > te.remainder, hi: prepaid > 0 && te.allocated > 0 && m365.hi > te.remainder };
+    /* Draw-on spill is taken from the tenant remainder before Microsoft 365 sees it. */
+    var m365Avail = { mid: Math.max(0, te.remainder - spill.mid), hi: Math.max(0, te.remainder - spill.hi) };
+    var starvation = { mid: prepaid > 0 && (te.allocated > 0 || spill.mid > 0) && m365.mid > m365Avail.mid,
+                       hi: prepaid > 0 && (te.allocated > 0 || spill.hi > 0) && m365.hi > m365Avail.hi };
     /* Per-user caps: manual, or the December 1 default when it applies. */
     var excluded = RC.capExcluded.v.indexOf(ac.country) > -1, first = null;
     iso.forEach(function (m, k) { if (first === null && m >= RC.capDate.v.slice(0, 7)) first = k; });
@@ -2445,7 +2464,7 @@ footer.pagefoot p { margin:0 0 10px; }
       basisPaygOverflow: basis.scen.hi.paygCredits > 0,
       overAllocated: te.overAllocated, flowsCutoff: te.flowsCutoff, agentsCutoff: te.agentsCutoff,
       environments: envOut, tenantPool: { consumption: tenantPpac, cuts: tenantCuts, payg: s.combined.enforcement.defaultEnvPayg },
-      m365: { demand: m365, available: te.remainder, starvation: starvation },
+      m365: { demand: m365, available: m365Avail.mid, availableHi: m365Avail.hi, drawOnSpill: spill, starvation: starvation },
       userCap: { cap: cap, source: capSource, auto: auto, firstMonth: first === null ? null : iso[first], excluded: excluded,
                  cappedUsers: cappedUsers, capTotal: cap !== null ? cappedUsers * cap : 0, perUser: perUser, day: capDay, events: capEvents },
       peakMonth: peak.iso, events: events,
@@ -5127,7 +5146,7 @@ footer.pagefoot p { margin:0 0 10px; }
     }).join('') + '</div>';
     var rows = en.environments.map(function (e) {
       var kl = KIND_OPTS.filter(function (o) { return o[0] === e.kind; })[0];
-      return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : '') + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td>' + dayCell(e.cuts.flowsDay) + '</td><td>' + dayCell(e.cuts.agentsDay) + '</td></tr>';
+      return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : (e.tenantDraw ? ', draws from the tenant pool above its allocation' : '')) + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td>' + dayCell(e.cuts.flowsDay) + '</td><td>' + dayCell(e.cuts.agentsDay) + '</td></tr>';
     });
     var tp = en.tenantPool;
     rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td>' + dayCell(tp.cuts.flowsDay) + '</td><td>' + dayCell(tp.cuts.agentsDay) + '</td></tr>');

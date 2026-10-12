@@ -1052,6 +1052,32 @@ sec('QA-E');
   eq(rc.pool.pointYear, 487200 + 1200000, 'QA-E H-01 point = agents itemized + Cowork tab figure');
   ok(/Cowork tab/.test(E.customerView(rc).buy.upToLabel), 'QA-E H-01 the up-to label names the Cowork band when Cowork is in');
 }
+/* H-02: an environment with allocation 0 and tenant draw on draws from the
+   tenant remainder, so it reports the same stops as unassigned cards (lead-
+   envcheck.js). SMB trio, one pack (25,000), Default 0 / draw on, Production
+   0 / draw off, Sandbox 5,000: remainder 20,000; flows 20,000 ÷ (48,720 ÷ 30)
+   → day 13, agents 25,000 ÷ 1,624 → day 16 at the high end. */
+{
+  const envs = () => [
+    { name: 'Default', kind: 'default', allocation: 0, payg: false, tenantDraw: true, managed: false },
+    { name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false },
+    { name: 'Sandbox', kind: 'sandbox', allocation: 5000, payg: false, tenantDraw: false, managed: false }];
+  const run = (envName) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.environments = envs(); s.studio.agents.forEach((a) => { a.env = envName; }); return E.compute(s); };
+  const dflt = run('Default'), none = run('');
+  const evs = (r) => JSON.stringify(r.enforcement.events.map((e) => [e.kind, e.day, e.scen]));
+  eq(dflt.enforcement.remainder, 20000, 'QA-E H-02 remainder 20,000');
+  eq(evs(dflt), evs(none), 'QA-E H-02 cards in Default (draw on) stop when unassigned cards do');
+  ok(dflt.enforcement.events.every((e) => e.day > 1), 'QA-E H-02 no day-1 stop');
+  const fl = none.enforcement.events.filter((e) => e.kind === 'flows')[0], ag = none.enforcement.events.filter((e) => e.kind === 'agents')[0];
+  ok(fl && ag && fl.day === 13 && ag.day === 16, 'QA-E H-02 flows day 13, agents day 16 (high end)');
+  const d = dflt.enforcement.environments[0];
+  ok(d.cuts.flowsDay.hi === 13 && d.cuts.agentsDay.hi === 16, 'QA-E H-02 the Default row is cut against allocation + remainder');
+  eq((dflt.enforcement.m365.drawOnSpill || {}).hi, 48720, 'QA-E H-02 the draw-on spill joins the tenant pool');
+  ok(!dflt.warnings.some((w) => (w.id === 'P-50' || w.id === 'P-51') && /day 1 /.test(w.msg)), 'QA-E H-02 P-50 and P-51 no longer say day 1');
+  // Draw off keeps the hard stop at its own allocation
+  const prod = run('Production');
+  ok(prod.enforcement.events.some((e) => e.scope === 'Production' && e.day === 1), 'QA-E H-02 draw off with no allocation still stops on day 1');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
