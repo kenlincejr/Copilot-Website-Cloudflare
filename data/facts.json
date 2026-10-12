@@ -3,7 +3,7 @@
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
  "fact_count": 204,
- "occurrence_count": 290,
+ "occurrence_count": 295,
  "facts": [
   {
    "id": "F-001",
@@ -713,6 +713,13 @@
      "anchor_unique": true,
      "anchor": "PACK: { usdPerMonth: 200, creditsPerMonth: 25000 },",
      "context": "PACK: { usdPerMonth: 200, creditsPerMonth: 25000 },"
+    },
+    {
+     "file": "copilot-credit-planner.html",
+     "line": 564,
+     "anchor_unique": true,
+     "anchor": "Capacity packs (<span data-fact=\"F-013\">$200</span> for 25,000",
+     "context": "Cowork and every agent draw from the same tenant pool. Capacity packs ($200 for 25,000 credits a month) draw first, then any pre-purchase plan, then pay-as-you-go at $0.01 a c"
     }
    ],
    "new_value": "$200/25,000 credits/month",
@@ -2746,6 +2753,13 @@
      "anchor_unique": true,
      "anchor": "5 Copilot</strong><span>$30/user/mo, enterprise-gra",
      "context": "> M365 Copilot $30/user/mo, enterprise-grade with advanced admin controls and E-suite integration <p"
+    },
+    {
+     "file": "copilot-credit-planner.html",
+     "line": 488,
+     "anchor_unique": true,
+     "anchor": "<span data-fact=\"F-090\">$30</span> a user a month.",
+     "context": "Microsoft 365 Copilot (enterprise) seats from the Cowork tab$30 a user a month."
     }
    ],
    "new_value": "$30/user/mo",
@@ -3915,6 +3929,13 @@
      "anchor_unique": true,
      "anchor": "M365 Copilot Business (standalone add-on)",
      "context": "M365 Copilot Business (standalone add-on)"
+    },
+    {
+     "file": "copilot-credit-planner.html",
+     "line": 486,
+     "anchor_unique": true,
+     "anchor": "<span data-fact=\"F-147\">$18</span> promotional",
+     "context": "Copilot Business seats from the Cowork tabCapped at 300 seats. $18 promotional through December 31, 2026."
     }
    ],
    "new_value": "$18/user/mo (promo)",
@@ -3959,6 +3980,13 @@
      "anchor_unique": true,
      "anchor": "ork cost', 'credits × $0.01',\n      mon",
      "context": "ork cost', 'credits × $0.01', mon"
+    },
+    {
+     "file": "copilot-credit-planner.html",
+     "line": 564,
+     "anchor_unique": true,
+     "anchor": "pay-as-you-go at <span data-fact=\"F-149\">$0.01</span> a credit",
+     "context": " ($200 for 25,000 credits a month) draw first, then any pre-purchase plan, then pay-as-you-go at $0.01 a credit."
     }
    ],
    "new_value": "$0.01/credit",
@@ -4410,7 +4438,15 @@
    "as_of": "2026-10-11",
    "verified": true,
    "notes": "$25.20 on monthly billing. The $18 promo (F-147) runs 2026-07-01 to 2026-12-31, annual commitment, first year only. 2026-10-11 research pass (research/cowork-calculator-studio-autopilot-2026-10-11.md).",
-   "occurrences": [],
+   "occurrences": [
+    {
+     "file": "copilot-credit-planner.html",
+     "line": 487,
+     "anchor_unique": true,
+     "anchor": "Annual is <span data-fact=\"F-176\">$21</span> a user",
+     "context": "Copilot Business billing after the promotionAnnual commitmentMonthly billingAnnual is $21 a user a month."
+    }
+   ],
    "new_value": "",
    "status": "CONFIRMED"
   },

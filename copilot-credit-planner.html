@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="robots" content="noindex" />
 <title>Copilot Credit Planner | Copilot Playbook</title>
 <meta name="description" content="TD SYNNEX partner planner for Copilot Credits: Cowork and Copilot Studio agents in one pool, the cheapest way to buy, the guardrails to set, and the conversation to have. Built on Microsoft's published rates." />
 <style>
@@ -368,7 +367,7 @@ footer.pagefoot p { margin:0 0 10px; }
   @page { margin: 12mm 11mm; }
   * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   html, body { background:#fff; }
-  body { padding:0; margin:0; max-width:100%; font-size:11px; }
+  body { padding:0; margin:0; max-width:100%; font-size:12px; }
   .mh-bar, .hubbar, footer.pagefoot, .no-print, .cv-pill, .copybtn, .btn, .linkbtn, #notice { display:none !important; }
   .masthead { background:#fff; }
   .masthead-inner { padding:0 0 10px; }
@@ -4113,14 +4112,14 @@ footer.pagefoot p { margin:0 0 10px; }
     pu.top.forEach(function (o) { add(o, 'top'); });
     ['payg', 'packs', 'p3', 'mix'].forEach(function (f) { add(pu.families[f], f); });
     if (pu.current) add(pu.current, 'current');
-    $('buyOptions').innerHTML = '<table class="dtable"><thead><tr><th>Option</th><th class="n">Year one</th><th class="n">Saves against pay-as-you-go</th><th class="n">Per credit used</th><th class="n">Wasted</th><th class="n">Plan runs out</th><th class="n">Worst-case regret</th></tr></thead><tbody>' +
+    $('buyOptions').innerHTML = '<table class="dtable"><thead><tr><th>Option</th><th class="n">Year one</th><th class="n">Saves against pay-as-you-go</th><th class="n">Per credit used</th><th class="n">Wasted</th><th>Plan runs out</th><th class="n">Worst-case regret</th></tr></thead><tbody>' +
       opts.map(function (x) {
         var o = x.o, e = o.expected;
         return '<tr' + (x.tag === 'best' ? ' class="winner"' : '') + '><td>' + esc(o.label) + (x.tag === 'best' ? '<span class="recbadge">Recommended</span>' : '') +
           (o.p3.count > 1 ? ' <span class="pill likely" title="Holding several plans at once, each at its own discount, is Likely but not stated by Microsoft">Likely</span>' : '') +
           '<span class="mini">' + esc(x.tag === 'current' ? FAMILY_LBL.current : FAMILY_LBL[o.family] || '') + (o.admissible === false ? ' &middot; outside the commit appetite' : '') + '</span></td>' +
           '<td class="n">' + fu(e.usd) + '</td><td class="n">' + fu(pu.payg.expected.usd - e.usd) + '</td><td class="n">' + E.fmtRate(Math.round(e.effUsdPerCredit * 100000) / 100000) + '</td>' +
-          '<td class="n">' + E.fmtPct(e.wastePct, 1) + '</td><td class="n">' + (o.p3ExhaustMonth ? 'Month ' + o.p3ExhaustMonth : '—') + '</td><td class="n">' + fu(o.regret.max) + '</td></tr>';
+          '<td class="n">' + E.fmtPct(e.wastePct, 1) + '</td><td>' + (o.p3ExhaustMonth ? 'Month ' + o.p3ExhaustMonth : '—') + '</td><td class="n">' + fu(o.regret.max) + '</td></tr>';
       }).join('') + '</tbody></table>';
     var notes = [];
     if (best.p3.units > 0) notes.push('<div class="callout warn"><div class="callout-title">A pre-purchase plan is final</div><div class="callout-body">It is a one-year commitment that cannot be canceled, renews automatically unless turned off, and its unused credits expire at the end of the term. ' + rcRef('cccu') + '</div></div>');
@@ -4163,12 +4162,12 @@ footer.pagefoot p { margin:0 0 10px; }
     }).join('') + '</div>';
     var rows = en.environments.map(function (e) {
       var kl = KIND_OPTS.filter(function (o) { return o[0] === e.kind; })[0];
-      return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : '') + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td class="n">' + dayCell(e.cuts.flowsDay) + '</td><td class="n">' + dayCell(e.cuts.agentsDay) + '</td></tr>';
+      return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : '') + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td>' + dayCell(e.cuts.flowsDay) + '</td><td>' + dayCell(e.cuts.agentsDay) + '</td></tr>';
     });
     var tp = en.tenantPool;
-    rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td class="n">' + dayCell(tp.cuts.flowsDay) + '</td><td class="n">' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
+    rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td>' + dayCell(tp.cuts.flowsDay) + '</td><td>' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
     var html = lights + '<p class="note" style="margin-top:10px;">Peak month: <b>' + esc(monLong(en.peakMonth)) + '</b>. Prepaid capacity simulated: ' + fi(en.prepaidMonthly) + ' credits a month (' + (en.basis === 'recommended' ? 'the recommended purchase' : 'what the customer holds') + '); ' + fi(en.allocated) + ' pre-allocated to environments.</p>' +
-      '<div class="tablewrap"><table class="dtable"><thead><tr><th>Where</th><th class="n">Allocation a month</th><th class="n">Peak-month agent use</th><th class="n">Flows stop</th><th class="n">Agents switch off</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+      '<div class="tablewrap"><table class="dtable"><thead><tr><th>Where</th><th class="n">Allocation a month</th><th class="n">Peak-month agent use</th><th>Flows stop</th><th>Agents switch off</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
     html += '<div class="whybox cust-ok"><div class="wb-h">Microsoft 365 and Cowork</div><p>Microsoft 365 can draw ' + fi(en.m365.available) + ' credits a month after Power Platform pre-allocations; Cowork needs ' + rng(en.m365.demand.mid, en.m365.demand.hi) + '. ' +
       (en.m365.starvation.mid ? '<b>The pre-allocations push Cowork onto pay-as-you-go in the middle scenario.</b>' : en.m365.starvation.hi ? 'The pre-allocations push Cowork onto pay-as-you-go at the high end.' :
         (en.m365.demand.hi > en.m365.available ? 'No pre-allocation is squeezing it; Cowork use above prepaid capacity simply runs on pay-as-you-go.' : 'That covers it.')) + ' ' + rcRef('m365Share') + '</p>' +
