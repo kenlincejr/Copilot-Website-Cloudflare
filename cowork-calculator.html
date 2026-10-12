@@ -2545,6 +2545,40 @@ body.embedded .hub-link { display:none !important; }
                closes:closes, gaps:gaps, violations:violations, feasible:violations.length === 0 };
     });
 
+    /* QA M-04: past the cap, Business and Enterprise plans mix in one tenant.
+       A Business bundle can carry 300 of the Copilot users and the rest go on
+       the enterprise add-on over an enterprise base. At 301 Premium seats that
+       is 300 x $32 + 1 x ($30 + $39 E3) = $9,669, not 301 x $69 = $20,769.
+       One split row per Business bundle the floor allows; the split closes
+       only what both halves close, plus the scale gap. */
+    if (needed > 300) {
+      var rest = needed - 300;
+      var entOwned = Math.min(ownedEntBases, rest);
+      var entBaseUsd = ownedBaseCost(['e3','e5'], entOwned) + (rest - entOwned) * skuPrice(state, 'e3');
+      var entPart = skuPrice(state, 'cop_ent') * rest + entBaseUsd;
+      ['bbasic_cop','bstd_cop','bprem_cop','bprem_cop_suites'].forEach(function (bid) {
+        var bc = candidates.filter(function (x) { return x.id === bid; })[0];
+        var v = [];
+        var bb = BIZ_BUNDLE_BASE[bid];
+        if (floorBase && bb && BIZ_RANK[bb] < BIZ_RANK[floorBase])
+          v.push(bc.label + ' would move this tenant down from the ' + SKU_BY_ID[floorBase].name + ' base it already owns.');
+        if (ownedEntBases > 0 && ownedSmbBases === 0)
+          v.push('Every base this tenant owns is enterprise (E3/E5), so a Business bundle would replace them rather than add Copilot.');
+        if (state.org.dataResidency === 'gov_cloud')
+          v.push('Cowork is unavailable in GCC/GCC High/DoD and sovereign clouds — no licensing path changes this.');
+        var both = (PATH_CLOSES[bid] || []).filter(function (id) { return PATH_CLOSES.cop_ent.indexOf(id) > -1; }).concat(['scale']);
+        var closes = req.filter(function (r) { return r.skuClosable !== false && both.indexOf(r.id) > -1; });
+        var gaps   = req.filter(function (r) { return closes.indexOf(r) === -1; });
+        var monthly = bc.per * 300 + entPart;
+        scored.push({ id:'split_' + bid, label:'300 × ' + bc.label + ' + ' + rest + ' on the M365 Copilot enterprise add-on',
+                      perUser:bc.per, split:true, addOn:false, baseUsd:entBaseUsd, baseSeats:0,
+                      ownedBaseSeats:0, ownedBaseUsd:0,
+                      promoEnds:(SKU_BY_ID[bid] && SKU_BY_ID[bid].promoEnds) || null,
+                      baseName:null, basePer:0, perUserAllIn:monthly / needed, monthly:monthly,
+                      closes:closes, gaps:gaps, violations:v, feasible:v.length === 0 });
+      });
+    }
+
     var complete = scored.filter(function (p) {
       return p.feasible && p.gaps.filter(function (g) { return g.skuClosable !== false; }).length === 0;
     }).sort(function (a, b) { return a.monthly - b.monthly; });
@@ -2562,7 +2596,8 @@ body.embedded .hub-link { display:none !important; }
         ? 'This path has to cover ' + needed + ' Copilot user' + (needed === 1 ? '' : 's') +
           ' — under the 300-seat cap, so the SMB bundles are available to you' +
           (ctx.employees > 300 ? ', even though the company itself is ' + ctx.employees + ' people' : '') + '.'
-        : 'At ' + needed + ' users you are past the 300-seat SMB cap, so only the enterprise paths are available.');
+        : 'At ' + needed + ' users you are past the 300-seat SMB cap, so a Business bundle can carry at most 300 of them. ' +
+          'Business and Enterprise plans mix in one tenant, so the rest can go on the enterprise add-on, or the whole estate on an enterprise path.');
       if (winner.closes.length)
         why.push('This path closes ' + winner.closes.length + ' of the ' +
           req.filter(function(r){return r.skuClosable!==false;}).length + ' gaps you flagged: ' +

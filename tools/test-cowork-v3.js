@@ -2640,5 +2640,26 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
      'M-03: the P3 headline cell carries the Likely pill on a multi-plan mix');
 }
 
+/* ── M-04 · past 300: 300 on a Business bundle + the rest on enterprise ── */
+{
+  const P = id => E.SKU_BY_ID[id].usd;
+  let L = qaLic(301, [{ skuId:'bprem_cop', seats:301 }], true).licensing;
+  const sp = qaPath(L, 'split_bprem_cop');
+  ok(sp && sp.feasible, 'M-04: a 300 + enterprise split path exists and is feasible at 301');
+  eq(sp && sp.monthly, 300 * 32 + 1 * (30 + P('e3')), 'M-04: 300 x $32 + 1 x ($30 + E3) all-in');
+  eq(L.winner && L.winner.id, 'split_bprem_cop', 'M-04: the split wins when it is cheaper and closes the same gaps');
+  ok(L.winner && L.winner.monthly < qaPath(L, 'cop_ent').monthly, 'M-04: cheaper than moving all 301 to enterprise');
+  ok(L.why.join(' ').indexOf('mix in one tenant') >= 0, 'M-04: "Why this one" says Business and Enterprise plans mix');
+  // 400 Premium seats: 300 bundle + 100 enterprise.
+  L = qaLic(400, [{ skuId:'bprem_cop', seats:400 }], true).licensing;
+  eq(qaPath(L, 'split_bprem_cop').monthly, 300 * 32 + 100 * (30 + P('e3')), 'M-04: 400 seats split 300 + 100');
+  // An all-enterprise estate gets no Business split.
+  L = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], true).licensing;
+  ok(L.paths.filter(p => /^split_/.test(p.id)).every(p => !p.feasible), 'M-04: no Business split for an all-E5 estate');
+  // Under the cap there is no split row at all.
+  L = qaLic(299, [{ skuId:'bprem_cop', seats:299 }], true).licensing;
+  ok(L.paths.every(p => !/^split_/.test(p.id)), 'M-04: no split rows at 299 seats');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
