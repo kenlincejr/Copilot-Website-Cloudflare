@@ -1719,7 +1719,9 @@ footer.pagefoot p { margin:0 0 10px; }
         if (sh.greeting) out.push(item('greetings', 'Greeting or conversation start (classic rate)', 'standard', 1, RC.classic));
         out.push(item('classic', null, 'standard', b.classic + sh.turns * (100 - sh.genPct) / 100, RC.classic));
         out.push(item('generative', null, 'standard', b.generative + sh.turns * sh.genPct / 100, RC.generative));
-        out.push(item('grounded', null, 'standard', b.grounded + sh.turns * sh.groundedPct / 100, RC.grounding));
+        /* Grounding is +10 on a generative answer (F-164), never on a classic
+           one: grounded turns are capped at the generative share (QA H-13). */
+        out.push(item('grounded', null, 'standard', b.grounded + sh.turns * Math.min(sh.groundedPct, sh.genPct) / 100, RC.grounding));
         out.push(item('actions', null, 'standard', b.actions, RC.action));
       } else {
         out.push(item('classic', null, 'standard', b.classic, RC.classic));
@@ -3699,7 +3701,7 @@ footer.pagefoot p { margin:0 0 10px; }
     volBasis: { w: 'How the number to the left is counted.', a: 'Per user multiplies it by the headcount; a day multiplies it by the days active a month (under &ldquo;Where it runs and when&rdquo;).' },
     turns: { w: 'How many times the agent answers in a typical conversation.', a: 'Each answer bills: AI-written (generative) answers at one rate, scripted (classic) ones at another.',
       c: function () { return cr('generative') + ' credits a generative answer, ' + cr('classic') + ' a classic one.'; }, rc: 'generative' },
-    grounded: { w: 'Answers drawn from company data: the agent searches the customer&rsquo;s SharePoint, OneDrive and Teams content to answer.', a: 'Applies to most internal knowledge agents; leave it at 0 for a public FAQ agent.',
+    grounded: { w: 'Generative answers drawn from company data: the agent searches the customer&rsquo;s SharePoint, OneDrive and Teams content to answer. Only generative turns can be grounded, so this never counts more turns than the generative share.', a: 'Applies to most internal knowledge agents; leave it at 0 for a public FAQ agent.',
       c: function () { return cr('grounding') + ' credits per grounded answer, on top of the ' + cr('generative') + '-credit generative answer; free for licensed staff in Microsoft channels.'; }, rc: 'grounding' },
     actions: { w: 'Times per conversation or run the agent looks something up in, or updates, another system: a connector, an API, a flow call.', a: 'A lead logged to a CRM, an order status check, a ticket raised.',
       c: function () { return cr('action') + ' credits an action.'; }, rc: 'action' },
@@ -4552,7 +4554,7 @@ footer.pagefoot p { margin:0 0 10px; }
       if (showLic) e.push(fld(a, 'users.licensed', 'Of whom Copilot-licensed', 'int', { step: 1, help: 'licensed' }));
       e.push(fld(a, 'traffic.count', 'Conversations', 'num', { help: 'volConv', w: cW }), fld(a, '__vol', 'Counted as', 'enum', { options: VOL_OPTS, help: 'volBasis', w: cW }));
       e.push(fld(a, 'shape.turns', 'Turns per conversation', 'num', { help: 'turns', w: 2 }),
-             fld(a, 'shape.groundedPct', 'Answers drawn from company data (%)', 'num', { max: 100, help: 'grounded', w: 2, imp: ['shape.groundedPct'] }),
+             fld(a, 'shape.groundedPct', 'Generative turns grounded on tenant data (%)', 'num', { max: 100, help: 'grounded', w: 2, imp: ['shape.groundedPct'] }),
              fld(a, 'bundle.actions', 'Actions per conversation', 'num', { help: 'actions', w: 2, imp: ['bundle.actions'] }));
       h += grid(e, true);
     } else {

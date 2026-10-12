@@ -1133,6 +1133,16 @@ sec('QA-E');
   eq(o2.best.family, 'payg', 'QA-E H-12 20% stranded in the middle scenario is outside the balanced 15%');
   ok(src.indexOf('in the low scenario') < 0 && /Appetite caps stranded spend in the middle scenario/.test(src), 'QA-E H-12 the page note says middle scenario');
 }
+/* H-13: grounding bills only on generative answers. Helpdesk, 50% generative,
+   100% grounded: 40 × 4 × (2.5 × 1 + 2.5 × 2 + 2.5 × 10) = 5,200, not 9,200. */
+{
+  const s = E.newAgent(E.defaults(), 'helpdesk'); s.studio.agents[0].shape.genPct = 50;
+  eq(firstAgent(s).lo, 5200, 'QA-E H-13 50% generative, 100% grounded = 5,200');
+  const s2 = E.newAgent(E.defaults(), 'helpdesk'); s2.studio.agents[0].shape.genPct = 50; s2.studio.agents[0].shape.groundedPct = 20;
+  eq(firstAgent(s2).lo, 40 * 4 * (2.5 + 5 + 1 * 10), 'QA-E H-13 grounded below the generative share is unchanged (20% of 5 turns = 1)');
+  eq(firstAgent(presetState('helpdesk')).lo, 9600, 'QA-E H-13 the helpdesk anchor stays 9,600');
+  ok(src.indexOf('Generative turns grounded on tenant data (%)') > -1, 'QA-E H-13 the field is relabeled');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
