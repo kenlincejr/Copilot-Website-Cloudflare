@@ -2161,6 +2161,10 @@ footer.pagefoot p { margin:0 0 10px; }
     }
     return out;
   }
+  /* Step-up schedules never go down within the year. Added packs are bought
+     as added quantity on the existing NCE subscription and co-term with it
+     (QA H-11), so a pack added in month m bills months m..12 only: the
+     commitment is Σ schedule × pack price, with no tail past month 12. */
   function stepUp(arr) { var mx = 0; return arr.map(function (k) { mx = Math.max(mx, k); return mx; }); }
   function schedKey(sched) { return sched.join(','); }
   function isFlat(sched) { return sched.every(function (k) { return k === sched[0]; }); }
@@ -2843,7 +2847,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (pu.current && pu.current.expected.usd > b.expected.usd + 0.5) warn.push(W('P-35', 'warn', 'What the customer holds today costs about ' + fmtUsd(pu.current.expected.usd - b.expected.usd) + ' more over the year than the recommendation.'));
     if (pu.blocked) warn.push(W('P-36', 'info', 'A cheaper option (' + pu.blocked.label + ', ' + fmtUsd(pu.blocked.expected.usd) + ') was set aside because it strands more than the ' +
       P.appetite + ' limit of ' + APPETITE[P.appetite] + '% in the low scenario.', { fixes: [{ label: 'Use a balanced commit appetite', path: 'combined.purchase.appetite', value: 'balanced' }] }));
-    if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year carry their own annual term past this horizon. The planner counts only the months inside it.'));
+    if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year are bought as added quantity on the customer’s existing annual (NCE) capacity-pack subscription and co-term with it: they end with it at month 12 and bill only for the months left. The step-up schedule counts exactly those months, so nothing is committed past this horizon.'));
     if (b.p3ExhaustMonth) warn.push(W('P-38', 'info', 'In the middle scenario the pre-purchase plan runs out in month ' + b.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
     if (!(pl.year.hi > 0)) warn.push(W('P-40', 'info', 'No billable usage modeled yet, so there is nothing to buy.', { aud: 'customer' }));
     if (pl.year.hi > 0 && !hasBillingPath(s))

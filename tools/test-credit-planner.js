@@ -1102,6 +1102,20 @@ sec('QA-E');
   // Default small estate unchanged
   eq(hd6(() => {}).crossover.agents[0].sku, 'promo', 'QA-E H-06 a 50-user Business Premium estate still gets Copilot Business');
 }
+/* H-11: added packs co-term with the existing NCE subscription, so a step-up
+   schedule commits Σ schedule × $200 and nothing past month 12; P-37 says so. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const ramp = [25, 40, 55, 70, 85, 100, 100, 100, 100, 100, 100, 100];
+  s.coworkSession = PAYLOAD({ rampSeats: ramp, rampCredits: ramp.map((x) => x * 5500), monthlyCredits: 550000, basisSeats: 100 });
+  const r = E.compute(s), b = r.purchase.best;
+  eq(b.packs.schedule.join(), '5,7,10,12,14,17,17,17,17,17,17,17', 'QA-E H-11 the ramp steps up from 5 to 17 packs');
+  eq(b.packs.usd, 167 * 200, 'QA-E H-11 pack spend is the 167 pack-months inside the horizon × $200 = $33,400');
+  eq(b.commitUsd, b.packs.usd + b.p3.usd, 'QA-E H-11 the commitment has no tail past month 12');
+  near(b.scen.mid.packUsd, b.packs.usd, 'QA-E H-11 the simulation bills the same pack-months', 1e-9);
+  const p37 = r.warnings.filter((w) => w.id === 'P-37')[0];
+  ok(p37 && /co-term/.test(p37.msg) && /nothing is committed past this horizon/.test(p37.msg) && !/own annual term/.test(p37.msg), 'QA-E H-11 P-37 says added packs co-term, with no tail');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
