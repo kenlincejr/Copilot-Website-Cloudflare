@@ -1103,6 +1103,18 @@ sec('QA-C');
     ok(n6 && E.talk(lic).filter((l) => l === n6.opener).length === 1 && !E.talk(lic).some((l) => /Metering is cheaper than a seat/.test(l)), 'M-12 T-SEAT is the NBA-06 opener when a seat wins');
   }
 
+  // M-13 · NBA-04's Apply fix links the environment to pay-as-you-go when caps are set and agents are cut
+  {
+    const st = E.applyScenarioPreset(E.defaults(), 'smb-trio'); st.combined.enforcement.perAgentCaps = 'yes'; st.studio.account.azurePayg = 'yes';
+    const r4 = E.compute(st), n4 = nbaOf(r4, 'NBA-04');
+    ok(r4.enforcement.events.some((e) => e.kind === 'agents') && n4, 'M-13 setup: caps set, agents still cut');
+    ok(n4 && n4.fix && n4.fix.path === 'combined.enforcement.defaultEnvPayg' && n4.fix.value === true && /pay-as-you-go/.test(n4.fix.label), 'M-13 the fix links the environment to pay-as-you-go');
+    if (n4 && n4.fix) ok(!nbaOf(E.compute(E.applyFix(st, n4.fix)), 'NBA-04'), 'M-13 the fix clears NBA-04');
+    const un = J(st); un.combined.enforcement.perAgentCaps = 'unsure';
+    const f2 = nbaOf(E.compute(un), 'NBA-04').fix;
+    ok(f2 && f2.path === 'combined.enforcement.perAgentCaps', 'M-13 caps not set: the fix still sets per-agent limits');
+  }
+
   /* QA-C end */
 }
 
