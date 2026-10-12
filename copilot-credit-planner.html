@@ -2662,7 +2662,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function agentWarnings(s, agents, warn) {
     var n;
     if ((n = names(agents, function (a) { return a.flags.reasoning; })).length)
-      warn.push(W('P-20', 'warn', 'Reasoning bills twice: the feature rate plus 10 credits per started 1,000 reasoning tokens (' + list(n) + ').', { aud: 'customer' }));
+      warn.push(W('P-20', 'warn', 'A reasoning model adds 10 credits per started 1,000 tokens on top of the step that uses it (' + list(n) + ').', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.type === 'autonomous' && a.lo > 0; })).length)
       warn.push(W('P-21', 'info', 'Autonomous runs are billed even when the maker holds a Copilot license (Likely; they run on the maker’s credentials): ' + list(n) + '.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.cua; })).length)
@@ -2998,8 +2998,14 @@ footer.pagefoot p { margin:0 0 10px; }
       'NBA-10': function () {
         var rsn = ag.filter(function (a) { return a.flags.reasoning; });
         if (!rsn.length) return null;
-        return rule('NBA-10', 'Cost driver', 'Reasoning bills twice', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per 1,000 reasoning tokens.'],
-          'Reasoning makes answers better and costs twice; we only turn it on where it pays.', 'Test with reasoning off first and compare quality.', null, GUIDE.economics);
+        var add = 0;
+        rsn.forEach(function (x) {
+          var src = s.studio.agents.filter(function (y) { return y.id === x.id; })[0];
+          if (src) add += fieldImpact(src, s, ['reasoning.on', 'reasoning.tokens']).credits;
+        });
+        return rule('NBA-10', 'Cost driver', 'Reasoning adds to every step it runs on', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per started 1,000 reasoning tokens.'],
+          'The reasoning model adds 10 credits per started 1,000 tokens on top of the step that uses it' + (add > 0 ? ': on ' + (rsn.length > 1 ? 'these agents' : 'this agent') + ' that is ' + fmtInt(add) + ' credits a month' : '') + '. It makes answers better, so we only turn it on where it pays.',
+          'Test with reasoning off first and compare quality.', null, GUIDE.economics);
       },
       'NBA-11': function () {
         var bp = r.purchase.best;
@@ -3789,7 +3795,7 @@ footer.pagefoot p { margin:0 0 10px; }
     aiCount: { w: 'Prompt responses per conversation or run, at the tier to the left.' },
     aiPricing: { w: 'Microsoft prices prompt tools per response, or per 1,000 tokens.', a: 'Per 1,000 tokens rounds every started 1,000 up: 1,500 tokens bills as 2 units.', rc: 'aiPremium' },
     aiTokens: { w: 'Tokens in a typical prompt response.', a: 'Only counts when prompt tools are priced per 1,000 tokens.' },
-    reasoningOn: { w: 'A reasoning model thinks before it answers; it helps on hard, multi-step jobs.', a: 'It bills twice: the normal rate for the step, plus its reasoning tokens on top.',
+    reasoningOn: { w: 'A reasoning model thinks before it answers; it helps on hard, multi-step jobs.', a: 'It adds 10 credits per started 1,000 reasoning tokens on top of the normal rate for the step.',
       c: function () { return cr('reasoning') + ' credits per started 1,000 reasoning tokens.'; }, rc: 'reasoning' },
     reasoningTokens: { w: 'Reasoning tokens per conversation or run.', a: 'Every started 1,000 rounds up.', rc: 'reasoning' },
     contentPages: { w: 'Pages of documents the agent reads per conversation or run: invoices, PDFs, forms.', c: function () { return cr('content') + ' credits a page.'; }, rc: 'content' },

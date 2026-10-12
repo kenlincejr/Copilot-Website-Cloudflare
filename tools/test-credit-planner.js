@@ -1115,6 +1115,17 @@ sec('QA-C');
     ok(f2 && f2.path === 'combined.enforcement.perAgentCaps', 'M-13 caps not set: the fix still sets per-agent limits');
   }
 
+  // M-14 · reasoning "adds 10 credits per started 1,000 tokens on top of the step", never "bills/costs twice"
+  {
+    const rs = presetState('website'); rs.studio.agents[0].reasoning = { on: true, tokens: 2500 };
+    const rr = E.compute(rs), n10 = nbaOf(rr, 'NBA-10'), w20 = wOf(rr, 'P-20');
+    const all = [n10.name, n10.opener, n10.then].concat(n10.why).join(' ') + ' ' + w20.msg;
+    ok(!/twice/.test(all), 'M-14 no "twice" in NBA-10 or P-20');
+    ok(/adds 10 credits per started 1,000 tokens on top of the step/.test(n10.opener) && /adds 10 credits per started 1,000 tokens on top of the step/.test(w20.msg), 'M-14 NBA-10 opener and P-20 use the precise wording');
+    ok(/45,000 credits a month/.test(n10.opener), 'M-14 NBA-10 states what reasoning adds on this agent (1,500 × 30 = 45,000)');
+    ok(!/bills twice|costs twice/.test(src.slice(src.indexOf('<script id="planner-ui">'))), 'M-14 the UI help never says it bills twice');
+  }
+
   /* QA-C end */
 }
 
