@@ -462,7 +462,7 @@ sec('D');
         let exp = 0;
         ['lo', 'mid', 'hi'].forEach((s) => { cost[s] = packUsd + p.usd + Math.max(0, resid[s] - C) / 100; strand[s] = unused[s] * 0.008 + (C > 0 ? Math.max(0, C - resid[s]) * p.usd / C : 0); exp += W[s] * cost[s]; });
         const cap = CAP[appetite];
-        if (cap !== null && strand.lo > cap * cost.lo + 1e-9) return;
+        if (cap !== null && strand.mid > cap * cost.mid + 1e-9) return; // spec §6.2: the middle scenario (QA H-12)
         const family = packUsd > 0 ? (p.units > 0 ? 'mix' : 'packs') : (p.units > 0 ? 'p3' : 'payg');
         const rec = { exp: exp, family: family };
         if (!best || exp < best.exp - 1e-6) best = rec;
@@ -1115,6 +1115,23 @@ sec('QA-E');
   near(b.scen.mid.packUsd, b.packs.usd, 'QA-E H-11 the simulation bills the same pack-months', 1e-9);
   const p37 = r.warnings.filter((w) => w.id === 'P-37')[0];
   ok(p37 && /co-term/.test(p37.msg) && /nothing is committed past this horizon/.test(p37.msg) && !/own annual term/.test(p37.msg), 'QA-E H-11 P-37 says added packs co-term, with no tail');
+}
+/* H-12: the commit appetite tests stranding in the MIDDLE scenario (spec
+   §6.2). Flat 20,000 / 25,000 / 30,000 a month, conservative: 1 pack strands
+   $480 of $2,400 in the low scenario (20%) but $0 in the middle, so it is
+   admissible: 0.25 × 2,400 + 0.5 × 2,400 + 0.25 × 3,000 = $2,550 against
+   $3,000 pay-as-you-go. */
+{
+  const D = { lo: Array(12).fill(20000), mid: Array(12).fill(25000), hi: Array(12).fill(30000) };
+  const o = E.optimize(D, { appetite: 'conservative' });
+  eq(o.best.packs.flat, 1, 'QA-E H-12 conservative buys 1 pack at 20k/25k/30k');
+  near(o.best.expected.usd, 2550, 'QA-E H-12 expected $2,550, not $3,000 pay-as-you-go', 1e-9);
+  eq(o.blocked, null, 'QA-E H-12 nothing cheaper is set aside');
+  // Stranding in the middle scenario still blocks: flat 18,000 / 20,000 / 22,000, 1 pack strands 5,000 × 12 × 0.008 = $480 of $2,400 mid (20%)
+  const D2 = { lo: Array(12).fill(18000), mid: Array(12).fill(20000), hi: Array(12).fill(22000) };
+  const o2 = E.optimize(D2, { appetite: 'balanced' });
+  eq(o2.best.family, 'payg', 'QA-E H-12 20% stranded in the middle scenario is outside the balanced 15%');
+  ok(src.indexOf('in the low scenario') < 0 && /Appetite caps stranded spend in the middle scenario/.test(src), 'QA-E H-12 the page note says middle scenario');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

@@ -956,7 +956,7 @@ footer.pagefoot p { margin:0 0 10px; }
        Option   = { key, family, label, packs:{schedule[12],flat,packMonths,usd}, p3:{units,cccu,credits,usd,plans,count},
                     commitUsd, expected:{usd,paygUsd,strandedUsd,strandedCredits,consumed,effUsdPerCredit,wastePct},
                     scen:{lo,mid,hi:{usd,packUsd,p3Usd,paygUsd,paygCredits,strandedCredits,strandedUsd,consumed,exhaustMonth,months[]}},
-                    regret:{lo,mid,hi,max}, p3ExhaustMonth, admissible, strandRatioLo }
+                    regret:{lo,mid,hi,max}, p3ExhaustMonth, admissible, strandRatioLo, strandRatioMid }
      tenantEnforcement(prepaidCredits, environments) → { remainder, flowsCutoff, agentsCutoff, environments[] }
    Adjacent lines (never in the credit pool)
      dataverse(state, agents, configured) → { entitlement, usage, overageGb, addOnUsd, paygUsd, sessions }
@@ -2146,7 +2146,7 @@ footer.pagefoot p { margin:0 0 10px; }
 
   /* ══ 17 · Optimizer ═════════════════════════════════════════════════════
      Scenario weights 25/50/25. Commit appetite caps stranded dollars in the
-     low scenario (5% / 15% / unlimited). Search space: flat pack counts
+     middle scenario (5% / 15% / unlimited; spec §6.2). Search space: flat pack counts
      (0..kmax, or scenario breakpoints when kmax > 300) with exact pruning,
      three step-up schedules (each scenario's whole-pack floor, never down),
      and for each schedule every exact and covering P3 plan for 0..Nmax units
@@ -2262,7 +2262,8 @@ footer.pagefoot p { margin:0 0 10px; }
         var pointCost = st.packUsd + plan.usd + PR.paygUsd(Math.max(0, st.resid.point - C));
         if (pointCost > paygPoint + 1e-6) return null;
       }
-      var adm = capPct === null || strand.lo <= capPct / 100 * cost.lo + 1e-9;
+      /* Spec §6.2 (QA H-12): stranded commitment ≤ cap% of the MIDDLE scenario's cost. */
+      var adm = capPct === null || strand.mid <= capPct / 100 * cost.mid + 1e-9;
       var rec = { sched: sched, plan: plan, family: fm, exp: exp, cost: cost, strand: strand, commit: st.packUsd + plan.usd,
                   packMonths: sum(sched), admissible: adm, key: schedKey(sched) + '|' + plan.plans.map(function (p) { return p.tier + 'x' + p.count; }).join('+') };
       if (fm === 'current') return rec;
@@ -2340,6 +2341,7 @@ footer.pagefoot p { margin:0 0 10px; }
         expected: { usd: expUsd, paygUsd: expPayg, strandedUsd: expStrand, strandedCredits: expStrandC, consumed: expCons,
                     effUsdPerCredit: expCons > 0 ? expUsd / expCons : 0, wastePct: expUsd > 0 ? 100 * expStrand / expUsd : 0 },
         strandRatioLo: sim.lo.usd > 0 ? sim.lo.strandedUsd / sim.lo.usd : 0,
+        strandRatioMid: sim.mid.usd > 0 ? sim.mid.strandedUsd / sim.mid.usd : 0,
         scen: sim, regret: regret, p3ExhaustMonth: sim.mid.exhaustMonth
       };
     }
@@ -2846,7 +2848,7 @@ footer.pagefoot p { margin:0 0 10px; }
       ' that exactly matches the need of ' + fmtInt(pu.overbuy.needUnits * p3UnitCccu()) + ' units. The larger plan strands credits but costs less.'));
     if (pu.current && pu.current.expected.usd > b.expected.usd + 0.5) warn.push(W('P-35', 'warn', 'What the customer holds today costs about ' + fmtUsd(pu.current.expected.usd - b.expected.usd) + ' more over the year than the recommendation.'));
     if (pu.blocked) warn.push(W('P-36', 'info', 'A cheaper option (' + pu.blocked.label + ', ' + fmtUsd(pu.blocked.expected.usd) + ') was set aside because it strands more than the ' +
-      P.appetite + ' limit of ' + APPETITE[P.appetite] + '% in the low scenario.', { fixes: [{ label: 'Use a balanced commit appetite', path: 'combined.purchase.appetite', value: 'balanced' }] }));
+      P.appetite + ' limit of ' + APPETITE[P.appetite] + '% in the middle scenario.', { fixes: [{ label: 'Use a balanced commit appetite', path: 'combined.purchase.appetite', value: 'balanced' }] }));
     if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year are bought as added quantity on the customer’s existing annual (NCE) capacity-pack subscription and co-term with it: they end with it at month 12 and bill only for the months left. The step-up schedule counts exactly those months, so nothing is committed past this horizon.'));
     if (b.p3ExhaustMonth) warn.push(W('P-38', 'info', 'In the middle scenario the pre-purchase plan runs out in month ' + b.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
     if (!(pl.year.hi > 0)) warn.push(W('P-40', 'info', 'No billable usage modeled yet, so there is nothing to buy.', { aud: 'customer' }));
@@ -5126,9 +5128,9 @@ footer.pagefoot p { margin:0 0 10px; }
     if (pu.overbuy) notes.push('<p class="srcline">A larger pre-purchase plan (' + fi(pu.overbuy.coverUnits * 3000) + ' commit units for ' + fu(pu.overbuy.coverUsd) + ') costs less than the exact need (' + fu(pu.overbuy.exactUsd) + '); it strands credits but saves money.</p>');
     var puC = R.purchaseCustomer;
     if (puC && puC.best && puC.best.key !== best.key) notes.push('<p class="srcline">At the customer&rsquo;s prices (' + fu(puC.prices.packUsd) + ' a pack, ' + E.fmtRate(puC.prices.creditUsd) + ' a credit) the cheapest plan is <b>' + esc(puC.best.label) + '</b>, about ' + fu(puC.best.expected.usd) + ' expected over the year. That is the plan the customer view and the report show; this table prices every option at Microsoft list.</p>');
-    if (pu.blocked) notes.push('<p class="srcline">A cheaper option (' + esc(pu.blocked.label) + ', ' + fu(pu.blocked.expected.usd) + ') strands more than the ' + esc(pu.appetite) + ' appetite allows in the low scenario.</p>');
+    if (pu.blocked) notes.push('<p class="srcline">A cheaper option (' + esc(pu.blocked.label) + ', ' + fu(pu.blocked.expected.usd) + ') strands more than the ' + esc(pu.appetite) + ' appetite allows in the middle scenario.</p>');
     if (state.combined.purchase.showAgentP3) notes.push('<p class="srcline">Microsoft Agent pre-purchase plans (' + E.RC.agentP3Tiers.v.map(function (t) { return fi(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') + ') are disclosed only, never chosen: Microsoft&rsquo;s pages disagree on where they sit in the drawdown order. ' + rcRef('agentP3Tiers') + '</p>');
-    notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Appetite caps stranded spend in the low scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
+    notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Appetite caps stranded spend in the middle scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
     $('buyNotes').innerHTML = notes.join('');
   }
   function renderHoldingsStructure() {
