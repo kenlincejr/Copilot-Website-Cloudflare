@@ -3954,10 +3954,10 @@
    "occurrences": [
     {
      "file": "cowork-calculator.html",
-     "line": 1639,
+     "line": 1103,
      "anchor_unique": true,
-     "anchor": "Suites priced at $10 each, $15 combined",
-     "context": "Suites priced at $10 each, $15 combined"
+     "anchor": "both_suites:    { name:'Defender + Purview Suites (combined)', usd:15.00, cap:300",
+     "context": "both_suites: { name:'Defender + Purview Suites (combined)', usd:15.00, cap:300, prov:'ms-verified' }"
     }
    ],
    "new_value": "$15/user/mo combined",
@@ -3976,10 +3976,10 @@
    "occurrences": [
     {
      "file": "cowork-calculator.html",
-     "line": 865,
+     "line": 1033,
      "anchor_unique": true,
-     "anchor": "ork cost', 'credits × $0.01',\n      mon",
-     "context": "ork cost', 'credits × $0.01', mon"
+     "anchor": "CREDIT_USD: 0.01,                       // ms-verified",
+     "context": "CREDIT_USD: 0.01, // ms-verified"
     },
     {
      "file": "copilot-credit-planner.html",
