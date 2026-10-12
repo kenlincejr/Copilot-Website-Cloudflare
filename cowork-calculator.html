@@ -2360,6 +2360,16 @@ body.embedded .hub-link { display:none !important; }
     function ownedBaseSeats(ids) {
       return ids.reduce(function (a, id) { return a + Math.max(0, n(ownedBySku[id], 0)); }, 0);
     }
+    // What `seats` of the owned qualifying bases cost a month, cheapest first.
+    function ownedBaseCost(ids, seats) {
+      var left = seats, usd = 0;
+      ids.slice().sort(function (a, b) { return skuPrice(state, a) - skuPrice(state, b); })
+        .forEach(function (id) {
+          var take = Math.min(left, Math.max(0, n(ownedBySku[id], 0)));
+          usd += take * skuPrice(state, id); left -= take;
+        });
+      return usd;
+    }
     var ownedSmbBases = ownedBaseSeats(['bbasic','bstd','bprem']);
     var ownedEntBases = ownedBaseSeats(['e3','e5']);
     var BASE_FOR   = { cop_biz:'bbasic', cop_ent:'e3' };
@@ -2400,9 +2410,18 @@ body.embedded .hub-link { display:none !important; }
       var needBase   = c.addOn ? Math.max(0, needed - basesOwned) : 0;
       if (c.addOn) maxNeedBase = Math.max(maxNeedBase, needBase);
       var baseUsd = c.addOn ? basePer * needBase : 0;
-      var monthly = c.per * needed + baseUsd;
+      /* All-in on one basis (QA C-02). A bundle or E7 carries its base inside
+         the price, so an add-on path must carry the base each Copilot user
+         sits on too, owned or bought. Pricing the add-on net of owned bases
+         against bundles priced gross made $18 on owned Premium look cheaper
+         than the $32 bundle that replaces Premium + $18 = $40. Owned bases
+         are assigned cheapest first, as the cheapest qualifying base is for
+         the seats still to buy. */
+      var ownedBaseUsd = c.addOn ? ownedBaseCost(BASE_FAMILY[c.id] || [], basesOwned) : 0;
+      var monthly = c.per * needed + baseUsd + ownedBaseUsd;
       return { id:c.id, label:c.label, perUser:c.per,
                addOn:!!c.addOn, baseUsd:baseUsd, baseSeats:c.addOn ? needBase : 0,
+               ownedBaseSeats:basesOwned, ownedBaseUsd:ownedBaseUsd,
                baseName:c.baseId ? SKU_BY_ID[c.baseId].name : null, basePer:basePer,
                // The figure every comparison runs on: what this path actually
                // bills per Copilot user once its prerequisite is paid for.
@@ -2436,12 +2455,14 @@ body.embedded .hub-link { display:none !important; }
       if (cheapestFeasible && cheapestFeasible.id !== winner.id) {
         // All-in, not sticker: comparing a bare add-on against a full bundle is
         // how a tool invents a saving the customer would never actually see.
-        var delta = (winner.perUserAllIn - cheapestFeasible.perUserAllIn);
+        // Both figures come from the same all-in monthly totals (QA C-02).
+        var deltaMonthly = winner.monthly - cheapestFeasible.monthly;
+        var delta = needed > 0 ? deltaMonthly / needed : 0;
         if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label + ' even though it is $' +
-          delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(delta * needed).toLocaleString() +
+          delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(deltaMonthly).toLocaleString() +
           '/month across ' + needed + ' seats' +
-          (cheapestFeasible.addOn && cheapestFeasible.baseSeats > 0
-            ? ', and that already counts the ' + cheapestFeasible.baseName + ' base it needs underneath it'
+          (cheapestFeasible.addOn
+            ? ', and that already counts the base license each user needs underneath it, owned or bought'
             : '') +
           ' — because it leaves ' +
           cheapestFeasible.gaps.filter(function(g){return g.skuClosable!==false;}).length +
@@ -4399,9 +4420,13 @@ body.embedded .hub-link { display:none !important; }
       return '<tr' + (win ? ' class="winner"' : '') + '>' +
         '<td style="font-weight:' + (win ? '700' : '400') + ';">' + esc(p.label) +
           (p.addOn ? '<br><span style="font-size:.72rem;color:#6b7280;font-weight:400;">' +
-            usd(p.perUser, 2) + ' add-on + ' + (p.baseSeats > 0
-              ? usd(p.basePer, 2) + ' ' + esc(p.baseName) + ' base × ' + p.baseSeats + ' seat' + (p.baseSeats === 1 ? '' : 's')
-              : 'base already owned') + '</span>' : '') +
+            usd(p.perUser, 2) + ' add-on' +
+            (p.ownedBaseSeats > 0
+              ? ' + owned base × ' + p.ownedBaseSeats + ' seat' + (p.ownedBaseSeats === 1 ? '' : 's') + ' (' + usd(p.ownedBaseUsd) + '/mo)'
+              : '') +
+            (p.baseSeats > 0
+              ? ' + ' + usd(p.basePer, 2) + ' ' + esc(p.baseName) + ' base × ' + p.baseSeats + ' seat' + (p.baseSeats === 1 ? '' : 's')
+              : '') + '</span>' : '') +
           (win ? '<br>' + pill('verified','Recommended') : '') + '</td>' +
         '<td class="num">' + usd(p.perUserAllIn, 2) + '</td>' +
         '<td class="num">' + (p.feasible ? usd(p.monthly) : '<span style="color:#6b7280;">n/a</span>') + '</td>' +
@@ -4416,13 +4441,14 @@ body.embedded .hub-link { display:none !important; }
       '<div class="licgrid">' +
         '<div class="lg-main">' +
           '<div class="lg-h">Every path, priced all-in across ' + L.needed + ' Copilot user' + (L.needed === 1 ? '' : 's') + '</div>' +
+          '<p class="srcline" style="margin:0 0 8px;">The $/user column is <b>all-in</b> on one basis: every path includes the base license each Copilot user sits on. The bundles and E7 carry theirs inside the price; each add-on carries the base licenses this tenant already owns at their own price' +
           (L.baseSeatsNeeded > 0
-            ? '<p class="srcline" style="margin:0 0 8px;">The $/user column is <b>all-in</b>. An add-on cannot stand alone, so each one is priced with the cheapest base that actually qualifies it &mdash; ' +
+            ? ', plus the cheapest base that actually qualifies it &mdash; ' +
               L.paths.filter(function (q) { return q.addOn; }).map(function (q) {
                 return esc(q.label) + ' on ' + esc(q.baseName) + ' at ' + usd(q.basePer, 2);
               }).join('; ') + ' &mdash; across the ' + L.baseSeatsNeeded + ' seat' +
-              (L.baseSeatsNeeded === 1 ? '' : 's') + ' this tenant\u2019s existing base licenses do not already cover.</p>'
-            : '') +
+              (L.baseSeatsNeeded === 1 ? '' : 's') + ' those owned licenses do not already cover'
+            : '') + '.</p>' +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
           '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60 &mdash; a price implied by this E7 a-la-carte arithmetic, not read from a price list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
             ? 'saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%)'

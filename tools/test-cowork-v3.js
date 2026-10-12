@@ -621,11 +621,14 @@ function assertCopyClean(r, m) {
   eq(L.baseSeatsNeeded, 40, 'stock baseSeatsNeeded unchanged');
   const EXPECT = {
     bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: true },
-    cop_biz:          { perUserAllIn: 21,   monthly: 1680, baseSeats: 40, baseUsd: 240,  feasible: true },
+    // QA C-02 moved the two add-on rows onto the all-in basis: they now carry
+    // the 40 owned Business Standard bases ($12.50 x 40 = $500) as well.
+    // cop_biz 21 -> 27.25 ($1,680 -> $2,180); cop_ent 48 -> 54.25 ($3,840 -> $4,340).
+    cop_biz:          { perUserAllIn: 27.25, monthly: 2180, baseSeats: 40, baseUsd: 240,  feasible: true },
     bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop:        { perUserAllIn: 32,   monthly: 2560, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop_suites: { perUserAllIn: 47,   monthly: 3760, baseSeats: 0,  baseUsd: 0,    feasible: true },
-    cop_ent:          { perUserAllIn: 48,   monthly: 3840, baseSeats: 40, baseUsd: 1440, feasible: true },
+    cop_ent:          { perUserAllIn: 54.25, monthly: 4340, baseSeats: 40, baseUsd: 1440, feasible: true },
     e7:               { perUserAllIn: 99,   monthly: 7920, baseSeats: 0,  baseUsd: 0,    feasible: true }
   };
   L.paths.forEach(function (p) {
@@ -666,7 +669,8 @@ function assertCopyClean(r, m) {
   });
   const ent = L.paths.filter(p => p.id === 'cop_ent')[0];
   eq(ent.baseSeats, 0, 'the enterprise add-on credits the owned E3 bases');
-  eq(ent.monthly, 120 * 30, 'enterprise add-on priced with no invented base cost');
+  // QA C-02: all-in, the owned E3 base is a real cost on the same basis as a bundle.
+  eq(ent.monthly, 120 * (30 + E.SKU_BY_ID.e3.usd), 'enterprise add-on priced all-in on the owned E3 base, nothing bought');
 }
 
 /* ── R4.2 · Repro (b): the same estate fires no headcount alarm (#8) ────── */
@@ -2392,6 +2396,54 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(r301.licensing.requirements.some(q => q.id === 'scale'), 'C-01: 301 seats does raise the scale gap');
   ok(r301.licensing.requirements.filter(q => q.id === 'scale')[0].why.indexOf('at or past') === -1,
      'C-01: the scale gap copy says past, not "at or past"');
+}
+
+/* ── C-02 · every path priced all-in on one basis ──────────────────────────
+   An add-on path carries the base each Copilot user sits on, owned or bought,
+   exactly as a bundle or E7 carries its base inside the price. Expected
+   figures read the catalog so a later price correction moves them with it. */
+{
+  const P = id => E.SKU_BY_ID[id].usd;
+  const usd0 = v => '$' + Math.round(v).toLocaleString();
+  // 1. 150 Business Premium + 150 Copilot Business add-on
+  let L = qaLic(150, [{ skuId:'bprem', seats:150 }, { skuId:'cop_biz', seats:150 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 150 * (P('bprem') + P('cop_biz')), 'C-02 #1: add-on on owned Premium is 150 x ($22 + $18) all-in');
+  eq(qaPath(L, 'bprem_cop').monthly, 150 * 32, 'C-02 #1: Business Premium with Copilot is 150 x $32');
+  ok(qaPath(L, 'bprem_cop').monthly < qaPath(L, 'cop_biz').monthly, 'C-02 #1: the bundle is cheaper than the add-on');
+  ok(L.winner.id !== 'cop_biz', 'C-02 #1: the add-on is not recommended over a cheaper bundle');
+  // 2. 250 Business Standard + 250 add-on
+  L = qaLic(250, [{ skuId:'bstd', seats:250 }, { skuId:'cop_biz', seats:250 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 250 * (P('bstd') + P('cop_biz')), 'C-02 #2: add-on on owned Standard priced all-in');
+  eq(qaPath(L, 'cop_biz').monthly - qaPath(L, 'bstd_cop').monthly, 250 * (P('bstd') + P('cop_biz') - P('bstd_cop')),
+     'C-02 #2: Standard with Copilot saves the full base-plus-add-on gap');
+  ok(L.winner.id !== 'cop_biz', 'C-02 #2: the add-on is not recommended');
+  // 3. 50 Business Basic + 50 add-on
+  L = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 50 * (P('bbasic') + P('cop_biz')), 'C-02 #3: add-on on owned Basic priced all-in');
+  ok(qaPath(L, 'bbasic_cop').monthly < qaPath(L, 'cop_biz').monthly, 'C-02 #3: Basic + Copilot Business bundle is cheaper');
+  eq(L.winner.id, 'bbasic_cop', 'C-02 #3: the bundle wins for an owned-Basic estate');
+  // 4. 60 Business Premium, greenfield, 25-seat pilot
+  L = qaLic(60, [{ skuId:'bprem', seats:60 }], true).licensing;
+  eq(L.needed, 25, 'C-02 #4: pilot sized at 25');
+  eq(qaPath(L, 'cop_biz').monthly, 25 * (P('bprem') + P('cop_biz')), 'C-02 #4: pilot add-on carries the owned Premium base');
+  eq(qaPath(L, 'cop_biz').monthly - qaPath(L, 'bprem_cop').monthly, 25 * (P('bprem') + P('cop_biz') - 32),
+     'C-02 #4: the upgrade is cheaper by 25 x ($40 - $32)');
+  // 5. 1,200 E5 + enterprise Copilot: E7 is $9 a user more, not $69
+  L = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], false).licensing;
+  eq(qaPath(L, 'cop_ent').monthly, 1200 * (P('e5') + 30), 'C-02 #5: E5 + enterprise Copilot priced all-in');
+  eq(L.winner.id, 'e7', 'C-02 #5: E7 still closes the open gaps (governance unasked)');
+  const gap5 = 99 - (P('e5') + 30);
+  let w = L.why.join(' ');
+  ok(w.indexOf('$' + gap5.toFixed(2) + '/user/month cheaper') >= 0, 'C-02 #5: "cheaper by" names $' + gap5.toFixed(2) + ' a user (' + w.slice(0, 0) + ')');
+  ok(w.indexOf(usd0(gap5 * 1200) + '/month') >= 0, 'C-02 #5: "cheaper by" dollars come from the same basis (' + usd0(gap5 * 1200) + ')');
+  ok(w.indexOf('$69.00') === -1, 'C-02 #5: the old net-of-base $69 gap is gone');
+  // 6. 500 E3 + enterprise Copilot
+  L = qaLic(500, [{ skuId:'e3', seats:500 }, { skuId:'cop_ent', seats:500 }], false).licensing;
+  eq(qaPath(L, 'cop_ent').monthly, 500 * (P('e3') + 30), 'C-02 #6: E3 + enterprise Copilot priced all-in');
+  const gap6 = 99 - (P('e3') + 30);
+  w = L.why.join(' ');
+  ok(w.indexOf('$' + gap6.toFixed(2) + '/user/month cheaper') >= 0, 'C-02 #6: "cheaper by" names $' + gap6.toFixed(2) + ' a user');
+  ok(w.indexOf(usd0(gap6 * 500) + '/month') >= 0, 'C-02 #6: "cheaper by" dollars match the per-user gap x 500');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
