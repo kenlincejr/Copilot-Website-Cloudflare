@@ -192,6 +192,17 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 .saidline p { margin: .35rem 0; font-size: .93rem; line-height: 1.7; color: #374151; font-style: italic; }
 .saidline p strong { color: var(--navy); font-style: normal; }
 
+/* FORK — a two-branch billing path */
+.fork { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 20px 0; box-shadow: var(--shadow-sm); }
+@media (max-width: 700px) { .fork { grid-template-columns: 1fr; } }
+.fork-branch { background: #fff; padding: 18px 20px; }
+.fork-branch .fb-head { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin-bottom: 8px; }
+.fork-branch.no .fb-head { color: #92400e; }
+.fork-branch h4 { margin: 0 0 7px; }
+.fork-branch p { margin: .25rem 0; font-size: .87rem; color: #374151; }
+.fork-branch ul { margin: .4rem 0 .2rem 1.1rem; font-size: .85rem; }
+.fork-branch li { margin: .2rem 0; }
+
 /* PHASE — the four verbs */
 .phase { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); margin: 16px 0; overflow: hidden; }
 .phase .ph-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 20px; background: var(--muted); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -336,7 +347,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="callout">
   <div class="callout-title">How to use this</div>
-  <div class="callout-body"><p>Sections 1 through 4 explain what changed and why it is your customer's problem now. Read those with your leadership team. Sections 5 through 9 are the practice: the words, the service, the whiteboard and the price. Sections 10 through 13 are for the seller walking into the room: the talk track, the objections, the December 1 campaign and the lines that will cost you credibility. The research behind every number sits in the <a href="research/token-economics-practice/00-synthesis-and-talk-track.md">token economics research folder</a>, and the pricing dials this page extends are in <a href="cpb-model-the-practice.html">Model the Practice</a>.</p></div>
+  <div class="callout-body"><p>Sections 1 through 4 explain what changed and why it is your customer's problem now. Read those with your leadership team. Sections 5 through 9 are the practice: the words, the service, the whiteboard, the price and how the money flows through distribution. Sections 10 through 14 are for the seller walking into the room: the talk track, the objections, the December 1 campaign and the lines that will cost you credibility. The research behind every number sits in the <a href="research/token-economics-practice/00-synthesis-and-talk-track.md">token economics research folder</a>, and the pricing dials this page extends are in <a href="cpb-model-the-practice.html">Model the Practice</a>.</p></div>
 </div>
 
 <nav id="toc">
@@ -351,12 +362,13 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
       <li><a href="#section-6">The Service in Four Verbs</a></li>
       <li><a href="#section-7">The Whiteboard</a></li>
       <li><a href="#section-8">Pricing the Fourth Line</a></li>
-      <li><a href="#section-9">Governed Growth, Not Cost Cutting</a></li>
-      <li><a href="#section-10">The Talk Track</a></li>
-      <li><a href="#section-11">Objections</a></li>
-      <li><a href="#section-12">The December 1 Campaign</a></li>
-      <li><a href="#section-13">Guardrails: What Never To Say</a></li>
-      <li><a href="#section-14">Sources, Provenance and Related Guides</a></li>
+      <li><a href="#section-9">How the Money Flows Through Distribution</a></li>
+      <li><a href="#section-10">Governed Growth, Not Cost Cutting</a></li>
+      <li><a href="#section-11">The Talk Track</a></li>
+      <li><a href="#section-12">Objections</a></li>
+      <li><a href="#section-13">The December 1 Campaign</a></li>
+      <li><a href="#section-14">Guardrails: What Never To Say</a></li>
+      <li><a href="#section-15">Sources, Provenance and Related Guides</a></li>
     </ul>
   </div>
 </nav>
@@ -419,7 +431,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
     </div>
   </div>
   <p>Partner Center said the rest on September 25, 2026, introducing the new Copilot. The partner opportunity is to <strong>&ldquo;<span data-fact="F-209">manage and optimize AI at scale</span>&rdquo;</strong>, and <strong>&ldquo;FinOps for AI introduces new ways to govern costs.&rdquo;</strong> The same post said partners can turn this into expanded services, differentiated software, increased consumption and deeper customer relationships. Microsoft also reports that <span data-fact="F-208">60% of CSP partner revenue</span> is now tied to value-added services.</p>
-  <p class="dp-source"><strong>Sources:</strong> Microsoft FY26 Q4 earnings call transcript (July 29, 2026); Microsoft Official Blog, &ldquo;Accelerating frontier transformation with Microsoft partners&rdquo; (April 21, 2026); Partner Center announcements, September 2026. Every quote is verbatim and under fifteen words. The full source list is in <a href="#section-14" style="color:#a8ecf5;">section 14</a>.</p>
+  <p class="dp-source"><strong>Sources:</strong> Microsoft FY26 Q4 earnings call transcript (July 29, 2026); Microsoft Official Blog, &ldquo;Accelerating frontier transformation with Microsoft partners&rdquo; (April 21, 2026); Partner Center announcements, September 2026. Every quote is verbatim and under fifteen words. The full source list is in <a href="#section-15" style="color:#a8ecf5;">section 15</a>.</p>
 </div>
 
 <h3>2.1 &middot; The 2026 timeline that put the meter in your customer's tenant</h3>
@@ -427,7 +439,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 <div class="vtimeline">
   <div class="vt-item"><div class="vt-when">July 1, 2026</div><h4>Cowork usage billing goes live</h4><p>Copilot Cowork, the delegate-a-job product, starts drawing Copilot Credits. Nadella told investors in July that thousands of customers were already paying for it. The <a href="cowork.html">Cowork Guide</a> covers the product; the <a href="cowork-calculator.html">Cowork simulator</a> models the credits.</p></div>
   <div class="vt-item"><div class="vt-when">July 29, 2026</div><h4>&ldquo;Seat plus usage&rdquo; becomes the investor language</h4><p>The FY26 Q4 call: usage-based credit consumption in customer-service agents up four times quarter over quarter. Autopilots, autonomous long-running agents, announced.</p></div>
-  <div class="vt-item"><div class="vt-when">September 1, 2026</div><h4>Microsoft starts paying partners for consumption</h4><p>The Copilot Cowork CSP Activation Incentive recognizes partners &ldquo;accelerating consumption growth.&rdquo; The payout is gated on sustained monthly consumption, not on seats. See <a href="#section-9">section 9</a>.</p></div>
+  <div class="vt-item"><div class="vt-when">September 1, 2026</div><h4>Microsoft starts paying partners for consumption</h4><p>The Copilot Cowork CSP Activation Incentive recognizes partners &ldquo;accelerating consumption growth.&rdquo; The payout is gated on sustained monthly consumption, not on seats. See <a href="#section-10">section 10</a>.</p></div>
   <div class="vt-item"><div class="vt-when">September 25, 2026</div><h4>The new Copilot, with FinOps for AI</h4><p>Cowork, Code, Autopilot and frontier models all run on usage-based billing. Cost Management, spending policies, per-user limits, alerts and model routing live under Copilot in the Microsoft 365 admin center. Partner Center names FinOps for AI as the partner opportunity.</p></div>
   <div class="vt-item"><div class="vt-when">October 1, 2026</div><h4>The default-on announcement, and growth margin</h4><p>Partner Center confirms usage-based billing on by default for new Copilot Business in CSP from December 1, with the 4,000-credit default. The same day, CSP growth margin goes live on Copilot seat growth.</p></div>
   <div class="vt-item"><div class="vt-when">November 2, 2026</div><h4>Sandbox opens</h4><p>Partners can test the default-on experience before it reaches customers.</p></div>
@@ -849,7 +861,175 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
 <!-- ═══════════════════════════ 9 ═══════════════════════════ -->
-<h2 id="section-9">9 &middot; Governed Growth, Not Cost Cutting</h2>
+<h2 id="section-9">9 &middot; How the Money Flows Through Distribution</h2>
+
+<p class="lede">Everything above tells you what to sell. This section is the plumbing: how a seat and a credit each get billed to an indirect partner buying through TD SYNNEX, where each dollar of margin actually comes from, what you have to set up before December 1, and a worked invoice for a 50-seat customer. It is the section to read with whoever runs your billing.</p>
+
+<div class="callout warn">
+  <div class="callout-title">One caveat before any number below</div>
+  <div class="callout-body"><p><strong>Microsoft has not published a channel margin on Copilot Credits.</strong> Every credit figure on this page is Microsoft's public price. Confirm the channel price, the invoice line and the pack pooling rules with your TD SYNNEX team before you quote credits to a customer.</p></div>
+</div>
+
+<h3>9.1 &middot; Two products, two billing paths</h3>
+
+<div class="fork">
+  <div class="fork-branch">
+    <div class="fb-head">The seat: a license subscription</div>
+    <h4>Microsoft &rarr; TD SYNNEX &rarr; you &rarr; the customer</h4>
+    <p>A normal CSP license. TD SYNNEX bills you, you set your own price to the customer, and you earn your CSP margin on it. Since October 1, 2026 you also earn <strong>CSP growth margin</strong> on new-to-offer, seat expansion and adoption for Copilot and the other eligible workloads.</p>
+    <ul>
+      <li>Predictable. Same invoice line you have sold for a decade.</li>
+      <li>Margin is published and validated per tenant before you quote.</li>
+    </ul>
+  </div>
+  <div class="fork-branch no">
+    <div class="fb-head">The credits: Azure consumption</div>
+    <h4>Same path, different meter</h4>
+    <p>Copilot Credits are consumption, billed monthly in arrears through an <strong>Azure subscription in the CSP channel</strong>. Microsoft's partner setup guidance starts with one requirement: an Azure subscription linked to your partner billing account. For an indirect partner that subscription sits inside the TD SYNNEX relationship, so credit charges flow Microsoft &rarr; TD SYNNEX &rarr; you &rarr; the customer, the same path as the seat.</p>
+    <ul>
+      <li>Variable. The amount is whatever the tenant consumed last month.</li>
+      <li>From December 1, 2026, new Copilot Business purchases <span data-fact="F-230">include the Azure subscription setup</span> needed for usage billing. If the admin can reach no Azure subscription, the admin center creates one automatically against the billing account linked there. Indirect resellers are named in scope.</li>
+      <li>Invoiced monthly in arrears: usage for a calendar month lands on an invoice ready <span data-fact="F-232">by the eighth of the following month</span>, due in 60 days.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout dark">
+  <div class="callout-title">The consequence partners have to understand above everything else</div>
+  <div class="callout-body"><p><strong>Microsoft invoices the distributor for the customer's Azure consumption and holds it responsible for payment.</strong> Microsoft's own partner guidance tells CSP partners <span data-fact="F-231">you're responsible for your customers' Azure consumption</span>, and the nonpayment policy makes direct-bill partners and distributors financially responsible for customer nonpayment. What you owe TD SYNNEX in turn is set by your reseller agreement with TD SYNNEX, and you should expect it to pass straight through. If a customer burns $3,000 in credits and disputes it, the invoice still arrives. That is the commercial reason to set the limits before Microsoft's default does, and it is why reading the meter is a service worth paying for rather than a favor.</p></div>
+</div>
+
+<h3>9.2 &middot; Where the money actually comes from</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Revenue line</th><th>Who pays</th><th>How it works</th><th>Type</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Seat margin</strong></td><td>Customer, through your seat price</td><td>CSP margin plus growth margin on Copilot Business.</td><td>Recurring</td></tr>
+    <tr><td><strong>Credits</strong></td><td>Customer, passed through</td><td>Billed at Microsoft's price as its own invoice line. Expect little or no margin on pay-as-you-go.</td><td>Recurring, variable</td></tr>
+    <tr><td><strong>Pack spread</strong></td><td>Customer, at the public rate</td><td>Buy capacity packs below the pay-as-you-go rate and bill steady usage at pay-as-you-go. Only the used part of a pack is spread; an unused pack is your loss.</td><td>Recurring, conditional</td></tr>
+    <tr><td><strong>Credit Wrap</strong> (reading the meter)</td><td>Customer</td><td>Flat $3 to $5 a user with a tenant minimum. SET, WATCH, TUNE, PROVE.</td><td>Recurring, the core of the offer</td></tr>
+    <tr><td><strong>Sizing and agent build</strong></td><td>Customer</td><td>Scoping Cowork and agents with the <a href="copilot-credit-planner.html">Copilot Credit Planner</a>; building Copilot Studio agents.</td><td>One-time project</td></tr>
+    <tr><td><strong>Agent operations</strong></td><td>Customer</td><td>A retainer per production agent to monitor, tune and retire. AgentCare in <a href="cpb-model-the-practice.html">Model the Practice</a>.</td><td>Recurring</td></tr>
+    <tr><td><strong>Microsoft incentives</strong></td><td>Microsoft</td><td>Paid on sustained consumption and seat growth. Upside, not plan.</td><td>Periodic</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="rule-strip">
+  <div class="rs"><div class="rs-k">Credits: pass through, don't mark up</div><p class="rs-v">CSP partners set their own customer pricing, so marking up credits is technically possible. <strong>Bill at Microsoft's public rate</strong> so the customer can always check it. The revenue is the service, not the resale.</p></div>
+  <div class="rs"><div class="rs-k">Pack spread: real but conditional</div><p class="rs-v"><span data-fact="F-013">$200 for 25,000 credits</span> a month is $0.008 a credit against $0.01. No rollover, and the licensing guide footnotes the pack as billed annually, so confirm the CSP billing frequency with TD SYNNEX. You keep the difference only on credits that actually get used, and only once pooling is confirmed in the Azure portal.</p></div>
+  <div class="rs"><div class="rs-k">Credit Wrap: the dependable money</div><p class="rs-v"><strong>$3 to $5 a user, $150 to $250 tenant minimum.</strong> One to two hours a month per tenant. It is the line that turns a variable Microsoft meter into your MRR.</p></div>
+</div>
+
+<h3>9.3 &middot; What the partner has to set up</h3>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">1</span><span class="ph-name">Billing readiness with TD SYNNEX</span><span class="ph-meta">before December 1</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><ul>
+      <li>Make sure you can transact an <strong>Azure plan</strong> through TD SYNNEX, not just Microsoft 365 seats. The <a href="azure-billing-setup.html">Azure Billing Setup guide</a> is the walkthrough.</li>
+      <li>Confirm your credit line covers consumption. Credits are billed in arrears, so a heavy month lands on your invoice before the customer has paid you.</li>
+      <li>Know which Azure subscription each customer's credits will hit, especially after December 1 when the admin center may create one automatically. In CSP the subscription sits in the customer's tenant under the billing partner's account, so link the one you want before the purchase rather than discovering it on the invoice.</li>
+      <li>Ask TD SYNNEX for the actual channel price and the invoicing detail for Copilot Credits and capacity packs.</li>
+    </ul></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">2</span><span class="ph-name">Admin access to the customer's tenant</span><span class="ph-meta">onboarding</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><p>Set up the delegated admin relationship with the right roles. Global or Billing Administrator creates spending policies; AI Administrator edits them; AI Reader and Global Reader get the read-only dashboard, which is the role you give the customer's finance person.</p></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">3</span><span class="ph-name">Control the spend in the tenant</span><span class="ph-meta">the SET verb, section 6</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><ul>
+      <li>Replace the 4,000-credit default with the limit the customer agreed to.</li>
+      <li>Set a tenant-wide cap and alerts at 80% and 100%.</li>
+      <li>Turn off auto-apply for new services, or require approval.</li>
+      <li>Route credit requests to a named budget owner.</li>
+      <li>Choose the funding mix: pay-as-you-go first, packs once usage is steady, pre-purchase only at break-even.</li>
+    </ul></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">4</span><span class="ph-name">Add a safety net at the Azure level</span><span class="ph-meta">your side of the meter</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><p>Partner Center can hold an <strong>Azure spending budget per customer</strong>, with an email <span data-fact="F-233">every seven days once usage reaches 80 to 100%</span> of the figure. Two things to know: it alerts, it does not stop usage, and the tool sits in the Billing workspace of the partner Microsoft invoices, which for an indirect reseller is TD SYNNEX. Ask your TD SYNNEX team to set one for each of your Copilot Business customers. Your own hard stop is the tenant spending limit in the Microsoft 365 admin center, which can go to zero; in an emergency a partner with admin-agent rights can cancel the Azure subscription.</p></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">5</span><span class="ph-name">Update contracts and billing</span><span class="ph-meta">before the first consumption invoice</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><ul>
+      <li>Add a credit pass-through clause and payment terms to the master agreement.</li>
+      <li>Add an owner clause for packs and pre-purchase commitments: who owns the commitment if the customer leaves mid-term? Nobody publishes this language for Copilot Credits yet. Write yours.</li>
+      <li>Map the TD SYNNEX consumption line to a customer invoice line in your billing tool, so credits show up as their own line every month.</li>
+    </ul></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">6</span><span class="ph-name">Plan for manual reporting</span><span class="ph-meta">the WATCH verb, for now</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">Do</div><div class="ph-v"><p>Microsoft publishes no multi-tenant cost view for partners, and since September 2026 the credit-consumption endpoint refuses automated calls. The monthly report is a manual export someone pulls and summarizes. Budget the hour. That is also why the service is worth paying for.</p></div></div>
+  </div>
+</div>
+
+<h3>9.4 &middot; Worked example: a 50-seat customer sizing Cowork and one agent</h3>
+
+<p>You run a scoping session with the <a href="copilot-credit-planner.html">Copilot Credit Planner</a>. The figures are illustrative, built on Microsoft's published rates, and the arithmetic is ours.</p>
+
+<p><strong>Usage the customer agrees to:</strong></p>
+<ul>
+  <li>15 heavy Cowork users capped at 3,000 credits each: 45,000 credits.</li>
+  <li>35 light users capped at 500 each: 17,500 credits.</li>
+  <li>One customer-facing Copilot Studio agent at 2 credits per generative answer and 5 per action. At 3,000 answers and 500 actions a month: 8,500 credits.</li>
+  <li><strong>Total budget: about 71,000 credits, about $710 a month at pay-as-you-go.</strong></li>
+</ul>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Invoice line</th><th>Customer pays</th><th>Your cost</th><th>You keep</th></tr></thead>
+  <tbody>
+    <tr><td>50 Copilot Business seats</td><td class="num">$1,050</td><td>Channel price</td><td>CSP and growth margin</td></tr>
+    <tr><td>Tier 1 AI Essentials (existing)</td><td class="num">$600</td><td>Labor</td><td>$600 less labor</td></tr>
+    <tr><td>Copilot Credits, about 71,000 at $0.01</td><td class="num">$710</td><td>Two packs ($400 for 50,000) plus 21,000 on pay-as-you-go ($210): $610</td><td>About $100 of spread, if both packs get used</td></tr>
+    <tr><td>Credit Wrap, 50 &times; $4</td><td class="num">$200</td><td>One to two hours of labor</td><td>Most of the $200</td></tr>
+    <tr><td>Agent operations retainer</td><td class="num">&mdash;</td><td>Labor</td><td>The retainer, at the price you set</td></tr>
+    <tr><td>One-time: sizing and agent build</td><td class="num">&mdash;</td><td>Labor</td><td>The project margin, at the fee you set</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">The nuance in the credits line</div>
+  <div class="callout-body"><p>The customer agreed to a <strong>cap</strong>, not a guaranteed spend. Start them on pay-as-you-go. Move steady usage onto packs after a 30 to 60 day baseline, because a pack you bought for usage that did not happen is your loss, not theirs. Consider a pre-purchase tier only when the baseline is 60 to 90 days old and the break-even math works: discounts run 5% to 20%, unused credits expire, and the plan is final with no cancellation or exchange. Microsoft's own documents disagree on whether it is paid up front or monthly, so ask TD SYNNEX how it invoices in CSP.</p></div>
+</div>
+
+<h3>9.5 &middot; The one-slide version</h3>
+
+<div class="callout dark">
+  <div class="callout-title">Five lines for the partner's leadership team</div>
+  <div class="callout-body">
+    <p><strong>The seat pays you margin.</strong> Same as always, plus growth margin.</p>
+    <p><strong>The credits pay you almost nothing.</strong> Pass them through at Microsoft's price. You carry the risk, so control it.</p>
+    <p><strong>Reading the meter pays you every month.</strong> $3 to $5 a user, the line that turns credits into MRR.</p>
+    <p><strong>Packs pay you a spread</strong> once usage is steady enough that nothing goes to waste.</p>
+    <p><strong>Agents pay you twice:</strong> once to build, every month to operate.</p>
+    <p>Your job with TD SYNNEX is to wire the billing, size the line of credit and confirm credit pricing. Your job in the customer's tenant is to set the limits before Microsoft's default does.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 10 ═══════════════════════════ -->
+<h2 id="section-10">10 &middot; Governed Growth, Not Cost Cutting</h2>
 
 <p>There is a trap in this conversation, and partners who miss it will find themselves arguing with Microsoft's incentives. Microsoft's partner language about consumption is growth language: &ldquo;accelerating consumption growth,&rdquo; &ldquo;a natural path to expanded consumption.&rdquo; The money follows it.</p>
 
@@ -873,12 +1053,12 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
-<!-- ═══════════════════════════ 10 ═══════════════════════════ -->
-<h2 id="section-10">10 &middot; The Talk Track</h2>
+<!-- ═══════════════════════════ 11 ═══════════════════════════ -->
+<h2 id="section-11">11 &middot; The Talk Track</h2>
 
 <p>Written for a seller or vCIO talking to an SMB owner or office manager, 30 to 300 seats, who already buys Microsoft 365 and either has Copilot or is about to. Plain words. No &ldquo;FinOps,&rdquo; no &ldquo;tokens,&rdquo; no &ldquo;UBB&rdquo; in the customer's hearing.</p>
 
-<h3>10.1 &middot; Opening, sixty seconds</h3>
+<h3>11.1 &middot; Opening, sixty seconds</h3>
 
 <div class="saidline">
   <div class="sl-label">You say</div>
@@ -887,11 +1067,11 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <p>The bill comes to us first, because we are your Microsoft partner. So we are not going to let the default run. We are going to set it with you.&rdquo;</p>
 </div>
 
-<h3>10.2 &middot; The whiteboard moment</h3>
+<h3>11.2 &middot; The whiteboard moment</h3>
 
 <p>Draw the four bars from <a href="#section-7">section 7</a>. Say the three sentences from <a href="#section-5">section 5</a>. Stop talking. Let them ask what a credit buys.</p>
 
-<h3>10.3 &middot; &ldquo;What does a credit actually buy?&rdquo;</h3>
+<h3>11.3 &middot; &ldquo;What does a credit actually buy?&rdquo;</h3>
 
 <div class="saidline">
   <div class="sl-label">You say</div>
@@ -902,7 +1082,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <p>Our job is to make sure the second and third kinds happen on purpose.&rdquo;</p>
 </div>
 
-<h3>10.4 &middot; The offer, ninety seconds</h3>
+<h3>11.4 &middot; The offer, ninety seconds</h3>
 
 <div class="saidline">
   <div class="sl-label">You say</div>
@@ -911,7 +1091,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <p>The credits themselves are Microsoft's price, on their own line. We don't mark up the pennies. We charge for reading the meter.&rdquo;</p>
 </div>
 
-<h3>10.5 &middot; The ask</h3>
+<h3>11.5 &middot; The ask</h3>
 
 <div class="saidline">
   <div class="sl-label">You say</div>
@@ -920,8 +1100,8 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
-<!-- ═══════════════════════════ 11 ═══════════════════════════ -->
-<h2 id="section-11">11 &middot; Objections</h2>
+<!-- ═══════════════════════════ 12 ═══════════════════════════ -->
+<h2 id="section-12">12 &middot; Objections</h2>
 
 <div class="tablewrap">
 <table>
@@ -940,8 +1120,8 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
-<!-- ═══════════════════════════ 12 ═══════════════════════════ -->
-<h2 id="section-12">12 &middot; The December 1 Campaign</h2>
+<!-- ═══════════════════════════ 13 ═══════════════════════════ -->
+<h2 id="section-13">13 &middot; The December 1 Campaign</h2>
 
 <p>Other partners are offering the setup session for free. Turn it into the on-ramp to the paid service. This is the first thing to ship, and it is sellable to every Copilot Business customer you have, this quarter.</p>
 
@@ -953,7 +1133,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <div class="vt-item"><div class="vt-when">December 1</div><h4>The meter is on, and your customers chose their number</h4><p>Everyone else's customers got the default.</p></div>
 </div>
 
-<h3>12.1 &middot; Before you sell this</h3>
+<h3>13.1 &middot; Before you sell this</h3>
 
 <ul class="checklist">
   <li><strong>Your own tenant has a spending policy, a per-user limit and a tripped alert in its history.</strong> You cannot explain the 80% email until you have received one.</li>
@@ -965,8 +1145,8 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
-<!-- ═══════════════════════════ 13 ═══════════════════════════ -->
-<h2 id="section-13">13 &middot; Guardrails: What Never To Say</h2>
+<!-- ═══════════════════════════ 14 ═══════════════════════════ -->
+<h2 id="section-14">14 &middot; Guardrails: What Never To Say</h2>
 
 <div class="trap">
   <div class="t-label">Trap 1</div>
@@ -986,7 +1166,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 <div class="trap">
   <div class="t-label">Trap 4</div>
   <h4>&ldquo;We'll keep your AI bill down.&rdquo;</h4>
-  <p>That pitch fights Microsoft's incentives, which pay you on sustained consumption, and it fights the customer's reason for buying. Say &ldquo;we'll make sure you spend it on purpose.&rdquo; See <a href="#section-9">section 9</a>.</p>
+  <p>That pitch fights Microsoft's incentives, which pay you on sustained consumption, and it fights the customer's reason for buying. Say &ldquo;we'll make sure you spend it on purpose.&rdquo; See <a href="#section-10">section 10</a>.</p>
 </div>
 <div class="trap">
   <div class="t-label">Trap 5</div>
@@ -1001,10 +1181,10 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
 
 <div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
 
-<!-- ═══════════════════════════ 14 ═══════════════════════════ -->
-<h2 id="section-14">14 &middot; Sources, Provenance and Related Guides</h2>
+<!-- ═══════════════════════════ 15 ═══════════════════════════ -->
+<h2 id="section-15">15 &middot; Sources, Provenance and Related Guides</h2>
 
-<h3>14.1 &middot; Microsoft, primary</h3>
+<h3>15.1 &middot; Microsoft, primary</h3>
 
 <ul class="reflist">
   <li><div class="rf-t"><a href="https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4" target="_blank" rel="noopener">Microsoft FY26 Q4 earnings call</a></div><div class="rf-d">July 29, 2026. Hood: &ldquo;per-seat-plus-consumption&rdquo;; &ldquo;observability of token spend and the manageability of token spend.&rdquo; Nadella on Cowork usage billing and Autopilots.</div></li>
@@ -1014,10 +1194,15 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits" target="_blank" rel="noopener">Usage-based billing with Copilot Credits: overview</a></div><div class="rf-d">Microsoft Learn, updated October 2026. Spending policies, limits, alerts, roles, auto-apply default, reporting dimensions.</div></li>
   <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-copilot-credits-csp-partner-macc" target="_blank" rel="noopener">Usage-based billing for CSP partners</a></div><div class="rf-d">Microsoft Learn, October 1, 2026. The Azure subscription linked to the partner billing account; spending limits and alerts.</div></li>
   <li><div class="rf-t"><a href="https://blogs.microsoft.com/blog/2026/09/25/introducing-the-new-copilot-with-home-code-and-autopilot/" target="_blank" rel="noopener">Introducing the new Copilot, with Home, Code and Autopilot</a></div><div class="rf-d">Jared Spataro, September 25, 2026. Cowork, Code, Autopilot and frontier models on usage-based billing; &ldquo;match cost to value.&rdquo;</div></li>
-  <li><div class="rf-t"><a href="https://aka.ms/CopilotCredits/LicensingGuide" target="_blank" rel="noopener">Copilot Credits Guide, October 2026</a></div><div class="rf-d">Credits as the common currency; $0.01 pay-as-you-go; packs; pre-purchase tiers; the August 2026 rename. No token-to-credit conversion.</div></li>
+  <li><div class="rf-t"><a href="https://aka.ms/CopilotCredits/LicensingGuide" target="_blank" rel="noopener">Copilot Credits Guide, October 2026</a></div><div class="rf-d">Credits as the common currency; $0.01 pay-as-you-go; packs; pre-purchase tiers; the August 2026 rename. No token-to-credit conversion. Pay-as-you-go bills in arrears at the end of the billing month.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-copilot-credits-setup" target="_blank" rel="noopener">Set up usage-based billing with Copilot Credits</a></div><div class="rf-d">Microsoft Learn, October 1, 2026. If the admin cannot access any Azure subscription, one is created automatically against the billing account linked in the admin center; existing subscriptions can be chosen instead.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/security/azure-fraud-notification" target="_blank" rel="noopener">Azure fraud notifications for CSP partners</a></div><div class="rf-d">Microsoft Learn. CSP partners are responsible for their customers' Azure consumption. With the <a href="https://learn.microsoft.com/en-us/partner-center/security/nonpayment-fraud-misuse" target="_blank" rel="noopener">nonpayment, fraud and misuse policy</a>: direct-bill partners and distributors are financially responsible for customer nonpayment.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/billing/azure-plan-billing" target="_blank" rel="noopener">Azure plan billing in CSP</a></div><div class="rf-d">Microsoft Learn. Usage billed monthly for the calendar month; invoice ready by the eighth of the following month; payment due in 60 days. Microsoft invoices direct-bill partners and indirect providers only.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/billing/set-an-azure-spending-budget-for-your-customers" target="_blank" rel="noopener">Set an Azure spending budget for your customers</a></div><div class="rf-d">Microsoft Learn. Per-customer budget in Partner Center; email alerts every seven days at 80 to 100%; the budget does not stop usage.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/billing/partner-earned-credit-faq" target="_blank" rel="noopener">Partner Earned Credit FAQ</a></div><div class="rf-d">Microsoft Learn. PEC applies to Azure plan pay-as-you-go except reservations, savings plans and Marketplace items. Copilot Credits are not mentioned; no margin on credits is published anywhere.</div></li>
 </ul>
 
-<h3>14.2 &middot; Analysts and surveys</h3>
+<h3>15.2 &middot; Analysts and surveys</h3>
 
 <ul class="reflist">
   <li><div class="rf-t"><a href="https://zylo.com/news/2026-saas-management-index" target="_blank" rel="noopener">Zylo 2026 SaaS Management Index</a></div><div class="rf-d">January 29, 2026. 78% of IT leaders reported unexpected charges from consumption-based or AI pricing.</div></li>
@@ -1030,7 +1215,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <li><div class="rf-t"><a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">Gartner: over 40% of agentic AI projects will be canceled by end of 2027</a></div><div class="rf-d">June 25, 2025. Escalating costs, unclear value or weak risk controls. <span data-fact="F-218">Over 40%</span> is the headline figure.</div></li>
 </ul>
 
-<h3>14.3 &middot; The research behind this page</h3>
+<h3>15.3 &middot; The research behind this page</h3>
 
 <ul class="reflist">
   <li><div class="rf-t"><a href="research/token-economics-practice/00-synthesis-and-talk-track.md">Synthesis and the first talk track</a></div><div class="rf-d">The verdicts, the framework, the pricing structure, the proposed playbook edits and the open items, including the gated Microsoft documents still to read with a partner login.</div></li>
@@ -1039,7 +1224,7 @@ td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space:
   <li><div class="rf-t"><a href="research/token-economics-practice/03-analyst-frameworks-and-economics.md">Analysts, FinOps for AI and the economics</a></div><div class="rf-d">The pricing shift, the partner opportunity, the failure-mode evidence, pricing norms for services around consumption, and the three analogies.</div></li>
 </ul>
 
-<h3>14.4 &middot; Where this sits in the playbook</h3>
+<h3>15.4 &middot; Where this sits in the playbook</h3>
 
 <ul class="reflist">
   <li><div class="rf-t"><a href="cpb-model-the-practice.html">Model the Practice</a></div><div class="rf-d">Upstream. The three tiers, the four pricing dials and the Credit Wrap definition this page extends.</div></li>
