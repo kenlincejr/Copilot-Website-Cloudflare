@@ -1141,6 +1141,17 @@ sec('QA-C');
     ok(/past what is included/.test(o7o) && /\$/.test(o7o), 'M-15 OBJ-07 states an overage and its add-on cost');
   }
 
+  // M-16 · O-2 keeps 4,800 vs 9,600, carries the test date, makes no false citation claim, never says the estimator shows 0
+  {
+    const o2 = objOf(E.compute(helpdesk()), 'OBJ-02');
+    ok(o2.indexOf('4,800') > -1 && o2.indexOf('9,600') > -1, 'M-16 O-2 keeps 4,800 vs 9,600');
+    ok(/tested 2026-10-11/.test(o2), 'M-16 O-2 says when the estimator was tested');
+    ok(!/Every line here cites Microsoft.s billing rates page/.test(o2), 'M-16 O-2 drops the false "every line cites the billing rates page"');
+    const half = helpdesk(); half.studio.agents[0].users.licensed = 30;
+    const o2h = objOf(E.compute(half), 'OBJ-02');
+    ok(!/shows 0 credits/.test(o2h) && /twice/.test(o2h), 'M-16 at half licensed O-2 never claims the estimator shows 0 credits (' + o2h.slice(0, 120) + ')');
+  }
+
   /* QA-C end */
 }
 

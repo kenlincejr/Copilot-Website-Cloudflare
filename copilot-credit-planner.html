@@ -2893,6 +2893,7 @@ footer.pagefoot p { margin:0 0 10px; }
      commitment, first year). Eligibility is judged at the month the seats
      would be bought: the agent's go-live month (or the engine's buyMonth). */
   var PROMO_TXT = 'promo through ' + RC.seatBizPromo.ends;
+  var ESTIMATOR_TESTED = '2026-10-11';   // last hands-on test of Microsoft's web estimator (O-2)
   function promoBuyMonth(s, row) {
     if (row && typeof row.buyMonth === 'string') return row.buyMonth;
     var a = s.studio.agents.filter(function (x) { return x.id === row.id; })[0];
@@ -3114,8 +3115,13 @@ footer.pagefoot p { margin:0 0 10px; }
         '. The meter is ' + meterTxt + ', so a user above ' + fmtInt(beAt(cs.enterprise)) + ' credits a month (' + fmtInt(beAt(bizSell ? cs.business : cs.promo)) +
         (bizSell ? ' on Copilot Business' : ' at the ' + fmtUsd(cs.promo) + ' Business price while the promo lasts') + ') costs more on the meter than on a seat.' });
       var eq = s.studio.agents.map(function (a) { return { name: a.name, e: msEstimatorEquivalent(a, s) }; }).filter(function (x) { return x.e; })[0];
-      out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? 'For ' + eq.name + ', Microsoft’s Studio estimator shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) +
-        ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. ' : '') + 'Its estimator also leaves out greetings and classic answers, and its flows do not scale with traffic. Every line here cites Microsoft’s billing rates page.' });
+      /* Behavior of Microsoft's web estimator as tested on ESTIMATOR_TESTED. At
+         half or more licensed its total goes stale rather than reaching 0, so
+         no figure is quoted then. */
+      out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? (eq.e.msTool > 0
+          ? 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) + ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. '
+          : 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice, so it understates the ' + fmtInt(eq.e.rateCard) + ' credits the rate card gives; with this many licensed users its total stops updating, so compare it line by line. ')
+        : '') + 'When we tested it on ' + ESTIMATOR_TESTED + ', it also left out greetings and classic answers, and its flows did not scale with traffic. Every rate in this plan names the Microsoft page it comes from, line by line in the calculation trace.' });
       out.push({ id: 'OBJ-03', q: 'Isn’t it free with our licenses?', a: 'Only for licensed employees, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Here that covers ' + fmtInt(sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }))) +
         ' credits a month. Website and external users, autonomous runs, computer use, Work IQ and the GitHub harness always bill.' });
       out.push({ id: 'OBJ-04', q: 'The 25-credit myth.', a: 'An agent action is ' + RC.action.v[0] + ' credits, not 25. The 25 figure comes from an unused weight left in Microsoft’s old estimator code.' });
