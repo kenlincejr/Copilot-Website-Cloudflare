@@ -1353,12 +1353,12 @@ footer.pagefoot p { margin:0 0 10px; }
       users: { total: 0, licensed: 0 },
       traffic: { mode: 'total', count: 0, per: 'month' },
       daysActive: 22, startMonth: 0, ramped: true,
-      shape: { turns: 0, genPct: 100, groundedPct: 0, greeting: false },
+      shape: { turns: 5, genPct: 100, groundedPct: 0, greeting: false },
       bundle: b,
       bundleMode: 'itemized', blueprint: '', fixedPerRun: 0,
       flowTrigger: 'agent',
       aiPricing: 'response', aiTokensPerCall: 1000,
-      reasoning: { on: false, tokens: 0 },
+      reasoning: { on: false, tokens: 2000 },
       autonomous: { countTriggerAsAction: false, countPromptAsAction: false },
       cua: { model: 'standard', w365Hours: 0, w365AlwaysOn: 0 },
       github: { users: 0, perUserPerDay: 0, split: [40, 40, 20], heavyObserved: null,
@@ -1397,7 +1397,7 @@ footer.pagefoot p { margin:0 0 10px; }
        autonomous and Business Central agents run at full volume (QA M-08). */
     t.ramped = cBool(own(a, 'ramped'), t.type === 'conversational');
     var sh = own(a, 'shape');
-    t.shape.turns = cNum(own(sh, 'turns'), 0, 0, MAX.perUnit, 2);
+    t.shape.turns = cNum(own(sh, 'turns'), 5, 0, MAX.perUnit, 2);   // spec §S2 defaults (QA L-31): 5 turns
     t.shape.genPct = cNum(own(sh, 'genPct'), 100, 0, 100, 2);
     t.shape.groundedPct = cNum(own(sh, 'groundedPct'), 0, 0, 100, 2);
     t.shape.greeting = cBool(own(sh, 'greeting'), false);
@@ -1412,7 +1412,7 @@ footer.pagefoot p { margin:0 0 10px; }
     t.aiTokensPerCall = cInt(own(a, 'aiTokensPerCall'), 1000, 0, MAX.tokens);
     var r = own(a, 'reasoning');
     t.reasoning.on = cBool(own(r, 'on'), false);
-    t.reasoning.tokens = cInt(own(r, 'tokens'), 0, 0, MAX.tokens);
+    t.reasoning.tokens = cInt(own(r, 'tokens'), 2000, 0, MAX.tokens);   // 2,000 reasoning tokens a run
     var au = own(a, 'autonomous');
     t.autonomous.countTriggerAsAction = cBool(own(au, 'countTriggerAsAction'), false);
     t.autonomous.countPromptAsAction = cBool(own(au, 'countPromptAsAction'), false);
@@ -3351,10 +3351,10 @@ footer.pagefoot p { margin:0 0 10px; }
                    agent: { name: 'Expense Agent', type: 'bc', bc: { kind: 'expense', volume: 50 } } },
     support:     { label: 'Customer support bot (Microsoft example)', example: '[(4 × 1) + (2 × 2)] × 900 = 7,200 credits a day', fact: 'F-161', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Customer support bot', type: 'conversational', audience: 'external', channel: 'website', auth: 'none',
-                            traffic: { mode: 'total', count: 900, per: 'day' }, daysActive: 30, bundle: { classic: 4, generative: 2 } } },
+                            traffic: { mode: 'total', count: 900, per: 'day' }, daysActive: 30, shape: { turns: 0 }, bundle: { classic: 4, generative: 2 } } },
     sales:       { label: 'Sales research agent (Microsoft example)', example: '[(4 × 2) + (4 × 10)] × 100 users without a license = 4,800 credits; the 50 licensed users are zero-rated', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Sales research agent', type: 'conversational', audience: 'internal', channel: 'teams_m365', auth: 'microsoft',
-                            users: { total: 150, licensed: 50 }, traffic: { mode: 'perUser', count: 1, per: 'day' }, daysActive: 22, bundle: { generative: 4, grounded: 4 } } },
+                            users: { total: 150, licensed: 50 }, traffic: { mode: 'perUser', count: 1, per: 'day' }, daysActive: 22, shape: { turns: 0 }, bundle: { generative: 4, grounded: 4 } } },
     order:       { label: 'Order processing (Microsoft example)', example: '4 actions × 5 = 20 credits a run', fact: 'F-163', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Order processing', type: 'autonomous', traffic: { mode: 'total', count: 100, per: 'day' }, daysActive: 30, bundle: { actions: 4 } } },
     expense:     { label: 'Expense receipt (Microsoft blueprint)', example: '15 credits a run', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
@@ -3385,6 +3385,10 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.studio.agents.length >= MAX.agents) return s;
     var a = presetAgent(typeof archetype === 'string' ? archetype : '');
     a.id = '';
+    /* Spec §S2 (QA L-31): a new card runs in production, a Business Central
+       card in the default environment ('' here). */
+    var prod = s.studio.environments.filter(function (e) { return e.kind === 'production'; })[0];
+    if (prod && a.type !== 'bc' && a.env === '') a.env = prod.name;
     s.studio.agents.push(a);
     return normalize(s);
   }
@@ -3553,7 +3557,7 @@ footer.pagefoot p { margin:0 0 10px; }
     'harness': 'standard', 'shape.genPct': 100, 'shape.greeting': false, 'shape.groundedPct': 0,
     'bundle.classic': 0, 'bundle.generative': 0, 'bundle.grounded': 0, 'bundle.actions': 0, 'bundle.flowActions': 0, 'flowTrigger': 'agent',
     'bundle.aiBasic': 0, 'bundle.aiStandard': 0, 'bundle.aiPremium': 0, 'aiPricing': 'response', 'aiTokensPerCall': 1000,
-    'reasoning.on': false, 'reasoning.tokens': 0, 'bundle.contentPages': 0,
+    'reasoning.on': false, 'reasoning.tokens': 2000, 'bundle.contentPages': 0,
     'bundle.voiceClassic': 0, 'bundle.voiceGen': 0, 'bundle.voicePremium': 0,
     'bundle.cuaSteps': 0, 'cua.model': 'standard', 'cua.w365Hours': 0, 'cua.w365AlwaysOn': 0, 'bundle.workiqCalls': 0,
     'autonomous.countTriggerAsAction': false, 'autonomous.countPromptAsAction': false,
@@ -4505,7 +4509,7 @@ footer.pagefoot p { margin:0 0 10px; }
     /* Autonomous and Business Central agents do not follow the adoption ramp
        (spec §S2; QA M-08). */
     if (v === 'bc') { if (a.type !== 'bc') a.ramped = false; a.type = 'bc'; return; }
-    if (v === 'auto') { if (a.type !== 'autonomous') a.ramped = false; a.type = 'autonomous'; return; }
+    if (v === 'auto') { if (a.type !== 'autonomous') { a.ramped = false; if (a.daysActive === 22) a.daysActive = 30; } a.type = 'autonomous'; return; }
     a.type = 'conversational';
     if (v === 'staff') { a.audience = 'internal'; if (!ms) a.channel = 'teams_m365'; a.auth = 'microsoft'; }
     else if (v === 'staffOther') { a.audience = 'internal'; if (ms) a.channel = 'website'; }

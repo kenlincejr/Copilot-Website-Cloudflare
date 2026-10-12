@@ -1223,7 +1223,7 @@ sec('QA-E');
   near(E.compute(s).pool.months[0].total.lo, 27240, 'QA-E M-08 full estate month 1 low = 27,240', 1e-6);
   ok(['invoice', 'bcSalesOrder', 'bcPayables', 'bcExpense', 'order', 'expense'].every((k) => presetState(k).studio.agents[0].ramped === false), 'QA-E M-08 presets');
   eq(E.normalize({ studio: { agents: [{ type: 'autonomous' }] } }).studio.agents[0].ramped, false, 'QA-E M-08 an autonomous card with no ramp flag defaults to full volume');
-  ok(/if \(a\.type !== 'autonomous'\) a\.ramped = false/.test(src), 'QA-E M-08 switching a card to autonomous turns the ramp off');
+  ok(/if \(a\.type !== 'autonomous'\) (\{ )?a\.ramped = false/.test(src), 'QA-E M-08 switching a card to autonomous turns the ramp off');
 }
 /* M-23 + M-24: the tenant base defaults to 'unsure' (spec §S1), and
    tenant.suites (Defender + Purview) is an alternative Agent 365 prerequisite. */
@@ -1288,6 +1288,27 @@ sec('QA-E');
   s.studio.agents[0].perAgentCap = 'x';
   eq(E.normalize(s).studio.agents[0].perAgentCap, null, 'QA-E L-30 junk is null');
   ok(/data-k="' \+ k \+ '"/.test(src) && src.indexOf("fld(a, 'perAgentCap'") > -1, 'QA-E L-30 the card has the field');
+}
+/* L-31: spec §S2 card defaults: 5 turns, 2,000 reasoning tokens, 30 days
+   when switched to autonomous, production environment ('' = default for
+   Business Central). A blank card with reasoning on: 5 × 2 + 2 × 10 = 30 a
+   conversation. */
+{
+  const t = E.agentTemplate();
+  ok(t.shape.turns === 5 && t.reasoning.tokens === 2000, 'QA-E L-31 template: 5 turns, 2,000 reasoning tokens');
+  const n = E.normalize({ studio: { agents: [{}] } }).studio.agents[0];
+  ok(n.shape.turns === 5 && n.reasoning.tokens === 2000, 'QA-E L-31 normalize fills the same defaults');
+  const s = E.newAgent(E.defaults()); const a = s.studio.agents[0];
+  a.audience = 'external'; a.traffic.count = 100; a.reasoning.on = true;
+  eq(firstAgent(s).lo, 100 * (5 * 2 + 2 * 10), 'QA-E L-31 reasoning on a blank card adds 20 a conversation');
+  // Microsoft's itemized examples keep their own counts
+  eq(firstAgent(presetState('support')).perPeriod.billed, 7200, 'QA-E L-31 A1 support bot still 7,200 a day');
+  eq(firstAgent(presetState('sales')).perPeriod.billed, 4800, 'QA-E L-31 A2 sales research still 4,800 a day');
+  // Environment: production when the plan has one; Business Central stays on the default environment
+  const se = E.defaults(); se.studio.environments = [{ name: 'Default', kind: 'default' }, { name: 'Prod', kind: 'production' }];
+  eq(E.newAgent(se).studio.agents[0].env, 'Prod', 'QA-E L-31 a new card runs in the production environment');
+  eq(E.newAgent(se, 'bcPayables').studio.agents[0].env, '', 'QA-E L-31 a new Business Central card stays on the default environment');
+  ok(/if \(a\.daysActive === 22\) a\.daysActive = 30;/.test(src), 'QA-E L-31 switching to autonomous moves 22 days to 30');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
