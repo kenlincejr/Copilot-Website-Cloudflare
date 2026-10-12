@@ -3122,8 +3122,16 @@ footer.pagefoot p { margin:0 0 10px; }
       out.push({ id: 'OBJ-05', q: 'What if we run out?', a: 'Flows stop at 100% of prepaid capacity and custom agents at 125%; pay-as-you-go environments keep running. The plan sets per-agent limits and alerts at 50, 80 and 100% so nobody finds out by an agent breaking.' });
       out.push({ id: 'OBJ-06', q: 'Why not pre-buy for 20%?', a: 'The 20% tier starts at ' + fmtInt(RC.p3Tiers.v[8].cccu) + ' commit units. Plans are fixed sizes, final for a year, and unused credits expire; capacity packs at ' +
         '$' + String(packUsdPerCredit()) + ' a credit already beat every tier below Tier 9 for steady use. The recommendation here: ' + r.purchase.best.label + '.' });
-      out.push({ id: 'OBJ-07', q: 'Why do we need Dataverse or Agent 365?', a: 'Transcripts and knowledge files are stored in Dataverse, which has its own entitlement (' + r.dataverse.entitlement.db + ' GB database here). Agent 365 is ' +
-        fmtUsd(RC.agent365.v) + ' a user a month for the people who own and sponsor agents, once several agents need one control plane.' });
+      var dv = r.dataverse, base = s.studio.account.tenantBase, BASE_LBL = { basic: 'Business Basic', standard: 'Business Standard', premium: 'Business Premium', e3: 'E3', e5: 'E5' };
+      var over = dv.overageGb.db + dv.overageGb.file + dv.overageGb.log > 0;
+      /* The month the overage starts, when the engine exposes one. */
+      var dvMonth = typeof dv.overMonth === 'number' && dv.overMonth > 0 ? ' by month ' + dv.overMonth : '';
+      var meets = base === 'premium' || base === 'e5' ? 'which this tenant has (' + BASE_LBL[base] + ')'
+        : base === 'unsure' ? 'so confirm the tenant’s base before quoting it'
+        : 'and this tenant’s ' + BASE_LBL[base] + ' base does not include any of them';
+      out.push({ id: 'OBJ-07', q: 'Why do we need Dataverse or Agent 365?', a: 'Dataverse is where the agent keeps its conversations and files. You get ' + fmtInt(dv.entitlement.db) + ' GB of database and ' + fmtInt(dv.entitlement.file) +
+        ' GB of file storage included, and at your settings you’ll use ' + gbWords(dv.usage.db) + ' of database' + dvMonth + (over ? ', past what is included: about ' + fmtUsd(dv.addOnUsd) + ' a month in capacity add-ons' : ', inside what is included') +
+        '. Agent 365 is optional: it becomes worth it around three agents, at ' + fmtUsd(RC.agent365.v) + ' a user a month for the people who own and sponsor them, and it needs Business Premium, E5/A5, or the Defender and Purview suites, ' + meets + '.' });
       out.push({ id: 'OBJ-08', q: 'You’re marking up credits.', a: listCredit
         ? 'Credits are priced at Microsoft’s list rate in this plan, ' + fmtRate(rate) + ' a credit. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be, shown as its own line so you can see it.'
         : 'Credits in this plan are priced at our rate of ' + fmtRate(rate) + ' a credit' + (cr.creditSource === 'cowork' ? ', the same rate the Cowork tab quotes' : '') +

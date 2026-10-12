@@ -1126,6 +1126,21 @@ sec('QA-C');
     ok(!/bills twice|costs twice/.test(src.slice(src.indexOf('<script id="planner-ui">'))), 'M-14 the UI help never says it bills twice');
   }
 
+  // M-15 · OBJ-07 states the Agent 365 prerequisite and whether this tenant meets it, plus the Dataverse use
+  {
+    const e3 = helpdesk(4); e3.studio.account.tenantBase = 'e3';
+    const o7 = objOf(E.compute(e3), 'OBJ-07');
+    ok(/Business Premium/.test(o7) && /Defender and Purview/.test(o7) && /does not/.test(o7), 'M-15 OBJ-07 on E3: names the prerequisite and says this tenant does not meet it (' + o7 + ')');
+    ok(/you.ll use .*GB/.test(o7), 'M-15 OBJ-07 gives the modeled Dataverse use');
+    const pr = helpdesk(4); pr.studio.account.tenantBase = 'premium';
+    ok(/which this tenant has/.test(objOf(E.compute(pr), 'OBJ-07')), 'M-15 OBJ-07 on Business Premium: the tenant qualifies');
+    const un = helpdesk(4); un.studio.account.tenantBase = 'unsure';
+    ok(/confirm/.test(objOf(E.compute(un), 'OBJ-07')), 'M-15 OBJ-07 with an unsure base: confirm it first');
+    const ov = helpdesk(4); ov.studio.dataverse.existingDbGb = 20;
+    const o7o = objOf(E.compute(ov), 'OBJ-07');
+    ok(/past what is included/.test(o7o) && /\$/.test(o7o), 'M-15 OBJ-07 states an overage and its add-on cost');
+  }
+
   /* QA-C end */
 }
 
