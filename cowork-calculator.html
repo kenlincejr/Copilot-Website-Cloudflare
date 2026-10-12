@@ -1528,6 +1528,11 @@ body.embedded .hub-link { display:none !important; }
 
     var CU = creditUsd(state);                 // customer-facing credit rate
     var sellMode = state.pricing && state.pricing.mode === 'sell';
+    // QA L-13: the fallback to $0.01 for a rate at or below zero is no longer silent.
+    var sellRateIn = num_(state.pricing && state.pricing.creditSellUsd);
+    if (sellMode && sellRateIn != null && !(sellRateIn > 0))
+      W('V-32','warn','Your credit sell rate is $0 or below, which is not a price, so every meter figure here is at Microsoft’s $0.01 a credit instead. ' +
+        'Enter the rate you actually bill on the pricing screen before you show this to a customer.', []);
 
     /* F1–F5 · the funnel */
     var employees = Math.max(0, n(state.org.totalEmployees, 0));

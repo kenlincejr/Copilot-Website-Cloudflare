@@ -2747,5 +2747,19 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(f6 && /× 100%/.test(f6.expression), 'L-12: the rate clamps to 100%');
 }
 
+/* ── L-13 · a sell rate of $0 or below warns instead of vanishing ─────── */
+{
+  [0, -0.05].forEach(function (v) {
+    const s = E.defaults(); s.pricing = Object.assign(s.pricing, { mode:'sell', creditSellUsd:v });
+    const r = E.compute(s);
+    eq(r.ctx.creditUsd, 0.01, 'L-13: sell rate ' + v + ' still prices at $0.01');
+    const w = r.warnings.filter(x => x.id === 'V-32')[0];
+    ok(w && /not a price/.test(w.message) && /\$0\.01/.test(w.message), 'L-13: sell rate ' + v + ' raises V-32 saying it fell back to $0.01');
+  });
+  const ok1 = E.defaults(); ok1.pricing = Object.assign(ok1.pricing, { mode:'sell', creditSellUsd:0.012 });
+  ok(E.compute(ok1).warnings.every(x => x.id !== 'V-32'), 'L-13: a positive sell rate raises no V-32');
+  ok(E.compute(E.defaults()).warnings.every(x => x.id !== 'V-32'), 'L-13: list mode raises no V-32');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
