@@ -32,6 +32,7 @@ const OUT_OF_SITEMAP = {
   'cpb-field-guide.html': 'unlinked, awaiting a decision',
   'ask.html': 'chat shell, no content (spec D9)',
 };
+const PAGE_TYPES = ['playbook', 'engagement', 'tool', 'customer-zero', 'program'];
 // check-facts.py mismatches that predate site search (recorded 2026-10-12 at
 // commit 3620fe6). A new ID here is a regression; one disappearing is a fix.
 const FACTS_BASELINE = ['F-001', 'F-004', 'F-006', 'F-009', 'F-010', 'F-017', 'F-020', 'F-025', 'F-027', 'F-028', 'F-034', 'F-036', 'F-055', 'F-058', 'F-059', 'F-156', 'F-176'];
@@ -70,6 +71,11 @@ htmlPages.forEach((f) => {
   });
   const t = /<meta name="title" content="([^"]*)"/.exec(head);
   ok(t && t[1].trim().length > 0 && t[1].length <= 80, f + ': title meta is non-empty and at most 80 characters');
+  // Spec 3.2: filter chips and boosting read these two custom metadata fields.
+  const pt = [...head.matchAll(/<meta name="page_type" content="([^"]*)"/g)];
+  ok(pt.length === 1 && PAGE_TYPES.includes(pt[0][1]), f + ': exactly one page_type meta with an allowed value');
+  const pr = [...head.matchAll(/<meta name="priority" content="([^"]*)"/g)];
+  ok(pr.length === 1 && /^[123]$/.test(pr[0][1]), f + ': exactly one priority meta, 1 to 3');
 });
 
 // ── J: search script placement ──
