@@ -1088,6 +1088,21 @@ sec('QA-C');
     ok(/w\.note \? '<div class="mini partner-only">/.test(src), 'M-11 the flags render a note as partner-only');
   }
 
+  // M-12 · the spec's headline lines T-ZERO, T-BUY, T-GUARD, T-ADJ, T-SEAT; a plain line when nothing is modeled
+  {
+    const t0 = E.talk(E.compute(E.defaults()));
+    ok(/Nothing is modeled yet/.test(t0[0]) && t0.every((l) => !/0–0|\$0–\$0/.test(l)), 'M-12 no agents and no Cowork: the opener says nothing is modeled yet (' + t0[0] + ')');
+    const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio'); trio.studio.adjacent.agent365Owners = 2;
+    const tt = E.talk(E.compute(trio)), has = (re) => tt.some((l) => re.test(l));
+    ok(has(/^4,800 credits a month are already covered by the Copilot licenses you own\. That.s \d+% of the agent traffic\.$/), 'M-12 T-ZERO');
+    ok(has(/^The cheapest way to buy it is .+: about \$[\d,.]+ a month, against \$[\d,.]+ if you paid as you go\.$/) || has(/^Pay-as-you-go is the cheapest way to buy it/), 'M-12 T-BUY');
+    ok(has(/^We.ll set a cap on each agent and alerts at 50, 80 and 100%, so nothing switches off by surprise\.$/), 'M-12 T-GUARD');
+    ok(has(/^Separately from credits, budget \$30 a month for Agent 365\.$/), 'M-12 T-ADJ');
+    ok(has(/^Metering is cheaper than a seat for these users/), 'M-12 T-SEAT (meter verdict)');
+    const lic = E.compute(helpdesk(40)), n6 = nbaOf(lic, 'NBA-06');
+    ok(n6 && E.talk(lic).filter((l) => l === n6.opener).length === 1 && !E.talk(lic).some((l) => /Metering is cheaper than a seat/.test(l)), 'M-12 T-SEAT is the NBA-06 opener when a seat wins');
+  }
+
   /* QA-C end */
 }
 

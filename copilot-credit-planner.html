@@ -3036,11 +3036,38 @@ footer.pagefoot p { margin:0 0 10px; }
       var lines = [];
       var cv = customerView(r);
       var cr = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : { usdPerCredit: RC.payg.v, basis: 'list' };
+      var rc = cr.usdPerCredit, nba = nextBestAction(r).matches;
+      if (!(r.pool.steady.hi > 0)) {
+        lines.push('Nothing is modeled yet: once we add your Cowork answers or a first agent, this plan shows what it would cost and how to buy it.');
+        return lines;
+      }
+      /* T-POOL */
       lines.push((cr.basis === 'sell' ? 'At our price' : 'At list price') + ' your plan runs about ' + fmtInt(r.pool.steady.lo) + '–' + fmtInt(r.pool.steady.hi) + ' credits a month once it is running, roughly ' +
-        fmtUsd(r.pool.steady.lo * cr.usdPerCredit) + '–' + fmtUsd(r.pool.steady.hi * cr.usdPerCredit) + ' a month at pay-as-you-go.');
+        fmtUsd(r.pool.steady.lo * rc) + '–' + fmtUsd(r.pool.steady.hi * rc) + ' a month at pay-as-you-go.');
+      /* T-ZERO: covered credits as a share of all agent traffic */
+      var z = num(cv.zeroRatedMonthly), billedLo = sum(cv.agents.map(function (a) { return num(a.lo); }));
+      if (z > 0) lines.push(fmtInt(z) + ' credits a month are already covered by the Copilot licenses you own. That’s ' + Math.round(100 * z / (z + billedLo)) + '% of the agent traffic.');
+      /* T-BUY: the customer's own figures (middle scenario, a month) */
+      var buyM = num(cv.buy.yearUsd) / 12, paygM = num(cv.buy.paygYearUsd) / 12;
+      if (paygM > 0) lines.push(r.purchase.best.family !== 'payg' && buyM < paygM
+        ? 'The cheapest way to buy it is ' + String(cv.buy.approach).charAt(0).toLowerCase() + String(cv.buy.approach).slice(1) + ': about ' + fmtUsd(buyM) + ' a month, against ' + fmtUsd(paygM) + ' if you paid as you go.'
+        : 'Pay-as-you-go is the cheapest way to buy it: about ' + fmtUsd(paygM) + ' a month in the middle scenario.');
+      /* T-GUARD */
+      if (cv.agents.length) lines.push('We’ll set a cap on each agent and alerts at 50, 80 and 100%, so nothing switches off by surprise.');
+      /* T-ADJ: outside the credit pool */
+      var adj = cv.adjacent, adjL = [];
+      if (num(adj.dataverseUsdMonthly) > 0) adjL.push('Dataverse storage');
+      if (num(adj.w365UsdMonthly) > 0) adjL.push('Windows 365 for Agents');
+      if (num(adj.agent365UsdMonthly) > 0) adjL.push('Agent 365');
+      if (num(adj.byomUsdMonthly) > 0) adjL.push('your own models');
+      if (num(adj.totalUsdMonthly) > 0 && adjL.length) lines.push('Separately from credits, budget ' + fmtUsd(num(adj.totalUsdMonthly)) + ' a month for ' + (adjL.length > 1 ? adjL.slice(0, -1).join(', ') + ' and ' + adjL[adjL.length - 1] : adjL[0]) + '.');
+      /* T-SEAT: the NBA-06 opener when a seat wins, otherwise the meter line */
+      var seat = nba.filter(function (m) { return m.id === 'NBA-06'; })[0];
+      if (seat) lines.push(seat.opener);
+      else if (r.crossover.agents.length) lines.push('Metering is cheaper than a seat for these users, so we’d justify seats by what Copilot and Cowork do for them.');
       cv.warnings.forEach(function (w) { lines.push(w.msg); });
       /* NBA-13 (the specialization) is addressed to the partner, never the customer. */
-      nextBestAction(r).matches.forEach(function (m) { if (m.id !== 'NBA-13') lines.push(m.opener); });
+      nba.forEach(function (m) { if (m.id !== 'NBA-13') lines.push(m.opener); });
       var seen = {};
       return lines.filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; });
     } catch (e) { return []; }
