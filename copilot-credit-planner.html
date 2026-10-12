@@ -2802,7 +2802,7 @@ footer.pagefoot p { margin:0 0 10px; }
       { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evF) : [] }));
     if (en.m365.starvation.hi) warn.push(W('P-52', en.m365.starvation.mid ? 'risk' : 'warn', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits) leave ' + fmtInt(en.remainder) +
       ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.hi) + ' at the high end. Cowork spills to pay-as-you-go sooner.', { aud: 'customer' }));
-    if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + monthName(cap.firstMonth) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
+    if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + dayName(RC.capDate.v) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
       '-credit monthly limit per user (about ' + fmtUsd(usdOf(RC.capDefault.v)) + '). ' + (cap.day.hi ? 'The average Cowork user reaches it as early as working day ' + cap.day.hi + '. Raise the limit to the governance figure or users stop mid-month.' : 'Modeled users stay under it.'),
       { aud: 'customer' }));
     if (gv.allocations.some(function (a) { return a.flowsBelowHigh; })) warn.push(W('P-54', 'info', 'At least one environment allocation sits below its own high-end use, so its flows can block at 100% before agents reach 125%.'));
@@ -2904,6 +2904,8 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.combined.enforcement.basis === 'current' && pc.packs === 1 && pc.p3.every(function (x) { return x === 0; })) return false;
     return Math.max.apply(null, best.packs.schedule) > 1 || best.p3.units > 0;
   }
+  /* 'YYYY-MM-DD' → 'December 1, 2026' (the date Microsoft announced, not a horizon month). */
+  function dayName(iso) { var mn = monthName(String(iso).slice(0, 7)).split(' '); return mn[0] + ' ' + Number(String(iso).slice(8, 10)) + ', ' + mn[1]; }
   function promoLate(s, row) { return !!row && row.sku === 'promo' && promoBuyMonth(s, row) > RC.seatBizPromo.ends.slice(0, 7); }
   var GUIDE = deepFreeze({
     billing: 'azure-billing-setup.html#section-13', budgets: 'azure-billing-setup.html#section-9', economics: 'copilot-studio-agent-engagement.html#section-6',

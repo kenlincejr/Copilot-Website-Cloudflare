@@ -1044,6 +1044,13 @@ sec('QA-C');
     ok(/x\.holds && !x\.recommended/.test(src), 'H-09 the UI ticks only rungs that hold');
   }
 
+  // H-10 · P-53 prints the December 1, 2026 date, never the first horizon month
+  {
+    const st = helpdesk(4); st.combined.horizon.startMonth = '2027-03'; st.studio.account.seats.business = 20; st.studio.account.cspNewBusiness = 'yes';
+    const w53 = wOf(E.compute(st), 'P-53');
+    ok(w53 && /December 1, 2026/.test(w53.msg) && !/March 2027/.test(w53.msg), 'H-10 P-53 says December 1, 2026 for a 2027-03 start (' + (w53 && w53.msg.slice(0, 60)) + ')');
+  }
+
   /* QA-C end */
 }
 
