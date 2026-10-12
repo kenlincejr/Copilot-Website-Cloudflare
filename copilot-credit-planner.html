@@ -2849,7 +2849,16 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.partner.motion === 'direct' && p3o) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
     if (s.partner.motion === 'indirectReseller' && p3o) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
     var lic = cx.agents.filter(function (r) { return r.verdict === 'license'; });
-    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(r.savingUsdMonthly) + ' a month on a Copilot seat'; }).join('; ') + '.' +
+    /* The customer-facing saving is at the customer's prices: the engine's
+       customer-basis figure when it exposes one, otherwise the same arithmetic
+       the customer view uses. A row that saves nothing at those prices is left out. */
+    function custSaving(x) {
+      if (typeof x.customerSavingUsdMonthly === 'number') return x.customerSavingUsdMonthly;
+      var seat = rate.seats && rate.seats[x.sku] > 0 ? rate.seats[x.sku] : x.seatUsd;
+      return x.unlicensedUsers * (x.freeIfLicensedPerUser * rate.usdPerCredit - seat);
+    }
+    lic = lic.filter(function (x) { return custSaving(x) > 0; });
+    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(custSaving(r)) + ' a month on a Copilot seat'; }).join('; ') + '.' +
       (lic.some(function (r) { return r.sku === 'promo'; }) ? ' That uses the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price, a ' + PROMO_TXT + '; new seats after that cost ' + fmtUsd(RC.seatBiz.v) + '.' : ''), { aud: 'customer' }));
     var iso = horizonMonths(s.combined.horizon.startMonth);
     var promoRows = cx.agents.filter(function (r) { return r.sku === 'promo'; });
@@ -2967,8 +2976,10 @@ footer.pagefoot p { margin:0 0 10px; }
       },
       'NBA-03': function () {
         if (!r.enforcement.m365.starvation.hi) return null;
+        /* The starvation day, when the engine exposes it (m365.starvation.day or .dayMid). */
+        var sv = r.enforcement.m365.starvation, sd = typeof sv.day === 'number' ? sv.day : (typeof sv.dayMid === 'number' ? sv.dayMid : null);
         return rule('NBA-03', 'Pool', 'Power Platform allocations starve Cowork', ['Pre-allocations leave ' + fmtInt(r.enforcement.remainder) + ' credits a month for Microsoft 365 against ' + fmtInt(r.enforcement.m365.demand.hi) + ' of Cowork demand.'],
-          'Cowork and your agents share one pool; the way it is split decides who runs out first.', 'Resize environment allocations from the governance sheet.', null, GUIDE.limits);
+          'Your agents and Cowork share one pot of credits. As configured, the agent environments reserve so much that Cowork ' + (sd ? 'runs dry by day ' + sd + '.' : 'runs dry before the month ends.'), 'Resize environment allocations from the governance sheet.', null, GUIDE.limits);
       },
       'NBA-04': function () {
         var agentsCut = r.enforcement.events.filter(function (e) { return e.kind === 'agents'; })[0];

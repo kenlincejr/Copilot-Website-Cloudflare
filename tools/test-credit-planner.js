@@ -1321,6 +1321,19 @@ sec('QA-C');
     ok(!/cloudflareinsights|beacon\.min\.js/i.test(src) && !/cloudflareinsights|beacon\.min\.js/i.test(cw), 'L-34 neither page loads cloudflareinsights (the request comes from the hosting layer)');
   }
 
+  // Engine figures read when present: P-75 quotes the customer-basis saving; NBA-03 gives the starvation day
+  {
+    const st = helpdesk(40); st.partner.sellCreditUsd = 0.012;
+    const r = E.compute(st), cv = E.customerView(r).licenseInstead.agents[0], w75 = wOf(r, 'P-75');
+    ok(w75 && cv.verdict === 'license' && w75.msg.indexOf(E.fmtUsd(cv.savingUsdMonthly)) > -1, 'P-75 quotes the same saving as the customer view (' + E.fmtUsd(cv.savingUsdMonthly) + ')');
+    const neg = helpdesk(40); neg.partner.sellSeatUsd.business = 25;
+    const rn = E.compute(neg);
+    ok(!wOf(rn, 'P-75') || !/-\$/.test(wOf(rn, 'P-75').msg), 'P-75 never quotes a negative saving at the customer prices');
+    const fake = E.compute(helpdesk(4)); fake.enforcement = Object.assign({}, fake.enforcement, { remainder: 1000, m365: { demand: { lo: 1, mid: 5000, hi: 9000 }, starvation: { mid: true, hi: true, day: 12 } } });
+    const n3 = nbaOf(fake, 'NBA-03');
+    ok(n3 && /day 12/.test(n3.opener), 'NBA-03 states the engine starvation day when it is exposed');
+  }
+
   /* QA-C end */
 }
 
