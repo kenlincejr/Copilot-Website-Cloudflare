@@ -705,7 +705,7 @@ sec('H');
   // Text builders
   const rr = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
   const nba = E.nextBestAction(rr);
-  ok(nba.primary && nba.matches.length >= 2 && nba.matches[nba.matches.length - 1].id === 'NBA-14', 'H next best action ends with the default rule');
+  ok(nba.primary && nba.matches.length >= 2 && nba.matches.every((x) => x.id !== 'NBA-14'), 'H next best action lists the matched rules; the default rule appears only when nothing matched (M-10)');
   ok(nba.matches.every((x) => x.eyebrow && x.name && Array.isArray(x.why) && x.opener && x.then && x.link), 'H rules carry every field');
   ok(E.objections(rr).length === 9 && E.objections(rr).every((o) => o.q && o.a && !/NaN|undefined|Infinity/.test(o.a)), 'H nine objection cards, clean');
   ok(E.talk(rr).length > 2 && E.talk(rr).every((l) => !/NaN|undefined|Infinity/.test(l)), 'H talk track clean');
@@ -719,10 +719,12 @@ sec('H');
    ══════════════════════════════════════════════════════════════════════════ */
 sec('R');
 {
-  const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio'); trio.studio.account.tenantBase = 'premium';
   const rec = (st) => E.ladder(E.compute(st)).filter((x) => x.recommended)[0].key;
-  // Ladder: the NEXT rung to sell
-  eq(rec(trio), 'governance', 'R ladder: smb-trio at defaults recommends environment and governance setup');
+  const holds = (st, k) => E.ladder(E.compute(st)).filter((x) => x.key === k)[0].holds;
+  // Ladder (spec §S7, H-09): the highest rung whose condition holds; lower rungs that hold are ticked
+  eq(rec(trio), 'agent365', 'R ladder: smb-trio on a Business Premium base: NBA-12 holds, so rung 6 is highest');
+  ok(holds(trio, 'setup'), 'R ladder: smb-trio at defaults: setup holds (NBA-01) and is ticked');
   eq(E.nextBestAction(E.compute(trio)).primary.id, 'NBA-01', 'R smb-trio at defaults: next best action is the billing path');
   eq(rec(E.defaults()), 'assessment', 'R ladder: no agents recommends the assessment');
   const ready = J(trio);
@@ -730,15 +732,15 @@ sec('R');
   ready.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: false, tenantDraw: false, managed: false }];
   eq(rec(ready), 'agent365', 'R ladder: 3 agents + caps + billing path + production allocation + Business Premium → Agent 365');
   const std = J(ready); std.studio.account.tenantBase = 'standard';
-  eq(rec(std), 'agentcare', 'R ladder: set up, under $1,000 a month, no Agent 365 eligibility → AgentCare');
+  eq(rec(std), 'finops', 'R ladder: no Agent 365 eligibility, pay-as-you-go overflow beyond the pack → credit management');
   const big = J(std); big.studio.agents[0].traffic.count = 150000;
-  eq(rec(big), 'finops', 'R ladder: set up, $1,000+ a month → credit management');
+  eq(rec(big), 'finops', 'R ladder: a larger plan with overflow → credit management');
   const noCaps = J(ready); noCaps.combined.enforcement.perAgentCaps = 'unsure';
-  eq(rec(noCaps), 'governance', 'R ladder: caps not confirmed → governance first, even with Agent 365 eligibility');
+  ok(holds(noCaps, 'setup'), 'R ladder: caps not confirmed → setup holds (NBA-04)');
   const noProd = J(ready); noProd.studio.environments = [];
-  eq(rec(noProd), 'governance', 'R ladder: no production allocation → governance first');
+  ok(holds(noProd, 'setup') && holds(noProd, 'build'), 'R ladder: no production environment → the build rung holds');
   const noBill = J(ready); noBill.studio.account.azurePayg = 'unsure';
-  eq(rec(noBill), 'governance', 'R ladder: no billing path → governance first');
+  ok(holds(noBill, 'setup'), 'R ladder: no billing path → setup holds (NBA-01)');
 
   // P-50 / P-51: PAYG overflow needs a PAYG-linked environment
   const r0 = E.compute(trio);
@@ -752,7 +754,7 @@ sec('R');
   eq(rl.state.combined.enforcement.perAgentCaps, 'unsure', 'R the PAYG link leaves per-agent limits unconfirmed');
   ok(wids(rl).indexOf('P-63') > -1, 'R P-63 still asks for per-agent limits after the PAYG link');
   ok(wids(rl).indexOf('P-41') < 0 && E.nextBestAction(rl).primary.id !== 'NBA-01', 'R a PAYG-linked environment counts as a billing path');
-  eq(rec(linked), 'governance', 'R ladder stays at governance until per-agent limits are set');
+  ok(holds(linked, 'setup'), 'R ladder: setup holds until per-agent limits are set');
   const capped = E.applyFix(linked, w50.fixes[1]);
   eq(E.compute(capped).state.combined.enforcement.perAgentCaps, 'yes', 'R the caps fix is what governance and the ladder see');
   capped.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: true, tenantDraw: false, managed: false }];
@@ -1321,6 +1323,412 @@ sec('QA-E');
   eq(v.payload.year1Credits, exact, 'QA-E L-35 a missing year one is the ramp sum');
   v = E.validateCoworkPayload(PAYLOAD({ rampCredits: ramp, year1Credits: 5000000 }));
   eq(v.payload.year1Credits, 5000000, 'QA-E L-35 a figure further off is kept as sent');
+}
+
+/* ═══ QA-C · conversation and citation regressions ═══ */
+sec('QA-C');
+{
+  const objOf = (r, id) => (E.objections(r).filter((o) => o.id === id)[0] || { a: '' }).a;
+  const nbaIds = (r) => E.nextBestAction(r).matches.map((x) => x.id);
+  const nbaOf = (r, id) => E.nextBestAction(r).matches.filter((x) => x.id === id)[0] || null;
+  const wOf = (r, id) => r.warnings.filter((w) => w.id === id)[0] || null;
+  const helpdesk = (count, over) => { const s = presetState('helpdesk'); if (count != null) s.studio.agents[0].traffic.count = count; return Object.assign(s, over || {}); };
+
+  // C-06 · OBJ-08 and OBJ-01 quote the customer's rate; "Microsoft list" only when credits are at list
+  {
+    const list = E.compute(helpdesk(4));
+    ok(/Microsoft.s list rate/.test(objOf(list, 'OBJ-08')) && objOf(list, 'OBJ-08').indexOf('$0.01 a credit') > -1, 'C-06 OBJ-08 at list names Microsoft list and $0.01');
+    const sell = helpdesk(4); sell.partner.sellCreditUsd = 0.013;
+    const rs = E.compute(sell), o8 = objOf(rs, 'OBJ-08'), o1 = objOf(rs, 'OBJ-01');
+    ok(!/priced at Microsoft.s list|priced at Microsoft list/.test(o8) && o8.indexOf('$0.013') > -1, 'C-06 OBJ-08 at a partner rate quotes $0.013, never "priced at Microsoft list" (' + o8 + ')');
+    ok(o1.indexOf('$0.013 a credit') > -1 && o1.indexOf('2,308') > -1, 'C-06 OBJ-01 meter and enterprise break-even at the customer rate: $30 / $0.013 = 2,308 (' + o1 + ')');
+    const cw = helpdesk(4); cw.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.012 });
+    const o8c = objOf(E.compute(cw), 'OBJ-08');
+    ok(o8c.indexOf('$0.012') > -1 && !/priced at Microsoft.s list|priced at Microsoft list/.test(o8c), 'C-06 OBJ-08 follows a Cowork sell rate');
+    const seat = helpdesk(4); seat.partner.sellSeatUsd.business = 25;
+    const o1s = objOf(E.compute(seat), 'OBJ-01');
+    ok(o1s.indexOf('$25') > -1 && o1s.indexOf('2,500') > -1, 'C-06 OBJ-01 uses the partner Business seat price and its break-even (2,500) (' + o1s + ')');
+    ok(objOf(list, 'OBJ-01').indexOf('3,000') > -1 && objOf(list, 'OBJ-01').indexOf('1,800') > -1, 'C-06 OBJ-01 at list keeps 3,000 and 1,800');
+  }
+
+  // C-08 · the Cowork tab at list while the plan uses the partner's price: one warning, shown on both tabs
+  {
+    const st = helpdesk(4); st.coworkSession = PAYLOAD(); st.combined.includeCowork = 'on'; st.partner.sellCreditUsd = 0.0123;
+    const w19 = wOf(E.compute(st), 'P-19');
+    ok(w19 && w19.aud === 'partner' && w19.msg.indexOf('$0.0123') > -1 && /Microsoft list/.test(w19.msg), 'C-08 P-19 fires when the Cowork tab is at list and the plan at $0.0123');
+    const same = J(st); same.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.0123 });
+    ok(!wOf(E.compute(same), 'P-19'), 'C-08 P-19 silent when both tabs use the same rate');
+    const none = J(st); none.partner.sellCreditUsd = null;
+    ok(!wOf(E.compute(none), 'P-19'), 'C-08 P-19 silent with no partner sell price');
+    const ag = J(st); ag.meta.mode = 'agents';
+    ok(!wOf(E.compute(ag), 'P-19'), 'C-08 P-19 silent on an agents-only plan');
+    ok(/id="cwRateWarn"/.test(src) && /function renderCoworkRate\(\)[\s\S]{0,400}'P-19'/.test(src), 'C-08 the Cowork tab shows the P-19 warning above the frame');
+  }
+
+  // H-07 · $18 always carries "promo through 2026-12-31"; P-76 fires whenever the crossover uses the promo; eligibility at the buy month
+  {
+    const PT = 'promo through 2026-12-31';
+    const r40 = E.compute(helpdesk(40));
+    ok(r40.crossover.agents[0].sku === 'promo' && r40.state.studio.account.seats.business === 0, 'H-07 setup: promo crossover with no Business seats');
+    const w76 = wOf(r40, 'P-76'), w75 = wOf(r40, 'P-75');
+    ok(w76 && w76.msg.indexOf(PT) > -1, 'H-07 P-76 fires when the crossover uses the promo, with no Business seats');
+    ok(w75 && w75.msg.indexOf(PT) > -1, 'H-07 P-75 states the promo end');
+    ok(objOf(r40, 'OBJ-01').indexOf(PT) > -1, 'H-07 OBJ-01 states the promo end');
+    const n6 = nbaOf(r40, 'NBA-06');
+    ok(n6 && n6.why.join(' ').indexOf(PT) > -1, 'H-07 NBA-06 why states the promo end');
+    const late = helpdesk(40); late.combined.horizon.startMonth = '2026-12'; late.studio.agents[0].startMonth = 6;
+    const wl = wOf(E.compute(late), 'P-76');
+    ok(wl && /June 2027/.test(wl.msg) && /after the promo ends/.test(wl.msg), 'H-07 P-76 judges the promo at the go-live month (June 2027 is after it ends)');
+    ok(/a\.sku === 'promo'[\s\S]{0,200}promo through/.test(src), 'H-07 the customer report license-instead callout states the promo end');
+    ok(/promo: 'Copilot Business \(promo through 2026-12-31\)'/.test(src), 'H-07 the seat table labels the promo SKU with its end date');
+  }
+
+  // H-08 · NBA-11 fires on packs > 1 or any P3 with nothing measured; opener and Apply fix to spec; P3 warnings reachable
+  {
+    const big = helpdesk(4); big.coworkSession = PAYLOAD(); big.combined.includeCowork = 'on';
+    const rb = E.compute(big);
+    ok(Math.max.apply(null, rb.purchase.best.packs.schedule) > 1 && rb.purchase.best.p3.units === 0, 'H-08 setup: best plan is several packs, no P3');
+    const n11 = nbaOf(rb, 'NBA-11');
+    ok(!!n11, 'H-08 NBA-11 fires when the plan holds more than one pack and nothing is measured');
+    ok(n11 && /one pack/i.test(n11.opener + n11.then) && /pay-as-you-go/.test(n11.opener + n11.then) && !/for a quarter/.test(n11.opener) && /billed annually/.test(n11.why.join(' ') + n11.then), 'H-08 opener: start with one pack and PAYG overflow; packs are billed annually');
+    ok(n11 && n11.fix && n11.fix.path === 'combined', 'H-08 NBA-11 has an Apply fix');
+    if (n11 && n11.fix) {
+      const fx = E.applyFix(rb.state, n11.fix);
+      ok(fx.combined.purchase.appetite === 'conservative' && fx.combined.purchase.current.packs === 1 && fx.combined.purchase.current.p3.every((x) => x === 0) && fx.combined.enforcement.basis === 'current',
+        'H-08 the fix plans on 1 pack + pay-as-you-go at a conservative appetite');
+      ok(!nbaOf(E.compute(fx), 'NBA-11'), 'H-08 once applied, NBA-11 clears');
+    }
+    const meas = J(big); meas.actuals = { 'agent-1': { credits: 1000 } };
+    ok(!nbaOf(E.compute(meas), 'NBA-11'), 'H-08 NBA-11 silent once a quantity is measured');
+    ok(!nbaOf(E.compute(presetState('helpdesk')), 'NBA-11'), 'H-08 NBA-11 silent on a one-pack or pay-as-you-go plan');
+    const ids = wids(rb);
+    ['P-30', 'P-32', 'P-38'].forEach((id) => ok(ids.indexOf(id) > -1, 'H-08 ' + id + ' reachable on the NBA-11 condition (pre-purchase alternative)'));
+    const ind = J(big); ind.partner.motion = 'indirectReseller'; ok(wids(E.compute(ind)).indexOf('P-74') > -1, 'H-08 P-74 reachable');
+    const dir = J(big); dir.partner.motion = 'direct'; ok(wids(E.compute(dir)).indexOf('P-73') > -1, 'H-08 P-73 reachable');
+    ok(wOf(rb, 'P-32') && /instead/.test(wOf(rb, 'P-32').msg), 'H-08 P-3x name the pre-purchase alternative when it is not the recommendation');
+  }
+
+  // H-09 · ladder: a separate 'setup' rung with no price; the spec's per-rung conditions; ticks only where a rung holds
+  {
+    const lad = (st) => E.ladder(E.compute(st));
+    const one = helpdesk(4); one.studio.account.tenantBase = 'standard';
+    const L1 = lad(one), by = (L, k) => L.filter((x) => x.key === k)[0];
+    eq(L1.map((x) => x.key).join(), 'assessment,build,setup,agentcare,finops,agent365', 'H-09 rung keys: setup is its own rung');
+    ok(by(L1, 'setup').price === null, 'H-09 setup shows "your price", never the $12 governance base');
+    ok(E.defaults().partner.services.some((x) => x.key === 'governance' && x.price === 12), 'H-09 the $12 governance base stays its own service line');
+    eq(L1.filter((x) => x.recommended).map((x) => x.key).join(), 'setup', 'H-09 no billing path, nothing higher holds: setup is recommended');
+    ok(by(L1, 'build').holds && !by(L1, 'agentcare').holds && !by(L1, 'finops').holds, 'H-09 build holds (no production environment); AgentCare and FinOps do not');
+    const later = helpdesk(4); later.studio.account.tenantBase = 'standard'; later.studio.account.azurePayg = 'yes'; later.combined.enforcement.perAgentCaps = 'yes';
+    later.studio.environments = [{ name: 'Production', kind: 'production', allocation: 20000, payg: false, tenantDraw: false, managed: false }];
+    later.studio.agents[0].env = 'Production'; later.studio.agents[0].startMonth = 4;
+    const L2 = lad(later);
+    ok(!by(L2, 'agentcare').holds && by(L2, 'build').holds, 'H-09 an agent not yet live (startMonth 4) does not get AgentCare; the build rung holds');
+    const live = J(later); live.studio.agents[0].startMonth = 0;
+    const L3 = lad(live);
+    eq(L3.filter((x) => x.recommended).map((x) => x.key).join(), 'agentcare', 'H-09 a live agent in production: AgentCare is the highest rung that holds');
+    ok(!by(L3, 'build').holds && !by(L3, 'setup').holds, 'H-09 rungs that do not hold are not ticked');
+    const prem = E.applyScenarioPreset(E.defaults(), 'smb-trio'); prem.studio.account.tenantBase = 'premium';
+    const L6 = lad(prem);
+    ok(by(L6, 'agent365').recommended && /\$15/.test(by(L6, 'agent365').note) && /separate/.test(by(L6, 'agent365').note), 'H-09 rung 6 says the $15 Agent 365 license is separate from the overlay');
+    eq(lad(E.defaults()).filter((x) => x.recommended).map((x) => x.key).join(), 'assessment', 'H-09 nothing modeled: the assessment');
+    ok(/x\.holds && !x\.recommended/.test(src), 'H-09 the UI ticks only rungs that hold');
+  }
+
+  // H-10 · P-53 prints the December 1, 2026 date, never the first horizon month
+  {
+    const st = helpdesk(4); st.combined.horizon.startMonth = '2027-03'; st.studio.account.seats.business = 20; st.studio.account.cspNewBusiness = 'yes';
+    const w53 = wOf(E.compute(st), 'P-53');
+    ok(w53 && /December 1, 2026/.test(w53.msg) && !/March 2027/.test(w53.msg), 'H-10 P-53 says December 1, 2026 for a 2027-03 start (' + (w53 && w53.msg.slice(0, 60)) + ')');
+  }
+
+  // M-09 · NBA-05 says "in the high scenario" when only the high end crosses; Apply sets the per-user cap to hi rounded up to 500
+  {
+    const cwSt = (mc) => { const s = helpdesk(4); s.coworkSession = PAYLOAD({ monthlyCredits: mc, rampCredits: Array(12).fill(mc), annualCredits: mc * 12, year1Credits: mc * 12 });
+      s.combined.includeCowork = 'on'; s.studio.account.seats.business = 100; s.studio.account.cspNewBusiness = 'yes'; return s; };
+    const rh = E.compute(cwSt(350000)), n5 = nbaOf(rh, 'NBA-05');
+    ok(rh.enforcement.userCap.day.hi && !rh.enforcement.userCap.day.mid, 'M-09 setup: only the high scenario crosses 4,000');
+    ok(n5 && /high scenario/.test(n5.why.join(' ') + n5.opener) && !/will hit it/.test(n5.opener), 'M-09 NBA-05 hedges to the high scenario (' + (n5 && n5.opener) + ')');
+    ok(n5 && n5.fix && n5.fix.path === 'combined.enforcement.perUserCap' && n5.fix.value === 5000, 'M-09 Apply sets the per-user cap to the modeled high 4,550 rounded up to 5,000');
+    if (n5 && n5.fix) ok(!nbaOf(E.compute(E.applyFix(rh.state, n5.fix)), 'NBA-05'), 'M-09 the fix clears NBA-05');
+    const n5m = nbaOf(E.compute(cwSt(500000)), 'NBA-05');
+    ok(n5m && /working day \d+/.test(n5m.opener) && !/high scenario/.test(n5m.opener), 'M-09 when the middle scenario crosses, NBA-05 states the middle day');
+  }
+
+  // M-10 · NBA-14 only when nothing else matched; a throwing rule is skipped, not the others
+  {
+    const rt = E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'));
+    ok(nbaIds(rt).indexOf('NBA-01') > -1 && nbaIds(rt).indexOf('NBA-14') < 0, 'M-10 no "No blocker found" under an NBA-01 blocker');
+    eq(nbaIds(E.compute(E.defaults())).join(), 'NBA-14', 'M-10 NBA-14 alone when nothing else matches');
+    const broken = Object.assign({}, rt, { dataverse: null });
+    const ids = nbaIds(broken);
+    ok(ids.indexOf('NBA-01') > -1 && ids.indexOf('NBA-14') < 0, 'M-10 a rule that throws (no dataverse) skips only itself (' + ids.join() + ')');
+  }
+
+  // M-11 · no partner-only text in the talk track (NBA-13 opener, P-28 coaching)
+  {
+    const fe = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
+    const n13 = nbaOf(fe, 'NBA-13');
+    ok(fe.specialization.reached && n13, 'M-11 setup: the full estate reaches the specialization bar');
+    const tk = E.talk(fe);
+    ok(n13 && tk.indexOf(n13.opener) < 0, 'M-11 the NBA-13 opener never enters the talk track');
+    ok(tk.every((l) => !/Say it plainly/.test(l)), 'M-11 no "Say it plainly" coaching in the talk track');
+    const w28 = wOf(fe, 'P-28');
+    ok(w28 && !/Say it plainly/.test(w28.msg) && /Say it plainly/.test(w28.note || ''), 'M-11 P-28 keeps the coaching as a partner-only note');
+    ok(E.customerView(fe).warnings.every((w) => !/Say it plainly/.test(w.msg) && !('note' in w)), 'M-11 the customer view carries no coaching');
+    ok(/w\.note \? '<div class="mini partner-only">/.test(src), 'M-11 the flags render a note as partner-only');
+  }
+
+  // M-12 · the spec's headline lines T-ZERO, T-BUY, T-GUARD, T-ADJ, T-SEAT; a plain line when nothing is modeled
+  {
+    const t0 = E.talk(E.compute(E.defaults()));
+    ok(/Nothing is modeled yet/.test(t0[0]) && t0.every((l) => !/0–0|\$0–\$0/.test(l)), 'M-12 no agents and no Cowork: the opener says nothing is modeled yet (' + t0[0] + ')');
+    const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio'); trio.studio.adjacent.agent365Owners = 2;
+    const tt = E.talk(E.compute(trio)), has = (re) => tt.some((l) => re.test(l));
+    ok(has(/^4,800 credits a month are already covered by the Copilot licenses you own\. That.s \d+% of the agent traffic\.$/), 'M-12 T-ZERO');
+    ok(has(/^The cheapest way to buy it is .+: about \$[\d,.]+ a month, against \$[\d,.]+ if you paid as you go\.$/) || has(/^Pay-as-you-go is the cheapest way to buy it/), 'M-12 T-BUY');
+    ok(has(/^We.ll set a cap on each agent and alerts at 50, 80 and 100%, so nothing switches off by surprise\.$/), 'M-12 T-GUARD');
+    ok(has(/^Separately from credits, budget \$30 a month for Agent 365\.$/), 'M-12 T-ADJ');
+    ok(has(/^Metering is cheaper than a seat for these users/), 'M-12 T-SEAT (meter verdict)');
+    const lic = E.compute(helpdesk(40)), n6 = nbaOf(lic, 'NBA-06');
+    ok(n6 && E.talk(lic).filter((l) => l === n6.opener).length === 1 && !E.talk(lic).some((l) => /Metering is cheaper than a seat/.test(l)), 'M-12 T-SEAT is the NBA-06 opener when a seat wins');
+  }
+
+  // M-13 · NBA-04's Apply fix links the environment to pay-as-you-go when caps are set and agents are cut
+  {
+    const st = E.applyScenarioPreset(E.defaults(), 'smb-trio'); st.combined.enforcement.perAgentCaps = 'yes'; st.studio.account.azurePayg = 'yes';
+    const r4 = E.compute(st), n4 = nbaOf(r4, 'NBA-04');
+    ok(r4.enforcement.events.some((e) => e.kind === 'agents') && n4, 'M-13 setup: caps set, agents still cut');
+    ok(n4 && n4.fix && n4.fix.path === 'combined.enforcement.defaultEnvPayg' && n4.fix.value === true && /pay-as-you-go/.test(n4.fix.label), 'M-13 the fix links the environment to pay-as-you-go');
+    if (n4 && n4.fix) ok(!nbaOf(E.compute(E.applyFix(st, n4.fix)), 'NBA-04'), 'M-13 the fix clears NBA-04');
+    const un = J(st); un.combined.enforcement.perAgentCaps = 'unsure';
+    const f2 = nbaOf(E.compute(un), 'NBA-04').fix;
+    ok(f2 && f2.path === 'combined.enforcement.perAgentCaps', 'M-13 caps not set: the fix still sets per-agent limits');
+  }
+
+  // M-14 · reasoning "adds 10 credits per started 1,000 tokens on top of the step", never "bills/costs twice"
+  {
+    const rs = presetState('website'); rs.studio.agents[0].reasoning = { on: true, tokens: 2500 };
+    const rr = E.compute(rs), n10 = nbaOf(rr, 'NBA-10'), w20 = wOf(rr, 'P-20');
+    const all = [n10.name, n10.opener, n10.then].concat(n10.why).join(' ') + ' ' + w20.msg;
+    ok(!/twice/.test(all), 'M-14 no "twice" in NBA-10 or P-20');
+    ok(/adds 10 credits per started 1,000 tokens on top of the step/.test(n10.opener) && /adds 10 credits per started 1,000 tokens on top of the step/.test(w20.msg), 'M-14 NBA-10 opener and P-20 use the precise wording');
+    ok(/45,000 credits a month/.test(n10.opener), 'M-14 NBA-10 states what reasoning adds on this agent (1,500 × 30 = 45,000)');
+    ok(!/bills twice|costs twice/.test(src.slice(src.indexOf('<script id="planner-ui">'))), 'M-14 the UI help never says it bills twice');
+  }
+
+  // M-15 · OBJ-07 states the Agent 365 prerequisite and whether this tenant meets it, plus the Dataverse use
+  {
+    const e3 = helpdesk(4); e3.studio.account.tenantBase = 'e3';
+    const o7 = objOf(E.compute(e3), 'OBJ-07');
+    ok(/Business Premium/.test(o7) && /Defender and Purview/.test(o7) && /does not/.test(o7), 'M-15 OBJ-07 on E3: names the prerequisite and says this tenant does not meet it (' + o7 + ')');
+    ok(/you.ll use .*GB/.test(o7), 'M-15 OBJ-07 gives the modeled Dataverse use');
+    const pr = helpdesk(4); pr.studio.account.tenantBase = 'premium';
+    ok(/which this tenant has/.test(objOf(E.compute(pr), 'OBJ-07')), 'M-15 OBJ-07 on Business Premium: the tenant qualifies');
+    const un = helpdesk(4); un.studio.account.tenantBase = 'unsure';
+    ok(/confirm/.test(objOf(E.compute(un), 'OBJ-07')), 'M-15 OBJ-07 with an unsure base: confirm it first');
+    const ov = helpdesk(4); ov.studio.dataverse.existingDbGb = 20;
+    const o7o = objOf(E.compute(ov), 'OBJ-07');
+    ok(/past what is included/.test(o7o) && /\$/.test(o7o), 'M-15 OBJ-07 states an overage and its add-on cost');
+  }
+
+  // M-16 · O-2 keeps 4,800 vs 9,600, carries the test date, makes no false citation claim, never says the estimator shows 0
+  {
+    const o2 = objOf(E.compute(helpdesk()), 'OBJ-02');
+    ok(o2.indexOf('4,800') > -1 && o2.indexOf('9,600') > -1, 'M-16 O-2 keeps 4,800 vs 9,600');
+    ok(/tested 2026-10-11/.test(o2), 'M-16 O-2 says when the estimator was tested');
+    ok(!/Every line here cites Microsoft.s billing rates page/.test(o2), 'M-16 O-2 drops the false "every line cites the billing rates page"');
+    const half = helpdesk(); half.studio.agents[0].users.licensed = 30;
+    const o2h = objOf(E.compute(half), 'OBJ-02');
+    ok(!/shows 0 credits/.test(o2h) && /twice/.test(o2h), 'M-16 at half licensed O-2 never claims the estimator shows 0 credits (' + o2h.slice(0, 120) + ')');
+  }
+
+  // M-17 · O-9 is the spec's build-burn objection ({buildLo}–{buildHi}); no Autopilot text
+  {
+    const fe = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
+    const o9 = E.objections(fe).filter((o) => o.id === 'OBJ-09')[0];
+    const tot = (k) => fe.lanes.agents.filter((a) => !a.paused).reduce((t, a) => t + a.build[k] * (a.build.months.length + a.build.outside), 0);
+    ok(/still building/.test(o9.q) && !/Autopilot/.test(o9.a), 'M-17 O-9 asks why they pay while building, not about Autopilot');
+    ok(tot('hi') > 0 && o9.a.indexOf(E.fmtInt(tot('lo')) + '–' + E.fmtInt(tot('hi'))) > -1, 'M-17 O-9 gives build credits before go-live ' + E.fmtInt(tot('lo')) + '–' + E.fmtInt(tot('hi')) + ' (' + o9.a.slice(0, 160) + ')');
+    const g = objOf(E.compute(helpdesk(4)), 'OBJ-09');
+    ok(!/Autopilot/.test(g) && /GitHub Copilot harness/.test(g), 'M-17 with no harness build, O-9 gives the generic line');
+  }
+
+  // M-18 · NBA-02 fires on external OR no sign-in; why gives credits and dollars at the customer rate
+  {
+    const ext = presetState('website'); ext.studio.agents[0].auth = 'manual';
+    ok(nbaOf(E.compute(ext), 'NBA-02'), 'M-18 an external agent with manual sign-in fires NBA-02');
+    const intNone = presetState('helpdesk'); intNone.studio.agents[0].auth = 'none';
+    ok(nbaOf(E.compute(intNone), 'NBA-02'), 'M-18 an internal agent with no sign-in fires NBA-02');
+    ok(!nbaOf(E.compute(presetState('helpdesk')), 'NBA-02'), 'M-18 an internal Microsoft sign-in agent stays silent');
+    const sell = presetState('website'); sell.partner.sellCreditUsd = 0.013;
+    const n2 = nbaOf(E.compute(sell), 'NBA-02'), why = n2.why.join(' ');
+    ok(/15,000–18,000 credits a month/.test(why) && /\$195–\$234 a month/.test(why), 'M-18 why gives credits and dollars at the customer rate (' + why + ')');
+    ok(n2.fix === null || /perAgentCap/.test(n2.fix.path), 'M-18 the Apply fix only ever sets a per-agent cap (omitted while the engine has none)');
+  }
+
+  // M-19 · blockers first: 01, 03, 04, 05, 07, then 02, 06, 08–13; the spec table matches
+  {
+    const order = ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-07', 'NBA-02', 'NBA-06', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13', 'NBA-14'];
+    const sorted = (ids) => ids.every((id, i) => i === 0 || order.indexOf(ids[i - 1]) < order.indexOf(id));
+    const fe = E.applyScenarioPreset(E.defaults(), 'full-estate'); fe.studio.agents[0].traffic.count = 40;
+    [E.applyScenarioPreset(E.defaults(), 'smb-trio'), fe, helpdesk(40)].forEach((st, k) => {
+      const ids = nbaIds(E.compute(st));
+      ok(sorted(ids), 'M-19 rules come out in blocker-first order, case ' + k + ' (' + ids.join(',') + ')');
+    });
+    const tri = nbaIds(E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio')));
+    ok(tri.indexOf('NBA-04') > -1 && tri.indexOf('NBA-02') > -1 && tri.indexOf('NBA-04') < tri.indexOf('NBA-02'), 'M-19 NBA-04 outranks NBA-02');
+    const spec = fs.readFileSync(path.join(ROOT, 'specs', 'copilot-credit-planner.spec.md'), 'utf8');
+    const rows = (spec.match(/^\| NBA-\d\d \|/gm) || []).map((x) => x.slice(2, 8));
+    eq(rows.join(','), order.join(','), 'M-19 the spec table lists the rules in the same order');
+  }
+
+  // M-22 · P-77's fix moves the seats above 300 to enterprise, as its message says
+  {
+    const st = helpdesk(4); st.studio.account.seats = { business: 400, enterprise: 25, e7: 3 };
+    const w77 = wOf(E.compute(st), 'P-77');
+    const fx = E.applyFix(st, w77.fixes[0]);
+    ok(fx.studio.account.seats.business === 300 && fx.studio.account.seats.enterprise === 125 && fx.studio.account.seats.e7 === 3, 'M-22 400 Business + 25 enterprise → 300 Business + 125 enterprise, no seats dropped');
+    ok(!wOf(E.compute(fx), 'P-77') && /enterprise/.test(w77.fixes[0].label), 'M-22 the fix clears P-77 and says what it does');
+  }
+
+  // M-25..M-29, L-04..L-07, L-10, L-24, L-26 · citations (values unchanged)
+  {
+    const S = E.SRC, R = E.RC, G = 'https://go.microsoft.com/fwlink/?linkid=2368800';
+    ok(S[R.payg.src].url === G && R.payg.page === 'p.4' && R.payg.v === 0.01, 'M-25 PAYG $0.01 cites the Copilot Credits Guide p.4');
+    ok(S[R.p3Tiers.src].url === G && /p\.5/.test(R.p3Tiers.page) && /Studio Licensing Guide p\.14/.test(R.p3Tiers.page), 'M-26 P3 tiers cite the Credits Guide p.5 and the Studio Licensing Guide p.14');
+    eq(S['ms-p3'].date, '2026-07-17', 'M-26 ms-p3 carries the page ms.date');
+    eq(S['ms-cop-ent'].date, '2026-10-11', 'M-27 ms-cop-ent refreshed');
+    ok(/Pre-purchase plan discounts don(&rsquo;|.)t combine with other discounts/.test(src), 'M-28 the P3 note carries Microsoft\'s no-combining caveat');
+    ok(/ubb-setup|Set up usage-based billing/.test(wOf(E.compute(Object.assign(helpdesk(4), { combined: Object.assign(E.defaults().combined, { purchase: Object.assign(E.defaults().combined.purchase, { showAgentP3: true }) }) })), 'P-31').msg)
+       && /Agent pre-purchase plan first/.test(wOf(E.compute(Object.assign(helpdesk(4), { combined: Object.assign(E.defaults().combined, { purchase: Object.assign(E.defaults().combined.purchase, { showAgentP3: true }) }) })), 'P-31').msg), 'M-29 P-31 discloses which Learn page says which drawdown order');
+    ok(S[R.ghSplit.src].url === 'https://aka.ms/CopilotCreditPlanningModel', 'L-04 ghSplit cites the web estimator');
+    ok(S[R.agentP3Tiers.src] && R.agentP3Tiers.src === 'ms-licensing-guide' && R.agentP3Tiers.page === 'p.14', 'L-04 Agent P3 tiers cite the Studio Licensing Guide p.14');
+    eq(S['ms-value'].date, '2026-06-04', 'L-05 ms-value date');
+    eq(S['ms-bc-billing'].date, '2026-02-04', 'L-05 ms-bc-billing uses ms.date');
+    ok(S['ms-cop-biz'].url === 'https://www.microsoft.com/en-us/copilot/solutions/business' && S['ms-cop-ent'].url === 'https://www.microsoft.com/en-us/copilot/solutions/enterprise', 'L-06 redirected Copilot URLs updated');
+    const inc = E.INCENTIVES.filter((x) => x.key === 'copilot-in-30')[0];
+    ok(/December 31, 2026/.test(inc.text) && inc.src === 'ms-pc-aug', 'L-07 Copilot in 30 states its 2026-12-31 end (Partner Center August)');
+    ok(src.indexOf('Not for this account') < 0, 'L-07 Copilot in 30 is hidden, not labeled "Not for this account"');
+    ok(/x\.fact \? provPill\('ms-verified'\)/.test(src), 'L-24 the ms-verified pill only on incentives with a fact');
+    const cw = E.SERVICE_PREFILLS.filter((x) => x.key === 'finops')[0];
+    ok(cw.priceLo === 25 && cw.priceHi === 35 && cw.price === 30, 'L-24 Credit Wrap range 25–35%, prefill 30%');
+    const facts = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'facts.json'), 'utf8')).facts, F = (id) => facts.filter((f) => f.id === id)[0];
+    ok(F('F-149').source_url === G && F('F-155').source_url === G, 'M-25/M-26 F-149 and F-155 cite the Credits Guide');
+    ok(F('F-049').source_url === 'https://www.microsoft.com/en-us/microsoft-365/enterprise/e7' && F('F-090').source_url === 'https://www.microsoft.com/en-us/copilot/solutions/enterprise', 'M-27 F-049 and F-090 cite microsoft.com');
+    eq(F('F-182').as_of, '2026-08-03', 'L-05 F-182 date');
+    ok(/2026-12-31/.test(F('F-195').notes) && !/not confirmed/.test(F('F-195').notes), 'L-07 F-195 note carries the confirmed end date');
+    ok(/cpb-model-the-practice\.html/.test(F('F-010').source_url), 'L-26 F-010 points at cpb-model-the-practice.html');
+    const spec = fs.readFileSync(path.join(ROOT, 'specs', 'copilot-credit-planner.spec.md'), 'utf8');
+    ok(/\| F-010 \/ F-004 \| `cpb-model-the-practice\.html`/.test(spec), 'L-26 the spec points the build fee at cpb-model-the-practice.html');
+  }
+
+  // M-31 · every static control in the hub has a label (the Cowork iframe's own inputs belong to that page)
+  {
+    const html = src.replace(/<script[\s\S]*?<\/script>/g, '');
+    const ctl = html.match(/<(input|select|textarea)\b[^>]*>/g) || [];
+    const bad = ctl.filter((tag) => {
+      if (/aria-label="[^"]+"/.test(tag) || /aria-labelledby=/.test(tag)) return false;
+      const id = (/\bid="([^"]+)"/.exec(tag) || [])[1];
+      if (id && html.indexOf('for="' + id + '"') > -1) return false;
+      const at = html.indexOf(tag), before = html.slice(Math.max(0, at - 300), at);
+      return !(before.lastIndexOf('<label') > before.lastIndexOf('</label>'));
+    });
+    ok(ctl.length > 10 && bad.length === 0, 'M-31 every hub control is labeled (' + bad.map((b) => b.slice(0, 60)).join(' | ') + ')');
+  }
+
+  // M-32 · at phone width the Customer view pill is a full-width bar with room reserved under the page
+  {
+    const mq = /@media \(max-width:720px\)\{ body\.customer-view \.cv-pill \{([^}]*)\}\s*body\.customer-view \{ padding-bottom:(\d+)px; \} \}/.exec(src);
+    ok(mq && /left:16px; right:16px; transform:none;/.test(mq[1]) && Number(mq[2]) >= 72, 'M-32 the pill spans the 16px gutters and the page reserves space beneath it at 375 px');
+  }
+
+  // L-01 · the governance sheet reads the engine's click paths; every engine path is used
+  {
+    const cp = E.customerView(E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'))).guardrails.clickPaths;
+    const gw = (/function govWhere\(cv\) \{([\s\S]*?)\n  \}/.exec(src) || [])[1] || '';
+    ok(cp.length === 4 && cp.every((c) => gw.indexOf("by['" + c.setting + "']") > -1), 'L-01 govWhere maps every engine click path (' + cp.map((c) => c.setting).join('; ') + ')');
+    ok(/cv\.guardrails\.clickPaths/.test(gw) && /WH = govWhere\(cv\)/.test(src), 'L-01 govRows takes its paths from the customer view, not a second copy');
+  }
+
+  // L-19, L-20, L-21 · objection cards: no origin claim for "25", O-6 to spec, O-3 hedged, "no figures" keyed on placeholders
+  {
+    const ob = (st) => { const m = {}; E.objections(E.compute(st)).forEach((o) => { m[o.id] = o; }); return m; };
+    const hd = ob(helpdesk(4)), ws = ob(presetState('website'));
+    ok(!/unused weight|estimator code/.test(hd['OBJ-04'].a) && /5 credits, not 25/.test(hd['OBJ-04'].a), 'L-19 OBJ-04 keeps the rate, drops the origin claim');
+    const big = helpdesk(4); big.coworkSession = PAYLOAD(); big.combined.includeCowork = 'on';
+    const o6 = ob(big)['OBJ-06'];
+    ok(/saves \d+(\.\d+)?%/.test(o6.a) && /only if you use all of it/.test(o6.a) && !/commit units/.test(o6.a) && !o6.generic, 'L-20 OBJ-06 gives {p3pct}, "only if you use all of it", no "commit units" (' + o6.a + ')');
+    const sell = J(big); sell.partner.sellCreditUsd = 0.013;
+    ok(!/0\.008/.test(ob(sell)['OBJ-06'].a), 'L-20 OBJ-06 shows no $0.008 in sell mode');
+    ok(!/always bill/.test(hd['OBJ-03'].a) && /Likely/.test(hd['OBJ-03'].a), 'L-21 OBJ-03 hedges autonomous runs as Likely');
+    ok(!/covers 0 credits/.test(ws['OBJ-03'].a) && ws['OBJ-03'].generic === true && hd['OBJ-03'].generic === false, 'L-21 OBJ-03 uses the generic line, flagged, when nothing is covered');
+    ok(ws['OBJ-02'].generic === true && hd['OBJ-02'].generic === false && hd['OBJ-08'].generic === false, 'L-21 the "no figures" flag follows the placeholders, not a digit regex');
+    ok(/var generic = o\.generic === true;/.test(src), 'L-21 the UI marks a card from its generic flag');
+  }
+
+  // L-22 · spec Apply fixes on NBA-06, 07, 08, 09, 12 where the path exists; NBA-09 also fires on a GitHub card with no build
+  {
+    const applyN = (st, id) => { const n = nbaOf(E.compute(st), id); return n && n.fix ? E.applyFix(st, n.fix) : null; };
+    const s6 = helpdesk(40), f6 = applyN(s6, 'NBA-06');
+    ok(f6 && f6.studio.agents[0].users.licensed === 60 && f6.studio.account.seats.business === 40 && !nbaOf(E.compute(f6), 'NBA-06'), 'L-22 NBA-06 licenses the 40 users on Copilot Business and clears');
+    const s7 = E.applyScenarioPreset(E.defaults(), 'business-central');
+    s7.studio.environments = [{ name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false }];
+    const r7 = E.compute(s7);
+    if (nbaOf(r7, 'NBA-07')) {
+      const f7 = applyN(s7, 'NBA-07');
+      ok(f7 && f7.studio.agents.filter((a) => a.type === 'bc').every((a) => a.env === 'Production') && !nbaOf(E.compute(f7), 'NBA-07'), 'L-22 NBA-07 moves the Business Central agents to Production and clears');
+    } else ok(false, 'L-22 setup: NBA-07 fires on the Business Central preset');
+    const no7 = J(s7); no7.studio.environments = [];
+    ok(nbaOf(E.compute(no7), 'NBA-07') && nbaOf(E.compute(no7), 'NBA-07').fix === null, 'L-22 NBA-07 offers no fix when there is no production environment');
+    const s8 = helpdesk(4); s8.studio.agents[0].data.retentionDays = 3650; s8.studio.agents[0].traffic.count = 4000;
+    const r8 = E.compute(s8);
+    if (nbaOf(r8, 'NBA-08')) { const f8 = applyN(s8, 'NBA-08'); ok(f8 && f8.studio.agents[0].data.retentionDays === 30, 'L-22 NBA-08 sets retention to 30 days on cards above 30'); }
+    else ok(false, 'L-22 setup: NBA-08 fires on a long retention');
+    const fe = E.applyScenarioPreset(E.defaults(), 'full-estate'), f9 = applyN(fe, 'NBA-09');
+    const bud = f9 && f9.partner.services.filter((x) => /Build budget/.test(x.label))[0];
+    const bh = E.compute(fe).lanes.agents.filter((a) => !a.paused).reduce((t, a) => t + a.build.hi * (a.build.months.length + a.build.outside), 0);
+    ok(bud && bud.on && Math.abs(bud.price - Math.round(bh * 0.01 * 100) / 100) < 0.01, 'L-22 NBA-09 adds a build budget service line at the build high × $0.01');
+    const gh = J(fe); gh.studio.agents.forEach((a) => { if (a.harness === 'github') a.github.buildSessions = 0; });
+    ok(nbaOf(E.compute(gh), 'NBA-09'), 'L-22 NBA-09 fires on any GitHub card, even with no build sessions');
+    const s12 = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s12.studio.account.tenantBase = 'premium';
+    const f12 = applyN(s12, 'NBA-12');
+    ok(f12 && f12.studio.adjacent.agent365Owners === 3, 'L-22 NBA-12 turns on Agent 365 for the three agent owners');
+    ok(!nbaOf(E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio')), 'NBA-12'), 'NBA-12 stays silent on the default unsure tenant base');
+    const s12s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s12s.studio.account.tenantBase = 'standard'; s12s.studio.account.suites = 'yes';
+    ok(nbaOf(E.compute(s12s), 'NBA-12'), 'NBA-12 fires on a Standard base that owns the Defender and Purview suites (eligibility field, not the base alone)');
+  }
+
+  // L-23 · P-15 checks the 100-emails-a-day limit it quotes, per active day
+  {
+    const pay = (vol, days) => { const s = E.newAgent(E.defaults(), 'bcPayables'); s.studio.agents[0].bc.volume = vol; s.studio.agents[0].daysActive = days; return wOf(E.compute(s), 'P-15'); };
+    const w = pay(2400, 20);
+    ok(w && /120 invoices a day/.test(w.msg) && /100 emails/.test(w.msg), 'L-23 2,400 invoices over 20 days = 120 a day: above the 100-emails-a-day limit (' + (w && w.msg) + ')');
+    ok(!pay(2000, 22), 'L-23 2,000 over 22 days (91 a day) stays silent');
+    ok(pay(12000, 22) && /545 invoices a day/.test(pay(12000, 22).msg), 'L-23 the invoice limit is judged per active day too');
+  }
+
+  // L-33 · P-21 in plain words for the customer; L-34 · neither page references Cloudflare Web Analytics
+  {
+    const w21 = wOf(E.compute(presetState('order')), 'P-21');
+    ok(w21 && w21.aud === 'customer' && !/Likely/.test(w21.msg) && /our reading/.test(w21.msg), 'L-33 P-21 drops the "Likely" jargon (' + (w21 && w21.msg) + ')');
+    const cw = fs.readFileSync(path.join(ROOT, 'cowork-calculator.html'), 'utf8');
+    ok(!/cloudflareinsights|beacon\.min\.js/i.test(src) && !/cloudflareinsights|beacon\.min\.js/i.test(cw), 'L-34 neither page loads cloudflareinsights (the request comes from the hosting layer)');
+  }
+
+  // Engine figures read when present: P-75 quotes the customer-basis saving; NBA-03 gives the starvation day
+  {
+    const st = helpdesk(40); st.partner.sellCreditUsd = 0.012;
+    const r = E.compute(st), cv = E.customerView(r).licenseInstead.agents[0], w75 = wOf(r, 'P-75');
+    ok(w75 && cv.verdict === 'license' && w75.msg.indexOf(E.fmtUsd(cv.savingUsdMonthly)) > -1, 'P-75 quotes the same saving as the customer view (' + E.fmtUsd(cv.savingUsdMonthly) + ')');
+    const neg = helpdesk(40); neg.partner.sellSeatUsd.business = 25;
+    const rn = E.compute(neg);
+    ok(!wOf(rn, 'P-75') || !/-\$/.test(wOf(rn, 'P-75').msg), 'P-75 never quotes a negative saving at the customer prices');
+    const fake = E.compute(helpdesk(4)); fake.enforcement = Object.assign({}, fake.enforcement, { remainder: 1000, m365: { demand: { lo: 1, mid: 5000, hi: 9000 }, starvation: { mid: true, hi: true, day: 12 } } });
+    const n3 = nbaOf(fake, 'NBA-03');
+    ok(n3 && /day 12/.test(n3.opener), 'NBA-03 states the engine starvation day when it is exposed');
+  }
+
+  /* QA-C end */
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

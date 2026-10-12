@@ -439,6 +439,9 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 .cv-pill .cv-exit { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#a8ecf5;
   border-radius:20px; padding:4px 12px; font-size:.74rem; font-weight:700; cursor:pointer; font-family:inherit; }
 .cv-pill .cv-exit:hover { background:rgba(255,255,255,.2); }
+/* Phones: a full-width bar with room reserved under the page, so the pill never sits on content (M-32). */
+@media (max-width:720px){ body.customer-view .cv-pill { left:16px; right:16px; transform:none; bottom:12px; justify-content:space-between; gap:10px; padding:8px 12px; font-size:.76rem; border-radius:14px; }
+  body.customer-view { padding-bottom:84px; } }
 
 footer.pagefoot { max-width:1320px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#6b7280; line-height:1.7; }
 footer.pagefoot a { color:#6b7280; }
@@ -543,9 +546,9 @@ footer.pagefoot p { margin:0 0 10px; }
           <button type="button" role="menuitem" data-print="csv" id="pmCsv">Download the cost trace (.csv)</button>
         </div>
       </div>
-      <input type="file" id="fileSession" accept="application/json,.json" hidden>
-      <input type="file" id="fileCard" accept="application/json,.json" hidden>
-      <input type="file" id="fileCowork" accept="application/json,.json" hidden>
+      <input type="file" id="fileSession" accept="application/json,.json" aria-label="Load a session file" hidden>
+      <input type="file" id="fileCard" accept="application/json,.json" aria-label="Load a partner card" hidden>
+      <input type="file" id="fileCowork" accept="application/json,.json" aria-label="Load a Cowork session file" hidden>
     </div>
   </div>
 </div>
@@ -633,6 +636,7 @@ footer.pagefoot p { margin:0 0 10px; }
     <!-- ══════════ TAB 1 · COWORK ══════════ -->
     <section class="tabpanel" id="panel-cowork" role="tabpanel" aria-labelledby="tab-cowork" hidden>
       <div class="cwstatus no-print" id="cwStatus" role="status"></div>
+      <div class="callout warn no-print partner-only" id="cwRateWarn" role="status" hidden></div>
       <p class="note no-print" id="cwFallback" hidden>Customer view and auto-height need the page served over http(s). The Cowork calculator still works below, but its figures cannot reach the other tabs from a local file.</p>
       <div class="cwhost">
         <iframe id="coworkFrame" src="cowork-calculator.html?embed=1" title="Cowork Cost &amp; Conversation Simulator" scrolling="no"></iframe>
@@ -1024,7 +1028,7 @@ footer.pagefoot p { margin:0 0 10px; }
     'ms-harness':         { title: 'Copilot Studio billing credit overview (GitHub Copilot harness)', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/agents-experience/billing-credit-overview', date: '2026-09-10' },
     'ms-credits-guide':   { title: 'Copilot Credits Guide, October 2026', url: 'https://go.microsoft.com/fwlink/?linkid=2368800', date: '2026-10-08' },
     'ms-licensing-guide': { title: 'Copilot Studio Licensing Guide, October 2026', url: 'https://go.microsoft.com/fwlink/?linkid=2320995', date: '2026-10-07' },
-    'ms-p3':              { title: 'Copilot Credit pre-purchase plan', url: 'https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/copilot-credit-p3', date: '2026-10-08' },
+    'ms-p3':              { title: 'Copilot Credit pre-purchase plan', url: 'https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/copilot-credit-p3', date: '2026-07-17' },
     'ms-agent-p3':        { title: 'Microsoft Agent pre-purchase plan', url: 'https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/agent-pre-purchase', date: '2026-09-29' },
     'ms-ubb-setup':       { title: 'Set up usage-based billing for Copilot Credits', url: 'https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-copilot-credits-setup', date: '2026-10-01' },
     'ms-ubb-overview':    { title: 'Usage-based billing with Copilot Credits', url: 'https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits', date: '2026-08-21' },
@@ -1032,18 +1036,19 @@ footer.pagefoot p { margin:0 0 10px; }
     'ms-pc-jul':          { title: 'Partner Center announcements, July 2026', url: 'https://learn.microsoft.com/en-us/partner-center/announcements/2026-july', date: '2026-07-29' },
     'ms-pc-aug':          { title: 'Partner Center announcements, August 2026', url: 'https://learn.microsoft.com/en-us/partner-center/announcements/2026-august', date: '2026-08-25' },
     'ms-studio-estimator':{ title: 'Copilot Studio agent usage estimator', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/agent-usage-estimator', date: '2026-08-03' },
-    'ms-cop-biz':         { title: 'Microsoft 365 Copilot Business', url: 'https://www.microsoft.com/en-us/microsoft-365/copilot/business', date: '2026-10-11' },
-    'ms-cop-ent':         { title: 'Microsoft 365 Copilot for enterprise', url: 'https://www.microsoft.com/en-us/microsoft-365/copilot/enterprise', date: '2026-05-01' },
-    'ms-bc-billing':      { title: 'Business Central: manage consumption-based billing', url: 'https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/tenant-admin-center-manage-consumption-billing', date: '2026-07-08' },
+    'ms-cop-biz':         { title: 'Microsoft 365 Copilot Business', url: 'https://www.microsoft.com/en-us/copilot/solutions/business', date: '2026-10-11' },
+    'ms-cop-ent':         { title: 'Microsoft 365 Copilot for enterprise', url: 'https://www.microsoft.com/en-us/copilot/solutions/enterprise', date: '2026-10-11' },
+    'ms-bc-billing':      { title: 'Business Central: manage consumption-based billing (updated 2026-07-08)', url: 'https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/tenant-admin-center-manage-consumption-billing', date: '2026-02-04' },
     'ms-bc-payables':     { title: 'Business Central Payables Agent overview', url: 'https://learn.microsoft.com/en-us/dynamics365/business-central/payables-agent', date: '2026-10-02' },
     'ms-capacity':        { title: 'Dataverse capacity-based storage details', url: 'https://learn.microsoft.com/en-us/power-platform/admin/capacity-storage', date: '2026-09-30' },
     'ms-ppac-meters':     { title: 'Power Platform pay-as-you-go meters', url: 'https://learn.microsoft.com/en-us/power-platform/admin/pay-as-you-go-meters', date: '2026-08-14' },
     'ms-agents-report':   { title: 'Copilot Studio agents report (Viva Insights)', url: 'https://learn.microsoft.com/en-us/viva/insights/advanced/analyst/templates/copilot-studio-agents', date: '2026-06-23' },
-    'ms-value':           { title: 'Agent business value: measure impact', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact', date: '2026-08-28' },
+    'ms-value':           { title: 'Agent business value: measure impact', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact', date: '2026-06-04' },
     'ms-managed-env':     { title: 'Licensing requirements for managed environments', url: 'https://learn.microsoft.com/en-us/power-platform/admin/managed-environment-licensing', date: '2026-08-31' },
     'ms-voucher':         { title: 'FY27 Copilot Agents Voucher Program (Featured Program Center KB-01841)', url: 'https://fpc.microsoft.com/knowledgebase/article/KB-01841/en-us', date: '2026-07-01' },
     'ms-transcripts':     { title: 'Control how transcripts are retained and accessed (Copilot Studio)', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-transcript-controls', date: '2026-08-27' },
     'ms-transcript-retention': { title: 'Change the default transcript retention period (Copilot Studio)', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/analytics-transcripts-powerapps#change-the-default-retention-period', date: '2026-08-27' },
+    'ms-web-estimator':   { title: 'Copilot Credit planning model (Microsoft web estimator)', url: 'https://aka.ms/CopilotCreditPlanningModel', date: '2026-10-11' },
     'playbook':           { title: 'Copilot Playbook partner price sheet (TD SYNNEX)', url: 'cpb-model-the-practice.html', date: '2026-08-26' }
   });
 
@@ -1052,15 +1057,15 @@ footer.pagefoot p { margin:0 0 10px; }
      rate change is a one-row edit plus a RATECARD_VERSION bump. Fractional
      credit rates are [credits, per] so bundle math stays in integers. */
   var RC = deepFreeze({
-    payg:         { v: 0.01, unit: 'USD per credit', fact: 'F-149', prov: 'ms-verified', src: 'ms-ubb-overview', label: 'Pay-as-you-go price per Copilot Credit' },
+    payg:         { v: 0.01, unit: 'USD per credit', fact: 'F-149', prov: 'ms-verified', src: 'ms-credits-guide', page: 'p.4', label: 'Pay-as-you-go price per Copilot Credit' },
     pack:         { v: { usd: 200, credits: 25000 }, unit: 'USD and credits per pack per month', fact: 'F-013', prov: 'ms-verified', src: 'ms-licensing-guide', label: 'Capacity pack (billed annually, no rollover)' },
     cccu:         { v: { usd: 1, credits: 100 }, unit: 'USD and credits per commit unit', fact: 'F-160', prov: 'ms-verified', src: 'ms-p3', label: 'Copilot Credit Commit Unit' },
     p3Tiers:      { v: [ { tier: 1, cccu: 3000, pct: 5 }, { tier: 2, cccu: 15000, pct: 6 }, { tier: 3, cccu: 30000, pct: 7 },
                          { tier: 4, cccu: 150000, pct: 8 }, { tier: 5, cccu: 300000, pct: 10 }, { tier: 6, cccu: 750000, pct: 12 },
                          { tier: 7, cccu: 1500000, pct: 14 }, { tier: 8, cccu: 2250000, pct: 17 }, { tier: 9, cccu: 3000000, pct: 20 } ],
-                    unit: 'commit units and discount percent per one-year plan', fact: 'F-155', prov: 'ms-verified', src: 'ms-p3', label: 'Copilot Credit pre-purchase plan tiers' },
+                    unit: 'commit units and discount percent per one-year plan', fact: 'F-155', prov: 'ms-verified', src: 'ms-credits-guide', page: 'p.5; Copilot Studio Licensing Guide p.14', label: 'Copilot Credit pre-purchase plan tiers' },
     p3Stacking:   { v: true, unit: 'several plans held at once', fact: 'F-155', prov: 'ms-inferred', src: 'ms-p3', label: 'Several pre-purchase plans held at once, each at its own discount' },
-    agentP3Tiers: { v: [ { acu: 20000, pct: 5 }, { acu: 100000, pct: 10 }, { acu: 500000, pct: 15 } ], unit: 'agent commit units and discount percent', fact: 'F-177', prov: 'ms-verified', src: 'ms-agent-p3', label: 'Microsoft Agent pre-purchase plan tiers' },
+    agentP3Tiers: { v: [ { acu: 20000, pct: 5 }, { acu: 100000, pct: 10 }, { acu: 500000, pct: 15 } ], unit: 'agent commit units and discount percent', fact: 'F-177', prov: 'ms-verified', src: 'ms-licensing-guide', page: 'p.14', label: 'Microsoft Agent pre-purchase plan tiers' },
     billingOrder: { v: ['packs', 'p3', 'payg'], unit: 'drawdown order', fact: 'F-181', prov: 'ms-verified', src: 'ms-ubb-setup', label: 'Billing order: capacity packs, then pre-purchase plan, then pay-as-you-go' },
     m365Share:    { v: 'purchased minus pre-allocated', unit: 'rule', fact: 'F-183', prov: 'ms-verified', src: 'ms-ubb-setup', label: 'Microsoft 365 draws only what is not pre-allocated to Power Platform environments' },
     classic:      { v: [1, 1], unit: 'credits per answer', fact: 'F-161', prov: 'ms-verified', src: 'ms-rates', label: 'Classic answer' },
@@ -1082,7 +1087,7 @@ footer.pagefoot p { margin:0 0 10px; }
     w365Hour:     { v: 0.40, unit: 'USD per hour', fact: 'F-171', prov: 'ms-verified', src: 'ms-w365', label: 'Windows 365 for Agents, pay-as-you-go hour' },
     w365AlwaysOn: { v: 5, unit: 'USD per always-available Cloud PC per month', fact: 'F-171', prov: 'ms-verified', src: 'ms-w365', label: 'Windows 365 for Agents, always-available Cloud PC' },
     ghRun:        { v: [[100, 300], [300, 500], [500, null]], unit: 'credits per task, light/medium/heavy', fact: 'F-172', prov: 'ms-verified', src: 'ms-harness', label: 'GitHub Copilot harness task' },
-    ghSplit:      { v: [40, 40, 20], unit: 'percent light/medium/heavy', fact: 'F-172', prov: 'ms-verified', src: 'ms-harness', label: 'GitHub Copilot harness default split' },
+    ghSplit:      { v: [40, 40, 20], unit: 'percent light/medium/heavy', fact: 'F-172', prov: 'ms-verified', src: 'ms-web-estimator', label: 'GitHub Copilot harness default split' },
     ghBuild:      { v: [[1, 20], [21, 60], [61, null]], unit: 'credits per creation session', fact: 'F-173', prov: 'ms-verified', src: 'ms-credits-guide', label: 'GitHub Copilot harness build session' },
     bcAnalyze:    { v: [2, 1], unit: 'credits per email', fact: 'F-185', prov: 'ms-verified', src: 'ms-bc-billing', label: 'Sales Order Agent: analyze incoming email' },
     bcAttachNoData:{ v: [2, 1], unit: 'credits per attachment', fact: 'F-185', prov: 'ms-verified', src: 'ms-bc-billing', label: 'Sales Order Agent: attachment, no sales data' },
@@ -1297,7 +1302,7 @@ footer.pagefoot p { margin:0 0 10px; }
     { key: 'build', label: 'Agent build', basis: 'per-agent-one-time', price: 3500, priceHi: 8000, fact: 'F-010' },
     { key: 'governance', label: 'Governance and environment setup and care (per-user base)', basis: 'per-user-month', price: 12, priceHi: 15, fact: 'F-201' },
     { key: 'agentcare', label: 'AgentCare managed service', basis: 'per-agent-month', price: 350, priceHi: 400, fact: 'F-199' },
-    { key: 'finops', label: 'Credit management (Credit Wrap)', basis: 'pct-meter', price: 30, priceHi: 30, fact: 'F-202' },
+    { key: 'finops', label: 'Credit management (Credit Wrap)', basis: 'pct-meter', price: 30, priceLo: 25, priceHi: 35, fact: 'F-202' },
     { key: 'agent365', label: 'Agent 365 governance overlay', basis: 'per-user-month', price: 10, priceHi: 10, fact: 'F-203' }
   ]);
   var SERVICE_BASES = ['one-time', 'per-agent-one-time', 'per-agent-month', 'per-user-month', 'pct-meter'];
@@ -1305,7 +1310,7 @@ footer.pagefoot p { margin:0 0 10px; }
     return SERVICE_PREFILLS.map(function (s) { return { key: s.key, label: s.label, basis: s.basis, price: s.price, cost: null, on: false }; });
   }
   var INCENTIVES = deepFreeze([
-    { key: 'copilot-in-30', text: 'Copilot in 30: a 25-user, 30-day Microsoft 365 Copilot Business trial, partner-led through CSP, for customers with fewer than 300 employees.', fact: 'F-195', src: 'ms-pc-jul' },
+    { key: 'copilot-in-30', text: 'Copilot in 30: a 25-user, 30-day Microsoft 365 Copilot Business trial, partner-led through CSP, for customers with fewer than 300 employees, through December 31, 2026.', fact: 'F-195', src: 'ms-pc-aug' },
     { key: 'growth-margin', text: 'CSP growth margin (from October 1, 2026, for direct-bill partners and distributors) covers Microsoft 365 Copilot, E5, E7, Defender Suite, Purview Suite and Windows 365 Enterprise. Copilot Studio is not on the list.', fact: 'F-196', src: 'ms-pc-oct' },
     { key: 'agents-voucher', text: 'The FY27 Copilot Agents Voucher excludes CSP customers.', fact: 'F-197', src: 'ms-voucher' },
     { key: 'cowork-activation', text: 'The Copilot Cowork activation incentive exists; its terms are gated, so quote nothing from it until you have read them.', fact: null, src: 'ms-pc-oct' }
@@ -1575,7 +1580,10 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ 9 · Warnings, assumptions and trace rows ═══════════════════════════ */
   function W(id, sev, msg, opt) {
     var o = isObj(opt) ? opt : {};
-    return { id: id, sev: sev, msg: msg, aud: o.aud === 'customer' ? 'customer' : 'partner', fixes: Array.isArray(o.fixes) ? o.fixes : [] };
+    var w = { id: id, sev: sev, msg: msg, aud: o.aud === 'customer' ? 'customer' : 'partner', fixes: Array.isArray(o.fixes) ? o.fixes : [] };
+    /* note: partner-only coaching that never reaches the customer view or the talk track */
+    if (typeof o.note === 'string' && o.note) w.note = o.note;
+    return w;
   }
   function A(id, label, note, prov, aud) { return { id: id, label: label, note: note, prov: prov, aud: aud === 'customer' ? 'customer' : 'partner' }; }
   function TR(o) {
@@ -2815,9 +2823,9 @@ footer.pagefoot p { margin:0 0 10px; }
   function agentWarnings(s, agents, warn) {
     var n;
     if ((n = names(agents, function (a) { return a.flags.reasoning; })).length)
-      warn.push(W('P-20', 'warn', 'Reasoning bills twice: the feature rate plus 10 credits per started 1,000 reasoning tokens (' + list(n) + ').', { aud: 'customer' }));
+      warn.push(W('P-20', 'warn', 'A reasoning model adds 10 credits per started 1,000 tokens on top of the step that uses it (' + list(n) + ').', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.type === 'autonomous' && a.lo > 0; })).length)
-      warn.push(W('P-21', 'info', 'Autonomous runs are billed even when the maker holds a Copilot license (Likely; they run on the maker’s credentials): ' + list(n) + '.', { aud: 'customer' }));
+      warn.push(W('P-21', 'info', 'Autonomous runs are billed even when the maker holds a Copilot license. That is our reading of Microsoft’s rules, which do not say it in one sentence: the runs use the maker’s credentials, and Microsoft’s own order-processing example is billed. ' + list(n) + '.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.cua; })).length)
       warn.push(W('P-22', 'info', 'Computer use is never covered by a Copilot license, and Windows 365 for Agents hosting is a separate Azure charge outside the credit pool (' + list(n) + ').', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.harness === 'github' && a.floor; })).length)
@@ -2831,13 +2839,21 @@ footer.pagefoot p { margin:0 0 10px; }
     var covered = sum(agents.filter(function (a) { return !a.paused; }).map(function (a) { return a.licensedCovered; }));
     if (covered > 0) warn.push(W('P-27', 'info', 'Copilot licenses already cover ' + fmtInt(covered) + ' credits a month of agent use. Fair-use limits apply and Microsoft does not quantify them.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.unauthExternal; })).length)
-      warn.push(W('P-28', 'info', 'External agents with no sign-in bill every conversation: ' + list(n) + '. Say it plainly: a website agent is a metered service.', { aud: 'customer' }));
+      warn.push(W('P-28', 'info', 'External agents with no sign-in bill every conversation: ' + list(n) + '.', { aud: 'customer', note: 'Say it plainly: a website agent is a metered service.' }));
     if ((n = names(agents, function (a) { return a.flags.assumedUnlicensed; })).length)
       warn.push(W('P-29', 'info', 'No users entered, so all internal traffic is treated as unlicensed and billed: ' + list(n) + '.'));
     if ((n = names(agents, function (a) { return a.type === 'bc' && a.defaultEnv; })).length)
       warn.push(W('P-14', 'warn', 'Business Central agents draw from the default Power Platform environment unless the Business Central environment is linked to another one: ' + list(n) + '. Relink and cap them.', { aud: 'customer' }));
-    if ((n = names(agents, function (a) { return a.type === 'bc' && a.overLimit; })).length)
-      warn.push(W('P-15', 'warn', 'The Payables Agent processes at most 500 invoices and 100 emails a day, PDFs up to 10 pages and 5 MB: ' + list(n) + ' is above that volume.', { aud: 'customer' }));
+    /* Microsoft's daily limits, judged per active day; one invoice per email is
+       assumed, so the 100-emails-a-day limit binds first. */
+    var lim = RC.bcPayablesLimits.v, over = [];
+    s.studio.agents.forEach(function (c) {
+      if (c.paused || c.type !== 'bc' || c.bc.kind !== 'payables') return;
+      var perDay = c.bc.volume / Math.max(1, c.daysActive);
+      if (perDay > lim.emailsPerDay || perDay > lim.invoicesPerDay) over.push(c.name + ' averages ' + fmtInt(perDay) + ' invoices a day' + (perDay > lim.invoicesPerDay ? '' : ' (one email each assumed)'));
+    });
+    if (over.length)
+      warn.push(W('P-15', 'warn', 'The Payables Agent processes at most ' + fmtInt(lim.invoicesPerDay) + ' invoices and ' + fmtInt(lim.emailsPerDay) + ' emails a day, PDFs up to ' + lim.pages + ' pages and ' + lim.mb + ' MB: ' + over.join('; ') + ', above that limit.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.type === 'bc' && a.bcKind === 'expense'; })).length)
       warn.push(W('P-16', 'info', 'The Business Central Expense Agent is in preview; its 50-credit receipt rate can change: ' + list(n) + '.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.voice; })).length)
@@ -2895,24 +2911,48 @@ footer.pagefoot p { margin:0 0 10px; }
       ' band. The Cowork tab discloses how Microsoft’s current estimator compares; this planner does not model Cowork a second time.', cw.calibrated ? 'measured' : 'ms-modeled', 'customer'));
     var seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7;
     if (cw.included && cw.basisSeats > seats && seats > 0) warn.push(W('P-13', 'warn', 'Cowork users (' + fmtInt(cw.basisSeats) + ') exceed the Copilot seats entered here (' + fmtInt(seats) + '). Cowork needs a Copilot license for every user.', { aud: 'customer' }));
+    /* The hub prices Cowork credits at the partner's rate; the embedded Cowork
+       tab prices them at its own pricing step. When they differ, both tabs say
+       so (the hub cannot change the Cowork page's pricing for it). */
+    if (!agentsOnly && cw.valid && rate.creditSource === 'partner') {
+      var cwp = validateCoworkPayload(s.coworkSession).payload;
+      var cwRate = cwp && cwp.sellMode && cwp.creditUsd > 0 ? cwp.creditUsd : RC.payg.v;
+      if (Math.abs(cwRate - rate.usdPerCredit) > 1e-9)
+        warn.push(W('P-19', 'warn', 'The Cowork tab prices Cowork credits at ' + (cwp && cwp.sellMode && cwp.creditUsd > 0 ? 'a rate of ' : 'Microsoft list, ') + fmtRate(cwRate) +
+          ' a credit, while this plan prices them at your partner’s rate of ' + fmtRate(rate.usdPerCredit) + '. The credits are the same; the dollar figures on the two tabs differ for that reason only. Set the Cowork tab’s pricing step to the same rate before you show either tab.'));
+    }
     agentWarnings(s, agents, warn);
     if (pl.months.some(function (r) { return r.total.hi >= MAX.demand; }))
       warn.push(W('P-39', 'warn', 'Demand is beyond the planner’s range; the purchase options are capped. Check the inputs for a typo.'));
 
     /* Purchase */
     var b = pu.best;
-    if (b.p3.count > 1) warn.push(W('P-30', 'info', 'The recommendation holds ' + b.p3.count + ' pre-purchase plans at once. Holding several plans, each at its own tier discount, is Likely but not stated by Microsoft; confirm it in the Azure portal before quoting.'));
+    /* When the plan commits (more than one pack a month, or any pre-purchase
+       plan) and nothing is measured, the customer will ask about pre-buying:
+       the pre-purchase caveats then apply to the cheapest pre-purchase option
+       even when it is not the recommendation (H-08). */
+    var commitCase = commitWithoutActuals(s, b), p3o = b.p3.units > 0 ? b : null;
+    if (!p3o && commitCase) [pu.families.p3, pu.families.mix].forEach(function (o) { if (!p3o && o && o.p3.units > 0) p3o = o; });
+    var p3pre = p3o && p3o !== b ? 'If the customer pre-buys instead (' + p3o.label + '): ' : '';
+    if (p3o && p3o.p3.count > 1) warn.push(W('P-30', 'info', p3pre + (p3pre ? 'that holds ' : 'The recommendation holds ') + p3o.p3.count + ' pre-purchase plans at once. Holding several plans, each at its own tier discount, is Likely but not stated by Microsoft; confirm it in the Azure portal before quoting.'));
     if (P.showAgentP3) warn.push(W('P-31', 'info', 'Microsoft Agent pre-purchase plans (' + RC.agentP3Tiers.v.map(function (t) { return fmtInt(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') +
-      ') are shown for disclosure only and never optimized: Microsoft’s Learn pages disagree on where they sit in the drawdown order.'));
-    if (b.p3.units > 0) warn.push(W('P-32', 'info', 'A pre-purchase plan is final: one-year term, no cancellation, renews automatically unless turned off, and unused credits expire at term end.'));
+      ') are shown for disclosure only and never optimized: two Microsoft Learn pages disagree on the drawdown order. “Set up usage-based billing for Copilot Credits” (ubb-setup) draws the Agent pre-purchase plan first; “Microsoft Agent pre-purchase plan” draws the Copilot Credit pre-purchase plan first.'));
+    if (p3o) warn.push(W('P-32', 'info', p3pre + 'a pre-purchase plan is final: one-year term, no cancellation, renews automatically unless turned off, and unused credits expire at term end.'));
     if (b.packs.packMonths > 0) warn.push(W('P-33', 'info', 'Capacity packs reset every month with no rollover; unused credits in a month are lost. Expected unused: ' + fmtInt(b.expected.strandedCredits) + ' credits over the year.'));
-    if (pu.overbuy) warn.push(W('P-34', 'info', 'Buying ' + fmtInt(pu.overbuy.coverUnits * p3UnitCccu()) + ' commit units costs ' + fmtUsd(pu.overbuy.coverUsd) + ', less than the ' + fmtUsd(pu.overbuy.exactUsd) +
-      ' that exactly matches the need of ' + fmtInt(pu.overbuy.needUnits * p3UnitCccu()) + ' units. The larger plan strands credits but costs less.'));
+    var ob = pu.overbuy;
+    if (!ob && p3o && p3o !== b && P.allowP3) {
+      var resid = 0, sch = p3o.packs.schedule;
+      for (var mo = 0; mo < HORIZON; mo++) resid += Math.max(0, (pu.demand.mid[mo] || 0) - sch[mo] * RC.pack.v.credits);
+      var needU = p3UnitsFor(resid), exP = p3Plan(needU), cvP = p3Cover(needU);
+      if (needU > 0 && cvP.units > needU && cvP.usd < exP.usd) ob = { needUnits: needU, exactUsd: exP.usd, coverUnits: cvP.units, coverUsd: cvP.usd };
+    }
+    if (ob) warn.push(W('P-34', 'info', (ob === pu.overbuy ? '' : p3pre) + 'Buying ' + fmtInt(ob.coverUnits * p3UnitCccu()) + ' commit units costs ' + fmtUsd(ob.coverUsd) + ', less than the ' + fmtUsd(ob.exactUsd) +
+      ' that exactly matches the need of ' + fmtInt(ob.needUnits * p3UnitCccu()) + ' units. The larger plan strands credits but costs less.'));
     if (pu.current && pu.current.expected.usd > b.expected.usd + 0.5) warn.push(W('P-35', 'warn', 'What the customer holds today costs about ' + fmtUsd(pu.current.expected.usd - b.expected.usd) + ' more over the year than the recommendation.'));
     if (pu.blocked) warn.push(W('P-36', 'info', 'A cheaper option (' + pu.blocked.label + ', ' + fmtUsd(pu.blocked.expected.usd) + ') was set aside because it strands more than the ' +
       P.appetite + ' limit of ' + APPETITE[P.appetite] + '% in the middle scenario.', { fixes: [{ label: 'Use a balanced commit appetite', path: 'combined.purchase.appetite', value: 'balanced' }] }));
     if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year are bought as added quantity on the customer’s existing annual (NCE) capacity-pack subscription and co-term with it: they end with it at month 12 and bill only for the months left. The step-up schedule counts exactly those months, so nothing is committed past this horizon.'));
-    if (b.p3ExhaustMonth) warn.push(W('P-38', 'info', 'In the middle scenario the pre-purchase plan runs out in month ' + b.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
+    if (p3o && p3o.p3ExhaustMonth) warn.push(W('P-38', 'info', p3pre + 'in the middle scenario the pre-purchase plan runs out in month ' + p3o.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
     if (!(pl.year.hi > 0)) warn.push(W('P-40', 'info', 'No billable usage modeled yet, so there is nothing to buy.', { aud: 'customer' }));
     if (pl.year.hi > 0 && !hasBillingPath(s))
       warn.push(W('P-41', 'risk', 'No billing path yet: no capacity pack, no pre-purchase plan and no Azure subscription for pay-as-you-go. Nothing on this plan runs until one exists.', { aud: 'customer',
@@ -2946,7 +2986,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (en.m365.starvation.mid) warn.push(W('P-52', 'risk', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits, ' + fmtInt(en.m365.overAllocated.mid) + ' more than the agents in those environments use) leave ' + fmtInt(en.m365.available) +
       ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.mid) + ' in the middle scenario. The shared pool runs dry around day ' + en.m365.starvationDay.mid + ' of ' + monthName(en.peakMonth) +
       ', and Cowork runs on pay-as-you-go from then. Allocate each environment only what its agents use.', { aud: 'customer' }));
-    if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + monthName(cap.firstMonth) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
+    if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + dayName(RC.capDate.v) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
       '-credit monthly limit per user (about ' + fmtUsd(usdOf(RC.capDefault.v)) + '). ' + (cap.day.hi ? 'The average Cowork user reaches it as early as working day ' + cap.day.hi + '. Raise the limit to the governance figure or users stop mid-month.' : 'Modeled users stay under it.'),
       { aud: 'customer' }));
     if (gv.actualBelowHigh.length) warn.push(W('P-54', 'info', 'The allocation for ' + list(gv.actualBelowHigh) + ' sits below its own high-end use, so its flows can block at 100% before agents reach 125%.'));
@@ -2978,14 +3018,28 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.partner.motion === 'unsure') warn.push(W('P-70', 'info', 'Your CSP motion is not established, so no margin is shown.', { fixes: [{ label: 'Indirect reseller', path: 'partner.motion', value: 'indirectReseller' }, { label: 'Direct-bill partner', path: 'partner.motion', value: 'direct' }] }));
     if (pe.margin === null && s.partner.motion !== 'unsure' && pe.asks.length) warn.push(W('P-71', 'info', 'Margin needs a cost basis for every line. Ask: ' + pe.asks.join('; ') + '.'));
     if (s.partner.motion === 'notCsp') warn.push(W('P-72', 'info', 'Outside CSP the customer buys from Microsoft directly, so there is no meter margin; only services count.'));
-    if (s.partner.motion === 'direct' && b.p3.units > 0) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
-    if (s.partner.motion === 'indirectReseller' && b.p3.units > 0) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
+    if (s.partner.motion === 'direct' && p3o) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
+    if (s.partner.motion === 'indirectReseller' && p3o) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
     var lic = cx.agents.filter(function (r) { return r.verdict === 'license'; });
-    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(r.savingUsdMonthly) + ' a month on a Copilot seat'; }).join('; ') + '.', { aud: 'customer' }));
+    /* The customer-facing saving is at the customer's prices: the engine's
+       customer-basis figure when it exposes one, otherwise the same arithmetic
+       the customer view uses. A row that saves nothing at those prices is left out. */
+    function custSaving(x) {
+      if (typeof x.customerSavingUsdMonthly === 'number') return x.customerSavingUsdMonthly;
+      var seat = rate.seats && rate.seats[x.sku] > 0 ? rate.seats[x.sku] : x.seatUsd;
+      return x.unlicensedUsers * (x.freeIfLicensedPerUser * rate.usdPerCredit - seat);
+    }
+    lic = lic.filter(function (x) { return custSaving(x) > 0; });
+    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(custSaving(r)) + ' a month on a Copilot seat'; }).join('; ') + '.' +
+      (lic.some(function (r) { return r.sku === 'promo'; }) ? ' That uses the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price, a ' + PROMO_TXT + '; new seats after that cost ' + fmtUsd(RC.seatBiz.v) + '.' : ''), { aud: 'customer' }));
     var iso = horizonMonths(s.combined.horizon.startMonth);
-    if (ac.seats.business > 0 && iso[0] <= RC.seatBizPromo.ends.slice(0, 7) && iso[HORIZON - 1] > RC.seatBizPromo.ends.slice(0, 7))
-      warn.push(W('P-76', 'info', 'The ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business promotion ends December 31, 2026, inside this plan; renewals move to ' + fmtUsd(RC.seatBiz.v) + ' (' + fmtUsd(RC.seatBizMonthly.v) + ' on monthly billing).', { aud: 'customer' }));
-    if (ac.seats.business > RC.bizSeatCap.v) warn.push(W('P-77', 'warn', 'Copilot Business is capped at ' + RC.bizSeatCap.v + ' seats; ' + fmtInt(ac.seats.business) + ' entered. Move the rest to the enterprise SKU.', { aud: 'customer', fixes: [{ label: 'Cap Business at ' + RC.bizSeatCap.v, path: 'studio.account.seats.business', value: RC.bizSeatCap.v }] }));
+    var promoRows = cx.agents.filter(function (r) { return r.sku === 'promo'; });
+    var lateRows = promoRows.filter(function (r) { return promoLate(s, r); });
+    if ((ac.seats.business > 0 && iso[0] <= RC.seatBizPromo.ends.slice(0, 7) && iso[HORIZON - 1] > RC.seatBizPromo.ends.slice(0, 7)) || promoRows.length)
+      warn.push(W('P-76', 'info', 'The ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price is a ' + PROMO_TXT + ' (annual commitment, first year), inside this plan; renewals and new seats move to ' + fmtUsd(RC.seatBiz.v) + ' (' + fmtUsd(RC.seatBizMonthly.v) + ' on monthly billing).' +
+        lateRows.map(function (r) { return ' ' + r.name + ' goes live in ' + monthName(promoBuyMonth(s, r)) + ', after the promo ends, so its seats would be bought at ' + fmtUsd(RC.seatBiz.v) + ' (break-even ' + fmtInt(breakEven(RC.seatBiz.v)) + ' credits a user), not ' + fmtUsd(RC.seatBizPromo.v) + '.'; }).join(''), { aud: 'customer' }));
+    if (ac.seats.business > RC.bizSeatCap.v) warn.push(W('P-77', 'warn', 'Copilot Business is capped at ' + RC.bizSeatCap.v + ' seats; ' + fmtInt(ac.seats.business) + ' entered. Move the rest to the enterprise SKU.', { aud: 'customer', fixes: [{ label: 'Move the ' + fmtInt(ac.seats.business - RC.bizSeatCap.v) + ' seats above ' + RC.bizSeatCap.v + ' to enterprise Copilot', path: 'studio.account.seats',
+      value: { business: RC.bizSeatCap.v, enterprise: ac.seats.enterprise + ac.seats.business - RC.bizSeatCap.v, e7: ac.seats.e7 } }] }));
     if (sp.ttmUsd > 0) warn.push(W('P-78', 'info', sp.reached ? 'This deal clears the ' + fmtUsd(sp.thresholdUsd) + ' Copilot Studio deployment bar for the Agentic Business Solutions specialization in month ' + sp.monthReached + '.'
       : 'Copilot Studio spend reaches ' + fmtUsd(sp.ttmUsd) + ' in twelve months, short of the ' + fmtUsd(sp.thresholdUsd) + ' specialization bar.'));
     if (s.partner.motion === 'direct') warn.push(W('P-79', 'info', 'Partner-earned credit on the Copilot Credit meter is not confirmed; the planner uses ' + fmtPct(s.partner.pecPct, 2) + ' until you verify it.'));
@@ -3029,6 +3083,28 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ 27 · Conversation layer: next best action, talk track, objections, ladder ═ */
+  /* The $18 Copilot Business price is a promotion through 2026-12-31 (annual
+     commitment, first year). Eligibility is judged at the month the seats
+     would be bought: the agent's go-live month (or the engine's buyMonth). */
+  var PROMO_TXT = 'promo through ' + RC.seatBizPromo.ends;
+  var ESTIMATOR_TESTED = '2026-10-11';   // last hands-on test of Microsoft's web estimator (O-2)
+  function promoBuyMonth(s, row) {
+    if (row && typeof row.buyMonth === 'string') return row.buyMonth;
+    var a = s.studio.agents.filter(function (x) { return x.id === row.id; })[0];
+    return addMonths(cMonth(s.combined.horizon.startMonth, '2026-11'), a ? a.startMonth : 0);
+  }
+  /* The plan commits (more than one capacity pack in any month, or any
+     pre-purchase plan) while nothing has been measured, and the customer has
+     not already been planned on the 1-pack start NBA-11 recommends. */
+  function commitWithoutActuals(s, best) {
+    if (!best || Object.keys(s.actuals).length) return false;
+    var pc = s.combined.purchase.current;
+    if (s.combined.enforcement.basis === 'current' && pc.packs === 1 && pc.p3.every(function (x) { return x === 0; })) return false;
+    return Math.max.apply(null, best.packs.schedule) > 1 || best.p3.units > 0;
+  }
+  /* 'YYYY-MM-DD' → 'December 1, 2026' (the date Microsoft announced, not a horizon month). */
+  function dayName(iso) { var mn = monthName(String(iso).slice(0, 7)).split(' '); return mn[0] + ' ' + Number(String(iso).slice(8, 10)) + ', ' + mn[1]; }
+  function promoLate(s, row) { return !!row && row.sku === 'promo' && promoBuyMonth(s, row) > RC.seatBizPromo.ends.slice(0, 7); }
   var GUIDE = deepFreeze({
     billing: 'azure-billing-setup.html#section-13', budgets: 'azure-billing-setup.html#section-9', economics: 'copilot-studio-agent-engagement.html#section-6',
     governance: 'copilot-studio-agent-engagement.html#section-3', limits: 'copilot-studio-agent-engagement.html#section-9', build: 'copilot-studio-agent-engagement.html#section-7',
@@ -3038,54 +3114,178 @@ footer.pagefoot p { margin:0 0 10px; }
   function rule(id, eyebrow, name, why, opener, then, fix, link) {
     return { id: id, eyebrow: eyebrow, name: name, why: why, opener: opener, then: then, fix: fix || null, link: link };
   }
+  /* Each rule is its own function: a rule that throws is skipped, never the
+     others. NBA-14 (the default motion) appears only when nothing matched. */
+  /* Blockers first (M-19): billing path, pool starvation, the 125% switch, the
+     December 1 cap, Business Central on the default environment; then the rest. */
+  var NBA_ORDER = ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-07', 'NBA-02', 'NBA-06', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13'];
+  function nbaRules(r) {
+    var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
+    return {
+      'NBA-01': function () {
+        if (!(r.pool.year.hi > 0 && !hasBillingPath(s))) return null;
+        return rule('NBA-01', 'Blocker', 'Set up a billing path first', ['Nothing in this plan runs without a capacity pack, a pre-purchase plan or an Azure subscription for pay-as-you-go.'],
+          'Before we talk agents, let’s decide how the credits get paid for.', 'Quote a starter pack or set up the Azure plan in the same visit.',
+          { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing);
+      },
+      'NBA-02': function () {
+        /* Spec: any active card with an external audience, or no sign-in. */
+        var ext = ag.filter(function (a) { return a.type === 'conversational' && (a.audience === 'external' || a.auth === 'none') && a.hi > 0; });
+        if (!ext.length) return null;
+        var cr2 = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate.usdPerCredit : RC.payg.v;
+        var eLo = sum(ext.map(function (a) { return a.lo; })), eHi = sum(ext.map(function (a) { return a.hi; }));
+        /* Per-agent cap at the card's high end, only once the engine has a per-card cap field. */
+        var fix2 = null, cards = s.studio.agents;
+        var idx = ext.map(function (a) { for (var i = 0; i < cards.length; i++) if (cards[i].id === a.id) return i; return -1; });
+        if (idx.every(function (i) { return i > -1 && HOP.call(cards[i], 'perAgentCap'); })) {
+          if (idx.length === 1) fix2 = { label: 'Cap ' + ext[0].name + ' at ' + fmtInt(Math.ceil(ext[0].hi)) + ' credits a month', path: 'studio.agents.' + idx[0] + '.perAgentCap', value: Math.ceil(ext[0].hi) };
+          else { var cc = clone(cards); idx.forEach(function (i, k) { cc[i].perAgentCap = Math.ceil(ext[k].hi); }); fix2 = { label: 'Cap each of these agents at its high end', path: 'studio.agents', value: cc }; }
+        }
+        return rule('NBA-02', 'Say it plainly', 'Public and unsigned conversations bill every time', [ext.map(function (a) { return a.name; }).join(', ') + ': ' + (ext.length > 1 ? 'their users are' : 'its users are') + ' outside your Copilot licenses or not signed in, so no license covers any of it.',
+            fmtInt(eLo) + '–' + fmtInt(eHi) + ' credits a month, all billed: about ' + fmtUsd(eLo * cr2) + '–' + fmtUsd(eHi * cr2) + ' a month at ' + (r.customerRate && r.customerRate.creditSource !== 'list' ? 'your customer’s price' : 'Microsoft list') + '.'],
+          'Every conversation with ' + (ext.length > 1 ? 'these agents' : 'this agent') + ' is billed: there’s no license that covers a visitor or anyone who isn’t signed in. That’s ' + fmtInt(eLo) + '–' + fmtInt(eHi) + ' credits, about ' + fmtUsd(eLo * cr2) + '–' + fmtUsd(eHi * cr2) + ' a month, at the volumes you gave me.',
+          'Agree the monthly volume ceiling, and put a per-agent cap on it.', fix2, GUIDE.economics);
+      },
+      'NBA-03': function () {
+        if (!r.enforcement.m365.starvation.hi) return null;
+        /* The starvation day, when the engine exposes it (m365.starvation.day or .dayMid). */
+        var sv = r.enforcement.m365.starvation, sd = typeof sv.day === 'number' ? sv.day : (typeof sv.dayMid === 'number' ? sv.dayMid : null);
+        return rule('NBA-03', 'Pool', 'Power Platform allocations starve Cowork', ['Pre-allocations leave ' + fmtInt(r.enforcement.remainder) + ' credits a month for Microsoft 365 against ' + fmtInt(r.enforcement.m365.demand.hi) + ' of Cowork demand.'],
+          'Your agents and Cowork share one pot of credits. As configured, the agent environments reserve so much that Cowork ' + (sd ? 'runs dry by day ' + sd + '.' : 'runs dry before the month ends.'), 'Resize environment allocations from the governance sheet.', null, GUIDE.limits);
+      },
+      'NBA-04': function () {
+        var agentsCut = r.enforcement.events.filter(function (e) { return e.kind === 'agents'; })[0];
+        var capsSet = s.combined.enforcement.perAgentCaps === 'yes';
+        if (!(agentsCut || (ag.length && !capsSet && r.enforcement.prepaidMonthly > 0))) return null;
+        /* With limits already set, what clears the cut is the pay-as-you-go
+           link on the environment that hits 125% (the same fix as P-50). */
+        var env4 = agentsCut && agentsCut.envIndex >= 0 ? s.studio.environments[agentsCut.envIndex] : null;
+        var fix4 = !capsSet || !agentsCut ? { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }
+          : env4 ? { label: 'Link ' + env4.name + ' to pay-as-you-go', path: 'studio.environments.' + agentsCut.envIndex + '.payg', value: true }
+          : { label: 'Link the default environment to pay-as-you-go', path: 'combined.enforcement.defaultEnvPayg', value: true };
+        return rule('NBA-04', 'Service level', 'The 125% switch turns agents off', [agentsCut ? 'Agents are disabled around day ' + agentsCut.day + ' of the peak month.' : 'No per-agent limits are confirmed, and there is no tenant-wide default.'],
+          'If an agent runs out of credits it simply stops; your users find out by the agent breaking.', capsSet && agentsCut ? 'Link the environment to a pay-as-you-go billing policy so usage past the pack keeps running, with the per-agent limits as the ceiling.' : 'Set per-agent limits and alerts on day one.',
+          fix4, GUIDE.limits);
+      },
+      'NBA-05': function () {
+        var uc = r.enforcement.userCap;
+        if (!(uc.source === 'december-default' && uc.day.hi)) return null;
+        /* State the middle-scenario day as the expectation; when only the
+           high scenario crosses, say so instead of stating it as fact. */
+        var capFix = uc.perUser && uc.perUser.hi > 0 ? { label: 'Set the per-user limit to ' + fmtInt(roundUp(uc.perUser.hi, 500)) + ' credits', path: 'combined.enforcement.perUserCap', value: roundUp(uc.perUser.hi, 500) } : null;
+        return rule('NBA-05', 'December 1', 'The default ' + fmtInt(RC.capDefault.v) + '-credit limit can stop users mid-month', [uc.day.mid
+            ? 'The average Cowork user reaches it around working day ' + uc.day.mid + ' (working day ' + uc.day.hi + ' in the high scenario).'
+            : 'In the high scenario the average Cowork user reaches it around working day ' + uc.day.hi + '; the middle scenario stays under it.'],
+          'New Copilot Business licenses bought through CSP from December 1 come with a ' + fmtInt(RC.capDefault.v) + '-credit monthly limit per user. ' + (uc.day.mid
+            ? 'At the usage we’ve modeled, your heavier users hit it around working day ' + uc.day.mid + '.'
+            : 'At the usage we’ve modeled most months stay under it, but in the high scenario your heavier users would hit it around working day ' + uc.day.hi + '.'),
+          'Decide the per-user limit now, and write it into the governance sheet.', capFix, GUIDE.budgets);
+      },
+      'NBA-06': function () {
+        var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
+        if (!lic.length) return null;
+        return rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
+          (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
+          (promoLate(s, x) ? '; its seats would be bought in ' + monthName(promoBuyMonth(s, x)) + ', after the promo ends, when the break-even is ' + fmtInt(breakEven(RC.seatBiz.v)) : '') + '.'; }),
+          'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', licFix(s, lic), GUIDE.economics);
+      },
+      'NBA-07': function () {
+        var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
+        if (!bcDef.length) return null;
+        return rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
+          'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', bcFix(s, bcDef), GUIDE.limits);
+      },
+      'NBA-08': function () {
+        if (!(r.dataverse.overageGb.db + r.dataverse.overageGb.file + r.dataverse.overageGb.log > 0)) return null;
+        return rule('NBA-08', 'Storage', 'Dataverse overage ahead', ['About ' + fmtUsd(r.dataverse.addOnUsd) + ' a month in capacity add-ons at the modeled retention.'],
+          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', retentionFix(s), GUIDE.limits);
+      },
+      'NBA-09': function () {
+        /* Spec: any GitHub card, or any build sessions. */
+        var gb = ag.filter(function (a) { return a.build.hi > 0 || a.harness === 'github'; });
+        if (!gb.length) return null;
+        var perM = sum(gb.map(function (a) { return a.build.hi; }));
+        var total = sum(gb.map(function (a) { return a.build.hi * (a.build.months.length + a.build.outside); }));
+        var svc9 = clone(s.partner.services);
+        var fix9 = total > 0 && svc9.length < MAX.services && !svc9.some(function (x) { return x.key === 'buildbudget'; })
+          ? (svc9.push({ key: 'buildbudget', label: 'Build budget (GitHub Copilot harness credits)', basis: 'one-time', price: roundTo(total * RC.payg.v, 2), cost: null, on: true }),
+             { label: 'Add a ' + fmtUsd(roundTo(total * RC.payg.v, 2)) + ' build budget line', path: 'partner.services', value: svc9 }) : null;
+        return rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', [perM > 0
+            ? 'Build sessions bill from the first build: up to ' + fmtInt(perM) + ' credits a month during the build, ' + fmtInt(total) + ' before go-live.'
+            : gb.map(function (a) { return a.name; }).join(', ') + ' run on the GitHub Copilot harness, where building and testing bill too: enter the build sessions to size it.'],
+          'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', fix9, GUIDE.build);
+      },
+      'NBA-10': function () {
+        var rsn = ag.filter(function (a) { return a.flags.reasoning; });
+        if (!rsn.length) return null;
+        var add = 0;
+        rsn.forEach(function (x) {
+          var src = s.studio.agents.filter(function (y) { return y.id === x.id; })[0];
+          if (src) add += fieldImpact(src, s, ['reasoning.on', 'reasoning.tokens']).credits;
+        });
+        return rule('NBA-10', 'Cost driver', 'Reasoning adds to every step it runs on', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per started 1,000 reasoning tokens.'],
+          'The reasoning model adds 10 credits per started 1,000 tokens on top of the step that uses it' + (add > 0 ? ': on ' + (rsn.length > 1 ? 'these agents' : 'this agent') + ' that is ' + fmtInt(add) + ' credits a month' : '') + '. It makes answers better, so we only turn it on where it pays.',
+          'Test with reasoning off first and compare quality.', null, GUIDE.economics);
+      },
+      'NBA-11': function () {
+        var bp = r.purchase.best;
+        if (!commitWithoutActuals(s, bp)) return null;
+        var cmb = clone(s.combined);
+        cmb.purchase.appetite = 'conservative'; cmb.purchase.current = { packs: 1, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; cmb.enforcement.basis = 'current';
+        var mp = Math.max.apply(null, bp.packs.schedule);
+        return rule('NBA-11', 'Commit', 'Measure 90 days, then commit', [
+          'The cheapest option is ' + bp.label + (mp > 1 ? '; each pack is billed annually, so every pack is a commitment for the year' : '') + (bp.p3.units > 0 ? '; it includes a one-year pre-purchase commitment' : '') + '.',
+          'Nothing has been measured yet: every volume is an estimate.'],
+          'These volumes are our best estimate, not your history. Let’s start with one pack and pay-as-you-go overflow, the smallest commitment, and buy more once we’ve seen 90 days of real usage.',
+          'Start on 1 pack + pay-as-you-go overflow; packs are billed annually, so each pack added is a year’s commitment. Re-run with actuals at day 90.',
+          { label: 'Plan on 1 pack + pay-as-you-go, conservative appetite', path: 'combined', value: cmb }, GUIDE.economics);
+      },
+      'NBA-12': function () {
+        if (!(ag.length >= 3 && r.adjacent.agent365.eligible)) return null;
+        return rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
+          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.',
+          s.studio.adjacent.agent365Owners === ag.length ? null : { label: 'Price Agent 365 for ' + ag.length + ' agent owners', path: 'studio.adjacent.agent365Owners', value: ag.length }, GUIDE.agent365);
+      },
+      'NBA-13': function () {
+        if (!r.specialization.reached) return null;
+        return rule('NBA-13', 'Partner', 'This deal counts toward the specialization', ['Copilot Studio spend clears ' + fmtUsd(r.specialization.thresholdUsd) + ' in month ' + r.specialization.monthReached + '.'],
+          'This deployment is the kind Microsoft recognizes; we’ll document it as we go.', 'Track it as one of the two Pathway Two deployments.', null, GUIDE.specialization);
+      }
+    };
+  }
+  /* Apply fixes (spec §S7), each a single path the engine already has. */
+  function cardIndex(s, id) { for (var i = 0; i < s.studio.agents.length; i++) if (s.studio.agents[i].id === id) return i; return -1; }
+  function licFix(s, rows) {
+    var st = clone(s.studio), biz = 0, ent = 0;
+    rows.forEach(function (x) {
+      var i = cardIndex(s, x.id); if (i < 0) return;
+      st.agents[i].users.licensed = st.agents[i].users.total;
+      if (x.sku === 'enterprise') ent += x.unlicensedUsers; else biz += x.unlicensedUsers;
+    });
+    if (!(biz + ent > 0)) return null;
+    st.account.seats.business += biz; st.account.seats.enterprise += ent;
+    return { label: 'License the ' + fmtInt(biz + ent) + ' users' + (biz ? ' on Copilot Business' : ' on enterprise Copilot'), path: 'studio', value: st };
+  }
+  function bcFix(s, rows) {
+    var prod = s.studio.environments.filter(function (e) { return e.kind === 'production'; })[0];
+    if (!prod) return null;
+    var ags = clone(s.studio.agents);
+    rows.forEach(function (x) { var i = cardIndex(s, x.id); if (i > -1) ags[i].env = prod.name; });
+    return { label: 'Move the Business Central agents to ' + prod.name, path: 'studio.agents', value: ags };
+  }
+  function retentionFix(s) {
+    var ags = clone(s.studio.agents), n = 0;
+    ags.forEach(function (a) { if (!a.paused && a.data.retentionDays > 30) { a.data.retentionDays = 30; n++; } });
+    return n ? { label: 'Keep transcripts 30 days', path: 'studio.agents', value: ags } : null;
+  }
   function nextBestAction(result) {
     var r = isObj(result) ? result : compute(defaults());
-    var out = [];
-    try {
-      var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
-      var hasDemand = r.pool.year.hi > 0;
-      if (hasDemand && !hasBillingPath(s))
-        out.push(rule('NBA-01', 'Blocker', 'Set up a billing path first', ['Nothing in this plan runs without a capacity pack, a pre-purchase plan or an Azure subscription for pay-as-you-go.'],
-          'Before we talk agents, let’s decide how the credits get paid for.', 'Quote a starter pack or set up the Azure plan in the same visit.',
-          { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing));
-      var ext = ag.filter(function (a) { return a.flags.unauthExternal; });
-      if (ext.length) out.push(rule('NBA-02', 'Say it plainly', 'Website agents bill every conversation', [ext.map(function (a) { return a.name; }).join(', ') + ': no sign-in, so no license covers any of it.', fmtInt(sum(ext.map(function (a) { return a.lo; }))) + ' credits a month, all billed.'],
-        'Your website agent is a metered service, like a phone line: every conversation costs credits.', 'Agree a monthly cap and an alert before launch.', null, GUIDE.economics));
-      if (r.enforcement.m365.starvation.hi) out.push(rule('NBA-03', 'Pool', 'Power Platform allocations starve Cowork', ['Pre-allocations leave ' + fmtInt(r.enforcement.remainder) + ' credits a month for Microsoft 365 against ' + fmtInt(r.enforcement.m365.demand.hi) + ' of Cowork demand.'],
-        'Cowork and your agents share one pool; the way it is split decides who runs out first.', 'Resize environment allocations from the governance sheet.', null, GUIDE.limits));
-      var agentsCut = r.enforcement.events.filter(function (e) { return e.kind === 'agents'; })[0];
-      if (agentsCut || (ag.length && s.combined.enforcement.perAgentCaps !== 'yes' && r.enforcement.prepaidMonthly > 0))
-        out.push(rule('NBA-04', 'Service level', 'The 125% switch turns agents off', [agentsCut ? 'Agents are disabled around day ' + agentsCut.day + ' of the peak month.' : 'No per-agent limits are confirmed, and there is no tenant-wide default.'],
-          'If an agent runs out of credits it simply stops; your users find out by the agent breaking.', 'Set per-agent limits and alerts on day one.',
-          { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }, GUIDE.limits));
-      if (r.enforcement.userCap.source === 'december-default' && r.enforcement.userCap.day.hi)
-        out.push(rule('NBA-05', 'December 1', 'The default 4,000-credit limit stops users mid-month', ['The average Cowork user reaches it around working day ' + r.enforcement.userCap.day.hi + '.'],
-          'New Copilot Business licenses come with a monthly credit limit per user, and your people will hit it.', 'Raise the limit to the governance figure when the seats are bought.', null, GUIDE.budgets));
-      var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
-      if (lic.length) out.push(rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even.'; }),
-        'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', null, GUIDE.economics));
-      var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
-      if (bcDef.length) out.push(rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
-        'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', null, GUIDE.limits));
-      if (r.dataverse.overageGb.db + r.dataverse.overageGb.file + r.dataverse.overageGb.log > 0)
-        out.push(rule('NBA-08', 'Storage', 'Dataverse overage ahead', ['About ' + fmtUsd(r.dataverse.addOnUsd) + ' a month in capacity add-ons at the modeled retention.'],
-          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', null, GUIDE.limits));
-      var gb = ag.filter(function (a) { return a.build.hi > 0; });
-      if (gb.length) out.push(rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', ['Build sessions bill from the first build: up to ' + fmtInt(sum(gb.map(function (a) { return a.build.hi; }))) + ' credits a month during the build.'],
-        'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', null, GUIDE.build));
-      var rsn = ag.filter(function (a) { return a.flags.reasoning; });
-      if (rsn.length) out.push(rule('NBA-10', 'Cost driver', 'Reasoning bills twice', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per 1,000 reasoning tokens.'],
-        'Reasoning makes answers better and costs twice; we only turn it on where it pays.', 'Test with reasoning off first and compare quality.', null, GUIDE.economics));
-      var commit = r.purchase.best.family === 'p3' || r.purchase.best.family === 'mix';
-      if (commit && !Object.keys(s.actuals).length) out.push(rule('NBA-11', 'Commit', 'Measure 90 days, then commit', ['The cheapest option includes a one-year commitment, and nothing has been measured yet.'],
-        'Let’s run on capacity packs or pay-as-you-go for a quarter, then commit on real numbers.', 'Book the 90-day true-up now.', null, GUIDE.economics));
-      if (ag.length >= 3 && (ac.tenantBase === 'premium' || ac.tenantBase === 'e5'))
-        out.push(rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
-          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.', null, GUIDE.agent365));
-      if (r.specialization.reached) out.push(rule('NBA-13', 'Partner', 'This deal counts toward the specialization', ['Copilot Studio spend clears ' + fmtUsd(r.specialization.thresholdUsd) + ' in month ' + r.specialization.monthReached + '.'],
-        'This deployment is the kind Microsoft recognizes; we’ll document it as we go.', 'Track it as one of the two Pathway Two deployments.', null, GUIDE.specialization));
-    } catch (e) { out = []; }
-    out.push(rule('NBA-14', 'Default', 'Estimate, cap, monitor, true up', ['No blocker found. Run the standard motion.'],
+    var out = [], fns = null;
+    try { fns = nbaRules(r); } catch (e) { fns = null; }
+    if (fns) NBA_ORDER.forEach(function (id) {
+      try { var x = fns[id](); if (x) out.push(x); } catch (e) { /* this rule only */ }
+    });
+    if (!out.length) out.push(rule('NBA-14', 'Default', 'Estimate, cap, monitor, true up', ['No blocker found. Run the standard motion.'],
       'Here is the estimate, here is the cap that keeps it there, and here is when we check it against real usage.', 'Set alerts at 50, 80 and 100% and book the true-up.', null, GUIDE.agentops));
     return { primary: out[0], matches: out };
   }
@@ -3095,10 +3295,38 @@ footer.pagefoot p { margin:0 0 10px; }
       var lines = [];
       var cv = customerView(r);
       var cr = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : { usdPerCredit: RC.payg.v, basis: 'list' };
+      var rc = cr.usdPerCredit, nba = nextBestAction(r).matches;
+      if (!(r.pool.steady.hi > 0)) {
+        lines.push('Nothing is modeled yet: once we add your Cowork answers or a first agent, this plan shows what it would cost and how to buy it.');
+        return lines;
+      }
+      /* T-POOL */
       lines.push((cr.basis === 'sell' ? 'At our price' : 'At list price') + ' your plan runs about ' + fmtInt(r.pool.steady.lo) + '–' + fmtInt(r.pool.steady.hi) + ' credits a month once it is running, roughly ' +
-        fmtUsd(r.pool.steady.lo * cr.usdPerCredit) + '–' + fmtUsd(r.pool.steady.hi * cr.usdPerCredit) + ' a month at pay-as-you-go.');
+        fmtUsd(r.pool.steady.lo * rc) + '–' + fmtUsd(r.pool.steady.hi * rc) + ' a month at pay-as-you-go.');
+      /* T-ZERO: covered credits as a share of all agent traffic */
+      var z = num(cv.zeroRatedMonthly), billedLo = sum(cv.agents.map(function (a) { return num(a.lo); }));
+      if (z > 0) lines.push(fmtInt(z) + ' credits a month are already covered by the Copilot licenses you own. That’s ' + Math.round(100 * z / (z + billedLo)) + '% of the agent traffic.');
+      /* T-BUY: the customer's own figures (middle scenario, a month) */
+      var buyM = num(cv.buy.yearUsd) / 12, paygM = num(cv.buy.paygYearUsd) / 12;
+      if (paygM > 0) lines.push(r.purchase.best.family !== 'payg' && buyM < paygM
+        ? 'The cheapest way to buy it is ' + String(cv.buy.approach).charAt(0).toLowerCase() + String(cv.buy.approach).slice(1) + ': about ' + fmtUsd(buyM) + ' a month, against ' + fmtUsd(paygM) + ' if you paid as you go.'
+        : 'Pay-as-you-go is the cheapest way to buy it: about ' + fmtUsd(paygM) + ' a month in the middle scenario.');
+      /* T-GUARD */
+      if (cv.agents.length) lines.push('We’ll set a cap on each agent and alerts at 50, 80 and 100%, so nothing switches off by surprise.');
+      /* T-ADJ: outside the credit pool */
+      var adj = cv.adjacent, adjL = [];
+      if (num(adj.dataverseUsdMonthly) > 0) adjL.push('Dataverse storage');
+      if (num(adj.w365UsdMonthly) > 0) adjL.push('Windows 365 for Agents');
+      if (num(adj.agent365UsdMonthly) > 0) adjL.push('Agent 365');
+      if (num(adj.byomUsdMonthly) > 0) adjL.push('your own models');
+      if (num(adj.totalUsdMonthly) > 0 && adjL.length) lines.push('Separately from credits, budget ' + fmtUsd(num(adj.totalUsdMonthly)) + ' a month for ' + (adjL.length > 1 ? adjL.slice(0, -1).join(', ') + ' and ' + adjL[adjL.length - 1] : adjL[0]) + '.');
+      /* T-SEAT: the NBA-06 opener when a seat wins, otherwise the meter line */
+      var seat = nba.filter(function (m) { return m.id === 'NBA-06'; })[0];
+      if (seat) lines.push(seat.opener);
+      else if (r.crossover.agents.length) lines.push('Metering is cheaper than a seat for these users, so we’d justify seats by what Copilot and Cowork do for them.');
       cv.warnings.forEach(function (w) { lines.push(w.msg); });
-      nextBestAction(r).matches.forEach(function (m) { lines.push(m.opener); });
+      /* NBA-13 (the specialization) is addressed to the partner, never the customer. */
+      nba.forEach(function (m) { if (m.id !== 'NBA-13') lines.push(m.opener); });
       var seen = {};
       return lines.filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; });
     } catch (e) { return []; }
@@ -3114,58 +3342,121 @@ footer.pagefoot p { margin:0 0 10px; }
     var dbl = Math.max(0, x.users.total - 2 * x.users.licensed);
     return { rateCard: full.lo, msTool: full.lo * dbl / U, users: x.users.total, licensed: x.users.licensed };
   }
+  /* Each card carries generic: true when its scenario placeholders could not
+     be filled, so the UI marks it "No figures in this scenario". */
   function objections(result) {
     var r = isObj(result) ? result : compute(defaults());
-    var out = [];
+    var out = [], gen = {};
+    function flag() { out.forEach(function (o) { o.generic = gen[o.id] === true; }); return out; }
     try {
-      var s = r.state, be = r.crossover.breakEvens;
-      out.push({ id: 'OBJ-01', q: 'Why is the meter more than a seat?', a: 'A Copilot seat is a flat ' + fmtUsd(RC.seatEnt.v) + ' a month (' + fmtUsd(RC.seatBizPromo.v) + '–' + fmtUsd(RC.seatBizMonthly.v) +
-        ' for Copilot Business). The meter is ' + fmtUsd(RC.payg.v, true) + ' a credit, so a user above ' + fmtInt(be.enterprise) + ' credits a month (' + fmtInt(be.promo) + ' at the promotional Business price) costs more on the meter than on a seat.' });
+      var s = r.state;
+      /* The customer's basis: the partner's credit and seat prices when set,
+         Microsoft list otherwise. Break-evens are seat price ÷ credit price. */
+      var cr = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : customerRateFrom(s);
+      var rate = cr.usdPerCredit, cs = cr.seats, listCredit = cr.creditSource === 'list';
+      var bizSell = s.partner.sellSeatUsd.business !== null && s.partner.sellSeatUsd.business > 0;
+      var entSell = s.partner.sellSeatUsd.enterprise !== null && s.partner.sellSeatUsd.enterprise > 0;
+      function beAt(usd) { return rate > 0 ? Math.round(usd / rate) : 0; }
+      var meterTxt = listCredit ? fmtRate(rate) + ' a credit at Microsoft list' : fmtRate(rate) + ' a credit at our price';
+      out.push({ id: 'OBJ-01', q: 'Why is the meter more than a seat?', a: 'A Copilot seat is a flat ' + fmtUsd(cs.enterprise) + ' a month' + (entSell ? ' at our price' : '') +
+        (bizSell ? ' (' + fmtUsd(cs.business) + ' at our price for Copilot Business)' : ' (' + fmtUsd(cs.promo) + ' for Copilot Business on the ' + PROMO_TXT + ', then ' + fmtUsd(cs.business) + ' annual or ' + fmtUsd(cs.monthly) + ' monthly)') +
+        '. The meter is ' + meterTxt + ', so a user above ' + fmtInt(beAt(cs.enterprise)) + ' credits a month (' + fmtInt(beAt(bizSell ? cs.business : cs.promo)) +
+        (bizSell ? ' on Copilot Business' : ' at the ' + fmtUsd(cs.promo) + ' Business price while the promo lasts') + ') costs more on the meter than on a seat.' });
       var eq = s.studio.agents.map(function (a) { return { name: a.name, e: msEstimatorEquivalent(a, s) }; }).filter(function (x) { return x.e; })[0];
-      out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? 'For ' + eq.name + ', Microsoft’s Studio estimator shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) +
-        ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. ' : '') + 'Its estimator also leaves out greetings and classic answers, and its flows do not scale with traffic. Every line here cites Microsoft’s billing rates page.' });
-      out.push({ id: 'OBJ-03', q: 'Isn’t it free with our licenses?', a: 'Only for licensed employees, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Here that covers ' + fmtInt(sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }))) +
-        ' credits a month. Website and external users, autonomous runs, computer use, Work IQ and the GitHub harness always bill.' });
-      out.push({ id: 'OBJ-04', q: 'The 25-credit myth.', a: 'An agent action is ' + RC.action.v[0] + ' credits, not 25. The 25 figure comes from an unused weight left in Microsoft’s old estimator code.' });
+      /* Behavior of Microsoft's web estimator as tested on ESTIMATOR_TESTED. At
+         half or more licensed its total goes stale rather than reaching 0, so
+         no figure is quoted then. */
+      out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? (eq.e.msTool > 0
+          ? 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) + ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. '
+          : 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice, so it understates the ' + fmtInt(eq.e.rateCard) + ' credits the rate card gives; with this many licensed users its total stops updating, so compare it line by line. ')
+        : '') + 'When we tested it on ' + ESTIMATOR_TESTED + ', it also left out greetings and classic answers, and its flows did not scale with traffic. Every rate in this plan names the Microsoft page it comes from, line by line in the calculation trace.' });
+      gen['OBJ-02'] = !eq;
+      var zc = sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }));
+      var bc = sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.lo; }));
+      gen['OBJ-03'] = !(zc > 0);
+      out.push({ id: 'OBJ-03', q: 'Isn’t it free with our licenses?', a: 'Partly. A licensed person, signed in with their own account, in Teams, SharePoint or Copilot Chat, costs nothing to run' + (zc > 0 ? ', and that’s ' + fmtInt(zc) + ' credits a month here' : '') +
+        '. Website and external users, unlicensed staff, autonomous runs (Likely: Microsoft states it for agent flows), computer use, Work IQ and the GitHub harness are billed' + (zc > 0 && bc > 0 ? ': ' + fmtInt(bc) + ' credits a month here.' : '.') });
+      out.push({ id: 'OBJ-04', q: 'The 25-credit myth.', a: 'An agent action is ' + RC.action.v[0] + ' credits, not 25. The 25 is an old figure that still circulates; every number here is Microsoft’s current rate card, dated ' + RATECARD_VERSION + '.' });
       out.push({ id: 'OBJ-05', q: 'What if we run out?', a: 'Flows stop at 100% of prepaid capacity and custom agents at 125%; pay-as-you-go environments keep running. The plan sets per-agent limits and alerts at 50, 80 and 100% so nobody finds out by an agent breaking.' });
-      out.push({ id: 'OBJ-06', q: 'Why not pre-buy for 20%?', a: 'The 20% tier starts at ' + fmtInt(RC.p3Tiers.v[8].cccu) + ' commit units. Plans are fixed sizes, final for a year, and unused credits expire; capacity packs at ' +
-        '$' + String(packUsdPerCredit()) + ' a credit already beat every tier below Tier 9 for steady use. The recommendation here: ' + r.purchase.best.label + '.' });
-      out.push({ id: 'OBJ-07', q: 'Why do we need Dataverse or Agent 365?', a: 'Transcripts and knowledge files are stored in Dataverse, which has its own entitlement (' + r.dataverse.entitlement.db + ' GB database here). Agent 365 is ' +
-        fmtUsd(RC.agent365.v) + ' a user a month for the people who own and sponsor agents, once several agents need one control plane.' });
-      out.push({ id: 'OBJ-08', q: 'You’re marking up credits.', a: 'Credits are priced at Microsoft list in this plan. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be.' });
-      out.push({ id: 'OBJ-09', q: 'What will Autopilot cost?', a: r.autopilot.rateStatus + ' Decide now whether new services join your spending policy automatically.' });
-    } catch (e) { return out; }
-    return out;
+      /* {p3pct}: the effective discount of the cheapest option that pre-buys. */
+      var fam = r.purchase.families || {}, p3o = [fam.p3, fam.mix, r.purchase.best].filter(function (o) { return o && o.p3 && o.p3.units > 0; })[0];
+      var p3pct = p3o && p3o.p3.cccu > 0 ? roundTo(100 * (1 - p3o.p3.usd / (p3o.p3.cccu * RC.cccu.v.usd)), 1) : null;
+      gen['OBJ-06'] = p3pct === null;
+      var topM = fmtInt(RC.p3Tiers.v[8].cccu * RC.cccu.v.credits / 1e6) + ' million credits';
+      out.push({ id: 'OBJ-06', q: 'Why not pre-buy for 20%?', a: 'The 20% discount is the top tier, at ' + topM + ' a year. ' + (p3pct !== null
+          ? 'At your volume the best pre-purchase plan saves ' + p3pct + '%, and only if you use all of it in the year. '
+          : 'A pre-purchase plan saves only if you use all of it in the year. ') +
+        'Packs expire monthly with no rollover' + (cr.basis === 'list' ? ', and at Microsoft list they already work out at ' + fmtRate(packUsdPerCredit()) + ' a credit' : '') +
+        '. So: ' + r.purchase.best.label + ' now, and revisit at day 90 with real usage.' });
+      var dv = r.dataverse, base = s.studio.account.tenantBase, BASE_LBL = { basic: 'Business Basic', standard: 'Business Standard', premium: 'Business Premium', e3: 'E3', e5: 'E5' };
+      var over = dv.overageGb.db + dv.overageGb.file + dv.overageGb.log > 0;
+      /* The month the overage starts, when the engine exposes one. */
+      var dvMonth = typeof dv.overMonth === 'number' && dv.overMonth > 0 ? ' by month ' + dv.overMonth : '';
+      var meets = base === 'premium' || base === 'e5' ? 'which this tenant has (' + BASE_LBL[base] + ')'
+        : base === 'unsure' ? 'so confirm the tenant’s base before quoting it'
+        : 'and this tenant’s ' + BASE_LBL[base] + ' base does not include any of them';
+      out.push({ id: 'OBJ-07', q: 'Why do we need Dataverse or Agent 365?', a: 'Dataverse is where the agent keeps its conversations and files. You get ' + fmtInt(dv.entitlement.db) + ' GB of database and ' + fmtInt(dv.entitlement.file) +
+        ' GB of file storage included, and at your settings you’ll use ' + gbWords(dv.usage.db) + ' of database' + dvMonth + (over ? ', past what is included: about ' + fmtUsd(dv.addOnUsd) + ' a month in capacity add-ons' : ', inside what is included') +
+        '. Agent 365 is optional: it becomes worth it around three agents, at ' + fmtUsd(RC.agent365.v) + ' a user a month for the people who own and sponsor them, and it needs Business Premium, E5/A5, or the Defender and Purview suites, ' + meets + '.' });
+      out.push({ id: 'OBJ-08', q: 'You’re marking up credits.', a: listCredit
+        ? 'Credits are priced at Microsoft’s list rate in this plan, ' + fmtRate(rate) + ' a credit. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be, shown as its own line so you can see it.'
+        : 'Credits in this plan are priced at our rate of ' + fmtRate(rate) + ' a credit' + (cr.creditSource === 'cowork' ? ', the same rate the Cowork tab quotes' : '') +
+          ', and every figure here uses that rate openly; Microsoft’s published list rate is ' + fmtRate(RC.payg.v) + '. The difference pays for the work around the credits: limits, monitoring and the monthly true-up that keeps the bill where we said it would be.' });
+      /* Build credits before go-live: the per-month build burn over every build
+         month, including any that fall before the horizon. */
+      var bld = r.lanes.agents.filter(function (a) { return !a.paused && a.build.hi > 0; });
+      var bLo = sum(bld.map(function (a) { return a.build.lo * (a.build.months.length + a.build.outside); }));
+      var bHi = sum(bld.map(function (a) { return a.build.hi * (a.build.months.length + a.build.outside); }));
+      gen['OBJ-09'] = !(bHi > 0);
+      out.push({ id: 'OBJ-09', q: 'Why do we pay while we’re still building?', a: bHi > 0
+        ? 'On the GitHub Copilot harness, Microsoft bills building and testing as well as running: ' + fmtInt(bLo) + '–' + fmtInt(bHi) + ' credits before go-live here. It’s in the statement of work as its own line, it runs in a sandbox with a fixed allocation, and it stops when the build does. Standard agents don’t bill for test chat.'
+        : 'Only agents built on the GitHub Copilot harness bill for building and testing, and none is modeled here. Standard agents don’t bill for test chat, so the meter starts when the agent goes live.' });
+    } catch (e) { return flag(); }
+    return flag();
   }
+  /* The spec's six rungs. Rung 3 (environment and governance setup) has no
+     Playbook price: it shows "your price" unless the partner adds a service
+     line keyed 'setup'. The $12 governance run base is its own service line,
+     never this rung's price. */
   var LADDER = deepFreeze([
     { n: 1, key: 'assessment', name: 'Assessment' },
     { n: 2, key: 'build', name: 'First agent build' },
-    { n: 3, key: 'governance', name: 'Environment and governance setup' },
+    { n: 3, key: 'setup', name: 'Environment and governance setup' },
     { n: 4, key: 'agentcare', name: 'AgentCare managed service' },
     { n: 5, key: 'finops', name: 'Credit management (FinOps)' },
     { n: 6, key: 'agent365', name: 'Agent 365 governance' }
   ]);
+  /* Which rungs hold (spec §S7): the highest one that holds is recommended,
+     lower rungs that hold are ticked, and rung 1 is recommended when nothing
+     else holds. */
+  function ladderHolds(r) {
+    var s = r.state, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
+    var prodEnvs = s.studio.environments.filter(function (e) { return e.kind === 'production'; }).map(function (e) { return e.name; });
+    var live = ag.filter(function (a) { return a.startMonth === 0 && prodEnvs.indexOf(a.env) > -1; });
+    var ids = nextBestAction(r).matches.map(function (m) { return m.id; });
+    var b = r.purchase.best, prepaid = b.packs.packMonths > 0 || b.p3.units > 0;
+    return {
+      assessment: !live.length || s.studio.account.tenantBase === 'unsure',
+      build: ag.some(function (a) { return a.startMonth > 0; }) || (ag.length > 0 && !prodEnvs.length),
+      setup: ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-07'].some(function (id) { return ids.indexOf(id) > -1; }),
+      agentcare: live.length > 0,
+      finops: (prepaid && b.scen.mid.paygCredits > 0) || b.family === 'mix',
+      agent365: ids.indexOf('NBA-12') > -1
+    };
+  }
   function ladder(result) {
     var r = isObj(result) ? result : compute(defaults());
+    var holds = {};
+    try { holds = ladderHolds(r); } catch (e) { holds = {}; }
     var rec = 'assessment';
-    try {
-      /* The NEXT rung to sell, in sequence: nothing goes live before the
-         environment and governance setup (a billing path, per-agent limits
-         and a production environment with an allocation). */
-      var s = r.state, ag = r.lanes.agents.filter(function (a) { return !a.paused; }), base = s.studio.account.tenantBase;
-      var billing = hasBillingPath(s), caps = s.combined.enforcement.perAgentCaps === 'yes';
-      var prod = s.studio.environments.some(function (e) { return e.kind === 'production' && e.allocation > 0; });
-      if (!ag.length) rec = 'assessment';
-      else if (!billing || !caps || !prod) rec = 'governance';
-      else if (ag.length >= 3 && (base === 'premium' || base === 'e5')) rec = 'agent365';
-      else if (r.pool.steadyUsd.mid >= 1000) rec = 'finops';
-      else rec = 'agentcare';
-      var svc = r.state.partner.services;
-      return LADDER.map(function (x) {
-        var p = svc.filter(function (y) { return y.key === x.key; })[0];
-        return { n: x.n, key: x.key, name: x.name, price: p ? p.price : null, basis: p ? p.basis : null, recommended: x.key === rec };
-      });
-    } catch (e) { return LADDER.map(function (x) { return { n: x.n, key: x.key, name: x.name, price: null, basis: null, recommended: x.key === rec }; }); }
+    LADDER.forEach(function (x) { if (holds[x.key]) rec = x.key; });
+    var svc = [];
+    try { svc = r.state.partner.services; } catch (e) { svc = []; }
+    return LADDER.map(function (x) {
+      var p = svc.filter(function (y) { return y.key === x.key; })[0];
+      return { n: x.n, key: x.key, name: x.name, price: p ? p.price : null, basis: p ? p.basis : null, holds: holds[x.key] === true || x.key === rec, recommended: x.key === rec,
+               note: x.key === 'agent365' ? 'Microsoft’s Agent 365 license (' + fmtUsd(RC.agent365.v) + ' a user a month) is separate from this governance overlay.' : null };
+    });
   }
 
   /* ══ 28 · Customer view: an explicit whitelist projection ═══════════════
@@ -3717,7 +4008,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function rcRef(key) {
     var row = E.RC[key];
     if (!row) return '';
-    return '<span class="ref">' + provPill(row.prov) + ' ' + srcLink(row.src) + ' &middot; ' + esc(row.fact) + '</span>';
+    return '<span class="ref">' + provPill(row.prov) + ' ' + srcLink(row.src) + (row.page ? ', ' + esc(row.page) : '') + ' &middot; ' + esc(row.fact) + '</span>';
   }
   function factRef(fact, prov) {
     var src = FACT_SRC[fact];
@@ -3804,7 +4095,7 @@ footer.pagefoot p { margin:0 0 10px; }
     aiCount: { w: 'Prompt responses per conversation or run, at the tier to the left.' },
     aiPricing: { w: 'Microsoft prices prompt tools per response, or per 1,000 tokens.', a: 'Per 1,000 tokens rounds every started 1,000 up: 1,500 tokens bills as 2 units.', rc: 'aiPremium' },
     aiTokens: { w: 'Tokens in a typical prompt response.', a: 'Only counts when prompt tools are priced per 1,000 tokens.' },
-    reasoningOn: { w: 'A reasoning model thinks before it answers; it helps on hard, multi-step jobs.', a: 'It bills twice: the normal rate for the step, plus its reasoning tokens on top.',
+    reasoningOn: { w: 'A reasoning model thinks before it answers; it helps on hard, multi-step jobs.', a: 'It adds 10 credits per started 1,000 reasoning tokens on top of the normal rate for the step.',
       c: function () { return cr('reasoning') + ' credits per started 1,000 reasoning tokens.'; }, rc: 'reasoning' },
     reasoningTokens: { w: 'Reasoning tokens per conversation or run.', a: 'Every started 1,000 rounds up.', rc: 'reasoning' },
     contentPages: { w: 'Pages of documents the agent reads per conversation or run: invoices, PDFs, forms.', c: function () { return cr('content') + ' credits a page.'; }, rc: 'content' },
@@ -4338,6 +4629,17 @@ footer.pagefoot p { margin:0 0 10px; }
     el.innerHTML = html;
   }
 
+  /* The Cowork tab and the plan price Cowork credits at different rates (P-19):
+     say so above the frame and in the Combined tab's flags. Partner-only: the
+     partner aligns the two before showing either tab. */
+  function renderCoworkRate() {
+    var el = $('cwRateWarn'), w = R ? R.warnings.filter(function (x) { return x.id === 'P-19'; })[0] : null;
+    if (!el) return;
+    el.hidden = !w;
+    el.innerHTML = w ? '<div class="callout-title">Two prices for the same credits</div><div class="callout-body">' + esc(w.msg) +
+      ' On the Cowork tab&rsquo;s pricing step, choose &ldquo;My sell price&rdquo; and enter ' + esc(String(R.customerRate.usdPerCredit)) + ' a credit.</div>' : '';
+  }
+
   /* ══ Print menu ═══════════════════════════════════════════════════════ */
   /* Two toolbar menus (Print, Files) share one open/close model: one open at
      a time, Esc or a click outside closes it, arrow keys move inside it. */
@@ -4391,6 +4693,7 @@ footer.pagefoot p { margin:0 0 10px; }
     renderBadges();
     renderMotionPill();
     renderCoworkStatus();
+    renderCoworkRate();
     renderAccount();
     renderAgentOutputs();
     renderEnvOutputs();
@@ -5024,7 +5327,7 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Studio §5: results, crossover ════════════════════════════════════ */
-  var SKU_LBL = { enterprise: 'Microsoft 365 Copilot (enterprise)', business: 'Copilot Business (annual)', promo: 'Copilot Business (promotional)', monthly: 'Copilot Business (monthly billing)' };
+  var SKU_LBL = { enterprise: 'Microsoft 365 Copilot (enterprise)', business: 'Copilot Business (annual)', promo: 'Copilot Business (promo through 2026-12-31)', monthly: 'Copilot Business (monthly billing)' };
   var SKU_RC = { enterprise: 'seatEnt', business: 'seatBiz', promo: 'seatBizPromo', monthly: 'seatBizMonthly' };
   function renderStudioResults() {
     var rate = R.customerRate.usdPerCredit, ag = R.lanes.agents.filter(function (a) { return !a.paused; });
@@ -5049,7 +5352,7 @@ footer.pagefoot p { margin:0 0 10px; }
       ['enterprise', 'business', 'promo', 'monthly'].map(function (k) {
         return '<tr><td>' + SKU_LBL[k] + '</td><td class="n">' + fu(E.RC[SKU_RC[k]].v) + '</td><td class="n">' + fi(cx.breakEvens[k]) + '</td><td>' + rcRef(SKU_RC[k]) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
-      '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The promotional price applies while the plan starts by December 2026.' : '') + '</p>';
+      '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The ' + fu(E.RC.seatBizPromo.v) + ' price is a promo through ' + esc(E.RC.seatBizPromo.ends) + ' (annual commitment, first year); seats bought after it cost ' + fu(E.RC.seatBiz.v) + '.' : '') + '</p>';
     if (cx.agents.length) {
       html += cx.agents.map(function (row, i) {
         /* One set of figures: the engine's row, at the customer's prices. */
@@ -5098,6 +5401,7 @@ footer.pagefoot p { margin:0 0 10px; }
       var s = SEV[w.sev] || SEV.info;
       return '<div class="flag' + (w.aud === 'partner' ? ' partner-only' : '') + '"><div class="fi"><span class="light ' + s[0] + '">' + s[1] + '</span></div><div class="ft">' + esc(w.msg) +
         (w.aud === 'partner' ? ' <span class="pill default">Partner</span>' : '') +
+        (w.note ? '<div class="mini partner-only">' + esc(w.note) + '</div>' : '') +
         (w.fixes.length ? '<div class="fixrow no-print">' + w.fixes.map(function (f, i) { return '<button type="button" class="linkbtn" data-fixw="' + esc(w.id) + '" data-fixi="' + i + '">' + esc(f.label) + '</button>'; }).join('') + '</div>' : '') +
         '</div></div>';
     }).join('') : '<p class="note">Nothing to flag.</p>';
@@ -5207,7 +5511,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (puC && puC.best && puC.best.key !== best.key) notes.push('<p class="srcline">At the customer&rsquo;s prices (' + fu(puC.prices.packUsd) + ' a pack, ' + E.fmtRate(puC.prices.creditUsd) + ' a credit) the cheapest plan is <b>' + esc(puC.best.label) + '</b>, about ' + fu(puC.best.expected.usd) + ' expected over the year. That is the plan the customer view and the report show; this table prices every option at Microsoft list.</p>');
     if (pu.blocked) notes.push('<p class="srcline">A cheaper option (' + esc(pu.blocked.label) + ', ' + fu(pu.blocked.expected.usd) + ') strands more than the ' + esc(pu.appetite) + ' appetite allows in the middle scenario.</p>');
     if (state.combined.purchase.showAgentP3) notes.push('<p class="srcline">Microsoft Agent pre-purchase plans (' + E.RC.agentP3Tiers.v.map(function (t) { return fi(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') + ') are disclosed only, never chosen: Microsoft&rsquo;s pages disagree on where they sit in the drawdown order. ' + rcRef('agentP3Tiers') + '</p>');
-    notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Appetite caps stranded spend in the middle scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
+    notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Pre-purchase plan discounts don&rsquo;t combine with other discounts (Microsoft). ' + rcRef('cccu') + '. Appetite caps stranded spend in the middle scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
     $('buyNotes').innerHTML = notes.join('');
   }
   function renderHoldingsStructure() {
@@ -5268,27 +5572,36 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Combined: governance settings sheet (customer-safe: built from the customer view) ═ */
+  /* Click paths: the engine's governance.clickPaths (carried by the customer
+     view) are the source for the settings they cover; GOV_WHERE holds only
+     the rows the engine has no path for, plus detail the engine row lacks. */
   var GOV_WHERE = {
-    tenant: 'Microsoft 365 admin center → Billing → Cost management → Spending policies',
-    user: 'Microsoft 365 admin center → Spending policies → user and group limits',
-    agents: 'Power Platform admin center → Licensing → Copilot Studio → Manage agents',
-    env: 'Power Platform admin center → Licensing → Copilot Studio → Environments; Environment groups → Rules → Cost controls (draw from the tenant credit pool)',
     alerts: 'Spending policy threshold emails; per-agent notification threshold; an Azure budget (alerts only)',
     auto: 'Within each spending policy',
-    retention: 'Power Platform admin center → Manage → Environments → (environment) → Settings → Product → Features (transcripts on or off); retention: a Power Apps bulk-delete job on the conversation transcript table, 30 days by default',
-    ids: 'Microsoft Entra admin center → Agent ID'
+    ids: 'Microsoft Entra admin center → Agent ID',
+    envExtra: 'Environment groups → Rules → Cost controls (draw from the tenant credit pool)'
   };
+  function govWhere(cv) {
+    var cp = (cv.guardrails && cv.guardrails.clickPaths) || [], by = {};
+    cp.forEach(function (c) { by[c.setting] = c.where; });
+    var spend = by['Spending policy, user and group limits'] || '';
+    return {
+      tenant: spend, user: spend, agents: by['Per-agent limits'] || '',
+      env: (by['Environment allocations and tenant draw'] || '') + '; ' + GOV_WHERE.envExtra,
+      retention: by['Transcript retention'] || '', alerts: GOV_WHERE.alerts, auto: GOV_WHERE.auto, ids: GOV_WHERE.ids
+    };
+  }
   function govRows(cv) {
-    var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [];
-    if (g.tenantMonthlyLimit !== null) rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', GOV_WHERE.tenant]);
-    rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', GOV_WHERE.user]);
-    rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', GOV_WHERE.agents]);
-    rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', GOV_WHERE.env]);
-    if (g.alerts.length) rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', GOV_WHERE.alerts]);
-    else if (g.agentLimits.length) rows.push(['Alerts', 'At 50, 80 and 100% of each agent’s monthly limit', GOV_WHERE.alerts]);
-    rows.push(['“Auto-apply new services”', g.autoApply, GOV_WHERE.auto]);
-    rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', GOV_WHERE.retention]);
-    rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', GOV_WHERE.ids]);
+    var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [], WH = govWhere(cv);
+    if (g.tenantMonthlyLimit !== null) rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', WH.tenant]);
+    rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', WH.user]);
+    rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', WH.agents]);
+    rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', WH.env]);
+    if (g.alerts.length) rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', WH.alerts]);
+    else if (g.agentLimits.length) rows.push(['Alerts', 'At 50, 80 and 100% of each agent’s monthly limit', WH.alerts]);
+    rows.push(['“Auto-apply new services”', g.autoApply, WH.auto]);
+    rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', WH.retention]);
+    rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', WH.ids]);
     return rows;
   }
   function govTable(cv) {
@@ -5356,7 +5669,8 @@ footer.pagefoot p { margin:0 0 10px; }
     var li = (cv.licenseInstead && cv.licenseInstead.agents) || [];
     var lic = li.filter(function (a) { return a.verdict === 'license'; }), met = li.filter(function (a) { return a.verdict !== 'license'; });
     if (lic.length) h += '<div class="callout"><div class="callout-title">License instead of metering</div><div class="callout-body">' + lic.map(function (a) {
-      return 'License the ' + fi(a.users) + ' people using ' + esc(a.name) + ' instead: it saves about ' + fu(Math.max(0, a.savingUsdMonthly)) + ' a month ' + at + ', and they get Copilot.';
+      return 'License the ' + fi(a.users) + ' people using ' + esc(a.name) + ' instead: it saves about ' + fu(Math.max(0, a.savingUsdMonthly)) + ' a month ' + at + ', and they get Copilot.' +
+        (a.sku === 'promo' ? ' That uses the ' + fu(a.seatUsd) + ' Copilot Business price, a promo through ' + esc(E.RC.seatBizPromo.ends) + '.' : '');
     }).join(' ') + '</div></div>';
     else if (met.length) h += '<p>For the people using ' + met.map(function (a) { return esc(a.name); }).join(' and ') + ', metering is cheaper than a Copilot seat, so seats are justified by what Copilot and Cowork do for them, not by these agents.</p>';
     h += '<p><b>' + fi(cv.zeroRatedMonthly) + ' credits a month</b> of agent use are already covered by the Copilot licenses you own: licensed people, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Fair use applies. Website visitors, unlicensed staff, scheduled runs and anything that drives a computer are billed.</p>';
@@ -5420,7 +5734,8 @@ footer.pagefoot p { margin:0 0 10px; }
       return '<div class="tablewrap"><table class="dtable"><thead><tr><th>On</th><th>Service</th><th>Basis</th><th class="n">Your price</th><th class="n">Your delivery cost</th><th>Playbook range</th><th class="n">Year one</th><th></th></tr></thead><tbody>' +
         sv.map(function (s, i) {
           var p = 'partner.services.' + i + '.', pre = E.SERVICE_PREFILLS.filter(function (x) { return x.key === s.key; })[0];
-          var range = pre ? (pre.basis === 'pct-meter' ? pre.price + '%' + (pre.priceHi !== pre.price ? '–' + pre.priceHi + '%' : '') : fu(pre.price) + (pre.priceHi !== pre.price ? '–' + fu(pre.priceHi) : '')) + ' &middot; <span class="ref">' + srcLink('playbook') + ' &middot; ' + esc(pre.fact) + '</span>' : '<span class="note">Your own line</span>';
+          var lo = pre && typeof pre.priceLo === 'number' ? pre.priceLo : pre ? pre.price : 0;
+          var range = pre ? (pre.basis === 'pct-meter' ? lo + '%' + (pre.priceHi !== lo ? '–' + pre.priceHi + '%' : '') : fu(lo) + (pre.priceHi !== lo ? '–' + fu(pre.priceHi) : '')) + ' &middot; <span class="ref">' + srcLink('playbook') + ' &middot; ' + esc(pre.fact) + '</span>' : '<span class="note">Your own line</span>';
           return '<tr><td><input type="checkbox" aria-label="Include this service" data-bind="' + p + 'on" data-type="bool"></td>' +
             '<td><input type="text" maxlength="80" aria-label="Service name" data-bind="' + p + 'label" data-type="text"></td>' +
             '<td><select aria-label="Basis" data-bind="' + p + 'basis" data-type="enum">' + Object.keys(BASIS_LBL).map(function (b) { return '<option value="' + b + '">' + BASIS_LBL[b] + '</option>'; }).join('') + '</select></td>' +
@@ -5470,7 +5785,7 @@ footer.pagefoot p { margin:0 0 10px; }
     var talk = E.talk(R);
     $('talkBody').innerHTML = talk.map(function (l, i) { return '<p><span data-talk="' + i + '">' + esc(l) + '</span><button type="button" class="copybtn light-bg" data-copytalk="' + i + '">Copy</button></p>'; }).join('');
     $('objBody').innerHTML = E.objections(R).map(function (o) {
-      var generic = !/\d/.test(o.a);
+      var generic = o.generic === true;
       return '<div class="objcard"><div class="oq">&ldquo;' + esc(o.q) + '&rdquo;</div><div class="oa">' + esc(o.a) + '</div>' + (generic ? '<div class="on">No figures in this scenario.</div>' : '') + '</div>';
     }).join('');
     var lad = E.ladder(R), recN = 0;
@@ -5478,13 +5793,15 @@ footer.pagefoot p { margin:0 0 10px; }
     $('ladderTag').textContent = 'Next to sell: rung ' + recN;
     $('ladderBody').innerHTML = '<div class="ladder">' + lad.map(function (x) {
       var price = x.price === null ? 'Your price' : (x.basis === 'pct-meter' ? x.price + '% of pooled consumption' : fu(x.price) + ' ' + (BASIS_LBL[x.basis] || ''));
-      return '<div class="rung' + (x.recommended ? ' on' : '') + '"><div class="rg-n">Rung ' + x.n + (x.recommended ? ' &middot; next to sell' : (x.n < recN ? ' &middot; <span class="check">&#10003;</span>' : '')) + '</div><div class="rg-t">' + esc(x.name) + '</div><div class="rg-p">' + esc(price) + '</div></div>';
-    }).join('') + '</div><p class="srcline">The next rung to sell, in order: nothing goes live before the billing path, per-agent limits and a production allocation are in place.</p>';
+      return '<div class="rung' + (x.recommended ? ' on' : '') + '"><div class="rg-n">Rung ' + x.n + (x.recommended ? ' &middot; next to sell' : (x.holds && !x.recommended ? ' &middot; <span class="check">&#10003;</span>' : '')) + '</div><div class="rg-t">' + esc(x.name) + '</div><div class="rg-p">' + esc(price) + '</div>' +
+        (x.note ? '<div class="mini">' + esc(x.note) + '</div>' : '') + '</div>';
+    }).join('') + '</div><p class="srcline">The highest rung whose condition holds is the next to sell; a tick marks a lower rung that also holds. Rung 3 has no Playbook price: quote your own.</p>';
     var ac = state.studio.account, seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7, sp = R.specialization;
-    var inc = E.INCENTIVES.map(function (x) {
-      var na = x.key === 'copilot-in-30' && !(ac.totalUsers < 300 && seats === 0) ? ' <span class="pill default">Not for this account</span>' : '';
+    /* Copilot in 30 is shown only when it applies (fewer than 300 users, no Copilot seats). */
+    var inc = E.INCENTIVES.filter(function (x) { return x.key !== 'copilot-in-30' || (ac.totalUsers < 300 && seats === 0); }).map(function (x) {
+      var na = '';
       var csp = x.key === 'agents-voucher' ? ' <span class="pill default">Rules out a CSP deal</span>' : '';
-      return '<li>' + esc(x.text) + na + csp + ' <span class="ref">' + provPill('ms-verified') + ' ' + srcLink(x.src) + (x.fact ? ' &middot; ' + esc(x.fact) : '') + '</span></li>';
+      return '<li>' + esc(x.text) + na + csp + ' <span class="ref">' + (x.fact ? provPill('ms-verified') + ' ' : '') + srcLink(x.src) + (x.fact ? ' &middot; ' + esc(x.fact) : '') + '</span></li>';
     }).join('');
     var pct = sp.thresholdUsd > 0 ? Math.min(100, 100 * sp.ttmUsd / sp.thresholdUsd) : 0;
     $('incentBody').innerHTML = '<ul class="evlist">' + inc + '</ul>' +
@@ -5690,14 +6007,20 @@ footer.pagefoot p { margin:0 0 10px; }
     if (t.id === 'btnQuote') { recompute(); copyText(quoteText(), t); return; }
     if (t.id === 'btnCopyTalk') { copyText(E.talk(R).join('\n\n'), t); return; }
     if (t.hasAttribute('data-copytalk')) { copyText(E.talk(R)[Number(t.getAttribute('data-copytalk'))] || '', t); return; }
+    /* A fix that writes an object (P-77's seats, NBA-11's plan) marks every
+       leaf it sets as touched, so a later Cowork prefill never overwrites it. */
+    function markTouched(path, v) {
+      touched[path] = true;
+      if (v && typeof v === 'object' && !Array.isArray(v)) Object.keys(v).forEach(function (k) { markTouched(path + '.' + k, v[k]); });
+    }
     if (t.hasAttribute('data-fixw')) {
       var w = R.warnings.filter(function (x) { return x.id === t.getAttribute('data-fixw'); })[0], fx = w && w.fixes[Number(t.getAttribute('data-fixi'))];
-      if (fx) { state = E.applyFix(state, fx); touched[fx.path] = true; recompute(); showNotice('Applied: ' + esc(fx.label) + '.'); }
+      if (fx) { state = E.applyFix(state, fx); markTouched(fx.path, fx.value); recompute(); showNotice('Applied: ' + esc(fx.label) + '.'); }
       return;
     }
     if (t.hasAttribute('data-nbafix')) {
       var rule = E.nextBestAction(R).matches.filter(function (x) { return x.id === t.getAttribute('data-nbafix'); })[0];
-      if (rule && rule.fix) { state = E.applyFix(state, rule.fix); touched[rule.fix.path] = true; recompute(); showNotice('Applied: ' + esc(rule.fix.label) + '.'); }
+      if (rule && rule.fix) { state = E.applyFix(state, rule.fix); markTouched(rule.fix.path, rule.fix.value); recompute(); showNotice('Applied: ' + esc(rule.fix.label) + '.'); }
       return;
     }
     var seg = t.closest('[data-seg]');
