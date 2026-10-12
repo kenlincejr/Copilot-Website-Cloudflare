@@ -1211,6 +1211,18 @@ sec('QA-E');
   r = st(10, 0);
   ok(!r.enforcement.m365.starvation.hi && (r.enforcement.m365.starvationDay || {}).mid == null, 'QA-E M-07 no allocations, no starvation');
 }
+/* M-08: autonomous and Business Central cards run at full volume from go-live.
+   Full estate, month 1, low: website 1,500 + helpdesk 960 (10% ramp) + invoice
+   16,000 + Sales Order 1,650 + Payables 6,500 + GitHub build 630 = 27,240. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'full-estate');
+  ok(s.studio.agents.filter((a) => a.type !== 'conversational').every((a) => a.ramped === false), 'QA-E M-08 autonomous and BC cards are not ramped');
+  ok(s.studio.agents.filter((a) => a.type === 'conversational' && a.harness === 'standard').every((a) => a.ramped === true), 'QA-E M-08 conversational cards still ramp');
+  near(E.compute(s).pool.months[0].total.lo, 27240, 'QA-E M-08 full estate month 1 low = 27,240', 1e-6);
+  ok(['invoice', 'bcSalesOrder', 'bcPayables', 'bcExpense', 'order', 'expense'].every((k) => presetState(k).studio.agents[0].ramped === false), 'QA-E M-08 presets');
+  eq(E.normalize({ studio: { agents: [{ type: 'autonomous' }] } }).studio.agents[0].ramped, false, 'QA-E M-08 an autonomous card with no ramp flag defaults to full volume');
+  ok(/if \(a\.type !== 'autonomous'\) a\.ramped = false/.test(src), 'QA-E M-08 switching a card to autonomous turns the ramp off');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

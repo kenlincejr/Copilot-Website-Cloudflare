@@ -1391,7 +1391,9 @@ footer.pagefoot p { margin:0 0 10px; }
     t.traffic.per = cEnum(own(tr, 'per'), ['day', 'month'], 'month');
     t.daysActive = cInt(own(a, 'daysActive'), t.type === 'conversational' ? 22 : 30, 1, 31);
     t.startMonth = cInt(own(a, 'startMonth'), 0, 0, HORIZON - 1);
-    t.ramped = cBool(own(a, 'ramped'), true);
+    /* Spec §S2: internal conversational agents follow the adoption ramp;
+       autonomous and Business Central agents run at full volume (QA M-08). */
+    t.ramped = cBool(own(a, 'ramped'), t.type === 'conversational');
     var sh = own(a, 'shape');
     t.shape.turns = cNum(own(sh, 'turns'), 0, 0, MAX.perUnit, 2);
     t.shape.genPct = cNum(own(sh, 'genPct'), 100, 0, 100, 2);
@@ -3355,6 +3357,7 @@ footer.pagefoot p { margin:0 0 10px; }
       else a[k] = src[k];
     });
     if (src.type && src.type !== 'conversational' && !HOP.call(src, 'daysActive')) a.daysActive = 30;
+    if (src.type && src.type !== 'conversational' && !HOP.call(src, 'ramped')) a.ramped = false;
     a.archetype = key;
     return a;
   }
@@ -4478,8 +4481,10 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   function setWho(a, v) {
     var ms = E.MS_CHANNELS.indexOf(a.channel) > -1;
-    if (v === 'bc') { a.type = 'bc'; return; }
-    if (v === 'auto') { a.type = 'autonomous'; return; }
+    /* Autonomous and Business Central agents do not follow the adoption ramp
+       (spec §S2; QA M-08). */
+    if (v === 'bc') { if (a.type !== 'bc') a.ramped = false; a.type = 'bc'; return; }
+    if (v === 'auto') { if (a.type !== 'autonomous') a.ramped = false; a.type = 'autonomous'; return; }
     a.type = 'conversational';
     if (v === 'staff') { a.audience = 'internal'; if (!ms) a.channel = 'teams_m365'; a.auth = 'microsoft'; }
     else if (v === 'staffOther') { a.audience = 'internal'; if (ms) a.channel = 'website'; }
