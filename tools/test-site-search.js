@@ -1302,10 +1302,10 @@ ok(/document\.createElement\('playbook-search'\)/.test(src) && /document\.create
 ok(/new IntersectionObserver\(/.test(src) && /fetch\(core\.RELATED_URL/.test(src), 'related.json fetched lazily on approach');
 ok(/getElementsByTagName\('footer'\)/.test(src) && /querySelector\('main'\)/.test(src) && /SCRIPT\.parentNode\.insertBefore\(host, SCRIPT\)/.test(src), 'related row: before the last footer, else end of main, else before the script');
 ok(/var panel = home \? null : mount\.launcher\(\);/.test(src), 'no launcher on the home page (it has the inline card)');
-eq(C.VERSION, '5', 'module version');
-eq(C.CONFIG_URL, '/data/site-search-config.json?v=5', 'config fetched with the same ?v as the script');
-eq(C.RELATED_URL, '/data/related.json?v=5', 'related.json fetched with the same ?v');
-ok(/assets\/site-search\.js\?v=5/.test(src.split('\n')[0]), 'header names ?v=5');
+eq(C.VERSION, '6', 'module version');
+eq(C.CONFIG_URL, '/data/site-search-config.json?v=6', 'config fetched with the same ?v as the script');
+eq(C.RELATED_URL, '/data/related.json?v=6', 'related.json fetched with the same ?v');
+ok(/assets\/site-search\.js\?v=6/.test(src.split('\n')[0]), 'header names ?v=6');
 ok(!fs.existsSync(path.join(ROOT, 'assets', 'site-search-jump.js')), 'assets/site-search-jump.js deleted');
 const IDS = ['site-search-form', 'site-search-q', 'site-search-status', 'site-search-results', 'site-search-open-chat',
   'site-search-suggest', 'site-search-ask', 'site-search-answer', 'site-search-answer-state', 'site-search-answer-body',
@@ -1335,7 +1335,7 @@ ok(src.indexOf("'site-search-chips'") < 0, 'mount no longer wires a chip row');
     ok(rule && /border: 0/.test(rule[1]) && /background: none/.test(rule[1]) && /color: var\(--teal\)/.test(rule[1]), 'home suggestions are plain teal text links, no box');
   }
   ok(idx.indexOf('id="site-search"') > 0, 'index.html still has #site-search');
-  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=5" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=5');
+  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=6" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=6');
   ok(!/site-search\.js\?v=[34]"/.test(idx), 'index.html no longer loads ?v=3 or ?v=4');
   ok(idx.indexOf('site-search-jump.js') < 0, 'index.html no longer loads the jump file');
   ok(idx.indexOf('function fragmentFor') < 0, 'index.html inline search script removed');

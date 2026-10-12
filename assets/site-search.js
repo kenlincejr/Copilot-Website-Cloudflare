@@ -1,4 +1,4 @@
-/* assets/site-search.js?v=5: the one site search module
+/* assets/site-search.js?v=6: the one site search module
    (specs/site-search-v2.spec.md §3.1). Loaded by every page in sitemap.xml
    (see DESIGN.md 8b.5) except copilot-credit-planner.html, which stays free
    of external scripts.
@@ -29,7 +29,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '5';
+  var VERSION = '6';
   var ENDPOINT = 'https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/';
   var MAX_PAGES = 6;
 
@@ -963,6 +963,7 @@
     // placed straight in <body> it gets the .stage width and its own gutters.
     '.related{margin:32px 0 64px;color:#1a2330;font-family:' + FONT + ';font-size:.9rem;line-height:1.5;text-align:left}',
     ':host([data-edge]) .related{max-width:1000px;margin:32px auto 64px;padding:0 16px}',
+    ':host([data-edge][data-fit]) .related{max-width:none;margin:32px 0 64px;padding:0}',
     '.label{margin:0 0 10px;color:#005F6B;font-size:.58rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase}',
     '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}',
     '.card{display:flex;flex-direction:column;padding:18px 20px;border:1px solid #dde1e7;border-radius:8px;background:#fff;color:inherit;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:border-color .15s,box-shadow .15s}',
@@ -1865,7 +1866,21 @@
     else if (main) main.appendChild(host);
     else if (SCRIPT && SCRIPT.parentNode) SCRIPT.parentNode.insertBefore(host, SCRIPT);
     else document.body.appendChild(host);
-    if (host.parentNode === document.body) host.setAttribute('data-edge', '');
+    if (host.parentNode === document.body) {
+      host.setAttribute('data-edge', '');
+      // Line the row up with the page's own content column: take the width of
+      // the nearest visible block above it, so the cards share its left and
+      // right edges instead of sitting inside a fixed 1000px box.
+      var ref = host.previousElementSibling;
+      while (ref && (/^(SCRIPT|STYLE|LINK|TEMPLATE)$/.test(ref.tagName) || !ref.offsetWidth)) ref = ref.previousElementSibling;
+      if (ref) {
+        var fit = function () { host.style.maxWidth = ref.getBoundingClientRect().width + 'px'; };
+        host.setAttribute('data-fit', '');
+        host.style.marginLeft = host.style.marginRight = 'auto';
+        fit();
+        window.addEventListener('resize', fit);
+      }
+    }
     var root = host.attachShadow({ mode: 'open' });
     root.innerHTML = core.relatedHtml(null);
     function load() {
