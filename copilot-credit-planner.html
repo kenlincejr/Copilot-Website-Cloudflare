@@ -749,7 +749,7 @@ footer.pagefoot p { margin:0 0 10px; }
      coworkFromPayload(p, include) → CoworkLane            include: 'auto'|'on'|'off'
        CoworkLane = { included, valid, reason, band, monthlyCredits, basisSeats,
                       months:[{lo,mid,hi}×12], steady:{lo,mid,hi}, year:{lo,mid,hi}, trace[] }
-     accountFromPayload(p) → { seats:{business,enterprise,e7}, tenantBase, motion, copilotLicensed }
+     accountFromPayload(p) → { seats:{business,enterprise,e7}, tenantBase, motion, copilotLicensed, employees }
    Copilot Studio agents
      bundleCredits(items) → { units, credits }            exact (1e-5 credit units)
      conversationBundle(agent) / autonomousBundle(agent) → Item[]
@@ -1434,6 +1434,7 @@ footer.pagefoot p { margin:0 0 10px; }
       year1Credits: cNum(own(p, 'year1Credits'), monthly * HORIZON, 0, MAX.demand * HORIZON),
       rampSeats: arr12(own(p, 'rampSeats'), 0, MAX.seats),
       rampCredits: arr12(own(p, 'rampCredits'), monthly, MAX.demand),
+      employees: cInt(own(p, 'employees'), 0, 0, MAX.users),
       basisSeats: cInt(own(p, 'basisSeats'), 0, 0, MAX.seats),
       copilotLicensed: cInt(own(p, 'copilotLicensed'), 0, 0, MAX.seats),
       licenses: licenses,
@@ -1483,7 +1484,7 @@ footer.pagefoot p { margin:0 0 10px; }
     else if ((L.bbasic_cop || 0) + (L.bbasic || 0) > 0) base = 'basic';
     else if ((L.e3 || 0) > 0) base = 'e3';
     return { seats: { business: biz, enterprise: L.cop_ent || 0, e7: L.e7 || 0 }, tenantBase: base,
-             motion: v.payload.cspMotion, copilotLicensed: v.payload.copilotLicensed };
+             motion: v.payload.cspMotion, copilotLicensed: v.payload.copilotLicensed, employees: v.payload.employees };
   }
 
   /* ══ 12 · Bundles and zero-rating ═══════════════════════════════════════ */
@@ -3445,7 +3446,10 @@ footer.pagefoot p { margin:0 0 10px; }
     put('studio.account.seats.e7', acc.seats.e7);
     if (acc.tenantBase !== 'unsure') put('studio.account.tenantBase', acc.tenantBase);
     var seats = acc.seats.business + acc.seats.enterprise + acc.seats.e7;
-    if (p.basisSeats > 0 || seats > 0) put('studio.account.totalUsers', Math.max(p.basisSeats, seats));
+    // Employees when the Cowork tab reports them (every person who could meet an
+    // agent); otherwise the larger of its active users and the Copilot seats.
+    if (acc.employees > 0) put('studio.account.totalUsers', Math.max(acc.employees, seats));
+    else if (p.basisSeats > 0 || seats > 0) put('studio.account.totalUsers', Math.max(p.basisSeats, seats));
     if (p.accountName) put('meta.accountName', p.accountName);
     if (acc.motion !== 'unsure') put('partner.motion', acc.motion);
   }

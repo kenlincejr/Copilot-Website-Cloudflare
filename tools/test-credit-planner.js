@@ -794,5 +794,18 @@ sec('R');
   near(pe.revenue.payg, E.compute(sell).purchase.best.scen.mid.paygCredits * 0.0125, 'R partner revenue uses the same customer rate', 1e-6);
 }
 
+/* Employee count from the Cowork tab (prefills total users). */
+{
+  const acc = E.accountFromPayload(PAYLOAD({ employees: 120 }));
+  eq(acc.employees, 120, 'payload employees reach accountFromPayload');
+  eq(E.accountFromPayload(PAYLOAD()).employees, 0, 'an older payload without employees reads as 0');
+  [NaN, -5, 'x', 1e308, null].forEach(function (v) {
+    const a = E.accountFromPayload(PAYLOAD({ employees: v }));
+    ok(a && isFinite(a.employees) && a.employees >= 0, 'hostile employees value ' + String(v) + ' stays finite and non-negative');
+  });
+  ok(/if \(acc\.employees > 0\) put\('studio\.account\.totalUsers'/.test(src),
+     'the UI prefills total users from the employee count when present');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
