@@ -2820,10 +2820,14 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.partner.motion === 'direct' && b.p3.units > 0) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
     if (s.partner.motion === 'indirectReseller' && b.p3.units > 0) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
     var lic = cx.agents.filter(function (r) { return r.verdict === 'license'; });
-    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(r.savingUsdMonthly) + ' a month on a Copilot seat'; }).join('; ') + '.', { aud: 'customer' }));
+    if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(r.savingUsdMonthly) + ' a month on a Copilot seat'; }).join('; ') + '.' +
+      (lic.some(function (r) { return r.sku === 'promo'; }) ? ' That uses the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price, a ' + PROMO_TXT + '; new seats after that cost ' + fmtUsd(RC.seatBiz.v) + '.' : ''), { aud: 'customer' }));
     var iso = horizonMonths(s.combined.horizon.startMonth);
-    if (ac.seats.business > 0 && iso[0] <= RC.seatBizPromo.ends.slice(0, 7) && iso[HORIZON - 1] > RC.seatBizPromo.ends.slice(0, 7))
-      warn.push(W('P-76', 'info', 'The ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business promotion ends December 31, 2026, inside this plan; renewals move to ' + fmtUsd(RC.seatBiz.v) + ' (' + fmtUsd(RC.seatBizMonthly.v) + ' on monthly billing).', { aud: 'customer' }));
+    var promoRows = cx.agents.filter(function (r) { return r.sku === 'promo'; });
+    var lateRows = promoRows.filter(function (r) { return promoLate(s, r); });
+    if ((ac.seats.business > 0 && iso[0] <= RC.seatBizPromo.ends.slice(0, 7) && iso[HORIZON - 1] > RC.seatBizPromo.ends.slice(0, 7)) || promoRows.length)
+      warn.push(W('P-76', 'info', 'The ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price is a ' + PROMO_TXT + ' (annual commitment, first year), inside this plan; renewals and new seats move to ' + fmtUsd(RC.seatBiz.v) + ' (' + fmtUsd(RC.seatBizMonthly.v) + ' on monthly billing).' +
+        lateRows.map(function (r) { return ' ' + r.name + ' goes live in ' + monthName(promoBuyMonth(s, r)) + ', after the promo ends, so its seats would be bought at ' + fmtUsd(RC.seatBiz.v) + ' (break-even ' + fmtInt(breakEven(RC.seatBiz.v)) + ' credits a user), not ' + fmtUsd(RC.seatBizPromo.v) + '.'; }).join(''), { aud: 'customer' }));
     if (ac.seats.business > RC.bizSeatCap.v) warn.push(W('P-77', 'warn', 'Copilot Business is capped at ' + RC.bizSeatCap.v + ' seats; ' + fmtInt(ac.seats.business) + ' entered. Move the rest to the enterprise SKU.', { aud: 'customer', fixes: [{ label: 'Cap Business at ' + RC.bizSeatCap.v, path: 'studio.account.seats.business', value: RC.bizSeatCap.v }] }));
     if (sp.ttmUsd > 0) warn.push(W('P-78', 'info', sp.reached ? 'This deal clears the ' + fmtUsd(sp.thresholdUsd) + ' Copilot Studio deployment bar for the Agentic Business Solutions specialization in month ' + sp.monthReached + '.'
       : 'Copilot Studio spend reaches ' + fmtUsd(sp.ttmUsd) + ' in twelve months, short of the ' + fmtUsd(sp.thresholdUsd) + ' specialization bar.'));
@@ -2868,6 +2872,16 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ 27 · Conversation layer: next best action, talk track, objections, ladder ═ */
+  /* The $18 Copilot Business price is a promotion through 2026-12-31 (annual
+     commitment, first year). Eligibility is judged at the month the seats
+     would be bought: the agent's go-live month (or the engine's buyMonth). */
+  var PROMO_TXT = 'promo through ' + RC.seatBizPromo.ends;
+  function promoBuyMonth(s, row) {
+    if (row && typeof row.buyMonth === 'string') return row.buyMonth;
+    var a = s.studio.agents.filter(function (x) { return x.id === row.id; })[0];
+    return addMonths(cMonth(s.combined.horizon.startMonth, '2026-11'), a ? a.startMonth : 0);
+  }
+  function promoLate(s, row) { return !!row && row.sku === 'promo' && promoBuyMonth(s, row) > RC.seatBizPromo.ends.slice(0, 7); }
   var GUIDE = deepFreeze({
     billing: 'azure-billing-setup.html#section-13', budgets: 'azure-billing-setup.html#section-9', economics: 'copilot-studio-agent-engagement.html#section-6',
     governance: 'copilot-studio-agent-engagement.html#section-3', limits: 'copilot-studio-agent-engagement.html#section-9', build: 'copilot-studio-agent-engagement.html#section-7',
@@ -2901,7 +2915,9 @@ footer.pagefoot p { margin:0 0 10px; }
         out.push(rule('NBA-05', 'December 1', 'The default 4,000-credit limit stops users mid-month', ['The average Cowork user reaches it around working day ' + r.enforcement.userCap.day.hi + '.'],
           'New Copilot Business licenses come with a monthly credit limit per user, and your people will hit it.', 'Raise the limit to the governance figure when the seats are bought.', null, GUIDE.budgets));
       var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
-      if (lic.length) out.push(rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even.'; }),
+      if (lic.length) out.push(rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
+        (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
+        (promoLate(s, x) ? '; its seats would be bought in ' + monthName(promoBuyMonth(s, x)) + ', after the promo ends, when the break-even is ' + fmtInt(breakEven(RC.seatBiz.v)) : '') + '.'; }),
         'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', null, GUIDE.economics));
       var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
       if (bcDef.length) out.push(rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
@@ -2967,9 +2983,9 @@ footer.pagefoot p { margin:0 0 10px; }
       function beAt(usd) { return rate > 0 ? Math.round(usd / rate) : 0; }
       var meterTxt = listCredit ? fmtRate(rate) + ' a credit at Microsoft list' : fmtRate(rate) + ' a credit at our price';
       out.push({ id: 'OBJ-01', q: 'Why is the meter more than a seat?', a: 'A Copilot seat is a flat ' + fmtUsd(cs.enterprise) + ' a month' + (entSell ? ' at our price' : '') +
-        (bizSell ? ' (' + fmtUsd(cs.business) + ' at our price for Copilot Business)' : ' (' + fmtUsd(cs.promo) + '–' + fmtUsd(cs.monthly) + ' for Copilot Business)') +
+        (bizSell ? ' (' + fmtUsd(cs.business) + ' at our price for Copilot Business)' : ' (' + fmtUsd(cs.promo) + ' for Copilot Business on the ' + PROMO_TXT + ', then ' + fmtUsd(cs.business) + ' annual or ' + fmtUsd(cs.monthly) + ' monthly)') +
         '. The meter is ' + meterTxt + ', so a user above ' + fmtInt(beAt(cs.enterprise)) + ' credits a month (' + fmtInt(beAt(bizSell ? cs.business : cs.promo)) +
-        (bizSell ? ' on Copilot Business' : ' at the promotional Business price') + ') costs more on the meter than on a seat.' });
+        (bizSell ? ' on Copilot Business' : ' at the ' + fmtUsd(cs.promo) + ' Business price while the promo lasts') + ') costs more on the meter than on a seat.' });
       var eq = s.studio.agents.map(function (a) { return { name: a.name, e: msEstimatorEquivalent(a, s) }; }).filter(function (x) { return x.e; })[0];
       out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? 'For ' + eq.name + ', Microsoft’s Studio estimator shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) +
         ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. ' : '') + 'Its estimator also leaves out greetings and classic answers, and its flows do not scale with traffic. Every line here cites Microsoft’s billing rates page.' });
@@ -4865,7 +4881,7 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Studio §5: results, crossover ════════════════════════════════════ */
-  var SKU_LBL = { enterprise: 'Microsoft 365 Copilot (enterprise)', business: 'Copilot Business (annual)', promo: 'Copilot Business (promotional)', monthly: 'Copilot Business (monthly billing)' };
+  var SKU_LBL = { enterprise: 'Microsoft 365 Copilot (enterprise)', business: 'Copilot Business (annual)', promo: 'Copilot Business (promo through 2026-12-31)', monthly: 'Copilot Business (monthly billing)' };
   var SKU_RC = { enterprise: 'seatEnt', business: 'seatBiz', promo: 'seatBizPromo', monthly: 'seatBizMonthly' };
   function renderStudioResults() {
     var rate = R.customerRate.usdPerCredit, ag = R.lanes.agents.filter(function (a) { return !a.paused; });
@@ -4890,7 +4906,7 @@ footer.pagefoot p { margin:0 0 10px; }
       ['enterprise', 'business', 'promo', 'monthly'].map(function (k) {
         return '<tr><td>' + SKU_LBL[k] + '</td><td class="n">' + fu(E.RC[SKU_RC[k]].v) + '</td><td class="n">' + fi(cx.breakEvens[k]) + '</td><td>' + rcRef(SKU_RC[k]) + '</td></tr>';
       }).join('') + '</tbody></table></div>' +
-      '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The promotional price applies while the plan starts by December 2026.' : '') + '</p>';
+      '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The ' + fu(E.RC.seatBizPromo.v) + ' price is a promo through ' + esc(E.RC.seatBizPromo.ends) + ' (annual commitment, first year); seats bought after it cost ' + fu(E.RC.seatBiz.v) + '.' : '') + '</p>';
     if (cx.agents.length) {
       html += cx.agents.map(function (row, i) {
         var c = li.agents[i] || {};
@@ -5186,7 +5202,8 @@ footer.pagefoot p { margin:0 0 10px; }
     var li = (cv.licenseInstead && cv.licenseInstead.agents) || [];
     var lic = li.filter(function (a) { return a.verdict === 'license'; }), met = li.filter(function (a) { return a.verdict !== 'license'; });
     if (lic.length) h += '<div class="callout"><div class="callout-title">License instead of metering</div><div class="callout-body">' + lic.map(function (a) {
-      return 'License the ' + fi(a.users) + ' people using ' + esc(a.name) + ' instead: it saves about ' + fu(Math.max(0, a.savingUsdMonthly)) + ' a month ' + at + ', and they get Copilot.';
+      return 'License the ' + fi(a.users) + ' people using ' + esc(a.name) + ' instead: it saves about ' + fu(Math.max(0, a.savingUsdMonthly)) + ' a month ' + at + ', and they get Copilot.' +
+        (a.sku === 'promo' ? ' That uses the ' + fu(a.seatUsd) + ' Copilot Business price, a promo through ' + esc(E.RC.seatBizPromo.ends) + '.' : '');
     }).join(' ') + '</div></div>';
     else if (met.length) h += '<p>For the people using ' + met.map(function (a) { return esc(a.name); }).join(' and ') + ', metering is cheaper than a Copilot seat, so seats are justified by what Copilot and Cowork do for them, not by these agents.</p>';
     h += '<p><b>' + fi(cv.zeroRatedMonthly) + ' credits a month</b> of agent use are already covered by the Copilot licenses you own: licensed people, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Fair use applies. Website visitors, unlicensed staff, scheduled runs and anything that drives a computer are billed.</p>';

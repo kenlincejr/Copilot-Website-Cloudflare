@@ -974,6 +974,24 @@ sec('QA-C');
     ok(/id="cwRateWarn"/.test(src) && /function renderCoworkRate\(\)[\s\S]{0,400}'P-19'/.test(src), 'C-08 the Cowork tab shows the P-19 warning above the frame');
   }
 
+  // H-07 · $18 always carries "promo through 2026-12-31"; P-76 fires whenever the crossover uses the promo; eligibility at the buy month
+  {
+    const PT = 'promo through 2026-12-31';
+    const r40 = E.compute(helpdesk(40));
+    ok(r40.crossover.agents[0].sku === 'promo' && r40.state.studio.account.seats.business === 0, 'H-07 setup: promo crossover with no Business seats');
+    const w76 = wOf(r40, 'P-76'), w75 = wOf(r40, 'P-75');
+    ok(w76 && w76.msg.indexOf(PT) > -1, 'H-07 P-76 fires when the crossover uses the promo, with no Business seats');
+    ok(w75 && w75.msg.indexOf(PT) > -1, 'H-07 P-75 states the promo end');
+    ok(objOf(r40, 'OBJ-01').indexOf(PT) > -1, 'H-07 OBJ-01 states the promo end');
+    const n6 = nbaOf(r40, 'NBA-06');
+    ok(n6 && n6.why.join(' ').indexOf(PT) > -1, 'H-07 NBA-06 why states the promo end');
+    const late = helpdesk(40); late.combined.horizon.startMonth = '2026-12'; late.studio.agents[0].startMonth = 6;
+    const wl = wOf(E.compute(late), 'P-76');
+    ok(wl && /June 2027/.test(wl.msg) && /after the promo ends/.test(wl.msg), 'H-07 P-76 judges the promo at the go-live month (June 2027 is after it ends)');
+    ok(/a\.sku === 'promo'[\s\S]{0,200}promo through/.test(src), 'H-07 the customer report license-instead callout states the promo end');
+    ok(/promo: 'Copilot Business \(promo through 2026-12-31\)'/.test(src), 'H-07 the seat table labels the promo SKU with its end date');
+  }
+
   /* QA-C end */
 }
 
