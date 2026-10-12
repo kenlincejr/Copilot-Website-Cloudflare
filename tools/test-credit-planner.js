@@ -699,7 +699,7 @@ sec('H');
   // Text builders
   const rr = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
   const nba = E.nextBestAction(rr);
-  ok(nba.primary && nba.matches.length >= 2 && nba.matches[nba.matches.length - 1].id === 'NBA-14', 'H next best action ends with the default rule');
+  ok(nba.primary && nba.matches.length >= 2 && nba.matches.every((x) => x.id !== 'NBA-14'), 'H next best action lists the matched rules; the default rule appears only when nothing matched (M-10)');
   ok(nba.matches.every((x) => x.eyebrow && x.name && Array.isArray(x.why) && x.opener && x.then && x.link), 'H rules carry every field');
   ok(E.objections(rr).length === 9 && E.objections(rr).every((o) => o.q && o.a && !/NaN|undefined|Infinity/.test(o.a)), 'H nine objection cards, clean');
   ok(E.talk(rr).length > 2 && E.talk(rr).every((l) => !/NaN|undefined|Infinity/.test(l)), 'H talk track clean');
@@ -1062,6 +1062,16 @@ sec('QA-C');
     if (n5 && n5.fix) ok(!nbaOf(E.compute(E.applyFix(rh.state, n5.fix)), 'NBA-05'), 'M-09 the fix clears NBA-05');
     const n5m = nbaOf(E.compute(cwSt(500000)), 'NBA-05');
     ok(n5m && /working day \d+/.test(n5m.opener) && !/high scenario/.test(n5m.opener), 'M-09 when the middle scenario crosses, NBA-05 states the middle day');
+  }
+
+  // M-10 · NBA-14 only when nothing else matched; a throwing rule is skipped, not the others
+  {
+    const rt = E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'));
+    ok(nbaIds(rt).indexOf('NBA-01') > -1 && nbaIds(rt).indexOf('NBA-14') < 0, 'M-10 no "No blocker found" under an NBA-01 blocker');
+    eq(nbaIds(E.compute(E.defaults())).join(), 'NBA-14', 'M-10 NBA-14 alone when nothing else matches');
+    const broken = Object.assign({}, rt, { dataverse: null });
+    const ids = nbaIds(broken);
+    ok(ids.indexOf('NBA-01') > -1 && ids.indexOf('NBA-14') < 0, 'M-10 a rule that throws (no dataverse) skips only itself (' + ids.join() + ')');
   }
 
   /* QA-C end */

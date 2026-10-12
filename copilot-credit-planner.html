@@ -2916,75 +2916,114 @@ footer.pagefoot p { margin:0 0 10px; }
   function rule(id, eyebrow, name, why, opener, then, fix, link) {
     return { id: id, eyebrow: eyebrow, name: name, why: why, opener: opener, then: then, fix: fix || null, link: link };
   }
-  function nextBestAction(result) {
-    var r = isObj(result) ? result : compute(defaults());
-    var out = [];
-    try {
-      var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
-      var hasDemand = r.pool.year.hi > 0;
-      if (hasDemand && !hasBillingPath(s))
-        out.push(rule('NBA-01', 'Blocker', 'Set up a billing path first', ['Nothing in this plan runs without a capacity pack, a pre-purchase plan or an Azure subscription for pay-as-you-go.'],
+  /* Each rule is its own function: a rule that throws is skipped, never the
+     others. NBA-14 (the default motion) appears only when nothing matched. */
+  var NBA_ORDER = ['NBA-01', 'NBA-02', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-06', 'NBA-07', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13'];
+  function nbaRules(r) {
+    var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
+    return {
+      'NBA-01': function () {
+        if (!(r.pool.year.hi > 0 && !hasBillingPath(s))) return null;
+        return rule('NBA-01', 'Blocker', 'Set up a billing path first', ['Nothing in this plan runs without a capacity pack, a pre-purchase plan or an Azure subscription for pay-as-you-go.'],
           'Before we talk agents, let’s decide how the credits get paid for.', 'Quote a starter pack or set up the Azure plan in the same visit.',
-          { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing));
-      var ext = ag.filter(function (a) { return a.flags.unauthExternal; });
-      if (ext.length) out.push(rule('NBA-02', 'Say it plainly', 'Website agents bill every conversation', [ext.map(function (a) { return a.name; }).join(', ') + ': no sign-in, so no license covers any of it.', fmtInt(sum(ext.map(function (a) { return a.lo; }))) + ' credits a month, all billed.'],
-        'Your website agent is a metered service, like a phone line: every conversation costs credits.', 'Agree a monthly cap and an alert before launch.', null, GUIDE.economics));
-      if (r.enforcement.m365.starvation.hi) out.push(rule('NBA-03', 'Pool', 'Power Platform allocations starve Cowork', ['Pre-allocations leave ' + fmtInt(r.enforcement.remainder) + ' credits a month for Microsoft 365 against ' + fmtInt(r.enforcement.m365.demand.hi) + ' of Cowork demand.'],
-        'Cowork and your agents share one pool; the way it is split decides who runs out first.', 'Resize environment allocations from the governance sheet.', null, GUIDE.limits));
-      var agentsCut = r.enforcement.events.filter(function (e) { return e.kind === 'agents'; })[0];
-      if (agentsCut || (ag.length && s.combined.enforcement.perAgentCaps !== 'yes' && r.enforcement.prepaidMonthly > 0))
-        out.push(rule('NBA-04', 'Service level', 'The 125% switch turns agents off', [agentsCut ? 'Agents are disabled around day ' + agentsCut.day + ' of the peak month.' : 'No per-agent limits are confirmed, and there is no tenant-wide default.'],
+          { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing);
+      },
+      'NBA-02': function () {
+        var ext = ag.filter(function (a) { return a.flags.unauthExternal; });
+        if (!ext.length) return null;
+        return rule('NBA-02', 'Say it plainly', 'Website agents bill every conversation', [ext.map(function (a) { return a.name; }).join(', ') + ': no sign-in, so no license covers any of it.', fmtInt(sum(ext.map(function (a) { return a.lo; }))) + ' credits a month, all billed.'],
+          'Your website agent is a metered service, like a phone line: every conversation costs credits.', 'Agree a monthly cap and an alert before launch.', null, GUIDE.economics);
+      },
+      'NBA-03': function () {
+        if (!r.enforcement.m365.starvation.hi) return null;
+        return rule('NBA-03', 'Pool', 'Power Platform allocations starve Cowork', ['Pre-allocations leave ' + fmtInt(r.enforcement.remainder) + ' credits a month for Microsoft 365 against ' + fmtInt(r.enforcement.m365.demand.hi) + ' of Cowork demand.'],
+          'Cowork and your agents share one pool; the way it is split decides who runs out first.', 'Resize environment allocations from the governance sheet.', null, GUIDE.limits);
+      },
+      'NBA-04': function () {
+        var agentsCut = r.enforcement.events.filter(function (e) { return e.kind === 'agents'; })[0];
+        if (!(agentsCut || (ag.length && s.combined.enforcement.perAgentCaps !== 'yes' && r.enforcement.prepaidMonthly > 0))) return null;
+        return rule('NBA-04', 'Service level', 'The 125% switch turns agents off', [agentsCut ? 'Agents are disabled around day ' + agentsCut.day + ' of the peak month.' : 'No per-agent limits are confirmed, and there is no tenant-wide default.'],
           'If an agent runs out of credits it simply stops; your users find out by the agent breaking.', 'Set per-agent limits and alerts on day one.',
-          { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }, GUIDE.limits));
-      var uc = r.enforcement.userCap;
-      if (uc.source === 'december-default' && uc.day.hi) {
+          { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }, GUIDE.limits);
+      },
+      'NBA-05': function () {
+        var uc = r.enforcement.userCap;
+        if (!(uc.source === 'december-default' && uc.day.hi)) return null;
         /* State the middle-scenario day as the expectation; when only the
            high scenario crosses, say so instead of stating it as fact. */
         var capFix = uc.perUser && uc.perUser.hi > 0 ? { label: 'Set the per-user limit to ' + fmtInt(roundUp(uc.perUser.hi, 500)) + ' credits', path: 'combined.enforcement.perUserCap', value: roundUp(uc.perUser.hi, 500) } : null;
-        out.push(rule('NBA-05', 'December 1', 'The default ' + fmtInt(RC.capDefault.v) + '-credit limit can stop users mid-month', [uc.day.mid
+        return rule('NBA-05', 'December 1', 'The default ' + fmtInt(RC.capDefault.v) + '-credit limit can stop users mid-month', [uc.day.mid
             ? 'The average Cowork user reaches it around working day ' + uc.day.mid + ' (working day ' + uc.day.hi + ' in the high scenario).'
             : 'In the high scenario the average Cowork user reaches it around working day ' + uc.day.hi + '; the middle scenario stays under it.'],
           'New Copilot Business licenses bought through CSP from December 1 come with a ' + fmtInt(RC.capDefault.v) + '-credit monthly limit per user. ' + (uc.day.mid
             ? 'At the usage we’ve modeled, your heavier users hit it around working day ' + uc.day.mid + '.'
             : 'At the usage we’ve modeled most months stay under it, but in the high scenario your heavier users would hit it around working day ' + uc.day.hi + '.'),
-          'Decide the per-user limit now, and write it into the governance sheet.', capFix, GUIDE.budgets));
-      }
-      var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
-      if (lic.length) out.push(rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
-        (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
-        (promoLate(s, x) ? '; its seats would be bought in ' + monthName(promoBuyMonth(s, x)) + ', after the promo ends, when the break-even is ' + fmtInt(breakEven(RC.seatBiz.v)) : '') + '.'; }),
-        'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', null, GUIDE.economics));
-      var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
-      if (bcDef.length) out.push(rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
-        'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', null, GUIDE.limits));
-      if (r.dataverse.overageGb.db + r.dataverse.overageGb.file + r.dataverse.overageGb.log > 0)
-        out.push(rule('NBA-08', 'Storage', 'Dataverse overage ahead', ['About ' + fmtUsd(r.dataverse.addOnUsd) + ' a month in capacity add-ons at the modeled retention.'],
-          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', null, GUIDE.limits));
-      var gb = ag.filter(function (a) { return a.build.hi > 0; });
-      if (gb.length) out.push(rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', ['Build sessions bill from the first build: up to ' + fmtInt(sum(gb.map(function (a) { return a.build.hi; }))) + ' credits a month during the build.'],
-        'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', null, GUIDE.build));
-      var rsn = ag.filter(function (a) { return a.flags.reasoning; });
-      if (rsn.length) out.push(rule('NBA-10', 'Cost driver', 'Reasoning bills twice', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per 1,000 reasoning tokens.'],
-        'Reasoning makes answers better and costs twice; we only turn it on where it pays.', 'Test with reasoning off first and compare quality.', null, GUIDE.economics));
-      var bp = r.purchase.best;
-      if (commitWithoutActuals(s, bp)) {
+          'Decide the per-user limit now, and write it into the governance sheet.', capFix, GUIDE.budgets);
+      },
+      'NBA-06': function () {
+        var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
+        if (!lic.length) return null;
+        return rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
+          (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
+          (promoLate(s, x) ? '; its seats would be bought in ' + monthName(promoBuyMonth(s, x)) + ', after the promo ends, when the break-even is ' + fmtInt(breakEven(RC.seatBiz.v)) : '') + '.'; }),
+          'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', null, GUIDE.economics);
+      },
+      'NBA-07': function () {
+        var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
+        if (!bcDef.length) return null;
+        return rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
+          'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', null, GUIDE.limits);
+      },
+      'NBA-08': function () {
+        if (!(r.dataverse.overageGb.db + r.dataverse.overageGb.file + r.dataverse.overageGb.log > 0)) return null;
+        return rule('NBA-08', 'Storage', 'Dataverse overage ahead', ['About ' + fmtUsd(r.dataverse.addOnUsd) + ' a month in capacity add-ons at the modeled retention.'],
+          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', null, GUIDE.limits);
+      },
+      'NBA-09': function () {
+        var gb = ag.filter(function (a) { return a.build.hi > 0; });
+        if (!gb.length) return null;
+        return rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', ['Build sessions bill from the first build: up to ' + fmtInt(sum(gb.map(function (a) { return a.build.hi; }))) + ' credits a month during the build.'],
+          'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', null, GUIDE.build);
+      },
+      'NBA-10': function () {
+        var rsn = ag.filter(function (a) { return a.flags.reasoning; });
+        if (!rsn.length) return null;
+        return rule('NBA-10', 'Cost driver', 'Reasoning bills twice', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per 1,000 reasoning tokens.'],
+          'Reasoning makes answers better and costs twice; we only turn it on where it pays.', 'Test with reasoning off first and compare quality.', null, GUIDE.economics);
+      },
+      'NBA-11': function () {
+        var bp = r.purchase.best;
+        if (!commitWithoutActuals(s, bp)) return null;
         var cmb = clone(s.combined);
         cmb.purchase.appetite = 'conservative'; cmb.purchase.current = { packs: 1, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; cmb.enforcement.basis = 'current';
         var mp = Math.max.apply(null, bp.packs.schedule);
-        out.push(rule('NBA-11', 'Commit', 'Measure 90 days, then commit', [
+        return rule('NBA-11', 'Commit', 'Measure 90 days, then commit', [
           'The cheapest option is ' + bp.label + (mp > 1 ? '; each pack is billed annually, so every pack is a commitment for the year' : '') + (bp.p3.units > 0 ? '; it includes a one-year pre-purchase commitment' : '') + '.',
           'Nothing has been measured yet: every volume is an estimate.'],
           'These volumes are our best estimate, not your history. Let’s start with one pack and pay-as-you-go overflow, the smallest commitment, and buy more once we’ve seen 90 days of real usage.',
           'Start on 1 pack + pay-as-you-go overflow; packs are billed annually, so each pack added is a year’s commitment. Re-run with actuals at day 90.',
-          { label: 'Plan on 1 pack + pay-as-you-go, conservative appetite', path: 'combined', value: cmb }, GUIDE.economics));
+          { label: 'Plan on 1 pack + pay-as-you-go, conservative appetite', path: 'combined', value: cmb }, GUIDE.economics);
+      },
+      'NBA-12': function () {
+        if (!(ag.length >= 3 && (ac.tenantBase === 'premium' || ac.tenantBase === 'e5'))) return null;
+        return rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
+          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.', null, GUIDE.agent365);
+      },
+      'NBA-13': function () {
+        if (!r.specialization.reached) return null;
+        return rule('NBA-13', 'Partner', 'This deal counts toward the specialization', ['Copilot Studio spend clears ' + fmtUsd(r.specialization.thresholdUsd) + ' in month ' + r.specialization.monthReached + '.'],
+          'This deployment is the kind Microsoft recognizes; we’ll document it as we go.', 'Track it as one of the two Pathway Two deployments.', null, GUIDE.specialization);
       }
-      if (ag.length >= 3 && (ac.tenantBase === 'premium' || ac.tenantBase === 'e5'))
-        out.push(rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
-          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.', null, GUIDE.agent365));
-      if (r.specialization.reached) out.push(rule('NBA-13', 'Partner', 'This deal counts toward the specialization', ['Copilot Studio spend clears ' + fmtUsd(r.specialization.thresholdUsd) + ' in month ' + r.specialization.monthReached + '.'],
-        'This deployment is the kind Microsoft recognizes; we’ll document it as we go.', 'Track it as one of the two Pathway Two deployments.', null, GUIDE.specialization));
-    } catch (e) { out = []; }
-    out.push(rule('NBA-14', 'Default', 'Estimate, cap, monitor, true up', ['No blocker found. Run the standard motion.'],
+    };
+  }
+  function nextBestAction(result) {
+    var r = isObj(result) ? result : compute(defaults());
+    var out = [], fns = null;
+    try { fns = nbaRules(r); } catch (e) { fns = null; }
+    if (fns) NBA_ORDER.forEach(function (id) {
+      try { var x = fns[id](); if (x) out.push(x); } catch (e) { /* this rule only */ }
+    });
+    if (!out.length) out.push(rule('NBA-14', 'Default', 'Estimate, cap, monitor, true up', ['No blocker found. Run the standard motion.'],
       'Here is the estimate, here is the cap that keeps it there, and here is when we check it against real usage.', 'Set alerts at 50, 80 and 100% and book the true-up.', null, GUIDE.agentops));
     return { primary: out[0], matches: out };
   }
