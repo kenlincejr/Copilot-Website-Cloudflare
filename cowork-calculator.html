@@ -2308,9 +2308,11 @@ body.embedded .hub-link { display:none !important; }
       out.push({ id:'comms', label:'Communication Compliance', prov:'editorial',
         why: (VERTICAL_LABEL[state.org.vertical] || 'Regulated') +
              ' accounts typically carry a supervision obligation that Business Premium alone does not cover.' });
-    if (ctx.copilotLicensed >= 300)
+    // Inclusive cap: Microsoft sells the SMB Copilot SKUs "for up to 300 users",
+    // so 300 seats is inside it and only 301 or more needs another path.
+    if (ctx.copilotLicensed > 300)
       out.push({ id:'scale', label:'A path above the 300-seat SMB cap', mandatory:true, prov:'ms-verified',
-        why:'At ' + ctx.copilotLicensed + ' Copilot users you are at or past the 300-license ceiling on every SMB SKU.' });
+        why:'At ' + ctx.copilotLicensed + ' Copilot users you are past the 300-license ceiling on every SMB SKU.' });
     return out;
   }
 
@@ -2640,7 +2642,7 @@ body.embedded .hub-link { display:none !important; }
         opener:'"Nobody owns this number yet. That is the job: a monthly Cost Management review, spending limits with alerts at 50 and 80 per cent, and a concentration check before it becomes an invoice conversation."',
         then:'Insurance and compliance readiness when their renewal comes round.' },
 
-      { id:'at-scale', when: ctx.copilotLicensed >= 300,
+      { id:'at-scale', when: ctx.copilotLicensed > 300,
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
         why:['At ' + ctx.copilotLicensed + ' Copilot licenses this is past every SMB cap and into enterprise governance.',

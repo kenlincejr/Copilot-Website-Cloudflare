@@ -2363,5 +2363,36 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(src.indexOf('href="copilot-credit-planner.html"') >= 0, 'HUB: the link points at the planner');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   QA audit 2026-10-11 (research/credit-planner-qa-audit-2026-10-11.md §2)
+   One block per finding id. Each block failed before its fix.
+   ══════════════════════════════════════════════════════════════════════════ */
+const QA_GOV_YES = { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes', namedCostOwner:'yes', insuranceRenewal:'no' };
+function qaLic(emp, inv, gov, extra) {
+  const s = E.defaults();
+  s.org = Object.assign(s.org, { totalEmployees: emp });
+  s.licenseInventory = inv;
+  if (gov) { s.governanceAsked = true; s.governance = Object.assign({}, QA_GOV_YES); }
+  if (extra) extra(s);
+  return E.compute(s);
+}
+function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id; })[0]; }
+
+/* ── C-01 · the 300-seat cap is inclusive ("for up to 300 users") ──────── */
+{
+  const r = qaLic(300, [{ skuId:'bprem_cop', seats:300 }], true), L = r.licensing;
+  ok(L.requirements.every(q => q.id !== 'scale'), 'C-01: 300 seats raises no scale gap');
+  const bp = qaPath(L, 'bprem_cop');
+  ok(bp && bp.feasible, 'C-01: Business Premium with Copilot is feasible at 300');
+  eq(bp && Math.round(bp.monthly), 9600, 'C-01: 300 x $32 = $9,600 a month');
+  ok(L.winner && ['cop_ent','e7'].indexOf(L.winner.id) === -1, 'C-01: 300 seats is not pushed to an enterprise path');
+  ok(L.why.join(' ').indexOf('past the 300-seat') === -1, 'C-01: "Why this one" never says past the cap at 300');
+  ok(r.next.pick.id !== 'at-scale', 'C-01: the at-scale next step does not fire at exactly 300');
+  const r301 = qaLic(301, [{ skuId:'bprem_cop', seats:301 }], true);
+  ok(r301.licensing.requirements.some(q => q.id === 'scale'), 'C-01: 301 seats does raise the scale gap');
+  ok(r301.licensing.requirements.filter(q => q.id === 'scale')[0].why.indexOf('at or past') === -1,
+     'C-01: the scale gap copy says past, not "at or past"');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
