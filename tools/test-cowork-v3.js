@@ -2686,5 +2686,39 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(L3.requirements.filter(x => x.id === 'labels')[0].skuClosable !== false, 'M-05: an E3 base still needs a license for labels');
 }
 
+/* ── L-02 · loadRateCard never merges a prototype key ─────────────────── */
+{
+  // The loader and the key-cleaning helper above it, lifted together.
+  const helperAt = src.indexOf('  var BAD_KEYS');
+  const body = helperAt >= 0 && helperAt < src.indexOf('  function loadRateCard(')
+    ? src.slice(helperAt, src.indexOf('\n  function renderBasisBar', helperAt))
+    : uiSource('loadRateCard', '\n  function renderBasisBar');
+  function load(json) {
+    let seen = null;
+    const E2 = Object.assign({}, E, { normalize: function (s) {
+      // defaults() objects come from the engine's own realm (vm context).
+      seen = { pricingProto: Object.getPrototypeOf(s.pricing) === Object.getPrototypeOf(E.defaults().pricing),
+               overridesProto: s.priceOverrides == null || Object.getPrototypeOf(s.priceOverrides) === Object.prototype,
+               servicesProto: s.partnerServices == null || Object.getPrototypeOf(s.partnerServices) === Object.prototype,
+               keys: Object.keys(s.pricing).concat(Object.keys(s.priceOverrides || {}), Object.keys(s.partnerServices || {})) };
+      return E.normalize(s);
+    } });
+    function FR() {}
+    FR.prototype.readAsText = function () { this.onload({ target: { result: json } }); };
+    const fn = new Function('E', 'alert', 'FileReader', 'renderPricing', 'refresh', 'state',
+      body + '\nreturn loadRateCard;')(E2, () => {}, FR, () => {}, () => {}, E.defaults());
+    fn({ target: { files: [{}], value: 'x' } });
+    return seen;
+  }
+  const evil = '{"__type":"cowork-rate-card","pricing":{"__proto__":{"polluted":1},"constructor":{"x":1},"mode":"sell"},' +
+               '"priceOverrides":{"__proto__":{"polluted":2},"bstd":15},"partnerServices":{"prototype":{"p":1},"__proto__":{"polluted":3},"retainerLo":4}}';
+  const seen = load(evil);
+  ok(seen && seen.pricingProto, 'L-02: pricing keeps a plain prototype through the merge');
+  ok(seen && seen.overridesProto, 'L-02: priceOverrides keeps a plain prototype');
+  ok(seen && seen.servicesProto, 'L-02: partnerServices keeps a plain prototype');
+  ok(seen && seen.keys.every(k => ['__proto__', 'constructor', 'prototype'].indexOf(k) === -1), 'L-02: no bad key survives into state');
+  ok(({}).polluted === undefined, 'L-02: Object.prototype untouched');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

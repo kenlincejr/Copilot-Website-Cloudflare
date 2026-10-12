@@ -1490,6 +1490,8 @@ body.embedded .hub-link { display:none !important; }
     [s.priceOverrides, s.pricing.sell, s.pricing.cost].forEach(function (map) {
       if (map == null || typeof map !== 'object') return;
       Object.keys(map).forEach(function (id) {
+        // QA L-02: the engine's own bad-key guard, whatever the loader did.
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') { delete map[id]; return; }
         var v = num_(map[id]);
         if (v == null) delete map[id]; else map[id] = clamp(v, 0, CONST.MAX.usd);
       });
@@ -3957,6 +3959,20 @@ body.embedded .hub-link { display:none !important; }
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
+  /* QA L-02: a key JSON.parse hands back as an own property can still hit
+     a setter on merge: Object.assign with an own '__proto__' key swaps the
+     target's prototype. Copy own keys only, never the three prototype keys,
+     two levels deep (pricing carries the sell/cost/uplift/pec maps). */
+  var BAD_KEYS = ['__proto__', 'constructor', 'prototype'];
+  function cleanKeys(o, depth) {
+    if (o == null || typeof o !== 'object' || Array.isArray(o)) return o;
+    var out = {};
+    Object.keys(o).forEach(function (k) {
+      if (BAD_KEYS.indexOf(k) > -1) return;
+      out[k] = (depth || 0) < 2 ? cleanKeys(o[k], (depth || 0) + 1) : o[k];
+    });
+    return out;
+  }
   function loadRateCard(e) {
     var f = e.target.files[0]; if (!f) return;
     var rd = new FileReader();
@@ -3968,9 +3984,9 @@ body.embedded .hub-link { display:none !important; }
         // rather than quietly repricing a shared file a colleague will reuse.
         if (c.pricing && c.pricing.creditSellUsd != null &&
             !(isFinite(c.pricing.creditSellUsd) && c.pricing.creditSellUsd > 0)) throw new Error('rate');
-        if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, c.pricing);
-        if (c.priceOverrides) state.priceOverrides = c.priceOverrides;
-        if (c.partnerServices) state.partnerServices = c.partnerServices;
+        if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, cleanKeys(c.pricing));
+        if (c.priceOverrides) state.priceOverrides = cleanKeys(c.priceOverrides);
+        if (c.partnerServices) state.partnerServices = cleanKeys(c.partnerServices);
         // The slider's own range, applied to the file the slider never saw.
         if (c.effortStep != null) state.effort.step = Math.max(1, Math.min(3, +c.effortStep || 1));
         // A card saved before the PEC question existed carries no answer.
