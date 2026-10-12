@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Token economics for the SMB Copilot practice. From December 1, 2026 every Copilot Business license sold through CSP comes with a consumption meter switched on, defaulting to more than the license costs, billed through the partner. The customer's new problem, the three sentences, the four-verb managed service, the pricing, the talk track and the December 1 campaign." />
+<title>The Meter Conversation: Token Economics for the Copilot Practice | Copilot Playbook</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — see DESIGN.md §1. No value here is new.
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 28px;
+  line-height: 1.7;
+  background: #fff;
+}
+
+h2 { color: var(--navy); margin: 2.8rem 0 .75rem; border-bottom: 2px solid var(--navy); padding-bottom: 10px; font-size: 1.45rem; font-weight: 700; letter-spacing: -.1px; }
+h3 { color: var(--teal); margin: 1.6rem 0 .4rem; font-size: 1.05rem; font-weight: 600; }
+h4 { color: var(--navy); margin: 1.2rem 0 .3rem; font-size: .95rem; font-weight: 700; }
+p { margin: .5rem 0 .8rem; }
+ul, ol { margin: .4rem 0 .9rem 1.3rem; }
+li { margin: .28rem 0; line-height: 1.65; }
+hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+code { background: var(--muted-2); padding: 2px 6px; border-radius: 4px; font-size: .88em; color: #004B87; font-family: 'Consolas','Monaco',monospace; }
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.docref { font-weight: 600; border-bottom: 1px dotted var(--ltblue); }
+
+/* TABLE OF CONTENTS */
+.toc { background: var(--muted); border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: 0 0 var(--radius) var(--radius); padding: 20px 24px 22px; margin: 0 0 28px; }
+.toc-head { font-weight: 700; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin: 0 0 14px; }
+.toc ul { columns: 2; column-gap: 28px; margin: 0; padding: 0; list-style: none; counter-reset: toc-counter; }
+.toc li { break-inside: avoid; margin: 0; padding: 7px 0; border-bottom: 1px solid var(--border); counter-increment: toc-counter; display: flex; align-items: baseline; gap: 10px; line-height: 1.4; }
+.toc li::before { content: counter(toc-counter, decimal-leading-zero); font-size: .72rem; font-weight: 700; color: var(--teal); flex: 0 0 auto; opacity: .7; }
+.toc a { color: var(--text); text-decoration: none; font-size: .9rem; font-weight: 500; }
+.toc a:hover { color: var(--teal); text-decoration: underline; }
+@media (max-width: 720px) { .toc ul { columns: 1; } }
+
+.back-to-toc { text-align: right; margin: 16px 0 6px; font-size: .82rem; }
+.back-to-toc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+
+/* CALLOUTS */
+.callout { background: var(--accent); border: 1px solid #c5dde3; border-left: 4px solid var(--teal); border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 20px; margin: 18px 0; }
+.callout.subtle { background: #f3fbfc; border-color: #c8e6eb; }
+.callout.warn { background: var(--warn); border-color: #f5ddb0; border-left-color: #d97706; }
+.callout.dark { background: var(--navy); border-color: var(--navy); border-left-color: var(--teal-light); color: #fff; }
+.callout.dark .callout-title { color: #a8ecf5; }
+.callout.dark .callout-body { color: rgba(255,255,255,.92); }
+.callout.dark strong { color: #fff; }
+.callout-title { font-weight: 700; color: #00474f; margin: 0 0 6px; font-size: .85rem; letter-spacing: .3px; text-transform: uppercase; }
+.callout.warn .callout-title { color: #92400e; }
+.callout-body { margin: 0; font-size: .93rem; line-height: 1.65; }
+.callout-body p { margin: .35rem 0; }
+.callout-body p:first-child { margin-top: 0; }
+.callout-body p:last-child { margin-bottom: 0; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 20px 0; }
+.metric { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); padding: 18px 20px; background: #fff; box-shadow: var(--shadow-sm); }
+.metric .k { font-weight: 700; font-size: 1.75rem; color: #004B87; line-height: 1; letter-spacing: -.5px; }
+.metric .l { font-size: .88rem; color: #374151; margin-top: 6px; line-height: 1.45; }
+.metric .s { color: #6b7280; font-size: .78rem; margin-top: 5px; font-style: italic; }
+.metric.warn { border-top-color: #d97706; }
+.metric.warn .k { color: #92400e; }
+
+blockquote { border-left: 4px solid var(--teal); padding: 14px 20px; margin: 18px 0; border-radius: 0 var(--radius) var(--radius) 0; background: #f5fbfc; font-style: italic; color: #374151; }
+blockquote .attr { display: block; font-style: normal; font-size: .82rem; color: #6b7280; margin-top: 8px; font-weight: 600; }
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: .88rem; box-shadow: var(--shadow-sm); border-radius: var(--radius); overflow: hidden; }
+th, td { border: 1px solid var(--border); padding: 10px 13px; vertical-align: top; }
+th { background: var(--muted-2); text-align: left; font-weight: 600; color: var(--navy); font-size: .82rem; border-left: 3px solid var(--teal); }
+tr:nth-child(even) td { background: #fafbfc; }
+.tablewrap { overflow-x: auto; }
+td.num { text-align: right; font-family: Consolas,Monaco,monospace; white-space: nowrap; }
+
+/* HERO + DARK PANEL */
+.hero-statement { background: linear-gradient(135deg, #004a55 0%, var(--teal) 60%, #1a9db5 100%); border-radius: var(--radius-lg); padding: 32px 36px; margin: 24px 0; text-align: center; box-shadow: var(--shadow-md); }
+.hero-statement p { margin: 0; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.6; }
+.hero-statement p em { color: #a8ecf5; font-style: normal; font-weight: 700; }
+.hero-statement .hero-sub { font-size: .9rem; font-weight: 400; color: rgba(255,255,255,.82); margin-top: 12px; }
+.dark-panel { background: linear-gradient(135deg, #001f3d 0%, var(--navy) 45%, var(--teal) 130%); border-radius: var(--radius-lg); padding: 30px 34px; margin: 20px 0; box-shadow: var(--shadow-md); }
+.dark-panel .dp-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.dark-panel .dp-eyebrow .bar { width: 24px; height: 2px; background: var(--ltblue); border-radius: 1px; }
+.dark-panel .dp-eyebrow .lbl { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.55); }
+.dark-panel .dp-eyebrow .rule { flex: 1; height: 1px; background: rgba(255,255,255,.12); }
+.dark-panel p { color: rgba(255,255,255,.9); font-size: .95rem; }
+.dark-panel h3 { color: #fff; margin-top: 0; }
+.dark-panel strong { color: #fff; }
+.dark-panel em { color: #a8ecf5; font-style: normal; }
+.dp-quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,.08); border-radius: 6px; overflow: hidden; margin: 6px 0 16px; }
+.dp-quote { background: rgba(255,255,255,.04); padding: 18px 20px; }
+.dp-quote .q { font-size: 1.05rem; font-weight: 700; color: #fff; line-height: 1.35; margin: 0 0 10px; letter-spacing: -.01em; }
+.dp-quote .q em { color: #a8ecf5; }
+.dp-quote .who { font-size: .72rem; color: rgba(255,255,255,.55); margin: 0; line-height: 1.5; }
+.dp-quote .who strong { color: rgba(255,255,255,.8); }
+.dp-source { margin: 0; font-size: .78rem; line-height: 1.55; color: rgba(255,255,255,.55); }
+.dp-source strong { color: rgba(255,255,255,.7); font-weight: 600; }
+@media (max-width: 760px) { .dp-quotes { grid-template-columns: 1fr; } }
+
+/* VERTICAL TIMELINE */
+.vtimeline { position: relative; margin: 20px 0 20px 8px; padding-left: 26px; border-left: 2px solid var(--border); }
+.vt-item { position: relative; padding-bottom: 22px; }
+.vt-item:last-child { padding-bottom: 0; }
+.vt-item::before { content: ""; position: absolute; left: -33px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--teal); }
+.vt-item.hot::before { border-color: #d97706; background: #d97706; }
+.vt-when { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .06em; }
+.vt-item.hot .vt-when { color: #92400e; }
+.vt-item h4 { margin: 3px 0 3px; }
+.vt-item p { font-size: .87rem; margin: 0; }
+
+/* WARNING BANNER */
+.smb-reality { border: 1px solid var(--border); border-left: 4px solid #d97706; border-radius: 0 var(--radius) var(--radius) 0; padding: 20px 24px; margin: 20px 0; background: var(--warn); box-shadow: var(--shadow-sm); }
+.smb-reality .sr-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #92400e; margin-bottom: 10px; }
+.smb-reality p { margin: .3rem 0; font-size: .92rem; line-height: 1.65; color: #374151; }
+.smb-reality strong { color: #92400e; }
+
+/* INLINE TAG + PROVENANCE */
+.tag { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; padding: 2px 8px; border-radius: 4px; background: var(--accent); color: var(--teal); text-transform: uppercase; margin-right: 6px; vertical-align: 1px; }
+.tag.warn { background: #fef3c7; color: #92400e; }
+.prov { display: inline-block; font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; vertical-align: 2px; margin-left: 5px; white-space: nowrap; }
+.prov-ms     { background: var(--accent); color: var(--teal); }
+.prov-survey { background: #dcfce7; color: #166534; }
+.prov-range  { background: #fef3c7; color: #92400e; }
+.prov-model  { background: #ede9fe; color: #5b21b6; }
+.provkey { display: flex; flex-wrap: wrap; gap: 14px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 18px; margin: 16px 0; font-size: .8rem; color: #374151; }
+.provkey span.pk { display: flex; align-items: baseline; gap: 6px; }
+
+/* RECAP HAIRLINE GRID */
+.recap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.recap-item { background: #fff; padding: 18px 20px; }
+.recap-item .rn { font-family: Consolas,Monaco,monospace; color: var(--teal-light); font-size: .72rem; font-weight: 700; }
+.recap-item h4 { margin: 6px 0 4px; }
+.recap-item p { margin: 0; font-size: .83rem; color: #374151; }
+
+/* REFERENCE LIST */
+.reflist { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.reflist li { background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 0 6px 6px 0; padding: 10px 16px; margin: 0; }
+.reflist .rf-t { font-weight: 600; font-size: .9rem; }
+.reflist .rf-t a { color: var(--navy); }
+.reflist .rf-d { font-size: .8rem; color: #6b7280; margin-top: 2px; }
+
+/* TRAP — a named failure mode */
+.trap { border: 1px solid var(--border); border-left: 4px solid #92400e; background: #fff; border-radius: 0 var(--radius) var(--radius) 0; padding: 15px 20px; margin: 16px 0; box-shadow: var(--shadow-sm); }
+.trap .t-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #92400e; margin-bottom: 6px; }
+.trap h4 { margin: 0 0 5px; }
+.trap p { margin: .25rem 0; font-size: .88rem; color: #374151; }
+
+/* SAIDLINE — what the partner actually says */
+.saidline { border: 1px solid #c8e6eb; border-left: 4px solid var(--teal-light); background: #f3fbfc; border-radius: 0 var(--radius) var(--radius) 0; padding: 16px 22px; margin: 18px 0; }
+.saidline .sl-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--teal); margin-bottom: 8px; }
+.saidline p { margin: .35rem 0; font-size: .93rem; line-height: 1.7; color: #374151; font-style: italic; }
+.saidline p strong { color: var(--navy); font-style: normal; }
+
+/* PHASE — the four verbs */
+.phase { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); margin: 16px 0; overflow: hidden; }
+.phase .ph-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 20px; background: var(--muted); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.phase .ph-num { font-family: Consolas,Monaco,monospace; font-size: .7rem; font-weight: 700; color: #fff; background: var(--teal); border-radius: 4px; padding: 2px 9px; flex: 0 0 auto; }
+.phase .ph-name { font-weight: 700; font-size: 1rem; color: var(--navy); flex: 1; }
+.phase .ph-meta { font-family: Consolas,Monaco,monospace; font-size: .7rem; color: #6b7280; flex: 0 0 auto; }
+.phase .ph-body { padding: 12px 20px 14px; }
+.phase .ph-row { display: grid; grid-template-columns: 104px 1fr; gap: 14px; padding: 9px 0; border-top: 1px dashed var(--border); }
+.phase .ph-row:first-child { border-top: none; padding-top: 2px; }
+.phase .ph-k { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--teal); padding-top: 3px; }
+.phase .ph-v { font-size: .89rem; }
+.phase .ph-v p { margin: 0 0 .3rem; font-size: .89rem; }
+.phase .ph-v ul { margin: .1rem 0 .1rem 1.05rem; }
+.phase .ph-v li { margin: .18rem 0; font-size: .89rem; }
+@media (max-width: 600px) { .phase .ph-row { grid-template-columns: 1fr; gap: 3px; } }
+
+.checklist { list-style: none; margin: 14px 0; padding: 0; }
+.checklist li { position: relative; padding: 9px 0 9px 30px; border-bottom: 1px solid var(--border); font-size: .91rem; margin: 0; line-height: 1.6; }
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before { content: "\2610"; position: absolute; left: 2px; top: 6px; color: var(--teal); font-size: 1.1rem; }
+.checklist li strong { color: var(--navy); }
+
+.lede { font-size: .95rem; color: #374151; margin: .4rem 0 1rem; }
+.rule-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+.rule-strip .rs { background: #fff; padding: 15px 18px; }
+.rule-strip .rs-k { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--teal); margin-bottom: 5px; }
+.rule-strip .rs-v { font-size: .88rem; color: #374151; margin: 0; }
+.rule-strip .rs-v strong { color: var(--navy); }
+
+/* ═══ NEW COMPONENTS FOR THIS PAGE — values from DESIGN §1, §2, §4 only ═══ */
+
+/* SENTENCE — one of the three sentences, numbered big */
+.sentence { display: grid; grid-template-columns: 64px 1fr; gap: 18px; align-items: start; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); padding: 20px 22px; margin: 14px 0; }
+.sentence .sn { font-size: 2.4rem; font-weight: 800; color: var(--ltblue); line-height: 1; font-family: Consolas,Monaco,monospace; }
+.sentence h3 { margin: 0 0 6px; color: var(--navy); font-size: 1.15rem; }
+.sentence p { margin: .25rem 0; font-size: .92rem; color: #374151; }
+@media (max-width: 600px) { .sentence { grid-template-columns: 1fr; gap: 6px; } }
+
+/* VERB GRID — four verbs, pinned 2x2 (DESIGN §8b.3) */
+.verbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 18px 0; }
+@media (max-width: 760px) { .verbs { grid-template-columns: repeat(2, 1fr); } }
+.verb { background: #fff; padding: 18px 18px 16px; }
+.verb .vk { font-size: 1.25rem; font-weight: 800; color: var(--teal); letter-spacing: .04em; margin: 0 0 4px; }
+.verb .vc { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: #9ca3af; margin: 0 0 8px; }
+.verb p { margin: 0; font-size: .85rem; color: #374151; }
+
+/* PRICE TAGS — what a credit buys */
+.pricetags { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0; }
+@media (max-width: 720px) { .pricetags { grid-template-columns: 1fr; } }
+.pricetag { border: 1px solid var(--border); border-top: 3px solid var(--teal); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); padding: 16px 18px; }
+.pricetag.free { border-top-color: #0f766e; }
+.pricetag.meter { border-top-color: #d97706; }
+.pricetag .pt-k { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: var(--teal); margin-bottom: 6px; }
+.pricetag.free .pt-k { color: #0f766e; }
+.pricetag.meter .pt-k { color: #92400e; }
+.pricetag .pt-price { font-size: 1.6rem; font-weight: 700; color: #004B87; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.5px; }
+.pricetag h4 { margin: 0 0 6px; }
+.pricetag p { margin: 0; font-size: .85rem; color: #374151; }
+
+/* CHART — inline SVG, house colors, direct labels, table follows */
+.chart { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow-sm); padding: 18px 20px 14px; margin: 18px 0; }
+.chart .ch-title { font-weight: 700; color: var(--navy); font-size: .95rem; margin: 0 0 2px; }
+.chart .ch-sub { font-size: .8rem; color: #6b7280; margin: 0 0 12px; }
+.chart svg { width: 100%; height: auto; display: block; font-family: 'Segoe UI', 'Inter', Georgia, sans-serif; }
+.chart .ax { stroke: var(--border); stroke-width: 1; }
+.chart .grid { stroke: #e5e7eb; stroke-width: 1; }
+.chart .lbl { font-size: .72rem; fill: #6b7280; }
+.chart .lbl-b { font-size: .78rem; fill: #374151; font-weight: 600; }
+.chart .val { font-size: .78rem; fill: #374151; font-weight: 700; }
+.chart .val-on { font-size: .78rem; fill: #fff; font-weight: 700; }
+.chart .big { font-size: 1.05rem; fill: var(--navy); font-weight: 700; }
+.chart .f-teal { fill: var(--teal); }
+.chart .f-navy { fill: #004B87; }
+.chart .f-amber { fill: #d97706; }
+.chart .f-lt { fill: var(--ltblue); }
+.chart .f-grey { fill: #9ca3af; }
+.chart-key { display: flex; flex-wrap: wrap; gap: 16px; margin: 10px 0 0; font-size: .78rem; color: #374151; }
+.chart-key span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-key i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; }
+.chart .ch-note { font-size: .72rem; color: #9ca3af; margin: 10px 0 0; font-style: italic; }
+
+/* MASTHEAD — shared header system, DESIGN.md §3 C14 */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy); box-shadow: var(--shadow-sm); margin: -32px -28px 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 28px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); margin: 0 -28px 24px; }
+.masthead-inner { padding: 26px 28px 30px; }
+.mh-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 11px; }
+.mh-eyebrow .bar { width: 24px; height: 2px; background: #a8ecf5; border-radius: 1px; flex: none; }
+.mh-eyebrow .lbl { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .18em; color: rgba(255,255,255,.52); }
+.masthead h1 { margin: 0 0 9px; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.3px; line-height: 1.15; }
+.masthead .sub { margin: 0; font-size: .95rem; color: rgba(255,255,255,.8); line-height: 1.6; }
+.masthead .mh-meta { margin: 10px 0 0; font-size: .74rem; color: rgba(255,255,255,.5); }
+[id] { scroll-margin-top: 58px; }
+@media (max-width: 720px) {
+  .mh-bar-in { padding: 0 28px; gap: 10px; }
+  .mh-crumb, .mh-date { display: none; }
+  .masthead { margin: 0 -28px 20px; }
+  .masthead-inner { padding: 20px 28px 24px; }
+  .masthead h1 { font-size: 1.5rem; }
+}
+@media print {
+  .mh-bar { display: none; }
+  .masthead { background: #fff; border-bottom: 3px solid var(--teal); margin: 0 0 20px; }
+  .masthead-inner { padding: 0 0 18px; }
+  .masthead h1 { color: var(--navy); }
+  .masthead .sub { color: var(--text); }
+  .masthead .mh-meta { color: #6b7280; }
+  .mh-eyebrow .bar { background: var(--teal); }
+  .mh-eyebrow .lbl { color: var(--teal); }
+}
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5z M130.2,44.5L130.2,44.5c0.3,0.1,0.1,0.1,0,0c5.3,8,8.5,17.4,8.5,27.7c0,27.2-22.1,49.3-49.3,49.3 c-2.2,0-4.5-0.2-6.6-0.5c0,0-1.6-0.2-2.4-0.2c-8.1,0-14.6,6.6-14.6,14.6c0,7.2,5.2,13.3,12.1,14.5c3.4,0.6,6.8,0.9,10.3,0.9 c33.9,0,61.5-27.5,61.5-61.5C149.6,71.7,142.2,55.8,130.2,44.5z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><a href="cpb-model-the-practice.html">Model the Practice</a><span class="sep"> / </span><span class="cur">The Meter Conversation</span></div>
+    <div class="mh-date">Updated October 11, 2026</div>
+  </div>
+</div>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Practice Guide &middot; Token Economics</div></div>
+    <h1>The Meter Conversation: Token Economics for the Copilot Practice</h1>
+    <p class="sub">From December 1, every Copilot Business license you sell comes with a consumption meter switched on, set by default to more than the license itself, and billed through you. This is the customer's new problem, the three sentences that explain it, the four-verb managed service that solves it, and what to charge.</p>
+    <p class="mh-meta">Prepared by <strong>Ken Lince</strong> &mdash; Sr. Director, Cloud Engineering, <strong>TD SYNNEX</strong> &middot; For SMB-focused MSP partners building a Copilot practice through distribution</p>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">How to use this</div>
+  <div class="callout-body"><p>Sections 1 through 4 explain what changed and why it is your customer's problem now. Read those with your leadership team. Sections 5 through 9 are the practice: the words, the service, the whiteboard and the price. Sections 10 through 13 are for the seller walking into the room: the talk track, the objections, the December 1 campaign and the lines that will cost you credibility. The research behind every number sits in the <a href="research/token-economics-practice/00-synthesis-and-talk-track.md">token economics research folder</a>, and the pricing dials this page extends are in <a href="cpb-model-the-practice.html">Model the Practice</a>.</p></div>
+</div>
+
+<nav id="toc">
+  <div class="toc">
+    <p class="toc-head">Contents</p>
+    <ul>
+      <li><a href="#section-1">The Answer, On One Page</a></li>
+      <li><a href="#section-2">What Changed: Seats Plus Usage</a></li>
+      <li><a href="#section-3">The Customer's New Problem</a></li>
+      <li><a href="#section-4">Nobody Has Packaged It Yet</a></li>
+      <li><a href="#section-5">The Three Sentences</a></li>
+      <li><a href="#section-6">The Service in Four Verbs</a></li>
+      <li><a href="#section-7">The Whiteboard</a></li>
+      <li><a href="#section-8">Pricing the Fourth Line</a></li>
+      <li><a href="#section-9">Governed Growth, Not Cost Cutting</a></li>
+      <li><a href="#section-10">The Talk Track</a></li>
+      <li><a href="#section-11">Objections</a></li>
+      <li><a href="#section-12">The December 1 Campaign</a></li>
+      <li><a href="#section-13">Guardrails: What Never To Say</a></li>
+      <li><a href="#section-14">Sources, Provenance and Related Guides</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════ 1 ═══════════════════════════ -->
+<h2 id="section-1">1 &middot; The Answer, On One Page</h2>
+
+<p class="lede">This playbook started with a question partners could not answer. They could explain the $30 to $40 a user they charge on top of a Microsoft 365 license: helpdesk, security, backup, patching. Asked what they did for the Copilot license, they went quiet. The three tiers in <a href="cpb-model-the-practice.html">Model the Practice</a> answered that. Now the question has changed shape, and Microsoft changed it on purpose.</p>
+
+<div class="hero-statement">
+  <p>The seat was the key. <em>The credit is the meter.</em> Microsoft built the meter, switched it on by default for your SMB customers, set the default higher than the license, and routed the bill through you. Nobody is reading it.</p>
+  <div class="hero-sub">The partner who can say three plain sentences about the meter, and sell a four-verb service behind them, owns the conversation that now sits inside every Copilot license sale.</div>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="k"><span data-fact="F-176">$21</span></div>
+    <div class="l">What a Copilot Business seat costs per user per month</div>
+    <div class="s">Microsoft list price, annual billing</div>
+  </div>
+  <div class="metric warn">
+    <div class="k">$40</div>
+    <div class="l">What the default credit ceiling lets each user spend on top of it: <span data-fact="F-157">4,000 credits</span> at <span data-fact="F-149">$0.01</span> a credit</div>
+    <div class="s">Partner Center announcement, October 1, 2026</div>
+  </div>
+  <div class="metric">
+    <div class="k">Dec 1</div>
+    <div class="l">The day usage-based billing switches on by default for new Copilot Business licenses sold through CSP</div>
+    <div class="s">Moved from November 2. Sandbox opens November 2.</div>
+  </div>
+</div>
+
+<div class="recap-grid">
+  <div class="recap-item"><div class="rn">THE PROBLEM</div><h4>Your customer bought a flat number and got a meter</h4><p>Everyday Copilot is still included in the seat. The new Copilot, the part that does work instead of answering questions, runs on Copilot Credits. A credit is a penny. The default lets every user spend up to $40 a month of them, and the customer did not choose that.</p></div>
+  <div class="recap-item"><div class="rn">THE SERVICE</div><h4>Four verbs, once a month, per tenant</h4><p><strong>SET</strong> the budget and the limits. <strong>WATCH</strong> the meter. <strong>TUNE</strong> who buys what and how. <strong>PROVE</strong> it on one page. It maps onto the dials Microsoft already built into the admin center and onto the FinOps Foundation's own loop.</p></div>
+  <div class="recap-item"><div class="rn">THE MONEY</div><h4>A fourth line on every Copilot invoice</h4><p>Credits pass through at Microsoft's price. You charge $3 to $5 a user to read the meter, with a tenant minimum, and keep the spread when you pool prepaid packs. Across 50 customers that is roughly $175,000 a year at about 85% gross margin, and it attaches to Tier 1, not Tier 3.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 2 ═══════════════════════════ -->
+<h2 id="section-2">2 &middot; What Changed: Seats Plus Usage</h2>
+
+<p>For twenty years the Microsoft business you sold was a seat. One price, one user, one month. In 2026 Microsoft said, in its own words, that the model is now the seat plus what the user consumes. The words below are Microsoft's, not ours. They are the corroboration a partner needs before building a practice on this.</p>
+
+<div class="dark-panel">
+  <div class="dp-eyebrow"><div class="bar"></div><div class="lbl">In Microsoft's words, 2026</div><div class="rule"></div></div>
+  <div class="dp-quotes">
+    <div class="dp-quote">
+      <p class="q">&ldquo;<span data-fact="F-205">Evolving our business model beyond per-seat to <em>per-seat-plus-consumption</em></span>.&rdquo;</p>
+      <p class="who"><strong>Amy Hood</strong>, CFO<br />FY26 Q4 earnings call, July 29, 2026</p>
+    </div>
+    <div class="dp-quote">
+      <p class="q">&ldquo;<span data-fact="F-206">Observability of token spend and the <em>manageability</em> of token spend</span>.&rdquo;</p>
+      <p class="who"><strong>Amy Hood</strong>, on what customers need next<br />Same call</p>
+    </div>
+    <div class="dp-quote">
+      <p class="q">&ldquo;Advancing Copilot and agents <span data-fact="F-207">from <em>conversation to consumption</em></span>.&rdquo;</p>
+      <p class="who"><strong>Nicole Dezen</strong>, Chief Partner Officer, to CSP partners<br />Microsoft blog, April 21, 2026</p>
+    </div>
+  </div>
+  <p>Partner Center said the rest on September 25, 2026, introducing the new Copilot. The partner opportunity is to <strong>&ldquo;<span data-fact="F-209">manage and optimize AI at scale</span>&rdquo;</strong>, and <strong>&ldquo;FinOps for AI introduces new ways to govern costs.&rdquo;</strong> The same post said partners can turn this into expanded services, differentiated software, increased consumption and deeper customer relationships. Microsoft also reports that <span data-fact="F-208">60% of CSP partner revenue</span> is now tied to value-added services.</p>
+  <p class="dp-source"><strong>Sources:</strong> Microsoft FY26 Q4 earnings call transcript (July 29, 2026); Microsoft Official Blog, &ldquo;Accelerating frontier transformation with Microsoft partners&rdquo; (April 21, 2026); Partner Center announcements, September 2026. Every quote is verbatim and under fifteen words. The full source list is in <a href="#section-14" style="color:#a8ecf5;">section 14</a>.</p>
+</div>
+
+<h3>2.1 &middot; The 2026 timeline that put the meter in your customer's tenant</h3>
+
+<div class="vtimeline">
+  <div class="vt-item"><div class="vt-when">July 1, 2026</div><h4>Cowork usage billing goes live</h4><p>Copilot Cowork, the delegate-a-job product, starts drawing Copilot Credits. Nadella told investors in July that thousands of customers were already paying for it. The <a href="cowork.html">Cowork Guide</a> covers the product; the <a href="cowork-calculator.html">Cowork simulator</a> models the credits.</p></div>
+  <div class="vt-item"><div class="vt-when">July 29, 2026</div><h4>&ldquo;Seat plus usage&rdquo; becomes the investor language</h4><p>The FY26 Q4 call: usage-based credit consumption in customer-service agents up four times quarter over quarter. Autopilots, autonomous long-running agents, announced.</p></div>
+  <div class="vt-item"><div class="vt-when">September 1, 2026</div><h4>Microsoft starts paying partners for consumption</h4><p>The Copilot Cowork CSP Activation Incentive recognizes partners &ldquo;accelerating consumption growth.&rdquo; The payout is gated on sustained monthly consumption, not on seats. See <a href="#section-9">section 9</a>.</p></div>
+  <div class="vt-item"><div class="vt-when">September 25, 2026</div><h4>The new Copilot, with FinOps for AI</h4><p>Cowork, Code, Autopilot and frontier models all run on usage-based billing. Cost Management, spending policies, per-user limits, alerts and model routing live under Copilot in the Microsoft 365 admin center. Partner Center names FinOps for AI as the partner opportunity.</p></div>
+  <div class="vt-item"><div class="vt-when">October 1, 2026</div><h4>The default-on announcement, and growth margin</h4><p>Partner Center confirms usage-based billing on by default for new Copilot Business in CSP from December 1, with the 4,000-credit default. The same day, CSP growth margin goes live on Copilot seat growth.</p></div>
+  <div class="vt-item"><div class="vt-when">November 2, 2026</div><h4>Sandbox opens</h4><p>Partners can test the default-on experience before it reaches customers.</p></div>
+  <div class="vt-item hot"><div class="vt-when"><span data-fact="F-156">December 1, 2026</span></div><h4>The meter is on for every new Copilot Business license in CSP</h4><p>Pay-as-you-go by default. 4,000 credits per user per month by default. Billed through the partner's Azure plan. Eleven markets are excluded at launch, including Germany, France, India and Australia. The United States is in.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 3 ═══════════════════════════ -->
+<h2 id="section-3">3 &middot; The Customer's New Problem</h2>
+
+<p>Your customer did not ask for a meter. They bought Copilot the way they buy everything from Microsoft: a price per person, per month, that finance can put in a budget. What arrives on December 1 is that price plus a ceiling they did not set, on a bill they will not see until it lands. The chart below is the first thing to draw for a business owner.</p>
+
+<div class="chart">
+  <p class="ch-title">Chart A &middot; The license you sold them versus the ceiling they got by default</p>
+  <p class="ch-sub">Per month. Copilot Business at $21 a user, against the 4,000-credit default at $0.01 a credit. The ceiling is an exposure, not a forecast, and that is exactly the problem: nobody knows which it will be.</p>
+  <svg viewBox="0 0 760 290" role="img" aria-labelledby="chartA-t chartA-d">
+    <title id="chartA-t">License cost versus default credit ceiling at 50, 100 and 300 seats</title>
+    <desc id="chartA-d">Grouped bars. At 50 seats the license is $1,050 a month and the default credit ceiling is $2,000. At 100 seats, $2,100 versus $4,000. At 300 seats, $6,300 versus $12,000.</desc>
+    <line class="grid" x1="70" y1="20" x2="740" y2="20"/>
+    <line class="grid" x1="70" y1="90" x2="740" y2="90"/>
+    <line class="grid" x1="70" y1="160" x2="740" y2="160"/>
+    <line class="ax" x1="70" y1="230" x2="740" y2="230"/>
+    <text class="lbl" x="62" y="24" text-anchor="end">$12,000</text>
+    <text class="lbl" x="62" y="94" text-anchor="end">$8,000</text>
+    <text class="lbl" x="62" y="164" text-anchor="end">$4,000</text>
+    <text class="lbl" x="62" y="234" text-anchor="end">$0</text>
+    <!-- 50 seats -->
+    <rect class="f-teal" x="144" y="211.6" width="70" height="18.4" rx="2"><title>50 seats, license: $1,050 a month</title></rect>
+    <text class="val" x="179" y="205" text-anchor="middle">$1,050</text>
+    <rect class="f-amber" x="216" y="195" width="70" height="35" rx="2"><title>50 seats, default credit ceiling: $2,000 a month</title></rect>
+    <text class="val" x="251" y="189" text-anchor="middle">$2,000</text>
+    <text class="lbl-b" x="215" y="254" text-anchor="middle">50 seats</text>
+    <!-- 100 seats -->
+    <rect class="f-teal" x="369" y="193.2" width="70" height="36.8" rx="2"><title>100 seats, license: $2,100 a month</title></rect>
+    <text class="val" x="404" y="187" text-anchor="middle">$2,100</text>
+    <rect class="f-amber" x="441" y="160" width="70" height="70" rx="2"><title>100 seats, default credit ceiling: $4,000 a month</title></rect>
+    <text class="val" x="476" y="154" text-anchor="middle">$4,000</text>
+    <text class="lbl-b" x="440" y="254" text-anchor="middle">100 seats</text>
+    <!-- 300 seats -->
+    <rect class="f-teal" x="594" y="119.8" width="70" height="110.2" rx="2"><title>300 seats, license: $6,300 a month</title></rect>
+    <text class="val" x="629" y="113" text-anchor="middle">$6,300</text>
+    <rect class="f-amber" x="666" y="20" width="70" height="210" rx="2"><title>300 seats, default credit ceiling: $12,000 a month</title></rect>
+    <text class="val" x="701" y="14" text-anchor="middle">$12,000</text>
+    <text class="lbl-b" x="665" y="254" text-anchor="middle">300 seats (the cap)</text>
+    <text class="lbl" x="405" y="282" text-anchor="middle">Monthly, US dollars. Derived from Microsoft list price and the Partner Center default.</text>
+  </svg>
+  <div class="chart-key"><span><i style="background:var(--teal);"></i>Copilot Business license</span><span><i style="background:#d97706;"></i>Default credit ceiling, left as shipped</span></div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Seats</th><th>License per month</th><th>Default ceiling per month</th><th>Ceiling as a multiple of the license</th></tr></thead>
+    <tbody>
+      <tr><td>50</td><td class="num">$1,050</td><td class="num">$2,000</td><td class="num">1.9x</td></tr>
+      <tr><td>100</td><td class="num">$2,100</td><td class="num">$4,000</td><td class="num">1.9x</td></tr>
+      <tr><td>300</td><td class="num">$6,300</td><td class="num">$12,000</td><td class="num">1.9x</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="ch-note">Microsoft's own example in the October 1 announcement: 100 users can consume up to 400,000 credits a month. The <span data-fact="F-147">$18</span> promotional seat price running through December 31 makes the multiple larger, not smaller.</p>
+</div>
+
+<h3>3.1 &middot; Why a ceiling nobody watches becomes the bill</h3>
+
+<p>The honest answer to &ldquo;will they really spend $40?&rdquo; is: some will, most will not, and nobody in the customer's building has the job of finding out which. Three things make that worse than it sounds.</p>
+
+<ul>
+  <li><strong>New metered services switch themselves on.</strong> In the admin center, spending policies auto-apply to new services by default, and usage-based features are visible to all users by default. The ceiling grows on its own.</li>
+  <li><strong>The heavy users are real.</strong> Microsoft's own Cowork estimator put an engaged user at <span data-fact="F-150">$82 to $228</span> a month in credits. On the <a href="cowork-calculator.html">Cowork simulator's</a> stock defaults, a modeled user hits the 4,000-credit ceiling around day 8 of the month. The ceiling is not theoretical for the people who get the most from the product.</li>
+  <li><strong>The bill arrives on your Azure plan.</strong> Microsoft's CSP guidance tells you to link an Azure subscription to <span data-fact="F-210">your partner billing account</span> before usage billing starts. You carry the collection risk on every credit the customer burns, whether or not you are charging for governance.</li>
+</ul>
+
+<div class="chart">
+  <p class="ch-title">Chart B &middot; This is already happening to everyone else</p>
+  <p class="ch-sub">The surveys partners can quote. Consumption pricing surprises are the norm, and the smallest businesses have nobody to catch them.</p>
+  <svg viewBox="0 0 760 232" role="img" aria-labelledby="chartB-t chartB-d">
+    <title id="chartB-t">Four survey findings on AI cost surprises</title>
+    <desc id="chartB-d">Horizontal bars. 78 percent of IT leaders reported unexpected charges from consumption or AI pricing. 79 percent of finance leaders had AI overruns in the past year. 46.9 percent of enterprises are over their AI budget. 40 percent of SMBs have no full-time IT employee.</desc>
+    <text class="lbl-b" x="0" y="34">Got an unexpected AI or consumption charge</text>
+    <rect class="f-teal" x="300" y="18" width="351" height="24" rx="2"><title>78% of IT leaders, Zylo 2026 SaaS Management Index</title></rect>
+    <text class="val" x="659" y="35"><tspan data-fact="F-211">78%</tspan></text>
+    <text class="lbl" x="0" y="50">IT leaders &middot; Zylo, January 2026</text>
+    <text class="lbl-b" x="0" y="86">Overran the AI budget in the last 12 months</text>
+    <rect class="f-teal" x="300" y="70" width="355.5" height="24" rx="2"><title>79% of finance leaders, DoiT survey, February 2026</title></rect>
+    <text class="val" x="663" y="87"><tspan data-fact="F-216">79%</tspan></text>
+    <text class="lbl" x="0" y="102">Finance leaders, 1,000+ employees &middot; DoiT, February 2026</text>
+    <text class="lbl-b" x="0" y="138">Over the AI budget right now</text>
+    <rect class="f-teal" x="300" y="122" width="211" height="24" rx="2"><title>46.9% of enterprises over budget; 10% have no AI budget at all. Futurum, September 2026</title></rect>
+    <text class="val" x="519" y="139"><tspan data-fact="F-212">46.9%</tspan></text>
+    <text class="lbl" x="0" y="154">1,636 decision-makers &middot; Futurum, September 2026 &middot; one in ten has no AI budget at all</text>
+    <text class="lbl-b" x="0" y="190">Have no full-time IT employee</text>
+    <rect class="f-amber" x="300" y="174" width="180" height="24" rx="2"><title>40% of SMBs, IDC, June 2026</title></rect>
+    <text class="val" x="488" y="191"><tspan data-fact="F-214">40%</tspan></text>
+    <text class="lbl" x="0" y="206">Small and medium businesses, 2,700+ respondents &middot; IDC, June 2026</text>
+    <line class="ax" x1="300" y1="10" x2="300" y2="212"/>
+    <text class="lbl" x="300" y="228">0%</text>
+    <text class="lbl" x="750" y="228" text-anchor="end">100%</text>
+  </svg>
+  <div class="chart-key"><span><i style="background:var(--teal);"></i>Share of organizations surveyed</span><span><i style="background:#d97706;"></i>The SMB-specific finding</span></div>
+  <p class="ch-note">IDC's SMB survey, in its own words: unpredictable costs are a big red flag, and SMBs prefer transparent, credit-based pricing. That sentence is your opening.</p>
+</div>
+
+<h3>3.2 &middot; What a credit actually buys</h3>
+
+<p>Partners lose this conversation by making it complicated. There are three kinds of Copilot work, and three price tags. A credit is <span data-fact="F-149">one cent</span>. Microsoft publishes no conversion from credits to tokens, and you should never offer one.</p>
+
+<div class="pricetags">
+  <div class="pricetag free">
+    <div class="pt-k">Included in the seat</div>
+    <p class="pt-price">$0</p>
+    <h4>Asking Copilot a question</h4>
+    <p>Chat in Word, Outlook, Teams and the Copilot app. A licensed user talking to a standard Copilot Studio agent inside Microsoft channels, under their own identity. No meter.</p>
+  </div>
+  <div class="pricetag meter">
+    <div class="pt-k">On the meter, counted in dollars</div>
+    <p class="pt-price">$82 to $228</p>
+    <h4>Telling Copilot to go do a job</h4>
+    <p>Cowork, Code and Autopilot. &ldquo;Build the board pack from these six folders.&rdquo; Microsoft's own estimator range for an engaged user, per month, if nobody is watching.</p>
+  </div>
+  <div class="pricetag meter">
+    <div class="pt-k">On the meter, counted in pennies</div>
+    <p class="pt-price">2&cent; to 5&cent;</p>
+    <h4>An agent that serves other people or runs alone</h4>
+    <p><span data-fact="F-162">2 credits</span> for a generative answer, <span data-fact="F-163">5 credits</span> for an action, in Copilot Studio. Metered when the agent answers customers, unlicensed users or external channels, or runs on its own schedule.</p>
+  </div>
+</div>
+
+<div class="callout warn">
+  <div class="callout-title">The zero-rating rule is the first question, not the last</div>
+  <div class="callout-body"><p>A licensed user's own use of a standard agent is free with the seat. The bill comes from Cowork, Code, Autopilot, unlicensed and external users, autonomous runs, computer use and the GitHub harness. A partner who cannot draw that line for every agent before building it will over-quote the deal and lose it, or under-quote it and eat the difference. The rate card and the rule are verified in the <a href="copilot-credit-planner.html">Copilot Credit Planner</a>.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 4 ═══════════════════════════ -->
+<h2 id="section-4">4 &middot; Nobody Has Packaged It Yet</h2>
+
+<p>We went looking for who is already selling this to small businesses. Across roughly sixty searches and thirty-five vendor pages, here is what the market looks like in October 2026.</p>
+
+<div class="rule-strip">
+  <div class="rs"><div class="rs-k">The dominant pattern</div><p class="rs-v"><strong>A free 15 to 30 minute &ldquo;set your spending policies&rdquo; session.</strong> Several Microsoft partners are giving the first step of the service away as lead generation, with no ongoing fee behind it.</p></div>
+  <div class="rs"><div class="rs-k">The priced retainers</div><p class="rs-v"><strong>Governance and adoption by the hour.</strong> The best published example sells three monthly tiers of hours. Its scope covers telemetry reviews and says nothing about credit budgets, thresholds or re-billing.</p></div>
+  <div class="rs"><div class="rs-k">What does not exist</div><p class="rs-v"><strong>No SMB MSP publicly re-bills Copilot Credits, prices an included-credit allowance with overage, or sells a per-agent retainer.</strong> The enterprise firms have essays and frameworks, not a priced Copilot consumption service.</p></div>
+</div>
+
+<p>Why is the market behind? Three reasons, and each one is a reason the partner wins by moving now.</p>
+
+<ul>
+  <li><strong>The deadlines only just arrived.</strong> Cowork billing started in July. The default-on date was announced on October 1. The sandbox does not open until November 2.</li>
+  <li><strong>Microsoft built the dials, not the operator.</strong> Cost Management in the admin center has budgets, per-user limits, alerts, model routing and reports by user, group, agent and service. It does not come with anyone whose job is to turn them, and <span data-fact="F-214">40%</span> of SMBs have no full-time IT person to do it.</li>
+  <li><strong>There is no partner-side dashboard.</strong> Microsoft publishes no multi-tenant cost view for partners, and since September 2026 the credit-consumption endpoint refuses automated calls. The service is a monthly export and a human for now. That is a moat for a partner with a process, and a wall for a partner waiting for a tool.</li>
+</ul>
+
+<div class="smb-reality">
+  <div class="sr-label">The analyst sentence that explains the whole opportunity</div>
+  <p>When AI is billed separately, buyers prefer per-seat pricing (<span data-fact="F-213">42.3%</span>) over consumption (36.6%), because they want an AI cost they can budget. Microsoft bills the new Copilot by consumption anyway. <strong>The partner's product is turning the meter back into a budget.</strong> That is the service, in one sentence. Futurum, &ldquo;The Pricing Split,&rdquo; August 2026.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 5 ═══════════════════════════ -->
+<h2 id="section-5">5 &middot; The Three Sentences</h2>
+
+<p>Partners asked for this drawn with big crayons. Here it is. If a seller can say these three sentences without notes, the rest of this page is detail.</p>
+
+<div class="sentence">
+  <div class="sn">1</div>
+  <div>
+    <h3>&ldquo;Your Copilot license now comes with a meter.&rdquo;</h3>
+    <p>The seat buys everyday Copilot. Cowork, Code, Autopilot, agents that serve people outside your license, and anything your agents do on their own run on the meter, in Copilot Credits. A credit is a penny.</p>
+  </div>
+</div>
+<div class="sentence">
+  <div class="sn">2</div>
+  <div>
+    <h3>&ldquo;The meter's default setting is bigger than the license.&rdquo;</h3>
+    <p>Microsoft ships new Copilot Business tenants with a 4,000-credit default per user. That is up to $40 a month on top of a $21 seat. For 100 users, the license is $2,100 and the default exposure is $4,000.</p>
+  </div>
+</div>
+<div class="sentence">
+  <div class="sn">3</div>
+  <div>
+    <h3>&ldquo;Somebody has to read the meter. That's us.&rdquo;</h3>
+    <p>Microsoft built the dials: budgets, per-user limits, alerts, model routing, reports by user, group and agent. It did not build anyone to turn them. The bill comes to us before it comes to you, so we are going to set the budget with you, watch it, tune it and hand you a receipt every month.</p>
+  </div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 6 ═══════════════════════════ -->
+<h2 id="section-6">6 &middot; The Service in Four Verbs</h2>
+
+<p>This is the whole managed service. Everything else in the playbook, Tier 1 to 3, AgentCare, the Agent 365 overlay, wraps around it. It maps directly onto the FinOps Foundation's Inform, Optimize, Operate loop, and onto the controls Microsoft already shipped in the Microsoft 365 admin center under Copilot, then Cost management.</p>
+
+<div class="verbs">
+  <div class="verb"><p class="vk">SET</p><p class="vc">Onboarding, then quarterly</p><p>Agree a credit budget per tenant and per group. Lower the 4,000 default to the agreed limit. Alerts at 80% and 100%. Decide which services are allowed. Pick the funding source.</p></div>
+  <div class="verb"><p class="vk">WATCH</p><p class="vc">Monthly, 1 to 2 hours a tenant</p><p>Read the meter. Top consumers, idle agents, spikes, users hitting limits, requests for more. Baseline for 30 to 60 days before you move a threshold.</p></div>
+  <div class="verb"><p class="vk">TUNE</p><p class="vc">Monthly, re-plan quarterly</p><p>Steady users onto prepaid packs. Pre-purchase only at break-even. Retire idle agents. Route routine work to the cheaper model. Remove unused seats.</p></div>
+  <div class="verb"><p class="vk">PROVE</p><p class="vc">One page, every month</p><p>Credits spent, by whom, on what, next to the outcome. Cost per user per month. Cost per resolved request for each agent. It feeds the QBR.</p></div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">SET</span><span class="ph-name">Turn the default into a decision</span><span class="ph-meta">onboarding &middot; 30 min in the admin center, with the customer on the call</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">You do</div><div class="ph-v"><ul>
+      <li>Confirm the Azure subscription is linked to your partner billing account, so the meter is wired before the first credit burns.</li>
+      <li>Create the spending policy. Replace the <span data-fact="F-157">4,000</span>-credit default with the limit the customer chose. Set a tenant-level limit too.</li>
+      <li>Switch on alerts at <span data-fact="F-222">80% and 100%</span> of budget. They repeat daily until reset, so route them to a mailbox someone reads.</li>
+      <li>Review auto-apply for new services. Decide, with the customer, whether a new metered service is on by default or off until approved.</li>
+      <li>Name the budget owner on the customer side. One person. Write it in the policy description.</li>
+      <li>Choose the funding source for now: pay-as-you-go until there is a baseline.</li>
+    </ul></div></div>
+    <div class="ph-row"><div class="ph-k">Surface</div><div class="ph-v"><p>Microsoft 365 admin center: Copilot, then Cost management. Spending policies, user limits, policy alerts, credit-request routing, model profiles. Global or Billing Administrator creates; AI Administrator edits; AI Reader and Global Reader get the read-only dashboard, which is the role you give the customer's finance person.</p></div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v"><p>A one-page credit budget the customer signed: per-user limit, tenant limit, allowed services, alert recipients, budget owner, review date.</p></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">WATCH</span><span class="ph-name">Read the meter</span><span class="ph-meta">monthly &middot; 1 to 2 hours a tenant &middot; a human and an export, for now</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">You do</div><div class="ph-v"><ul>
+      <li>Pull consumption by user, group, agent, service and funding source. Note the top ten consumers and anyone who hit a limit.</li>
+      <li>List every agent that consumed nothing. Idle agents are retirement candidates in TUNE.</li>
+      <li>Flag spikes against the previous month. A user whose consumption tripled is either a champion or a runaway. Find out which.</li>
+      <li>Collect the credit requests that came through routing. Each one is a conversation about value, not a ticket.</li>
+      <li>In the first two months, do not move thresholds. The FinOps rule is a <span data-fact="F-225">30 to 60 day baseline</span> before you set a real threshold, then set it at 110 to 120% of the baseline.</li>
+    </ul></div></div>
+    <div class="ph-row"><div class="ph-k">Surface</div><div class="ph-v"><p>Cost management reports in the admin center; the Power Platform admin center for per-agent Copilot Studio consumption; Microsoft's Analytics Hub templates for single-tenant chargeback reports. The consumption API has refused automated calls since September 2026, so this is an export and a person until Microsoft ships the supported alternative.</p></div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v"><p>A meter reading: top consumers, idle agents, spikes, limit hits, requests. It becomes the first half of the PROVE page.</p></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">TUNE</span><span class="ph-name">Buy the right credits the right way</span><span class="ph-meta">monthly moves &middot; quarterly re-plan</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">You do</div><div class="ph-v"><ul>
+      <li>Move steady, predictable consumers onto capacity packs: <span data-fact="F-013">$200 for 25,000 credits</span> a month, which is $0.008 a credit against $0.01 on pay-as-you-go. No rollover, so only for consumption you can see every month.</li>
+      <li>Consider a pre-purchase tier only when the baseline is 60 to 90 days old and the break-even math works. Discounts run <span data-fact="F-152">5% to 20%</span>; unused credits expire.</li>
+      <li>Retire idle agents. Convert agents that only serve licensed staff to the zero-rated path if they are not already on it.</li>
+      <li>Set model profiles so routine Cowork jobs run on the cheaper model. Microsoft's own framing: match cost to value.</li>
+      <li>Remove Copilot seats with no activity. The <a href="copilot-adoption-audit.html">Copilot Adoption Audit</a> is the method.</li>
+    </ul></div></div>
+    <div class="ph-row"><div class="ph-k">Surface</div><div class="ph-v"><p>Capacity packs and pre-purchase plans through CSP; model profiles and request routing in Cost management; the <a href="copilot-credit-planner.html">Copilot Credit Planner</a> for the cheapest-cover math across packs, pre-purchase and pay-as-you-go.</p></div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v"><p>A funding mix the customer approved, and a list of what was retired or re-routed and what it saved.</p></div></div>
+  </div>
+</div>
+
+<div class="phase">
+  <div class="ph-head"><span class="ph-num">PROVE</span><span class="ph-name">One page a month</span><span class="ph-meta">monthly page &middot; quarterly review</span></div>
+  <div class="ph-body">
+    <div class="ph-row"><div class="ph-k">You do</div><div class="ph-v"><ul>
+      <li>Credits spent this month against budget, by group and by service, with last month beside it.</li>
+      <li>Cost per user per month for Cowork users, and cost per resolved request for each production agent. Count only the runs that worked.</li>
+      <li>The outcome next to the spend: hours returned, tickets deflected, documents produced. The <a href="cowork-calculator.html">Cowork simulator's</a> value model and Microsoft's agent reports are the inputs.</li>
+      <li>Three sentences of recommendation: keep, raise, lower.</li>
+    </ul></div></div>
+    <div class="ph-row"><div class="ph-k">Surface</div><div class="ph-v"><p>The Insights consumption dashboards (preview as of September 2026) and the customer report the Credit Planner prints with your name on it.</p></div></div>
+    <div class="ph-row"><div class="ph-k">Output</div><div class="ph-v"><p>The receipt. It is the artifact that makes the fourth line on the invoice feel earned, and it is the input to the QBR in Tier 1's Value Proof pillar.</p></div></div>
+  </div>
+</div>
+
+<div class="callout subtle">
+  <div class="callout-title">Already doing this work?</div>
+  <div class="callout-body"><p>If your team has ever lowered a credit limit for a customer, answered &ldquo;why is our Azure bill up?&rdquo; or turned off an agent nobody used, you have delivered part of this service for free. The opportunity is to name it, schedule it and put it on the invoice, the same way <a href="cpb-model-the-practice.html">Model the Practice</a> says of AgentOps.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 7 ═══════════════════════════ -->
+<h2 id="section-7">7 &middot; The Whiteboard</h2>
+
+<p>Every MSP owner can draw the first bar from memory. The second bar is what this playbook taught. The third and fourth bars are what December 1 adds, and the difference between them is the service.</p>
+
+<div class="chart">
+  <p class="ch-title">Chart C &middot; Old math, Copilot math, and the new fourth line</p>
+  <p class="ch-sub">Per user, per month. The top two bars you already sell. The third is Microsoft's, and it is on whether you like it or not. The fourth is what stops the third from surprising anyone.</p>
+  <svg viewBox="0 0 760 300" role="img" aria-labelledby="chartC-t chartC-d">
+    <title id="chartC-t">Four stacked bars comparing per-user monthly economics</title>
+    <desc id="chartC-d">The Microsoft 365 math: $22 license plus $35 managed services, $57. The Copilot math: $21 license plus $12 Tier 1, $33. December 1 left on the default: $21 plus $12 plus a $40 credit ceiling, $73. December 1 governed: $21 plus $12 plus a $15 credit budget plus $4 Credit Wrap, $52.</desc>
+    <!-- scale: $80 = 480px, 6px per dollar, x0 = 250 -->
+    <text class="lbl-b" x="0" y="24">The Microsoft 365 math you already sell</text>
+    <rect class="f-teal" x="250" y="32" width="132" height="26" rx="2"><title>Microsoft 365 Business Premium license: $22</title></rect>
+    <text class="val-on" x="316" y="50" text-anchor="middle">$<tspan data-fact="F-223">22</tspan></text>
+    <rect class="f-navy" x="384" y="32" width="210" height="26" rx="2"><title>Your managed services upcharge: $30 to $40, drawn at $35</title></rect>
+    <text class="val-on" x="489" y="50" text-anchor="middle">$<tspan data-fact="F-224">30 to $40</tspan></text>
+    <text class="big" x="604" y="51">$57</text>
+    <text class="lbl-b" x="0" y="92">The Copilot math the playbook taught</text>
+    <rect class="f-teal" x="250" y="100" width="126" height="26" rx="2"><title>Copilot Business license: $21</title></rect>
+    <text class="val-on" x="313" y="118" text-anchor="middle">$21</text>
+    <rect class="f-navy" x="378" y="100" width="72" height="26" rx="2"><title>Tier 1 AI Essentials: $12 (range $10 to $15)</title></rect>
+    <text class="val-on" x="414" y="118" text-anchor="middle">$<tspan data-fact="F-201">12</tspan></text>
+    <text class="big" x="460" y="119">$33</text>
+    <text class="lbl-b" x="0" y="160">December 1, left on the default</text>
+    <rect class="f-teal" x="250" y="168" width="126" height="26" rx="2"><title>Copilot Business license: $21</title></rect>
+    <text class="val-on" x="313" y="186" text-anchor="middle">$21</text>
+    <rect class="f-navy" x="378" y="168" width="72" height="26" rx="2"><title>Tier 1 AI Essentials: $12</title></rect>
+    <text class="val-on" x="414" y="186" text-anchor="middle">$12</text>
+    <rect class="f-amber" x="452" y="168" width="240" height="26" rx="2"><title>Default credit ceiling: up to $40, nobody watching</title></rect>
+    <text class="val-on" x="572" y="186" text-anchor="middle">up to $40 in credits</text>
+    <text class="big" x="702" y="187">$73</text>
+    <text class="lbl-b" x="0" y="228">December 1, governed</text>
+    <rect class="f-teal" x="250" y="236" width="126" height="26" rx="2"><title>Copilot Business license: $21</title></rect>
+    <text class="val-on" x="313" y="254" text-anchor="middle">$21</text>
+    <rect class="f-navy" x="378" y="236" width="72" height="26" rx="2"><title>Tier 1 AI Essentials: $12</title></rect>
+    <text class="val-on" x="414" y="254" text-anchor="middle">$12</text>
+    <rect class="f-amber" x="452" y="236" width="90" height="26" rx="2"><title>Credit budget the customer chose: $15 cap, passed through at Microsoft's price</title></rect>
+    <text class="val-on" x="497" y="254" text-anchor="middle">$15 cap</text>
+    <rect class="f-lt" x="544" y="236" width="24" height="26" rx="2"><title>Credit Wrap: $4 a user to read the meter</title></rect>
+    <text class="val" x="572" y="254">$4</text>
+    <text class="big" x="600" y="255">$52</text>
+    <line class="ax" x1="250" y1="10" x2="250" y2="270"/>
+    <text class="lbl" x="250" y="290">$0 per user per month</text>
+    <text class="lbl" x="730" y="290" text-anchor="end">$80</text>
+  </svg>
+  <div class="chart-key"><span><i style="background:var(--teal);"></i>Microsoft license</span><span><i style="background:#004B87;"></i>Your service</span><span><i style="background:#d97706;"></i>Copilot Credits, passed through</span><span><i style="background:var(--ltblue);"></i>Credit Wrap</span></div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Line</th><th>Microsoft license</th><th>Your service</th><th>Credits (pass-through)</th><th>Credit Wrap</th><th>Per user per month</th></tr></thead>
+    <tbody>
+      <tr><td>Microsoft 365 math</td><td class="num">$22</td><td class="num">$35</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">$57</td></tr>
+      <tr><td>Copilot math</td><td class="num">$21</td><td class="num">$12</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">$33</td></tr>
+      <tr><td>December 1, default</td><td class="num">$21</td><td class="num">$12</td><td class="num">up to $40</td><td class="num">&mdash;</td><td class="num">up to $73</td></tr>
+      <tr><td>December 1, governed</td><td class="num">$21</td><td class="num">$12</td><td class="num">$15 cap</td><td class="num">$4</td><td class="num">$52</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="ch-note">The $35 managed-services line is the midpoint of the $30 to $40 upcharge partners describe for Business Premium. The $15 credit cap and $4 Credit Wrap are the worked example in <a href="#section-8">section 8</a>, not Microsoft figures.</p>
+</div>
+
+<div class="saidline">
+  <div class="sl-label">The whiteboard sentence</div>
+  <p>&ldquo;The top two lines you already know. The third line is Microsoft's, and it is on whether you like it or not. The fourth line is what stops the third one from surprising you.&rdquo;</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 8 ═══════════════════════════ -->
+<h2 id="section-8">8 &middot; Pricing the Fourth Line</h2>
+
+<h3>8.1 &middot; Where the playbook is today, and why it moves</h3>
+
+<p>Credit Wrap in <a href="cpb-model-the-practice.html">Model the Practice</a> is defined as an Azure consumption markup: buy pooled credits at CSP cost, bill at a <span data-fact="F-202">30%</span> markup, earn roughly $75 to $150 a month per customer, &ldquo;modest at Tier 2.&rdquo; That definition was written when consumption was a side effect of a few Copilot Studio agents. Three things changed under it.</p>
+
+<ol>
+  <li><strong>Consumption is now attached to every Copilot Business seat</strong>, not just agent customers. Credit Wrap belongs at Tier 1, next to the oversharing assessment, not at Tier 2.</li>
+  <li><strong>Pure percentage pricing fails at SMB scale.</strong> Thirty percent of a $250 meter is $75. Thirty percent of a tenant that stays under its budget is nothing. Published norms for spend-based fees in adjacent markets run 1 to 5% of spend, and nobody publishes a Copilot markup. The revenue has to sit in the floor, not the markup.</li>
+  <li><strong>Microsoft routes the bill through you</strong>, so you already carry the collection risk whether or not you charge for governance.</li>
+</ol>
+
+<h3>8.2 &middot; The recommended structure</h3>
+
+<p>This is our synthesis, not a published norm, and it follows the shape the analysts and the MSP billing guidance converge on: a predictable fee, pass-through at Microsoft's price, a visible spread, and an optional savings share.</p>
+
+<div class="provkey">
+  <span class="pk"><span class="prov prov-ms">MS</span> Microsoft-published figure</span>
+  <span class="pk"><span class="prov prov-survey">Survey</span> Analyst or survey figure</span>
+  <span class="pk"><span class="prov prov-range">Reported</span> Secondary source, not verified</span>
+  <span class="pk"><span class="prov prov-model">Ours</span> Copilot Playbook modeling or price</span>
+</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Component</th><th>How it is priced</th><th>Why</th><th>Provenance</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Credit Wrap floor</strong></td><td><span data-fact="F-220">$3 to $5</span> per user per month, with a <span data-fact="F-221">$150 to $250</span> per-tenant minimum</td><td>The buyer's predictable number. Covers SET, WATCH, TUNE and PROVE at one to two hours a month per tenant. The analyst finding that AI buyers want a budgetable number is the reason this is a flat fee.</td><td><span class="prov prov-model">Ours</span></td></tr>
+    <tr><td><strong>Credits, passed through</strong></td><td>Microsoft's price, as a separate invoice line</td><td>Never sell unlimited usage. Keep license, usage, service and labor as separate lines. The customer always sees the public rate.</td><td><span class="prov prov-ms">MS</span> rate; <span class="prov prov-range">Reported</span> billing guidance</td></tr>
+    <tr><td><strong>Pack spread</strong></td><td>Buy packs at $0.008 a credit, bill steady consumers at the $0.01 pay-as-you-go rate</td><td>A 20% spread that is visible and defensible: the customer pays the public rate, you carry the commitment and the pooling. Confirm pooling rules in the Azure portal before quoting it.</td><td><span class="prov prov-ms">MS</span> prices; <span class="prov prov-model">Ours</span> spread</td></tr>
+    <tr><td><strong>Savings share, optional</strong></td><td>25 to 50% of verified savings from retired seats, retired agents or a pay-as-you-go to pre-purchase move, for one quarter</td><td>The telecom expense management precedent. &ldquo;We only win if you save.&rdquo;</td><td><span class="prov prov-range">Reported</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>8.3 &middot; The worked example: 50 Copilot Business users, Tier 1 plus Credit Wrap</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Invoice line</th><th>Arithmetic</th><th>Per month</th><th>Who keeps it</th></tr></thead>
+  <tbody>
+    <tr><td>Copilot Business licenses</td><td>50 &times; $21</td><td class="num">$1,050</td><td>Microsoft, less your CSP margin</td></tr>
+    <tr><td>Tier 1 AI Essentials</td><td>50 &times; $12</td><td class="num">$600</td><td>You (existing playbook figure)</td></tr>
+    <tr><td>Copilot Credits, budgeted</td><td>1,500 credits a user, a $15 cap instead of the $40 default</td><td class="num">up to $750</td><td>Microsoft, passed through</td></tr>
+    <tr><td>Credit Wrap floor</td><td>50 &times; $4</td><td class="num">$200</td><td>You</td></tr>
+    <tr><td>Pack spread</td><td>30 steady Cowork users on packs, roughly 45,000 credits a month at a $0.002 spread, about</td><td class="num">$90</td><td>You</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The new line is worth about <strong>$290 a month per customer</strong> at roughly 85% gross margin once the monthly read is routine, and almost all of it comes from the floor fee, not the markup. That is the opposite of how the current Credit Wrap page is written, and it is what the research supports.</p>
+
+<div class="chart">
+  <p class="ch-title">Chart D &middot; Where the fourth line's revenue comes from, across a 50-customer book</p>
+  <p class="ch-sub">Annual, at the worked example above. The floor is predictable and attaches to every Copilot Business tenant. The spread only exists where consumption is steady enough to pool.</p>
+  <svg viewBox="0 0 760 150" role="img" aria-labelledby="chartD-t chartD-d">
+    <title id="chartD-t">Annual Credit Wrap revenue across 50 customers, floor versus spread</title>
+    <desc id="chartD-d">Two horizontal bars. Floor fee: $120,000 a year. Pack spread: $54,000 a year. Total about $174,000.</desc>
+    <!-- scale: $120,000 = 480px, x0 = 200 -->
+    <text class="lbl-b" x="0" y="40">Credit Wrap floor, 50 tenants</text>
+    <rect class="f-teal" x="200" y="22" width="480" height="28" rx="2"><title>50 tenants x $200 a month x 12 = $120,000</title></rect>
+    <text class="val" x="688" y="41">$120,000</text>
+    <text class="lbl-b" x="0" y="96">Pack spread, where it pools</text>
+    <rect class="f-lt" x="200" y="78" width="216" height="28" rx="2"><title>50 tenants x about $90 a month x 12 = about $54,000</title></rect>
+    <text class="val" x="424" y="97">about $54,000</text>
+    <line class="ax" x1="200" y1="10" x2="200" y2="118"/>
+    <text class="lbl" x="200" y="140">$0 a year</text>
+    <text class="lbl" x="740" y="140" text-anchor="end">about $174,000 a year combined</text>
+  </svg>
+  <div class="chart-key"><span><i style="background:var(--teal);"></i>Floor fee</span><span><i style="background:var(--ltblue);"></i>Pack spread</span></div>
+  <p class="ch-note">Compare the current Credit Wrap page's $75,000 to $90,000 a year across 50 Tier 3 customers. The floor-first structure roughly doubles it and does not wait for Tier 3.</p>
+</div>
+
+<h3>8.4 &middot; Guardrails that print beside the price</h3>
+
+<ul class="checklist">
+  <li><strong>Never promise a token-to-credit conversion.</strong> Microsoft publishes none. The credit is the unit.</li>
+  <li><strong>Never promise that pre-purchase saves money</strong> without a 60 to 90 day baseline and a break-even calculation. Unused pre-purchased credits expire.</li>
+  <li><strong>Draw the zero-rating line for every agent before you build it.</strong> Licensed staff using a standard agent in Microsoft channels is free. External users, autonomous runs, computer use and the GitHub harness are not.</li>
+  <li><strong>Put an owner clause on every pack and pre-purchase commitment.</strong> Who owns the commitment if the customer leaves mid-term? Nobody publishes this language for Copilot Credits yet. Write yours.</li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 9 ═══════════════════════════ -->
+<h2 id="section-9">9 &middot; Governed Growth, Not Cost Cutting</h2>
+
+<p>There is a trap in this conversation, and partners who miss it will find themselves arguing with Microsoft's incentives. Microsoft's partner language about consumption is growth language: &ldquo;accelerating consumption growth,&rdquo; &ldquo;a natural path to expanded consumption.&rdquo; The money follows it.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Mechanism</th><th>What it pays on</th><th>What it means for the pitch</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Copilot Cowork CSP Activation Incentive</strong> <span class="prov prov-range">Reported</span></td><td>From September 1, 2026. Reported as <span data-fact="F-219">$50 per incremental Cowork monthly active user</span>, capped at $12,500 per tenant, gated on 50 or more Cowork users and $2,500 or more of monthly Cowork consumption sustained through month three. The announcement is verified; the dollar mechanics come from channel press and sit behind partner sign-in.</td><td>You are paid when consumption is real and sustained. A pitch built on minimizing spend fights your own incentive.</td></tr>
+    <tr><td><strong>CSP growth margin</strong> <span class="prov prov-ms">MS</span></td><td>Live October 1, 2026, on new-to-offer, seat expansion and adoption for Copilot and the other eligible workloads.</td><td>Seats still pay. Governance keeps the seats renewing.</td></tr>
+    <tr><td><strong>Microsoft 365 Copilot specialization</strong> <span class="prov prov-ms">MS</span></td><td>Since July 2026, performance is measured on monthly active usage growth, not seats sold.</td><td>Usage is the badge metric now. See <a href="copilot-specialization.html">Designation to Specialization</a>.</td></tr>
+    <tr><td><strong>Partner margin on Copilot Credits</strong></td><td>Not published anywhere we could find.</td><td>Do not quote one. The revenue is the service, not the resale.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout dark">
+  <div class="callout-title">The honest framing</div>
+  <div class="callout-body"><p><strong>Spend the right credits, on purpose, with a receipt.</strong> The service is not a brake on the customer's AI. It is the thing that lets them push harder without the bill surprising anyone. Microsoft's CFO called it manageability of token spend, and the Cowork incentive only pays once a customer is consuming steadily. Governance is what makes the growth survivable, for the customer and for you.</p>
+  <p>One more reason to take it seriously: when organizations overrun on AI, <span data-fact="F-217">60.9%</span> cut external contractors and consultants first. An ungoverned credit bill eats your own services line before it eats anything else.</p></div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 10 ═══════════════════════════ -->
+<h2 id="section-10">10 &middot; The Talk Track</h2>
+
+<p>Written for a seller or vCIO talking to an SMB owner or office manager, 30 to 300 seats, who already buys Microsoft 365 and either has Copilot or is about to. Plain words. No &ldquo;FinOps,&rdquo; no &ldquo;tokens,&rdquo; no &ldquo;UBB&rdquo; in the customer's hearing.</p>
+
+<h3>10.1 &middot; Opening, sixty seconds</h3>
+
+<div class="saidline">
+  <div class="sl-label">You say</div>
+  <p>&ldquo;You know how your Microsoft 365 bill has always been a flat number per person? Copilot changed that this year. The license is still flat, $21 a person. But the new stuff, the part where Copilot actually does work for you instead of answering questions, runs on a meter. Microsoft calls the units credits. A credit is a penny.</p>
+  <p>Here's the thing nobody is telling small businesses. Starting December 1, every new Copilot Business license comes with that meter switched on, and the default setting lets each person spend up to 4,000 credits a month. That's forty dollars. On top of a twenty-one dollar license. For your 50 people, that is a $2,000 a month ceiling you did not agree to.</p>
+  <p>The bill comes to us first, because we are your Microsoft partner. So we are not going to let the default run. We are going to set it with you.&rdquo;</p>
+</div>
+
+<h3>10.2 &middot; The whiteboard moment</h3>
+
+<p>Draw the four bars from <a href="#section-7">section 7</a>. Say the three sentences from <a href="#section-5">section 5</a>. Stop talking. Let them ask what a credit buys.</p>
+
+<h3>10.3 &middot; &ldquo;What does a credit actually buy?&rdquo;</h3>
+
+<div class="saidline">
+  <div class="sl-label">You say</div>
+  <p>&ldquo;Three kinds of work, three price tags.</p>
+  <p><strong>Asking Copilot a question</strong> in Word, Outlook, Teams: included in the license. No meter.</p>
+  <p><strong>Telling Copilot to go do a job</strong>, like &lsquo;build me the board pack from these six folders&rsquo; or &lsquo;work through these forty invoices&rsquo;: that runs on the meter, and a job is counted in dollars, not pennies. Microsoft's own range for a heavy user is somewhere between eighty and two hundred-odd dollars a month if nobody is watching.</p>
+  <p><strong>An agent you build that answers your customers, or runs by itself overnight:</strong> every answer and every action is metered. A couple of pennies per answer, a nickel per action.</p>
+  <p>Our job is to make sure the second and third kinds happen on purpose.&rdquo;</p>
+</div>
+
+<h3>10.4 &middot; The offer, ninety seconds</h3>
+
+<div class="saidline">
+  <div class="sl-label">You say</div>
+  <p>&ldquo;Four things, every month, for $4 a person.</p>
+  <p>We <strong>SET</strong> the budget with you: a limit per person, a limit for the whole company, an alert at 80%. We <strong>WATCH</strong> the meter: who is using it, what is sitting idle, anything that spikes. We <strong>TUNE</strong> it: steady users go on the cheaper prepaid rate, unused seats and forgotten agents get turned off, routine work goes to the cheaper model. And we <strong>PROVE</strong> it: one page, once a month, that says what you spent and what you got for it.</p>
+  <p>The credits themselves are Microsoft's price, on their own line. We don't mark up the pennies. We charge for reading the meter.&rdquo;</p>
+</div>
+
+<h3>10.5 &middot; The ask</h3>
+
+<div class="saidline">
+  <div class="sl-label">You say</div>
+  <p>&ldquo;Before December 1, let's set your limits. Thirty minutes, in your admin center, with you on the call. Then we run one month at the budget we agreed and I bring you the first page.&rdquo;</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 11 ═══════════════════════════ -->
+<h2 id="section-11">11 &middot; Objections</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>They say</th><th>You say</th><th>Backing</th></tr></thead>
+  <tbody>
+    <tr><td>&ldquo;We'll just leave the default. $40 is a ceiling, not a bill.&rdquo;</td><td>&ldquo;A ceiling nobody is watching becomes the bill. 78% of IT leaders got a surprise charge from this kind of pricing last year. And Microsoft turns on new metered features by default, so the ceiling grows on its own.&rdquo;</td><td>Zylo 2026 SaaS Management Index; admin center auto-apply default</td></tr>
+    <tr><td>&ldquo;We'll just turn the meter off.&rdquo;</td><td>&ldquo;You can, and for some people you should. But the meter is where the new Copilot lives: the jobs, the agents, the overnight work. Turning it off keeps you on the chatbot forever. The question is not on or off. It is who decides, and when.&rdquo;</td><td>Spataro, September 25, 2026: Cowork, Code and Autopilot run on usage billing</td></tr>
+    <tr><td>&ldquo;Isn't this your problem? You're the partner.&rdquo;</td><td>&ldquo;It is, which is why I'm here. The bill comes to us before it comes to you. We are going to govern it either way. I'd rather do it with you, with a budget you chose, than for you after the fact.&rdquo;</td><td>Microsoft CSP guidance: Azure subscription linked to the partner billing account</td></tr>
+    <tr><td>&ldquo;Why pay you to read a dashboard Microsoft gives us?&rdquo;</td><td>&ldquo;Microsoft gave you the dials. Nobody at your company has the job of turning them, and 40% of businesses your size have no full-time IT person at all. Four dollars a person buys you someone whose job it is.&rdquo;</td><td>IDC SMB survey, June 2026</td></tr>
+    <tr><td>&ldquo;Can't you just put us on prepaid and save us money?&rdquo;</td><td>&ldquo;Not yet. Prepaid credits expire if you don't use them. We baseline you for two months first, then we move the steady users across when the math says it pays. That is part of what you're paying us to get right.&rdquo;</td><td>FinOps Foundation break-even rule; pre-purchase expiry</td></tr>
+    <tr><td>&ldquo;What's a credit in tokens?&rdquo;</td><td>&ldquo;Microsoft doesn't publish that, and anyone who gives you a number is guessing. The credit is the unit. A penny. That's the whole point: you budget in pennies, not tokens.&rdquo;</td><td>Copilot Credits Guide, October 2026: no conversion published</td></tr>
+    <tr><td>&ldquo;Our agents are for our own staff. Why would we pay anything?&rdquo;</td><td>&ldquo;If they're your licensed people using a normal agent in Teams, you don't. That's included. You pay when the agent serves customers, runs on its own, or does the heavy stuff. We'll draw that line for every agent before we build it.&rdquo;</td><td>Zero-rating rule, Copilot Studio billing documentation</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 12 ═══════════════════════════ -->
+<h2 id="section-12">12 &middot; The December 1 Campaign</h2>
+
+<p>Other partners are offering the setup session for free. Turn it into the on-ramp to the paid service. This is the first thing to ship, and it is sellable to every Copilot Business customer you have, this quarter.</p>
+
+<div class="vtimeline">
+  <div class="vt-item"><div class="vt-when">This week</div><h4>Email every Copilot Business customer</h4><p>Subject line: &ldquo;Your Copilot bill changes December 1. Let's set your limit first.&rdquo; Three sentences from <a href="#section-5">section 5</a> and a link to book thirty minutes.</p></div>
+  <div class="vt-item"><div class="vt-when">November 2</div><h4>Run the default-on sandbox yourself first</h4><p>Become Customer Zero on the meter. Set your own limits, trip your own alert, pull your own export. The <a href="customer-zero-starter-kit/index.html">Customer Zero Starter Kit</a> is the method.</p></div>
+  <div class="vt-item"><div class="vt-when">November</div><h4>The thirty-minute SET session, free</h4><p>Link the Azure billing, lower the default, set the alerts, review auto-apply, name the budget owner. The customer leaves with a signed one-page credit budget.</p></div>
+  <div class="vt-item hot"><div class="vt-when">End of the session</div><h4>The close</h4><p>&ldquo;That's SET. WATCH, TUNE and PROVE are $4 a person a month. Your first page arrives in thirty days.&rdquo;</p></div>
+  <div class="vt-item"><div class="vt-when">December 1</div><h4>The meter is on, and your customers chose their number</h4><p>Everyone else's customers got the default.</p></div>
+</div>
+
+<h3>12.1 &middot; Before you sell this</h3>
+
+<ul class="checklist">
+  <li><strong>Your own tenant has a spending policy, a per-user limit and a tripped alert in its history.</strong> You cannot explain the 80% email until you have received one.</li>
+  <li><strong>You have pulled a consumption export</strong> by user, group, agent and service, and turned it into one page, once.</li>
+  <li><strong>You have run the <a href="copilot-credit-planner.html">Copilot Credit Planner</a> for one real customer</strong> and can say which funding source it recommended and why.</li>
+  <li><strong>You can say the three sentences without notes</strong>, and your seller can draw the four bars.</li>
+  <li><strong>Your MSA has a line for credit pass-through and an owner clause for commitments.</strong></li>
+</ul>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 13 ═══════════════════════════ -->
+<h2 id="section-13">13 &middot; Guardrails: What Never To Say</h2>
+
+<div class="trap">
+  <div class="t-label">Trap 1</div>
+  <h4>&ldquo;A credit is about N tokens.&rdquo;</h4>
+  <p>Microsoft publishes no conversion, and per-task consumption varies by model, context and tools. An automated summary of the Credits Guide invented one; the actual document has none. The credit is the unit. Stop there.</p>
+</div>
+<div class="trap">
+  <div class="t-label">Trap 2</div>
+  <h4>&ldquo;The default limit is $10 a user.&rdquo;</h4>
+  <p>One trade publication reported a $10 preset. Microsoft's own October 1 announcement says 4,000 credits, which is $40. Use Microsoft's figure, always.</p>
+</div>
+<div class="trap">
+  <div class="t-label">Trap 3</div>
+  <h4>&ldquo;Pre-purchase will save you 20%.&rdquo;</h4>
+  <p>Only the largest tier reaches 20%, the smallest is 5%, unused credits expire, and the FinOps rule is a 60 to 90 day baseline before any commitment. Say &ldquo;we will tell you when prepaying pays,&rdquo; and mean it.</p>
+</div>
+<div class="trap">
+  <div class="t-label">Trap 4</div>
+  <h4>&ldquo;We'll keep your AI bill down.&rdquo;</h4>
+  <p>That pitch fights Microsoft's incentives, which pay you on sustained consumption, and it fights the customer's reason for buying. Say &ldquo;we'll make sure you spend it on purpose.&rdquo; See <a href="#section-9">section 9</a>.</p>
+</div>
+<div class="trap">
+  <div class="t-label">Trap 5</div>
+  <h4>&ldquo;Microsoft told partners to build this service.&rdquo;</h4>
+  <p>It did not, in so many words. It named FinOps for AI and managed services as partner opportunities, built the controls, set the default and routed the bill through you. Say that, exactly, and let the partner draw the conclusion.</p>
+</div>
+<div class="trap">
+  <div class="t-label">Trap 6</div>
+  <h4>Naming two products as if they were one</h4>
+  <p>The Credits Guide says Microsoft 365 Copilot became Microsoft Copilot in August 2026. Partner Center still writes &ldquo;Microsoft 365 Copilot Business.&rdquo; Both names are live. Use the one on the document in front of the customer.</p>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+<!-- ═══════════════════════════ 14 ═══════════════════════════ -->
+<h2 id="section-14">14 &middot; Sources, Provenance and Related Guides</h2>
+
+<h3>14.1 &middot; Microsoft, primary</h3>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4" target="_blank" rel="noopener">Microsoft FY26 Q4 earnings call</a></div><div class="rf-d">July 29, 2026. Hood: &ldquo;per-seat-plus-consumption&rdquo;; &ldquo;observability of token spend and the manageability of token spend.&rdquo; Nadella on Cowork usage billing and Autopilots.</div></li>
+  <li><div class="rf-t"><a href="https://blogs.microsoft.com/blog/2026/04/21/accelerating-frontier-transformation-with-microsoft-partners/" target="_blank" rel="noopener">Accelerating frontier transformation with Microsoft partners</a></div><div class="rf-d">Nicole Dezen, April 21, 2026. &ldquo;From conversation to consumption&rdquo;; 60% of CSP partner revenue tied to value-added services.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/announcements/2026-october" target="_blank" rel="noopener">Partner Center announcements, October 2026</a></div><div class="rf-d">Usage-based billing on by default for Copilot Business in CSP from December 1, 2026; 4,000 credits per user per month default; excluded markets; sandbox November 2; CSP growth margin live.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/partner-center/announcements/2026-september" target="_blank" rel="noopener">Partner Center announcements, September 2026</a></div><div class="rf-d">&ldquo;Introducing the new Copilot&rdquo; (September 25): manage and optimize AI at scale; FinOps for AI. Copilot Cowork CSP Activation Incentive (September 10).</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-overview-copilot-credits" target="_blank" rel="noopener">Usage-based billing with Copilot Credits: overview</a></div><div class="rf-d">Microsoft Learn, updated October 2026. Spending policies, limits, alerts, roles, auto-apply default, reporting dimensions.</div></li>
+  <li><div class="rf-t"><a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/usage-based-billing-copilot-credits-csp-partner-macc" target="_blank" rel="noopener">Usage-based billing for CSP partners</a></div><div class="rf-d">Microsoft Learn, October 1, 2026. The Azure subscription linked to the partner billing account; spending limits and alerts.</div></li>
+  <li><div class="rf-t"><a href="https://blogs.microsoft.com/blog/2026/09/25/introducing-the-new-copilot-with-home-code-and-autopilot/" target="_blank" rel="noopener">Introducing the new Copilot, with Home, Code and Autopilot</a></div><div class="rf-d">Jared Spataro, September 25, 2026. Cowork, Code, Autopilot and frontier models on usage-based billing; &ldquo;match cost to value.&rdquo;</div></li>
+  <li><div class="rf-t"><a href="https://aka.ms/CopilotCredits/LicensingGuide" target="_blank" rel="noopener">Copilot Credits Guide, October 2026</a></div><div class="rf-d">Credits as the common currency; $0.01 pay-as-you-go; packs; pre-purchase tiers; the August 2026 rename. No token-to-credit conversion.</div></li>
+</ul>
+
+<h3>14.2 &middot; Analysts and surveys</h3>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="https://zylo.com/news/2026-saas-management-index" target="_blank" rel="noopener">Zylo 2026 SaaS Management Index</a></div><div class="rf-d">January 29, 2026. 78% of IT leaders reported unexpected charges from consumption-based or AI pricing.</div></li>
+  <li><div class="rf-t"><a href="https://futurumgroup.com/press-release/46-9-of-enterprises-report-ai-spend-over-budget-in-2h-2026/" target="_blank" rel="noopener">Futurum: 46.9% of enterprises report AI spend over budget</a></div><div class="rf-d">September 10, 2026, 1,636 decision-makers. 10% have no formal AI budget; 60.9% cut external contractors and consultants first when they overrun.</div></li>
+  <li><div class="rf-t"><a href="https://futurumgroup.com/wp-content/uploads/2026/08/The-Pricing-Split-Why-Core-Software-and-AI-Cant-Share-One-Commercial-Model_AIOKK202608.pdf" target="_blank" rel="noopener">Futurum: The Pricing Split</a></div><div class="rf-d">August 2026. For separately billed AI, buyers prefer per-seat (42.3%) over consumption (36.6%) because they want a cost they can budget.</div></li>
+  <li><div class="rf-t"><a href="https://www.doit.com/blog/ai-spending-survey" target="_blank" rel="noopener">DoiT AI spending survey</a></div><div class="rf-d">February 2026, 500 finance leaders. 79% had AI overruns in the past 12 months.</div></li>
+  <li><div class="rf-t"><a href="https://www.idc.com/resource-center/blog/from-wait-and-see-to-all-in-how-smbs-are-rewriting-their-ai-story/" target="_blank" rel="noopener">IDC: How SMBs are rewriting their AI story</a></div><div class="rf-d">June 30, 2026, 2,700+ respondents. AI is the number one SMB priority; 40% have no full-time IT employee; unpredictable costs are a big red flag.</div></li>
+  <li><div class="rf-t"><a href="https://www.channeldive.com/news/managed-services-608b-tech-growth-omdia-jay-mcbain/807746/" target="_blank" rel="noopener">Omdia, via Channel Dive: generative and agentic AI services</a></div><div class="rf-d">December 2025. <span data-fact="F-215">$59B in 2025 to $267B by 2030</span>, the fastest-growing services segment. Partners need &ldquo;consumption optimization expertise.&rdquo;</div></li>
+  <li><div class="rf-t"><a href="https://www.finops.org/wg/token-economics-saas/" target="_blank" rel="noopener">FinOps Foundation: Tokenomics for SaaS model token costs</a></div><div class="rf-d">Updated June 3, 2026. Baseline 30 to 60 days; alert at 80% and 100%; break-even before committing; cost per user per month and cost per successful outcome.</div></li>
+  <li><div class="rf-t"><a href="https://www.gartner.com/en/newsroom/press-releases/2025-06-25-gartner-predicts-over-40-percent-of-agentic-ai-projects-will-be-canceled-by-end-of-2027" target="_blank" rel="noopener">Gartner: over 40% of agentic AI projects will be canceled by end of 2027</a></div><div class="rf-d">June 25, 2025. Escalating costs, unclear value or weak risk controls. <span data-fact="F-218">Over 40%</span> is the headline figure.</div></li>
+</ul>
+
+<h3>14.3 &middot; The research behind this page</h3>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="research/token-economics-practice/00-synthesis-and-talk-track.md">Synthesis and the first talk track</a></div><div class="rf-d">The verdicts, the framework, the pricing structure, the proposed playbook edits and the open items, including the gated Microsoft documents still to read with a partner login.</div></li>
+  <li><div class="rf-t"><a href="research/token-economics-practice/01-microsoft-positioning.md">What Microsoft says publicly</a></div><div class="rf-d">Every quote, every Partner Center announcement, the CSP mechanics, the vocabulary, and where Microsoft is silent.</div></li>
+  <li><div class="rf-t"><a href="research/token-economics-practice/02-who-is-monetizing-it.md">Who is monetizing it, and how</a></div><div class="rf-d">SMB MSP offers, enterprise frameworks, the tooling that makes the service deliverable, re-billing norms and the white space.</div></li>
+  <li><div class="rf-t"><a href="research/token-economics-practice/03-analyst-frameworks-and-economics.md">Analysts, FinOps for AI and the economics</a></div><div class="rf-d">The pricing shift, the partner opportunity, the failure-mode evidence, pricing norms for services around consumption, and the three analogies.</div></li>
+</ul>
+
+<h3>14.4 &middot; Where this sits in the playbook</h3>
+
+<ul class="reflist">
+  <li><div class="rf-t"><a href="cpb-model-the-practice.html">Model the Practice</a></div><div class="rf-d">Upstream. The three tiers, the four pricing dials and the Credit Wrap definition this page extends.</div></li>
+  <li><div class="rf-t"><a href="copilot-credit-planner.html">Copilot Credit Planner</a></div><div class="rf-d">The tool. Sizes Cowork and Copilot Studio agents against one credit pool, finds the cheapest way to buy, writes the guardrails and prints the customer report.</div></li>
+  <li><div class="rf-t"><a href="cowork-calculator.html">Cowork simulator</a></div><div class="rf-d">Models the per-user Cowork credits that make the default ceiling real for heavy users.</div></li>
+  <li><div class="rf-t"><a href="azure-billing-setup.html">Azure Billing Setup for CSP Partners</a></div><div class="rf-d">The wiring. How the Azure subscription that carries the credits gets linked to your partner billing account.</div></li>
+  <li><div class="rf-t"><a href="copilot-adoption-audit.html">The Copilot Adoption Audit</a></div><div class="rf-d">The TUNE input for seats: which licenses are idle and what to do about each segment.</div></li>
+  <li><div class="rf-t"><a href="cpb-run-the-engagement.html">Run the Engagement</a></div><div class="rf-d">Where the talk track joins the rest of the customer conversation.</div></li>
+</ul>
+
+<div class="hero-statement">
+  <p>Microsoft built the meter, switched it on, set the default above the seat, and sent you the bill. <em>Every other partner is waiting for a dashboard. You have a process, three sentences and a price.</em></p>
+  <div class="hero-sub">The December 1 campaign is sellable to every Copilot Business customer you have, this quarter. Start with the one who asked you last month why their Azure bill went up.</div>
+</div>
+
+<div class="back-to-toc"><a href="#toc">&#8593; Contents</a></div>
+
+</body>
+</html>
