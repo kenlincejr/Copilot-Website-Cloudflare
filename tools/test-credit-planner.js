@@ -1260,6 +1260,22 @@ sec('QA-C');
     ok(/cv\.guardrails\.clickPaths/.test(gw) && /WH = govWhere\(cv\)/.test(src), 'L-01 govRows takes its paths from the customer view, not a second copy');
   }
 
+  // L-19, L-20, L-21 · objection cards: no origin claim for "25", O-6 to spec, O-3 hedged, "no figures" keyed on placeholders
+  {
+    const ob = (st) => { const m = {}; E.objections(E.compute(st)).forEach((o) => { m[o.id] = o; }); return m; };
+    const hd = ob(helpdesk(4)), ws = ob(presetState('website'));
+    ok(!/unused weight|estimator code/.test(hd['OBJ-04'].a) && /5 credits, not 25/.test(hd['OBJ-04'].a), 'L-19 OBJ-04 keeps the rate, drops the origin claim');
+    const big = helpdesk(4); big.coworkSession = PAYLOAD(); big.combined.includeCowork = 'on';
+    const o6 = ob(big)['OBJ-06'];
+    ok(/saves \d+(\.\d+)?%/.test(o6.a) && /only if you use all of it/.test(o6.a) && !/commit units/.test(o6.a) && !o6.generic, 'L-20 OBJ-06 gives {p3pct}, "only if you use all of it", no "commit units" (' + o6.a + ')');
+    const sell = J(big); sell.partner.sellCreditUsd = 0.013;
+    ok(!/0\.008/.test(ob(sell)['OBJ-06'].a), 'L-20 OBJ-06 shows no $0.008 in sell mode');
+    ok(!/always bill/.test(hd['OBJ-03'].a) && /Likely/.test(hd['OBJ-03'].a), 'L-21 OBJ-03 hedges autonomous runs as Likely');
+    ok(!/covers 0 credits/.test(ws['OBJ-03'].a) && ws['OBJ-03'].generic === true && hd['OBJ-03'].generic === false, 'L-21 OBJ-03 uses the generic line, flagged, when nothing is covered');
+    ok(ws['OBJ-02'].generic === true && hd['OBJ-02'].generic === false && hd['OBJ-08'].generic === false, 'L-21 the "no figures" flag follows the placeholders, not a digit regex');
+    ok(/var generic = o\.generic === true;/.test(src), 'L-21 the UI marks a card from its generic flag');
+  }
+
   /* QA-C end */
 }
 

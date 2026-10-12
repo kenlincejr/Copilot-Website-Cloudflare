@@ -3116,9 +3116,12 @@ footer.pagefoot p { margin:0 0 10px; }
     var dbl = Math.max(0, x.users.total - 2 * x.users.licensed);
     return { rateCard: full.lo, msTool: full.lo * dbl / U, users: x.users.total, licensed: x.users.licensed };
   }
+  /* Each card carries generic: true when its scenario placeholders could not
+     be filled, so the UI marks it "No figures in this scenario". */
   function objections(result) {
     var r = isObj(result) ? result : compute(defaults());
-    var out = [];
+    var out = [], gen = {};
+    function flag() { out.forEach(function (o) { o.generic = gen[o.id] === true; }); return out; }
     try {
       var s = r.state;
       /* The customer's basis: the partner's credit and seat prices when set,
@@ -3141,12 +3144,24 @@ footer.pagefoot p { margin:0 0 10px; }
           ? 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) + ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. '
           : 'For ' + eq.name + ', Microsoft’s Studio estimator (tested ' + ESTIMATOR_TESTED + ') subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice, so it understates the ' + fmtInt(eq.e.rateCard) + ' credits the rate card gives; with this many licensed users its total stops updating, so compare it line by line. ')
         : '') + 'When we tested it on ' + ESTIMATOR_TESTED + ', it also left out greetings and classic answers, and its flows did not scale with traffic. Every rate in this plan names the Microsoft page it comes from, line by line in the calculation trace.' });
-      out.push({ id: 'OBJ-03', q: 'Isn’t it free with our licenses?', a: 'Only for licensed employees, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Here that covers ' + fmtInt(sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }))) +
-        ' credits a month. Website and external users, autonomous runs, computer use, Work IQ and the GitHub harness always bill.' });
-      out.push({ id: 'OBJ-04', q: 'The 25-credit myth.', a: 'An agent action is ' + RC.action.v[0] + ' credits, not 25. The 25 figure comes from an unused weight left in Microsoft’s old estimator code.' });
+      gen['OBJ-02'] = !eq;
+      var zc = sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }));
+      var bc = sum(r.lanes.agents.map(function (a) { return a.paused ? 0 : a.lo; }));
+      gen['OBJ-03'] = !(zc > 0);
+      out.push({ id: 'OBJ-03', q: 'Isn’t it free with our licenses?', a: 'Partly. A licensed person, signed in with their own account, in Teams, SharePoint or Copilot Chat, costs nothing to run' + (zc > 0 ? ', and that’s ' + fmtInt(zc) + ' credits a month here' : '') +
+        '. Website and external users, unlicensed staff, autonomous runs (Likely: Microsoft states it for agent flows), computer use, Work IQ and the GitHub harness are billed' + (zc > 0 && bc > 0 ? ': ' + fmtInt(bc) + ' credits a month here.' : '.') });
+      out.push({ id: 'OBJ-04', q: 'The 25-credit myth.', a: 'An agent action is ' + RC.action.v[0] + ' credits, not 25. The 25 is an old figure that still circulates; every number here is Microsoft’s current rate card, dated ' + RATECARD_VERSION + '.' });
       out.push({ id: 'OBJ-05', q: 'What if we run out?', a: 'Flows stop at 100% of prepaid capacity and custom agents at 125%; pay-as-you-go environments keep running. The plan sets per-agent limits and alerts at 50, 80 and 100% so nobody finds out by an agent breaking.' });
-      out.push({ id: 'OBJ-06', q: 'Why not pre-buy for 20%?', a: 'The 20% tier starts at ' + fmtInt(RC.p3Tiers.v[8].cccu) + ' commit units. Plans are fixed sizes, final for a year, and unused credits expire; capacity packs at ' +
-        '$' + String(packUsdPerCredit()) + ' a credit already beat every tier below Tier 9 for steady use. The recommendation here: ' + r.purchase.best.label + '.' });
+      /* {p3pct}: the effective discount of the cheapest option that pre-buys. */
+      var fam = r.purchase.families || {}, p3o = [fam.p3, fam.mix, r.purchase.best].filter(function (o) { return o && o.p3 && o.p3.units > 0; })[0];
+      var p3pct = p3o && p3o.p3.cccu > 0 ? roundTo(100 * (1 - p3o.p3.usd / (p3o.p3.cccu * RC.cccu.v.usd)), 1) : null;
+      gen['OBJ-06'] = p3pct === null;
+      var topM = fmtInt(RC.p3Tiers.v[8].cccu * RC.cccu.v.credits / 1e6) + ' million credits';
+      out.push({ id: 'OBJ-06', q: 'Why not pre-buy for 20%?', a: 'The 20% discount is the top tier, at ' + topM + ' a year. ' + (p3pct !== null
+          ? 'At your volume the best pre-purchase plan saves ' + p3pct + '%, and only if you use all of it in the year. '
+          : 'A pre-purchase plan saves only if you use all of it in the year. ') +
+        'Packs expire monthly with no rollover' + (cr.basis === 'list' ? ', and at Microsoft list they already work out at ' + fmtRate(packUsdPerCredit()) + ' a credit' : '') +
+        '. So: ' + r.purchase.best.label + ' now, and revisit at day 90 with real usage.' });
       var dv = r.dataverse, base = s.studio.account.tenantBase, BASE_LBL = { basic: 'Business Basic', standard: 'Business Standard', premium: 'Business Premium', e3: 'E3', e5: 'E5' };
       var over = dv.overageGb.db + dv.overageGb.file + dv.overageGb.log > 0;
       /* The month the overage starts, when the engine exposes one. */
@@ -3166,11 +3181,12 @@ footer.pagefoot p { margin:0 0 10px; }
       var bld = r.lanes.agents.filter(function (a) { return !a.paused && a.build.hi > 0; });
       var bLo = sum(bld.map(function (a) { return a.build.lo * (a.build.months.length + a.build.outside); }));
       var bHi = sum(bld.map(function (a) { return a.build.hi * (a.build.months.length + a.build.outside); }));
+      gen['OBJ-09'] = !(bHi > 0);
       out.push({ id: 'OBJ-09', q: 'Why do we pay while we’re still building?', a: bHi > 0
         ? 'On the GitHub Copilot harness, Microsoft bills building and testing as well as running: ' + fmtInt(bLo) + '–' + fmtInt(bHi) + ' credits before go-live here. It’s in the statement of work as its own line, it runs in a sandbox with a fixed allocation, and it stops when the build does. Standard agents don’t bill for test chat.'
         : 'Only agents built on the GitHub Copilot harness bill for building and testing, and none is modeled here. Standard agents don’t bill for test chat, so the meter starts when the agent goes live.' });
-    } catch (e) { return out; }
-    return out;
+    } catch (e) { return flag(); }
+    return flag();
   }
   /* The spec's six rungs. Rung 3 (environment and governance setup) has no
      Playbook price: it shows "your price" unless the partner adds a service
@@ -5509,7 +5525,7 @@ footer.pagefoot p { margin:0 0 10px; }
     var talk = E.talk(R);
     $('talkBody').innerHTML = talk.map(function (l, i) { return '<p><span data-talk="' + i + '">' + esc(l) + '</span><button type="button" class="copybtn light-bg" data-copytalk="' + i + '">Copy</button></p>'; }).join('');
     $('objBody').innerHTML = E.objections(R).map(function (o) {
-      var generic = !/\d/.test(o.a);
+      var generic = o.generic === true;
       return '<div class="objcard"><div class="oq">&ldquo;' + esc(o.q) + '&rdquo;</div><div class="oa">' + esc(o.a) + '</div>' + (generic ? '<div class="on">No figures in this scenario.</div>' : '') + '</div>';
     }).join('');
     var lad = E.ladder(R), recN = 0;
