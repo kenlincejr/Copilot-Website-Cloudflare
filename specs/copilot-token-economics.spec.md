@@ -35,12 +35,13 @@ Masthead (C14), "How to use this" callout, TOC, then:
 6. The Service in Four Verbs. SET, WATCH, TUNE, PROVE as phase cards with cadence and admin-center surface.
 7. The Whiteboard. Chart B (old math, Copilot math, the new fourth line, governed vs default).
 8. Pricing the Fourth Line. Where Credit Wrap sits today; the recommended structure table; worked 50-user example; Chart C (floor vs spread across a 50-customer book).
-9. Governed Growth, Not Cost Cutting. Microsoft's incentives and the honest framing.
-10. The Talk Track. Opening, the credit answer, the offer, the ask.
-11. Objections. Table with sourced rebuttals.
-12. The December 1 Campaign. Checklist and timeline.
-13. Guardrails. Trap cards: what never to say.
-14. Sources, Provenance and Related Guides.
+9. How the Money Flows Through Distribution (added 2026-10-11 at Ken's request). Two billing paths, partner liability, the revenue-line table, the six set-up steps, a worked 50-seat invoice, the one-slide version.
+10. Governed Growth, Not Cost Cutting. Microsoft's incentives and the honest framing.
+11. The Talk Track. Opening, the credit answer, the offer, the ask.
+12. Objections. Table with sourced rebuttals.
+13. The December 1 Campaign. Checklist and timeline.
+14. Guardrails. Trap cards: what never to say.
+15. Sources, Provenance and Related Guides.
 
 ## 4. Design decisions recorded for sign-off (DESIGN §8 prohibition 7)
 

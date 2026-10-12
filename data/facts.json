@@ -2,8 +2,8 @@
   "schema_version": 1,
   "generated": "2026-08-26",
   "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
-  "fact_count": 229,
-  "occurrence_count": 335,
+  "fact_count": 233,
+  "occurrence_count": 340,
   "facts": [
     {
       "id": "F-001",
@@ -723,10 +723,17 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 666,
+          "line": 678,
           "anchor_unique": true,
-          "anchor": "<span data-fact=\"F-013\">$200 for 25,000 credits</span>",
+          "anchor": "rs onto capacity packs: <span data-fact=\"F-013\">$200 for 25,000 credits</span> a month, which is $0.00",
           "context": ">You do Move steady, predictable consumers onto capacity packs: $200 for 25,000 credits a month, which is $0.008 a credit against $0.01 on pay-as-you-go. No rollover, so only for consumption you can see ever"
+        },
+        {
+          "file": "copilot-token-economics.html",
+          "line": 921,
+          "anchor_unique": true,
+          "anchor": "al</div><p class=\"rs-v\"><span data-fact=\"F-013\">$200 for 25,000 credits</span> a month is $0.008 a cre",
+          "context": "e, not the resale. Pack spread: real but conditional$200 for 25,000 credits a month is $0.008 a credit against $0.01. No rollover, and the licensing guide footnotes the pack as billed annually, s"
         }
       ],
       "new_value": "$200/25,000 credits/month",
@@ -3946,7 +3953,7 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 489,
+          "line": 501,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-147\">$18</span>",
           "context": "h-note\">Microsoft's own example in the October 1 announcement: 100 users can consume up to 400,000 credits a month. The $18 promotional seat price running through December 31 makes the multiple larger, not smaller. 3.1 &middot;"
@@ -4004,14 +4011,14 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 382,
+          "line": 394,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-149\">$0.01</span>",
           "context": "=\"l\">What the default credit ceiling lets each user spend on top of it: 4,000 credits at $0.01 a credit Partner Center announcement, October 1, 2026"
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 534,
+          "line": 546,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-149\">one cent</span>",
           "context": "se this conversation by making it complicated. There are three kinds of Copilot work, and three price tags. A credit is one cent. Microsoft publishes no conversion from credits to tokens, and you should never offer one."
@@ -4040,7 +4047,7 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 498,
+          "line": 510,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-150\">$82 to $228</span>",
           "context": "its own. The heavy users are real. Microsoft's own Cowork estimator put an engaged user at $82 to $228 a month in credits. On the Cowork simulator's stock defaults, a modeled user hits"
@@ -4091,7 +4098,7 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 667,
+          "line": 679,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-152\">5% to 20%</span>",
           "context": "i>Consider a pre-purchase tier only when the baseline is 60 to 90 days old and the break-even math works. Discounts run 5% to 20%; unused credits expire. Retire idle agents. Convert agents that only serve licensed staff to the zero-ra"
@@ -4186,7 +4193,7 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 434,
+          "line": 446,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-156\">December 1, 2026</span>",
           "context": "n test the default-on experience before it reaches customers. December 1, 2026The meter is on for every new Copilot Business license in CSPPay-as-you-go by default. 4,000 credits p"
@@ -4215,14 +4222,14 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 382,
+          "line": 394,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-157\">4,000 credits</span>",
           "context": "rn\"> $40 What the default credit ceiling lets each user spend on top of it: 4,000 credits at $0.01 a credit Partner Center announcement, October 1, 2026<"
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 636,
+          "line": 648,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-157\">4,000</span>",
           "context": "ng account, so the meter is wired before the first credit burns. Create the spending policy. Replace the 4,000-credit default with the limit the customer chose. Set a tenant-level limit too. Switch on alerts at <spa"
@@ -4308,7 +4315,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 553,
+          "line": 565,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-162\">2 credits</span>",
           "context": "div> 2&cent; to 5&cent; An agent that serves other people or runs alone 2 credits for a generative answer, 5 credits for an action, in Copilot Studio. Metered when the ag"
@@ -4330,7 +4337,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 553,
+          "line": 565,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-163\">5 credits</span>",
           "context": "nt that serves other people or runs alone 2 credits for a generative answer, 5 credits for an action, in Copilot Studio. Metered when the agent answers customers, unlicensed users or external channels, or r"
@@ -4527,7 +4534,7 @@
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 376,
+          "line": 388,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-176\">$21</span>",
           "context": "w sits inside every Copilot license sale. $21 What a Copilot Business seat costs per user per month Microsoft list"
@@ -4885,7 +4892,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 720,
+          "line": 732,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-201\">12</tspan>",
           "context": "r 1 AI Essentials: $12 (range $10 to $15) $12 $33 December 1, left on the d"
@@ -4907,7 +4914,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 771,
+          "line": 783,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-202\">30%</span>",
           "context": "ctice.html\">Model the Practice is defined as an Azure consumption markup: buy pooled credits at CSP cost, bill at a 30% markup, earn roughly $75 to $150 a month per customer, &ldquo;modest at Tier 2.&rdquo; That definition was written when"
@@ -4957,7 +4964,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 409,
+          "line": 421,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-205\">Evolving our business model beyond per-seat to <em>per-seat-plus-consumption</em></span>",
           "context": "2026 &ldquo;Evolving our business model beyond per-seat to per-seat-plus-consumption.&rdquo; Amy Hood, CFOFY26 Q4 earnings call, July 29, 2026 </div"
@@ -4979,7 +4986,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 413,
+          "line": 425,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-206\">Observability of token spend and the <em>manageability</em> of token spend</span>",
           "context": "ong>, CFOFY26 Q4 earnings call, July 29, 2026 &ldquo;Observability of token spend and the manageability of token spend.&rdquo; Amy Hood, on what customers need nextSame call"
@@ -5001,7 +5008,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 417,
+          "line": 429,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-207\">from <em>conversation to consumption</em></span>",
           "context": "ed nextSame call &ldquo;Advancing Copilot and agents from conversation to consumption.&rdquo; Nicole Dezen, Chief Partner Officer, to CSP partnersMicrosoft b"
@@ -5023,7 +5030,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 421,
+          "line": 433,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-208\">60% of CSP partner revenue</span>",
           "context": "services, differentiated software, increased consumption and deeper customer relationships. Microsoft also reports that 60% of CSP partner revenue is now tied to value-added services. Sources: Microsoft FY26 Q4 earnings ca"
@@ -5045,7 +5052,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 421,
+          "line": 433,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-209\">manage and optimize AI at scale</span>",
           "context": "r Center said the rest on September 25, 2026, introducing the new Copilot. The partner opportunity is to &ldquo;manage and optimize AI at scale&rdquo;, and &ldquo;FinOps for AI introduces new ways to govern costs.&rdquo; The same post sa"
@@ -5067,7 +5074,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 499,
+          "line": 511,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-210\">your partner billing account</span>",
           "context": "trong>The bill arrives on your Azure plan. Microsoft's CSP guidance tells you to link an Azure subscription to your partner billing account before usage billing starts. You carry the collection risk on every credit the customer burns, whether or not you are c"
@@ -5089,7 +5096,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 510,
+          "line": 522,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-211\">78%</tspan>",
           "context": "4\" rx=\"2\">78% of IT leaders, Zylo 2026 SaaS Management Index 78% IT leaders &middot; Zylo, January 2026 <text class=\"lbl-b\" x=\"0\" y"
@@ -5111,7 +5118,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 518,
+          "line": 530,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-212\">46.9%</tspan>",
           "context": "over budget; 10% have no AI budget at all. Futurum, September 2026 46.9% 1,636 decision-makers &middot; Futurum, September 2026 &middot; one in ten h"
@@ -5133,7 +5140,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 585,
+          "line": 597,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-213\">42.3%</span>",
           "context": "t sentence that explains the whole opportunity When AI is billed separately, buyers prefer per-seat pricing (42.3%) over consumption (36.6%), because they want an AI cost they can budget. Microsoft bills the new Copilot by consumption"
@@ -5155,14 +5162,14 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 522,
+          "line": 534,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-214\">40%</tspan>",
           "context": "width=\"180\" height=\"24\" rx=\"2\">40% of SMBs, IDC, June 2026 40% Small and medium businesses, 2,700+ respondents &middot; IDC, June 2026</tex"
         },
         {
           "file": "copilot-token-economics.html",
-          "line": 579,
+          "line": 591,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-214\">40%</span>",
           "context": "odel routing and reports by user, group, agent and service. It does not come with anyone whose job is to turn them, and 40% of SMBs have no full-time IT person to do it. There is no partner-side dashboard. Microsoft"
@@ -5184,7 +5191,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 1028,
+          "line": 1213,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-215\">$59B in 2025 to $267B by 2030</span>",
           "context": "k\" rel=\"noopener\">Omdia, via Channel Dive: generative and agentic AI servicesDecember 2025. $59B in 2025 to $267B by 2030, the fastest-growing services segment. Partners need &ldquo;consumption optimization expertise.&rdquo; <li"
@@ -5206,7 +5213,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 514,
+          "line": 526,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-216\">79%</tspan>",
           "context": "4\" rx=\"2\">79% of finance leaders, DoiT survey, February 2026 79% Finance leaders, 1,000+ employees &middot; DoiT, February 2026 <t"
@@ -5228,7 +5235,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 871,
+          "line": 1051,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-217\">60.9%</span>",
           "context": "vivable, for the customer and for you. One more reason to take it seriously: when organizations overrun on AI, 60.9% cut external contractors and consultants first. An ungoverned credit bill eats your own services line before it eats an"
@@ -5250,10 +5257,10 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 1030,
+          "line": 1215,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-218\">Over 40%</span>",
-          "context": "anceled by end of 2027June 25, 2025. Escalating costs, unclear value or weak risk controls. Over 40% is the headline figure. 14.3 &middot; The research behind this page"
+          "context": "anceled by end of 2027June 25, 2025. Escalating costs, unclear value or weak risk controls. Over 40% is the headline figure. 15.3 &middot; The research behind this page"
         }
       ],
       "new_value": "",
@@ -5272,7 +5279,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 860,
+          "line": 1040,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-219\">$50 per incremental Cowork monthly active user</span>",
           "context": "Activation Incentive ReportedFrom September 1, 2026. Reported as $50 per incremental Cowork monthly active user, capped at $12,500 per tenant, gated on 50 or more Cowork users and $2,500 or more of monthly Cowork consumption sustai"
@@ -5294,7 +5301,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 794,
+          "line": 806,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-220\">$3 to $5</span>",
           "context": "ricedWhyProvenance Credit Wrap floor$3 to $5 per user per month, with a $150 to $250 per-tenant minimumThe buyer's predictab"
@@ -5316,7 +5323,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 794,
+          "line": 806,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-221\">$150 to $250</span>",
           "context": "Credit Wrap floor$3 to $5 per user per month, with a $150 to $250 per-tenant minimumThe buyer's predictable number. Covers SET, WATCH, TUNE and PROVE at one to two hours a mont"
@@ -5338,7 +5345,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 637,
+          "line": 649,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-222\">80% and 100%</span>",
           "context": "pan>-credit default with the limit the customer chose. Set a tenant-level limit too. Switch on alerts at 80% and 100% of budget. They repeat daily until reset, so route them to a mailbox someone reads. Review auto-apply fo"
@@ -5360,7 +5367,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 712,
+          "line": 724,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-223\">22</tspan>",
           "context": "icrosoft 365 Business Premium license: $22 $22 Your managed services upcharge: $3"
@@ -5382,7 +5389,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 714,
+          "line": 726,
           "anchor_unique": true,
           "anchor": "<tspan data-fact=\"F-224\">30 to $40</tspan>",
           "context": "ervices upcharge: $30 to $40, drawn at $35 $30 to $40 $57 The Copilot math the playbo"
@@ -5404,7 +5411,7 @@
       "occurrences": [
         {
           "file": "copilot-token-economics.html",
-          "line": 655,
+          "line": 667,
           "anchor_unique": true,
           "anchor": "<span data-fact=\"F-225\">30 to 60 day baseline</span>",
           "context": "rsation about value, not a ticket. In the first two months, do not move thresholds. The FinOps rule is a 30 to 60 day baseline before you set a real threshold, then set it at 110 to 120% of the baseline. <div class="
@@ -5499,6 +5506,94 @@
         }
       ],
       "new_value": "$60/user/mo",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "F-230",
+      "kind": "quote",
+      "value": "include the Azure subscription setup needed for usage-based billing",
+      "label": "New CSP Copilot Business licenses include the Azure subscription setup for usage-based billing from 2026-12-01; admin center auto-creates one if none is accessible",
+      "type": "microsoft-reported",
+      "source_url": "https://learn.microsoft.com/en-us/partner-center/announcements/2026-october",
+      "as_of": "2026-10-01",
+      "verified": true,
+      "notes": "Partner Center October 2026 announcement (page updated Oct 8); admin-center behavior on the setup page (ms.date 2026-10-01). Indirect resellers named in scope. research/token-economics-practice/04-billing-mechanics-verification.md section 1.",
+      "occurrences": [
+        {
+          "file": "copilot-token-economics.html",
+          "line": 891,
+          "anchor_unique": true,
+          "anchor": "<span data-fact=\"F-230\">include the Azure subscription setup</span>",
+          "context": "amount is whatever the tenant consumed last month. From December 1, 2026, new Copilot Business purchases include the Azure subscription setup needed for usage billing. If the admin can reach no Azure subscription, the admin center creates one automatically agai"
+        }
+      ],
+      "new_value": "",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "F-231",
+      "kind": "quote",
+      "value": "you're responsible for your customers' Azure consumption",
+      "label": "CSP partners are responsible for their customers' Azure consumption; direct-bill partners and distributors financially responsible for nonpayment",
+      "type": "microsoft-reported",
+      "source_url": "https://learn.microsoft.com/en-us/partner-center/security/azure-fraud-notification",
+      "as_of": "2026-10-11",
+      "verified": true,
+      "notes": "Fraud-notification page (applies to Direct Bill and Indirect Providers) plus nonpayment-fraud-misuse (ms.date 2025-06-18). Microsoft invoices only tier-1 and tier-2 partners; the reseller's exposure is set by its distributor agreement. 04 section 2.",
+      "occurrences": [
+        {
+          "file": "copilot-token-economics.html",
+          "line": 899,
+          "anchor_unique": true,
+          "anchor": "<span data-fact=\"F-231\">you're responsible for your customers' Azure consumption</span>",
+          "context": "'s Azure consumption and holds it responsible for payment. Microsoft's own partner guidance tells CSP partners you're responsible for your customers' Azure consumption, and the nonpayment policy makes direct-bill partners and distributors financially responsible for customer nonpayment."
+        }
+      ],
+      "new_value": "",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "F-232",
+      "kind": "date",
+      "value": "by the eighth of the following month",
+      "label": "Azure plan CSP invoice for a calendar month is ready by the eighth of the following month, payment due in 60 days",
+      "type": "microsoft-reported",
+      "source_url": "https://learn.microsoft.com/en-us/partner-center/billing/azure-plan-billing",
+      "as_of": "2025-03-03",
+      "verified": true,
+      "notes": "Also billing-basics (ms.date 2025-03-05). Copilot Credits pay-as-you-go bills in arrears at the end of the billing month (Credits Guide, Oct 2026). 04 section 4.",
+      "occurrences": [
+        {
+          "file": "copilot-token-economics.html",
+          "line": 892,
+          "anchor_unique": true,
+          "anchor": "<span data-fact=\"F-232\">by the eighth of the following month</span>",
+          "context": "rs are named in scope. Invoiced monthly in arrears: usage for a calendar month lands on an invoice ready by the eighth of the following month, due in 60 days. The consequenc"
+        }
+      ],
+      "new_value": "",
+      "status": "CONFIRMED"
+    },
+    {
+      "id": "F-233",
+      "kind": "percent",
+      "value": "every seven days at 80-100%",
+      "label": "Partner Center Azure spending budget per customer: email alerts every seven days once usage reaches 80-100% of the budget; the budget does not stop usage",
+      "type": "microsoft-reported",
+      "source_url": "https://learn.microsoft.com/en-us/partner-center/billing/set-an-azure-spending-budget-for-your-customers",
+      "as_of": "2025-02-27",
+      "verified": true,
+      "notes": "Admin agent role, per customer not per subscription, tool sits in the billed partner's Billing workspace. 04 section 3.",
+      "occurrences": [
+        {
+          "file": "copilot-token-economics.html",
+          "line": 962,
+          "anchor_unique": true,
+          "anchor": "<span data-fact=\"F-233\">every seven days once usage reaches 80 to 100%</span>",
+          "context": "/div>Partner Center can hold an Azure spending budget per customer, with an email every seven days once usage reaches 80 to 100% of the figure. Two things to know: it alerts, it does not stop usage, and the tool sits in the Billing workspace of the"
+        }
+      ],
+      "new_value": "",
       "status": "CONFIRMED"
     }
   ],
