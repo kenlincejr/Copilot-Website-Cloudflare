@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "wsoe1tf6sb");
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGXEJKC80P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGXEJKC80P');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Use the Playbook in Your AI Assistant | Copilot Playbook</title>
+<meta name="description" content="Connect Claude, VS Code with GitHub Copilot, Cursor, or Microsoft Copilot Studio to the playbook's public MCP server, so your assistant can look up pricing, engagement phases and Customer Zero guidance while you work." />
+<link rel="canonical" href="https://copilotplaybook.com/use-with-your-ai.html" />
+<meta property="og:type" content="website" />
+<meta name="title" content="Use the Playbook in Your AI Assistant" />
+<meta property="og:title" content="Use the Playbook in Your AI Assistant" />
+<meta property="og:description" content="Connect Claude, VS Code with GitHub Copilot, Cursor, or Microsoft Copilot Studio to the playbook's public MCP server, so your assistant can look up pricing, engagement phases and Customer Zero guidance while you work." />
+<meta name="page_type" content="tool" />
+<meta name="priority" content="2" />
+<meta property="og:url" content="https://copilotplaybook.com/use-with-your-ai.html" />
+<meta property="og:site_name" content="Copilot Playbook" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Use the Playbook in Your AI Assistant" />
+<meta name="twitter:description" content="Connect your own AI assistant to the playbook's public, read-only MCP server with copy-paste setup for Claude, VS Code, Cursor and Copilot Studio." />
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — copilotplaybook.com system of record
+   ═══════════════════════════════════════════════════════ */
+:root {
+  --teal:       #005F6B;
+  --teal-light: #007B8A;
+  --ltblue:     #4daab8;
+  --navy:       #003057;
+  --text:       #1a2330;
+  --muted:      #f7f8fa;
+  --muted-2:    #eef1f4;
+  --accent:     #e4f0f3;
+  --warn:       #fff8ed;
+  --border:     #dde1e7;
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.09);
+  --radius:     8px;
+  --radius-lg:  10px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', 'Inter', Georgia, sans-serif;
+  font-size: 16px; color: var(--text); max-width: 1680px; margin: 0 auto;
+  padding: 0 0 80px; line-height: 1.6; background: #fff;
+}
+a { color: var(--teal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h2 { color: var(--navy); font-size: 1.15rem; font-weight: 700; margin: 30px 0 10px; }
+h3 { color: var(--teal); font-size: 1rem; font-weight: 700; margin: 22px 0 10px; }
+p  { margin: .6rem 0; }
+.mono { font-family: 'Consolas','Monaco',monospace; }
+
+/* ═══ C14 · PAGE MASTHEAD — shared header system, see specs/header-system.spec.md ═══ */
+.mh-bar { position: sticky; top: 0; z-index: 50; background: var(--navy,#003057); box-shadow: var(--shadow-sm); margin: 0; }
+.mh-bar-in { display: flex; align-items: center; gap: 14px; height: 46px; max-width: 1320px; margin: 0 auto; padding: 0 48px; }
+.mh-home { display: inline-flex; align-items: center; gap: 8px; flex: none; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.17); border-radius: 20px; padding: 4px 13px 4px 6px; }
+.mh-home:hover { background: rgba(255,255,255,.16); text-decoration: none; }
+.mh-home svg { display: block; flex: none; }
+.mh-home .ring { fill: #a8ecf5; }
+.mh-home .lbl { font-size: .68rem; font-weight: 700; color: #fff; letter-spacing: .04em; white-space: nowrap; }
+.mh-crumb { font-size: .74rem; color: rgba(255,255,255,.5); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mh-crumb a { color: rgba(255,255,255,.75); }
+.mh-crumb a:hover { color: #fff; }
+.mh-crumb .sep { padding: 0 6px; color: rgba(255,255,255,.25); }
+.mh-crumb .cur { color: rgba(255,255,255,.82); }
+.mh-date { margin-left: auto; flex: none; font-size: .68rem; color: rgba(255,255,255,.45); white-space: nowrap; }
+.masthead { background: linear-gradient(135deg,#001f3d 0%,var(--navy) 45%,var(--teal) 100%); }
+.masthead-inner { max-width: 1320px; margin: 0 auto; padding: 22px 48px 26px; }
+.mh-eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.mh-eyebrow .bar { width:24px; height:2px; background:var(--ltblue); border-radius:1px; }
+.mh-eyebrow .lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.5); }
+.masthead h1 { font-size: 1.85rem; color:#fff; margin: 0 0 8px; letter-spacing:-.3px; font-weight:800; line-height:1.15; }
+.masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); line-height:1.6; margin:0 0 14px; max-width:70ch; }
+.mh-badges { display:flex; gap:12px; flex-wrap:wrap; }
+.mh-badge { font-size:.72rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 16px; }
+[id] { scroll-margin-top: 58px; }
+@media print { .mh-bar { display:none; } .masthead { background:#fff !important; } .masthead h1, .mh-eyebrow .lbl, .masthead .sub { color:#000 !important; } }
+@media (max-width:720px){ .mh-bar-in { padding: 0 16px; } .mh-crumb, .mh-date { display:none; } .masthead-inner { padding:20px 20px 22px; } }
+
+/* ═══ LAYOUT ═══ */
+.wrap { padding: 28px 48px 0; }
+.stage { max-width: 1000px; margin: 0 auto; }
+@media (max-width:720px){ .wrap { padding: 18px 18px 0; } }
+
+/* ═══ CALLOUTS (C1) ═══ */
+.callout { background:var(--accent); border:1px solid #c5dde3; border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; margin:18px 0; }
+.callout-title { font-weight:700; color:#00474f; margin:0 0 6px; font-size:.85rem; letter-spacing:.3px; text-transform:uppercase; }
+.callout-body { margin:0; font-size:.9rem; line-height:1.65; }
+.callout-body p { margin:.5rem 0; }
+.callout-body p:first-child { margin-top:0; }
+.callout-body p:last-child { margin-bottom:0; }
+
+/* ═══ server URL copy box — new, §1 tokens only (DESIGN §8b sign-off: this page) ═══ */
+.urlbox { display:flex; align-items:center; gap:10px; background:var(--navy); border-radius:var(--radius); padding:14px 16px; margin:14px 0 18px; box-shadow:var(--shadow-sm); }
+.urlbox code { flex:1; min-width:0; overflow-wrap:anywhere; color:#a8ecf5; font-family:'Consolas','Monaco',monospace; font-size:.85rem; }
+.urlbox button { flex:0 0 auto; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff; font:inherit; font-size:.78rem; font-weight:700; border-radius:var(--radius); padding:7px 14px; cursor:pointer; }
+.urlbox button:hover { background:rgba(255,255,255,.17); }
+.urlbox button.copied { background:var(--teal); border-color:var(--teal); }
+
+/* ═══ setup blocks — a C1-derived card per client ═══ */
+.mcp-card { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); padding:22px 26px 24px; margin:18px 0; }
+.mcp-card h3 { margin-top:0; }
+.mcp-card ol { margin:.6rem 0; padding-left:1.2em; }
+.mcp-card li { font-size:.88rem; margin-bottom:6px; line-height:1.55; }
+.codeblock { background:var(--muted-2); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin:10px 0; overflow-x:auto; }
+.codeblock pre { margin:0; font-family:'Consolas','Monaco',monospace; font-size:.8rem; line-height:1.55; color:var(--text); white-space:pre; }
+.mcp-source { margin:10px 0 0; font-size:.72rem; color:#6b7280; }
+.mcp-source a { color:var(--teal); }
+
+/* ═══ try-list ═══ */
+.try-list { margin:.6rem 0; padding-left:0; list-style:none; }
+.try-list li { font-size:.9rem; margin-bottom:8px; padding:10px 14px; background:var(--muted); border:1px solid var(--border); border-radius:var(--radius); line-height:1.5; }
+.try-list li::before { content:"\201C"; color:var(--teal); font-weight:700; margin-right:2px; }
+.try-list li::after { content:"\201D"; color:var(--teal); font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="mh-bar">
+  <div class="mh-bar-in">
+    <a class="mh-home" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
+      <span class="lbl">Copilot Playbook</span>
+    </a>
+    <div class="mh-crumb"><span class="cur">Use the Playbook in Your AI Assistant</span></div>
+    <div class="mh-date">Updated October 12, 2026</div>
+  </div>
+</div>
+
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Tool &middot; MCP</div></div>
+    <h1>Use the Playbook in Your AI Assistant</h1>
+    <p class="sub">Point your own AI assistant at the playbook's public MCP server and it can look up pricing tiers, engagement phases and Customer Zero guidance on your behalf &mdash; without you leaving your editor, your chat window, or Copilot Studio.</p>
+    <div class="mh-badges">
+      <span class="mh-badge">Public, read-only</span>
+      <span class="mh-badge">No sign-in required</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="stage">
+
+<p>The playbook runs its own <a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener">Model Context Protocol</a> (MCP) server. Connect it to Claude, VS Code, Cursor, or Microsoft Copilot Studio, and your assistant gains one new capability: it can search the pages of this site and bring back the answer, with a source link, instead of you switching tabs to search it yourself.</p>
+
+<h2>What is MCP?</h2>
+<p>MCP is an open protocol that lets an AI assistant call tools hosted on a server it did not build. Your assistant sends a request to the playbook's server, the server searches the published pages and returns matching passages, and your assistant folds the answer into its reply.</p>
+
+<h2>The server URL</h2>
+<p>Every client below uses this same address. Copy it once and paste it into the setup step for your client.</p>
+<div class="urlbox">
+  <code id="mcpUrl">https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/mcp</code>
+  <button id="mcpCopyBtn" type="button">Copy</button>
+</div>
+
+<p>The server exposes exactly one tool, <code class="mono">search</code>. It takes a query, searches the playbook's published pages, and returns the matching passages with their source URLs. It cannot write, modify, or see anything outside those pages.</p>
+
+<h2>Setup, by client</h2>
+
+<div class="mcp-card">
+  <h3>Claude (claude.ai and Claude Desktop)</h3>
+  <ol>
+    <li>In Claude, go to <strong>Settings &gt; Connectors</strong> (on a Team or Enterprise plan, an owner adds it first under <strong>Organization settings &gt; Connectors</strong>, then members connect to it).</li>
+    <li>Click <strong>Add</strong>, then <strong>Add custom connector</strong>.</li>
+    <li>Name it (for example <em>Copilot Playbook</em>) and paste the server URL above, then <strong>Continue</strong>.</li>
+    <li>On the authentication step, choose <strong>No sign in</strong> &mdash; the server takes no credentials.</li>
+    <li>Click <strong>Add</strong>. Claude Desktop uses the same remote-connector flow, since the connection runs from Anthropic's infrastructure rather than your device.</li>
+  </ol>
+  <p class="mcp-source">Verified against <a href="https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp" target="_blank" rel="noopener">Claude Help Center: Get started with custom connectors using remote MCP</a>, current as of this page's last update.</p>
+</div>
+
+<div class="mcp-card">
+  <h3>VS Code with GitHub Copilot</h3>
+  <ol>
+    <li>Create <code class="mono">.vscode/mcp.json</code> in your workspace (or run <strong>MCP: Open User Configuration</strong> for a config that follows you across projects).</li>
+    <li>Add the server under the top-level <code class="mono">servers</code> key:</li>
+  </ol>
+  <div class="codeblock"><pre>{
+  "servers": {
+    "playbook": {
+      "type": "http",
+      "url": "https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/mcp"
+    }
+  }
+}</pre></div>
+  <ol start="3">
+    <li>Open Copilot Chat in agent mode. VS Code starts the server automatically; use <strong>Configure Tools</strong> to confirm <code class="mono">search</code> is enabled.</li>
+  </ol>
+  <p class="mcp-source">Verified against <a href="https://code.visualstudio.com/docs/agent-customization/mcp-servers" target="_blank" rel="noopener">VS Code docs: Add and manage MCP servers in VS Code</a>, current as of this page's last update.</p>
+</div>
+
+<div class="mcp-card">
+  <h3>Cursor</h3>
+  <ol>
+    <li>Create <code class="mono">.cursor/mcp.json</code> in your project (or <code class="mono">~/.cursor/mcp.json</code> to make it available in every project).</li>
+    <li>Add the server:</li>
+  </ol>
+  <div class="codeblock"><pre>{
+  "mcpServers": {
+    "playbook": {
+      "url": "https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/mcp"
+    }
+  }
+}</pre></div>
+  <ol start="3">
+    <li>Save the file. No <code class="mono">headers</code> entry is needed &mdash; the server is public.</li>
+  </ol>
+  <p class="mcp-source">Verified against <a href="https://cursor.com/docs/mcp" target="_blank" rel="noopener">Cursor docs: Model Context Protocol (MCP)</a>, current as of this page's last update.</p>
+</div>
+
+<div class="mcp-card">
+  <h3>Microsoft Copilot Studio</h3>
+  <ol>
+    <li>On your agent's <strong>Tools</strong> page, select <strong>Add a tool &gt; New tool &gt; Model Context Protocol</strong>.</li>
+    <li>Fill in <strong>Server name</strong> (for example <em>Copilot Playbook</em>), a one-line <strong>Server description</strong>, and the <strong>Server URL</strong> above.</li>
+    <li>For authentication, choose <strong>None</strong> &mdash; the server requires no sign-in.</li>
+    <li>Select <strong>Create</strong>, then <strong>Create a new connection</strong> and <strong>Add to agent</strong>.</li>
+  </ol>
+  <p>Copilot Studio only supports the Streamable HTTP transport for MCP (it dropped SSE after August 2025); this server speaks Streamable HTTP, so no extra configuration is needed.</p>
+  <p class="mcp-source">Verified against <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/mcp-add-existing-server-to-agent" target="_blank" rel="noopener">Microsoft Learn: Connect your agent to an existing MCP server</a>, current as of this page's last update.</p>
+</div>
+
+<h2>Try asking your assistant</h2>
+<p>Once connected, ask it something only the playbook would know:</p>
+<ul class="try-list">
+  <li>What changes for Copilot Business billing on December 1?</li>
+  <li>Summarize the managed service pricing tiers for a Copilot practice.</li>
+  <li>What are the phases of a Copilot Studio agent engagement?</li>
+  <li>How do I set up Customer Zero in my own tenant?</li>
+  <li>What does it take to go from a Copilot designation to the specialization?</li>
+</ul>
+
+<div class="callout">
+  <div class="callout-title">Before you quote a customer</div>
+  <div class="callout-body">
+    <p>This server is public and read-only. It answers only from the pages already published on <a href="https://copilotplaybook.com/">copilotplaybook.com</a>, the same content anyone can read here directly &mdash; it cannot see your tenant, your deals, or anything else. Always confirm pricing and licensing with Microsoft before quoting a customer.</p>
+  </div>
+</div>
+
+</div>
+</div>
+
+<footer class="pagefoot">
+  <p>Setup steps verified against each vendor's own current documentation, linked under each client above. Vendor products and UI flows change on their own schedule; if a step above no longer matches what you see, trust the vendor's doc over this page and let us know.</p>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('mcpCopyBtn');
+  var urlEl = document.getElementById('mcpUrl');
+  if (!btn || !urlEl) return;
+  btn.addEventListener('click', function(){
+    var text = urlEl.textContent;
+    function done(ok){
+      btn.textContent = ok ? 'Copied' : 'Copy failed';
+      btn.classList.toggle('copied', ok);
+      setTimeout(function(){ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+    } else {
+      done(false);
+    }
+  });
+})();
+</script>
+<script src="/assets/site-search.js?v=4" defer></script>
+</body>
+</html>

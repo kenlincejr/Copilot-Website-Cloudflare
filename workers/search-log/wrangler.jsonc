@@ -1,0 +1,14 @@
+// playbook-search-log (specs/site-search-v2.spec.md F11). Deployed from the
+// Cloudflare dashboard; this file records the configuration so it can also be
+// deployed with `npx wrangler deploy` from this folder.
+{
+  "name": "playbook-search-log",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "d1_databases": [
+    { "binding": "DB", "database_name": "playbook_search", "database_id": "1cb62c80-77f0-4e10-b6de-f27d39a869b0" }
+  ],
+  "triggers": { "crons": ["17 7 * * *"] },
+  "observability": { "enabled": true }
+}

@@ -7,7 +7,7 @@
      node tools/site-gate.js --fast     (skip the two long Cowork suites)
 
    Sections: S sitemap · M meta tags · J search script placement · I isolation ·
-   A assets · F facts (against the recorded baseline) · T test suites.
+   A assets (and config ?v) · F facts (against the recorded baseline) · T test suites.
 */
 'use strict';
 const fs = require('fs'), path = require('path'), cp = require('child_process');
@@ -112,6 +112,12 @@ if (fs.existsSync(path.join(ROOT, 'data/site-search-config.json'))) {
   try { cfg = JSON.parse(read('data/site-search-config.json')); } catch (e) { cfg = null; }
   ok(cfg && /^https:\/\/[0-9a-f-]+\.search\.ai\.cloudflare\.com\/$/.test(cfg.endpoint), 'site-search-config.json parses and names the endpoint');
 }
+{
+  // The module fetches its config with its own ?v=; it must match the ?v= every page loads.
+  const mod = /var VERSION = '(\d+)';/.exec(read('assets/site-search.js'));
+  const pageV = [...versions].map((t) => /\?v=(\d+)/.exec(t)[1]);
+  ok(mod && pageV.length === 1 && pageV[0] === mod[1], 'module VERSION matches the page script ?v= (' + (mod ? mod[1] : 'none') + ' vs ' + pageV.join(',') + ')');
+}
 
 // ── F: facts against baseline ──
 section('F');
@@ -129,6 +135,7 @@ ok(regressions.length === 0, 'no new check-facts mismatches beyond the 2026-10-1
 section('T');
 const suites = ['test-credit-planner.js'].concat(FAST ? [] : ['test-cowork-v3.js', 'test-cowork-motion.js']);
 if (fs.existsSync(path.join(ROOT, 'tools/test-site-search.js'))) suites.push('test-site-search.js');
+if (fs.existsSync(path.join(ROOT, 'tools/test-search-log.mjs'))) suites.push('test-search-log.mjs');
 suites.forEach((t) => {
   let out = '', code = 0;
   try { out = cp.execSync('node tools/' + t, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }); }

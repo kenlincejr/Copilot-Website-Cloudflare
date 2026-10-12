@@ -481,6 +481,168 @@ chat-bubble-snippet {
   background: rgba(72,202,228,.25);
   color: inherit;
 }
+/* Phase B (specs/site-search-v2.spec.md §6 sign-offs): suggested questions,
+   page-type chips, the AI answer panel (C1 callout treatment) and its sources. */
+.site-search [hidden] { display: none; }
+.site-search-suggest,
+.site-search-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.site-search-suggest:empty,
+.site-search-chips:empty { display: none; }
+.site-search-suggestion,
+.site-search-chip,
+.site-search-ask,
+.site-search-copy,
+.site-search-vote {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.site-search-suggestion {
+  padding: 5px 10px;
+  background: var(--soft);
+  color: #374151;
+  font-size: .78rem;
+  line-height: 1.35;
+  text-align: left;
+}
+.site-search-suggestion:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.site-search-chip,
+.site-search-copy {
+  padding: 4px 11px;
+  color: var(--teal);
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.site-search-chip:hover,
+.site-search-copy:hover,
+.site-search-vote:hover { border-color: var(--teal); }
+.site-search-chip[aria-pressed="true"],
+.site-search-vote[aria-pressed="true"] {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #fff;
+}
+.site-search-suggestion:focus-visible,
+.site-search-chip:focus-visible,
+.site-search-ask:focus-visible,
+.site-search-copy:focus-visible,
+.site-search-vote:focus-visible {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(72,202,228,.3);
+}
+.site-search-ask {
+  margin: 10px 0 0;
+  padding: 7px 14px;
+  border-color: var(--teal);
+  color: var(--teal);
+  font-size: .82rem;
+  font-weight: 700;
+}
+.site-search-ask:hover {
+  background: var(--teal);
+  color: #fff;
+}
+.site-search-answer {
+  margin: 10px 0 0;
+  padding: 16px 20px;
+  border: 1px solid #c5dde3;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: #e4f0f3;
+}
+.site-search-answer-title {
+  margin: 0 0 6px;
+  color: #00474f;
+  font-size: .85rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+.site-search-answer-state {
+  margin-left: 6px;
+  color: #6b7280;
+  font-size: .72rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  animation: site-search-writing 1.4s ease-in-out infinite;
+}
+@keyframes site-search-writing { 50% { opacity: .45; } }
+.site-search-answer-body {
+  color: var(--text);
+  font-size: .88rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.site-search-answer-body p,
+.site-search-answer-body ul,
+.site-search-answer-body ol { margin: 0 0 8px; }
+.site-search-answer-body ul,
+.site-search-answer-body ol { padding-left: 20px; }
+.site-search-answer-body li + li { margin-top: 2px; }
+.site-search-answer-body > :last-child { margin-bottom: 0; }
+.site-search-answer-body a,
+.site-search-sources a {
+  color: var(--teal);
+  font-weight: 600;
+}
+.site-search-answer-label {
+  margin: 12px 0 4px;
+  color: #00474f;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.site-search-sources {
+  margin: 0;
+  padding-left: 20px;
+  font-size: .82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.site-search-answer-foot {
+  margin: 8px 0 0;
+  color: #6b7280; /* #9ca3af was 2.2:1 on the callout background; this passes AA */
+  font-size: .68rem;
+  font-style: italic;
+}
+.site-search-answer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.site-search-copy,
+.site-search-vote { border-color: #c5dde3; }
+.site-search-vote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  color: #6b7280;
+}
+.site-search-vote svg {
+  width: 15px;
+  height: 15px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-search-answer-state { animation: none; }
+}
 chat-bubble-snippet {
   --search-snippet-border-radius: var(--radius-lg);
   --chat-bubble-button-shadow: var(--shadow-md);
@@ -491,6 +653,7 @@ chat-bubble-snippet {
     margin-bottom: 20px;
     padding: 15px;
   }
+  .site-search-answer { padding: 14px 15px; }
   chat-bubble-snippet {
     --chat-bubble-button-bottom: 16px;
     --chat-bubble-button-right: 16px;
@@ -1089,9 +1252,26 @@ chat-bubble-snippet {
       <input type="search" id="site-search-q" name="q" placeholder="Search the playbook, e.g. Copilot Credits billing" aria-label="Search the playbook" autocomplete="off">
       <button type="submit">Search</button>
     </form>
+    <div class="site-search-suggest" id="site-search-suggest" role="group" aria-label="Suggested questions"></div>
+    <div class="site-search-chips" id="site-search-chips" role="group" aria-label="Show results from"></div>
     <p class="site-search-status" id="site-search-status" role="status" aria-live="polite"></p>
+    <button type="button" class="site-search-ask" id="site-search-ask" hidden>Get an AI answer</button>
+    <div class="site-search-answer" id="site-search-answer" aria-live="polite" hidden>
+      <p class="site-search-answer-title">AI answer <span class="site-search-answer-state" id="site-search-answer-state"></span></p>
+      <div class="site-search-answer-body" id="site-search-answer-body"></div>
+      <div class="site-search-answer-sources" id="site-search-answer-sources" hidden>
+        <p class="site-search-answer-label">Sources</p>
+        <ol class="site-search-sources" id="site-search-sources"></ol>
+      </div>
+      <p class="site-search-answer-foot" id="site-search-answer-foot" hidden>AI-generated from the pages listed. Confirm pricing and licensing with Microsoft before quoting a customer.</p>
+      <div class="site-search-answer-actions" id="site-search-answer-actions" hidden>
+        <button type="button" class="site-search-copy" id="site-search-copy">Copy answer</button>
+        <button type="button" class="site-search-vote" id="site-search-vote-up" aria-pressed="false" aria-label="Helpful answer" title="Helpful"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 2 2.4l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.3-7.4A1.9 1.9 0 0 1 15 5.9Z"/></svg></button>
+        <button type="button" class="site-search-vote" id="site-search-vote-down" aria-pressed="false" aria-label="Unhelpful answer" title="Not helpful"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 14V2M9 18.1 10 14H4.2a2 2 0 0 1-2-2.4l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.3 7.4A1.9 1.9 0 0 1 9 18.1Z"/></svg></button>
+      </div>
+    </div>
     <ol class="site-search-results" id="site-search-results"></ol>
-    <p class="site-search-chat">Prefer to ask in plain English? <button type="button" id="site-search-open-chat">Ask the playbook assistant</button> and get an answer with links to its sources.</p>
+    <p class="site-search-chat">Prefer to ask in plain English? <button type="button" id="site-search-open-chat">Ask the playbook assistant</button> and get an answer with links to its sources, or <a href="/use-with-your-ai.html">use the playbook in your own AI assistant</a>.</p>
   </section>
 
   <section class="field-frame" aria-labelledby="field-frame-heading">
@@ -1605,6 +1785,6 @@ chat-bubble-snippet {
 <script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js"></script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script>
-<script src="/assets/site-search.js?v=3" defer></script>
+<script src="/assets/site-search.js?v=4" defer></script>
 </body>
 </html>

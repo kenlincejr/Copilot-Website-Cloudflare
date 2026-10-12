@@ -217,6 +217,7 @@ Each phase ships on its own, is verified live, and can be reverted alone. A swee
 | Launcher button and panel | No floating UI exists on the site | Shadow-DOM stylesheet using literal §1 values: `--teal`, `--teal-light`, `--navy`, `--line`, `--soft`, `--radius`, `--shadow-sm`, `--shadow-md`, and the §2 font stack. No new colors (prohibition 1). |
 | AI answer panel | New component | The C1 callout's border and background treatment; C8b for the sources line. |
 | Filter and suggestion chips | New component | The v1 `.site-search` button styling at chip size, on the §2.2 type scale. |
+| Phase B classes in `index.html` (built 2026-10-12) | New component; `index.html` is a pure-class file, so every new class is defined in its own `<style>` block next to the v1 `.site-search` rules | `.site-search-suggest`, `.site-search-chips`: flex rows that wrap, gap 6px, collapse when empty. `.site-search-suggestion`: `--soft` ground, `--line` border, `--radius`, `#374151` text at `.78rem`, teal border and text on hover. `.site-search-chip`, `.site-search-copy`: white ground, `--line` (chips) or `#c5dde3` (copy) border, `--teal` text at `.72rem` 700; a pressed chip (`aria-pressed="true"`) fills `--teal` with white text. `.site-search-ask`: the same button at `.82rem` with a `--teal` border, filling teal on hover. `.site-search-vote`: 30 by 26px icon button, `#c5dde3` border, `#6b7280` icon, filled `--teal` when pressed. Focus on all of them: the v1 input ring, `0 0 0 3px rgba(72,202,228,.3)`. `.site-search-answer`: C1 exactly (`#e4f0f3` ground, `1px solid #c5dde3`, `4px` `--teal` left rule, radius `0 var(--radius) var(--radius) 0`, padding 16px 20px; 14px 15px at 640px). `.site-search-answer-title`: C1 `.callout-title` (`#00474f`, `.85rem` 700). `.site-search-answer-state`: "Writing…" at `.72rem` `#6b7280`, a slow opacity pulse that stops under reduced motion. `.site-search-answer-body`: `.88rem`, line height 1.55, links `--teal` 600, URLs wrap. `.site-search-answer-label`: the C3 eyebrow (`.58rem` 700 uppercase, `.09em`) in `#00474f`. `.site-search-sources`: numbered list at `.82rem`, links `--teal` 600. `.site-search-answer-foot`: C8b (`.68rem`, `#9ca3af`, italic). `.site-search-answer-actions`: a wrapping flex row, gap 6px. `.site-search [hidden]`: keeps the `hidden` attribute winning over the flex rules. No new color, size, radius or shadow; nothing in an inline `style=`. |
 | Related pages row | Close to C5 grid cards | C5 in a shadow root, three across, stacked at 640px. |
 
 ---
@@ -226,9 +227,9 @@ Each phase ships on its own, is verified live, and can be reverted alone. A swee
 | Run | hit@1 | hit@3 | MRR | Notes |
 |---|---|---|---|---|
 | Baseline (A1), 2026-10-12, after the schema re-index | 0.76 | 0.92 | 0.841 | keyword 0.80 / 0.95; conversational 0.60 / 0.80. Misses: E13 (not in top 10), E24 (rank 5) |
-| + boosting (B3) | | | | |
-| + rewrite (B4) | | | | |
-| + rerank (B4) | | | | |
+| + boosting (B3) | 0.80 | 0.96 | 0.873 | **Kept** (config `boost: true`). E01, E24 and E25 moved up; nothing moved down |
+| + rewrite (B4) | 0.76 | 0.92 | 0.841 | **Off.** Identical to baseline on every case. The similarity cache may mask it; retest after two weeks of analytics |
+| + rerank (B4) | 0.76 | 0.92 | 0.841 | **Off.** Identical to baseline; the per-request field name is still unverified (V2) |
 
 Verification items to close before the phase that needs them:
 
@@ -249,8 +250,8 @@ Per action, measured or from Cloudflare's published rates:
 | Action | Semantic queries | Neurons |
 |---|---|---|
 | A search (home or launcher) | 1 | 0, or a small amount with rewrite |
-| An AI answer | 1 | about 136 |
-| An Ask-about-this-page turn | 1 | about 136 |
+| An AI answer | 1 | about 136 to 270 (270 measured with boost and 20 retrieved chunks) |
+| An Ask-about-this-page turn | 1 | about 136 to 270 |
 | Related pages rebuild | 34 per run | 0 |
 | Eval run | 25 per run | 0, or small with rewrite |
 
