@@ -1276,6 +1276,34 @@ sec('QA-C');
     ok(/var generic = o\.generic === true;/.test(src), 'L-21 the UI marks a card from its generic flag');
   }
 
+  // L-22 · spec Apply fixes on NBA-06, 07, 08, 09, 12 where the path exists; NBA-09 also fires on a GitHub card with no build
+  {
+    const applyN = (st, id) => { const n = nbaOf(E.compute(st), id); return n && n.fix ? E.applyFix(st, n.fix) : null; };
+    const s6 = helpdesk(40), f6 = applyN(s6, 'NBA-06');
+    ok(f6 && f6.studio.agents[0].users.licensed === 60 && f6.studio.account.seats.business === 40 && !nbaOf(E.compute(f6), 'NBA-06'), 'L-22 NBA-06 licenses the 40 users on Copilot Business and clears');
+    const s7 = E.applyScenarioPreset(E.defaults(), 'business-central');
+    s7.studio.environments = [{ name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false }];
+    const r7 = E.compute(s7);
+    if (nbaOf(r7, 'NBA-07')) {
+      const f7 = applyN(s7, 'NBA-07');
+      ok(f7 && f7.studio.agents.filter((a) => a.type === 'bc').every((a) => a.env === 'Production') && !nbaOf(E.compute(f7), 'NBA-07'), 'L-22 NBA-07 moves the Business Central agents to Production and clears');
+    } else ok(false, 'L-22 setup: NBA-07 fires on the Business Central preset');
+    const no7 = J(s7); no7.studio.environments = [];
+    ok(nbaOf(E.compute(no7), 'NBA-07') && nbaOf(E.compute(no7), 'NBA-07').fix === null, 'L-22 NBA-07 offers no fix when there is no production environment');
+    const s8 = helpdesk(4); s8.studio.agents[0].data.retentionDays = 3650; s8.studio.agents[0].traffic.count = 4000;
+    const r8 = E.compute(s8);
+    if (nbaOf(r8, 'NBA-08')) { const f8 = applyN(s8, 'NBA-08'); ok(f8 && f8.studio.agents[0].data.retentionDays === 30, 'L-22 NBA-08 sets retention to 30 days on cards above 30'); }
+    else ok(false, 'L-22 setup: NBA-08 fires on a long retention');
+    const fe = E.applyScenarioPreset(E.defaults(), 'full-estate'), f9 = applyN(fe, 'NBA-09');
+    const bud = f9 && f9.partner.services.filter((x) => /Build budget/.test(x.label))[0];
+    const bh = E.compute(fe).lanes.agents.filter((a) => !a.paused).reduce((t, a) => t + a.build.hi * (a.build.months.length + a.build.outside), 0);
+    ok(bud && bud.on && Math.abs(bud.price - Math.round(bh * 0.01 * 100) / 100) < 0.01, 'L-22 NBA-09 adds a build budget service line at the build high × $0.01');
+    const gh = J(fe); gh.studio.agents.forEach((a) => { if (a.harness === 'github') a.github.buildSessions = 0; });
+    ok(nbaOf(E.compute(gh), 'NBA-09'), 'L-22 NBA-09 fires on any GitHub card, even with no build sessions');
+    const f12 = applyN(E.applyScenarioPreset(E.defaults(), 'smb-trio'), 'NBA-12');
+    ok(f12 && f12.studio.adjacent.agent365Owners === 3, 'L-22 NBA-12 turns on Agent 365 for the three agent owners');
+  }
+
   /* QA-C end */
 }
 

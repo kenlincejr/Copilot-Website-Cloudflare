@@ -2996,24 +2996,33 @@ footer.pagefoot p { margin:0 0 10px; }
         return rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
           (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
           (promoLate(s, x) ? '; its seats would be bought in ' + monthName(promoBuyMonth(s, x)) + ', after the promo ends, when the break-even is ' + fmtInt(breakEven(RC.seatBiz.v)) : '') + '.'; }),
-          'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', null, GUIDE.economics);
+          'For these users a Copilot license costs less than the agent’s meter, and they get Copilot too.', 'Quote the seats and drop the meter line for them.', licFix(s, lic), GUIDE.economics);
       },
       'NBA-07': function () {
         var bcDef = ag.filter(function (a) { return a.type === 'bc' && a.defaultEnv; });
         if (!bcDef.length) return null;
         return rule('NBA-07', 'Business Central', 'Business Central agents draw from the default environment', [bcDef.map(function (a) { return a.name; }).join(', ') + ' will consume whatever the default environment can reach.'],
-          'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', null, GUIDE.limits);
+          'Your Business Central agents bill to the default environment unless we move them.', 'Link the Business Central environment to a capped Power Platform environment.', bcFix(s, bcDef), GUIDE.limits);
       },
       'NBA-08': function () {
         if (!(r.dataverse.overageGb.db + r.dataverse.overageGb.file + r.dataverse.overageGb.log > 0)) return null;
         return rule('NBA-08', 'Storage', 'Dataverse overage ahead', ['About ' + fmtUsd(r.dataverse.addOnUsd) + ' a month in capacity add-ons at the modeled retention.'],
-          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', null, GUIDE.limits);
+          'Agent transcripts are stored, and storage has its own bill.', 'Shorten transcript retention or budget the capacity.', retentionFix(s), GUIDE.limits);
       },
       'NBA-09': function () {
-        var gb = ag.filter(function (a) { return a.build.hi > 0; });
+        /* Spec: any GitHub card, or any build sessions. */
+        var gb = ag.filter(function (a) { return a.build.hi > 0 || a.harness === 'github'; });
         if (!gb.length) return null;
-        return rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', ['Build sessions bill from the first build: up to ' + fmtInt(sum(gb.map(function (a) { return a.build.hi; }))) + ' credits a month during the build.'],
-          'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', null, GUIDE.build);
+        var perM = sum(gb.map(function (a) { return a.build.hi; }));
+        var total = sum(gb.map(function (a) { return a.build.hi * (a.build.months.length + a.build.outside); }));
+        var svc9 = clone(s.partner.services);
+        var fix9 = total > 0 && svc9.length < MAX.services && !svc9.some(function (x) { return x.key === 'buildbudget'; })
+          ? (svc9.push({ key: 'buildbudget', label: 'Build budget (GitHub Copilot harness credits)', basis: 'one-time', price: roundTo(total * RC.payg.v, 2), cost: null, on: true }),
+             { label: 'Add a ' + fmtUsd(roundTo(total * RC.payg.v, 2)) + ' build budget line', path: 'partner.services', value: svc9 }) : null;
+        return rule('NBA-09', 'Statement of work', 'GitHub harness build burn belongs in the SOW', [perM > 0
+            ? 'Build sessions bill from the first build: up to ' + fmtInt(perM) + ' credits a month during the build, ' + fmtInt(total) + ' before go-live.'
+            : gb.map(function (a) { return a.name; }).join(', ') + ' run on the GitHub Copilot harness, where building and testing bill too: enter the build sessions to size it.'],
+          'Building this agent consumes credits before it goes live.', 'Put a build budget line in the statement of work.', fix9, GUIDE.build);
       },
       'NBA-10': function () {
         var rsn = ag.filter(function (a) { return a.flags.reasoning; });
@@ -3043,7 +3052,8 @@ footer.pagefoot p { margin:0 0 10px; }
       'NBA-12': function () {
         if (!(ag.length >= 3 && (ac.tenantBase === 'premium' || ac.tenantBase === 'e5'))) return null;
         return rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
-          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.', null, GUIDE.agent365);
+          'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.',
+          s.studio.adjacent.agent365Owners === ag.length ? null : { label: 'Price Agent 365 for ' + ag.length + ' agent owners', path: 'studio.adjacent.agent365Owners', value: ag.length }, GUIDE.agent365);
       },
       'NBA-13': function () {
         if (!r.specialization.reached) return null;
@@ -3051,6 +3061,31 @@ footer.pagefoot p { margin:0 0 10px; }
           'This deployment is the kind Microsoft recognizes; we’ll document it as we go.', 'Track it as one of the two Pathway Two deployments.', null, GUIDE.specialization);
       }
     };
+  }
+  /* Apply fixes (spec §S7), each a single path the engine already has. */
+  function cardIndex(s, id) { for (var i = 0; i < s.studio.agents.length; i++) if (s.studio.agents[i].id === id) return i; return -1; }
+  function licFix(s, rows) {
+    var st = clone(s.studio), biz = 0, ent = 0;
+    rows.forEach(function (x) {
+      var i = cardIndex(s, x.id); if (i < 0) return;
+      st.agents[i].users.licensed = st.agents[i].users.total;
+      if (x.sku === 'enterprise') ent += x.unlicensedUsers; else biz += x.unlicensedUsers;
+    });
+    if (!(biz + ent > 0)) return null;
+    st.account.seats.business += biz; st.account.seats.enterprise += ent;
+    return { label: 'License the ' + fmtInt(biz + ent) + ' users' + (biz ? ' on Copilot Business' : ' on enterprise Copilot'), path: 'studio', value: st };
+  }
+  function bcFix(s, rows) {
+    var prod = s.studio.environments.filter(function (e) { return e.kind === 'production'; })[0];
+    if (!prod) return null;
+    var ags = clone(s.studio.agents);
+    rows.forEach(function (x) { var i = cardIndex(s, x.id); if (i > -1) ags[i].env = prod.name; });
+    return { label: 'Move the Business Central agents to ' + prod.name, path: 'studio.agents', value: ags };
+  }
+  function retentionFix(s) {
+    var ags = clone(s.studio.agents), n = 0;
+    ags.forEach(function (a) { if (!a.paused && a.data.retentionDays > 30) { a.data.retentionDays = 30; n++; } });
+    return n ? { label: 'Keep transcripts 30 days', path: 'studio.agents', value: ags } : null;
   }
   function nextBestAction(result) {
     var r = isObj(result) ? result : compute(defaults());
