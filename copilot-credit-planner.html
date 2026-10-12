@@ -1365,7 +1365,8 @@ footer.pagefoot p { margin:0 0 10px; }
                 buildSessions: 0, buildMonths: 0, buildSplit: [40, 40, 20] },
       bc: { kind: 'salesOrder', volume: 0, checks: 1, orders: 1, attachData: 0, attachNoData: 0, lines: 3 },
       data: { retentionDays: 30, knowledgeGb: 0 },
-      env: ''
+      env: '',
+      perAgentCap: null
     };
   }
 
@@ -1439,6 +1440,9 @@ footer.pagefoot p { margin:0 0 10px; }
     t.data.retentionDays = cInt(own(d, 'retentionDays'), 30, 0, MAX.retention);
     t.data.knowledgeGb = cNum(own(d, 'knowledgeGb'), 0, 0, MAX.gb, 3);
     t.env = cStr(own(a, 'env'), '', 40);
+    /* Spec §S2 per-agent monthly cap (integer or null; QA L-30): feeds the
+       governance sheet's per-agent limits. */
+    t.perAgentCap = cNull(own(a, 'perAgentCap'), 0, MAX.cap, 0);
     return t;
   }
   function uniqueIds(agents) {
@@ -1825,7 +1829,7 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ 13 · Agents ════════════════════════════════════════════════════════ */
   function baseResult(a) {
     return { id: a.id, name: a.name, paused: a.paused, type: a.type, harness: a.harness, audience: a.audience, channel: a.channel,
-             auth: a.auth, archetype: a.archetype, startMonth: a.startMonth, ramped: a.ramped, env: a.env,
+             auth: a.auth, archetype: a.archetype, startMonth: a.startMonth, ramped: a.ramped, env: a.env, perAgentCap: a.perAgentCap,
              lo: 0, mid: 0, hi: 0, floor: false, licensedCovered: 0, perUnit: { total: 0, bySegment: {} },
              perPeriod: { per: a.traffic.per, billed: 0, zeroRated: 0 }, monthly: { billed: 0, zeroRated: 0, lo: 0, mid: 0, hi: 0 },
              segments: [], codes: [], items: [], w365Usd: 0, build: { lo: 0, hi: 0, months: [], outside: 0, floor: false },
@@ -2526,8 +2530,11 @@ footer.pagefoot p { margin:0 0 10px; }
        rather than printed as a 0-credit limit that would stop everything. */
     var tenantLimit = peak.m365.hi > 0 ? roundUp(peak.m365.hi * buf, 1000) : null;
     var userLimit = en.userCap.perUser ? roundUp(en.userCap.perUser.hi * buf, 100) : null;
-    var agentLimits = agents.filter(function (a) { return !a.paused && a.hi > 0; }).map(function (a) {
-      return { id: a.id, name: a.name, credits: roundUp(a.hi * buf, 1000) };
+    /* Each card's own perAgentCap when set, else its high end plus the buffer (spec §6.4). */
+    var agentLimits = agents.filter(function (a) { return !a.paused && (a.hi > 0 || a.perAgentCap !== null); }).map(function (a) {
+      var fromCard = a.perAgentCap !== null && a.perAgentCap !== undefined;
+      return { id: a.id, name: a.name, credits: fromCard ? a.perAgentCap : roundUp(a.hi * buf, 1000), source: fromCard ? 'card' : 'plan',
+               suggested: roundUp(a.hi * buf, 1000), belowHigh: fromCard && a.perAgentCap < a.hi };
     });
     var allocations = en.environments.filter(function (e) { return !e.payg; }).map(function (e) {
       /* A sandbox runs builds and tests, not published agents: with no agents
@@ -3808,6 +3815,7 @@ footer.pagefoot p { margin:0 0 10px; }
     retention: { w: 'How long conversation transcripts stay in Dataverse.', a: 'The 30-day default is fine for most agents; longer retention grows storage, not credits. 0 turns transcripts off and breaks enhanced reporting.',
       g: 'Change it in Power Apps: Settings, Advanced settings, Data Management, Bulk Record Deletion (the &ldquo;older than 1 month&rdquo; transcript job).', src: 'ms-transcript-retention' },
     knowledgeGb: { w: 'Files uploaded to the agent as knowledge, not SharePoint or website links.', a: 'They sit in Dataverse file storage, and their search index adds database storage. Leave 0 when knowledge is read from SharePoint.', rc: 'dvStudio' },
+    perAgentCap: { w: 'The monthly credit limit you will set on this agent in the Power Platform admin center.', a: 'Leave it empty and the governance sheet suggests the high end plus a 15% buffer.' },
     env: { w: 'The Power Platform environment the agent runs in.', a: 'It draws credits from that environment&rsquo;s allocation; the default environment shares the tenant pool. Set environments up in section 3.' },
     goLive: { w: 'The month this agent goes live.', a: 'It bills nothing before; GitHub harness build sessions bill in the months before it.' },
     ramped: { w: 'Whether this agent follows the adoption ramp on the Combined tab.', a: 'Off: full volume from its go-live month.' },
@@ -4629,7 +4637,8 @@ footer.pagefoot p { margin:0 0 10px; }
     var pk = a.id + ':place', pOpen = !!uiOpen[pk];
     var pl = [fld(a, 'env', 'Environment', 'enum', { options: envOptions(a), help: 'env', hint: bc && !a.env ? 'Business Central agents draw from the default environment unless relinked.' : '' }),
               fld(a, 'startMonth', 'Go-live month', 'int-enum', { options: monthOpts(), help: 'goLive' }),
-              fld(a, 'ramped', 'Follows the adoption ramp', 'bool', { help: 'ramped', on: 'Yes, ramp up' })];
+              fld(a, 'ramped', 'Follows the adoption ramp', 'bool', { help: 'ramped', on: 'Yes, ramp up' }),
+              fld(a, 'perAgentCap', 'Monthly credit limit for this agent', 'nullint', { step: 1, ph: 'Not set: the plan suggests one', help: 'perAgentCap' })];
     if (!gh && !bc && a.traffic.per === 'day') pl.push(fld(a, 'daysActive', 'Days active a month', 'int', { min: 1, max: 31, step: 1, help: 'daysActive' }));
     h += '<details class="adv" data-open="' + pk + '"' + (pOpen ? ' open' : '') + '><summary><span class="adv-t">Where it runs and when</span><span class="adv-n" id="plsum-' + a.id + '"></span></summary><div class="adv-b">' + grid(pl) + '</div></details>';
     /* Advanced cost drivers: collapsed unless something in them is set */

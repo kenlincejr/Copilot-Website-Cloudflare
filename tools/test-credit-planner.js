@@ -1272,6 +1272,23 @@ sec('QA-E');
   const held = E.defaults(); held.combined.purchase.current.packs = 1;
   eq(E.dataverse(held, [], undefined).entitlement.file, 20, 'QA-E L-29 a pack held is a billing path');
 }
+/* L-30: the per-card perAgentCap (integer or null, spec §S2) feeds the
+   governance sheet's per-agent limits; without one the plan suggests
+   roundUp(hi × 1.15). Website FAQ hi 18,000 → 21,000. */
+{
+  const s = presetState('website');
+  eq(s.studio.agents[0].perAgentCap, null, 'QA-E L-30 perAgentCap defaults to null');
+  eq(E.compute(s).governance.agentLimits[0].credits, 21000, 'QA-E L-30 no card cap: 18,000 × 1.15 → 21,000');
+  s.studio.agents[0].perAgentCap = 16000.4;
+  const n = E.normalize(s).studio.agents[0].perAgentCap;
+  eq(n, 16000, 'QA-E L-30 the cap is an integer');
+  const g = E.compute(s).governance.agentLimits[0];
+  ok(g.credits === 16000 && g.source === 'card' && g.suggested === 21000 && g.belowHigh === true, 'QA-E L-30 the card cap is the governance limit');
+  eq(E.customerView(E.compute(s)).guardrails.agentLimits[0].credits, 16000, 'QA-E L-30 the customer sheet shows the card cap');
+  s.studio.agents[0].perAgentCap = 'x';
+  eq(E.normalize(s).studio.agents[0].perAgentCap, null, 'QA-E L-30 junk is null');
+  ok(/data-k="' \+ k \+ '"/.test(src) && src.indexOf("fld(a, 'perAgentCap'") > -1, 'QA-E L-30 the card has the field');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
