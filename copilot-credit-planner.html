@@ -2687,8 +2687,16 @@ footer.pagefoot p { margin:0 0 10px; }
       warn.push(W('P-29', 'info', 'No users entered, so all internal traffic is treated as unlicensed and billed: ' + list(n) + '.'));
     if ((n = names(agents, function (a) { return a.type === 'bc' && a.defaultEnv; })).length)
       warn.push(W('P-14', 'warn', 'Business Central agents draw from the default Power Platform environment unless the Business Central environment is linked to another one: ' + list(n) + '. Relink and cap them.', { aud: 'customer' }));
-    if ((n = names(agents, function (a) { return a.type === 'bc' && a.overLimit; })).length)
-      warn.push(W('P-15', 'warn', 'The Payables Agent processes at most 500 invoices and 100 emails a day, PDFs up to 10 pages and 5 MB: ' + list(n) + ' is above that volume.', { aud: 'customer' }));
+    /* Microsoft's daily limits, judged per active day; one invoice per email is
+       assumed, so the 100-emails-a-day limit binds first. */
+    var lim = RC.bcPayablesLimits.v, over = [];
+    s.studio.agents.forEach(function (c) {
+      if (c.paused || c.type !== 'bc' || c.bc.kind !== 'payables') return;
+      var perDay = c.bc.volume / Math.max(1, c.daysActive);
+      if (perDay > lim.emailsPerDay || perDay > lim.invoicesPerDay) over.push(c.name + ' averages ' + fmtInt(perDay) + ' invoices a day' + (perDay > lim.invoicesPerDay ? '' : ' (one email each assumed)'));
+    });
+    if (over.length)
+      warn.push(W('P-15', 'warn', 'The Payables Agent processes at most ' + fmtInt(lim.invoicesPerDay) + ' invoices and ' + fmtInt(lim.emailsPerDay) + ' emails a day, PDFs up to ' + lim.pages + ' pages and ' + lim.mb + ' MB: ' + over.join('; ') + ', above that limit.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.type === 'bc' && a.bcKind === 'expense'; })).length)
       warn.push(W('P-16', 'info', 'The Business Central Expense Agent is in preview; its 50-credit receipt rate can change: ' + list(n) + '.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.voice; })).length)

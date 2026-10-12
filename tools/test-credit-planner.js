@@ -1304,6 +1304,15 @@ sec('QA-C');
     ok(f12 && f12.studio.adjacent.agent365Owners === 3, 'L-22 NBA-12 turns on Agent 365 for the three agent owners');
   }
 
+  // L-23 · P-15 checks the 100-emails-a-day limit it quotes, per active day
+  {
+    const pay = (vol, days) => { const s = E.newAgent(E.defaults(), 'bcPayables'); s.studio.agents[0].bc.volume = vol; s.studio.agents[0].daysActive = days; return wOf(E.compute(s), 'P-15'); };
+    const w = pay(2400, 20);
+    ok(w && /120 invoices a day/.test(w.msg) && /100 emails/.test(w.msg), 'L-23 2,400 invoices over 20 days = 120 a day: above the 100-emails-a-day limit (' + (w && w.msg) + ')');
+    ok(!pay(2000, 22), 'L-23 2,000 over 22 days (91 a day) stays silent');
+    ok(pay(12000, 22) && /545 invoices a day/.test(pay(12000, 22).msg), 'L-23 the invoice limit is judged per active day too');
+  }
+
   /* QA-C end */
 }
 
