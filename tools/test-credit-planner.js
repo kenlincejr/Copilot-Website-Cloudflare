@@ -1169,6 +1169,24 @@ sec('QA-E');
   rr = st(45000);
   ok(rr.warnings.some((w) => w.id === 'P-54' && /Production/.test(w.msg)), 'QA-E H-14 P-54 fires on an actual allocation of 45,000 under 48,720');
 }
+/* M-06: Cowork's draw shares the tenant remainder (F-183). SMB trio + 755,000
+   Cowork, 30 packs held, basis current: remainder 750,000; middle
+   44,660 + 755,000 = 799,660 → flows day ceil(750,000 ÷ 26,655.3) = 29; high
+   48,720 + 981,500 = 1,030,220 → flows day 22, agents at 937,500 → day 28. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  s.coworkSession = PAYLOAD({ rampCredits: Array(12).fill(755000), monthlyCredits: 755000, basisSeats: 52 });
+  s.combined.purchase.current = { packs: 30, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; s.combined.enforcement.basis = 'current';
+  const en = E.compute(s).enforcement, tc = en.tenantPool.cuts;
+  eq(en.remainder, 750000, 'QA-E M-06 remainder 750,000');
+  ok(tc.flowsDay.mid === 29 && tc.flowsDay.hi === 22, 'QA-E M-06 flows stop day 29 middle, 22 high');
+  ok(tc.agentsDay.mid === null && tc.agentsDay.hi === 28, 'QA-E M-06 agents cut day 28 at the high end only');
+  ok(en.events.some((e) => e.kind === 'flows' && /shared with Cowork/.test(e.text)), 'QA-E M-06 the event says the pool is shared with Cowork');
+  // Cowork only, no agents in the pool: nothing to switch off
+  const c = E.defaults(); c.coworkSession = PAYLOAD({ rampCredits: Array(12).fill(755000), monthlyCredits: 755000 });
+  c.combined.purchase.current = { packs: 30, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; c.combined.enforcement.basis = 'current';
+  eq(E.compute(c).enforcement.events.filter((e) => e.kind !== 'userCap').length, 0, 'QA-E M-06 Cowork alone raises no agent or flow stop');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

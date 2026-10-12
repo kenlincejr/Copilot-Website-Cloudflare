@@ -2447,8 +2447,14 @@ footer.pagefoot p { margin:0 0 10px; }
                spill: draw && !e.payg ? { lo: Math.max(0, c.lo - e.allocation), mid: Math.max(0, c.mid - e.allocation), hi: Math.max(0, c.hi - e.allocation) } : { lo: 0, mid: 0, hi: 0 },
                cuts: cut(e.name, c, draw ? e.allocation + te.remainder : e.allocation, e.payg || prepaid === 0, k, draw) };
     });
-    var tenantCuts = cut('the default environment and tenant pool', tenantPpac, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0, -1);
+    /* Cowork draws Microsoft 365's share from the same remainder (F-183;
+       QA M-06): the tenant pool's cut counts the Cowork demand with the
+       agents that draw from it. Cowork itself is never switched off; it
+       spills to pay-as-you-go, but it brings the agents' stop day forward.
+       With no agent drawing from the pool there is nothing to switch off. */
     var m365 = peak.m365;
+    var tenantAll = { lo: tenantPpac.lo + m365.lo, mid: tenantPpac.mid + m365.mid, hi: tenantPpac.hi + m365.hi };
+    var tenantCuts = cut('the default environment and tenant pool' + (m365.hi > 0 ? ' (shared with Cowork)' : ''), tenantAll, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0 || !(tenantPpac.hi > 0), -1);
     /* Draw-on spill is taken from the tenant remainder before Microsoft 365 sees it. */
     var m365Avail = { mid: Math.max(0, te.remainder - spill.mid), hi: Math.max(0, te.remainder - spill.hi) };
     var starvation = { mid: prepaid > 0 && (te.allocated > 0 || spill.mid > 0) && m365.mid > m365Avail.mid,
@@ -2482,7 +2488,7 @@ footer.pagefoot p { margin:0 0 10px; }
       basis: basis === pu.best ? 'recommended' : 'current', prepaidMonthly: prepaid, allocated: te.allocated, remainder: te.remainder,
       basisPaygOverflow: basis.scen.hi.paygCredits > 0,
       overAllocated: te.overAllocated, flowsCutoff: te.flowsCutoff, agentsCutoff: te.agentsCutoff,
-      environments: envOut, tenantPool: { consumption: tenantPpac, cuts: tenantCuts, payg: s.combined.enforcement.defaultEnvPayg },
+      environments: envOut, tenantPool: { consumption: tenantAll, agents: tenantPpac, m365: { lo: m365.lo, mid: m365.mid, hi: m365.hi }, cuts: tenantCuts, payg: s.combined.enforcement.defaultEnvPayg },
       m365: { demand: m365, available: m365Avail.mid, availableHi: m365Avail.hi, drawOnSpill: spill, starvation: starvation },
       userCap: { cap: cap, source: capSource, auto: auto, firstMonth: first === null ? null : iso[first], excluded: excluded,
                  cappedUsers: cappedUsers, capTotal: cap !== null ? cappedUsers * cap : 0, perUser: perUser, day: capDay, events: capEvents },
@@ -5190,7 +5196,7 @@ footer.pagefoot p { margin:0 0 10px; }
       return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : (e.tenantDraw ? ', draws from the tenant pool above its allocation' : '')) + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td>' + dayCell(e.cuts.flowsDay) + '</td><td>' + dayCell(e.cuts.agentsDay) + '</td></tr>';
     });
     var tp = en.tenantPool;
-    rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td>' + dayCell(tp.cuts.flowsDay) + '</td><td>' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
+    rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + (tp.m365 && tp.m365.hi > 0 ? '; its use includes Cowork&rsquo;s ' + rng(tp.m365.mid, tp.m365.hi) : '') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td>' + dayCell(tp.cuts.flowsDay) + '</td><td>' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
     var html = lights + '<p class="note" style="margin-top:10px;">Peak month: <b>' + esc(monLong(en.peakMonth)) + '</b>. Prepaid capacity simulated: ' + fi(en.prepaidMonthly) + ' credits a month (' + (en.basis === 'recommended' ? 'the recommended purchase' : 'what the customer holds') + '); ' + fi(en.allocated) + ' pre-allocated to environments.</p>' +
       '<div class="tablewrap"><table class="dtable"><thead><tr><th>Where</th><th class="n">Allocation a month</th><th class="n">Peak-month agent use</th><th>Flows stop</th><th>Agents switch off</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
     html += '<div class="whybox cust-ok cw-lane"><div class="wb-h">Microsoft 365 and Cowork</div><p>Microsoft 365 can draw ' + fi(en.m365.available) + ' credits a month after Power Platform pre-allocations; Cowork needs ' + rng(en.m365.demand.mid, en.m365.demand.hi) + '. ' +
