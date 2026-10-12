@@ -476,7 +476,7 @@ const DEF = C.DEFAULT_CONFIG;
 eq(DEF.endpoint, C.ENDPOINT, 'default endpoint is the constant');
 ok(!('chips' in DEF) && !('CHIPS' in C) && !('CHIP_LABELS' in C), 'no filter chips anywhere in the defaults or core');
 eq(DEF.suggested.length, 4, 'four suggested searches by default');
-eq(JSON.stringify(DEF.suggested.map((s) => s.label)), '["What changes on December 1","Pricing a managed service","Copilot Studio agent engagements","Customer Zero"]', 'suggestion labels exactly as Ken set them');
+eq(JSON.stringify(DEF.suggested.map((s) => s.label)), '["December 1 changes","Managed service pricing","Studio agents","Customer Zero"]', 'suggestion labels exactly as Ken set them');
 eq(JSON.stringify(DEF.suggested.map((s) => s.query)), '["What changes on December 1 for Copilot Business?","How do I price a managed Copilot service?","What does a Copilot Studio agent engagement include?","How do I run Customer Zero in my own tenant?"]', 'suggestion queries are the full questions');
 eq(DEF.boost, true, 'boost on by default');
 eq(DEF.rewriteMinWords, 0, 'rewrite off by default');

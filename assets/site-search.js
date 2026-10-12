@@ -281,9 +281,9 @@
     endpoint: ENDPOINT,
     logEndpoint: 'https://playbook-search-log.ken-lince.workers.dev/',
     suggested: [
-      { label: 'What changes on December 1', query: 'What changes on December 1 for Copilot Business?' },
-      { label: 'Pricing a managed service', query: 'How do I price a managed Copilot service?' },
-      { label: 'Copilot Studio agent engagements', query: 'What does a Copilot Studio agent engagement include?' },
+      { label: 'December 1 changes', query: 'What changes on December 1 for Copilot Business?' },
+      { label: 'Managed service pricing', query: 'How do I price a managed Copilot service?' },
+      { label: 'Studio agents', query: 'What does a Copilot Studio agent engagement include?' },
       { label: 'Customer Zero', query: 'How do I run Customer Zero in my own tenant?' }
     ],
     pageAskExclude: ['/', '/index.html', '/frontier-navigator/pages/'],
