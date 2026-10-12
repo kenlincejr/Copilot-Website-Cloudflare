@@ -918,5 +918,21 @@ sec('S');
   eq(firstAgent(presetState('invoice')).lo, 16000, 'S invoice intake still 16,000');
 }
 
+/* Attribution: only examples Microsoft published are called Microsoft's. */
+{
+  const P = E.AGENT_PRESETS;
+  E.AGENT_PRESET_ORDER.forEach(function (k) {
+    ok(P[k].exampleBy === 'microsoft' || P[k].exampleBy === 'rates', 'preset ' + k + ' declares who the example is by');
+  });
+  ['website', 'helpdesk', 'invoice', 'bcExpense'].forEach(function (k) {
+    eq(P[k].exampleBy, 'rates', 'the planner\'s own scenario ' + k + ' is not labeled as Microsoft\'s example');
+  });
+  ['bcSalesOrder', 'bcPayables', 'support', 'sales', 'order', 'expense', 'approval', 'timesheet'].forEach(function (k) {
+    eq(P[k].exampleBy, 'microsoft', 'Microsoft-published example ' + k + ' is attributed to Microsoft');
+  });
+  ok(src.indexOf("(byMs ? 'Microsoft&rsquo;s example' : 'Worked example on Microsoft&rsquo;s rates')") >= 0,
+     'the card label follows exampleBy');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

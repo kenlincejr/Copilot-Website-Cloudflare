@@ -517,10 +517,17 @@ footer.pagefoot p { margin:0 0 10px; }
       <button type="button" class="motionpill partner-only" id="motionPill" title="Your CSP motion (partner-only). Click to set it in the partner layer."></button>
       <button type="button" class="tbtn" id="btnCustView" aria-pressed="false" title="Hide partner-only content in both tabs (C; Esc exits)">Customer view<kbd>C</kbd></button>
       <span class="tb-sep" aria-hidden="true"></span>
-      <button type="button" class="tbtn" id="btnSave" title="Download this plan as a session file. Nothing is stored in the browser.">Save session</button>
-      <button type="button" class="tbtn" id="btnLoad">Load session</button>
-      <button type="button" class="tbtn partner-only" id="btnCardLoad" title="Load your pricing and services from a partner card file">Load partner card</button>
-      <button type="button" class="tbtn partner-only" id="btnCardSave" title="Save your pricing and services to reuse with other customers">Save partner card</button>
+      <div class="menuwrap">
+        <button type="button" class="tbtn" id="btnFiles" aria-haspopup="menu" aria-expanded="false" aria-controls="filesMenu" title="Save or load this plan, or your partner card. Nothing is stored in the browser.">Files &#9662;</button>
+        <div class="menu" id="filesMenu" role="menu" aria-label="Files" hidden>
+          <div class="m-h">This plan</div>
+          <button type="button" role="menuitem" id="btnSave" title="Download this plan as a session file. Nothing is stored in the browser.">Save session</button>
+          <button type="button" role="menuitem" id="btnLoad">Load session</button>
+          <div class="m-h partner-only">Your pricing and services</div>
+          <button type="button" role="menuitem" class="partner-only" id="btnCardLoad" title="Load your pricing and services from a partner card file">Load partner card</button>
+          <button type="button" role="menuitem" class="partner-only" id="btnCardSave" title="Save your pricing and services to reuse with other customers">Save partner card</button>
+        </div>
+      </div>
       <div class="menuwrap">
         <button type="button" class="tbtn" id="btnPrint" aria-haspopup="menu" aria-expanded="false" aria-controls="printMenu">Print &#9662;</button>
         <div class="menu" id="printMenu" role="menu" aria-label="Print" hidden>
@@ -2435,7 +2442,7 @@ footer.pagefoot p { margin:0 0 10px; }
         { setting: 'Per-agent limits', where: 'Power Platform admin center → Licensing → Copilot Studio → Manage agents', prov: 'editorial' },
         { setting: 'Environment allocations and tenant draw', where: 'Power Platform admin center → Licensing → Copilot Studio capacity', prov: 'editorial' },
         { setting: 'Spending policy, user and group limits', where: 'Microsoft 365 admin center → usage-based billing spending policies', prov: 'editorial' },
-        { setting: 'Transcript retention', where: 'Copilot Studio → agent settings → conversation transcripts', prov: 'editorial' }
+        { setting: 'Transcript retention', where: 'Power Platform admin center → Manage → Environments → (environment) → Settings → Product → Features to turn transcripts on or off; retention is a Power Apps bulk-delete job on the conversation transcript table (30 days by default)', prov: 'editorial' }
       ]
     };
   }
@@ -3148,34 +3155,34 @@ footer.pagefoot p { margin:0 0 10px; }
 
   /* ══ 30 · Presets and agent-card helpers (pure: new state out) ═════════ */
   var AGENT_PRESETS = deepFreeze({
-    website:     { label: 'Website FAQ and lead capture', example: '1,500 conversations × 5 turns × 2 credits = 15,000 a month, all billed', fact: 'F-162', group: 'smb',
+    website:     { label: 'Website FAQ and lead capture', example: '1,500 conversations × 5 turns × 2 credits = 15,000 a month, all billed', fact: 'F-162', exampleBy: 'rates', group: 'smb',
                    agent: { name: 'Website FAQ and lead capture', type: 'conversational', audience: 'external', channel: 'website', auth: 'none',
                             traffic: { mode: 'total', count: 1500, per: 'month' }, shape: { turns: 5, genPct: 100, groundedPct: 0, greeting: false }, data: { retentionDays: 30 } } },
-    helpdesk:    { label: 'HR and IT helpdesk', example: '40 users without a license × 4 conversations × 5 turns × 12 credits = 9,600 a month; the 20 licensed users are zero-rated', fact: 'F-164', group: 'smb',
+    helpdesk:    { label: 'HR and IT helpdesk', example: '40 users without a license × 4 conversations × 5 turns × 12 credits = 9,600 a month; the 20 licensed users are zero-rated', fact: 'F-164', exampleBy: 'rates', group: 'smb',
                    agent: { name: 'HR and IT helpdesk', type: 'conversational', audience: 'internal', channel: 'teams_m365', auth: 'microsoft',
                             users: { total: 60, licensed: 20 }, traffic: { mode: 'perUser', count: 4, per: 'month' },
                             shape: { turns: 5, genPct: 100, groundedPct: 100, greeting: false } } },
-    invoice:     { label: 'Invoice intake', example: '400 runs × (6 actions × 5 + 1 premium prompt × 10) = 16,000 a month (18,000 if the trigger counts as an action)', fact: 'F-163', group: 'smb',
+    invoice:     { label: 'Invoice intake', example: '400 runs × (6 actions × 5 + 1 premium prompt × 10) = 16,000 a month (18,000 if the trigger counts as an action)', fact: 'F-163', exampleBy: 'rates', group: 'smb',
                    agent: { name: 'Invoice intake', type: 'autonomous', traffic: { mode: 'total', count: 400, per: 'month' }, bundle: { actions: 6, aiPremium: 1 } } },
-    bcSalesOrder:{ label: 'Business Central Sales Order Agent', example: '[2 + 5 + 5 + 2 + (5 × 0.5)] × 100 emails = 1,650 a month', fact: 'F-185', group: 'bc',
+    bcSalesOrder:{ label: 'Business Central Sales Order Agent', example: '[2 + 5 + 5 + 2 + (5 × 0.5)] × 100 emails = 1,650 a month', fact: 'F-185', exampleBy: 'microsoft', group: 'bc',
                    agent: { name: 'Sales Order Agent', type: 'bc', bc: { kind: 'salesOrder', volume: 100, checks: 1, orders: 1, attachData: 0.5, attachNoData: 0 } } },
-    bcPayables:  { label: 'Business Central Payables Agent', example: '(50 + 5 × 3 lines) × 100 invoices = 6,500 a month', fact: 'F-186', group: 'bc',
+    bcPayables:  { label: 'Business Central Payables Agent', example: '(50 + 5 × 3 lines) × 100 invoices = 6,500 a month', fact: 'F-186', exampleBy: 'microsoft', group: 'bc',
                    agent: { name: 'Payables Agent', type: 'bc', bc: { kind: 'payables', volume: 100, lines: 3 } } },
-    bcExpense:   { label: 'Business Central Expense Agent (preview)', example: '50 credits a receipt × 100 receipts = 5,000 a month', fact: 'F-187', group: 'bc',
+    bcExpense:   { label: 'Business Central Expense Agent (preview)', example: '50 credits a receipt × 100 receipts = 5,000 a month', fact: 'F-187', exampleBy: 'rates', group: 'bc',
                    agent: { name: 'Expense Agent', type: 'bc', bc: { kind: 'expense', volume: 100 } } },
-    support:     { label: 'Customer support bot (Microsoft example)', example: '[(4 × 1) + (2 × 2)] × 900 = 7,200 credits a day', fact: 'F-161', group: 'ms',
+    support:     { label: 'Customer support bot (Microsoft example)', example: '[(4 × 1) + (2 × 2)] × 900 = 7,200 credits a day', fact: 'F-161', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Customer support bot', type: 'conversational', audience: 'external', channel: 'website', auth: 'none',
                             traffic: { mode: 'total', count: 900, per: 'day' }, daysActive: 30, bundle: { classic: 4, generative: 2 } } },
-    sales:       { label: 'Sales research agent (Microsoft example)', example: '[(4 × 2) + (4 × 10)] × 100 users without a license = 4,800 credits; the 50 licensed users are zero-rated', fact: 'F-184', group: 'ms',
+    sales:       { label: 'Sales research agent (Microsoft example)', example: '[(4 × 2) + (4 × 10)] × 100 users without a license = 4,800 credits; the 50 licensed users are zero-rated', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Sales research agent', type: 'conversational', audience: 'internal', channel: 'teams_m365', auth: 'microsoft',
                             users: { total: 150, licensed: 50 }, traffic: { mode: 'perUser', count: 1, per: 'day' }, daysActive: 22, bundle: { generative: 4, grounded: 4 } } },
-    order:       { label: 'Order processing (Microsoft example)', example: '4 actions × 5 = 20 credits a run', fact: 'F-163', group: 'ms',
+    order:       { label: 'Order processing (Microsoft example)', example: '4 actions × 5 = 20 credits a run', fact: 'F-163', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Order processing', type: 'autonomous', traffic: { mode: 'total', count: 100, per: 'day' }, daysActive: 30, bundle: { actions: 4 } } },
-    expense:     { label: 'Expense receipt (Microsoft blueprint)', example: '15 credits a run', fact: 'F-184', group: 'ms',
+    expense:     { label: 'Expense receipt (Microsoft blueprint)', example: '15 credits a run', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Expense receipt processing', type: 'autonomous', traffic: { mode: 'total', count: 40, per: 'day' }, daysActive: 30, bundleMode: 'blueprint', blueprint: 'expense' } },
-    approval:    { label: 'Approval routing (Microsoft blueprint)', example: '12 credits a run', fact: 'F-184', group: 'ms',
+    approval:    { label: 'Approval routing (Microsoft blueprint)', example: '12 credits a run', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Approval routing', type: 'autonomous', traffic: { mode: 'total', count: 60, per: 'day' }, daysActive: 30, bundleMode: 'blueprint', blueprint: 'approval' } },
-    timesheet:   { label: 'Timesheet assistant (Microsoft blueprint)', example: '77 credits a run', fact: 'F-184', group: 'ms',
+    timesheet:   { label: 'Timesheet assistant (Microsoft blueprint)', example: '77 credits a run', fact: 'F-184', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Timesheet assistant', type: 'autonomous', traffic: { mode: 'total', count: 400, per: 'month' }, bundleMode: 'blueprint', blueprint: 'timesheet' } }
   });
   var AGENT_PRESET_ORDER = deepFreeze(['website', 'helpdesk', 'invoice', 'bcSalesOrder', 'bcPayables', 'bcExpense', 'support', 'sales', 'order', 'expense', 'approval', 'timesheet']);
@@ -4041,7 +4048,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function onKey(e) {
     var t = e.target, tag = t && t.tagName;
     if (e.key === 'Escape') {
-      if (!$('printMenu').hidden) { closeMenu(true); return; }
+      if (anyMenuOpen()) { closeMenu(true); return; }
       if (cvOn) setCustomerView(false);
       return;
     }
@@ -4141,16 +4148,35 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Print menu ═══════════════════════════════════════════════════════ */
-  function openMenu() { $('printMenu').hidden = false; $('btnPrint').setAttribute('aria-expanded', 'true'); var f = $('printMenu').querySelector('button:not([hidden])'); if (f) f.focus(); }
-  function closeMenu(refocus) { $('printMenu').hidden = true; $('btnPrint').setAttribute('aria-expanded', 'false'); if (refocus) $('btnPrint').focus(); }
-  $('btnPrint').addEventListener('click', function (e) { e.stopPropagation(); if ($('printMenu').hidden) openMenu(); else closeMenu(); });
-  document.addEventListener('click', function (e) { if (!$('printMenu').hidden && !e.target.closest('.menuwrap')) closeMenu(); });
-  $('printMenu').addEventListener('keydown', function (e) {
-    var items = Array.prototype.filter.call($('printMenu').querySelectorAll('button'), function (b) { return b.offsetParent !== null; });
-    var i = items.indexOf(document.activeElement);
-    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  /* Two toolbar menus (Print, Files) share one open/close model: one open at
+     a time, Esc or a click outside closes it, arrow keys move inside it. */
+  var MENUS = { printMenu: 'btnPrint', filesMenu: 'btnFiles' };
+  function anyMenuOpen() { return Object.keys(MENUS).some(function (m) { return !$(m).hidden; }); }
+  function openMenuFor(m) {
+    closeMenu(false);
+    $(m).hidden = false; $(MENUS[m]).setAttribute('aria-expanded', 'true');
+    var f = $(m).querySelector('button:not([hidden])'); if (f) f.focus();
+  }
+  function openMenu() { openMenuFor('printMenu'); }
+  function closeMenu(refocus) {
+    Object.keys(MENUS).forEach(function (m) {
+      if ($(m).hidden) return;
+      $(m).hidden = true; $(MENUS[m]).setAttribute('aria-expanded', 'false');
+      if (refocus) $(MENUS[m]).focus();
+    });
+  }
+  Object.keys(MENUS).forEach(function (m) {
+    $(MENUS[m]).addEventListener('click', function (e) { e.stopPropagation(); if ($(m).hidden) openMenuFor(m); else closeMenu(); });
+    $(m).addEventListener('keydown', function (e) {
+      var items = Array.prototype.filter.call($(m).querySelectorAll('button'), function (b) { return b.offsetParent !== null; });
+      var i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    });
   });
+  document.addEventListener('click', function (e) { if (anyMenuOpen() && !e.target.closest('.menuwrap')) closeMenu(); });
+  // Files items run their own handlers (save, load, partner card); the menu just closes.
+  $('filesMenu').addEventListener('click', function (e) { if (e.target.closest('button')) closeMenu(); });
   $('printMenu').addEventListener('click', function (e) {
     var b = e.target.closest('[data-print]'); if (!b) return;
     closeMenu(); doPrint(b.getAttribute('data-print'));
@@ -4625,9 +4651,12 @@ footer.pagefoot p { margin:0 0 10px; }
         var P = arch ? E.AGENT_PRESETS[arch] : null;
         if (P) {
           var X = EXPECT[arch], got = X ? X.f(x) : null, match = X && Math.abs(got - X.v) < 1e-6;
-          ex.innerHTML = '<div class="example"><div class="ex-t"><b>Microsoft&rsquo;s example:</b> <span class="mono">' + esc(P.example) + '</span><br>' + factRef(P.fact) +
-            (X ? '<br>' + (match ? '<span class="check">&#10003;</span> This card reproduces it: ' : 'This card now computes ') + fnum(got) + ' ' + esc(X.u) + (match ? '.' : ' against Microsoft&rsquo;s ' + fi(X.v) + '.') : '') +
-            '</div><button type="button" class="btn small" data-act="example" data-a="' + a.id + '" data-arch="' + esc(arch) + '">Reproduce Microsoft&rsquo;s example</button></div>';
+          // Only examples Microsoft itself published are called Microsoft's; the
+          // planner's own scenarios are worked examples on Microsoft's rates.
+          var byMs = P.exampleBy === 'microsoft';
+          ex.innerHTML = '<div class="example"><div class="ex-t"><b>' + (byMs ? 'Microsoft&rsquo;s example' : 'Worked example on Microsoft&rsquo;s rates') + ':</b> <span class="mono">' + esc(P.example) + '</span><br>' + factRef(P.fact) +
+            (X ? '<br>' + (match ? '<span class="check">&#10003;</span> This card reproduces it: ' : 'This card now computes ') + fnum(got) + ' ' + esc(X.u) + (match ? '.' : ' against ' + (byMs ? 'Microsoft&rsquo;s ' : 'the example&rsquo;s ') + fi(X.v) + '.') : '') +
+            '</div><button type="button" class="btn small" data-act="example" data-a="' + a.id + '" data-arch="' + esc(arch) + '">' + (byMs ? 'Reproduce Microsoft&rsquo;s example' : 'Reproduce this example') + '</button></div>';
         } else ex.innerHTML = '';
       }
       var ps = $('plsum-' + a.id); if (ps) ps.textContent = placeSummary(a);
@@ -5042,7 +5071,7 @@ footer.pagefoot p { margin:0 0 10px; }
     env: 'Power Platform admin center → Licensing → Copilot Studio → Environments; Environment groups → Rules → Cost controls (draw from the tenant credit pool)',
     alerts: 'Spending policy threshold emails; per-agent notification threshold; an Azure budget (alerts only)',
     auto: 'Within each spending policy',
-    retention: 'Copilot Studio → agent settings → conversation transcripts',
+    retention: 'Power Platform admin center → Manage → Environments → (environment) → Settings → Product → Features (transcripts on or off); retention: a Power Apps bulk-delete job on the conversation transcript table, 30 days by default',
     ids: 'Microsoft Entra admin center → Agent ID'
   };
   function govRows(cv) {
