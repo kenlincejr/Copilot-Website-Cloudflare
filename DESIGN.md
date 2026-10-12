@@ -661,9 +661,11 @@ Every page in the sitemap also carries two things site search depends on:
 - `<meta name="title">`, `og:title`, `<meta name="description">` and
   `og:description` in `<head>`. AI Search reads result titles and summaries
   only from these tags; without them a result shows no title.
-- `<script src="/assets/site-search-jump.js" defer></script>` before
+- `<script src="/assets/site-search-jump.js?v=2" defer></script>` before
   `</body>`. Search results link to `page.html?hl=<phrase>`, and this script
-  scrolls to and highlights the matching passage.
+  scrolls to and highlights the matching passage. When the script changes,
+  bump `?v=` on every page so browsers stop serving the cached copy
+  (GitHub Pages caches for 10 minutes).
 
 ```bash
 # tracked .html files with no matching <loc> in the sitemap
