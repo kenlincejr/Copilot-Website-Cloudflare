@@ -142,6 +142,14 @@ The UI passes "today" in as a month string.
 - Keys `1`–`3` switch tabs, and `C` or `Esc` toggle customer view. All of these are ignored while focus is in an `input`, `select` or `textarea`, or when a modifier key is held.
 - The tab strip is a `role="tablist"` with `aria-selected`, and arrow-key movement within it.
 
+**Amendment, 2026-10-11 (UX polish): Start view and plan types.**
+- A fourth tab, **Start** (key `0`), comes first and is what the page opens on. It explains the planner in one paragraph and three steps, and offers three plan types as a pinned grid of three cards, each with who it is for, the time it takes, what to bring and what the partner walks out with.
+- The choice is `state.meta.mode`: `cowork`, `agents` or `full` (default `full`; normalized; saved in sessions; a session without it loads as `full`).
+  - `cowork` shows Start and Cowork. The report is the Cowork page's own print, and the Print menu says so.
+  - `agents` shows Start, Copilot Studio agents and the Combined tab renamed **Plan & report**. The engine keeps Cowork out of every total whatever the include switch says, and the switch is hidden. The customer report is titled "Copilot Studio agent plan" and carries no Cowork rows.
+  - `full` shows every tab, as before.
+- "Change plan type" in the toolbar returns to Start. Switching never deletes anything. Start is partner-only and never prints.
+
 ### 4.3 The Cowork embed
 
 **The iframe:**

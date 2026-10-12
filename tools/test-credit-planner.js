@@ -849,6 +849,7 @@ sec('S');
   ok(gProd && env('Production').allocation === gProd.credits && gProd.credits > 0, 'S Production allocation equals the governance figure (' + (gProd && gProd.credits) + ')');
   ok(su.allocations.some((x) => x.name === 'Production' && x.from === 0 && x.to === gProd.credits && x.basis === 'governance'), 'S the change list says what moved');
   eq(JSON.stringify(rsu.pool), JSON.stringify(E.compute(trio).pool), 'S set-up never moves a credit');
+  eq(rsu.governance.allocations.filter((x) => x.name === 'Sandbox')[0].credits, E.SANDBOX_PLACEHOLDER, 'S the governance sheet keeps the sandbox build allocation, not 0');
   const su2 = E.setupEnvironments(su.state);
   ok(su2.created.length === 0 && su2.moved.length === 0, 'S set-up twice creates nothing new');
   eq(JSON.stringify(su2.state.studio.environments), JSON.stringify(su.state.studio.environments), 'S set-up is idempotent');
@@ -903,6 +904,14 @@ sec('S');
   const before = JSON.stringify(inv);
   ['website', 'helpdesk', 'invoice'].forEach((k) => { const s = presetState(k); const snap = JSON.stringify(s); E.agentAdvanced(s.studio.agents[0], s); E.fieldImpact(s.studio.agents[0], s, E.advancedPaths(s.studio.agents[0])); eq(JSON.stringify(s), snap, 'S advanced helpers never mutate (' + k + ')'); });
   ok(before.length > 0, 'S snapshot');
+  // Page structure (UI source checks)
+  const tl = /<div class="hubtabs" role="tablist"[^>]*>([\s\S]*?)<\/div>/.exec(src);
+  ok(tl && /^\s*<button[^>]*id="tab-start"/.test(tl[1]) && (tl[1].match(/role="tab"/g) || []).length === 4, 'S Start is the first of four tabs');
+  ok(/<section class="tabpanel[^"]*" id="panel-start"/.test(src) && /data-mode="cowork"/.test(src) && /data-mode="agents"/.test(src) && /data-mode="full"/.test(src), 'S the Start view offers all three plan types');
+  ok(/\[hidden\] \{ display:none !important; \}/.test(src), 'S a hidden banner is always hidden');
+  ok(src.indexOf('btnEnvAlloc') < 0 && /id="btnEnvSetup"/.test(src) && /id="btnEnvRecalc"/.test(src), 'S one set-up action and one recalculate action');
+  ok(/class="helpbtn" aria-expanded="/.test(src) && /aria-controls="' \+ hid/.test(src), 'S help toggles are buttons with aria-expanded and aria-controls');
+  ok(/\.helpbtn, \.helptext, \.impact \{ display:none !important; \}|#notice, \.helpbtn, \.helptext, \.impact/.test(src), 'S help and impact lines never print');
   // The SMB trio still prices exactly
   eq(firstAgent(presetState('website')).lo, 15000, 'S website FAQ still 15,000');
   eq(firstAgent(presetState('helpdesk')).lo, 9600, 'S helpdesk still 9,600'); eq(firstAgent(presetState('helpdesk')).licensedCovered, 4800, 'S helpdesk still 4,800 covered');

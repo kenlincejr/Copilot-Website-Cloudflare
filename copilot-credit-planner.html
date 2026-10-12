@@ -95,11 +95,12 @@ p  { margin: .5rem 0; }
 .tbtn.on kbd { color:var(--navy); }
 .tb-sep { width:1px; height:18px; background:var(--border); margin:0 6px; }
 .menuwrap { position:relative; }
-.menu { position:absolute; right:0; top:calc(100% + 6px); z-index:60; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); padding:6px; min-width:270px; }
+.menu { position:absolute; right:0; top:calc(100% + 6px); z-index:60; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); padding:6px; width:300px; }
+.menu .menunote { font-size:.74rem; color:#6b7280; line-height:1.5; margin:0; padding:2px 10px 6px; }
 .menu button { display:block; width:100%; text-align:left; font-family:inherit; font-size:.82rem; color:var(--text); background:none; border:none; border-radius:6px; padding:8px 10px; cursor:pointer; }
 .menu button:hover, .menu button:focus-visible { background:var(--accent); color:var(--teal); }
 .menu .m-h { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#6b7280; padding:6px 10px 2px; }
-@media (max-width:720px){ .hubbar { position:static; } .hubbar-in { padding:8px 16px; } .acct input { width:150px; } }
+@media (max-width:720px){ .hubbar { position:static; } .hubbar-in { padding:8px 16px; } .acct input { width:150px; } .hubtab { padding:6px 12px; font-size:.8rem; } .hubtab .tb-badge { display:none; } }
 
 /* ═══ LAYOUT ═══ */
 .wrap { padding: 22px 48px 0; }
@@ -123,19 +124,51 @@ p  { margin: .5rem 0; }
 .sub-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin:20px 0 10px; padding-bottom:4px; border-bottom:1px solid var(--border); }
 @media (max-width:720px){ .wcard .wc-body { padding:18px 16px 20px; } }
 
-/* ═══ FORM ═══ */
-.fgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px 18px; }
-.field label, .field .flabel { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:6px; }
-.field input[type=text], .field input[type=number], .field input[type=month], .field select, .field textarea {
-  width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:6px; font-size:.9rem; color:var(--text); background:#fff; font-family:inherit;
+/* ═══ FORM: one field component everywhere ═══
+   A field is three rows: label (with its help toggle), control, foot (hints,
+   source tag, help text, impact). Inside .fgrid every field is a subgrid, so
+   across a row the labels share one height, the controls sit on one line,
+   and the feet start together, however many lines each label takes. The UI
+   packs every grid into full rows (--c columns; fields span --l, or --m at
+   tablet width), so no grid strands a field. */
+[hidden] { display:none !important; }
+.fgrid { display:grid; grid-template-columns:repeat(var(--c,4),minmax(0,1fr)); column-gap:18px; row-gap:0; }
+.fgrid > .field { display:grid; grid-row:span 3; grid-template-rows:subgrid; row-gap:0; grid-column:span var(--l,1); padding-bottom:14px; min-width:0; }
+.field .flab { display:block; align-self:end; margin-bottom:6px; min-width:0; line-height:1.35; }
+.field .flab label, .field .flab .flabel { display:inline; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; line-height:1.35; margin:0; }
+.field .fctl, .field .ffoot { align-self:start; min-width:0; }
+.field .ffoot > * { margin-top:5px; }
+.field .ffoot:empty { display:none; }
+@supports not (grid-template-rows: subgrid) {
+  .fgrid > .field { display:flex; flex-direction:column; }
+  .field .flab { min-height:2.7em; font-size:.68rem; }
 }
-.field textarea { min-height:70px; resize:vertical; }
+@media (max-width:1080px){ .fgrid { grid-template-columns:repeat(var(--cm,2),minmax(0,1fr)); } .fgrid > .field { grid-column:span var(--m,1); } }
+@media (max-width:720px){ .fgrid { grid-template-columns:minmax(0,1fr); } .fgrid > .field { grid-column:auto; } }
+.field input[type=text], .field input[type=number], .field input[type=month], .field select, .field textarea {
+  width:100%; height:38px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:.88rem; color:var(--text); background:#fff; font-family:inherit;
+}
+.field textarea { height:auto; min-height:70px; resize:vertical; }
 .field input:focus, .field select:focus, .field textarea:focus { outline:2px solid var(--ltblue); outline-offset:1px; border-color:var(--teal); }
-.field .hint { font-size:.72rem; color:#6b7280; margin-top:4px; line-height:1.45; }
-.field .fromcw { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:1px 6px; border-radius:20px; background:var(--accent); color:var(--teal); margin-left:6px; vertical-align:1px; }
-.field.check label { display:flex; gap:8px; align-items:flex-start; text-transform:none; letter-spacing:0; font-size:.84rem; font-weight:600; color:#374151; cursor:pointer; margin:0; }
-.field.check input { margin-top:4px; }
-.field.check { align-self:end; padding-bottom:8px; }
+.field .hint { font-size:.72rem; color:#6b7280; line-height:1.45; }
+.field .fromcw { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:2px 7px; border-radius:20px; background:var(--accent); color:var(--teal); }
+.fctl .ckbox { display:flex; gap:8px; align-items:center; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:6px; background:#fff; font-size:.84rem; font-weight:600; color:#374151; cursor:pointer; margin:0; }
+.fctl .ckbox:hover { border-color:var(--ltblue); }
+.fctl .ckbox input { margin:0; flex:0 0 auto; }
+.fctl .fout { display:flex; align-items:center; height:38px; padding:0 10px; border:1px dashed var(--border); border-radius:6px; background:var(--muted); font-size:.86rem; color:#374151; }
+.ctlrow .field.check label { display:flex; gap:8px; align-items:flex-start; text-transform:none; letter-spacing:0; font-size:.84rem; font-weight:600; color:#374151; cursor:pointer; margin:0; }
+.ctlrow .field.check input { margin-top:4px; }
+.ctlrow select { height:34px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:.84rem; font-family:inherit; color:var(--text); background:#fff; }
+/* Help: a real button beside the label; the text opens in the field's foot. */
+.helpbtn { width:17px; height:17px; padding:0; margin-left:5px; vertical-align:1px; border-radius:50%; border:1px solid #c5dde3; background:#fff; color:var(--teal); font-family:inherit; font-size:.62rem; font-weight:700; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+.helpbtn:hover { border-color:var(--teal); background:var(--accent); }
+.helpbtn[aria-expanded="true"] { background:var(--teal); border-color:var(--teal); color:#fff; }
+.helptext { background:var(--muted); border-left:2px solid var(--teal); border-radius:4px; padding:6px 10px; font-size:.74rem; line-height:1.5; color:#374151; }
+.helptext p { margin:0 0 3px; }
+.helptext p:last-child { margin-bottom:0; }
+.helptext .ref { display:block; margin-top:2px; }
+.impact { font-size:.72rem; font-weight:700; color:var(--teal); }
+.impact.saves { color:#0f766e; }
 .seg { display:inline-flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; flex-wrap:wrap; }
 .seg button { border:none; background:#fff; font-size:.82rem; font-weight:600; padding:8px 14px; cursor:pointer; color:#374151; border-right:1px solid var(--border); font-family:inherit; }
 .seg button:last-child { border-right:none; }
@@ -267,12 +300,23 @@ a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text
 .ahead .afig .af-k { font-size:1.05rem; font-weight:800; color:#004B87; white-space:nowrap; }
 .ahead .afig .af-s { font-size:.72rem; color:#6b7280; white-space:nowrap; }
 .ahead .aacts { display:flex; gap:4px; flex-wrap:wrap; }
-.abody { padding:14px 18px 16px; }
-.abody details { border-top:1px dashed var(--border); padding:8px 0 4px; }
-.abody details:first-of-type { border-top:none; }
-.abody summary { cursor:pointer; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); padding:4px 0 8px; }
-.abody .fgrid { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px 14px; margin-bottom:8px; }
-.abody .field input[type=text], .abody .field input[type=number], .abody .field select { padding:7px 9px; font-size:.86rem; }
+.abody { padding:14px 18px 6px; }
+.abody .sub-h { margin:6px 0 10px; }
+.abody .ess-h { display:flex; justify-content:space-between; align-items:baseline; gap:6px 14px; flex-wrap:wrap; }
+.abody .ess-h .linkbtn { font-size:.76rem; text-transform:none; letter-spacing:0; }
+.whoedit { background:var(--muted); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px 0; margin:0 0 12px; }
+.whoedit .we-h { font-size:.72rem; color:#374151; margin:0 0 8px; }
+/* Collapsible blocks on an agent card: a header line and a live summary. */
+.adv { border-top:1px solid var(--border); margin:2px -18px 0; }
+.adv > summary { list-style:none; cursor:pointer; padding:10px 18px; display:flex; gap:4px 14px; align-items:baseline; justify-content:space-between; flex-wrap:wrap; }
+.adv > summary::-webkit-details-marker { display:none; }
+.adv > summary:hover { background:var(--muted); }
+.adv > summary .adv-t { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); }
+.adv > summary .adv-t::before { content:"\25B8"; display:inline-block; width:14px; transition:transform .15s; }
+.adv[open] > summary .adv-t::before { transform:rotate(90deg); }
+.adv > summary .adv-n { font-size:.76rem; color:#6b7280; flex:1 1 220px; }
+.adv > summary .adv-s { font-size:.76rem; font-weight:700; color:var(--navy); white-space:nowrap; }
+.adv > .adv-b { padding:4px 18px 4px; }
 .afoot { padding:12px 18px 14px; border-top:1px solid var(--border); background:#fafbfc; border-radius:0 0 var(--radius-lg) 0; }
 .afoot .cover { font-size:.86rem; color:#374151; margin:6px 0 0; }
 .afoot .cover b { color:#065f46; }
@@ -282,6 +326,46 @@ a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text
 .example { display:flex; gap:12px 18px; align-items:center; justify-content:space-between; flex-wrap:wrap; background:#f3fbfc; border:1px solid #c8e6eb; border-radius:6px; padding:10px 14px; margin-bottom:10px; }
 .example .ex-t { font-size:.82rem; color:#00474f; line-height:1.55; }
 .example .ex-t .mono { font-size:.76rem; }
+
+/* ═══ START VIEW AND PLAN TYPES ═══ */
+.startlede { font-size:.95rem; color:#374151; line-height:1.65; margin:0 0 16px; }
+.howsteps { list-style:none; margin:0 0 24px; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; counter-reset:hs; }
+.howsteps li { position:relative; border:1px solid var(--border); border-radius:var(--radius); background:var(--muted); padding:12px 14px 12px 50px; font-size:.84rem; color:#374151; line-height:1.55; }
+.howsteps li::before { counter-increment:hs; content:counter(hs); position:absolute; left:14px; top:12px; width:24px; height:24px; border-radius:50%; background:var(--teal); color:#fff; font-size:.8rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.howsteps li b { display:block; color:var(--navy); font-size:.88rem; }
+.modegrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.modecard { display:grid; grid-row:span 7; grid-template-rows:subgrid; row-gap:0; border:1px solid var(--border); border-top:4px solid var(--teal); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); padding:18px 20px 20px; }
+@supports not (grid-template-rows: subgrid) { .modecard { display:flex; flex-direction:column; } .modecard .mc-go { margin-top:auto; } }
+.modecard.cur { border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal); }
+.modecard .mc-e { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.modecard h3 { font-size:1.15rem; color:var(--navy); margin:4px 0 6px; }
+.modecard .mc-for { font-size:.86rem; color:#374151; line-height:1.55; margin:0 0 8px; }
+.modecard .mc-time { font-size:.72rem; font-weight:700; color:#6b7280; margin:0 0 12px; }
+.modecard .mc-h { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#6b7280; border-bottom:1px solid var(--border); padding-bottom:4px; margin:0 0 6px; }
+.modecard ul { margin:0 0 14px; padding-left:18px; font-size:.82rem; color:#374151; line-height:1.55; }
+.modecard .mc-go { align-self:end; }
+.modecard .mc-go .btn { width:100%; }
+.startnote { font-size:.82rem; color:#6b7280; margin:16px 0 0; }
+@media (max-width:980px){ .modegrid, .howsteps { grid-template-columns:minmax(0,1fr); } }
+.tbmode { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--teal); background:var(--accent); border-radius:20px; padding:3px 9px; margin-right:6px; white-space:nowrap; }
+body.mode-cowork #tab-studio, body.mode-cowork #tab-combined, body.mode-agents #tab-cowork { display:none; }
+body.mode-agents .cw-lane { display:none !important; }
+
+/* ═══ STORAGE AND OTHER COSTS (collapsed, with a verdict) ═══ */
+.verdict { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--border); border-left:4px solid #0f766e; border-radius:0 var(--radius) var(--radius) 0; background:#f3fbfc; padding:11px 16px; font-size:.86rem; color:#374151; line-height:1.6; }
+.verdict.watch { border-left-color:#d97706; background:var(--warn); }
+.verdict.over { border-left-color:#b91c1c; background:#fef2f2; }
+.verdict p { margin:0; }
+.verdict p + p { margin-top:4px; color:#6b7280; font-size:.82rem; }
+.sect { margin-top:14px; border:1px solid var(--border); border-radius:var(--radius); }
+.sect > summary { list-style:none; cursor:pointer; padding:10px 16px; font-size:.84rem; font-weight:700; color:var(--teal); }
+.sect > summary::-webkit-details-marker { display:none; }
+.sect > summary::before { content:"\25B8"; display:inline-block; width:16px; transition:transform .15s; }
+.sect[open] > summary::before { transform:rotate(90deg); }
+.sect > summary:hover { background:var(--muted); }
+.sect > .sect-b { padding:6px 16px 4px; border-top:1px solid var(--border); }
+.envacts { display:flex; gap:10px 14px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+.envacts .note { font-size:.78rem; }
 
 /* ═══ COMBINED: CHART, TIMELINE ═══ */
 .chartwrap { overflow-x:auto; }
@@ -368,7 +452,7 @@ footer.pagefoot p { margin:0 0 10px; }
   * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   html, body { background:#fff; }
   body { padding:0; margin:0; max-width:100%; font-size:12px; }
-  .mh-bar, .hubbar, footer.pagefoot, .no-print, .cv-pill, .copybtn, .btn, .linkbtn, #notice { display:none !important; }
+  .mh-bar, .hubbar, footer.pagefoot, .no-print, .cv-pill, .copybtn, .btn, .linkbtn, #notice, .helpbtn, .helptext, .impact { display:none !important; }
   .masthead { background:#fff; }
   .masthead-inner { padding:0 0 10px; }
   .masthead h1 { color:var(--navy); font-size:1.25rem; }
@@ -420,11 +504,14 @@ footer.pagefoot p { margin:0 0 10px; }
 <div class="hubbar no-print" id="hubbar">
   <div class="hubbar-in">
     <div class="hubtabs" role="tablist" aria-label="Planner sections">
+      <button class="hubtab partner-only" type="button" role="tab" id="tab-start" aria-selected="true" aria-controls="panel-start" tabindex="0"><span class="tk" aria-hidden="true">0</span>Start <span class="tb-badge" id="badgeStart"></span></button>
       <button class="hubtab" type="button" role="tab" id="tab-cowork" aria-selected="false" aria-controls="panel-cowork" tabindex="-1"><span class="tk" aria-hidden="true">1</span>Cowork <span class="tb-badge" id="badgeCowork"></span></button>
-      <button class="hubtab" type="button" role="tab" id="tab-studio" aria-selected="true" aria-controls="panel-studio" tabindex="0"><span class="tk" aria-hidden="true">2</span>Copilot Studio agents <span class="tb-badge" id="badgeStudio"></span></button>
-      <button class="hubtab" type="button" role="tab" id="tab-combined" aria-selected="false" aria-controls="panel-combined" tabindex="-1"><span class="tk" aria-hidden="true">3</span>Combined plan &amp; report <span class="tb-badge" id="badgeCombined"></span></button>
+      <button class="hubtab" type="button" role="tab" id="tab-studio" aria-selected="false" aria-controls="panel-studio" tabindex="-1"><span class="tk" aria-hidden="true">2</span>Copilot Studio agents <span class="tb-badge" id="badgeStudio"></span></button>
+      <button class="hubtab" type="button" role="tab" id="tab-combined" aria-selected="false" aria-controls="panel-combined" tabindex="-1"><span class="tk" aria-hidden="true">3</span><span id="tabCombinedLbl">Combined plan &amp; report</span> <span class="tb-badge" id="badgeCombined"></span></button>
     </div>
     <div class="hubtools" role="toolbar" aria-label="Planner tools">
+      <button type="button" class="tbtn partner-only" id="btnMode" title="Go back to the Start view and pick another plan type. Nothing you have entered is lost."><span class="tbmode" id="tbMode">Full plan</span>Change plan type<kbd>0</kbd></button>
+      <span class="tb-sep partner-only" aria-hidden="true"></span>
       <label class="acct"><span class="sr-only">Account name</span><input type="text" id="tbAccount" maxlength="80" placeholder="Account name" autocomplete="off" data-bind="meta.accountName" data-type="text"></label>
       <button type="button" class="motionpill partner-only" id="motionPill" title="Your CSP motion (partner-only). Click to set it in the partner layer."></button>
       <button type="button" class="tbtn" id="btnCustView" aria-pressed="false" title="Hide partner-only content in both tabs (C; Esc exits)">Customer view<kbd>C</kbd></button>
@@ -436,15 +523,16 @@ footer.pagefoot p { margin:0 0 10px; }
       <div class="menuwrap">
         <button type="button" class="tbtn" id="btnPrint" aria-haspopup="menu" aria-expanded="false" aria-controls="printMenu">Print &#9662;</button>
         <div class="menu" id="printMenu" role="menu" aria-label="Print" hidden>
-          <div class="m-h">This planner</div>
-          <button type="button" role="menuitem" data-print="customer">Combined customer report (one page)</button>
-          <button type="button" role="menuitem" data-print="internal" class="partner-only">Partner working copy (everything)</button>
-          <button type="button" role="menuitem" data-print="governance">Governance settings sheet</button>
-          <div class="m-h">Cowork tab only</div>
-          <button type="button" role="menuitem" data-print="cowork-customer">Cowork customer leave-behind</button>
+          <div class="m-h" id="pmHub">This planner</div>
+          <button type="button" role="menuitem" data-print="customer" id="pmCustomer">Combined customer report (one page)</button>
+          <button type="button" role="menuitem" data-print="internal" class="partner-only" id="pmInternal">Partner working copy (everything)</button>
+          <button type="button" role="menuitem" data-print="governance" id="pmGov">Governance settings sheet</button>
+          <div class="m-h" id="pmCw">Cowork tab only</div>
+          <p class="menunote" id="pmCwNote" hidden>In a Cowork-only plan the report is the Cowork page&rsquo;s own print. For a combined report with agents, use Change plan type.</p>
+          <button type="button" role="menuitem" data-print="cowork-customer" id="pmCwCustomer">Cowork customer leave-behind</button>
           <button type="button" role="menuitem" data-print="cowork-internal" class="partner-only">Cowork internal working copy</button>
-          <div class="m-h partner-only">Exports</div>
-          <button type="button" role="menuitem" data-print="csv">Download the cost trace (.csv)</button>
+          <div class="m-h partner-only" id="pmExp">Exports</div>
+          <button type="button" role="menuitem" data-print="csv" id="pmCsv">Download the cost trace (.csv)</button>
         </div>
       </div>
       <input type="file" id="fileSession" accept="application/json,.json" hidden>
@@ -459,6 +547,81 @@ footer.pagefoot p { margin:0 0 10px; }
     <div id="notice" aria-live="polite"></div>
     <div class="printonly" id="printInternalHead"></div>
 
+    <!-- ══════════ TAB 0 · START ══════════ -->
+    <section class="tabpanel partner-only no-print" id="panel-start" role="tabpanel" aria-labelledby="tab-start">
+      <div class="wcard" id="cardStart">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-title">
+            <h2>Start here: what kind of plan is this?</h2></div></div>
+          <p class="startlede">This planner prices Copilot Credits the way Microsoft bills them. Cowork and Copilot Studio agents draw from one pool of credits in the customer&rsquo;s tenant, so the planner sizes them together, finds the cheapest way to buy the pool, and writes the settings that keep it from running out. Every number links to Microsoft&rsquo;s published rate, and every field you do not have in the room keeps a sensible default. Pick the plan type that matches the conversation you are having; you can change it at any time without losing anything you have entered.</p>
+          <ol class="howsteps" aria-label="How it works">
+            <li><b>Size it</b>Answer the Cowork questions, or describe each agent: who uses it, how often, and what it does.</li>
+            <li><b>Pool and buy</b>The planner adds everything into one monthly pool and tests every way to buy it: capacity packs, a pre-purchase plan and pay-as-you-go.</li>
+            <li><b>Leave behind</b>Print the one-page customer report and the guardrail settings sheet, copy the quote text for your provider, and save the session file.</li>
+          </ol>
+          <div class="modegrid" id="modeGrid">
+            <div class="modecard" data-modecard="cowork">
+              <div class="mc-e"><span>Plan type 1</span><span class="recbadge" data-curbadge="cowork" hidden>Current</span></div>
+              <h3>Cowork only</h3>
+              <p class="mc-for">For sizing Copilot Cowork for a customer who has, or is buying, Microsoft 365 Copilot. Use it when agents are not on the table yet.</p>
+              <p class="mc-time">About 10 minutes</p>
+              <div><div class="mc-h">Bring with you</div><ul>
+                <li>The employee count</li>
+                <li>Copilot licenses by SKU: Business, enterprise, E7</li>
+                <li>A rough share of users who will use Cowork actively</li>
+                <li>Your CSP motion: indirect reseller, direct-bill, or outside CSP</li>
+                <li>Your sell prices, if you quote your own</li></ul></div>
+              <div><div class="mc-h">You&rsquo;ll walk out with</div><ul>
+                <li>Monthly credits and dollars, with the arithmetic on show</li>
+                <li>Pay-as-you-go against a pre-purchase plan</li>
+                <li>A licensing recommendation and the per-user limit to set</li>
+                <li>A customer leave-behind and your internal working copy</li>
+                <li>The talk track and the next rung to sell</li></ul></div>
+              <div class="mc-go"><button type="button" class="btn primary" data-mode="cowork">Start a Cowork plan</button></div>
+            </div>
+            <div class="modecard" data-modecard="agents">
+              <div class="mc-e"><span>Plan type 2</span><span class="recbadge" data-curbadge="agents" hidden>Current</span></div>
+              <h3>Copilot Studio agents only</h3>
+              <p class="mc-for">For pricing one or more custom agents: a website FAQ, an HR or IT helpdesk, invoice intake, Business Central agents. Use it when Cowork is not part of this conversation.</p>
+              <p class="mc-time">About 5 minutes an agent; one click loads the three SMB examples</p>
+              <div><div class="mc-h">Bring with you</div><ul>
+                <li>Each agent&rsquo;s job, in a sentence</li>
+                <li>Who uses it: staff with or without Copilot licenses, or customers and the public</li>
+                <li>Rough conversations or runs a month</li>
+                <li>The channel: Teams, a website, WhatsApp or SMS</li>
+                <li>Whether Business Central is in use</li></ul></div>
+              <div><div class="mc-h">You&rsquo;ll walk out with</div><ul>
+                <li>Monthly credits and dollars per agent, and what licenses already cover</li>
+                <li>The cheapest way to buy it</li>
+                <li>The guardrail settings sheet: limits, environments, alerts</li>
+                <li>A one-page customer report and your partner working copy</li>
+                <li>Quote text for your provider, the talk track and objection answers</li></ul></div>
+              <div class="mc-go"><button type="button" class="btn primary" data-mode="agents">Start an agents plan</button></div>
+            </div>
+            <div class="modecard" data-modecard="full">
+              <div class="mc-e"><span>Plan type 3</span><span class="recbadge" data-curbadge="full" hidden>Current</span></div>
+              <h3>Full plan: Cowork + agents</h3>
+              <p class="mc-for">For a customer running Cowork and agents together. Both draw from one pool of credits, so one purchase covers both, and the guardrails decide who runs out first.</p>
+              <p class="mc-time">About 15 to 20 minutes</p>
+              <div><div class="mc-h">Bring with you</div><ul>
+                <li>Everything on the Cowork list</li>
+                <li>Everything on the agents list</li>
+                <li>The month the plan starts</li></ul></div>
+              <div><div class="mc-h">You&rsquo;ll walk out with</div><ul>
+                <li>One pooled monthly figure across Cowork and every agent</li>
+                <li>The combined purchase plan, and where the money runs out, day by day</li>
+                <li>The guardrail settings sheet</li>
+                <li>The combined customer report and your partner working copy</li>
+                <li>Quote text for your provider and the talk track</li></ul></div>
+              <div class="mc-go"><button type="button" class="btn primary" data-mode="full">Start the full plan</button></div>
+            </div>
+          </div>
+          <p class="startnote">Changing the plan type only changes what is shown: Cowork answers and agents stay in memory and come back when you switch. Keys: <b>0</b> returns here; <b>1</b>, <b>2</b> and <b>3</b> open the tabs this plan type shows; <b>C</b> toggles customer view.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ══════════ TAB 1 · COWORK ══════════ -->
     <section class="tabpanel" id="panel-cowork" role="tabpanel" aria-labelledby="tab-cowork" hidden>
       <div class="cwstatus no-print" id="cwStatus" role="status"></div>
@@ -469,7 +632,7 @@ footer.pagefoot p { margin:0 0 10px; }
     </section>
 
     <!-- ══════════ TAB 2 · COPILOT STUDIO AGENTS ══════════ -->
-    <section class="tabpanel" id="panel-studio" role="tabpanel" aria-labelledby="tab-studio">
+    <section class="tabpanel" id="panel-studio" role="tabpanel" aria-labelledby="tab-studio" hidden>
 
       <div class="wcard" id="cardAccount">
         <div class="wc-bar"></div>
@@ -478,20 +641,28 @@ footer.pagefoot p { margin:0 0 10px; }
             <h2>The account</h2>
             <div class="wc-sub">Who the agents serve and which Copilot licenses they already hold. Licensed people signed in with Microsoft, in Teams, SharePoint or Copilot Chat, cost nothing to run; everyone else is metered.</div></div></div>
           <div class="coach no-print" id="acctFromCowork" hidden><div class="co-txt"></div></div>
-          <div class="fgrid">
-            <div class="field"><label for="fPrepared">Prepared by (your company)</label><input type="text" id="fPrepared" maxlength="80" data-bind="meta.preparedBy" data-type="text" placeholder="Shown on the customer report"></div>
-            <div class="field"><label for="fStart">Plan start month</label><input type="month" id="fStart" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"><div class="hint">Twelve months from here.</div></div>
-            <div class="field"><label for="fUsers">Total users <span class="fromcw" data-from="studio.account.totalUsers" hidden>from the Cowork tab</span></label><input type="number" id="fUsers" min="0" max="1000000" step="1" data-bind="studio.account.totalUsers" data-type="int"></div>
-            <div class="field"><label for="fWd">Working days a month</label><input type="number" id="fWd" min="1" max="31" step="1" data-bind="studio.account.workingDays" data-type="int"><div class="hint">Used for per-user limit timing.</div></div>
-            <div class="field"><label for="fBiz">Copilot Business seats <span class="fromcw" data-from="studio.account.seats.business" hidden>from the Cowork tab</span></label><input type="number" id="fBiz" min="0" max="1000000" step="1" data-bind="studio.account.seats.business" data-type="int"><div class="hint">Capped at 300 seats. <span data-fact="F-147">$18</span> promotional through December 31, 2026.</div></div>
-            <div class="field"><label for="fBizBill">Copilot Business billing after the promotion</label><select id="fBizBill" data-bind="studio.account.businessBilling" data-type="enum"><option value="annual">Annual commitment</option><option value="monthly">Monthly billing</option></select><div class="hint">Annual is <span data-fact="F-176">$21</span> a user a month.</div></div>
-            <div class="field"><label for="fEnt">Microsoft 365 Copilot (enterprise) seats <span class="fromcw" data-from="studio.account.seats.enterprise" hidden>from the Cowork tab</span></label><input type="number" id="fEnt" min="0" max="1000000" step="1" data-bind="studio.account.seats.enterprise" data-type="int"><div class="hint"><span data-fact="F-090">$30</span> a user a month.</div></div>
-            <div class="field"><label for="fE7">E7 seats <span class="fromcw" data-from="studio.account.seats.e7" hidden>from the Cowork tab</span></label><input type="number" id="fE7" min="0" max="1000000" step="1" data-bind="studio.account.seats.e7" data-type="int"></div>
-            <div class="field"><label for="fBase">Tenant base <span class="fromcw" data-from="studio.account.tenantBase" hidden>from the Cowork tab</span></label><select id="fBase" data-bind="studio.account.tenantBase" data-type="enum"><option value="basic">Business Basic</option><option value="standard">Business Standard</option><option value="premium">Business Premium</option><option value="e3">Microsoft 365 E3</option><option value="e5">Microsoft 365 E5 or E7</option><option value="unsure">Not sure</option></select><div class="hint">Decides Agent 365 eligibility.</div></div>
-            <div class="field"><label for="fBc">Business Central in use</label><select id="fBc" data-bind="studio.account.businessCentral" data-type="bool"><option value="false">No</option><option value="true">Yes</option></select></div>
-            <div class="field"><label for="fCountry">Country</label><select id="fCountry" data-bind="studio.account.country" data-type="enum"></select></div>
-            <div class="field"><label for="fCspNew">New CSP Copilot Business seats from December 1, 2026</label><select id="fCspNew" data-bind="studio.account.cspNewBusiness" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select><div class="hint">They come with a default monthly credit limit per user.</div></div>
-            <div class="field"><label for="fAzure">Azure subscription linked for pay-as-you-go</label><select id="fAzure" data-bind="studio.account.azurePayg" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select><div class="hint">A billing path: without one, uncovered agent use simply fails.</div></div>
+          <div class="sub-h">Who and how many</div>
+          <div class="fgrid" data-pack="6">
+            <div class="field" data-help="preparedBy" data-w="2"><div class="flab"><label for="fPrepared">Prepared by (your company)</label></div><div class="fctl"><input type="text" id="fPrepared" maxlength="80" data-bind="meta.preparedBy" data-type="text" placeholder="Shown on the customer report"></div><div class="ffoot"></div></div>
+            <div class="field" data-help="totalUsers"><div class="flab"><label for="fUsers">Total users</label></div><div class="fctl"><input type="number" id="fUsers" min="0" max="1000000" step="1" data-bind="studio.account.totalUsers" data-type="int"></div><div class="ffoot"><span class="fromcw" data-from="studio.account.totalUsers" hidden>From the Cowork tab</span></div></div>
+            <div class="field" data-help="seatsBusiness"><div class="flab"><label for="fBiz">Copilot Business seats</label></div><div class="fctl"><input type="number" id="fBiz" min="0" max="1000000" step="1" data-bind="studio.account.seats.business" data-type="int"></div><div class="ffoot"><span class="fromcw" data-from="studio.account.seats.business" hidden>From the Cowork tab</span><div class="hint">Capped at 300 seats.</div></div></div>
+            <div class="field" data-help="seatsEnterprise"><div class="flab"><label for="fEnt">Microsoft 365 Copilot seats</label></div><div class="fctl"><input type="number" id="fEnt" min="0" max="1000000" step="1" data-bind="studio.account.seats.enterprise" data-type="int"></div><div class="ffoot"><span class="fromcw" data-from="studio.account.seats.enterprise" hidden>From the Cowork tab</span><div class="hint">The enterprise SKU.</div></div></div>
+            <div class="field" data-help="seatsE7"><div class="flab"><label for="fE7">E7 seats</label></div><div class="fctl"><input type="number" id="fE7" min="0" max="1000000" step="1" data-bind="studio.account.seats.e7" data-type="int"></div><div class="ffoot"><span class="fromcw" data-from="studio.account.seats.e7" hidden>From the Cowork tab</span></div></div>
+          </div>
+          <div class="sub-h">Tenant and billing</div>
+          <div class="fgrid" data-pack="6">
+            <div class="field" data-help="tenantBase"><div class="flab"><label for="fBase">Tenant base</label></div><div class="fctl"><select id="fBase" data-bind="studio.account.tenantBase" data-type="enum"><option value="basic">Business Basic</option><option value="standard">Business Standard</option><option value="premium">Business Premium</option><option value="e3">Microsoft 365 E3</option><option value="e5">Microsoft 365 E5 or E7</option><option value="unsure">Not sure</option></select></div><div class="ffoot"><span class="fromcw" data-from="studio.account.tenantBase" hidden>From the Cowork tab</span></div></div>
+            <div class="field" data-help="businessCentral"><div class="flab"><label for="fBc">Business Central in use</label></div><div class="fctl"><select id="fBc" data-bind="studio.account.businessCentral" data-type="bool"><option value="false">No</option><option value="true">Yes</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="businessBilling"><div class="flab"><label for="fBizBill">Copilot Business billing after the promotion</label></div><div class="fctl"><select id="fBizBill" data-bind="studio.account.businessBilling" data-type="enum"><option value="annual">Annual commitment</option><option value="monthly">Monthly billing</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="azurePayg"><div class="flab"><label for="fAzure">Azure subscription linked for pay-as-you-go</label></div><div class="fctl"><select id="fAzure" data-bind="studio.account.azurePayg" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="cspNewBusiness"><div class="flab"><label for="fCspNew">New CSP Copilot Business seats from Dec 1</label></div><div class="fctl"><select id="fCspNew" data-bind="studio.account.cspNewBusiness" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="country"><div class="flab"><label for="fCountry">Country</label></div><div class="fctl"><select id="fCountry" data-bind="studio.account.country" data-type="enum"></select></div><div class="ffoot"></div></div>
+          </div>
+          <div class="sub-h">Plan timing</div>
+          <div class="fgrid" data-pack="6">
+            <div class="field" data-help="startMonth" data-w="2"><div class="flab"><label for="fStart">Plan start month</label></div><div class="fctl"><input type="month" id="fStart" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"></div><div class="ffoot"></div></div>
+            <div class="field" data-help="workingDays" data-w="2"><div class="flab"><label for="fWd">Working days a month</label></div><div class="fctl"><input type="number" id="fWd" min="1" max="31" step="1" data-bind="studio.account.workingDays" data-type="int"></div><div class="ffoot"></div></div>
+            <div class="field" data-help="horizon" data-w="2"><div class="flab"><span class="flabel" id="lblHorizon">The twelve months modeled</span></div><div class="fctl"><div class="fout" id="acctHorizon" aria-labelledby="lblHorizon" role="status"></div></div><div class="ffoot"></div></div>
           </div>
           <div class="sub-h">What this account looks like</div>
           <div class="numgrid" id="acctRibbon"></div>
@@ -521,8 +692,7 @@ footer.pagefoot p { margin:0 0 10px; }
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">3</div><div class="wc-title">
             <h2>Build and environments</h2>
-            <div class="wc-sub">Where each agent draws its credits. The recommended layout keeps the default environment for personal use, gives published agents a capped production allocation, and builds in a sandbox with its tenant draw off.</div></div>
-            <div class="wc-tools"><button type="button" class="btn small" id="btnEnvLayout">Use the recommended layout</button><button type="button" class="btn small quiet" id="btnEnvAdd">+ Environment</button></div></div>
+            <div class="wc-sub">Where each agent draws its credits. The recommended layout keeps the default environment for personal use, gives published agents a capped production allocation, and builds in a sandbox with its tenant draw off.</div></div></div>
           <div id="envBody"></div>
         </div>
       </div>
@@ -531,9 +701,13 @@ footer.pagefoot p { margin:0 0 10px; }
         <div class="wc-bar"></div>
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">4</div><div class="wc-title">
-            <h2>Dataverse and other costs outside the credit pool</h2>
-            <div class="wc-sub">Storage, Windows 365 for Agents, Agent 365 and your own models are billed separately from Copilot Credits. They are never added to the pool or the purchase.</div></div></div>
-          <div id="adjBody"></div>
+            <h2>Storage and other costs outside the credit pool</h2>
+            <div class="wc-sub">Billed separately from Copilot Credits and never added to the pool or the purchase. Open this only for high-volume or long-retention agents, large knowledge libraries, computer use, Agent 365, or your own models; the line below says whether this plan needs it.</div></div></div>
+          <div id="adjVerdict" role="status"></div>
+          <details class="sect" id="adjSect" data-open="adj">
+            <summary>Storage and other costs: the detail</summary>
+            <div class="sect-b" id="adjBody"></div>
+          </details>
         </div>
       </div>
 
@@ -561,8 +735,8 @@ footer.pagefoot p { margin:0 0 10px; }
         <div class="wc-body">
           <div class="wc-head"><div class="wc-num">1</div><div class="wc-title">
             <h2>One pool of credits</h2>
-            <div class="wc-sub">Cowork and every agent draw from the same tenant pool. Capacity packs (<span data-fact="F-013">$200</span> for 25,000 credits a month) draw first, then any pre-purchase plan, then pay-as-you-go at <span data-fact="F-149">$0.01</span> a credit.</div></div></div>
-          <div class="ctlrow">
+            <div class="wc-sub">Everything in this plan draws from the same tenant pool. Capacity packs (<span data-fact="F-013">$200</span> for 25,000 credits a month) draw first, then any pre-purchase plan, then pay-as-you-go at <span data-fact="F-149">$0.01</span> a credit.</div></div></div>
+          <div class="ctlrow cw-lane">
             <span class="ctl-l" id="incLbl">Include Cowork</span>
             <div class="seg" role="group" aria-labelledby="incLbl" data-seg="combined.includeCowork">
               <button type="button" data-v="auto">Auto (at results)</button><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button>
@@ -570,10 +744,10 @@ footer.pagefoot p { margin:0 0 10px; }
             <span class="note" id="incStatus"></span>
           </div>
           <div class="fgrid" style="margin-top:14px;">
-            <div class="field"><label for="fStart2">Plan start month</label><input type="month" id="fStart2" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"></div>
-            <div class="field"><label for="fRamp">Agent adoption ramp</label><select id="fRamp" data-bind="combined.ramp.mode" data-type="enum"><option value="none">None: full volume from go-live</option><option value="linear">Linear ramp</option></select></div>
-            <div class="field"><label for="fRampStart">Ramp starts at (%)</label><input type="number" id="fRampStart" min="0" max="100" step="1" data-bind="combined.ramp.startPct" data-type="int"></div>
-            <div class="field"><label for="fRampMonths">Months to full volume</label><input type="number" id="fRampMonths" min="1" max="12" step="1" data-bind="combined.ramp.months" data-type="int"></div>
+            <div class="field" data-help="startMonth"><div class="flab"><label for="fStart2">Plan start month</label></div><div class="fctl"><input type="month" id="fStart2" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"></div><div class="ffoot"></div></div>
+            <div class="field" data-help="rampMode"><div class="flab"><label for="fRamp">Agent adoption ramp</label></div><div class="fctl"><select id="fRamp" data-bind="combined.ramp.mode" data-type="enum"><option value="none">None: full volume from go-live</option><option value="linear">Linear ramp</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="rampStart"><div class="flab"><label for="fRampStart">Ramp starts at (%)</label></div><div class="fctl"><input type="number" id="fRampStart" min="0" max="100" step="1" data-bind="combined.ramp.startPct" data-type="int"></div><div class="ffoot"></div></div>
+            <div class="field" data-help="rampMonths"><div class="flab"><label for="fRampMonths">Months to full volume</label></div><div class="fctl"><input type="number" id="fRampMonths" min="1" max="12" step="1" data-bind="combined.ramp.months" data-type="int"></div><div class="ffoot"></div></div>
           </div>
           <div class="numgrid" id="poolKpis" style="margin-top:18px;"></div>
           <div class="sub-h">Month by month (middle scenario)</div>
@@ -622,10 +796,10 @@ footer.pagefoot p { margin:0 0 10px; }
             <div class="wc-sub">Microsoft blocks agent flows at 100% of prepaid capacity and switches custom agents off at 125%. Power Platform pre-allocations come out first, and Microsoft 365 (Cowork) draws only what is left. This simulates the peak month, day by day.</div></div>
             <div class="wc-tools"><button type="button" class="btn small quiet" id="btnMsExample" aria-expanded="false">Show Microsoft&rsquo;s example</button></div></div>
           <div class="fgrid">
-            <div class="field"><label for="fEnfBasis">Simulate</label><select id="fEnfBasis" data-bind="combined.enforcement.basis" data-type="enum"><option value="recommended">The recommended purchase</option><option value="current">What the customer holds today</option></select></div>
-            <div class="field"><label for="fUserCap">Per-user monthly credit limit</label><input type="number" id="fUserCap" min="0" step="100" placeholder="None set" data-bind="combined.enforcement.perUserCap" data-type="nullint"><div class="hint">Blank: none, or the December 1 default when it applies.</div></div>
-            <div class="field"><label for="fCaps">Per-agent limits set</label><select id="fCaps" data-bind="combined.enforcement.perAgentCaps" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
-            <div class="field check"><label><input type="checkbox" data-bind="combined.enforcement.defaultEnvPayg" data-type="bool"> The default environment and tenant pool are linked to pay-as-you-go</label></div>
+            <div class="field" data-help="enfBasis"><div class="flab"><label for="fEnfBasis">Simulate</label></div><div class="fctl"><select id="fEnfBasis" data-bind="combined.enforcement.basis" data-type="enum"><option value="recommended">The recommended purchase</option><option value="current">What the customer holds today</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="perUserCap" data-mode-hide="agents"><div class="flab"><label for="fUserCap">Per-user monthly credit limit</label></div><div class="fctl"><input type="number" id="fUserCap" min="0" step="100" placeholder="None set" data-bind="combined.enforcement.perUserCap" data-type="nullint"></div><div class="ffoot"><div class="hint">Blank: none, or the December 1 default when it applies.</div></div></div>
+            <div class="field" data-help="perAgentCaps"><div class="flab"><label for="fCaps">Per-agent limits set</label></div><div class="fctl"><select id="fCaps" data-bind="combined.enforcement.perAgentCaps" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div><div class="ffoot"></div></div>
+            <div class="field" data-help="defaultEnvPayg"><div class="flab"><span class="flabel" id="lblDefPayg">Default environment on pay-as-you-go</span></div><div class="fctl"><label class="ckbox"><input type="checkbox" aria-labelledby="lblDefPayg" data-bind="combined.enforcement.defaultEnvPayg" data-type="bool"> Linked to a billing policy</label></div><div class="ffoot"></div></div>
           </div>
           <div id="msExample" hidden></div>
           <div id="enfBody"></div>
@@ -639,8 +813,9 @@ footer.pagefoot p { margin:0 0 10px; }
             <h2>Governance settings sheet</h2>
             <div class="wc-sub">Every setting, its value from this plan and where to set it. Customer-safe: hand it to whoever holds the admin keys.</div></div>
             <div class="wc-tools"><button type="button" class="btn small" id="btnCopyGov">Copy settings</button><button type="button" class="btn small quiet" id="btnPrintGov">Print the sheet</button></div></div>
-          <div class="fgrid" style="margin-bottom:12px;">
-            <div class="field"><label for="fAutoApply">&ldquo;Auto-apply new services&rdquo; decision made</label><select id="fAutoApply" data-bind="autopilot.checklist.autoApplyDecision" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div class="ctlrow" style="margin-bottom:12px;">
+            <label class="ctl-l" for="fAutoApply">&ldquo;Auto-apply new services&rdquo; decision made</label>
+            <select id="fAutoApply" data-bind="autopilot.checklist.autoApplyDecision" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select>
           </div>
           <div id="govBody"></div>
         </div>
@@ -670,7 +845,7 @@ footer.pagefoot p { margin:0 0 10px; }
                 <button type="button" data-v="indirectReseller">Indirect reseller</button><button type="button" data-v="direct">Direct-bill partner</button><button type="button" data-v="notCsp">Outside CSP</button><button type="button" data-v="unsure">Not established</button>
               </div>
             </div>
-            <div class="fgrid" id="whoFields" style="margin-top:14px;"></div>
+            <div id="whoFields" style="margin-top:4px;"></div>
             <p class="srcline" id="rateNote"></p>
           </div>
         </div>
@@ -2242,7 +2417,9 @@ footer.pagefoot p { margin:0 0 10px; }
       return { id: a.id, name: a.name, credits: roundUp(a.hi * buf, 1000) };
     });
     var allocations = en.environments.filter(function (e) { return !e.payg; }).map(function (e) {
-      var al = roundUp(e.consumption.hi * buf * 100 / RC.enforceAgents.v, 1000);
+      /* A sandbox runs builds and tests, not published agents: with no agents
+         in it, its own allocation is the figure to set. */
+      var al = e.kind === 'sandbox' && !(e.consumption.hi > 0) ? e.allocation : roundUp(e.consumption.hi * buf * 100 / RC.enforceAgents.v, 1000);
       return { name: e.name, credits: al, agentsCutoff: al * RC.enforceAgents.v / 100, flowsBelowHigh: al < e.consumption.hi, tenantDraw: e.kind === 'sandbox' ? false : e.tenantDraw };
     });
     var retention = agents.filter(function (a) { return !a.paused && a.sessions > 0; }).map(function (a) { return { name: a.name, days: a.retentionDays }; });
@@ -2323,7 +2500,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function gbWords(x) {
     if (!(x > 0)) return '0 GB';
     if (x < 0.1) return 'under 0.1 GB';
-    return String(x < 10 ? roundTo(x, 1) : Math.round(x)) + ' GB';
+    return 'about ' + String(x < 10 ? roundTo(x, 1) : Math.round(x)) + ' GB';
   }
   function storageVerdict(dv) {
     var e = dv.entitlement, u = dv.usage, o = dv.overageGb;
@@ -2339,7 +2516,8 @@ footer.pagefoot p { margin:0 0 10px; }
     if (!(u.db > 0) && !(u.file > 0) && !(u.log > 0))
       return { level: 'ok', text: 'No transcripts or knowledge files modeled yet, so storage stays inside the ' + fmtInt(e.db) + ' GB Dataverse database ' + where + '. No extra storage needed.' };
     var near = dv.headroomPct.db >= 80 || dv.headroomPct.file >= 80;
-    var txt = 'Transcripts and knowledge files use about ' + gbWords(u.db) + ' of the ' + fmtInt(e.db) + ' GB Dataverse database ' + where +
+    var existing = u.db > dv.transcriptGb + dv.indexGb + 1e-9 || u.file > dv.knowledgeGb + 1e-9 || u.log > 0;
+    var txt = (existing ? 'With the storage the tenant already uses, Dataverse comes to ' : 'Transcripts and knowledge files use ') + gbWords(u.db) + ' of the ' + fmtInt(e.db) + ' GB Dataverse database ' + where +
       (u.file > 0 ? ', and ' + gbWords(u.file) + ' of the ' + fmtInt(e.file) + ' GB of file storage' : '');
     return near ? { level: 'watch', text: txt + '. That is close to the included amount: check the tenant’s real storage use before quoting.' }
                 : { level: 'ok', text: txt + ': no extra storage needed at these volumes.' };
@@ -3349,6 +3527,250 @@ footer.pagefoot p { margin:0 0 10px; }
     return '<span class="ref">' + provPill(prov || 'ms-verified') + ' ' + (src ? srcLink(src) + ' &middot; ' : '') + esc(fact) + '</span>';
   }
 
+  /* ══ Help hints: plain words, built from the engine's rate card ════════
+     Every rate quoted here is read from E.RC at render time, so a hint can
+     never drift from the math. Each entry: w (what it is), a (when it
+     applies / whether the default is fine), c (what it costs), g (where a
+     partner finds the real number), and rc or src for the dated source. */
+  function rateOf(k) { var v = E.RC[k].v; return Array.isArray(v) ? v[0] / v[1] : v; }
+  function cr(k) { var x = Math.round(rateOf(k) * 100) / 100; return x >= 1000 ? fi(x) : String(x); }
+  var HELP = {
+    preparedBy: { w: 'Your company name, printed as &ldquo;Prepared by&rdquo; on the customer report and the governance sheet.', a: 'Leave it blank to print without a name.' },
+    totalUsers: { w: 'Everyone at the customer who could use an internal agent, Copilot-licensed or not.', a: 'The Cowork tab fills it when it reports; type over it to keep your own figure.',
+      c: function () { return 'Copilot Business is capped at ' + fi(E.RC.bizSeatCap.v) + ' seats, so above that some users need the enterprise SKU.'; }, rc: 'bizSeatCap' },
+    seatsBusiness: { w: 'Microsoft 365 Copilot Business licenses the customer holds or is buying.', a: 'Licensed staff using an agent in Teams, SharePoint or Copilot Chat with their Microsoft sign-in cost nothing to run.',
+      c: function () { return fu(E.RC.seatBizPromo.v) + ' a user a month on the promotion through December 31, 2026; then ' + fu(E.RC.seatBiz.v) + ' annual or ' + fu(E.RC.seatBizMonthly.v, true) + ' monthly.'; }, rc: 'seatBizPromo' },
+    seatsEnterprise: { w: 'Microsoft 365 Copilot licenses on the enterprise SKU.', a: 'Covered the same way as Business seats.', c: function () { return fu(E.RC.seatEnt.v) + ' a user a month.'; }, rc: 'seatEnt' },
+    seatsE7: { w: 'Microsoft 365 E7 licenses. E7 includes Microsoft 365 Copilot.', a: 'These users count as Copilot-licensed when they use an agent.' },
+    tenantBase: { w: 'The Microsoft 365 plan most of the customer&rsquo;s users are on.', a: 'Agent 365 needs Business Premium, E5 or E7 (or the Defender and Purview suites).',
+      c: function () { return 'Agent 365 is ' + fu(E.RC.agent365.v) + ' a user a month.'; }, rc: 'agent365' },
+    businessCentral: { w: 'Whether the customer runs Dynamics 365 Business Central.', a: 'When yes, the Business Central agents are listed first when you add an agent. They bill per document and draw from the default environment unless relinked.', rc: 'bcDefaultEnv' },
+    businessBilling: { w: 'How Copilot Business renews once the promotion ends.', a: 'Sets the seat price the seat-or-meter test uses after December 2026.',
+      c: function () { return 'Annual ' + fu(E.RC.seatBiz.v) + ' or monthly ' + fu(E.RC.seatBizMonthly.v, true) + ' a user a month.'; }, rc: 'seatBiz' },
+    azurePayg: { w: 'An Azure subscription linked to a Power Platform billing policy.', a: 'It lets use above any prepaid capacity bill as pay-as-you-go. Without some billing path, agent use that no license covers simply fails.',
+      c: function () { return fu(E.RC.payg.v, true) + ' a credit.'; }, rc: 'payg' },
+    cspNewBusiness: { w: 'Whether the Copilot Business seats are new CSP purchases on or after December 1, 2026.', a: 'Those seats come with usage-based billing on and a default monthly limit per user.',
+      c: function () { return fi(E.RC.capDefault.v) + ' credits per user a month by default.'; }, rc: 'capDefault' },
+    country: { w: 'Where the tenant is billed.', a: function () { return 'In ' + E.RC.capExcluded.v.length + ' countries the December 1 default limit is not available at first; the list marks them.'; }, rc: 'capExcluded' },
+    startMonth: { w: 'The first of the twelve months this plan models.', a: 'Agent go-live months count from here. The Copilot Business promotion applies while the plan starts by December 2026.', rc: 'seatBizPromo' },
+    workingDays: { w: 'Working days in a typical month.', a: 'Used only to time when an average Cowork user reaches a per-user limit. Microsoft&rsquo;s estimator assumes 22; most partners leave it.' },
+    horizon: { w: 'The twelve months this plan covers, from the start month.', a: 'The pool, the purchase and the day-by-day enforcement all use these months.' },
+    rampMode: { w: 'How agent use grows after go-live.', a: 'None puts every agent at full volume from its go-live month; a linear ramp starts lower and climbs. Cowork follows its own ramp from the Cowork tab.' },
+    rampStart: { w: 'Share of full volume in an agent&rsquo;s first live month.', a: 'Only used with a linear ramp.' },
+    rampMonths: { w: 'Months until an agent reaches full volume.', a: 'Only used with a linear ramp.' },
+    enfBasis: { w: 'Which purchase the day-by-day simulation tests.', a: 'The recommended purchase, or what the customer already holds (enter that under &ldquo;What the customer already holds&rdquo; above).' },
+    perUserCap: { w: 'A monthly credit limit per Copilot user, set in the Microsoft 365 admin center.', a: 'It caps each person&rsquo;s Cowork use. Leave blank for none, or for the December 1 default where it applies.',
+      c: function () { return fi(E.RC.capDefault.v) + ' credits a month is the default on new CSP Copilot Business seats.'; }, rc: 'capDefault' },
+    perAgentCaps: { w: 'Whether every agent has its own monthly limit in the Power Platform admin center.', a: 'There is no tenant-wide default agent limit, so each agent needs one; the governance sheet gives the figures.',
+      c: function () { return 'Without it, custom agents switch off at ' + E.RC.enforceAgents.v + '% of prepaid capacity.'; }, rc: 'enforceAgents' },
+    defaultEnvPayg: { w: 'Whether the default environment and tenant pool are linked to a pay-as-you-go billing policy.', a: 'A linked environment keeps running past prepaid capacity instead of stopping flows at 100% and agents at 125%.', rc: 'enforceFlows' },
+    /* Agent cards */
+    who: { w: 'Who talks to the agent decides who pays.', a: 'Staff signed in with Microsoft in Teams, SharePoint or Copilot Chat are covered by their own Copilot license; everyone else is metered. Autonomous runs and Business Central agents always bill.', src: 'ms-rates' },
+    users: { w: 'How many people use this agent.', a: 'For staff agents the Copilot-licensed ones are counted inside this number. With volume per user, it multiplies the volume.' },
+    licensed: { w: 'Of those people, how many hold a Copilot license.', a: 'A headcount, subtracted once. Their use in Microsoft channels with Microsoft sign-in is zero-rated; fair use applies.', src: 'ms-rates' },
+    volConv: { w: 'How many conversations the agent handles.', a: 'One visit is one conversation, however many questions it holds. The next field says whether this is in total or per user, a month or a day.' },
+    volRun: { w: 'How many times the agent runs on its own: one email processed, one document handled, one scheduled job.', a: 'The next field says whether this is in total or per user, a month or a day.' },
+    volBasis: { w: 'How the number to the left is counted.', a: 'Per user multiplies it by the headcount; a day multiplies it by the days active a month (under &ldquo;Where it runs and when&rdquo;).' },
+    turns: { w: 'How many times the agent answers in a typical conversation.', a: 'Each answer bills: AI-written (generative) answers at one rate, scripted (classic) ones at another.',
+      c: function () { return cr('generative') + ' credits a generative answer, ' + cr('classic') + ' a classic one.'; }, rc: 'generative' },
+    grounded: { w: 'Answers drawn from company data: the agent searches the customer&rsquo;s SharePoint, OneDrive and Teams content to answer.', a: 'Applies to most internal knowledge agents; leave it at 0 for a public FAQ agent.',
+      c: function () { return cr('grounding') + ' credits per grounded answer, on top of the ' + cr('generative') + '-credit generative answer; free for licensed staff in Microsoft channels.'; }, rc: 'grounding' },
+    actions: { w: 'Times per conversation or run the agent looks something up in, or updates, another system: a connector, an API, a flow call.', a: 'A lead logged to a CRM, an order status check, a ticket raised.',
+      c: function () { return cr('action') + ' credits an action.'; }, rc: 'action' },
+    bundleMode: { w: 'How a run is priced.', a: 'Itemize it from actions and tools; use one of Microsoft&rsquo;s published blueprint figures; or type your own measured credits per run.', rc: 'blueprints' },
+    blueprint: { w: 'Microsoft&rsquo;s published consumption for a typical run of this kind of agent.',
+      c: function () { var b = E.RC.blueprints.v; return 'Expense ' + b.expense + ', approval ' + b.approval + ', timesheet ' + b.timesheet + ' credits a run.'; }, rc: 'blueprints' },
+    fixedPerRun: { w: 'Your own credits per run, for example measured in a pilot.', a: 'Replaces the itemized lines; flows, reasoning, voice and computer use still add on top.' },
+    bcKind: { w: 'Which Business Central agent.', a: 'Each bills per document it handles, at Microsoft&rsquo;s Business Central rates.', rc: 'bcInvoice' },
+    bcVolSalesOrder: { w: 'Customer emails the Sales Order Agent reads a month.', c: function () { return cr('bcAnalyze') + ' credits to read an email, ' + cr('bcCheck') + ' per availability check, ' + cr('bcQuoteOrder') + ' per quote or order written, ' + cr('bcReply') + ' per reply.'; }, rc: 'bcAnalyze' },
+    bcVolPayables: { w: 'Vendor invoices the Payables Agent processes a month.', a: 'At most 500 invoices and 100 emails a day; PDFs up to 10 pages and 5 MB.', c: function () { return cr('bcInvoice') + ' credits an invoice plus ' + cr('bcInvoiceLine') + ' a line.'; }, rc: 'bcInvoice' },
+    bcVolExpense: { w: 'Receipts uploaded to the Expense Agent a month.', a: 'The agent is in preview, so its rate can change.', c: function () { return cr('bcReceipt') + ' credits a receipt.'; }, rc: 'bcReceipt' },
+    bcChecks: { w: 'Item availability checks the agent runs per email.', c: function () { return cr('bcCheck') + ' credits a check.'; }, rc: 'bcCheck' },
+    bcOrders: { w: 'Quotes or orders the agent creates or updates per email.', c: function () { return cr('bcQuoteOrder') + ' credits each.'; }, rc: 'bcQuoteOrder' },
+    bcAttachData: { w: 'Attachments carrying sales data, per email. 0.5 means half the emails carry one.', c: function () { return cr('bcAttachData') + ' credits an attachment.'; }, rc: 'bcAttachData' },
+    bcAttachNoData: { w: 'Attachments without sales data, per email.', c: function () { return cr('bcAttachNoData') + ' credits an attachment.'; }, rc: 'bcAttachNoData' },
+    bcLines: { w: 'Lines on a typical vendor invoice.', c: function () { return cr('bcInvoiceLine') + ' credits a line.'; }, rc: 'bcInvoiceLine' },
+    harness: { w: 'The engine the agent was built on. Standard is the default for agents built in Copilot Studio; Copilot Chat (Agent Builder) is for simple internal agents.',
+      a: 'Choose GitHub Copilot harness only if the agent was built in the new agents experience: it bills per task and is never covered by a license.',
+      c: function () { var g = E.RC.ghRun.v; return 'GitHub harness: ' + fi(g[0][0]) + ' to ' + fi(g[1][1]) + '+ credits a task.'; }, rc: 'ghRun' },
+    genPct: { w: 'Share of answers the AI writes itself rather than reading from a script.', a: 'Most modern agents are 100% generative; lower it only for agents built mostly on scripted topics.',
+      c: function () { return 'Generative ' + cr('generative') + ' credits, classic ' + cr('classic') + '.'; }, rc: 'classic' },
+    greeting: { w: 'Whether the agent opens every conversation with a message of its own.', a: 'Microsoft bills the greeting as a classic answer.', c: function () { return cr('classic') + ' credit a conversation.'; }, rc: 'classic' },
+    extraConv: { w: 'Answers on top of the turns above, per conversation.', a: 'Microsoft&rsquo;s support-bot example is written this way: 4 classic and 2 generative answers a conversation, with no turns.', rc: 'classic' },
+    extraRun: { w: 'Answers the agent writes during a run: classic, generative, or grounded in company data.', a: 'Most autonomous runs need none: actions and prompt tools do the work.', rc: 'generative' },
+    flowActions: { w: 'Steps run inside agent flows (automation built in Copilot Studio).', a: 'Count the actions in the flow: updating a record and sending an email is two.',
+      c: function () { var f = E.RC.flow.v; return f[0] + ' credits per ' + f[1] + ' flow actions.'; }, rc: 'flow' },
+    flowTrigger: { w: 'What starts the flow.', a: 'Flows started by &ldquo;When an agent calls the flow&rdquo; follow the agent&rsquo;s coverage; any other trigger (a schedule, an email) bills every time, even for licensed users.', rc: 'flow' },
+    aiTier: { w: 'Prompt tools: an AI prompt the agent runs to read, classify or write something.', a: 'Invoice intake uses one premium prompt to read each invoice.',
+      c: function () { return 'Basic ' + cr('aiBasic') + ', standard ' + cr('aiStandard') + ', premium ' + cr('aiPremium') + ' credits a response.'; }, rc: 'aiPremium' },
+    aiCount: { w: 'Prompt responses per conversation or run, at the tier to the left.' },
+    aiPricing: { w: 'Microsoft prices prompt tools per response, or per 1,000 tokens.', a: 'Per 1,000 tokens rounds every started 1,000 up: 1,500 tokens bills as 2 units.', rc: 'aiPremium' },
+    aiTokens: { w: 'Tokens in a typical prompt response.', a: 'Only counts when prompt tools are priced per 1,000 tokens.' },
+    reasoningOn: { w: 'A reasoning model thinks before it answers; it helps on hard, multi-step jobs.', a: 'It bills twice: the normal rate for the step, plus its reasoning tokens on top.',
+      c: function () { return cr('reasoning') + ' credits per started 1,000 reasoning tokens.'; }, rc: 'reasoning' },
+    reasoningTokens: { w: 'Reasoning tokens per conversation or run.', a: 'Every started 1,000 rounds up.', rc: 'reasoning' },
+    contentPages: { w: 'Pages of documents the agent reads per conversation or run: invoices, PDFs, forms.', c: function () { return cr('content') + ' credits a page.'; }, rc: 'content' },
+    voiceTier: { w: 'Phone or voice conversations, priced by the minute.', a: 'Voice is billed for every caller, licensed or not (Likely).',
+      c: function () { return 'Classic ' + cr('voiceClassic') + ', generative ' + cr('voiceGen') + ', premium ' + cr('voicePremium') + ' credits a minute.'; }, rc: 'voiceGen' },
+    voiceMin: { w: 'Minutes of voice per conversation, at the tier to the left.' },
+    cuaSteps: { w: 'Computer use: the agent operates a website or desktop app like a person, one step (a click or keystroke) at a time.', a: 'Only for systems with no API. Never covered by a Copilot license.',
+      c: function () { return cr('cuaStandard') + ' credits a step on the standard model, ' + cr('cuaPremium') + ' on premium.'; }, rc: 'cuaStandard' },
+    cuaModel: { w: 'The model that drives computer use.', c: function () { return cr('cuaStandard') + ' or ' + cr('cuaPremium') + ' credits a step.'; }, rc: 'cuaPremium' },
+    w365Hours: { w: 'Hosted Windows 365 machines the computer-use agent runs on.', a: 'Billed in dollars on Azure, outside the credit pool. Enter the hours its machines run in a month.',
+      c: function () { return fu(E.RC.w365Hour.v, true) + ' an hour, pay-as-you-go.'; }, rc: 'w365Hour' },
+    w365AlwaysOn: { w: 'Cloud PCs kept on all month for the agent, instead of paying by the hour.', c: function () { return fu(E.RC.w365AlwaysOn.v) + ' per Cloud PC a month.'; }, rc: 'w365AlwaysOn' },
+    workiq: { w: 'Work IQ API calls the agent makes.', a: 'Not included in the Copilot license; always billed.', c: function () { return cr('workiqCall') + ' credits a call.'; }, rc: 'workiqCall' },
+    trigger: { w: 'Counts the trigger that starts each run as one more agent action.', a: 'Microsoft&rsquo;s order example does not count it; turn it on to price the cautious reading (Likely).',
+      c: function () { return 'Adds ' + cr('action') + ' credits a run.'; }, rc: 'action' },
+    promptAsAction: { w: 'Counts each prompt call as an agent action as well.', a: 'Off matches Microsoft&rsquo;s examples; on prices the cautious reading.', c: function () { return 'Adds ' + cr('action') + ' credits a prompt call.'; }, rc: 'action' },
+    retention: { w: 'How long conversation transcripts stay in Dataverse.', a: 'The 30-day default is fine for most agents; longer retention grows storage, not credits. 0 turns transcripts off and breaks enhanced reporting.',
+      g: 'Change it in Power Apps: Settings, Advanced settings, Data Management, Bulk Record Deletion (the &ldquo;older than 1 month&rdquo; transcript job).', src: 'ms-transcript-retention' },
+    knowledgeGb: { w: 'Files uploaded to the agent as knowledge, not SharePoint or website links.', a: 'They sit in Dataverse file storage, and their search index adds database storage. Leave 0 when knowledge is read from SharePoint.', rc: 'dvStudio' },
+    env: { w: 'The Power Platform environment the agent runs in.', a: 'It draws credits from that environment&rsquo;s allocation; the default environment shares the tenant pool. Set environments up in section 3.' },
+    goLive: { w: 'The month this agent goes live.', a: 'It bills nothing before; GitHub harness build sessions bill in the months before it.' },
+    ramped: { w: 'Whether this agent follows the adoption ramp on the Combined tab.', a: 'Off: full volume from its go-live month.' },
+    daysActive: { w: 'Days a month the agent runs.', a: 'Only used when volume is given per day.' },
+    kind: { w: 'Conversational agents answer people; autonomous agents run on a trigger or schedule; Business Central agents run inside Business Central.', a: 'Autonomous runs and Business Central agents always bill.', src: 'ms-rates' },
+    audience: { w: 'Internal means the customer&rsquo;s own staff; external means customers or the public.', a: 'No Copilot license covers an external user.', src: 'ms-rates' },
+    channel: { w: 'Where people talk to the agent.', a: 'Only Teams and Microsoft 365, SharePoint and Copilot Chat can be covered by a license; every other channel bills.', src: 'ms-rates' },
+    auth: { w: 'How people sign in to the agent.', a: 'Only Microsoft sign-in can be covered by a Copilot license; Teams, SharePoint and Copilot Chat always use it.', src: 'ms-rates' },
+    ghUsers: { w: 'People who hand tasks to the agent.' },
+    ghPerDay: { w: 'Tasks each person gives the agent a day.', c: function () { var g = E.RC.ghRun.v; return fi(g[0][0]) + ' to ' + fi(g[0][1]) + ' credits a light task, ' + fi(g[1][0]) + ' to ' + fi(g[1][1]) + ' a medium one, ' + fi(g[2][0]) + ' or more a heavy one.'; }, rc: 'ghRun' },
+    ghSplit: { w: 'Share of tasks by size.', a: 'Microsoft&rsquo;s default split is 40/40/20; shares are rescaled to total 100%.', rc: 'ghSplit' },
+    ghHeavy: { w: 'Measured credits per heavy task, from a pilot.', a: 'Without it, heavy tasks count at the 500-credit floor, so the total is a minimum.', rc: 'ghRun' },
+    ghBuild: { w: 'Build and test sessions a month before go-live.', a: 'On this harness building bills from the first session; put it in the statement of work.',
+      c: function () { var g = E.RC.ghBuild.v; return fi(g[0][0]) + ' to ' + fi(g[0][1]) + ' credits a light session, ' + fi(g[1][0]) + ' to ' + fi(g[1][1]) + ' medium, ' + fi(g[2][0]) + ' or more heavy.'; }, rc: 'ghBuild' },
+    ghBuildMonths: { w: 'Months of building before go-live.', a: 'Build months before the plan starts fall outside the pool.' },
+    ghBuildSplit: { w: 'Share of build sessions by size; rescaled to total 100%.', rc: 'ghBuild' },
+    /* Storage and other costs */
+    kbPerSession: { w: 'Storage one conversation transcript takes in Dataverse.', a: 'A planner estimate: Microsoft publishes no figure. Leave it unless you have measured a tenant.',
+      g: 'To measure: Power Platform admin center, Licensing, Dataverse, then the environment&rsquo;s per-table use of ConversationTranscript, divided by the conversations in the period.', src: 'ms-capacity' },
+    searchIdx: { w: 'The search index Copilot Studio builds over uploaded knowledge files, as a share of their size.', a: 'A planner estimate; leave it unless you measured it after the first upload.', src: 'ms-capacity' },
+    existingDb: { w: 'Dataverse database the tenant already uses before these agents.', a: 'Leave 0 for a tenant with no other Power Apps or Dynamics 365 data.',
+      g: 'The real number: Power Platform admin center, Licensing, then Dataverse under Products; the Summary tab shows database, file and log use.', src: 'ms-capacity' },
+    existingFile: { w: 'Dataverse file storage the tenant already uses: attachments and uploaded files.', a: 'Leave 0 unless the tenant runs other Power Platform or Dynamics 365 apps.',
+      g: 'Power Platform admin center, Licensing, Dataverse (under Products), Summary tab.', src: 'ms-capacity' },
+    existingLog: { w: 'Dataverse log storage the tenant already uses: audit history.', a: 'Agents add none; leave 0 unless auditing is heavy.',
+      g: 'Power Platform admin center, Licensing, Dataverse (under Products), Summary tab.', src: 'ms-capacity' },
+    agent365Owners: { w: 'People who own or sponsor agents and use Agent 365 to see and govern them.', a: 'Optional; worth it around three agents. Count owners and sponsors, not everyone who uses an agent (Likely).',
+      c: function () { return fu(E.RC.agent365.v) + ' a user a month; needs Business Premium, E5 or E7.'; }, rc: 'agent365' },
+    byom: { w: 'Dollars a month for models the customer runs in its own Azure (Azure AI Foundry) and calls from an agent.', a: 'Leave 0 unless an agent uses a model the customer hosts.',
+      g: 'The real figure is on the customer&rsquo;s Azure bill: Azure portal, Cost Management, filtered to the Foundry resource.' },
+    premiumFlows: { w: 'Whether cloud flows use premium connectors (SQL, HTTP, Salesforce and the like).', a: 'Those can need Power Automate Premium licenses: a license, not credits, so price it separately. Agent flows inside Copilot Studio do not.' },
+    /* Value, partner */
+    valueOn: { w: 'Shows the value estimate on the customer report.', a: 'Off by default: it uses Microsoft&rsquo;s formula with your inputs, not measured results.', rc: 'aahSession' },
+    hourly: { w: 'What an hour of the customer&rsquo;s staff time is worth.', c: function () { return 'Microsoft&rsquo;s default is ' + fu(E.RC.aavRate.v) + ' an hour.'; }, rc: 'aavRate' },
+    minSession: { w: 'Minutes of staff time an agent conversation saves.', c: function () { return 'Microsoft&rsquo;s formula uses ' + fnum(E.RC.aahSession.v) + ' minutes.'; }, rc: 'aahSession' },
+    minAction: { w: 'Minutes an autonomous action saves.', c: function () { return 'Microsoft&rsquo;s formula uses ' + fnum(E.RC.aahAction.v) + ' minutes.'; }, rc: 'aahAction' },
+    resolvedPct: { w: 'Share of conversations the agent resolves without a person.', a: 'Only used for the deflection figure.' },
+    costContact: { w: 'What a human contact costs the customer: a call or a ticket handled by staff.', a: 'Microsoft&rsquo;s 2024 guidance suggested 5 to 10 dollars; dated, so use the customer&rsquo;s own figure.' },
+    provCredit: { w: 'What your provider charges you per pay-as-you-go credit.', a: 'Ask your provider; nothing is assumed.' },
+    provPack: { w: 'What you pay for one capacity pack.', a: 'Ask your provider or check your price list; no CSP price point is assumed.' },
+    provP3: { w: 'Your provider&rsquo;s discount off list on a pre-purchase plan.' },
+    pec: { w: 'Partner-earned credit on the Copilot Credit meter, for direct-bill partners.', a: 'Not confirmed for this meter, so it defaults to 0. A pre-purchase plan never earns it.' },
+    sellCredit: { w: 'Your price to the customer per credit.', a: 'Blank: the customer report uses Microsoft list, or the Cowork tab&rsquo;s sell price.' },
+    sellPack: { w: 'Your price to the customer for one capacity pack.' },
+    sellSeatBiz: { w: 'Your price for a Copilot Business seat; the seat-or-meter test uses it.' },
+    sellSeatEnt: { w: 'Your price for an enterprise Copilot seat; the seat-or-meter test uses it.' },
+    seatMargin: { w: 'Your margin on Copilot seats, for the license-instead line in your economics.' },
+    notes: { w: 'Your own notes. Partner-only: never printed for the customer, saved in the session file.' },
+    holdPacks: { w: 'Capacity packs a month the customer already holds.', a: 'Used to compare &ldquo;what you hold&rdquo; with the recommendation, and by the enforcement simulation.', rc: 'pack' }
+  };
+  var uiHelp = {}, helpSeq = 0;   // help panel id -> open
+  function helpVal(x) { return typeof x === 'function' ? x() : x; }
+  function helpInner(key) {
+    var h = HOP.call(HELP, key) ? HELP[key] : null;
+    if (!h) return '';
+    var out = '<p>' + helpVal(h.w) + '</p>' + (h.a ? '<p>' + helpVal(h.a) + '</p>' : '') + (h.c ? '<p><b>Cost:</b> ' + helpVal(h.c) + '</p>' : '') +
+      (h.g ? '<p><b>Where to find it:</b> ' + helpVal(h.g) + '</p>' : '');
+    if (h.rc) out += rcRef(h.rc);
+    else if (h.src) out += '<span class="ref">' + srcLink(h.src) + '</span>';
+    return out;
+  }
+  function helpBtn(key, hid, label) {
+    if (!HOP.call(HELP, key)) return '';
+    return '<button type="button" class="helpbtn" aria-expanded="' + (uiHelp[hid] ? 'true' : 'false') + '" aria-controls="' + hid + '" title="What is this?" aria-label="About ' + esc(String(label).replace(/<[^>]*>/g, '').replace(/&[a-z]+;/g, '')) + '">i</button>';
+  }
+  function helpPanel(key, hid) {
+    if (!HOP.call(HELP, key)) return '';
+    return '<div class="helptext" id="' + hid + '" role="note"' + (uiHelp[hid] ? '' : ' hidden') + '>' + helpInner(key) + '</div>';
+  }
+  /* One field: label row (label + help), control row, foot row. o: { id,
+     label, ctl, foot, help, w (width in a 6-unit row), labelSpan, cls, attrs } */
+  function fieldHtml(o) {
+    var hid = 'h-' + o.id;
+    var lab = o.labelSpan ? '<span class="flabel" id="lbl-' + o.id + '">' + o.label + '</span>' : '<label for="' + o.id + '">' + o.label + '</label>';
+    return '<div class="field' + (o.cls ? ' ' + o.cls : '') + '"' + (o.w && o.w !== 1 ? ' data-w="' + o.w + '"' : '') + (o.attrs || '') + '>' +
+      '<div class="flab">' + lab + (o.help ? helpBtn(o.help, hid, o.label) : '') + '</div>' +
+      '<div class="fctl">' + o.ctl + '</div>' +
+      '<div class="ffoot">' + (o.foot || '') + (o.help ? helpPanel(o.help, hid) : '') + '</div></div>';
+  }
+  /* Static fields carry data-help; give them the same button and panel. */
+  function decorateStaticHelp() {
+    Array.prototype.forEach.call(document.querySelectorAll('.field[data-help]'), function (f) {
+      if (f.__help) return;
+      f.__help = true;
+      var key = f.getAttribute('data-help'), lab = f.querySelector('.flab'), foot = f.querySelector('.ffoot');
+      if (!lab || !foot || !HOP.call(HELP, key)) return;
+      var ctl = f.querySelector('input,select,textarea'), id = (ctl && ctl.id) || ('sf' + (++helpSeq));
+      var t = lab.querySelector('label,.flabel');
+      lab.insertAdjacentHTML('beforeend', helpBtn(key, 'h-' + id, t ? t.textContent : key));
+      foot.insertAdjacentHTML('beforeend', helpPanel(key, 'h-' + id));
+    });
+  }
+  function toggleHelp(btn) {
+    var id = btn.getAttribute('aria-controls'), p = $(id);
+    if (!p) return;
+    var open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    p.hidden = !open;
+    uiHelp[id] = open;
+  }
+
+  /* ══ Grid packing: every .fgrid fills its rows ════════════════════════
+     Fields declare a width in a six-unit row (data-w, default 1). Weighted
+     grids pack greedily into six columns and widen the last fields of a
+     short row; unweighted grids pick a column count that divides the field
+     count (or leave at least two on the last row, widened to fill it). At
+     tablet width everything packs into three columns the same way; on a
+     phone every field takes the full width. */
+  function spread(widths, cols) {
+    var rows = [], cur = [], used = 0;
+    widths.forEach(function (w, i) {
+      w = Math.min(w, cols);
+      if (used + w > cols) { rows.push(cur); cur = []; used = 0; }
+      cur.push({ i: i, w: w }); used += w;
+    });
+    if (cur.length) rows.push(cur);
+    var out = widths.map(function () { return 1; });
+    rows.forEach(function (r) {
+      var left = cols - r.reduce(function (a, x) { return a + x.w; }, 0), k = r.length - 1;
+      while (left > 0 && r.length) { r[k].w++; left--; k = k > 0 ? k - 1 : r.length - 1; }
+      r.forEach(function (x) { out[x.i] = x.w; });
+    });
+    return out;
+  }
+  function colsFor(n, max) {
+    if (n <= max) return n;
+    for (var c = max; c >= 3; c--) if (n % c === 0) return c;
+    for (var d = max; d >= 3; d--) if (n % d !== 1) return d;
+    return 2;
+  }
+  function packGrid(g) {
+    var f = Array.prototype.filter.call(g.children, function (x) { return x.classList.contains('field') && !x.hidden; });
+    if (!f.length) return;
+    var ws = f.map(function (x) { return Number(x.getAttribute('data-w')) || 1; });
+    var weighted = ws.some(function (w) { return w > 1; }) || g.getAttribute('data-pack') === '6';
+    var c = weighted ? 6 : colsFor(f.length, 6), lg = spread(ws, c);
+    var cm = f.length <= 3 ? f.length : (f.length % 3 !== 1 ? 3 : (f.length % 2 === 0 ? 2 : 4)), md = spread(f.map(function () { return 1; }), cm);
+    var key = c + ':' + cm + ':' + lg.join(',') + ':' + md.join(',');
+    if (g.__pack === key) return;
+    g.__pack = key;
+    g.style.setProperty('--c', c); g.style.setProperty('--cm', cm);
+    f.forEach(function (x, i) { x.style.setProperty('--l', lg[i]); x.style.setProperty('--m', md[i]); });
+  }
+  function packAll() { Array.prototype.forEach.call(document.querySelectorAll('.fgrid'), packGrid); }
+
   /* ══ State ═════════════════════════════════════════════════════════════ */
   var state = E.defaults();
   state.combined.horizon.startMonth = nextMonthIso();
@@ -3358,8 +3780,8 @@ footer.pagefoot p { margin:0 0 10px; }
   var uiArch = {};           // agent id -> archetype, kept once a preset card has been edited
   var uiOpen = {};           // open/closed state of <details> blocks, by key
   var uiHide = {};           // agent id -> inputs collapsed
-  var lastPayload = null, lastScreen = null;
-  var activeTab = 'cowork', cvOn = false, showMsExample = false;
+  var lastPayload = null, lastScreen = null, printAll = false;
+  var activeTab = 'start', cvOn = false, showMsExample = false;
   var frame = $('coworkFrame'), frameOk = false;
   var PREFILL_PATHS = ['meta.accountName', 'studio.account.totalUsers', 'studio.account.seats.business', 'studio.account.seats.enterprise',
                        'studio.account.seats.e7', 'studio.account.tenantBase', 'partner.motion'];
@@ -3453,7 +3875,7 @@ footer.pagefoot p { margin:0 0 10px; }
     Array.prototype.forEach.call(document.querySelectorAll('[data-a][data-k]'), function (el) {
       if (isFocused(el)) return;
       var a = findAgent(el.getAttribute('data-a'));
-      if (a) putVal(el, getPath(a, el.getAttribute('data-k')));
+      if (a) putVal(el, agentGet(a, el.getAttribute('data-k')));
     });
     Array.prototype.forEach.call(document.querySelectorAll('[data-seg]'), function (g) {
       var v = getPath(state, g.getAttribute('data-seg'));
@@ -3485,7 +3907,7 @@ footer.pagefoot p { margin:0 0 10px; }
       var a = findAgent(aid);
       if (!a) return;
       if (ak !== 'name' && a.archetype) { uiArch[a.id] = a.archetype; a.archetype = ''; }
-      setPath(a, ak, v);
+      agentSet(a, ak, v);
     }
     schedule(typing ? 120 : 0);
   }
@@ -3493,7 +3915,13 @@ footer.pagefoot p { margin:0 0 10px; }
   document.addEventListener('change', onEdit, true);
   document.addEventListener('toggle', function (e) {
     var d = e.target;
-    if (d && d.getAttribute && d.getAttribute('data-open')) uiOpen[d.getAttribute('data-open')] = d.open;
+    if (!d || !d.getAttribute || !d.getAttribute('data-open')) return;
+    var k = d.getAttribute('data-open');
+    if (uiOpen[k] === d.open) return;
+    uiOpen[k] = d.open;
+    /* Opened blocks fill in what was skipped while they were shut. */
+    if (d.open && d.hasAttribute('data-trace')) { var id = d.getAttribute('data-trace'); d.insertAdjacentHTML('beforeend', traceTable(R.trace.filter(function (t) { return t.ref === id; }))); }
+    if (d.open && d.hasAttribute('data-adv')) { var a = findAgent(d.getAttribute('data-adv')), c = a && $('card-' + a.id); if (c) renderAgentImpacts(a, c); }
   }, true);
 
   /* ══ Notices ══════════════════════════════════════════════════════════ */
@@ -3521,8 +3949,16 @@ footer.pagefoot p { margin:0 0 10px; }
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
-  /* ══ Tabs ═════════════════════════════════════════════════════════════ */
-  var TABS = ['cowork', 'studio', 'combined'];
+  /* ══ Tabs and the plan type ═══════════════════════════════════════════
+     Start (0) is the partner's front door. The plan type decides which tabs
+     show: Cowork only (Start, Cowork), agents only (Start, Studio, Plan &
+     report) or the full plan (all four). Hidden tabs keep their data. */
+  var TABS = ['start', 'cowork', 'studio', 'combined'];
+  var MODE_TABS = { cowork: ['start', 'cowork'], agents: ['start', 'studio', 'combined'], full: ['start', 'cowork', 'studio', 'combined'] };
+  var MODE_HOME = { cowork: 'cowork', agents: 'studio', full: 'cowork' };
+  var MODE_SHORT = { cowork: 'Cowork only', agents: 'Agents only', full: 'Full plan' };
+  function planMode() { return HOP.call(MODE_TABS, state.meta.mode) ? state.meta.mode : 'full'; }
+  function visibleTabs() { return MODE_TABS[planMode()].filter(function (t) { return !(cvOn && t === 'start'); }); }
   function barsHeight() {
     var h = 0, mh = document.querySelector('.mh-bar'), hb = $('hubbar');
     if (mh) h += mh.getBoundingClientRect().height;
@@ -3535,7 +3971,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   }
   function selectTab(name, focus) {
-    if (TABS.indexOf(name) < 0) return;
+    if (TABS.indexOf(name) < 0 || visibleTabs().indexOf(name) < 0) return;
     activeTab = name;
     TABS.forEach(function (t) {
       var b = $('tab-' + t), p = $('panel-' + t), on = t === name;
@@ -3549,11 +3985,44 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   TABS.forEach(function (t) { $('tab-' + t).addEventListener('click', function () { selectTab(t); }); });
   document.querySelector('.hubtabs').addEventListener('keydown', function (e) {
-    var i = TABS.indexOf(activeTab), j = -1;
-    if (e.key === 'ArrowRight') j = (i + 1) % 3; else if (e.key === 'ArrowLeft') j = (i + 2) % 3;
-    else if (e.key === 'Home') j = 0; else if (e.key === 'End') j = 2;
-    if (j > -1) { e.preventDefault(); selectTab(TABS[j], true); }
+    var vis = visibleTabs(), i = vis.indexOf(activeTab), n = vis.length, j = -1;
+    if (e.key === 'ArrowRight') j = (i + 1) % n; else if (e.key === 'ArrowLeft') j = (i + n - 1) % n;
+    else if (e.key === 'Home') j = 0; else if (e.key === 'End') j = n - 1;
+    if (j > -1) { e.preventDefault(); selectTab(vis[j], true); }
   });
+  /* Show what the plan type shows. Runs after every recalculation. */
+  function applyMode() {
+    var m = planMode();
+    E.MODES.forEach(function (k) { document.body.classList.toggle('mode-' + k, k === m); });
+    $('tabCombinedLbl').textContent = m === 'agents' ? 'Plan & report' : 'Combined plan & report';
+    $('tbMode').textContent = MODE_SHORT[m];
+    $('btnMode').setAttribute('aria-label', 'Change plan type (now ' + E.MODE_LABEL[m] + ')');
+    $('badgeStart').textContent = '· ' + MODE_SHORT[m];
+    Array.prototype.forEach.call(document.querySelectorAll('[data-modecard]'), function (c) { c.classList.toggle('cur', c.getAttribute('data-modecard') === m); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-curbadge]'), function (c) { c.hidden = c.getAttribute('data-curbadge') !== m; });
+    var cwOnly = m === 'cowork';
+    ['pmHub', 'pmCustomer', 'pmInternal', 'pmGov', 'pmExp', 'pmCsv'].forEach(function (id) { $(id).hidden = cwOnly; });
+    $('pmCwNote').hidden = !cwOnly;
+    $('pmCw').textContent = cwOnly ? 'Your Cowork plan' : 'Cowork tab only';
+    $('pmCw').hidden = m === 'agents';
+    $('pmCwCustomer').hidden = m === 'agents';
+    $('pmCwCustomer').nextElementSibling.hidden = m === 'agents';
+    $('pmCustomer').textContent = m === 'agents' ? 'Customer report (one page)' : 'Combined customer report (one page)';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-mode-hide]'), function (f) { f.hidden = f.getAttribute('data-mode-hide') === m; });
+    if (visibleTabs().indexOf(activeTab) < 0) selectTab(MODE_HOME[m]);
+  }
+  function setMode(m) {
+    if (E.MODES.indexOf(m) < 0) return;
+    state.meta.mode = m;
+    recompute();
+    selectTab(MODE_HOME[m]);
+    scrollUnderBars($('stage'));
+    var msg = { cowork: '<b>Cowork-only plan.</b> Work through the Cowork questions below; its own Print gives the customer leave-behind. Agents you add later are kept: use Change plan type.',
+                agents: '<b>Agents-only plan.</b> Cowork stays out of every total. Load the three SMB agents in one click below, or add your own; then open Plan &amp; report.',
+                full: '<b>Full plan.</b> Answer the Cowork questions first (tab 1), then add the agents (tab 2); the Combined tab (3) pools them and writes the report.' }[m];
+    showNotice(msg);
+  }
+  $('btnMode').addEventListener('click', function () { if (cvOn) setCustomerView(false); selectTab('start', true); });
 
   /* ══ Customer view: one toggle, both documents ════════════════════════ */
   function frameDoc() { try { var d = frame.contentDocument; return d && d.body ? d : null; } catch (e) { return null; } }
@@ -3563,6 +4032,7 @@ footer.pagefoot p { margin:0 0 10px; }
     var b = $('btnCustView'); b.setAttribute('aria-pressed', String(cvOn)); b.classList.toggle('on', cvOn);
     var d = frameDoc();
     if (d && d.body.classList.contains('customer-view') !== cvOn) d.body.classList.toggle('customer-view', cvOn);
+    if (cvOn && activeTab === 'start') selectTab(MODE_HOME[planMode()]);
   }
   $('btnCustView').addEventListener('click', function () { setCustomerView(!cvOn); });
   $('custViewExit').addEventListener('click', function () { setCustomerView(false); });
@@ -3575,7 +4045,7 @@ footer.pagefoot p { margin:0 0 10px; }
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
-    if (e.key === '1' || e.key === '2' || e.key === '3') { selectTab(TABS[Number(e.key) - 1], true); e.preventDefault(); }
+    if (/^[0-3]$/.test(e.key)) { var tab = TABS[Number(e.key)]; if (visibleTabs().indexOf(tab) > -1) { selectTab(tab, true); e.preventDefault(); } }
     else if (e.key === 'c' || e.key === 'C') { setCustomerView(!cvOn); e.preventDefault(); }
   }
   document.addEventListener('keydown', onKey);
@@ -3647,6 +4117,14 @@ footer.pagefoot p { margin:0 0 10px; }
   function renderCoworkStatus() {
     var el = $('cwStatus'), cw = R ? R.lanes.cowork : null, p = state.coworkSession;
     var html, ok = false;
+    if (planMode() === 'cowork') {
+      ok = !!(p && p.screen === 'results');
+      html = '<span><b>Cowork-only plan.</b> ' + (ok ? 'At results: ' + fi(p.monthlyCredits) + ' credits in a steady month for ' + fi(p.basisSeats) + ' Cowork users. ' : 'Work through the questions below to reach the full picture. ') +
+        'The customer leave-behind is this page&rsquo;s own print: Print, then Cowork customer leave-behind.</span><span class="note">Adding agents later? Change plan type; nothing here is lost.</span>';
+      el.className = 'cwstatus no-print' + (ok ? ' ok' : '');
+      el.innerHTML = html;
+      return;
+    }
     if (!frameOk && !p) html = 'The Cowork calculator is loading. Its figures reach the Combined tab once it reports.';
     else if (!p) html = 'The Cowork calculator has not reported yet.';
     else if (cw && cw.included) {
@@ -3688,7 +4166,9 @@ footer.pagefoot p { margin:0 0 10px; }
     renderHoldingsStructure();
     renderWhoStructure();
     renderServicesStructure();
+    applyMode();
     hydrate();
+    packAll();
     renderBadges();
     renderMotionPill();
     renderCoworkStatus();
@@ -3733,6 +4213,7 @@ footer.pagefoot p { margin:0 0 10px; }
       return '<button type="button" class="pcard" data-preset="' + k + '"><div class="pc-t">' + esc(p.label) + '</div><div class="pc-d">' + esc(p.blurb) + '</div></button>';
     });
     $('presetGrid').innerHTML = groups.join('');
+    decorateStaticHelp();
   }
 
   function renderBadges() {
@@ -3752,6 +4233,8 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ Studio §1: the account ═══════════════════════════════════════════ */
   function renderAccount() {
     var ac = state.studio.account, en = R.enforcement, adj = R.adjacent;
+    var hz = E.horizonMonths(state.combined.horizon.startMonth);
+    $('acctHorizon').textContent = monLong(hz[0]) + ' to ' + monLong(hz[hz.length - 1]);
     var lic = ac.seats.business + ac.seats.enterprise + ac.seats.e7, unl = Math.max(0, ac.totalUsers - lic);
     var cap = en.userCap, dec;
     if (cap.auto) dec = ['Applies', 'New CSP Copilot Business seats get a ' + fi(E.RC.capDefault.v) + '-credit monthly limit per user from ' + monLong(cap.firstMonth) + '.'];
@@ -3778,43 +4261,103 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ Studio §2: agent cards ═══════════════════════════════════════════ */
   var TYPE_OPTS = [['conversational', 'Conversational'], ['autonomous', 'Autonomous (runs on a trigger)'], ['bc', 'Business Central agent']];
   var HARNESS_OPTS = [['standard', 'Standard agent'], ['chat', 'Copilot Chat (Agent Builder)'], ['github', 'GitHub Copilot harness']];
-  var AUD_OPTS = [['internal', 'Internal (employees)'], ['external', 'External (customers, visitors)']];
-  var AUTH_OPTS = [['microsoft', 'Microsoft sign-in'], ['none', 'No sign-in'], ['manual', 'Manual sign-in (your own identity provider)']];
+  var AUD_OPTS = [['internal', 'Internal (staff)'], ['external', 'External (customers, visitors)']];
+  var AUTH_OPTS = [['microsoft', 'Microsoft sign-in'], ['none', 'No sign-in'], ['manual', 'Manual sign-in (another identity provider)']];
   var CHAN_OPTS = Object.keys(E.CHANNELS).map(function (k) { return [k, E.CHANNELS[k]]; });
-  var MODE_OPTS_C = [['total', 'Total conversations'], ['perUser', 'Per user']];
-  var MODE_OPTS_A = [['total', 'Total runs'], ['perUser', 'Per user']];
-  var PER_OPTS = [['month', 'a month'], ['day', 'a day']];
+  var WHO_OPTS = [['staff', 'Staff in Teams or Microsoft 365'], ['staffOther', 'Staff on a website or other app'],
+                  ['public', 'Customers or the public'], ['auto', 'Runs on its own (trigger or schedule)'], ['bc', 'Business Central agent']];
+  var WHO_HINT = { staff: 'Copilot-licensed staff are covered; the rest are metered.', staffOther: 'Outside Teams and Microsoft 365, every conversation is billed.',
+                   public: 'Website, WhatsApp or SMS: every conversation is billed.', auto: 'Runs on a trigger or schedule: every run is billed (Likely).', bc: 'Billed per document it handles.' };
+  var VOL_OPTS = [['month|total', 'A month, in total'], ['day|total', 'A day, in total'], ['month|perUser', 'A month, per user'], ['day|perUser', 'A day, per user']];
   var BUNDLE_OPTS = [['itemized', 'Itemize the run'], ['blueprint', 'A Microsoft blueprint'], ['fixed', 'My own credits per run']];
   var BLUEPRINT_OPTS = [['expense', 'Expense receipt (15 a run)'], ['approval', 'Approval routing (12 a run)'], ['timesheet', 'Timesheet assistant (77 a run)']];
   var FLOW_OPTS = [['agent', 'When an agent calls the flow'], ['other', 'Any other trigger (always billed)']];
-  var AIPRICE_OPTS = [['response', 'Per response'], ['tokens', 'Per 1,000 tokens (started units round up)']];
+  var AIPRICE_OPTS = [['response', 'Per response'], ['tokens', 'Per 1,000 tokens']];
   var CUA_OPTS = [['standard', 'Standard model'], ['premium', 'Premium model']];
   var BCKIND_OPTS = [['salesOrder', 'Sales Order Agent'], ['payables', 'Payables Agent'], ['expense', 'Expense Agent (preview)']];
+  var AI_KEYS = { basic: 'bundle.aiBasic', standard: 'bundle.aiStandard', premium: 'bundle.aiPremium' };
+  var VOICE_KEYS = { classic: 'bundle.voiceClassic', generative: 'bundle.voiceGen', premium: 'bundle.voicePremium' };
+  var AI_TIER_OPTS = [['none', 'None'], ['basic', 'Basic'], ['standard', 'Standard'], ['premium', 'Premium']];
+  var VOICE_TIER_OPTS = [['none', 'No voice'], ['classic', 'Classic'], ['generative', 'Generative'], ['premium', 'Premium generative']];
   var LANE_LBL = { studio: 'Copilot Studio agent', github: 'GitHub Copilot harness', bc: 'Business Central' };
   function laneOf(a) { return a.type === 'bc' ? 'bc' : (a.harness === 'github' ? 'github' : 'studio'); }
 
+  /* "Who uses it": one plain choice over kind × audience × channel × sign-in. */
+  function whoOf(a) {
+    if (a.type === 'bc') return 'bc';
+    if (a.type === 'autonomous') return 'auto';
+    if (a.audience === 'external') return 'public';
+    return E.MS_CHANNELS.indexOf(a.channel) > -1 && a.auth === 'microsoft' ? 'staff' : 'staffOther';
+  }
+  function setWho(a, v) {
+    var ms = E.MS_CHANNELS.indexOf(a.channel) > -1;
+    if (v === 'bc') { a.type = 'bc'; return; }
+    if (v === 'auto') { a.type = 'autonomous'; return; }
+    a.type = 'conversational';
+    if (v === 'staff') { a.audience = 'internal'; if (!ms) a.channel = 'teams_m365'; a.auth = 'microsoft'; }
+    else if (v === 'staffOther') { a.audience = 'internal'; if (ms) a.channel = 'website'; }
+    else if (v === 'public') { a.audience = 'external'; if (ms) a.channel = 'website'; if (a.auth === 'microsoft') a.auth = 'none'; }
+  }
+  /* Prompt tools and voice: a tier plus a count over the engine's three
+     per-tier counts. The chosen tier is remembered while its count is 0. */
+  var uiTier = {};
+  function tierOf(a, map, slot) {
+    var on = Object.keys(map).filter(function (t) { return Number(getPath(a, map[t])) > 0; });
+    if (on.length > 1) return 'multi';
+    if (on.length === 1) return on[0];
+    var u = uiTier[a.id + ':' + slot];
+    return u && HOP.call(map, u) ? u : 'none';
+  }
+  function agentGet(a, k) {
+    if (k === '__who') return whoOf(a);
+    if (k === '__vol') return a.traffic.per + '|' + a.traffic.mode;
+    if (k === '__aiTier' || k === '__voiceTier') { var t = tierOf(a, k === '__aiTier' ? AI_KEYS : VOICE_KEYS, k); return t === 'multi' ? 'none' : t; }
+    if (k === '__aiCount' || k === '__voiceMin') {
+      var map = k === '__aiCount' ? AI_KEYS : VOICE_KEYS, t2 = tierOf(a, map, k === '__aiCount' ? '__aiTier' : '__voiceTier');
+      return HOP.call(map, t2) ? getPath(a, map[t2]) : 0;
+    }
+    return getPath(a, k);
+  }
+  function agentSet(a, k, v) {
+    if (k === '__who') { setWho(a, v); return; }
+    if (k === '__vol') { var p = String(v).split('|'); if (p.length === 2) { a.traffic.per = p[0]; a.traffic.mode = p[1]; } return; }
+    if (k === '__aiTier' || k === '__voiceTier') {
+      var map = k === '__aiTier' ? AI_KEYS : VOICE_KEYS, cur = tierOf(a, map, k), n = HOP.call(map, cur) ? Number(getPath(a, map[cur])) : 0;
+      Object.keys(map).forEach(function (t) { setPath(a, map[t], 0); });
+      uiTier[a.id + ':' + k] = v;
+      if (HOP.call(map, v)) setPath(a, map[v], n > 0 ? n : 1);
+      return;
+    }
+    if (k === '__aiCount' || k === '__voiceMin') {
+      var slot = k === '__aiCount' ? '__aiTier' : '__voiceTier', map2 = k === '__aiCount' ? AI_KEYS : VOICE_KEYS, t3 = tierOf(a, map2, slot);
+      if (HOP.call(map2, t3)) { setPath(a, map2[t3], v); uiTier[a.id + ':' + slot] = t3; }
+      return;
+    }
+    setPath(a, k, v);
+  }
+
+  /* One agent field, in the shared field component. o: options, help, w,
+     hint, imp (engine paths whose impact the foot shows), min/max/step, ph,
+     on (text beside a checkbox). */
   function fld(a, k, label, type, o) {
     o = o || {};
-    var id = 'ag-' + a.id + '-' + k.replace(/\./g, '-');
-    var v = getPath(a, k);
+    var id = 'ag-' + a.id + '-' + k.replace(/[^A-Za-z0-9]/g, '-');
+    var v = agentGet(a, k);
     var attrs = ' id="' + id + '" data-a="' + a.id + '" data-k="' + k + '" data-type="' + type + '"';
-    var hint = o.hint ? '<div class="hint">' + o.hint + '</div>' : '';
-    var tag = o.tag ? ' ' + o.tag : '';
-    if (type === 'bool') return '<div class="field check"><label><input type="checkbox"' + attrs + (v ? ' checked' : '') + '> <span>' + label + tag + '</span></label>' + hint + '</div>';
-    if (type === 'enum' || type === 'int-enum') {
-      return '<div class="field"><label for="' + id + '">' + label + tag + '</label><select' + attrs + '>' +
-        o.options.map(function (op) { return '<option value="' + esc(op[0]) + '"' + (String(op[0]) === String(v) ? ' selected' : '') + '>' + esc(op[1]) + '</option>'; }).join('') +
-        '</select>' + hint + '</div>';
+    var ctl;
+    if (type === 'bool') ctl = '<label class="ckbox"><input type="checkbox"' + attrs + ' aria-labelledby="lbl-' + id + '"' + (v ? ' checked' : '') + '> ' + (o.on || 'Yes') + '</label>';
+    else if (type === 'enum' || type === 'int-enum') ctl = '<select' + attrs + '>' + o.options.map(function (op) { return '<option value="' + esc(op[0]) + '"' + (String(op[0]) === String(v) ? ' selected' : '') + '>' + esc(op[1]) + '</option>'; }).join('') + '</select>';
+    else {
+      var num = type !== 'text';
+      ctl = '<input type="' + (num ? 'number' : 'text') + '"' + attrs + (num ? ' min="' + (o.min != null ? o.min : 0) + '"' + (o.max != null ? ' max="' + o.max + '"' : '') + ' step="' + (o.step || 'any') + '"' : ' maxlength="80"') +
+        (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' value="' + esc(v == null ? '' : v) + '">';
     }
-    var num = type !== 'text';
-    return '<div class="field"><label for="' + id + '">' + label + tag + '</label><input type="' + (num ? 'number' : 'text') + '"' + attrs +
-      (num ? ' min="' + (o.min != null ? o.min : 0) + '"' + (o.max != null ? ' max="' + o.max + '"' : '') + ' step="' + (o.step || 'any') + '"' : ' maxlength="80"') +
-      (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' value="' + esc(v == null ? '' : v) + '">' + hint + '</div>';
+    var foot = (o.hint ? '<div class="hint">' + o.hint + '</div>' : '') +
+      (o.imp ? '<div class="impact" data-imp="' + esc(o.imp.join(',')) + '" data-imp-a="' + a.id + '" aria-live="polite"></div>' : '');
+    return fieldHtml({ id: id, label: label + (o.tag ? ' ' + o.tag : ''), ctl: ctl, foot: foot, help: o.help, w: o.w, labelSpan: type === 'bool' });
   }
-  function grp(a, key, title, inner, openDefault) {
-    var k = a.id + ':' + key, open = HOP.call(uiOpen, k) ? uiOpen[k] : openDefault;
-    return '<details data-open="' + k + '"' + (open ? ' open' : '') + '><summary>' + title + '</summary><div class="fgrid">' + inner + '</div></details>';
-  }
+  function grid(fields, weighted) { var f = fields.filter(Boolean); return f.length ? '<div class="fgrid"' + (weighted ? ' data-pack="6"' : '') + '>' + f.join('') + '</div>' : ''; }
+  function subh(t) { return '<div class="sub-h">' + t + '</div>'; }
   function envOptions(a) {
     var names = state.studio.environments.map(function (e) { return e.name; }), out = [['', 'Default environment and tenant pool']];
     names.forEach(function (n) { out.push([n, n]); });
@@ -3825,91 +4368,132 @@ footer.pagefoot p { margin:0 0 10px; }
     var iso = E.horizonMonths(state.combined.horizon.startMonth);
     return iso.map(function (m, i) { return [i, 'Month ' + (i + 1) + ' (' + monShort(m) + ')']; });
   }
-  function anyNonZero(a, keys) { return keys.some(function (k) { return Number(getPath(a, k)) > 0; }); }
+  function advKey(a) { return a.id + ':adv'; }
+  function advOpen(a, adv) { var k = advKey(a); return HOP.call(uiOpen, k) ? uiOpen[k] : adv.set.length > 0; }
   function agentStructKey(a) {
-    return [a.id, a.type, a.harness, a.bundleMode, a.traffic.mode, a.audience, a.channel, a.reasoning.on, a.bc.kind, a.paused, a.archetype || uiArch[a.id] || '',
-            uiHide[a.id] ? 1 : 0, state.studio.environments.map(function (e) { return e.name; }).join('|'), state.combined.horizon.startMonth].join('~');
+    return [a.id, a.type, a.harness, a.bundleMode, a.traffic.mode, a.traffic.per, whoOf(a), a.audience, a.channel, a.auth, a.reasoning.on, a.bc.kind, a.paused,
+            a.archetype || uiArch[a.id] || '', uiHide[a.id] ? 1 : 0, tierOf(a, AI_KEYS, '__aiTier'), tierOf(a, VOICE_KEYS, '__voiceTier'), a.aiPricing,
+            a.bundle.cuaSteps > 0, a.bundle.flowActions > 0,
+            state.studio.environments.map(function (e) { return e.name; }).join('|'), state.combined.horizon.startMonth].join('~');
   }
   function agentInputs(a) {
-    var conv = a.type === 'conversational', auto = a.type === 'autonomous', bc = a.type === 'bc', gh = !bc && a.harness === 'github';
-    var per = conv ? 'conversation' : 'run', h = '';
-    var basics = fld(a, 'type', 'Kind', 'enum', { options: TYPE_OPTS }) +
-      (bc ? '' : fld(a, 'harness', 'Harness', 'enum', { options: HARNESS_OPTS, hint: a.harness === 'chat' ? 'Internal only, on Microsoft channels.' : '' })) +
-      fld(a, 'env', 'Environment', 'enum', { options: envOptions(a), hint: bc && !a.env ? 'Business Central agents draw from the default environment unless relinked.' : '' }) +
-      fld(a, 'startMonth', 'Go-live month', 'int-enum', { options: monthOpts() }) +
-      (bc ? '' : fld(a, 'daysActive', 'Days active a month', 'int', { min: 1, max: 31, step: 1 })) +
-      fld(a, 'ramped', 'Follows the adoption ramp', 'bool');
-    h += grp(a, 'basics', 'Basics', basics, true);
+    var who = whoOf(a), conv = a.type === 'conversational', auto = a.type === 'autonomous', bc = a.type === 'bc', gh = !bc && a.harness === 'github';
+    var per = conv ? 'conversation' : 'run', perU = a.traffic.mode === 'perUser', h = '';
+    /* Essentials: always visible */
+    var weId = 'we-' + a.id, weOpen = !!uiOpen[a.id + ':who'];
+    h += '<div class="sub-h ess-h"><span>Essentials</span>' + (conv && !gh ? '<button type="button" class="linkbtn no-print" data-act="whoedit" data-a="' + a.id + '" aria-expanded="' + weOpen + '" aria-controls="' + weId + '">Edit channel and sign-in</button>' : '') + '</div>';
+    if (conv && !gh) h += '<div class="whoedit" id="' + weId + '"' + (weOpen ? '' : ' hidden') + '><p class="we-h">&ldquo;Who uses it&rdquo; sets these three; change them here for anything it does not describe.</p>' +
+      grid([fld(a, 'audience', 'Audience', 'enum', { options: AUD_OPTS, help: 'audience' }), fld(a, 'channel', 'Channel', 'enum', { options: CHAN_OPTS, help: 'channel' }),
+            fld(a, 'auth', 'Sign-in', 'enum', { options: AUTH_OPTS, help: 'auth' })]) + '</div>';
+    var e = [];
     if (bc) {
       var noun = a.bc.kind === 'salesOrder' ? 'Emails' : a.bc.kind === 'payables' ? 'Invoices' : 'Receipts';
-      var bcf = fld(a, 'bc.kind', 'Business Central agent', 'enum', { options: BCKIND_OPTS }) +
-        fld(a, 'bc.volume', noun + ' a month', 'num', { step: 'any', hint: a.bc.kind === 'payables' ? 'At most 500 invoices and 100 emails a day; PDFs up to 10 pages and 5 MB.' : '' });
-      if (a.bc.kind === 'salesOrder') bcf += fld(a, 'bc.checks', 'Availability checks per email', 'num') + fld(a, 'bc.orders', 'Quote or order writes per email', 'num') +
-        fld(a, 'bc.attachData', 'Attachments with sales data per email', 'num', { max: 10, hint: '0.5 means half the emails carry one.' }) +
-        fld(a, 'bc.attachNoData', 'Attachments without sales data per email', 'num', { max: 10 });
-      if (a.bc.kind === 'payables') bcf += fld(a, 'bc.lines', 'Lines per invoice', 'num');
-      h += grp(a, 'bc', 'Volume', bcf, true);
-      return h;
-    }
-    if (gh) {
-      var g = fld(a, 'github.users', 'People using it', 'int', { step: 1 }) + fld(a, 'github.perUserPerDay', 'Tasks per person a day', 'num') +
-        fld(a, 'github.split.0', 'Light tasks (%)', 'int', { max: 100, step: 1 }) + fld(a, 'github.split.1', 'Medium tasks (%)', 'int', { max: 100, step: 1 }) +
-        fld(a, 'github.split.2', 'Heavy tasks (%)', 'int', { max: 100, step: 1, hint: 'Shares are rescaled to total 100%.' }) +
-        fld(a, 'github.heavyObserved', 'Observed credits per heavy task', 'nullnum', { ph: 'Not measured: a minimum', hint: 'Without it, heavy tasks count at 500, a minimum.' });
-      h += grp(a, 'gh', 'Run', g, true);
-      var b = fld(a, 'github.buildSessions', 'Build sessions a month', 'num') + fld(a, 'github.buildMonths', 'Months of building before go-live', 'int', { max: 12, step: 1 }) +
-        fld(a, 'github.buildSplit.0', 'Light sessions (%)', 'int', { max: 100, step: 1 }) + fld(a, 'github.buildSplit.1', 'Medium sessions (%)', 'int', { max: 100, step: 1 }) +
-        fld(a, 'github.buildSplit.2', 'Heavy sessions (%)', 'int', { max: 100, step: 1 });
-      h += grp(a, 'ghb', 'Build (billed from the first session)', b, a.github.buildSessions > 0);
-      return h;
-    }
-    if (conv) {
-      var w = fld(a, 'audience', 'Audience', 'enum', { options: AUD_OPTS }) + fld(a, 'channel', 'Channel', 'enum', { options: CHAN_OPTS }) +
-        fld(a, 'auth', 'Authentication', 'enum', { options: AUTH_OPTS }) +
-        fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1 }) +
-        (a.audience === 'internal' ? fld(a, 'users.licensed', 'Of whom Copilot-licensed', 'int', { step: 1, hint: 'A headcount, subtracted once.' }) : '');
-      h += grp(a, 'who', 'Who and where', w, true);
-      var vol = fld(a, 'traffic.mode', 'Volume is', 'enum', { options: MODE_OPTS_C }) + fld(a, 'traffic.count', a.traffic.mode === 'perUser' ? 'Conversations per user' : 'Conversations', 'num') +
-        fld(a, 'traffic.per', 'Per', 'enum', { options: PER_OPTS });
-      h += grp(a, 'vol', 'Volume', vol, true);
-      var sh = fld(a, 'shape.turns', 'Turns per conversation', 'num') + fld(a, 'shape.genPct', 'Generative answers (%)', 'num', { max: 100, hint: 'The rest are classic answers.' }) +
-        fld(a, 'shape.groundedPct', 'Turns grounded on tenant data (%)', 'num', { max: 100 }) + fld(a, 'shape.greeting', 'The agent sends a greeting', 'bool');
-      h += grp(a, 'shape', 'Conversation shape', sh, true);
+      var vh = a.bc.kind === 'salesOrder' ? 'bcVolSalesOrder' : a.bc.kind === 'payables' ? 'bcVolPayables' : 'bcVolExpense';
+      h += grid([fld(a, '__who', 'Who uses it', 'enum', { options: WHO_OPTS, help: 'who', hint: WHO_HINT[who], w: 2 }), fld(a, 'bc.kind', 'Business Central agent', 'enum', { options: BCKIND_OPTS, help: 'bcKind', w: 2 }),
+                 fld(a, 'bc.volume', noun + ' a month', 'num', { help: vh, w: 2 })], true);
+      if (a.bc.kind === 'salesOrder') h += grid([fld(a, 'bc.checks', 'Availability checks per email', 'num', { help: 'bcChecks' }), fld(a, 'bc.orders', 'Quote or order writes per email', 'num', { help: 'bcOrders' }),
+        fld(a, 'bc.attachData', 'Attachments with sales data per email', 'num', { max: 10, help: 'bcAttachData' }), fld(a, 'bc.attachNoData', 'Attachments without sales data per email', 'num', { max: 10, help: 'bcAttachNoData' })]);
+      if (a.bc.kind === 'payables') h += grid([fld(a, 'bc.lines', 'Lines per invoice', 'num', { help: 'bcLines' })]);
+    } else if (gh) {
+      e.push(fld(a, '__who', 'Who uses it', 'enum', { options: WHO_OPTS, help: 'who', hint: WHO_HINT[who], w: 2 }), fld(a, 'github.users', 'People using it', 'int', { step: 1, help: 'ghUsers', w: 2 }),
+             fld(a, 'github.perUserPerDay', 'Tasks per person a day', 'num', { help: 'ghPerDay' }), fld(a, 'daysActive', 'Days active a month', 'int', { min: 1, max: 31, step: 1, help: 'daysActive' }));
+      h += grid(e, true);
+    } else if (conv) {
+      var showLic = who === 'staff', showUsers = a.audience === 'internal' || perU;
+      var wW = 2, uW = showLic ? 1 : 2, cW = (!showUsers) ? 2 : 1;
+      e.push(fld(a, '__who', 'Who uses it', 'enum', { options: WHO_OPTS, help: 'who', hint: WHO_HINT[who], w: wW }));
+      if (showUsers) e.push(fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1, help: 'users', w: uW }));
+      if (showLic) e.push(fld(a, 'users.licensed', 'Of whom Copilot-licensed', 'int', { step: 1, help: 'licensed' }));
+      e.push(fld(a, 'traffic.count', 'Conversations', 'num', { help: 'volConv', w: cW }), fld(a, '__vol', 'Counted as', 'enum', { options: VOL_OPTS, help: 'volBasis', w: cW }));
+      e.push(fld(a, 'shape.turns', 'Turns per conversation', 'num', { help: 'turns', w: 2 }),
+             fld(a, 'shape.groundedPct', 'Answers drawn from company data (%)', 'num', { max: 100, help: 'grounded', w: 2, imp: ['shape.groundedPct'] }),
+             fld(a, 'bundle.actions', 'Actions per conversation', 'num', { help: 'actions', w: 2, imp: ['bundle.actions'] }));
+      h += grid(e, true);
     } else {
-      var rv = fld(a, 'traffic.mode', 'Runs are', 'enum', { options: MODE_OPTS_A }) +
-        (a.traffic.mode === 'perUser' ? fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1 }) : '') +
-        fld(a, 'traffic.count', a.traffic.mode === 'perUser' ? 'Runs per user' : 'Runs', 'num') + fld(a, 'traffic.per', 'Per', 'enum', { options: PER_OPTS });
-      h += grp(a, 'vol', 'Runs', rv, true);
-      var pr = fld(a, 'bundleMode', 'How a run is priced', 'enum', { options: BUNDLE_OPTS }) +
-        (a.bundleMode === 'blueprint' ? fld(a, 'blueprint', 'Blueprint', 'enum', { options: BLUEPRINT_OPTS }) : '') +
-        (a.bundleMode === 'fixed' ? fld(a, 'fixedPerRun', 'Credits per run', 'num') : '') +
-        fld(a, 'autonomous.countTriggerAsAction', 'Count the trigger as an action', 'bool', { tag: provPill('ms-inferred') }) +
-        fld(a, 'autonomous.countPromptAsAction', 'Count each prompt call as an action', 'bool');
-      h += grp(a, 'price', 'How a run is priced', pr, true);
+      var item = a.bundleMode === 'itemized';
+      e.push(fld(a, '__who', 'Who uses it', 'enum', { options: WHO_OPTS, help: 'who', hint: WHO_HINT[who], w: perU ? 1 : 2 }));
+      if (perU) e.push(fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1, help: 'users' }));
+      e.push(fld(a, 'traffic.count', 'Runs', 'num', { help: 'volRun' }), fld(a, '__vol', 'Counted as', 'enum', { options: VOL_OPTS, help: 'volBasis' }),
+             fld(a, 'bundleMode', 'How a run is priced', 'enum', { options: BUNDLE_OPTS, help: 'bundleMode' }));
+      if (item) e.push(fld(a, 'bundle.actions', 'Actions per run', 'num', { help: 'actions', imp: ['bundle.actions'] }));
+      else if (a.bundleMode === 'blueprint') e.push(fld(a, 'blueprint', 'Blueprint', 'enum', { options: BLUEPRINT_OPTS, help: 'blueprint' }));
+      else e.push(fld(a, 'fixedPerRun', 'Credits per run', 'num', { help: 'fixedPerRun' }));
+      h += grid(e, true);
     }
-    var item = a.bundleMode === 'itemized';
-    var ans = conv
-      ? fld(a, 'bundle.classic', 'Extra classic answers per conversation', 'num') + fld(a, 'bundle.generative', 'Extra generative answers', 'num') + fld(a, 'bundle.grounded', 'Extra grounded answers', 'num')
-      : fld(a, 'bundle.classic', 'Classic answers per run', 'num') + fld(a, 'bundle.generative', 'Generative answers per run', 'num') + fld(a, 'bundle.grounded', 'Grounded answers per run', 'num');
-    var tools = (item ? ans + fld(a, 'bundle.actions', 'Actions per ' + per, 'num') : '') +
-      fld(a, 'bundle.flowActions', 'Agent-flow actions per ' + per, 'num') + fld(a, 'flowTrigger', 'Flow trigger', 'enum', { options: FLOW_OPTS }) +
-      (item ? fld(a, 'bundle.aiBasic', 'AI tools, basic responses', 'num') + fld(a, 'bundle.aiStandard', 'AI tools, standard responses', 'num') +
-              fld(a, 'bundle.aiPremium', 'AI tools, premium responses', 'num') + fld(a, 'aiPricing', 'AI tools priced', 'enum', { options: AIPRICE_OPTS }) +
-              fld(a, 'aiTokensPerCall', 'Tokens per response', 'int', { min: 1, step: 1 }) + fld(a, 'bundle.contentPages', 'Content pages per ' + per, 'num') : '') +
-      fld(a, 'reasoning.on', 'Uses a reasoning model', 'bool') + (a.reasoning.on ? fld(a, 'reasoning.tokens', 'Reasoning tokens per ' + per, 'int', { step: 1 }) : '') +
-      fld(a, 'bundle.voiceClassic', 'Voice minutes, classic', 'num') + fld(a, 'bundle.voiceGen', 'Voice minutes, generative', 'num') + fld(a, 'bundle.voicePremium', 'Voice minutes, premium', 'num') +
-      fld(a, 'bundle.cuaSteps', 'Computer-use steps per ' + per, 'num') + fld(a, 'cua.model', 'Computer-use model', 'enum', { options: CUA_OPTS }) +
-      fld(a, 'cua.w365Hours', 'Windows 365 for Agents hours a month', 'num') + fld(a, 'cua.w365AlwaysOn', 'Always-on Cloud PCs', 'int', { step: 1 }) +
-      fld(a, 'bundle.workiqCalls', 'Work IQ API calls per ' + per, 'num');
-    var toolKeys = ['bundle.classic', 'bundle.generative', 'bundle.grounded', 'bundle.actions', 'bundle.flowActions', 'bundle.aiBasic', 'bundle.aiStandard', 'bundle.aiPremium',
-      'bundle.contentPages', 'bundle.voiceClassic', 'bundle.voiceGen', 'bundle.voicePremium', 'bundle.cuaSteps', 'bundle.workiqCalls'];
-    h += grp(a, 'tools', 'Actions, tools and add-ons', tools, auto || anyNonZero(a, toolKeys) || a.reasoning.on);
-    h += grp(a, 'data', 'Data kept', fld(a, 'data.retentionDays', 'Transcript retention (days)', 'int', { max: 3650, step: 1, hint: '0 turns transcripts off and breaks enhanced reporting.' }) +
-      fld(a, 'data.knowledgeGb', 'Knowledge files (GB)', 'num'), false);
+    /* Where it runs and when: collapsed, with a live summary */
+    var pk = a.id + ':place', pOpen = !!uiOpen[pk];
+    var pl = [fld(a, 'env', 'Environment', 'enum', { options: envOptions(a), help: 'env', hint: bc && !a.env ? 'Business Central agents draw from the default environment unless relinked.' : '' }),
+              fld(a, 'startMonth', 'Go-live month', 'int-enum', { options: monthOpts(), help: 'goLive' }),
+              fld(a, 'ramped', 'Follows the adoption ramp', 'bool', { help: 'ramped', on: 'Yes, ramp up' })];
+    if (!gh && !bc && a.traffic.per === 'day') pl.push(fld(a, 'daysActive', 'Days active a month', 'int', { min: 1, max: 31, step: 1, help: 'daysActive' }));
+    h += '<details class="adv" data-open="' + pk + '"' + (pOpen ? ' open' : '') + '><summary><span class="adv-t">Where it runs and when</span><span class="adv-n" id="plsum-' + a.id + '"></span></summary><div class="adv-b">' + grid(pl) + '</div></details>';
+    /* Advanced cost drivers: collapsed unless something in them is set */
+    if (!bc) {
+      var adv = E.agentAdvanced(a, state), open = advOpen(a, adv), b = '';
+      if (gh) {
+        b += subh('Task mix') + grid([fld(a, 'harness', 'Harness', 'enum', { options: HARNESS_OPTS, help: 'harness' }),
+          fld(a, 'github.split.0', 'Light tasks (%)', 'int', { max: 100, step: 1, help: 'ghSplit', imp: ['github.split'] }), fld(a, 'github.split.1', 'Medium tasks (%)', 'int', { max: 100, step: 1, help: 'ghSplit' }),
+          fld(a, 'github.split.2', 'Heavy tasks (%)', 'int', { max: 100, step: 1, help: 'ghSplit' }),
+          fld(a, 'github.heavyObserved', 'Observed credits per heavy task', 'nullnum', { ph: 'Not measured: a minimum', help: 'ghHeavy', imp: ['github.heavyObserved'] })]);
+        b += subh('Build before go-live') + grid([fld(a, 'github.buildSessions', 'Build sessions a month', 'num', { help: 'ghBuild', imp: ['github.buildSessions'] }),
+          fld(a, 'github.buildMonths', 'Months of building before go-live', 'int', { max: 12, step: 1, help: 'ghBuildMonths' }),
+          fld(a, 'github.buildSplit.0', 'Light sessions (%)', 'int', { max: 100, step: 1, help: 'ghBuildSplit' }), fld(a, 'github.buildSplit.1', 'Medium sessions (%)', 'int', { max: 100, step: 1, help: 'ghBuildSplit' }),
+          fld(a, 'github.buildSplit.2', 'Heavy sessions (%)', 'int', { max: 100, step: 1, help: 'ghBuildSplit' })]);
+      } else {
+        var item2 = a.bundleMode === 'itemized';
+        var g1 = [fld(a, 'harness', 'Harness', 'enum', { options: HARNESS_OPTS, help: 'harness', imp: a.harness === 'chat' ? ['harness'] : null })];
+        if (conv) g1.push(fld(a, 'shape.genPct', 'Generative answers (%)', 'num', { max: 100, help: 'genPct', imp: ['shape.genPct'] }),
+                          fld(a, 'shape.greeting', 'Greeting', 'bool', { help: 'greeting', on: 'Sends one', imp: ['shape.greeting'] }));
+        if (item2) {
+          var xh = conv ? 'extraConv' : 'extraRun', pre = conv ? 'Extra ' : '', suf = conv ? '' : ' per run';
+          g1.push(fld(a, 'bundle.classic', pre + (conv ? 'classic' : 'Classic') + ' answers' + suf, 'num', { help: xh, imp: ['bundle.classic'] }),
+                  fld(a, 'bundle.generative', pre + (conv ? 'generative' : 'Generative') + ' answers' + suf, 'num', { help: xh, imp: ['bundle.generative'] }),
+                  fld(a, 'bundle.grounded', pre + (conv ? 'grounded' : 'Grounded') + ' answers' + suf, 'num', { help: xh, imp: ['bundle.grounded'] }));
+        }
+        b += subh('How it answers') + grid(g1);
+        var g2 = [fld(a, 'bundle.flowActions', 'Agent-flow actions per ' + per, 'num', { help: 'flowActions', imp: ['bundle.flowActions'] })];
+        if (a.bundle.flowActions > 0) g2.push(fld(a, 'flowTrigger', 'Flow trigger', 'enum', { options: FLOW_OPTS, help: 'flowTrigger', imp: ['flowTrigger'] }));
+        if (item2) {
+          var at = tierOf(a, AI_KEYS, '__aiTier');
+          if (at === 'multi') g2.push(fld(a, 'bundle.aiBasic', 'Basic prompt responses', 'num', { help: 'aiTier', imp: ['bundle.aiBasic'] }),
+            fld(a, 'bundle.aiStandard', 'Standard prompt responses', 'num', { help: 'aiTier', imp: ['bundle.aiStandard'] }), fld(a, 'bundle.aiPremium', 'Premium prompt responses', 'num', { help: 'aiTier', imp: ['bundle.aiPremium'] }));
+          else {
+            g2.push(fld(a, '__aiTier', 'AI prompt tool', 'enum', { options: AI_TIER_OPTS, help: 'aiTier', imp: ['bundle.aiBasic', 'bundle.aiStandard', 'bundle.aiPremium'] }));
+            if (at !== 'none') g2.push(fld(a, '__aiCount', 'Prompt responses per ' + per, 'num', { help: 'aiCount' }));
+          }
+          if (at !== 'none') {
+            g2.push(fld(a, 'aiPricing', 'Prompts priced', 'enum', { options: AIPRICE_OPTS, help: 'aiPricing', imp: ['aiPricing'] }));
+            if (a.aiPricing === 'tokens') g2.push(fld(a, 'aiTokensPerCall', 'Tokens per response', 'int', { min: 1, step: 1, help: 'aiTokens' }));
+          }
+        }
+        b += subh('Flows and prompt tools') + grid(g2);
+        var g3 = [fld(a, 'reasoning.on', 'Reasoning model', 'bool', { help: 'reasoningOn', on: 'Uses one', imp: ['reasoning.on', 'reasoning.tokens'] })];
+        if (a.reasoning.on) g3.push(fld(a, 'reasoning.tokens', 'Reasoning tokens per ' + per, 'int', { step: 1, help: 'reasoningTokens' }));
+        if (item2) g3.push(fld(a, 'bundle.contentPages', 'Document pages read per ' + per, 'num', { help: 'contentPages', imp: ['bundle.contentPages'] }));
+        var vt = tierOf(a, VOICE_KEYS, '__voiceTier');
+        if (vt === 'multi') g3.push(fld(a, 'bundle.voiceClassic', 'Voice minutes, classic', 'num', { help: 'voiceTier', imp: ['bundle.voiceClassic'] }),
+          fld(a, 'bundle.voiceGen', 'Voice minutes, generative', 'num', { help: 'voiceTier', imp: ['bundle.voiceGen'] }), fld(a, 'bundle.voicePremium', 'Voice minutes, premium', 'num', { help: 'voiceTier', imp: ['bundle.voicePremium'] }));
+        else {
+          g3.push(fld(a, '__voiceTier', 'Voice', 'enum', { options: VOICE_TIER_OPTS, help: 'voiceTier', imp: ['bundle.voiceClassic', 'bundle.voiceGen', 'bundle.voicePremium'] }));
+          if (vt !== 'none') g3.push(fld(a, '__voiceMin', 'Voice minutes per ' + per, 'num', { help: 'voiceMin' }));
+        }
+        b += subh('Reasoning, documents and voice') + grid(g3);
+        var g4 = [fld(a, 'bundle.cuaSteps', 'Computer-use steps per ' + per, 'num', { help: 'cuaSteps', imp: ['bundle.cuaSteps'] })];
+        if (a.bundle.cuaSteps > 0) g4.push(fld(a, 'cua.model', 'Computer-use model', 'enum', { options: CUA_OPTS, help: 'cuaModel', imp: ['cua.model'] }),
+          fld(a, 'cua.w365Hours', 'Windows 365 hours a month', 'num', { help: 'w365Hours', imp: ['cua.w365Hours'] }), fld(a, 'cua.w365AlwaysOn', 'Always-on Cloud PCs', 'int', { step: 1, help: 'w365AlwaysOn', imp: ['cua.w365AlwaysOn'] }));
+        g4.push(fld(a, 'bundle.workiqCalls', 'Work IQ API calls per ' + per, 'num', { help: 'workiq', imp: ['bundle.workiqCalls'] }));
+        b += subh('Computer use and Work IQ') + grid(g4);
+        if (auto) b += subh('Autonomous runs') + grid([fld(a, 'autonomous.countTriggerAsAction', 'Count the trigger as an action', 'bool', { tag: provPill('ms-inferred'), help: 'trigger', on: 'Count it', imp: ['autonomous.countTriggerAsAction'] }),
+          fld(a, 'autonomous.countPromptAsAction', 'Count each prompt call as an action', 'bool', { help: 'promptAsAction', on: 'Count them', imp: ['autonomous.countPromptAsAction'] })]);
+        if (conv) b += subh('Data kept (storage, not credits)') + grid([fld(a, 'data.retentionDays', 'Transcript retention (days)', 'int', { max: 3650, step: 1, help: 'retention' }),
+          fld(a, 'data.knowledgeGb', 'Uploaded knowledge files (GB)', 'num', { help: 'knowledgeGb' })]);
+      }
+      h += '<details class="adv" data-open="' + advKey(a) + '" data-adv="' + a.id + '"' + (open ? ' open' : '') + '><summary><span class="adv-t">Advanced cost drivers</span>' +
+        '<span class="adv-n">Most small-business agents leave these as they are.</span><span class="adv-s" id="advsum-' + a.id + '"></span></summary><div class="adv-b">' + b + '</div></details>';
+    }
     return h;
   }
   function agentCardHtml(a) {
-    var lane = laneOf(a);
     return '<div class="ahead">' +
         '<div class="an"><label class="sr-only" for="ag-' + a.id + '-name">Agent name</label><input type="text" maxlength="80" id="ag-' + a.id + '-name" data-a="' + a.id + '" data-k="name" data-type="text" value="' + esc(a.name) + '">' +
           '<div class="akind" id="agkind-' + a.id + '"></div></div>' +
@@ -3984,19 +4568,57 @@ footer.pagefoot p { margin:0 0 10px; }
           '<td>' + provPill(t.prov) + (t.src ? ' <span class="ref">' + srcLink(t.src) + (t.fact ? ' &middot; ' + esc(t.fact) : '') + '</span>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
   }
+  function impactText(m) {
+    var parts = [], c = Math.round(m.credits), cov = Math.round(m.covered);
+    if (c > 0) parts.push('Adds ' + fi(c) + ' credits a month');
+    else if (c < 0) parts.push('Saves ' + fi(-c) + ' credits a month');
+    if (cov > 0 && c >= 0) parts.push((parts.length ? 'and ' : 'Adds ') + fi(cov) + ' a month that licenses cover');
+    if (m.w365Usd > 0.004) parts.push((parts.length ? 'and ' : 'Adds ') + fu(m.w365Usd) + ' a month on Azure, outside the pool');
+    if (m.buildHi > 0.5) parts.push((parts.length ? 'and ' : 'Adds ') + 'up to ' + fi(m.buildHi) + ' credits a month while building');
+    return parts.join(' ');
+  }
+  function renderAgentImpacts(a, card) {
+    Array.prototype.forEach.call(card.querySelectorAll('.impact[data-imp]'), function (el) {
+      var adv = el.closest('details.adv');
+      if (adv && !adv.open) { if (el.textContent) el.textContent = ''; return; }
+      var m = E.fieldImpact(a, state, el.getAttribute('data-imp').split(','));
+      var t = impactText(m);
+      if (el.textContent !== t) el.textContent = t;
+      el.classList.toggle('saves', Math.round(m.credits) < 0);
+    });
+  }
+  function advSummary(adv) {
+    if (!adv.set.length) return 'None set';
+    var n = adv.set.length + ' set', c = Math.round(adv.credits), bits = [];
+    if (c > 0) bits.push('+' + fi(c) + ' credits a month');
+    else if (c < 0) bits.push(fi(c).replace('-', '−') + ' credits a month');
+    if (adv.buildHi > 0.5) bits.push('build up to ' + fi(adv.buildHi) + ' a month');
+    if (adv.w365Usd > 0.004) bits.push('+' + fu(adv.w365Usd) + ' a month on Azure');
+    if (!bits.length) bits.push(adv.storageOnly ? 'storage only, no credits' : 'no change to credits');
+    return n + ' · ' + bits.join(' · ');
+  }
+  function placeSummary(a) {
+    var iso = E.horizonMonths(state.combined.horizon.startMonth), parts = [];
+    parts.push(a.env ? a.env : 'Default environment');
+    parts.push('live from ' + monShort(iso[a.startMonth] || iso[0]));
+    parts.push(a.ramped ? 'follows the ramp' : 'full volume at go-live');
+    if (a.type !== 'bc' && (a.harness === 'github' || a.traffic.per === 'day')) parts.push(a.daysActive + ' days a month');
+    return parts.join(' · ');
+  }
   function renderAgentOutputs() {
     var rate = R.customerRate.usdPerCredit;
     state.studio.agents.forEach(function (a) {
       var x = agentRes(a.id);
       if (!x) return;
-      var lane = laneOf(a);
+      var lane = laneOf(a), arch = a.archetype || uiArch[a.id];
       var kind = $('agkind-' + a.id);
-      if (kind) kind.textContent = [LANE_LBL[lane], a.type === 'bc' ? '' : (a.type === 'autonomous' ? 'Autonomous' : (a.audience === 'external' ? 'External' : 'Internal')),
+      if (kind) kind.textContent = [arch && E.AGENT_PRESETS[arch] ? 'From the ' + E.AGENT_PRESETS[arch].label + ' example' + (a.archetype ? '' : ', edited') : '', LANE_LBL[lane],
+        a.type === 'bc' ? '' : (a.type === 'autonomous' ? 'Autonomous' : (a.audience === 'external' ? 'External' : 'Internal')),
         a.type === 'conversational' && lane !== 'github' ? E.CHANNELS[a.channel] : ''].filter(Boolean).join(' · ') + (a.paused ? ' · Paused (not in totals)' : '');
       var fig = $('agfig-' + a.id);
       if (fig) fig.innerHTML = '<div class="af-k">' + rng(x.lo, x.hi) + (x.floor ? '+' : '') + '</div><div class="af-s">credits a month' + (x.floor ? ', a minimum' : '') +
         ' &middot; ' + urng(x.lo * rate, x.hi * rate) + '</div>';
-      var ex = $('agex-' + a.id), arch = a.archetype || uiArch[a.id];
+      var ex = $('agex-' + a.id);
       if (ex) {
         var P = arch ? E.AGENT_PRESETS[arch] : null;
         if (P) {
@@ -4006,6 +4628,9 @@ footer.pagefoot p { margin:0 0 10px; }
             '</div><button type="button" class="btn small" data-act="example" data-a="' + a.id + '" data-arch="' + esc(arch) + '">Reproduce Microsoft&rsquo;s example</button></div>';
         } else ex.innerHTML = '';
       }
+      var ps = $('plsum-' + a.id); if (ps) ps.textContent = placeSummary(a);
+      var as = $('advsum-' + a.id); if (as) as.textContent = advSummary(E.agentAdvanced(a, state));
+      var card = $('card-' + a.id); if (card && !uiHide[a.id]) renderAgentImpacts(a, card);
       var foot = $('agfoot-' + a.id);
       if (!foot) return;
       var codes = x.codes.map(chipFor).join('');
@@ -4020,9 +4645,10 @@ footer.pagefoot p { margin:0 0 10px; }
         ? '<div class="why0">Teams, SharePoint and Copilot Chat sign people in with Microsoft; with another sign-in nothing is covered.</div>' : '';
       var tk = 'trace:' + a.id;
       var rows = R.trace.filter(function (t) { return t.ref === a.id; });
+      /* The arithmetic table is built only while it is open: ten agents typing stays quick. */
       foot.innerHTML = '<div>' + codes + '</div>' +
         '<p class="cover"><b>' + fi(cover) + '</b> credits a month your Copilot licenses already cover.' + perLine + '</p>' + why0 + build + warnAuth +
-        '<details class="trace" data-open="' + tk + '"' + (uiOpen[tk] ? ' open' : '') + '><summary>Show the arithmetic (' + rows.length + ' lines)</summary>' + traceTable(rows) + '</details>';
+        '<details class="trace" data-open="' + tk + '" data-trace="' + a.id + '"' + (uiOpen[tk] ? ' open' : '') + '><summary>Show the arithmetic (' + rows.length + ' lines)</summary>' + (uiOpen[tk] || printAll ? traceTable(rows) : '') + '</details>';
     });
   }
   function archPickerHtml() {
@@ -4059,11 +4685,46 @@ footer.pagefoot p { margin:0 0 10px; }
           '<td id="envout-' + i + '"></td>' +
           '<td><button type="button" class="linkbtn" data-env-del="' + i + '" aria-label="Remove this environment">Remove</button></td></tr>';
       }).join('');
-      return (envs.length ? '<div class="tablewrap"><table class="dtable"><thead><tr><th>Environment</th><th>Kind</th><th class="n">Allocation a month</th><th>Pay-as-you-go</th><th>Tenant draw</th><th>Managed</th><th>In this plan</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
-        : '<p class="note">No environments yet. Every agent then draws from the default environment and the tenant pool. Use the recommended layout to give agents a capped home.</p>') +
-        '<div class="actionsrow" style="margin-top:12px;"><button type="button" class="btn small" id="btnEnvAlloc">Set allocations to this plan&rsquo;s figures</button></div>' +
-        '<div id="envNotes"></div>';
+      var none = !envs.length;
+      return (none ? '<p class="note">No environments yet, so every agent draws from the default environment and the tenant pool, with nothing capping it. The button below creates the recommended Default, Production and Sandbox environments and fills their allocations from this plan.</p>'
+          : '<div class="tablewrap"><table class="dtable"><thead><tr><th>Environment</th><th>Kind</th><th class="n">Allocation a month</th><th>Pay-as-you-go</th><th>Tenant draw</th><th>Managed</th><th>In this plan</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>') +
+        '<div class="envacts no-print"><button type="button" class="btn small primary" id="btnEnvSetup">Set up the recommended environments and allocations</button>' +
+        '<button type="button" class="btn small" id="btnEnvRecalc"' + (none ? ' disabled aria-describedby="envRecalcWhy"' : '') + '>Recalculate allocations</button>' +
+        '<button type="button" class="btn small quiet" id="btnEnvAdd">+ Environment</button>' +
+        (none ? '<span class="note" id="envRecalcWhy">Recalculate needs environments first: set them up with the first button.</span>' : '<span class="note">Recalculate after you change agents or volumes; it rewrites allocations only.</span>') + '</div>' +
+        '<div id="envResult" class="no-print" aria-live="polite"></div><div id="envNotes"></div>';
     });
+  }
+  function allocWords(list) {
+    return list.map(function (x) {
+      if (x.basis === 'payg') return x.name + ': pay-as-you-go, exempt (' + fi(x.to) + ' kept)';
+      if (x.kind === 'default' && x.to === 0) return x.name + ': no allocation, so it draws from the tenant pool';
+      var t = x.name + ': ' + fi(x.to) + ' credits a month';
+      if (x.basis === 'placeholder') t += ' (a planner placeholder for builds)';
+      else if (x.basis === 'build') t += ' (the build high end plus 10%)';
+      if (x.from === x.to) t += ', unchanged'; else t += ', was ' + fi(x.from);
+      return t;
+    }).join('; ');
+  }
+  function envSetup() {
+    var r = E.setupEnvironments(state);
+    state = r.state; recompute();
+    var parts = [];
+    parts.push(r.created.length ? 'Created ' + r.created.join(', ') + '.' : 'The recommended environments were already there.');
+    if (r.moved.length) parts.push('Moved ' + (r.moved.length === 1 ? r.moved[0] : r.moved.length + ' agents (' + r.moved.slice(0, 3).join(', ') + (r.moved.length > 3 ? ' and more' : '') + ')') + ' to ' + r.production + ', tenant draw off.');
+    if (state.studio.agents.some(function (a) { return a.type === 'bc' && !a.env; })) parts.push('Business Central agents stay on the default environment until you relink them.');
+    parts.push('Allocations: ' + allocWords(r.allocations) + '.');
+    envNote('<b>Environments set up.</b> ' + esc(parts.join(' ')));
+  }
+  function envRecalc() {
+    var r = E.recalcAllocations(state);
+    if (r.none) { envNote('There are no environments to fill yet. Use &ldquo;Set up the recommended environments and allocations&rdquo; first.', 'warn'); return; }
+    state = r.state; recompute();
+    var changed = r.allocations.filter(function (x) { return x.from !== x.to; });
+    envNote('<b>' + (changed.length ? 'Allocations recalculated.' : 'Allocations already match this plan.') + '</b> ' + esc(allocWords(r.allocations)) + '.');
+  }
+  function envNote(html, kind) {
+    $('envResult').innerHTML = '<div class="notice' + (kind === 'warn' ? ' warn' : '') + '" style="margin:12px 0 0;"><div>' + html + '</div><div class="n-acts"><button type="button" class="btn small quiet" data-act="envdismiss">Dismiss</button></div></div>';
   }
   function renderEnvOutputs() {
     var en = R.enforcement, gv = R.governance;
@@ -4074,7 +4735,7 @@ footer.pagefoot p { margin:0 0 10px; }
       var ee = en.environments[i], g = gv.allocations.filter(function (x) { return x.name === e.name; })[0];
       cell.innerHTML = '<span class="mini">' + (agents.length ? esc(agents.join(', ')) : 'No agents') + '</span>' +
         (ee ? '<span class="mini">Peak month: ' + rng(ee.consumption.mid, ee.consumption.hi) + ' credits</span>' : '') +
-        (g && !e.payg ? '<span class="mini">Suggested allocation: ' + fi(g.credits) + '</span>' : '');
+        (e.kind === 'sandbox' ? '<span class="mini">Builds and tests: ' + (e.allocation > 0 ? fi(e.allocation) + ' a month' : 'no allocation yet') + '</span>' : (g && !e.payg ? '<span class="mini">Suggested allocation: ' + fi(g.credits) + '</span>' : ''));
     });
     var gh = R.lanes.agents.filter(function (a) { return a.build && a.build.hi > 0 && !a.paused; });
     var notes = '<div class="whybox cust-ok"><div class="wb-h">Build burn</div>' +
@@ -4084,63 +4745,52 @@ footer.pagefoot p { margin:0 0 10px; }
     if (state.studio.environments.some(function (e) { return e.managed; })) notes += '<div class="callout warn"><div class="callout-body">Once Managed Environments is on, everyone active in that environment needs a premium license; enforcement starts in February 2027. ' + rcRef('managedEnv') + '</div></div>';
     var n = $('envNotes'); if (n) n.innerHTML = notes;
   }
-  function recommendedLayout() {
-    var hasGh = state.studio.agents.some(function (a) { return a.harness === 'github' && a.type !== 'bc'; });
-    state.studio.environments = [
-      { name: 'Default', kind: 'default', allocation: 0, payg: false, tenantDraw: true, managed: false },
-      { name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false },
-      { name: 'Sandbox', kind: 'sandbox', allocation: hasGh ? 0 : 5000, payg: false, tenantDraw: false, managed: false }
-    ];
-    state.studio.agents.forEach(function (a) { if (a.type !== 'bc') a.env = 'Production'; });
-    recompute();
-    applyAllocations(true);
-    showNotice('Recommended layout applied: published agents in Production with a capped allocation and tenant draw off; a Sandbox for builds' +
-      (hasGh ? '' : ' (5,000 credits a month, a planner placeholder)') + '; Business Central agents left on the default environment until you relink them.');
-  }
-  function applyAllocations(keepSandbox) {
-    var gv = R.governance, ghBuild = 0;
-    R.lanes.agents.forEach(function (a) { if (!a.paused && a.build) ghBuild = Math.max(ghBuild, a.build.hi); });
-    state.studio.environments.forEach(function (e) {
-      var g = gv.allocations.filter(function (x) { return x.name === e.name; })[0];
-      if (e.payg) return;
-      if (e.kind === 'sandbox') { if (ghBuild > 0) e.allocation = Math.ceil(ghBuild * 1.1 / 1000) * 1000; else if (!e.allocation) e.allocation = 5000; return; }
-      if (g) e.allocation = g.credits;
-    });
-    recompute();
-  }
-
   /* ══ Studio §4: Dataverse and adjacent costs ══════════════════════════ */
+  function sfield(id, help, label, bind, type, o) {
+    o = o || {};
+    var ctl = type === 'bool'
+      ? '<label class="ckbox"><input type="checkbox" id="' + id + '" aria-labelledby="lbl-' + id + '" data-bind="' + bind + '" data-type="bool"> ' + (o.on || 'Yes') + '</label>'
+      : '<input type="number" id="' + id + '" min="0" step="' + (o.step || 'any') + '"' + (o.max != null ? ' max="' + o.max + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' data-bind="' + bind + '" data-type="' + type + '">';
+    return fieldHtml({ id: id, label: label + (o.tag ? ' ' + o.tag : ''), ctl: ctl, foot: o.hint ? '<div class="hint">' + o.hint + '</div>' : '', help: help, labelSpan: type === 'bool' });
+  }
   function renderAdjStructure() {
     mount($('adjBody'), 'adj', function () {
-      return '<div class="fgrid">' +
-        '<div class="field"><label for="fKb">Transcript size per session (KB) ' + provPill('editorial') + '</label><input type="number" id="fKb" min="0" step="1" data-bind="studio.dataverse.kbPerSession" data-type="num"><div class="hint">Microsoft publishes no figure; measure one tenant to replace it.</div></div>' +
-        '<div class="field"><label for="fIdx">Search index, % of knowledge files ' + provPill('editorial') + '</label><input type="number" id="fIdx" min="0" step="1" data-bind="studio.dataverse.searchIndexFactor" data-type="pctfactor"><div class="hint">Measure after the first upload.</div></div>' +
-        '<div class="field"><label for="fDb">Database already used (GB)</label><input type="number" id="fDb" min="0" step="any" data-bind="studio.dataverse.existingDbGb" data-type="num"></div>' +
-        '<div class="field"><label for="fFile">File storage already used (GB)</label><input type="number" id="fFile" min="0" step="any" data-bind="studio.dataverse.existingFileGb" data-type="num"></div>' +
-        '<div class="field"><label for="fLog">Log storage already used (GB)</label><input type="number" id="fLog" min="0" step="any" data-bind="studio.dataverse.existingLogGb" data-type="num"></div>' +
-        '<div class="field"><label for="fA365">Agent 365: owners and sponsors</label><input type="number" id="fA365" min="0" step="1" data-bind="studio.adjacent.agent365Owners" data-type="int"><div class="hint">The people who own or sponsor agents, not everyone who uses them (Likely).</div></div>' +
-        '<div class="field"><label for="fByom">Your own models (Azure AI Foundry), a month</label><input type="number" id="fByom" min="0" step="any" data-bind="studio.adjacent.byomUsdMonthly" data-type="num"><div class="hint">Dollars, from the customer&rsquo;s Azure bill.</div></div>' +
-        '<div class="field check"><label><input type="checkbox" data-bind="studio.adjacent.premiumFlows" data-type="bool"> <span>Cloud flows use premium connectors</span></label></div>' +
-        '</div><div id="adjOut" style="margin-top:16px;"></div>';
+      return '<div class="sub-h">Dataverse storage</div><div class="fgrid">' +
+        sfield('fKb', 'kbPerSession', 'Transcript size per conversation (KB)', 'studio.dataverse.kbPerSession', 'num', { step: 1, tag: provPill('editorial'), hint: 'Planner estimate: leave it.' }) +
+        sfield('fIdx', 'searchIdx', 'Search index, % of knowledge files', 'studio.dataverse.searchIndexFactor', 'pctfactor', { step: 1, tag: provPill('editorial'), hint: 'Planner estimate: leave it.' }) +
+        sfield('fDb', 'existingDb', 'Database already used (GB)', 'studio.dataverse.existingDbGb', 'num') +
+        sfield('fFile', 'existingFile', 'File storage already used (GB)', 'studio.dataverse.existingFileGb', 'num') +
+        sfield('fLog', 'existingLog', 'Log storage already used (GB)', 'studio.dataverse.existingLogGb', 'num') +
+        '</div><div id="adjDv"></div>' +
+        '<div class="sub-h">Other costs outside the pool</div><div class="fgrid">' +
+        sfield('fA365', 'agent365Owners', 'Agent 365: owners and sponsors', 'studio.adjacent.agent365Owners', 'int', { step: 1 }) +
+        sfield('fByom', 'byom', 'Your own models (Azure AI Foundry), dollars a month', 'studio.adjacent.byomUsdMonthly', 'num') +
+        sfield('fPremFlows', 'premiumFlows', 'Premium cloud flows', 'studio.adjacent.premiumFlows', 'bool', { on: 'Premium connectors in use' }) +
+        '</div><div id="adjOut"></div>';
     });
   }
+  var lastAdjWarn = '';
   function renderAdjOutputs() {
-    var dv = R.dataverse, adj = R.adjacent, out = $('adjOut');
-    if (!out) return;
-    var ent = dv.entitlement;
-    var rows = [
-      ['Dataverse database', fnum(ent.db) + ' GB', fnum(dv.usage.db) + ' GB', fnum(dv.overageGb.db) + ' GB'],
-      ['Dataverse file', fnum(ent.file) + ' GB', fnum(dv.usage.file) + ' GB', fnum(dv.overageGb.file) + ' GB'],
-      ['Dataverse log', fnum(ent.log) + ' GB', fnum(dv.usage.log) + ' GB', fnum(dv.overageGb.log) + ' GB']
-    ];
-    out.innerHTML = '<div class="tablewrap"><table class="dtable"><thead><tr><th>Storage</th><th class="n">Included</th><th class="n">Used at steady state</th><th class="n">Over by</th></tr></thead><tbody>' +
-      rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td class="n">' + r[1] + '</td><td class="n">' + r[2] + '</td><td class="n">' + r[3] + '</td></tr>'; }).join('') +
+    var dv = R.dataverse, adj = R.adjacent, ent = dv.entitlement;
+    var v = dv.verdict || { level: 'ok', text: '' };
+    var lvl = v.level === 'over' ? 'over' : v.level === 'watch' ? 'watch' : (adj.agent365.owners > 0 && !adj.agent365.eligible ? 'watch' : 'ok');
+    $('adjVerdict').innerHTML = '<div class="verdict ' + (lvl === 'ok' ? '' : lvl) + '"><div><p>' + esc(v.text) + '</p><p>' + esc(adj.summary || '') + '</p></div></div>';
+    /* Open the section when a storage or Agent 365 warning starts to fire. */
+    var key = R.warnings.filter(function (w) { return ['P-60', 'P-61', 'P-65'].indexOf(w.id) > -1; }).map(function (w) { return w.id; }).join(',');
+    if (key && key !== lastAdjWarn) { $('adjSect').open = true; uiOpen.adj = true; }
+    lastAdjWarn = key;
+    var dvo = $('adjDv'), out = $('adjOut');
+    if (!dvo || !out) return;
+    var rows = [['Database', ent.db, dv.usage.db, dv.overageGb.db], ['File', ent.file, dv.usage.file, dv.overageGb.file], ['Log', ent.log, dv.usage.log, dv.overageGb.log]];
+    dvo.innerHTML = '<div class="tablewrap"><table class="dtable"><thead><tr><th>Dataverse storage</th><th class="n">Included (GB)</th><th class="n">Used at steady state (GB)</th><th class="n">Over by (GB)</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td class="n">' + fnum(r[1]) + '</td><td class="n">' + fnum(r[2]) + '</td><td class="n">' + fnum(r[3]) + '</td></tr>'; }).join('') +
       '</tbody></table></div>' +
       '<p class="srcline">Included capacity: ' + (dv.configured ? 'the one-time Copilot Studio default once a pack or pay-as-you-go is set up ' + rcRef('dvStudio') : 'the default environment&rsquo;s own capacity ' + rcRef('dvBaseline')) +
-      '. Transcripts: ' + fi(dv.sessions) + ' sessions a month, ' + fnum(dv.transcriptGb) + ' GB at each agent&rsquo;s retention.</p>' +
-      '<div class="tablewrap" style="margin-top:12px;"><table class="dtable"><thead><tr><th>Outside the credit pool</th><th class="n">A month</th><th>Basis</th></tr></thead><tbody>' +
-      '<tr><td>Dataverse capacity add-ons</td><td class="n">' + fu(adj.dataverse.usdMonthly) + '</td><td>' + rcRef('dvAddOn') + '<span class="mini">On pay-as-you-go meters instead: ' + fu(adj.dataverse.paygUsdMonthly) + ' a month ' + '</span><span class="mini">' + rcRef('dvPayg') + '</span></td></tr>' +
-      '<tr><td>Windows 365 for Agents</td><td class="n">' + fu(adj.w365.usdMonthly) + '</td><td>' + rcRef('w365Hour') + '</td></tr>' +
+      '. Transcripts: ' + fi(dv.sessions) + ' conversations a month, ' + fnum(dv.transcriptGb) + ' GB at each agent&rsquo;s retention (set under each agent&rsquo;s Advanced cost drivers). ' +
+      'The tenant&rsquo;s real use is in the Power Platform admin center under Licensing, then Dataverse. <span class="ref">' + srcLink('ms-capacity') + '</span></p>';
+    out.innerHTML = '<div class="tablewrap"><table class="dtable"><thead><tr><th>Outside the credit pool</th><th class="n">A month</th><th>Basis</th></tr></thead><tbody>' +
+      '<tr><td>Dataverse capacity add-ons</td><td class="n">' + fu(adj.dataverse.usdMonthly) + '</td><td>' + rcRef('dvAddOn') + '<span class="mini">On pay-as-you-go meters instead: ' + fu(adj.dataverse.paygUsdMonthly) + ' a month</span><span class="mini">' + rcRef('dvPayg') + '</span></td></tr>' +
+      '<tr><td>Windows 365 for Agents<span class="mini">Hours come from each computer-use agent&rsquo;s Advanced cost drivers.</span></td><td class="n">' + fu(adj.w365.usdMonthly) + '</td><td>' + rcRef('w365Hour') + '</td></tr>' +
       '<tr><td>Agent 365 (' + fi(adj.agent365.owners) + ' owners and sponsors)</td><td class="n">' + fu(adj.agent365.usdMonthly) + '</td><td>' + rcRef('agent365') + (adj.agent365.owners > 0 && !adj.agent365.eligible ? '<span class="mini"><b class="cross">Blocked:</b> needs Business Premium (or E5/E7, or the Defender and Purview suites).</span>' : '') + '</td></tr>' +
       '<tr><td>Your own models</td><td class="n">' + fu(adj.byom.usdMonthly) + '</td><td>' + provPill('partner') + '</td></tr>' +
       '</tbody><tfoot><tr><td>Total a month, outside the pool</td><td class="n">' + fu(adj.totalMonthlyUsd) + '</td><td></td></tr></tfoot></table></div>' +
@@ -4187,13 +4837,13 @@ footer.pagefoot p { margin:0 0 10px; }
   function renderValueStructure() {
     mount($('valueBody'), 'value', function () {
       return '<div class="fgrid">' +
-        '<div class="field check"><label><input type="checkbox" data-bind="studio.value.on" data-type="bool"> <span>Include on the customer report</span></label></div>' +
-        '<div class="field"><label for="fHr">Value of an hour</label><input type="number" id="fHr" min="0" step="any" data-bind="studio.value.hourlyUsd" data-type="num"><div class="hint" id="hrHint"></div></div>' +
-        '<div class="field"><label for="fMs">Minutes saved per session</label><input type="number" id="fMs" min="0" step="any" data-bind="studio.value.minutesPerSession" data-type="num"></div>' +
-        '<div class="field"><label for="fMa">Minutes saved per action</label><input type="number" id="fMa" min="0" step="any" data-bind="studio.value.minutesPerAction" data-type="num"></div>' +
-        '<div class="field"><label for="fRes">Sessions resolved (%)</label><input type="number" id="fRes" min="0" max="100" step="1" data-bind="studio.value.resolvedPct" data-type="num"></div>' +
-        '<div class="field"><label for="fCpc">Cost of a human contact</label><input type="number" id="fCpc" min="0" step="any" placeholder="Not set" data-bind="studio.value.costPerContactUsd" data-type="nullnum"><div class="hint" id="cpcHint"></div></div>' +
-        '</div><div id="valueOut" style="margin-top:14px;"></div>';
+        sfield('fValOn', 'valueOn', 'On the customer report', 'studio.value.on', 'bool', { on: 'Include it' }) +
+        sfield('fHr', 'hourly', 'Value of an hour (dollars)', 'studio.value.hourlyUsd', 'num') +
+        sfield('fMs', 'minSession', 'Minutes saved per conversation', 'studio.value.minutesPerSession', 'num') +
+        sfield('fMa', 'minAction', 'Minutes saved per action', 'studio.value.minutesPerAction', 'num') +
+        sfield('fRes', 'resolvedPct', 'Conversations resolved (%)', 'studio.value.resolvedPct', 'num', { step: 1, max: 100 }) +
+        sfield('fCpc', 'costContact', 'Cost of a human contact (dollars)', 'studio.value.costPerContactUsd', 'nullnum', { ph: 'Not set' }) +
+        '</div><div id="valueOut" style="margin-top:6px;"></div>';
     });
   }
   function renderValueOutputs() {
@@ -4274,17 +4924,19 @@ footer.pagefoot p { margin:0 0 10px; }
     $('incStatus').textContent = !p ? 'Cowork tab: no figures yet.' : (cw.included ? 'Cowork tab: included (' + rng(cw.steady.lo, cw.steady.hi) + ' credits a month, ±' + E.fmtPct(cw.band * 100) + ').'
       : (inc === 'off' ? 'Cowork tab: left out.' : 'Cowork tab: not yet at results (' + screenLabel(p.screen) + ').'));
     $('poolKpis').innerHTML =
-      cellHtml(rng(P.steady.lo, P.steady.hi), 'Credits in a steady month', 'Cowork and agents, low to high. ' + provPill('ms-modeled')) +
+      cellHtml(rng(P.steady.lo, P.steady.hi), 'Credits in a steady month', (planMode() === 'agents' ? 'All agents' : 'Cowork and agents') + ', low to high. ' + provPill('ms-modeled')) +
       cellHtml(urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi), 'A steady month at ' + (cv.pricing.basis === 'sell' ? 'your price' : 'Microsoft list'), 'If it were all pay-as-you-go') +
       cellHtml(fu(cv.buy.yearUsd), 'Year one on the recommended plan', 'Middle scenario; ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone', 'alt') +
       cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month licenses already cover', 'Agent use by licensed people', 'alt');
     $('poolChart').innerHTML = P.year.hi > 0 ? chartSvg() : '<p class="note">Nothing in the pool yet: run the Cowork tab to results or add agents.</p>';
+    var agentsOnly = planMode() === 'agents';
     $('poolLegend').innerHTML = P.year.hi > 0 ? [['cowork', 'Cowork (from the Cowork tab)'], ['studio', 'Copilot Studio agents'], ['github', 'GitHub Copilot harness, run and build'], ['bc', 'Business Central agents']]
-      .map(function (x) { return '<span><i style="background:' + LANE_COLORS[x[0]] + '"></i>' + x[1] + '</span>'; }).join('') +
+      .filter(function (x) { return !(agentsOnly && x[0] === 'cowork'); }).map(function (x) { return '<span><i style="background:' + LANE_COLORS[x[0]] + '"></i>' + x[1] + '</span>'; }).join('') +
       '<span><i style="background:#6b7280;width:2px;"></i>High end</span>' +
       '<span class="partner-only"><i class="ln"></i>Prepaid pack capacity</span><span class="partner-only"><i class="hatch"></i>Pay-as-you-go overflow</span>' +
       (R.purchase.best.p3.units > 0 ? '<span class="partner-only">A pre-purchase plan covers ' + fi(R.purchase.best.p3.credits) + ' credits across the year</span>' : '') : '';
-    var lanes = [['cowork', 'Cowork (from the Cowork tab' + (cw.included ? ', ±' + E.fmtPct(cw.band * 100) : ', not included') + ')'], ['studio', 'Copilot Studio agents'], ['github', 'GitHub Copilot harness, run'], ['build', 'GitHub Copilot harness, build'], ['bc', 'Business Central agents']];
+    var lanes = [['cowork', 'Cowork (from the Cowork tab' + (cw.included ? ', ±' + E.fmtPct(cw.band * 100) : ', not included') + ')'], ['studio', 'Copilot Studio agents'], ['github', 'GitHub Copilot harness, run'], ['build', 'GitHub Copilot harness, build'], ['bc', 'Business Central agents']]
+      .filter(function (l) { return !(agentsOnly && l[0] === 'cowork'); });
     var last = P.months[11];
     $('poolTable').innerHTML = '<table class="dtable"><thead><tr><th>Lane</th><th class="n">Steady month, low</th><th class="n">Middle</th><th class="n">High</th><th class="n">Year one, low</th><th class="n">Middle</th><th class="n">High</th></tr></thead><tbody>' +
       lanes.map(function (l) {
@@ -4325,9 +4977,9 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   function renderHoldingsStructure() {
     mount($('holdings'), 'h', function () {
-      return '<div class="field"><label for="fHoldPacks">Capacity packs a month</label><input type="number" id="fHoldPacks" min="0" step="1" data-bind="combined.purchase.current.packs" data-type="int"></div>' +
+      return sfield('fHoldPacks', 'holdPacks', 'Capacity packs a month', 'combined.purchase.current.packs', 'int', { step: 1 }) +
         E.RC.p3Tiers.v.map(function (t, i) {
-          return '<div class="field"><label for="fHoldP3' + i + '">Tier ' + t.tier + ' plans (' + fi(t.cccu) + ' units, ' + t.pct + '% off)</label><input type="number" id="fHoldP3' + i + '" min="0" step="1" data-bind="combined.purchase.current.p3.' + i + '" data-type="int"></div>';
+          return sfield('fHoldP3' + i, null, 'Tier ' + t.tier + ' plans (' + fi(t.cccu) + ' units, ' + t.pct + '% off)', 'combined.purchase.current.p3.' + i, 'int', { step: 1 });
         }).join('');
     });
   }
@@ -4350,7 +5002,7 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   function renderEnforce() {
     var en = R.enforcement, cap = en.userCap;
-    var lights = '<div class="ctlrow">' + [['flows', 'Agent flows'], ['agents', 'Custom agents'], ['userCap', 'Per-user limits'], ['m365', 'Cowork&rsquo;s share of the pool']].map(function (l) {
+    var lights = '<div class="ctlrow">' + [['flows', 'Agent flows'], ['agents', 'Custom agents'], ['userCap', 'Per-user limits'], ['m365', 'Cowork&rsquo;s share of the pool']].filter(function (l) { return !(planMode() === 'agents' && (l[0] === 'userCap' || l[0] === 'm365')); }).map(function (l) {
       var v = en.lights[l[0]]; return '<span><span class="ctl-l">' + l[1] + '</span> <span class="light ' + v + '">' + LIGHT_LBL[v] + '</span></span>';
     }).join('') + '</div>';
     var rows = en.environments.map(function (e) {
@@ -4361,7 +5013,7 @@ footer.pagefoot p { margin:0 0 10px; }
     rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td>' + dayCell(tp.cuts.flowsDay) + '</td><td>' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
     var html = lights + '<p class="note" style="margin-top:10px;">Peak month: <b>' + esc(monLong(en.peakMonth)) + '</b>. Prepaid capacity simulated: ' + fi(en.prepaidMonthly) + ' credits a month (' + (en.basis === 'recommended' ? 'the recommended purchase' : 'what the customer holds') + '); ' + fi(en.allocated) + ' pre-allocated to environments.</p>' +
       '<div class="tablewrap"><table class="dtable"><thead><tr><th>Where</th><th class="n">Allocation a month</th><th class="n">Peak-month agent use</th><th>Flows stop</th><th>Agents switch off</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
-    html += '<div class="whybox cust-ok"><div class="wb-h">Microsoft 365 and Cowork</div><p>Microsoft 365 can draw ' + fi(en.m365.available) + ' credits a month after Power Platform pre-allocations; Cowork needs ' + rng(en.m365.demand.mid, en.m365.demand.hi) + '. ' +
+    html += '<div class="whybox cust-ok cw-lane"><div class="wb-h">Microsoft 365 and Cowork</div><p>Microsoft 365 can draw ' + fi(en.m365.available) + ' credits a month after Power Platform pre-allocations; Cowork needs ' + rng(en.m365.demand.mid, en.m365.demand.hi) + '. ' +
       (en.m365.starvation.mid ? '<b>The pre-allocations push Cowork onto pay-as-you-go in the middle scenario.</b>' : en.m365.starvation.hi ? 'The pre-allocations push Cowork onto pay-as-you-go at the high end.' :
         (en.m365.demand.hi > en.m365.available ? 'No pre-allocation is squeezing it; Cowork use above prepaid capacity simply runs on pay-as-you-go.' : 'That covers it.')) + ' ' + rcRef('m365Share') + '</p>' +
       '<p>' + (cap.cap === null ? 'No per-user monthly limit applies.' : 'Per-user limit: <b>' + fi(cap.cap) + '</b> credits a month (' + (cap.source === 'manual' ? 'set here' : 'the December 1 default from ' + esc(monLong(cap.firstMonth))) + ')' +
@@ -4435,16 +5087,17 @@ footer.pagefoot p { margin:0 0 10px; }
     var sell = cv.pricing.basis === 'sell', at = sell ? 'at your partner&rsquo;s price' : 'at Microsoft list';
     var agLo = 0, agHi = 0;
     cv.agents.forEach(function (a) { agLo += a.lo; agHi += a.hi; });
-    var cw = cv.cowork || {}, rate = cv.pricing.usdPerCredit;
-    var h = '<div class="crep"><div class="cr-head"><div><div class="cr-title">Copilot Credit plan' + (cv.accountName ? ': ' + esc(cv.accountName) : '') + '</div>' +
+    var cw = cv.cowork || {}, rate = cv.pricing.usdPerCredit, agentsOnly = cv.mode === 'agents';
+    var h = '<div class="crep"><div class="cr-head"><div><div class="cr-title">' + (agentsOnly ? 'Copilot Studio agent plan' : 'Copilot Credit plan') + (cv.accountName ? ': ' + esc(cv.accountName) : '') + '</div>' +
       '<div class="cr-meta">' + (cv.preparedBy ? 'Prepared by ' + esc(cv.preparedBy) + ' &middot; ' : '') + esc(todayLabel()) + ' &middot; Rate card ' + esc(cv.rateCardVersion) + '</div></div>' +
       '<div class="cr-disc">' + esc(cv.pricing.disclaimer) + '</div></div>';
-    h += '<div class="numgrid">' +
-      cellHtml(cw.included ? rng(cw.steady.lo, cw.steady.hi) : '—', 'Cowork, credits a month', cw.included ? 'From the Cowork tab, &plusmn;' + E.fmtPct(cw.bandPct) : 'Not included in this plan') +
-      cellHtml(cv.agents.length ? rng(agLo, agHi) : '—', 'Copilot Studio agents, credits a month', cv.agents.length + ' agent' + (cv.agents.length === 1 ? '' : 's')) +
-      cellHtml(rng(cv.pool.steadyCredits.lo, cv.pool.steadyCredits.hi), 'All in, a steady month', urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi) + ' ' + at, 'alt') +
-      cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month your Copilot licenses already cover', 'Licensed people, signed in, on Microsoft channels', 'alt') + '</div>';
-    h += '<h4>Per tool, a steady month ' + provPill('ms-modeled') + '</h4><div class="tablewrap"><table class="dtable"><thead><tr><th>Tool</th><th class="n">Credits a month</th><th class="n">A month ' + at + '</th><th>Note</th></tr></thead><tbody>';
+    var agCell = cellHtml(cv.agents.length ? rng(agLo, agHi) : '—', 'Copilot Studio agents, credits a month', cv.agents.length + ' agent' + (cv.agents.length === 1 ? '' : 's'));
+    var allCell = cellHtml(rng(cv.pool.steadyCredits.lo, cv.pool.steadyCredits.hi), agentsOnly ? 'A steady month, in dollars' : 'All in, a steady month', urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi) + ' ' + at, 'alt');
+    var zeroCell = cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month your Copilot licenses already cover', 'Licensed people, signed in, on Microsoft channels', 'alt');
+    h += '<div class="numgrid">' + (agentsOnly
+      ? agCell + allCell + zeroCell + cellHtml(fu((cv.adjacent && cv.adjacent.totalUsdMonthly) || 0), 'Outside the credit pool, a month', 'Storage, Windows 365, Agent 365, your own models', 'alt')
+      : cellHtml(cw.included ? rng(cw.steady.lo, cw.steady.hi) : '—', 'Cowork, credits a month', cw.included ? 'From the Cowork tab, &plusmn;' + E.fmtPct(cw.bandPct) : 'Not included in this plan') + agCell + allCell + zeroCell) + '</div>';
+    h += '<h4>' + (agentsOnly ? 'Per agent' : 'Per tool') + ', a steady month ' + provPill('ms-modeled') + '</h4><div class="tablewrap"><table class="dtable"><thead><tr><th>' + (agentsOnly ? 'Agent' : 'Tool') + '</th><th class="n">Credits a month</th><th class="n">A month ' + at + '</th><th>Note</th></tr></thead><tbody>';
     if (cw.included) h += '<tr><td>Cowork</td><td class="n">' + rng(cw.steady.lo, cw.steady.hi) + '</td><td class="n">' + urng(cw.steady.lo * rate, cw.steady.hi * rate) + '</td><td>From the Cowork tab, &plusmn;' + E.fmtPct(cw.bandPct) + '</td></tr>';
     cv.agents.forEach(function (a) {
       var note = [];
@@ -4496,25 +5149,29 @@ footer.pagefoot p { margin:0 0 10px; }
   function renderWhoStructure() {
     var m = state.partner.motion;
     mount($('whoFields'), 'who:' + m, function () {
-      function nf(path, label, o) {
+      function nf(path, label, help, o) {
         o = o || {};
-        return '<div class="field"><label for="w-' + path.replace(/\./g, '-') + '">' + label + (o.tag ? ' ' + o.tag : '') + '</label><input type="number" id="w-' + path.replace(/\./g, '-') + '" min="0" step="' + (o.step || 'any') + '"' +
-          (o.max != null ? ' max="' + o.max + '"' : '') + ' placeholder="' + esc(o.ph || 'Not set') + '" data-bind="' + path + '" data-type="' + (o.type || 'nullnum') + '">' + (o.hint ? '<div class="hint">' + o.hint + '</div>' : '') + '</div>';
+        var id = 'w-' + path.replace(/\./g, '-');
+        return fieldHtml({ id: id, label: label + (o.tag ? ' ' + o.tag : ''), help: help, w: o.w,
+          ctl: '<input type="number" id="' + id + '" min="0" step="' + (o.step || 'any') + '"' + (o.max != null ? ' max="' + o.max + '"' : '') + ' placeholder="' + esc(o.ph || 'Not set') + '" data-bind="' + path + '" data-type="' + (o.type || 'nullnum') + '">',
+          foot: o.hint ? '<div class="hint">' + o.hint + '</div>' : '' });
       }
-      var h = '';
-      if (m === 'indirectReseller') h += nf('partner.providerCreditUsd', 'Your provider&rsquo;s rate per credit', { step: '0.0001', hint: 'What your provider charges you for pay-as-you-go.' }) +
-        nf('partner.providerPackUsd', 'Your provider&rsquo;s price per pack', { hint: 'Ask your provider; no CSP price point is assumed.' }) +
-        nf('partner.providerP3Pct', 'Your provider&rsquo;s discount on a pre-purchase plan (%)', { max: 100 });
-      if (m === 'direct') h += nf('partner.providerPackUsd', 'Your CSP buy price per pack', { hint: 'From your price list; no price point is assumed.' }) +
-        nf('partner.pecPct', 'Partner-earned credit on the meter (%)', { type: 'num', max: 100, tag: '<span class="pill estimate">Unverified</span>', hint: 'Default 0: not confirmed for this meter. A pre-purchase plan never earns it.' });
+      var h = '', cost = '';
+      if (m === 'indirectReseller') cost = nf('partner.providerCreditUsd', 'Your provider&rsquo;s rate per credit', 'provCredit', { step: '0.0001' }) +
+        nf('partner.providerPackUsd', 'Your provider&rsquo;s price per pack', 'provPack') +
+        nf('partner.providerP3Pct', 'Provider discount on a pre-purchase plan (%)', 'provP3', { max: 100 });
+      if (m === 'direct') cost = nf('partner.providerPackUsd', 'Your CSP buy price per pack', 'provPack') +
+        nf('partner.pecPct', 'Partner-earned credit on the meter (%)', 'pec', { type: 'num', max: 100, tag: '<span class="pill estimate">Unverified</span>' });
+      h += '<div class="sub-h">Your costs</div>';
+      if (cost) h += '<div class="fgrid">' + cost + '</div>';
       if (m === 'notCsp') h += '<p class="note">Outside CSP the customer buys from Microsoft directly: there is no meter margin, only services.</p>';
-      if (m === 'unsure') h += '<p class="note">Pick your motion to see what your costs are. Until then no margin is shown.</p>';
-      h += nf('partner.sellCreditUsd', 'Your sell price per credit', { step: '0.0001', hint: 'Blank: the customer report uses Microsoft list (or the Cowork tab&rsquo;s sell price).' }) +
-        nf('partner.sellPackUsd', 'Your sell price per pack') +
-        nf('partner.sellSeatUsd.business', 'Your sell price, Copilot Business seat') +
-        nf('partner.sellSeatUsd.enterprise', 'Your sell price, enterprise Copilot seat') +
-        nf('partner.seatMarginPct', 'Your margin on Copilot seats (%)', { max: 100 }) +
-        '<div class="field" style="grid-column:1/-1;"><label for="fNotes">Your notes (partner-only; saved in the session file)</label><textarea id="fNotes" maxlength="2000" data-bind="meta.notes" data-type="text"></textarea></div>';
+      if (m === 'unsure') h += '<p class="note">Pick your motion above to see what your costs are. Until then no margin is shown.</p>';
+      h += '<div class="sub-h">Your sell prices</div><div class="fgrid">' + nf('partner.sellCreditUsd', 'Your sell price per credit', 'sellCredit', { step: '0.0001' }) +
+        nf('partner.sellPackUsd', 'Your sell price per pack', 'sellPack') +
+        nf('partner.sellSeatUsd.business', 'Sell price, Copilot Business seat', 'sellSeatBiz') +
+        nf('partner.sellSeatUsd.enterprise', 'Sell price, enterprise Copilot seat', 'sellSeatEnt') +
+        nf('partner.seatMarginPct', 'Your margin on Copilot seats (%)', 'seatMargin', { max: 100 }) + '</div>' +
+        '<div class="fgrid">' + fieldHtml({ id: 'fNotes', label: 'Your notes (partner-only; saved in the session file)', help: 'notes', ctl: '<textarea id="fNotes" maxlength="2000" data-bind="meta.notes" data-type="text"></textarea>' }) + '</div>';
       return h;
     });
     $('rateNote').innerHTML = esc(R.customerRate.note) + ' The customer report says so: &ldquo;' + esc(R.customerRate.disclaimer) + '&rdquo;';
@@ -4648,7 +5305,7 @@ footer.pagefoot p { margin:0 0 10px; }
     $('printInternalHead').innerHTML = '<div class="crep"><div class="cr-head"><div><div class="cr-title">Copilot Credit plan, partner working copy' + (state.meta.accountName ? ': ' + esc(state.meta.accountName) : '') + '</div>' +
       '<div class="cr-meta">' + (state.meta.preparedBy ? 'Prepared by ' + esc(state.meta.preparedBy) + ' &middot; ' : '') + esc(todayLabel()) + ' &middot; Rate card ' + esc(E.RATECARD_VERSION) + '</div></div>' +
       '<div class="cr-disc">Partner-only: contains margins, provider pricing and coaching. Do not hand this to the customer.</div></div>' +
-      '<p>Cowork lane: ' + (cw.included ? rng(cw.steady.lo, cw.steady.hi) + ' credits in a steady month from the Cowork tab (&plusmn;' + E.fmtPct(cw.band * 100) + ', ' + fi(cw.basisSeats) + ' users).' : 'not included.') + '</p>' + legendHtml(CV) + '</div>';
+      '<p class="cw-lane">Cowork lane: ' + (cw.included ? rng(cw.steady.lo, cw.steady.hi) + ' credits in a steady month from the Cowork tab (&plusmn;' + E.fmtPct(cw.band * 100) + ', ' + fi(cw.basisSeats) + ' users).' : 'not included.') + '</p>' + legendHtml(CV) + '</div>';
   }
   function doPrint(kind) {
     if (kind === 'csv') { recompute(); download(csvTrace(), 'text/csv', 'credit-planner-trace-' + slug(state.meta.accountName) + '-' + todayIso() + '.csv'); return; }
@@ -4661,12 +5318,13 @@ footer.pagefoot p { margin:0 0 10px; }
       setTimeout(function () { d.body.classList.remove(cls); }, 1000);
       return;
     }
+    printAll = kind === 'internal';
     recompute();
     if (kind === 'internal') stampInternal();
     var c = 'print-' + kind;
     document.body.classList.remove('print-customer', 'print-internal', 'print-governance');
     document.body.classList.add(c);
-    var done = function () { document.body.classList.remove(c); window.removeEventListener('afterprint', done); };
+    var done = function () { document.body.classList.remove(c); window.removeEventListener('afterprint', done); if (printAll) { printAll = false; recompute(); } };
     window.addEventListener('afterprint', done);
     window.print();
     setTimeout(done, 1000);
@@ -4693,6 +5351,7 @@ footer.pagefoot p { margin:0 0 10px; }
     PREFILL_PATHS.forEach(function (k) { touched[k] = true; });
     lastScreen = state.coworkSession ? state.coworkSession.screen : lastScreen;
     recompute();
+    selectTab(MODE_HOME[planMode()]);
     var msg = '<b>Loaded ' + esc(name || 'the session') + '</b>' + (p.savedAt ? ', saved ' + esc(longDate(p.savedAt)) : '') + '.' +
       p.warnings.map(function (w) { return ' ' + esc(w.msg); }).join('');
     var act = '';
@@ -4742,6 +5401,14 @@ footer.pagefoot p { margin:0 0 10px; }
     if (!t) return;
     var act = t.getAttribute('data-act'), id = t.getAttribute('data-a');
     if (act === 'dismiss') { clearNotice(); return; }
+    if (t.classList.contains('helpbtn')) { toggleHelp(t); return; }
+    if (t.hasAttribute('data-mode')) { setMode(t.getAttribute('data-mode')); return; }
+    if (act === 'whoedit') {
+      var we = $('we-' + id), op = t.getAttribute('aria-expanded') !== 'true';
+      if (we) { we.hidden = !op; t.setAttribute('aria-expanded', String(op)); uiOpen[id + ':who'] = op; if (op) packAll(); }
+      return;
+    }
+    if (act === 'envdismiss') { $('envResult').innerHTML = ''; return; }
     if (act === 'cwreload') { $('fileCowork').click(); return; }
     if (act === 'closepick') { $('archPicker').hidden = true; $('btnAddAgent').setAttribute('aria-expanded', 'false'); return; }
     if (act === 'hide') { uiHide[id] = !uiHide[id]; recompute(); return; }
@@ -4779,8 +5446,8 @@ footer.pagefoot p { margin:0 0 10px; }
       if (state.studio.environments.length < E.MAX.environments) state.studio.environments.push({ name: 'Environment ' + (state.studio.environments.length + 1), kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false });
       recompute(); return;
     }
-    if (t.id === 'btnEnvLayout') { recommendedLayout(); return; }
-    if (t.id === 'btnEnvAlloc') { applyAllocations(false); showNotice('Allocations set to this plan&rsquo;s high-end use plus the governance buffer.'); return; }
+    if (t.id === 'btnEnvSetup') { envSetup(); return; }
+    if (t.id === 'btnEnvRecalc') { envRecalc(); return; }
     if (t.id === 'btnMsExample') { showMsExample = !showMsExample; t.setAttribute('aria-expanded', String(showMsExample)); t.textContent = showMsExample ? 'Hide Microsoft’s example' : 'Show Microsoft’s example'; renderEnforce(); return; }
     if (t.id === 'btnCopyGov') { copyText(govText(CV), t); return; }
     if (t.id === 'btnQuote') { recompute(); copyText(quoteText(), t); return; }
@@ -4806,7 +5473,7 @@ footer.pagefoot p { margin:0 0 10px; }
 
   /* ══ Boot ═════════════════════════════════════════════════════════════ */
   recompute();
-  selectTab('cowork');
+  selectTab('start');
   try { if (frame.contentDocument && frame.contentDocument.readyState === 'complete' && frame.contentDocument.getElementById('loadFile')) frame.dispatchEvent(new Event('load')); } catch (e) { /* not same-origin */ }
   window.PlannerUI = { renderCustomer: renderCustomer, quoteText: quoteText, csvTrace: csvTrace, getState: function () { return state; }, getResult: function () { return R; },
                        loadSessionText: loadSessionText, setCustomerView: setCustomerView, selectTab: selectTab };
