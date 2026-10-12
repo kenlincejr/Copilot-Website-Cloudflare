@@ -475,6 +475,7 @@ footer.pagefoot p { margin:0 0 10px; }
   body.print-customer .dtable td, body.print-customer .dtable th { padding:4px 6px; font-size:.68rem; }
   body.print-internal .tabpanel[hidden] { display:block !important; }
   body.print-internal #panel-cowork .cwhost { display:none !important; }
+  body.print-internal #panel-start, body.mode-agents.print-internal #panel-cowork { display:none !important; }
   body.print-internal #printInternalHead { display:block !important; margin-bottom:12px; }
   body.print-internal .acard, body.print-internal .rescard, body.print-internal .wcard { break-inside:avoid; page-break-inside:avoid; }
 }
@@ -3674,6 +3675,7 @@ footer.pagefoot p { margin:0 0 10px; }
     sellSeatEnt: { w: 'Your price for an enterprise Copilot seat; the seat-or-meter test uses it.' },
     seatMargin: { w: 'Your margin on Copilot seats, for the license-instead line in your economics.' },
     notes: { w: 'Your own notes. Partner-only: never printed for the customer, saved in the session file.' },
+    holdP3: { w: 'Pre-purchase plans of this tier the customer already holds.', a: 'Each is a one-year commitment; the comparison counts its credits across the twelve months modeled.', rc: 'p3Tiers' },
     holdPacks: { w: 'Capacity packs a month the customer already holds.', a: 'Used to compare &ldquo;what you hold&rdquo; with the recommendation, and by the enforcement simulation.', rc: 'pack' }
   };
   var uiHelp = {}, helpSeq = 0;   // help panel id -> open
@@ -4979,7 +4981,7 @@ footer.pagefoot p { margin:0 0 10px; }
     mount($('holdings'), 'h', function () {
       return sfield('fHoldPacks', 'holdPacks', 'Capacity packs a month', 'combined.purchase.current.packs', 'int', { step: 1 }) +
         E.RC.p3Tiers.v.map(function (t, i) {
-          return sfield('fHoldP3' + i, null, 'Tier ' + t.tier + ' plans (' + fi(t.cccu) + ' units, ' + t.pct + '% off)', 'combined.purchase.current.p3.' + i, 'int', { step: 1 });
+          return sfield('fHoldP3' + i, 'holdP3', 'Tier ' + t.tier + ' plans (' + fi(t.cccu) + ' units, ' + t.pct + '% off)', 'combined.purchase.current.p3.' + i, 'int', { step: 1 });
         }).join('');
     });
   }
