@@ -2835,7 +2835,7 @@ body.embedded .hub-link { display:none !important; }
       { id:'insurance', when: g.insuranceRenewal === 'yes' && asked,
         eyebrow:'Timing is the opening', rung:4, name:byKey.insure.name,
         price:byKey.insure.price,
-        why:['Their cyber insurance renews inside twelve months, and AI usage attestations now appear on renewal applications.',
+        why:['Their cyber insurance renews inside twelve months, and AI usage attestations often appear on renewal applications.',
              'A renewal date is a deadline someone else set for you.'],
         opener:'"If your application asks whether employees share data with AI systems, right now the honest answer is \u2018we don\u2019t know.\u2019 Here is how we get you an answer you can support with evidence."',
         then:'Training with completion tracking runs underneath it \u2014 completion records are exactly what the insurer asks for.' },
@@ -2843,7 +2843,7 @@ body.embedded .hub-link { display:none !important; }
       { id:'regulated-vciso', when: regulated && ctx.employees >= 50 && ctx.employees <= 1000,
         eyebrow:'Where this account ends up', rung:5, name:byKey.vciso.name,
         price:byKey.vciso.price,
-        why:[(VERTICAL_LABEL[o.vertical] || 'This vertical') + ' carries a supervision obligation that Business Premium alone does not cover.',
+        why:[(VERTICAL_LABEL[o.vertical] || 'This vertical') + ' may carry a supervision obligation that Business Premium alone does not cover.',
              'At ' + ctx.employees + ' employees they need security leadership and cannot justify a full-time CISO.'],
         opener:'"You need someone accountable for this, and you cannot justify a full-time hire. That is the role I am offering to fill \u2014 with the assessment and the policy as the first ninety days of it."',
         then:'Land with Rung 1 and Rung 2 first. The retainer is the destination, not the opener.' },
@@ -3612,7 +3612,7 @@ body.embedded .hub-link { display:none !important; }
     { k:'dlpForAi', t:'DLP for AI configured?', d:'Cowork-specific DLP is "coming soon" — this covers the broader estate.', c:'If No → adds a required gap only the Suites or E7 close.' },
     { k:'defenderCloudApps', t:'Defender for Cloud Apps deployed?', d:'Visibility into unsanctioned AI tools alongside Cowork.', c:'If No → adds a required gap.' },
     { k:'namedCostOwner', t:'Named cost owner for Copilot Credits?', d:'Someone paged before a runaway month, not after.', c:'If No → surfaces in the talk track and the retainer pitch.' },
-    { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
+    { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations often show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
   ];
   function renderGov() {
     $('govBlock').innerHTML =
@@ -4814,7 +4814,9 @@ body.embedded .hub-link { display:none !important; }
         ? 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription on your own Microsoft Customer Agreement, and there isn’t one yet. That’s an admin step on your side, and it comes before anything anyone quotes.'
         : 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription, and there isn’t one set up for you yet. That’s the first box to check, not an afterthought.');
     if (c.copilotLicensed > c.active)
-      t.push('You have ' + c.copilotLicensed + ' Copilot licenses and about ' + c.active + ' people who\'d really use Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licenses carrying cost with no meter attached &mdash; is worth a conversation on its own.');
+      t.push('You have ' + c.copilotLicensed + ' Copilot licenses, and at a modeled activation of ' +
+        Math.round(c.copilotLicensed > 0 ? c.active * 100 / c.copilotLicensed : 0) + '% this plan has about ' + c.active +
+        ' of those people using Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licenses carrying cost with no meter attached &mdash; is worth a conversation on its own.');
     /* Three states, three sentences (R7a, finding #6). govNo counts only an
        explicit "no" — an unsure is not a missing control, it is an unanswered
        question, and the engine's own three-way why() has said so all along.
@@ -4837,7 +4839,7 @@ body.embedded .hub-link { display:none !important; }
        is not a vCISO account — but the obligation itself does not scale with
        headcount, and saying nothing about it was the wrong silence. */
     if (c.regulated && c.verticalLabel)
-      t.push('One thing that follows from where you operate: ' + esc(c.verticalLabel) + ' carries a supervision obligation over how AI touches your records. It applies at your size, not only at enterprise scale &mdash; so it belongs in the licensing conversation rather than after it.');
+      t.push('One thing that follows from where you operate: ' + esc(c.verticalLabel) + ' may carry a supervision obligation over how AI touches your records. It can apply at your size, not only at enterprise scale &mdash; so it belongs in the licensing conversation rather than after it.');
     if (c.ratioBench > 3.5)
       t.push('Your Cowork-to-license ratio is running above the 2.6&times; benchmark we typically see. Before we talk about capping spend, let\'s find out who is driving the heavy-task volume &mdash; that is the group whose usage is driving the number, and understanding it comes before capping it.');
     /* "What you told us is open" is a claim about a conversation. When the

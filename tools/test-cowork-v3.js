@@ -1610,13 +1610,13 @@ function nextText(pick) {
     small.org.vertical = v; small.org.totalEmployees = 20;
     const t = talkFor(small);
     ok(t.r.ctx.regulated, v + ': ctx flags the vertical regulated');
-    ok(/carries a supervision obligation/.test(t.text),
+    ok(/may carry a supervision obligation/.test(t.text),
        v + ' at 20 employees: the regulated talk-track line renders');
-    ok(/It applies at your size, not only at enterprise scale/.test(t.text),
+    ok(/It can apply at your size, not only at enterprise scale/.test(t.text),
        v + ': the line says the obligation does not scale with headcount');
   });
   const notReg = E.defaults(); notReg.org.vertical = 'none';
-  ok(!/carries a supervision obligation/.test(talkFor(notReg).text),
+  ok(!/supervision obligation/.test(talkFor(notReg).text),
      'an unregulated vertical stays silent');
 
   // the rung-5 floor is untouched
@@ -2814,6 +2814,26 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   // A Business estate under the cap keeps the original sentence.
   const L2 = qaLic(50, [{ skuId:'bbasic', seats:50 }], false).licensing;
   ok(L2.why.join(' ').indexOf('so the SMB bundles are available') >= 0, 'L-17: a Business estate still hears that the SMB bundles are available');
+}
+
+/* ── L-25 · unsourced claims are hedged; activation is "modeled" ───────── */
+{
+  const ins = E.defaults(); ins.governanceAsked = true;
+  ins.governance = Object.assign({}, QA_GOV_YES, { insuranceRenewal:'yes' });
+  ins.org = Object.assign(ins.org, { azureCspPlan:'yes', usageBillingEnabled:'yes' });
+  const pick = nextFor(ins).pick;
+  eq(pick.id, 'insurance', 'L-25: precondition, the insurance step fires');
+  ok(pick.why.join(' ').indexOf('often appear on renewal applications') >= 0, 'L-25: the attestation claim says "often"');
+  ok(pick.why.join(' ').indexOf('now appear') === -1, 'L-25: no flat "now appear"');
+  const reg = E.defaults(); reg.governanceAsked = true; reg.governance = Object.assign({}, QA_GOV_YES);
+  reg.org = Object.assign(reg.org, { vertical:'healthcare', azureCspPlan:'yes', usageBillingEnabled:'yes' });
+  const rp = nextFor(reg).pick;
+  eq(rp.id, 'regulated-vciso', 'L-25: precondition, the regulated vCISO step fires');
+  ok(rp.why.join(' ').indexOf('may carry a supervision obligation') >= 0, 'L-25: the supervision claim says "may"');
+  const talk = talkFor(E.defaults()).text;
+  ok(talk.indexOf('modeled activation of 65%') >= 0, 'L-25: the talk track calls the 65% a modeled activation');
+  ok(talk.indexOf("really use Cowork") === -1, 'L-25: no "people who\'d really use Cowork"');
+  ok(!/carries a supervision obligation/.test(src), 'L-25: no flat supervision claim left on the page');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
