@@ -2761,5 +2761,12 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(E.compute(E.defaults()).warnings.every(x => x.id !== 'V-32'), 'L-13: list mode raises no V-32');
 }
 
+/* ── L-14 · "one light task every working day" is 22 working days ─────── */
+{
+  const sc = E.compute(E.defaults()).scenarios.filter(x => /every working day/.test(x.label))[0];
+  ok(sc && Math.abs(sc.credits - 52 * 125 * 22) < 1e-6, 'L-14: 52 users x 125 credits x 22 days (got ' + (sc && sc.credits) + ')');
+  ok(sc && Math.abs(sc.usd - 1430) < 0.005, 'L-14: $1,430 a month, matching the web estimator (got ' + (sc && sc.usd) + ')');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

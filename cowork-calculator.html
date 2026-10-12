@@ -2357,7 +2357,8 @@ body.embedded .hub-link { display:none !important; }
     return [
       row('Every active user runs one more light task per week',  A * n(TC.light)  * 4.33 * SM),
       row('…one more medium task per week',                        A * n(TC.medium) * 4.33 * SM),
-      row('…one light task every working day',                     A * n(TC.light)  * 21   * SM),
+      // QA L-14: 22 working days, as Microsoft's web estimator counts a month.
+      row('…one light task every working day',                     A * n(TC.light)  * CONST.WEB_ESTIMATOR.days * SM),
       row('Adoption doubles (' + A + ' → ' + Math.min(A * 2, ctx.copilotLicensed) + ' active)',
           (Math.min(A * 2, ctx.copilotLicensed) - A) * (A > 0 ? ctx.monthlyCredits / A : 0))
     ];
