@@ -2458,11 +2458,11 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   // 5. 1,200 E5 + enterprise Copilot: E7 is $9 a user more, not $69
   L = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], false).licensing;
   eq(qaPath(L, 'cop_ent').monthly, 1200 * (P('e5') + 30), 'C-02 #5: E5 + enterprise Copilot priced all-in');
-  eq(L.winner.id, 'e7', 'C-02 #5: E7 still closes the open gaps (governance unasked)');
+  // QA M-05 later stopped pushing E5 estates to E7 (E5 already licenses the
+  // gaps E7 was "closing"), so the gap is asserted on the path totals.
   const gap5 = 99 - (P('e5') + 30);
+  eq(qaPath(L, 'e7').monthly - qaPath(L, 'cop_ent').monthly, gap5 * 1200, 'C-02 #5: E7 is $' + gap5.toFixed(2) + ' a user more on the same basis');
   let w = L.why.join(' ');
-  ok(w.indexOf('$' + gap5.toFixed(2) + '/user/month cheaper') >= 0, 'C-02 #5: "cheaper by" names $' + gap5.toFixed(2) + ' a user (' + w.slice(0, 0) + ')');
-  ok(w.indexOf(usd0(gap5 * 1200) + '/month') >= 0, 'C-02 #5: "cheaper by" dollars come from the same basis (' + usd0(gap5 * 1200) + ')');
   ok(w.indexOf('$69.00') === -1, 'C-02 #5: the old net-of-base $69 gap is gone');
   // 6. 500 E3 + enterprise Copilot
   L = qaLic(500, [{ skuId:'e3', seats:500 }, { skuId:'cop_ent', seats:500 }], false).licensing;
@@ -2659,6 +2659,22 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   // Under the cap there is no split row at all.
   L = qaLic(299, [{ skuId:'bprem_cop', seats:299 }], true).licensing;
   ok(L.paths.every(p => !/^split_/.test(p.id)), 'M-04: no split rows at 299 seats');
+}
+
+/* ── M-05 · E5 already licenses labels, DLP for AI and Defender for Cloud Apps ── */
+{
+  const r = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], false);
+  const L = r.licensing;
+  ['labels', 'dlp', 'mdca'].forEach(function (id) {
+    const q = L.requirements.filter(x => x.id === id)[0];
+    ok(q && q.skuClosable === false, 'M-05: ' + id + ' is not a license gap on an E5 base');
+    ok(q && /E5 already licenses/.test(q.why), 'M-05: ' + id + ' says E5 already licenses it');
+  });
+  eq(L.winner && L.winner.id, 'cop_ent', 'M-05: an E5 estate keeps E5 + enterprise Copilot, not E7');
+  ok(L.why.join(' ').indexOf('E7') === -1 || L.winner.id !== 'e7', 'M-05: no push to E7');
+  // An E3 estate still has the license gaps E7 closes.
+  const L3 = qaLic(500, [{ skuId:'e3', seats:500 }, { skuId:'cop_ent', seats:500 }], false).licensing;
+  ok(L3.requirements.filter(x => x.id === 'labels')[0].skuClosable !== false, 'M-05: an E3 base still needs a license for labels');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

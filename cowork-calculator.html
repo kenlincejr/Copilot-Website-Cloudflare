@@ -2404,6 +2404,20 @@ body.embedded .hub-link { display:none !important; }
     if (ctx.copilotLicensed > 300)
       out.push({ id:'scale', label:'A path above the 300-seat SMB cap', mandatory:true, prov:'ms-verified',
         why:'At ' + ctx.copilotLicensed + ' Copilot users you are past the 300-license ceiling on every SMB SKU.' });
+    /* QA M-05: Microsoft 365 E5 already licenses Purview sensitivity labels,
+       DLP for AI and Defender for Cloud Apps. On an E5 (or E7) base those
+       gaps are configuration, not a license, so no SKU closes them and E7
+       must not be recommended to "close" them. */
+    var bySku = ctx.seatsBySku || {};
+    var e5Seats = n(bySku.e5, 0) + n(bySku.e7, 0);
+    if (e5Seats > 0 && e5Seats >= ctx.copilotLicensed) {
+      out.forEach(function (q) {
+        if (q.id === 'labels' || q.id === 'dlp' || q.id === 'mdca') {
+          q.skuClosable = false;
+          q.why = 'E5 already licenses ' + q.label + ', so this is configuration, not a license. ' + q.why;
+        }
+      });
+    }
     return out;
   }
 
