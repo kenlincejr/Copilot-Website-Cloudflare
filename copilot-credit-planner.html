@@ -2668,7 +2668,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if ((n = names(agents, function (a) { return a.flags.reasoning; })).length)
       warn.push(W('P-20', 'warn', 'A reasoning model adds 10 credits per started 1,000 tokens on top of the step that uses it (' + list(n) + ').', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.type === 'autonomous' && a.lo > 0; })).length)
-      warn.push(W('P-21', 'info', 'Autonomous runs are billed even when the maker holds a Copilot license (Likely; they run on the maker’s credentials): ' + list(n) + '.', { aud: 'customer' }));
+      warn.push(W('P-21', 'info', 'Autonomous runs are billed even when the maker holds a Copilot license. That is our reading of Microsoft’s rules, which do not say it in one sentence: the runs use the maker’s credentials, and Microsoft’s own order-processing example is billed. ' + list(n) + '.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.cua; })).length)
       warn.push(W('P-22', 'info', 'Computer use is never covered by a Copilot license, and Windows 365 for Agents hosting is a separate Azure charge outside the credit pool (' + list(n) + ').', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.harness === 'github' && a.floor; })).length)

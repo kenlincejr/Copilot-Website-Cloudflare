@@ -1313,6 +1313,14 @@ sec('QA-C');
     ok(pay(12000, 22) && /545 invoices a day/.test(pay(12000, 22).msg), 'L-23 the invoice limit is judged per active day too');
   }
 
+  // L-33 · P-21 in plain words for the customer; L-34 · neither page references Cloudflare Web Analytics
+  {
+    const w21 = wOf(E.compute(presetState('order')), 'P-21');
+    ok(w21 && w21.aud === 'customer' && !/Likely/.test(w21.msg) && /our reading/.test(w21.msg), 'L-33 P-21 drops the "Likely" jargon (' + (w21 && w21.msg) + ')');
+    const cw = fs.readFileSync(path.join(ROOT, 'cowork-calculator.html'), 'utf8');
+    ok(!/cloudflareinsights|beacon\.min\.js/i.test(src) && !/cloudflareinsights|beacon\.min\.js/i.test(cw), 'L-34 neither page loads cloudflareinsights (the request comes from the hosting layer)');
+  }
+
   /* QA-C end */
 }
 
