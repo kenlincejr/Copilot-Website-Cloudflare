@@ -780,7 +780,8 @@ sec('R');
   near(cvS.pool.steadyUsd.lo, 40600 * 0.0125, 'R steady low at the sell rate', 1e-9);
   eq(JSON.stringify(cvS.pool.steadyCredits), JSON.stringify(cv0.pool.steadyCredits), 'R the sell rate never moves credits');
   ok(/partner’s rates/.test(cvS.pricing.disclaimer) && /\$0\.0125/.test(cvS.pricing.note), 'R sell disclaimer and note carry the rate');
-  near(cvS.buy.paygYearUsd, cvS.pool.yearCredits.mid * 0.0125, 'R pay-as-you-go year at the sell rate', 1e-6);
+  // QA H-01: the buy line compares on the rate-card point (A19: 487,200 a year), not the buffered middle scenario.
+  near(cvS.buy.paygYearUsd, 487200 * 0.0125, 'R pay-as-you-go year at the sell rate, on the rate-card point', 1e-6);
   ok(/At our price/.test(E.talk(E.compute(sell))[0]), 'R talk track quotes the customer’s price');
   const cw = J(trio); cw.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.012 });
   const cvC = E.customerView(E.compute(cw));
@@ -1029,6 +1030,27 @@ sec('QA-E');
   const g = E.compute(sc).governance;
   ok(g.tenantLimit && g.tenantLimit.credits === 150000 && g.alerts.length === 3 && g.alerts[1].credits === 120000, 'QA-E C-07 with Cowork: 130,000 × 1.15 → 150,000, alerts 75,000 / 120,000 / 150,000');
   ok((src.match(/if \(g\.tenantMonthlyLimit !== null\)/g) || []).length === 2, 'QA-E C-07 the governance sheet and the report print the tenant limit only when there is one');
+}
+/* H-01: the customer's buy headline is the rate-card point (A19/A20: 40,600 a
+   month → 1 pack + 15,600 pay-as-you-go = $4,272 against $4,872), with the
+   buffered high scenario beside it as a labeled "up to" figure:
+   1 pack + (48,720 − 25,000) × 12 × $0.01 = $2,400 + $2,846.40 = $5,246.40. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const r = E.compute(s), cv = E.customerView(r);
+  eq(cv.buy.yearUsd, 4272, 'QA-E H-01 SMB trio headline is the rate-card $4,272');
+  eq(cv.buy.paygYearUsd, 4872, 'QA-E H-01 against $4,872 on pay-as-you-go');
+  eq(cv.buy.yearCredits, 487200, 'QA-E H-01 on 487,200 credits a year (A19)');
+  near(cv.buy.upToUsd, 5246.4, 'QA-E H-01 up to $5,246.40 in the high scenario', 1e-6);
+  ok(/buffer/.test(cv.buy.upToLabel || ''), 'QA-E H-01 the up-to figure is labeled as Microsoft’s buffer');
+  eq(r.pool.pointYear, 487200, 'QA-E H-01 pool point year');
+  eq(r.purchase.best.expected.usd, 4759.2, 'QA-E H-01 the optimizer keeps its 25/50/25 weighting (expected $4,759.20)');
+  ok(src.indexOf('in the middle scenario, against') < 0 && (src.match(/at the rate-card estimate, against/g) || []).length === 2, 'QA-E H-01 no buffered figure is called the rate-card result on the page');
+  // With Cowork: the point uses the Cowork tab's own figure
+  const sc = E.applyScenarioPreset(E.defaults(), 'smb-trio'); sc.coworkSession = PAYLOAD();
+  const rc = E.compute(sc);
+  eq(rc.pool.pointYear, 487200 + 1200000, 'QA-E H-01 point = agents itemized + Cowork tab figure');
+  ok(/Cowork tab/.test(E.customerView(rc).buy.upToLabel), 'QA-E H-01 the up-to label names the Cowork band when Cowork is in');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

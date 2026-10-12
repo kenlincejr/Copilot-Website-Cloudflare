@@ -2042,12 +2042,25 @@ footer.pagefoot p { margin:0 0 10px; }
     function z() { return { lo: 0, mid: 0, hi: 0 }; }
     function add(o, f, x) { o.lo += x.lo * f; o.mid += x.mid * f; o.hi += x.hi * f; }
     for (var m = 0; m < HORIZON; m++) {
-      var row = { m: m, iso: iso[m], ramp: rf[m], lanes: { cowork: z(), studio: z(), github: z(), build: z(), bc: z() }, total: z() };
+      var row = { m: m, iso: iso[m], ramp: rf[m], lanes: { cowork: z(), studio: z(), github: z(), build: z(), bc: z() }, total: z(), point: 0 };
       add(row.lanes.cowork, 1, cw.months[m]);
+      /* point: the rate-card estimate with no buffer (QA H-01). Cowork is the
+         Cowork tab's own figure (its mid); Studio and Business Central agents
+         are the itemized figure (their lo; mid and hi carry Microsoft's
+         10–20% buffer, F-179); GitHub harness runs and builds sit in the
+         middle of Microsoft's published task bands. */
+      row.point += cw.months[m].mid;
       agents.forEach(function (a) {
         if (a.paused) return;
-        if (m >= a.startMonth) add(row.lanes[laneOf(a)], a.ramped ? rf[m - a.startMonth] : 1, a);
-        if (a.build.months.indexOf(m) > -1) add(row.lanes.build, 1, { lo: a.build.lo, mid: (a.build.lo + a.build.hi) / 2, hi: a.build.hi });
+        if (m >= a.startMonth) {
+          var f = a.ramped ? rf[m - a.startMonth] : 1;
+          add(row.lanes[laneOf(a)], f, a);
+          row.point += f * (laneOf(a) === 'github' ? a.mid : a.lo);
+        }
+        if (a.build.months.indexOf(m) > -1) {
+          add(row.lanes.build, 1, { lo: a.build.lo, mid: (a.build.lo + a.build.hi) / 2, hi: a.build.hi });
+          row.point += (a.build.lo + a.build.hi) / 2;
+        }
       });
       POOLED_LANES.forEach(function (k) { add(row.total, 1, row.lanes[k]); });
       row.m365 = { lo: row.lanes.cowork.lo, mid: row.lanes.cowork.mid, hi: row.lanes.cowork.hi };
@@ -2059,7 +2072,9 @@ footer.pagefoot p { margin:0 0 10px; }
     months.forEach(function (r) { add(year, 1, r.total); POOLED_LANES.forEach(function (k) { add(laneYear[k], 1, r.lanes[k]); }); });
     var peak = months.reduce(function (b, r) { return r.total.hi > b.total.hi ? r : b; }, months[0]);
     var last = months[HORIZON - 1];
+    var pointYear = sum(months.map(function (r) { return r.point; }));
     return { months: months, year: year, laneYear: laneYear, steady: { lo: last.total.lo, mid: last.total.mid, hi: last.total.hi },
+             pointYear: pointYear, steadyPoint: last.point, pointYearUsd: usdOf(pointYear),
              peakMonth: peak.m, peak: { lo: peak.total.lo, mid: peak.total.mid, hi: peak.total.hi },
              yearUsd: { lo: usdOf(year.lo), mid: usdOf(year.mid), hi: usdOf(year.hi) },
              steadyUsd: { lo: usdOf(last.total.lo), mid: usdOf(last.total.mid), hi: usdOf(last.total.hi) }, comonotonic: true };
@@ -2163,7 +2178,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function simulate(sched, plan, D, prices) {
     var PR = isObj(prices) && typeof prices.paygUsd === 'function' ? prices : optPrices(null);
     var PC = RC.pack.v.credits, PU = PR.packUsd, C = plan.credits, out = {};
-    SCEN.forEach(function (s) {
+    (Array.isArray(D.point) ? SCEN.concat(['point']) : SCEN).forEach(function (s) {
       var bal = C, rows = [], packUsd = 0, unused = 0, payg = 0, consumed = 0, fromP3 = 0, exhaust = null;
       for (var m = 0; m < HORIZON; m++) {
         var k = sched[m], cap = k * PC, d = D[s][m];
@@ -2193,6 +2208,11 @@ footer.pagefoot p { margin:0 0 10px; }
   function optimize(demand, opts) {
     var dm = isObj(demand) ? demand : {};
     var D = { lo: series(own(dm, 'lo')), mid: series(own(dm, 'mid')), hi: series(own(dm, 'hi')) };
+    /* Optional rate-card point series (QA H-01): the customer headline is the
+       plan priced on it. When given, a commitment is admissible only if it
+       costs no more than pay-as-you-go on the point too, so the headline can
+       never show a plan dearer than the pay-as-you-go figure beside it. */
+    if (Array.isArray(own(dm, 'point'))) D.point = series(own(dm, 'point'));
     var o = isObj(opts) ? opts : {};
     var appetite = cEnum(own(o, 'appetite'), Object.keys(APPETITE), 'conservative');
     var capPct = APPETITE[appetite];
@@ -2203,10 +2223,11 @@ footer.pagefoot p { margin:0 0 10px; }
     var maxD = Math.max.apply(null, D.lo.concat(D.mid, D.hi));
     var minCost = { lo: Infinity, mid: Infinity, hi: Infinity };
     var best = null, fam = {}, top = [], blocked = null, evaluated = 0;
+    var paygPoint = D.point ? PR.paygUsd(sum(D.point)) : 0;
     function stats(sched) {
       var st = { packUsd: 0, resid: {}, unused: {} };
       sched.forEach(function (k) { st.packUsd += k * PU; });
-      SCEN.forEach(function (s) {
+      (D.point ? SCEN.concat(['point']) : SCEN).forEach(function (s) {
         var r = 0, un = 0;
         for (var m = 0; m < HORIZON; m++) { var cap = sched[m] * PC, d = D[s][m]; r += Math.max(0, d - cap); un += Math.max(0, cap - d); }
         st.resid[s] = r; st.unused[s] = un;
@@ -2233,6 +2254,10 @@ footer.pagefoot p { margin:0 0 10px; }
       });
       exp /= 100;
       var fm = family || (st.packUsd > 0 ? (plan.units > 0 ? 'mix' : 'packs') : (plan.units > 0 ? 'p3' : 'payg'));
+      if (D.point && fm !== 'current' && fm !== 'payg') {
+        var pointCost = st.packUsd + plan.usd + PR.paygUsd(Math.max(0, st.resid.point - C));
+        if (pointCost > paygPoint + 1e-6) return null;
+      }
       var adm = capPct === null || strand.lo <= capPct / 100 * cost.lo + 1e-9;
       var rec = { sched: sched, plan: plan, family: fm, exp: exp, cost: cost, strand: strand, commit: st.packUsd + plan.usd,
                   packMonths: sum(sched), admissible: adm, key: schedKey(sched) + '|' + plan.plans.map(function (p) { return p.tier + 'x' + p.count; }).join('+') };
@@ -2729,7 +2754,8 @@ footer.pagefoot p { margin:0 0 10px; }
     var agents = s.studio.agents.map(function (a) { return agentResult(a, s); });
     var ap = autopilotPanel(s);
     var pl = poolFrom(s, cw, agents);
-    var demand = { lo: pl.months.map(function (r) { return r.total.lo; }), mid: pl.months.map(function (r) { return r.total.mid; }), hi: pl.months.map(function (r) { return r.total.hi; }) };
+    var demand = { lo: pl.months.map(function (r) { return r.total.lo; }), mid: pl.months.map(function (r) { return r.total.mid; }), hi: pl.months.map(function (r) { return r.total.hi; }),
+                   point: pl.months.map(function (r) { return r.point; }) };
     var P = s.combined.purchase;
     var rate = customerRateFrom(s);
     /* Two runs of the optimizer: at Microsoft list for the partner's cost
@@ -3063,7 +3089,14 @@ footer.pagefoot p { margin:0 0 10px; }
       /* The buy line comes from the optimizer run at the customer's prices, so
          the cheapest way to buy it can never cost more than pay-as-you-go. */
       var PCU = isObj(r.purchaseCustomer) && isObj(r.purchaseCustomer.best) ? r.purchaseCustomer : r.purchase;
-      var best = PCU.best, buyYear = num(best.scen.mid.usd);
+      /* Headline: the rate-card point (QA H-01), with the high scenario beside
+         it as a labeled "up to" figure. The optimizer still weighs lo/mid/hi. */
+      var best = PCU.best, sp = best.scen.point || best.scen.mid, buyYear = num(sp.usd);
+      var pointYear = typeof P.pointYear === 'number' ? P.pointYear : num(P.year.mid);
+      var upTo = [];
+      if (L.agents.some(function (a) { return !a.paused && a.hi > 0 && laneOf(a) !== 'github'; })) upTo.push('the top of Microsoft’s recommended 10–20% estimate buffer on the agents');
+      if (L.agents.some(function (a) { return !a.paused && a.hi > 0 && laneOf(a) === 'github'; })) upTo.push('the high end of the GitHub Copilot harness task bands');
+      if (L.cowork.included === true) upTo.push('the Cowork tab’s high end');
       var bf = best.family || 'payg';
       var approach = { payg: 'Pay as you go', packs: 'Monthly prepaid capacity sized to steady use, overflow at pay-as-you-go',
                        p3: 'An annual pre-purchase commitment, overflow at pay-as-you-go',
@@ -3082,7 +3115,9 @@ footer.pagefoot p { margin:0 0 10px; }
         pricing: { basis: CR.basis === 'sell' ? 'sell' : 'list', usdPerCredit: rc, creditSource: String(CR.creditSource), note: String(CR.note), disclaimer: String(CR.disclaimer) },
         buy: { approach: approach, billingOrder: 'Capacity packs first, then any pre-purchase commitment, then pay-as-you-go.',
                finality: 'Prepaid capacity resets monthly; an annual commitment cannot be canceled and renews unless turned off.',
-               yearUsd: num(buyYear), paygYearUsd: num(P.year.mid) * rc, scenario: 'middle' },
+               yearUsd: num(buyYear), paygYearUsd: num(pointYear) * rc, scenario: 'point', yearCredits: num(pointYear),
+               upToUsd: num(best.scen.hi.usd), paygUpToUsd: num(P.year.hi) * rc,
+               upToLabel: upTo.length ? 'with ' + upTo.join(' and ') : 'in the high scenario' },
         adjacent: { w365UsdMonthly: num(J.w365.usdMonthly), agent365UsdMonthly: num(J.agent365.usdMonthly), byomUsdMonthly: num(J.byom.usdMonthly),
                     dataverseUsdMonthly: num(J.dataverse.usdMonthly), premiumFlowsFlag: J.premiumFlowsFlag === true, totalUsdMonthly: num(J.totalMonthlyUsd) },
         dataverse: { entitlement: { db: num(D.entitlement.db), file: num(D.entitlement.file), log: num(D.entitlement.log) },
@@ -5003,7 +5038,7 @@ footer.pagefoot p { margin:0 0 10px; }
     $('poolKpis').innerHTML =
       cellHtml(rng(P.steady.lo, P.steady.hi), 'Credits in a steady month', (planMode() === 'agents' ? 'All agents' : 'Cowork and agents') + ', low to high. ' + provPill('ms-modeled')) +
       cellHtml(urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi), 'A steady month at ' + (cv.pricing.basis === 'sell' ? 'your price' : 'Microsoft list'), 'If it were all pay-as-you-go') +
-      cellHtml(fu(cv.buy.yearUsd), 'Year one on the recommended plan', 'Middle scenario; ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone', 'alt') +
+      cellHtml(fu(cv.buy.yearUsd), 'Year one on the recommended plan', 'At the rate-card estimate; ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone. ' + buyUpTo(cv), 'alt') +
       cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month licenses already cover', 'Agent use by licensed people', 'alt');
     $('poolChart').innerHTML = P.year.hi > 0 ? chartSvg() : '<p class="note">Nothing in the pool yet: run the Cowork tab to results or add agents.</p>';
     var agentsOnly = planMode() === 'agents';
@@ -5023,11 +5058,17 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Combined: purchase ═══════════════════════════════════════════════ */
+  /* The labeled "up to" figure beside the rate-card headline (QA H-01): no
+     buffered number is ever shown as the rate-card result. */
+  function buyUpTo(cv) {
+    var b = cv.buy;
+    return typeof b.upToUsd === 'number' && b.upToUsd > b.yearUsd + 0.5 ? 'Up to ' + fu(b.upToUsd) + ' ' + esc(b.upToLabel || 'in the high scenario') + '.' : '';
+  }
   var FAMILY_LBL = { payg: 'Pay-as-you-go', packs: 'Capacity packs', p3: 'Pre-purchase plan', mix: 'Packs and a pre-purchase plan', current: 'What the customer holds' };
   function renderBuy() {
     var cv = CV, pu = R.purchase, best = pu.best;
     $('buyPlain').innerHTML = '<div class="callout"><div class="callout-title">How to buy it, in plain words</div><div class="callout-body"><p><b>' + esc(cv.buy.approach) + '.</b> About ' + fu(cv.buy.yearUsd) +
-      ' over the first year in the middle scenario, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone.</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p><p class="note">' + esc(cv.pricing.note) + '</p></div></div>';
+      ' over the first year at the rate-card estimate, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone. ' + buyUpTo(cv) + '</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p><p class="note">' + esc(cv.pricing.note) + '</p></div></div>';
     var opts = [], seen = {};
     function add(o, tag) { if (!o || seen[o.key + tag]) return; if (tag !== 'current' && seen[o.key]) return; seen[o.key] = 1; seen[o.key + tag] = 1; opts.push({ o: o, tag: tag }); }
     add(best, 'best');
@@ -5195,7 +5236,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (g.userLimit !== null) guard.push('A per-user limit of ' + fi(g.userLimit) + ' credits a month.');
     if (g.allocations.length) guard.push('Environment allocations: ' + g.allocations.map(function (a) { return esc(a.name) + ' ' + fi(a.credits) + (a.tenantDraw ? '' : ', tenant draw off'); }).join('; ') + '.');
     else guard.push(esc(g.autoApply));
-    h += '<div class="cr-two"><div><h4>How to buy it</h4><p><b>' + esc(cv.buy.approach) + '.</b> About ' + fu(cv.buy.yearUsd) + ' over the first year in the middle scenario, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone.</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p></div>' +
+    h += '<div class="cr-two"><div><h4>How to buy it</h4><p><b>' + esc(cv.buy.approach) + '.</b> About ' + fu(cv.buy.yearUsd) + ' over the first year at the rate-card estimate, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone. ' + buyUpTo(cv) + '</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p></div>' +
       '<div><h4>Guardrails we will set</h4><ul>' + guard.slice(0, 5).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div></div>';
     var li = (cv.licenseInstead && cv.licenseInstead.agents) || [];
     var lic = li.filter(function (a) { return a.verdict === 'license'; }), met = li.filter(function (a) { return a.verdict !== 'license'; });
