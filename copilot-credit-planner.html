@@ -2933,10 +2933,22 @@ footer.pagefoot p { margin:0 0 10px; }
           { label: 'An Azure subscription is linked', path: 'studio.account.azurePayg', value: 'yes' }, GUIDE.billing);
       },
       'NBA-02': function () {
-        var ext = ag.filter(function (a) { return a.flags.unauthExternal; });
+        /* Spec: any active card with an external audience, or no sign-in. */
+        var ext = ag.filter(function (a) { return a.type === 'conversational' && (a.audience === 'external' || a.auth === 'none') && a.hi > 0; });
         if (!ext.length) return null;
-        return rule('NBA-02', 'Say it plainly', 'Website agents bill every conversation', [ext.map(function (a) { return a.name; }).join(', ') + ': no sign-in, so no license covers any of it.', fmtInt(sum(ext.map(function (a) { return a.lo; }))) + ' credits a month, all billed.'],
-          'Your website agent is a metered service, like a phone line: every conversation costs credits.', 'Agree a monthly cap and an alert before launch.', null, GUIDE.economics);
+        var cr2 = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate.usdPerCredit : RC.payg.v;
+        var eLo = sum(ext.map(function (a) { return a.lo; })), eHi = sum(ext.map(function (a) { return a.hi; }));
+        /* Per-agent cap at the card's high end, only once the engine has a per-card cap field. */
+        var fix2 = null, cards = s.studio.agents;
+        var idx = ext.map(function (a) { for (var i = 0; i < cards.length; i++) if (cards[i].id === a.id) return i; return -1; });
+        if (idx.every(function (i) { return i > -1 && HOP.call(cards[i], 'perAgentCap'); })) {
+          if (idx.length === 1) fix2 = { label: 'Cap ' + ext[0].name + ' at ' + fmtInt(Math.ceil(ext[0].hi)) + ' credits a month', path: 'studio.agents.' + idx[0] + '.perAgentCap', value: Math.ceil(ext[0].hi) };
+          else { var cc = clone(cards); idx.forEach(function (i, k) { cc[i].perAgentCap = Math.ceil(ext[k].hi); }); fix2 = { label: 'Cap each of these agents at its high end', path: 'studio.agents', value: cc }; }
+        }
+        return rule('NBA-02', 'Say it plainly', 'Public and unsigned conversations bill every time', [ext.map(function (a) { return a.name; }).join(', ') + ': ' + (ext.length > 1 ? 'their users are' : 'its users are') + ' outside your Copilot licenses or not signed in, so no license covers any of it.',
+            fmtInt(eLo) + '–' + fmtInt(eHi) + ' credits a month, all billed: about ' + fmtUsd(eLo * cr2) + '–' + fmtUsd(eHi * cr2) + ' a month at ' + (r.customerRate && r.customerRate.creditSource !== 'list' ? 'your customer’s price' : 'Microsoft list') + '.'],
+          'Every conversation with ' + (ext.length > 1 ? 'these agents' : 'this agent') + ' is billed: there’s no license that covers a visitor or anyone who isn’t signed in. That’s ' + fmtInt(eLo) + '–' + fmtInt(eHi) + ' credits, about ' + fmtUsd(eLo * cr2) + '–' + fmtUsd(eHi * cr2) + ' a month, at the volumes you gave me.',
+          'Agree the monthly volume ceiling, and put a per-agent cap on it.', fix2, GUIDE.economics);
       },
       'NBA-03': function () {
         if (!r.enforcement.m365.starvation.hi) return null;

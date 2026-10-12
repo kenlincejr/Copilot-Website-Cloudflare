@@ -1163,6 +1163,19 @@ sec('QA-C');
     ok(!/Autopilot/.test(g) && /GitHub Copilot harness/.test(g), 'M-17 with no harness build, O-9 gives the generic line');
   }
 
+  // M-18 · NBA-02 fires on external OR no sign-in; why gives credits and dollars at the customer rate
+  {
+    const ext = presetState('website'); ext.studio.agents[0].auth = 'manual';
+    ok(nbaOf(E.compute(ext), 'NBA-02'), 'M-18 an external agent with manual sign-in fires NBA-02');
+    const intNone = presetState('helpdesk'); intNone.studio.agents[0].auth = 'none';
+    ok(nbaOf(E.compute(intNone), 'NBA-02'), 'M-18 an internal agent with no sign-in fires NBA-02');
+    ok(!nbaOf(E.compute(presetState('helpdesk')), 'NBA-02'), 'M-18 an internal Microsoft sign-in agent stays silent');
+    const sell = presetState('website'); sell.partner.sellCreditUsd = 0.013;
+    const n2 = nbaOf(E.compute(sell), 'NBA-02'), why = n2.why.join(' ');
+    ok(/15,000–18,000 credits a month/.test(why) && /\$195–\$234 a month/.test(why), 'M-18 why gives credits and dollars at the customer rate (' + why + ')');
+    ok(n2.fix === null || /perAgentCap/.test(n2.fix.path), 'M-18 the Apply fix only ever sets a per-agent cap (omitted while the engine has none)');
+  }
+
   /* QA-C end */
 }
 
