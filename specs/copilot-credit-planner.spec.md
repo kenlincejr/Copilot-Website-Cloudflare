@@ -187,6 +187,7 @@ This is the exact key set. Tests assert it is exact, and that none of the partne
 | `rampCredits` | number[12] | `rampSeats[m] × monthlyCredits / basisSeats` |
 | `basisSeats` | number | Seats behind `monthlyCredits` |
 | `copilotLicensed` | number | Copilot-licensed seats |
+| `employees` | number | Total employees from Cowork step 1; the planner reads it into the account context |
 | `licenses` | object | Seats by Cowork SKU id. Plain object, own keys only. |
 | `cspMotion` | string | `direct`, `indirectReseller`, `notCsp` or `unsure` |
 | `sellMode` | boolean | Cowork page is pricing at the partner's sell prices |

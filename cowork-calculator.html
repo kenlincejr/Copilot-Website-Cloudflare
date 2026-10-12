@@ -1017,7 +1017,10 @@ body.embedded .hub-link { display:none !important; }
   'use strict';
 
   /* ── Provenance ───────────────────────────────────────────────────────── */
-  var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'editorial': 1 };
+  // 'ms-inferred' (shown as Likely, QA M-03): a rule applied as the most
+  // probable reading where Microsoft has not said it in one sentence. Same
+  // rank and label as the Copilot Credit Planner.
+  var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'ms-inferred': 2, 'editorial': 1 };
   /* Weakest-link tag for a derived value. Ties keep the FIRST-listed tag, so
      callers put the headline input first — the old 'ms-verified' seed won
      every rank-4 tie, which made 'measured' literally unreachable through
@@ -1083,13 +1086,19 @@ body.embedded .hub-link { display:none !important; }
       copilotComponent:30.00, prov:'ms-verified', factId:'F-049',
       blurb:'Includes Copilot + Agent 365 + Entra Suite.' },
     // Non-Copilot bases → NOT Cowork-eligible
-    { id:'bbasic', name:'M365 Business Basic', usd:6.00, cap:300, copilot:false, prov:'editorial' },
-    { id:'bstd',   name:'M365 Business Standard', usd:12.50, cap:300, copilot:false, prov:'editorial' },
+    // QA C-09 / L-08: the four base prices re-read from microsoft.com plans
+    // and pricing, live 2026-10-11 (Basic $6.00 -> $7.00, Standard $12.50 ->
+    // $14.00, E3 $36.00 -> $39.00; E5 $60 now published, no longer implied).
+    { id:'bbasic', name:'M365 Business Basic', usd:7.00, cap:300, copilot:false, prov:'ms-verified', factId:'F-226',
+      src:'M365 Business Basic $7.00 user/month, microsoft.com plans and pricing, 2026-10-11 (F-226)' },
+    { id:'bstd',   name:'M365 Business Standard', usd:14.00, cap:300, copilot:false, prov:'ms-verified', factId:'F-227',
+      src:'M365 Business Standard $14.00 user/month, microsoft.com plans and pricing, 2026-10-11 (F-227)' },
     { id:'bprem',  name:'M365 Business Premium', usd:22.00, cap:300, copilot:false, prov:'ms-verified',
       src:'Microsoft SMB pricing, US annual' },
-    { id:'e3',     name:'Microsoft 365 E3', usd:36.00, cap:null, copilot:false, prov:'editorial' },
-    { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-modeled',
-      note:'Implied by the E7 a-la-carte arithmetic ($60+$30+$12+$15=$117).' }
+    { id:'e3',     name:'Microsoft 365 E3', usd:39.00, cap:null, copilot:false, prov:'ms-verified', factId:'F-228',
+      src:'Microsoft 365 E3 $39.00 user/month, microsoft.com enterprise plans and pricing, 2026-10-11 (F-228)' },
+    { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-verified', factId:'F-229',
+      src:'Microsoft 365 E5 $60.00 user/month, microsoft.com enterprise plans and pricing, 2026-10-11 (F-229)' }
   ];
   // Null prototype: a lookup keyed by user-supplied text must not resolve
   // 'toString' to a function and price a license off Object.prototype.
@@ -1146,6 +1155,12 @@ body.embedded .hub-link { display:none !important; }
                why:'Engineers and developers dominate, and the Technical persona carries roughly three times the heavy-task load of a knowledge worker. Expect the highest per-user credit figure of any shape here \u2014 which is exactly why running this on your own tenant first is the cheapest lesson available.' }
   };
 
+  /* QA L-12: own keys only. A session saying personaPreset "toString" must
+     not resolve to a prototype method and throw three lines later. */
+  function presetOf(key) {
+    return (typeof key === 'string' && Object.prototype.hasOwnProperty.call(PRESETS, key)) ? PRESETS[key] : null;
+  }
+
   /* ── Effort ───────────────────────────────────────────────────────────── */
   // Step size: envelope 15.00/0.70 = 21.43x; the tiers consume 1200/125 = 9.6x;
   // the residual 2.232x spread geometrically over four notional steps.
@@ -1197,7 +1212,7 @@ body.embedded .hub-link { display:none !important; }
      is final, and credit bought past the need expires unused.
      Holding several plans at once, each at its own tier, is the Azure
      reservation pattern; Microsoft does not state it for Copilot Credit P3,
-     so a multi-plan answer is tagged ms-modeled where it is shown (B4).
+     so a multi-plan answer is tagged ms-inferred (Likely) where it is shown (B4).
      Unit: 3,000 CCCU, the smallest plan; every tier is a whole number of
      units, so the search is an exact integer knapsack. */
   var P3_UNIT = P3_TIERS[0].cccu;
@@ -1423,7 +1438,8 @@ body.embedded .hub-link { display:none !important; }
 
   /* Shallow-merge a possibly-partial state over defaults so compute() is total. */
   function hydrate(input) {
-    var d = defaults(), s = input || {};
+    // QA L-12: a whole state that is a string, number or array is no state.
+    var d = defaults(), s = (input && typeof input === 'object' && !Array.isArray(input)) ? input : {};
     Object.keys(d).forEach(function (k) {
       if (s[k] == null) { s[k] = d[k]; return; }
       if (Array.isArray(d[k])) { if (!Array.isArray(s[k])) s[k] = d[k]; return; }
@@ -1459,6 +1475,8 @@ body.embedded .hub-link { display:none !important; }
         return p;
       });
     if (s.activation.count != null) s.activation.count = clamp(n(s.activation.count, 0), 0, CONST.MAX.seats);
+    // QA L-12: a share is 0 to 1; 1e308 printed "Infinity%" in the F6 trace.
+    if (s.activation.rate != null) s.activation.rate = clamp(n(s.activation.rate, 0.65), 0, 1);
     ['light','medium','heavy'].forEach(function (t) {
       s.tierCredits[t] = clamp(n(s.tierCredits[t], CONST.TIER_DEFAULT[t]), 0, CONST.MAX.tierCredits);
     });
@@ -1481,6 +1499,8 @@ body.embedded .hub-link { display:none !important; }
     [s.priceOverrides, s.pricing.sell, s.pricing.cost].forEach(function (map) {
       if (map == null || typeof map !== 'object') return;
       Object.keys(map).forEach(function (id) {
+        // QA L-02: the engine's own bad-key guard, whatever the loader did.
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') { delete map[id]; return; }
         var v = num_(map[id]);
         if (v == null) delete map[id]; else map[id] = clamp(v, 0, CONST.MAX.usd);
       });
@@ -1504,10 +1524,21 @@ body.embedded .hub-link { display:none !important; }
       if (prov && prov !== 'ms-verified' && note) assume.push({ id:id, label:label, note:note, prov:prov });
       return value;
     }
-    function W(id, sev, msg, fixes) { warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [] }); }
+    /* QA L-16: partner-economics warnings carry the page's partner-only
+       marking on the warning itself, not only through the card that holds
+       it, so any surface that renders them strips them in customer view
+       and the customer print. */
+    function W(id, sev, msg, fixes) {
+      warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [], partner:PARTNER_WARNINGS.indexOf(id) > -1 });
+    }
 
     var CU = creditUsd(state);                 // customer-facing credit rate
     var sellMode = state.pricing && state.pricing.mode === 'sell';
+    // QA L-13: the fallback to $0.01 for a rate at or below zero is no longer silent.
+    var sellRateIn = num_(state.pricing && state.pricing.creditSellUsd);
+    if (sellMode && sellRateIn != null && !(sellRateIn > 0))
+      W('V-32','warn','Your credit sell rate is $0 or below, which is not a price, so every meter figure here is at Microsoft’s $0.01 a credit instead. ' +
+        'Enter the rate you actually bill on the pricing screen before you show this to a customer.', []);
 
     /* F1–F5 · the funnel */
     var employees = Math.max(0, n(state.org.totalEmployees, 0));
@@ -1518,7 +1549,9 @@ body.embedded .hub-link { display:none !important; }
     var unknownSkuIds = [];
     var inv = (state.licenseInventory || []).filter(function (l) {
       if (SKU_BY_ID[l.skuId]) return true;
-      if (l.skuId != null) unknownSkuIds.push(String(l.skuId));
+      // QA L-12: name a text id; describe anything else rather than print "[object Object]".
+      if (l.skuId != null) unknownSkuIds.push(typeof l.skuId === 'string' || typeof l.skuId === 'number'
+        ? String(l.skuId) : 'an id that is not text (' + (Array.isArray(l.skuId) ? 'a list' : typeof l.skuId) + ')');
       return false;
     });
     if (unknownSkuIds.length)
@@ -1683,10 +1716,10 @@ body.embedded .hub-link { display:none !important; }
     /* Every chosen preset is disclosed \u2014 including 'even', which used to be
        exempt only because it was the (falsely labeled) default. The default
        is now '': no preset, no claim, no entry (finding #10). */
-    if (state.personaPreset && PRESETS[state.personaPreset])
+    if (presetOf(state.personaPreset))
       assume.push({ id:'preset', label:'Persona mix shape',
         note:'The split across the four personas came from the \u201c' +
-             PRESETS[state.personaPreset].label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. ' +
+             presetOf(state.personaPreset).label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. ' +
              (state.personaTasksTouched
                ? 'The task counts inside each persona have been edited by hand as well \u2014 both the split and the counts are this partner\u2019s, not Microsoft\u2019s.'
                : 'The task mix inside each persona is Microsoft\u2019s; only this split is ours.'),
@@ -1801,7 +1834,12 @@ body.embedded .hub-link { display:none !important; }
 
     /* Ratios — two, because there are two questions */
     var ratioActual = copilotSpend > 0 ? monthlyCowork / copilotSpend : 0;
-    var ratioBench  = anchorSpend  > 0 ? monthlyCowork / anchorSpend  : 0;
+    /* QA H-05: the benchmark ratio is a usage diagnosis, so it is read at
+       Microsoft's $0.01 whatever the partner bills. At a $0.012 sell rate it
+       read 3.775 instead of 3.146, crossed the 3.5 trigger and flipped the
+       next step and the talk track with usage unchanged. */
+    var coworkAtMs = monthlyCredits * CONST.CREDIT_USD;
+    var ratioBench  = anchorSpend  > 0 ? coworkAtMs / anchorSpend  : 0;
     /* Both ratio rows compute their tag from their inputs (finding #9).
        R1 divides the modeled meter by what this customer actually pays —
        partner-entered seats at verified prices. R2 exists to be read against
@@ -1811,9 +1849,9 @@ body.embedded .hub-link { display:none !important; }
     T('R1','ratio','Ratio vs actual Copilot spend','Cowork ÷ Copilot component of the licenses',
       '$' + monthlyCowork.toFixed(0) + ' ÷ $' + copilotSpend.toFixed(0), ratioActual,'x',
       weakest([f11Prov, 'partner', 'ms-verified']));
-    T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork ÷ (licensed × $30)',
-      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x',
-      weakest([f11Prov, 'ms-verified', 'editorial']),
+    T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork at $0.01 ÷ (licensed × $30)',
+      '$' + coworkAtMs.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x',
+      weakest([f10Prov, 'ms-verified', 'editorial']),
       'This ratio is built to be read against the 2.6× benchmark, and that benchmark is TD SYNNEX ' +
       'editorial observation across partner accounts — not a Microsoft-published figure. The $30 anchor ' +
       'under it is Microsoft’s list price for the enterprise add-on; the 2.6× itself is not Microsoft’s.');
@@ -1897,7 +1935,7 @@ body.embedded .hub-link { display:none !important; }
     var plan = manualPct != null ? null : p3Plan(commitCccu);
     var disc = manualPct != null
       ? { pct:clamp(manualPct, 0, 30), prov:'partner', exact:true, tier:'manual' }
-      : { pct:plan.pct, prov:plan.plans > 1 ? 'ms-modeled' : 'ms-verified', exact:true,
+      : { pct:plan.pct, prov:plan.plans > 1 ? 'ms-inferred' : 'ms-verified', exact:true,
           tier:plan.plans ? 'plan' : 'below-entry', plan:plan };
     var P3_TOP = P3_TIERS[P3_TIERS.length - 1];
     if (manualPct != null && disc.pct > P3_TOP.pct)
@@ -1938,6 +1976,67 @@ body.embedded .hub-link { display:none !important; }
     var p3PlanYear1 = manualPct != null ? null : p3Plan(cccuYear1);
     var p3Year1Prepay = packUsd + (p3PlanYear1 ? p3PlanYear1.prepayUsd
       : cccuYear1 * CONST.CCCU.usdPer * (1 - disc.pct / 100));
+    // QA M-01: what the year-one P3 order actually costs, PayGo remainder
+    // included ($72,750 + $839.42 = $73,589.42 at stock).
+    var p3Year1Annual = p3Year1Prepay + (p3PlanYear1 ? p3PlanYear1.remainderCccu * CONST.CCCU.usdPer : 0);
+    /* QA M-02: the P3 headline is the steady-state year, but the order is
+       sized on the ramp. The same steady-state commit bought for the ramped
+       year one: 3 x Tier 3 = $83,700 against $78,839.42 of year-one PayGo
+       loses $4,860.58. Stranded credit is the commit year one cannot burn,
+       priced at what it cost: 11,160.58 CCCU x $0.93 = $10,379.34. */
+    var steadyCovered = plan ? plan.coveredCccu : commitCccu;
+    var steadyOnY1Usd = packUsd + p3Prepay + Math.max(0, cccuYear1 - steadyCovered) * CONST.CCCU.usdPer;
+    var p3SteadyOnYear1 = { usd:steadyOnY1Usd, saving:year1PaygoAnnual - steadyOnY1Usd };
+    var p3Year1StrandedCccu = Math.max(0, steadyCovered - cccuYear1);
+    var p3Year1StrandedUsd = p3Year1StrandedCccu * breakeven;
+    /* QA M-01: capacity packs on the ramped year one. Packs are bought per
+       month with no rollover and drawn first; whatever a month needs above
+       them runs on P3 (a 12-month pool) and then PayGo. A flat pack count is
+       the shape Microsoft sells (annual term), so the search is over one
+       count held all year: packs alone, and packs plus the cheapest P3 mix
+       for the overflow. The flat steady-state count is priced too, because
+       holding it through the ramp wastes pack credit nobody can recover. */
+    var packYear1 = (function () {
+      var per = CONST.PACK.creditsPerMonth, usdM = CONST.PACK.usdPerMonth;
+      var perSeat = effTotal > 0 ? monthlyCredits / effTotal : 0;
+      var months = rampSeats.map(function (sx) { return sx * perSeat; });
+      var peak = months.reduce(function (a, v) { return Math.max(a, v); }, 0);
+      function overflowCccu(k) {
+        return months.reduce(function (a, v) { return a + Math.max(0, v - per * k); }, 0) / CONST.CCCU.creditsPer;
+      }
+      var kMax = Math.ceil(peak / per);
+      var bestP = null, bestM = null;
+      // Every count up to 400; past that a coarse pass then a fine pass around
+      // the best coarse point, so a hostile 1e6-seat estate stays fast.
+      function tryK(k) {
+        var ov = overflowCccu(k);
+        var po = usdM * 12 * k + ov * CONST.CCCU.usdPer;
+        if (!bestP || po < bestP.usd - 1e-9) bestP = { packs:k, usd:po };
+        var pl = p3Plan(ov);
+        if (pl.plans) {
+          var mx = usdM * 12 * k + pl.prepayUsd + pl.remainderCccu * CONST.CCCU.usdPer;
+          if (!bestM || mx < bestM.usd - 1e-9)
+            bestM = { packs:k, usd:mx, label:pl.label, prepayUsd:pl.prepayUsd, coveredCccu:pl.coveredCccu,
+                      remainderCccu:pl.remainderCccu };
+        }
+      }
+      var step = Math.max(1, Math.ceil(kMax / 400)), k;
+      for (k = 1; k <= kMax; k += step) tryK(k);
+      while (step > 1) {
+        var fine = Math.max(1, Math.ceil(step / 20)), span = step;
+        [bestP, bestM].filter(Boolean).map(function (b) { return b.packs; }).forEach(function (c0) {
+          for (var kk = Math.max(1, c0 - span); kk <= Math.min(kMax, c0 + span); kk += fine) tryK(kk);
+        });
+        step = fine;
+      }
+      var fk = packSteady.packs, flat = null;
+      if (fk > 0) {
+        var waste = months.reduce(function (a, v) { return a + Math.max(0, per * fk - v); }, 0);
+        flat = { packs:fk, usd:usdM * 12 * fk + overflowCccu(fk) * CONST.CCCU.usdPer,
+                 wasteCredits:waste, wasteUsd:waste * usdM / per };
+      }
+      return { packsOnly:bestP, packsP3:bestM, flat:flat };
+    })();
 
     /* ── What the meter costs the PARTNER, which is not what it costs the
        customer. Partner-earned credit is the only lever, and Microsoft does
@@ -2037,7 +2136,7 @@ body.embedded .hub-link { display:none !important; }
     // customer, which is exactly why it goes unnoticed.
     if (pecKnown && pecPct > 0 && p3PartnerCost != null && paygoPartnerCost < p3PartnerCost)
       W('V-21','warn','Careful \u2014 P3 looks cheaper and is not, for you. At ' + disc.pct.toFixed(1) +
-        '% the commit saves ' + '$' + Math.round(p3Saving).toLocaleString() + ' off the customer-facing meter, but a ' +
+        '% the commit saves ' + '$' + Math.round(p3Saving).toLocaleString() + ' a year at steady state off the customer-facing meter, but a ' +
         'pre-purchase plan is a reservation and earns no partner-earned credit. Pay-as-you-go at ' + pecPct +
         '% PEC costs you $' + Math.round(paygoPartnerCost).toLocaleString() + ' a year against $' +
         Math.round(p3PartnerCost).toLocaleString() + ' on P3 \u2014 a difference of $' +
@@ -2101,9 +2200,9 @@ body.embedded .hub-link { display:none !important; }
           ? ' + ' + Math.round(plan.remainderCccu).toLocaleString() + ' CCCU on PayGo' : '')
           : 'below the smallest plan (' + P3_TIERS[0].cccu.toLocaleString() + ' CCCU)',
         disc.pct,'pct', disc.prov,
-        plan.plans > 1 ? 'Microsoft publishes the nine plan sizes. Holding several plans at once, each at its own ' +
-          'discount, follows the Azure reservation pattern but is not stated for Copilot Credit P3 — confirm the ' +
-          'mix with your distributor before it is ordered.' : null);
+        plan.plans > 1 ? 'Likely: Microsoft publishes the nine plan sizes but does not say in one sentence that a ' +
+          'customer may hold several Copilot Credit P3 plans at once, each at its own discount. This mix assumes it ' +
+          'can; confirm the mix with your distributor before it is ordered.' : null);
 
     /* Residency + prerequisite gates */
     if (state.org.dataResidency === 'gov_cloud')
@@ -2140,15 +2239,29 @@ body.embedded .hub-link { display:none !important; }
     var creditsPerActive = effTotal > 0 ? monthlyCredits / effTotal : 0;
     var bizLimit = CONST.CSP_BIZ_UBB.creditsPerUser;
     if (inCsp && bizSeats > 0 && creditsPerActive > bizLimit) {
-      var capDay = Math.max(1, Math.round(bizLimit / (creditsPerActive / 30)));
-      var raiseTo = Math.ceil(creditsPerActive * (1 + band) / 500) * 500;
+      // QA L-11: the working day the limit is crossed (Cowork is used on
+      // working days; 22 a month, as the web estimator assumes), not a
+      // rounded calendar day. 4,000 / (14,519 / 22) = 6.06 -> working day 7.
+      var capDay = Math.max(1, Math.ceil(bizLimit / (creditsPerActive / CONST.WEB_ESTIMATOR.days) - 1e-9));
+      /* QA H-04: the per-user limit stops each user, not the average one.
+         Sized on the average (14,519 at stock -> 19,000) a Technical user at
+         22,800 still hit the raised limit around day 25. Size it on the
+         heaviest allocated persona at the top of the band instead. */
+      var heaviestIdx = -1, heaviestCredits = 0;
+      personas.forEach(function (p, i) {
+        var c = effectiveCredits(p);
+        if (effSeats[i] > 0 && c > heaviestCredits) { heaviestCredits = c; heaviestIdx = i; }
+      });
+      var heaviestName = heaviestIdx >= 0 ? String(personas[heaviestIdx].name) : 'the heaviest persona';
+      var raiseTo = Math.ceil(Math.max(heaviestCredits, creditsPerActive) * (1 + band) / 500) * 500;
       W('V-31','warn','New Copilot Business licenses bought through CSP from December 1, 2026 switch usage-based ' +
         'billing on by default, with a default limit of ' + bizLimit.toLocaleString() + ' Copilot Credits per user per ' +
         'month (about $' + Math.round(bizLimit * CONST.CREDIT_USD) + '). This account models about ' +
         Math.round(creditsPerActive).toLocaleString() + ' credits per active Cowork user a month, so a user reaches that ' +
-        'default around day ' + capDay + ' of the month and their usage stops until an admin raises it. If these seats ' +
+        'default around working day ' + capDay + ' of the month and their usage stops until an admin raises it. If these seats ' +
         'are bought on or after that date, raise the per-user limit in Copilot → Cost Management to about ' +
-        raiseTo.toLocaleString() + ' credits (the top of the band) before go-live. Not yet in effect in ' +
+        raiseTo.toLocaleString() + ' credits (the top of the band for the heaviest persona, ' + heaviestName +
+        ', at about ' + Math.round(heaviestCredits).toLocaleString() + ' a month) before go-live. Not yet in effect in ' +
         CONST.CSP_BIZ_UBB.excluded + '.', []);
     }
 
@@ -2214,6 +2327,8 @@ body.embedded .hub-link { display:none !important; }
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
       p3Exposure:p3Exposure, packSteady:packSteady, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
+      p3Year1Annual:p3Year1Annual, packYear1:packYear1, p3SteadyOnYear1:p3SteadyOnYear1,
+      p3Year1StrandedCccu:p3Year1StrandedCccu, p3Year1StrandedUsd:p3Year1StrandedUsd,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -2248,7 +2363,8 @@ body.embedded .hub-link { display:none !important; }
     return [
       row('Every active user runs one more light task per week',  A * n(TC.light)  * 4.33 * SM),
       row('…one more medium task per week',                        A * n(TC.medium) * 4.33 * SM),
-      row('…one light task every working day',                     A * n(TC.light)  * 21   * SM),
+      // QA L-14: 22 working days, as Microsoft's web estimator counts a month.
+      row('…one light task every working day',                     A * n(TC.light)  * CONST.WEB_ESTIMATOR.days * SM),
       row('Adoption doubles (' + A + ' → ' + Math.min(A * 2, ctx.copilotLicensed) + ' active)',
           (Math.min(A * 2, ctx.copilotLicensed) - A) * (A > 0 ? ctx.monthlyCredits / A : 0))
     ];
@@ -2260,6 +2376,9 @@ body.embedded .hub-link { display:none !important; }
                          public:'Public sector', eu:'EU/EFTA/UK' };
 
   var GOV_KEYS = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'];
+  // QA L-16: margin, PEC, commitment holder, Partner of Record, resale
+  // outside CSP, motion, and the partner's own sell rate (V-32, L-13).
+  var PARTNER_WARNINGS = ['V-21','V-22','V-24','V-25','V-26','V-29','V-32'];
 
   function requirements(state, ctx) {
     var g = state.governance, out = [];
@@ -2308,9 +2427,25 @@ body.embedded .hub-link { display:none !important; }
       out.push({ id:'comms', label:'Communication Compliance', prov:'editorial',
         why: (VERTICAL_LABEL[state.org.vertical] || 'Regulated') +
              ' accounts typically carry a supervision obligation that Business Premium alone does not cover.' });
-    if (ctx.copilotLicensed >= 300)
+    // Inclusive cap: Microsoft sells the SMB Copilot SKUs "for up to 300 users",
+    // so 300 seats is inside it and only 301 or more needs another path.
+    if (ctx.copilotLicensed > 300)
       out.push({ id:'scale', label:'A path above the 300-seat SMB cap', mandatory:true, prov:'ms-verified',
-        why:'At ' + ctx.copilotLicensed + ' Copilot users you are at or past the 300-license ceiling on every SMB SKU.' });
+        why:'At ' + ctx.copilotLicensed + ' Copilot users you are past the 300-license ceiling on every SMB SKU.' });
+    /* QA M-05: Microsoft 365 E5 already licenses Purview sensitivity labels,
+       DLP for AI and Defender for Cloud Apps. On an E5 (or E7) base those
+       gaps are configuration, not a license, so no SKU closes them and E7
+       must not be recommended to "close" them. */
+    var bySku = ctx.seatsBySku || {};
+    var e5Seats = n(bySku.e5, 0) + n(bySku.e7, 0);
+    if (e5Seats > 0 && e5Seats >= ctx.copilotLicensed) {
+      out.forEach(function (q) {
+        if (q.id === 'labels' || q.id === 'dlp' || q.id === 'mdca') {
+          q.skuClosable = false;
+          q.why = 'E5 already licenses ' + q.label + ', so this is configuration, not a license. ' + q.why;
+        }
+      });
+    }
     return out;
   }
 
@@ -2341,7 +2476,7 @@ body.embedded .hub-link { display:none !important; }
        seats this tenant already owns. */
     // Each add-on carries its OWN prerequisite, not a single global floor:
     // Copilot Business sits on an SMB base, the enterprise add-on requires E3
-    // or better. Pricing the enterprise add-on on a $6 Business Basic base
+    // or better. Pricing the enterprise add-on on a $7 Business Basic base
     // would understate it by $30 a seat.
     /* An owned base only qualifies for an add-on it can actually carry.
        Counting every non-Copilot seat as a base let a 250-seat E3 estate
@@ -2358,9 +2493,36 @@ body.embedded .hub-link { display:none !important; }
     function ownedBaseSeats(ids) {
       return ids.reduce(function (a, id) { return a + Math.max(0, n(ownedBySku[id], 0)); }, 0);
     }
+    // What `seats` of the owned qualifying bases cost a month, cheapest first.
+    function ownedBaseCost(ids, seats) {
+      var left = seats, usd = 0;
+      ids.slice().sort(function (a, b) { return skuPrice(state, a) - skuPrice(state, b); })
+        .forEach(function (id) {
+          var take = Math.min(left, Math.max(0, n(ownedBySku[id], 0)));
+          usd += take * skuPrice(state, id); left -= take;
+        });
+      return usd;
+    }
     var ownedSmbBases = ownedBaseSeats(['bbasic','bstd','bprem']);
     var ownedEntBases = ownedBaseSeats(['e3','e5']);
-    var BASE_FOR   = { cop_biz:'bbasic', cop_ent:'e3' };
+    /* The highest Business base the tenant owns is a floor (QA H-03). A
+       Copilot path is a way to add Copilot, not a reason to drop the base
+       the customer bought: Business Premium with Copilot at $32 is never
+       "cheaper" as Business Basic + Copilot Business at $21, because the move
+       takes away Premium's security and management. Add-ons keep the owned
+       base, so only the Business bundles are ranked. */
+    var BIZ_RANK = { bbasic:1, bstd:2, bprem:3 };
+    var BIZ_BUNDLE_BASE = { bbasic_cop:'bbasic', bstd_cop:'bstd', bprem_cop:'bprem', bprem_cop_suites:'bprem' };
+    var floorBase = null;
+    Object.keys(ownedBySku).forEach(function (id) {
+      var sk = SKU_BY_ID[id];
+      if (!sk || !(n(ownedBySku[id], 0) > 0)) return;
+      var b = sk.copilot ? sk.base : id;
+      if (BIZ_RANK[b] && (!floorBase || BIZ_RANK[b] > BIZ_RANK[floorBase])) floorBase = b;
+    });
+    // The add-on's seats still to buy sit on the cheapest Business base at or
+    // above that floor: a Premium estate adding Copilot Business pays Premium.
+    var BASE_FOR   = { cop_biz:floorBase || 'bbasic', cop_ent:'e3' };
 
     var candidates = [
       { id:'bbasic_cop', label:'Business Basic + Copilot Business', per:skuPrice(state,'bbasic_cop'), cap:300 },
@@ -2373,9 +2535,14 @@ body.embedded .hub-link { display:none !important; }
       { id:'e7',         label:'Microsoft 365 E7', per:skuPrice(state,'e7'), cap:null }
     ];
 
+
     var maxNeedBase = 0;
     var scored = candidates.map(function (c) {
       var violations = [];
+      var bb = BIZ_BUNDLE_BASE[c.id];
+      if (floorBase && bb && BIZ_RANK[bb] < BIZ_RANK[floorBase])
+        violations.push(c.label + ' would move this tenant down from the ' + SKU_BY_ID[floorBase].name +
+          ' base it already owns. Adding Copilot is not a reason to drop the base license.');
       if (c.cap && needed > c.cap)
         violations.push(c.label + ' caps at ' + c.cap + ' licenses; this account needs ' + needed + '.');
       /* An estate whose owned bases are all enterprise has no SMB path: the
@@ -2398,9 +2565,20 @@ body.embedded .hub-link { display:none !important; }
       var needBase   = c.addOn ? Math.max(0, needed - basesOwned) : 0;
       if (c.addOn) maxNeedBase = Math.max(maxNeedBase, needBase);
       var baseUsd = c.addOn ? basePer * needBase : 0;
-      var monthly = c.per * needed + baseUsd;
-      return { id:c.id, label:c.label, perUser:c.per,
+      /* All-in on one basis (QA C-02). A bundle or E7 carries its base inside
+         the price, so an add-on path must carry the base each Copilot user
+         sits on too, owned or bought. Pricing the add-on net of owned bases
+         against bundles priced gross made $18 on owned Premium look cheaper
+         than the $32 bundle that replaces Premium + $18 = $40. Owned bases
+         are assigned cheapest first, as the cheapest qualifying base is for
+         the seats still to buy. */
+      var ownedBaseUsd = c.addOn ? ownedBaseCost(BASE_FAMILY[c.id] || [], basesOwned) : 0;
+      var monthly = c.per * needed + baseUsd + ownedBaseUsd;
+      return { id:c.id, label:c.label, perUser:c.per, smb:!!c.cap,
                addOn:!!c.addOn, baseUsd:baseUsd, baseSeats:c.addOn ? needBase : 0,
+               ownedBaseSeats:basesOwned, ownedBaseUsd:ownedBaseUsd,
+               // QA H-07: the promo end date travels with the price (F-146, F-147).
+               promoEnds:(SKU_BY_ID[c.id] && SKU_BY_ID[c.id].promoEnds) || null,
                baseName:c.baseId ? SKU_BY_ID[c.baseId].name : null, basePer:basePer,
                // The figure every comparison runs on: what this path actually
                // bills per Copilot user once its prerequisite is paid for.
@@ -2408,6 +2586,40 @@ body.embedded .hub-link { display:none !important; }
                monthly:monthly,
                closes:closes, gaps:gaps, violations:violations, feasible:violations.length === 0 };
     });
+
+    /* QA M-04: past the cap, Business and Enterprise plans mix in one tenant.
+       A Business bundle can carry 300 of the Copilot users and the rest go on
+       the enterprise add-on over an enterprise base. At 301 Premium seats that
+       is 300 x $32 + 1 x ($30 + $39 E3) = $9,669, not 301 x $69 = $20,769.
+       One split row per Business bundle the floor allows; the split closes
+       only what both halves close, plus the scale gap. */
+    if (needed > 300) {
+      var rest = needed - 300;
+      var entOwned = Math.min(ownedEntBases, rest);
+      var entBaseUsd = ownedBaseCost(['e3','e5'], entOwned) + (rest - entOwned) * skuPrice(state, 'e3');
+      var entPart = skuPrice(state, 'cop_ent') * rest + entBaseUsd;
+      ['bbasic_cop','bstd_cop','bprem_cop','bprem_cop_suites'].forEach(function (bid) {
+        var bc = candidates.filter(function (x) { return x.id === bid; })[0];
+        var v = [];
+        var bb = BIZ_BUNDLE_BASE[bid];
+        if (floorBase && bb && BIZ_RANK[bb] < BIZ_RANK[floorBase])
+          v.push(bc.label + ' would move this tenant down from the ' + SKU_BY_ID[floorBase].name + ' base it already owns.');
+        if (ownedEntBases > 0 && ownedSmbBases === 0)
+          v.push('Every base this tenant owns is enterprise (E3/E5), so a Business bundle would replace them rather than add Copilot.');
+        if (state.org.dataResidency === 'gov_cloud')
+          v.push('Cowork is unavailable in GCC/GCC High/DoD and sovereign clouds — no licensing path changes this.');
+        var both = (PATH_CLOSES[bid] || []).filter(function (id) { return PATH_CLOSES.cop_ent.indexOf(id) > -1; }).concat(['scale']);
+        var closes = req.filter(function (r) { return r.skuClosable !== false && both.indexOf(r.id) > -1; });
+        var gaps   = req.filter(function (r) { return closes.indexOf(r) === -1; });
+        var monthly = bc.per * 300 + entPart;
+        scored.push({ id:'split_' + bid, label:'300 × ' + bc.label + ' + ' + rest + ' on the M365 Copilot enterprise add-on',
+                      perUser:bc.per, split:true, addOn:false, baseUsd:entBaseUsd, baseSeats:0,
+                      ownedBaseSeats:0, ownedBaseUsd:0,
+                      promoEnds:(SKU_BY_ID[bid] && SKU_BY_ID[bid].promoEnds) || null,
+                      baseName:null, basePer:0, perUserAllIn:monthly / needed, monthly:monthly,
+                      closes:closes, gaps:gaps, violations:v, feasible:v.length === 0 });
+      });
+    }
 
     var complete = scored.filter(function (p) {
       return p.feasible && p.gaps.filter(function (g) { return g.skuClosable !== false; }).length === 0;
@@ -2421,12 +2633,19 @@ body.embedded .hub-link { display:none !important; }
       .sort(function (a, b) { return a.monthly - b.monthly; })[0];
 
     var why = [];
+    // QA L-17: "the SMB bundles are available" only when one actually is.
+    var smbOpen = scored.some(function (p) { return p.smb && p.feasible; });
     if (winner) {
-      why.push(underCap
+      why.push(underCap && !smbOpen
+        ? 'This path has to cover ' + needed + ' Copilot user' + (needed === 1 ? '' : 's') +
+          ' \u2014 under the 300-seat cap, but every base this tenant owns is enterprise (E3/E5), so the SMB Copilot ' +
+          'SKUs cannot attach to it and only the enterprise paths are available.'
+        : underCap
         ? 'This path has to cover ' + needed + ' Copilot user' + (needed === 1 ? '' : 's') +
           ' — under the 300-seat cap, so the SMB bundles are available to you' +
           (ctx.employees > 300 ? ', even though the company itself is ' + ctx.employees + ' people' : '') + '.'
-        : 'At ' + needed + ' users you are past the 300-seat SMB cap, so only the enterprise paths are available.');
+        : 'At ' + needed + ' users you are past the 300-seat SMB cap, so a Business bundle can carry at most 300 of them. ' +
+          'Business and Enterprise plans mix in one tenant, so the rest can go on the enterprise add-on, or the whole estate on an enterprise path.');
       if (winner.closes.length)
         why.push('This path closes ' + winner.closes.length + ' of the ' +
           req.filter(function(r){return r.skuClosable!==false;}).length + ' gaps you flagged: ' +
@@ -2434,17 +2653,24 @@ body.embedded .hub-link { display:none !important; }
       if (cheapestFeasible && cheapestFeasible.id !== winner.id) {
         // All-in, not sticker: comparing a bare add-on against a full bundle is
         // how a tool invents a saving the customer would never actually see.
-        var delta = (winner.perUserAllIn - cheapestFeasible.perUserAllIn);
-        if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label + ' even though it is $' +
-          delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(delta * needed).toLocaleString() +
+        // Both figures come from the same all-in monthly totals (QA C-02).
+        var deltaMonthly = winner.monthly - cheapestFeasible.monthly;
+        var delta = needed > 0 ? deltaMonthly / needed : 0;
+        if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label +
+          (cheapestFeasible.promoEnds ? ' (a promo through ' + cheapestFeasible.promoEnds + ')' : '') +
+          ' even though it is $' +
+          delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(deltaMonthly).toLocaleString() +
           '/month across ' + needed + ' seats' +
-          (cheapestFeasible.addOn && cheapestFeasible.baseSeats > 0
-            ? ', and that already counts the ' + cheapestFeasible.baseName + ' base it needs underneath it'
+          (cheapestFeasible.addOn
+            ? ', and that already counts the base license each user needs underneath it, owned or bought'
             : '') +
           ' — because it leaves ' +
           cheapestFeasible.gaps.filter(function(g){return g.skuClosable!==false;}).length +
           ' of those gaps open on a tenant that is about to send its own data through an agent.');
       }
+      if (winner.promoEnds)
+        why.push(winner.label + ' is priced at a promo through ' + winner.promoEnds + ' (annual commitment, first year). ' +
+          'Seats bought or renewed after that date are priced at list, so re-quote before then.');
       var residual = winner.gaps.filter(function (g) { return g.skuClosable === false; });
       if (residual.length) why.push('Still open after any license change: ' +
         residual.map(function (r) { return r.label; }).join(', ') + ' — ' + residual[0].why);
@@ -2609,7 +2835,7 @@ body.embedded .hub-link { display:none !important; }
       { id:'insurance', when: g.insuranceRenewal === 'yes' && asked,
         eyebrow:'Timing is the opening', rung:4, name:byKey.insure.name,
         price:byKey.insure.price,
-        why:['Their cyber insurance renews inside twelve months, and AI usage attestations now appear on renewal applications.',
+        why:['Their cyber insurance renews inside twelve months, and AI usage attestations often appear on renewal applications.',
              'A renewal date is a deadline someone else set for you.'],
         opener:'"If your application asks whether employees share data with AI systems, right now the honest answer is \u2018we don\u2019t know.\u2019 Here is how we get you an answer you can support with evidence."',
         then:'Training with completion tracking runs underneath it \u2014 completion records are exactly what the insurer asks for.' },
@@ -2617,15 +2843,16 @@ body.embedded .hub-link { display:none !important; }
       { id:'regulated-vciso', when: regulated && ctx.employees >= 50 && ctx.employees <= 1000,
         eyebrow:'Where this account ends up', rung:5, name:byKey.vciso.name,
         price:byKey.vciso.price,
-        why:[(VERTICAL_LABEL[o.vertical] || 'This vertical') + ' carries a supervision obligation that Business Premium alone does not cover.',
+        why:[(VERTICAL_LABEL[o.vertical] || 'This vertical') + ' may carry a supervision obligation that Business Premium alone does not cover.',
              'At ' + ctx.employees + ' employees they need security leadership and cannot justify a full-time CISO.'],
         opener:'"You need someone accountable for this, and you cannot justify a full-time hire. That is the role I am offering to fill \u2014 with the assessment and the policy as the first ninety days of it."',
         then:'Land with Rung 1 and Rung 2 first. The retainer is the destination, not the opener.' },
 
-      { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActive > 200,
+      // At Microsoft's $0.01 (QA H-05): a markup is not heavier usage.
+      { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActiveMs > 200,
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
-        why:['At $' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
+        why:['At $' + ctx.perActiveMs.toFixed(0) + ' per active user per month at Microsoft\u2019s $0.01 a credit, this account runs hot against the 2.6\u00d7 benchmark.',
              /* Consumption framing, not value framing (finding #23): the tool
                 has no view on what the usage is worth, only on what it costs. */
              'Concentrated usage is the group whose usage is driving the number \u2014 understand it before you cap it.'],
@@ -2640,7 +2867,7 @@ body.embedded .hub-link { display:none !important; }
         opener:'"Nobody owns this number yet. That is the job: a monthly Cost Management review, spending limits with alerts at 50 and 80 per cent, and a concentration check before it becomes an invoice conversation."',
         then:'Insurance and compliance readiness when their renewal comes round.' },
 
-      { id:'at-scale', when: ctx.copilotLicensed >= 300,
+      { id:'at-scale', when: ctx.copilotLicensed > 300,
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
         why:['At ' + ctx.copilotLicensed + ' Copilot licenses this is past every SMB cap and into enterprise governance.',
@@ -2674,7 +2901,7 @@ body.embedded .hub-link { display:none !important; }
 
   /* ── Presets & actions ────────────────────────────────────────────────── */
   function applyPreset(state, key) {
-    var p = PRESETS[key] || PRESETS.even;
+    var p = presetOf(key) || PRESETS.even;
     var alloc = largestRemainder(computeActiveTarget(state), p.w);
     /* A preset is a whole claim: this split, with Microsoft's task counts
        inside it. Reallocating seats while hand-edited counts silently
@@ -2738,13 +2965,13 @@ body.embedded .hub-link { display:none !important; }
     EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
     P3_TIERS:P3_TIERS, p3Plan:p3Plan,
     MOTIONS:MOTIONS, MOTION_ORDER:MOTION_ORDER, motionOf:motionOf,
-    defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, largestRemainder:largestRemainder,
+    defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, presetOf:presetOf, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
     skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
     addonPrice:addonPrice, addonListPrice:addonListPrice,
     skuCostPrice:skuCostPrice, creditUsd:creditUsd,
-    copilotComponent:copilotComponent, weakest:weakest, promoCliffs:promoCliffs
+    copilotComponent:copilotComponent, weakest:weakest, promoCliffs:promoCliffs, PARTNER_WARNINGS:PARTNER_WARNINGS
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 
@@ -2773,9 +3000,18 @@ body.embedded .hub-link { display:none !important; }
   function num(v) { return Number(v || 0).toLocaleString(); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]; }); }
   function pill(kind, label) { return '<span class="pill ' + kind + '">' + label + '</span>'; }
+  /* QA H-07: one wording for every promo price on the page (F-146, F-147).
+     Empty for a SKU with no promo. */
+  function promoTag(id, wrap) {
+    var k = E.SKU_BY_ID[id];
+    if (!k || !k.promoEnds) return '';
+    var t = 'promo through ' + esc(k.promoEnds);
+    return wrap === 'paren' ? ' (' + t + ')' : t;
+  }
   function provPill(p) {
     var m = { 'ms-verified':['verified','Microsoft'], 'measured':['measured','Measured'],
-              'ms-modeled':['modeled','Modeled'], 'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
+              'ms-modeled':['modeled','Modeled'], 'ms-inferred':['modeled','Likely'],
+              'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
     var x = m[p] || ['default','—']; return pill(x[0], x[1]);
   }
 
@@ -2967,7 +3203,7 @@ body.embedded .hub-link { display:none !important; }
         E.PRESETS[k].label + '</button>';
     }).join('');
 
-    var sel = E.PRESETS[state.personaPreset];
+    var sel = E.presetOf(state.personaPreset);
     $('presetDesc').innerHTML = sel
       ? '<div class="shapenote"><div class="sn-eg">' + sel.eg + '</div><p>' + sel.why + '</p>' +
         '<p class="sn-prov">Modeled staffing shape &mdash; ours, not Microsoft\'s. ' +
@@ -3170,15 +3406,21 @@ body.embedded .hub-link { display:none !important; }
     var r0 = r.ctx;
     var ckUsd = ck ? (ck.light * TC.light + ck.medium * TC.medium + ck.heavy * TC.heavy) *
       r0.effortMult * r0.modelMult * E.CONST.CREDIT_USD : 0;
-    return '<div class="whybox partner-only"><div class="wb-h">Two Microsoft estimators, two answers ' + provPill('ms-modeled') + '</div>' +
+    // QA L-15: each figure carries its own tag: the retired workbook's range
+    // is modeled, the web estimator's band is Microsoft-published (F-158).
+    return '<div class="whybox partner-only"><div class="wb-h">Two Microsoft estimators, two answers</div>' +
       '<p>The persona defaults here come from Microsoft\u2019s original Customer Cowork Estimator, an Excel workbook built on ' +
       'Frontier data from May 27, 2026. It priced Cowork by the task and put a user at $' + E.CONST.PER_USER_RANGE.lo + '&ndash;$' +
-      E.CONST.PER_USER_RANGE.hi + ' a month. On this page\u2019s current settings one ' + esc(ck ? ck.name : 'Corporate Knowledge Worker') +
+      E.CONST.PER_USER_RANGE.hi + ' a month ' + provPill('ms-modeled') + '. On this page\u2019s current settings one ' + esc(ck ? ck.name : 'Corporate Knowledge Worker') +
       ' comes out at <b>' + usd(ckUsd, 2) + '</b> a month at Microsoft\u2019s $0.01.</p>' +
       '<p>Microsoft has since replaced it with a <a class="docref" href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">web Copilot Credit Estimator</a> ' +
       'that prices a working day instead: credits per user per day across ' + W.days + ' working days, a ' + W.split +
-      ' light/medium/heavy split, and ' + W.model + ' as the model. It puts a corporate knowledge worker at <b>$' + W.ckwLo +
-      '&ndash;$' + W.ckwHi + '</b> a month.</p>' +
+      ' light/medium/heavy split, and ' + W.model + ' as the model. It puts a corporate knowledge worker at <b data-fact="F-158">$' + W.ckwLo +
+      '&ndash;$' + W.ckwHi + '</b> a month ' + provPill('ms-verified') +
+      (ckUsd > 0 && W.ckwLo > 0
+        ? ', so this page\u2019s ' + usd(ckUsd, 2) + ' is <b>' + (ckUsd / W.ckwHi).toFixed(2) + '&times; to ' +
+          (ckUsd / W.ckwLo).toFixed(2) + '&times;</b> Microsoft\u2019s current band'
+        : '') + '.</p>' +
       '<p>Neither is a measurement. If the customer has seen Microsoft\u2019s lower figure, raise the gap before they do: it is two ' +
       'models of the same work, and thirty days of /cost readings from a pilot settle it for this account &mdash; that is what the ' +
       'calibration below is for.</p></div>';
@@ -3370,7 +3612,7 @@ body.embedded .hub-link { display:none !important; }
     { k:'dlpForAi', t:'DLP for AI configured?', d:'Cowork-specific DLP is "coming soon" — this covers the broader estate.', c:'If No → adds a required gap only the Suites or E7 close.' },
     { k:'defenderCloudApps', t:'Defender for Cloud Apps deployed?', d:'Visibility into unsanctioned AI tools alongside Cowork.', c:'If No → adds a required gap.' },
     { k:'namedCostOwner', t:'Named cost owner for Copilot Credits?', d:'Someone paged before a runaway month, not after.', c:'If No → surfaces in the talk track and the retainer pitch.' },
-    { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
+    { k:'insuranceRenewal', t:'Cyber insurance renewal within 12 months?', d:'AI usage attestations often show up on renewal applications.', c:'If Yes → strengthens the compliance-readiness rung.' }
   ];
   function renderGov() {
     $('govBlock').innerHTML =
@@ -3497,7 +3739,7 @@ body.embedded .hub-link { display:none !important; }
       return '<tr>' +
         '<td><b>' + esc(k.name) + '</b>' + (k.copilot ? ' <span class="check" title="Includes Copilot \u2014 can use Cowork">&#10003;</span>' : '') +
           (k.addonRow ? '<div style="font-size:.7rem;color:#6b7280;margin-top:3px;">Governance add-on \u2014 drives the licensing recommendation</div>' : '') +
-          (k.promoEnds ? '<div style="font-size:.7rem;color:#6b7280;margin-top:3px;">Promo price \u2014 ends ' + k.promoEnds + '</div>' : '') + '</td>' +
+          (k.promoEnds ? '<div style="font-size:.7rem;color:#92400e;margin-top:3px;">Price is a ' + promoTag(k.id) + '</div>' : '') + '</td>' +
         '<td class="money"><input type="number" step="0.5" min="0" data-plist="' + k.id + '" value="' + list + '"></td>' +
         '<td class="money partner-only"><input type="number" step="0.5" min="0" placeholder="\u2014" data-pcost="' + k.id + '" value="' + money(cost) + '"></td>' +
         '<td class="money"><input type="number" step="0.5" min="0" class="sell" data-psell="' + k.id + '" value="' + sp.toFixed(2) + '"></td>' +
@@ -3755,6 +3997,20 @@ body.embedded .hub-link { display:none !important; }
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
+  /* QA L-02: a key JSON.parse hands back as an own property can still hit
+     a setter on merge: Object.assign with an own '__proto__' key swaps the
+     target's prototype. Copy own keys only, never the three prototype keys,
+     two levels deep (pricing carries the sell/cost/uplift/pec maps). */
+  var BAD_KEYS = ['__proto__', 'constructor', 'prototype'];
+  function cleanKeys(o, depth) {
+    if (o == null || typeof o !== 'object' || Array.isArray(o)) return o;
+    var out = {};
+    Object.keys(o).forEach(function (k) {
+      if (BAD_KEYS.indexOf(k) > -1) return;
+      out[k] = (depth || 0) < 2 ? cleanKeys(o[k], (depth || 0) + 1) : o[k];
+    });
+    return out;
+  }
   function loadRateCard(e) {
     var f = e.target.files[0]; if (!f) return;
     var rd = new FileReader();
@@ -3766,9 +4022,9 @@ body.embedded .hub-link { display:none !important; }
         // rather than quietly repricing a shared file a colleague will reuse.
         if (c.pricing && c.pricing.creditSellUsd != null &&
             !(isFinite(c.pricing.creditSellUsd) && c.pricing.creditSellUsd > 0)) throw new Error('rate');
-        if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, c.pricing);
-        if (c.priceOverrides) state.priceOverrides = c.priceOverrides;
-        if (c.partnerServices) state.partnerServices = c.partnerServices;
+        if (c.pricing) state.pricing = Object.assign(E.defaults().pricing, cleanKeys(c.pricing));
+        if (c.priceOverrides) state.priceOverrides = cleanKeys(c.priceOverrides);
+        if (c.partnerServices) state.partnerServices = cleanKeys(c.partnerServices);
         // The slider's own range, applied to the file the slider never saw.
         if (c.effortStep != null) state.effort.step = Math.max(1, Math.min(3, +c.effortStep || 1));
         // A card saved before the PEC question existed carries no answer.
@@ -3927,7 +4183,7 @@ body.embedded .hub-link { display:none !important; }
     $('flagTag').textContent = tagBits.length ? tagBits.join(' \u00b7 ') : 'all clear';
     var flagHtml = blocks.concat(clamps, infos).map(function (w) {
       var ic = w.severity === 'block' ? '<span class="cross">&#10007;</span>' : w.severity === 'info' ? '&#8505;' : '&#9888;';
-      return '<div class="flag"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
+      return '<div class="flag' + (w.partner ? ' partner-only' : '') + '"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
         (w.fixes && w.fixes.length ? '<div class="fixrow">' + w.fixes.map(function (f) {
           return '<button class="linkbtn" data-fix="' + f.action + '">' + esc(f.label) + '</button>';
         }).join('') + '</div>' : '') + '</div></div>';
@@ -4040,14 +4296,34 @@ body.embedded .hub-link { display:none !important; }
         : 'Your modeled activation falls outside the range the 2.6&times; benchmark was built on, so a direct comparison isn\u2019t meaningful here.';
     return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly ' + provPill('editorial') + '</div>' +
       '<p>This ratio only means something once you say which Copilot price it\u2019s measured against &mdash; by itself, &ldquo;2.6&times;&rdquo; isn\u2019t a Microsoft figure, it\u2019s a TD SYNNEX field observation priced against the $30 enterprise add-on. ' +
-      'Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>. Priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
+      // Credits, not dollars: in sell mode a $0.01 dollar figure here would put
+      // Microsoft's cost of the meter on a customer-visible card.
+      'Your persona mix models <b>' + num(Math.round(c.perActiveMs / E.CONST.CREDIT_USD)) + ' credits per active user per month</b>. Read at Microsoft\u2019s $0.01 list and priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
       closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
       // Same basis as ratioBench (per licensed user), only the divisor changes.
-      (c.copilotLicensed > 0 ? c.monthlyCowork / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
+      (c.copilotLicensed > 0 ? c.coworkAtMsRate / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo' + promoTag('cop_biz', 'paren') + ', <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
       '</div>';
   }
 
+  /* QA M-01: the year-one order weighed against capacity packs on the same
+     ramp. Shown only where a pack option beats the year-one P3 total, plus
+     what holding the steady-state pack count flat through the ramp wastes. */
+  function packYear1Line(c) {
+    var Y = c.packYear1 || {}, po = Y.packsOnly, pm = Y.packsP3, fl = Y.flat;
+    var best = [po, pm].filter(function (o) { return o && o.usd < c.p3Year1Annual - 0.005; });
+    if (!best.length) return '';
+    return '<p><b>Capacity packs cost less on the same ramp.</b> ' +
+      (po ? num(po.packs) + ' packs a month all year, with the overflow on PayGo, is <b>' + usd(po.usd, 2) + '</b>' : '') +
+      (po && pm ? '; ' : '') +
+      (pm ? num(pm.packs) + ' packs plus ' + pm.label + ' for the overflow is <b>' + usd(pm.usd, 2) + '</b>' : '') +
+      ', against ' + usd(c.p3Year1Annual, 2) + ' on the P3 mix above.' +
+      (fl && fl.wasteCredits >= 1
+        ? ' Holding the steady-state ' + num(fl.packs) + ' packs flat through year one costs ' + usd(fl.usd, 2) +
+          ' and leaves ' + num(Math.round(fl.wasteCredits)) + ' pack credits unused (' + usd(fl.wasteUsd, 2) +
+          '), because pack credits reset every month.'
+        : '') + '</p>';
+  }
   function renderBillOut(r) {
     var c = r.ctx, d = c.discount;
     /* Who is allowed to place this order is not a formality. Microsoft's
@@ -4100,21 +4376,31 @@ body.embedded .hub-link { display:none !important; }
           ' CCCU for <b>' + usd(plan.prepayUsd) + '</b> up front, an effective <b>' + plan.pct.toFixed(1) + '%</b>' +
           (plan.remainderCccu >= 1 ? ', with the remaining ' + num(Math.round(plan.remainderCccu)) + ' CCCU on PayGo' : '') +
           '. Rounding up to a bigger plan would strand credit that expires unused.' +
-          (plan.plans > 1 ? ' Holding several plans at once, each at its own discount, is how Azure reservations work; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
+          (plan.plans > 1 ? ' ' + provPill('ms-inferred') + ' Holding several plans at once, each at its own discount, is likely but not stated by Microsoft for Copilot Credit P3; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
           (c.rampApplies && y1 && y1.plans
             ? '<p>Sized to year one instead, the order is <b>' + y1.label + '</b> (' + num(y1.coveredCccu) + ' CCCU, ' +
-              usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') + '.</p>'
+              usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') +
+              ': <b>' + usd(c.p3Year1Annual, 2) + ' for year one</b>, PayGo remainder included.</p>' + packYear1Line(c)
             : '');
     var verdict = c.p3Saving > 0
-      ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +
+      ? (c.rampApplies && c.p3SteadyOnYear1 && c.p3SteadyOnYear1.saving < 0
+          ? '<p><b>That saving is the steady-state year.</b> Bought for the ramped year one, the same commit costs ' +
+            usd(c.p3SteadyOnYear1.usd, 2) + ' against ' + usd(c.year1PaygoAnnual, 2) + ' of year-one PayGo: it <b>loses ' +
+            usd(-c.p3SteadyOnYear1.saving, 2) + '</b>, because year one burns only ' + num(Math.round(c.cccuYear1)) + ' CCCU.</p>'
+          : '') +
+        '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +
         '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and a commit sized on a model is a commit sized on a guess.</p>'
       : '<p>At this volume PayGo is the right answer.</p>';
     $('billOut').innerHTML =
       '<div class="numgrid">' +
         cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
-        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year',
+        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year' + (plan && plan.plans > 1 ? ' ' + provPill('ms-inferred') : ''),
           (d.tier === 'manual' ? d.pct + '% your rate' : d.pct.toFixed(1) + '% on ' + num(plan ? plan.coveredCccu : 0) + ' CCCU') +
-          ' · saves ' + usd(Math.max(0, c.p3Saving)),
+          ' · saves ' + usd(Math.max(0, c.p3Saving)) + ' at steady state' +
+          (c.rampApplies && c.p3SteadyOnYear1
+            ? ' · bought for the ramped year one it ' + (c.p3SteadyOnYear1.saving >= 0 ? 'saves ' : 'loses ') +
+              usd(Math.abs(c.p3SteadyOnYear1.saving), 2)
+            : ''),
           d.tier === 'manual'
             ? num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')'
             : (plan && plan.plans ? plan.label : 'no plan') +
@@ -4269,10 +4555,12 @@ body.embedded .hub-link { display:none !important; }
     /* The exposure figure follows the commit as configured on this step \u2014
        but when that commit exceeds what the ramped year needs, the gap is
        named in dollars rather than left implicit (v2 \u00a71.5c). */
-    if (c.rampApplies && c.commitCccu > c.cccuYear1)
-      body += '<p>And the commit as configured is <b>' + num(Math.round(c.commitCccu)) + ' CCCU</b> against a ' +
+    // QA M-02: unburned CCCU x what a CCCU of this commit cost, not the
+    // difference between two prepay totals ($10,379.34, not $10,950).
+    if (c.rampApplies && c.p3Year1StrandedCccu >= 1)
+      body += '<p>And the commit as configured is <b>' + num(Math.round(c.cccuYear1 + c.p3Year1StrandedCccu)) + ' CCCU</b> against a ' +
         'year-one need of about ' + num(Math.round(c.cccuYear1)) + ' \u2014 <b>' +
-        usd(Math.max(0, c.p3Exposure - c.p3Year1Prepay)) +
+        usd(c.p3Year1StrandedUsd, 2) +
         '</b> of pre-paid credit the ramp says nobody burns in year one. Size the order to the year-one ' +
         'figure, or carry that gap knowingly.</p>';
     return '<div class="whybox partner-only" style="border-left-color:#b45309;">' +
@@ -4397,9 +4685,14 @@ body.embedded .hub-link { display:none !important; }
       return '<tr' + (win ? ' class="winner"' : '') + '>' +
         '<td style="font-weight:' + (win ? '700' : '400') + ';">' + esc(p.label) +
           (p.addOn ? '<br><span style="font-size:.72rem;color:#6b7280;font-weight:400;">' +
-            usd(p.perUser, 2) + ' add-on + ' + (p.baseSeats > 0
-              ? usd(p.basePer, 2) + ' ' + esc(p.baseName) + ' base × ' + p.baseSeats + ' seat' + (p.baseSeats === 1 ? '' : 's')
-              : 'base already owned') + '</span>' : '') +
+            usd(p.perUser, 2) + ' add-on' +
+            (p.ownedBaseSeats > 0
+              ? ' + owned base × ' + p.ownedBaseSeats + ' seat' + (p.ownedBaseSeats === 1 ? '' : 's') + ' (' + usd(p.ownedBaseUsd) + '/mo)'
+              : '') +
+            (p.baseSeats > 0
+              ? ' + ' + usd(p.basePer, 2) + ' ' + esc(p.baseName) + ' base × ' + p.baseSeats + ' seat' + (p.baseSeats === 1 ? '' : 's')
+              : '') + '</span>' : '') +
+          (p.promoEnds ? '<br><span style="font-size:.72rem;color:#92400e;font-weight:400;">' + promoTag(p.id) + '</span>' : '') +
           (win ? '<br>' + pill('verified','Recommended') : '') + '</td>' +
         '<td class="num">' + usd(p.perUserAllIn, 2) + '</td>' +
         '<td class="num">' + (p.feasible ? usd(p.monthly) : '<span style="color:#6b7280;">n/a</span>') + '</td>' +
@@ -4414,15 +4707,16 @@ body.embedded .hub-link { display:none !important; }
       '<div class="licgrid">' +
         '<div class="lg-main">' +
           '<div class="lg-h">Every path, priced all-in across ' + L.needed + ' Copilot user' + (L.needed === 1 ? '' : 's') + '</div>' +
+          '<p class="srcline" style="margin:0 0 8px;">The $/user column is <b>all-in</b> on one basis: every path includes the base license each Copilot user sits on. The bundles and E7 carry theirs inside the price; each add-on carries the base licenses this tenant already owns at their own price' +
           (L.baseSeatsNeeded > 0
-            ? '<p class="srcline" style="margin:0 0 8px;">The $/user column is <b>all-in</b>. An add-on cannot stand alone, so each one is priced with the cheapest base that actually qualifies it &mdash; ' +
+            ? ', plus the cheapest base that actually qualifies it &mdash; ' +
               L.paths.filter(function (q) { return q.addOn; }).map(function (q) {
                 return esc(q.label) + ' on ' + esc(q.baseName) + ' at ' + usd(q.basePer, 2);
               }).join('; ') + ' &mdash; across the ' + L.baseSeatsNeeded + ' seat' +
-              (L.baseSeatsNeeded === 1 ? '' : 's') + ' this tenant\u2019s existing base licenses do not already cover.</p>'
-            : '') +
+              (L.baseSeatsNeeded === 1 ? '' : 's') + ' those owned licenses do not already cover'
+            : '') + '.</p>' +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60 &mdash; a price implied by this E7 a-la-carte arithmetic, not read from a price list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
+          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60, Microsoft list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
             ? 'saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%)'
             : 'costs ' + usd(-L.e7.delta) + '/user/mo more than its own components at the price you entered') + '. That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting, and read it beside <a class="docref" href="coworksession40.html#section-6" target="_blank" rel="noopener">section 6, the Licensing Snapshot</a>.</p>' +
           /* NCE term line (R6e, finding #16) — customer-visible, mirroring
@@ -4520,7 +4814,9 @@ body.embedded .hub-link { display:none !important; }
         ? 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription on your own Microsoft Customer Agreement, and there isn’t one yet. That’s an admin step on your side, and it comes before anything anyone quotes.'
         : 'Before we talk numbers &mdash; Cowork’s meter bills through an Azure subscription, and there isn’t one set up for you yet. That’s the first box to check, not an afterthought.');
     if (c.copilotLicensed > c.active)
-      t.push('You have ' + c.copilotLicensed + ' Copilot licenses and about ' + c.active + ' people who\'d really use Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licenses carrying cost with no meter attached &mdash; is worth a conversation on its own.');
+      t.push('You have ' + c.copilotLicensed + ' Copilot licenses, and at a modeled activation of ' +
+        Math.round(c.copilotLicensed > 0 ? c.active * 100 / c.copilotLicensed : 0) + '% this plan has about ' + c.active +
+        ' of those people using Cowork. That gap &mdash; ' + (c.copilotLicensed - c.active) + ' licenses carrying cost with no meter attached &mdash; is worth a conversation on its own.');
     /* Three states, three sentences (R7a, finding #6). govNo counts only an
        explicit "no" — an unsure is not a missing control, it is an unanswered
        question, and the engine's own three-way why() has said so all along.
@@ -4543,7 +4839,7 @@ body.embedded .hub-link { display:none !important; }
        is not a vCISO account — but the obligation itself does not scale with
        headcount, and saying nothing about it was the wrong silence. */
     if (c.regulated && c.verticalLabel)
-      t.push('One thing that follows from where you operate: ' + esc(c.verticalLabel) + ' carries a supervision obligation over how AI touches your records. It applies at your size, not only at enterprise scale &mdash; so it belongs in the licensing conversation rather than after it.');
+      t.push('One thing that follows from where you operate: ' + esc(c.verticalLabel) + ' may carry a supervision obligation over how AI touches your records. It can apply at your size, not only at enterprise scale &mdash; so it belongs in the licensing conversation rather than after it.');
     if (c.ratioBench > 3.5)
       t.push('Your Cowork-to-license ratio is running above the 2.6&times; benchmark we typically see. Before we talk about capping spend, let\'s find out who is driving the heavy-task volume &mdash; that is the group whose usage is driving the number, and understanding it comes before capping it.');
     /* "What you told us is open" is a claim about a conversation. When the

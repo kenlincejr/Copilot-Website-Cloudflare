@@ -75,8 +75,10 @@ function assertCopyClean(r, m) {
   const near = (got, want, label) => ok(Math.abs(got - want) < 0.01, 'golden: ' + label + ' (got ' + got + ', want ' + want + ')');
   near(c.monthlyCredits, 755000, 'monthlyCredits');
   near(c.monthlyCowork, 7550, 'monthlyCowork');
-  near(c.licenseMonthly, 2780, 'licenseMonthly');
-  near(c.allInMonthly, 10330, 'allInMonthly');
+  // QA C-09 moved these deliberately (Business Standard $12.50 -> $14.00 on
+  // the 40 stock seats): licenseMonthly 2,780 -> 2,840; allInMonthly 10,330 -> 10,390.
+  near(c.licenseMonthly, 2840, 'licenseMonthly');
+  near(c.allInMonthly, 10390, 'allInMonthly');
   near(c.coworkLo, 5285, 'coworkLo');
   near(c.coworkHi, 9815, 'coworkHi');
   near(c.annualCredits, 9060000, 'annualCredits');
@@ -586,14 +588,16 @@ function assertCopyClean(r, m) {
   ok(!/personaPreset: 'even'/.test(src), 'defaults() no longer claims the even preset');
   ok(!/You have edited the split by hand, so no preset applies/.test(src),
      'the false custom-mix copy is gone');
-  ok(/c\.monthlyCowork \/ \(c\.copilotLicensed \* E\.SKU_BY_ID\['cop_biz'\]\.usd\)/.test(src),
+  // QA H-05: the same-basis ratios now read the meter at $0.01 (coworkAtMsRate).
+  ok(/c\.coworkAtMsRate \/ \(c\.copilotLicensed \* E\.SKU_BY_ID\['cop_biz'\]\.usd\)/.test(src),
      'ratio explainer divides by the cop_biz catalog price, per licensed user (A0b)');
   ok(/usd\(E\.SKU_BY_ID\['cop_ent'\]\.usd\)/.test(src),
      'ratio explainer names the cop_ent catalog price');
   ok(!/perActiveMs \/ 18/.test(src) && !/perActiveMs \/ 30/.test(src),
      'no bare price literal left in the ratio-explainer math');
-  ok(/implied by this E7 a-la-carte arithmetic, not read from a price list/.test(src),
-     'the E5 srcline matches its ms-modeled tag');
+  // QA L-08: E5 $60 is now published on microsoft.com, so the srcline says list.
+  ok(/bundles E5 \(\$60, Microsoft list\)/.test(src) && !/implied by this E7 a-la-carte arithmetic/.test(src),
+     'the E5 srcline matches its ms-verified tag');
   ok(/The 2\.6&times; benchmark, honestly ' \+ provPill\('editorial'\)/.test(src),
      'ratio whybox header carries the editorial pill');
   ok(/TD SYNNEX editorial observation<\/b>/.test(src),
@@ -620,12 +624,22 @@ function assertCopyClean(r, m) {
   eq(L.needed, 80, 'stock needed unchanged');
   eq(L.baseSeatsNeeded, 40, 'stock baseSeatsNeeded unchanged');
   const EXPECT = {
-    bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: true },
-    cop_biz:          { perUserAllIn: 21,   monthly: 1680, baseSeats: 40, baseUsd: 240,  feasible: true },
-    bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    // QA H-03: stock owns Business Premium (60 bundle seats), so the two
+    // lower Business bundles are a downgrade and drop out (feasible true ->
+    // false), and the add-on buys Premium, not Basic, for the seats it lacks:
+    // cop_biz 28.50 -> 36.00 ($2,280 -> $2,880, base $280 -> $880).
+    bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: false },
+    // QA C-02 moved the two add-on rows onto the all-in basis: they now carry
+    // the 40 owned Business Standard bases ($12.50 x 40 = $500) as well.
+    // cop_biz 21 -> 27.25 ($1,680 -> $2,180); cop_ent 48 -> 54.25 ($3,840 -> $4,340).
+    // QA C-09 moved them again on the corrected base prices (Standard $14,
+    // Basic $7, E3 $39): cop_biz 27.25 -> 28.50 ($2,180 -> $2,280, base $240 -> $280);
+    // cop_ent 54.25 -> 56.50 ($4,340 -> $4,520, base $1,440 -> $1,560).
+    cop_biz:          { perUserAllIn: 36,   monthly: 2880, baseSeats: 40, baseUsd: 880,  feasible: true },
+    bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: false },
     bprem_cop:        { perUserAllIn: 32,   monthly: 2560, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop_suites: { perUserAllIn: 47,   monthly: 3760, baseSeats: 0,  baseUsd: 0,    feasible: true },
-    cop_ent:          { perUserAllIn: 48,   monthly: 3840, baseSeats: 40, baseUsd: 1440, feasible: true },
+    cop_ent:          { perUserAllIn: 56.5, monthly: 4520, baseSeats: 40, baseUsd: 1560, feasible: true },
     e7:               { perUserAllIn: 99,   monthly: 7920, baseSeats: 0,  baseUsd: 0,    feasible: true }
   };
   L.paths.forEach(function (p) {
@@ -666,7 +680,8 @@ function assertCopyClean(r, m) {
   });
   const ent = L.paths.filter(p => p.id === 'cop_ent')[0];
   eq(ent.baseSeats, 0, 'the enterprise add-on credits the owned E3 bases');
-  eq(ent.monthly, 120 * 30, 'enterprise add-on priced with no invented base cost');
+  // QA C-02: all-in, the owned E3 base is a real cost on the same basis as a bundle.
+  eq(ent.monthly, 120 * (30 + E.SKU_BY_ID.e3.usd), 'enterprise add-on priced all-in on the owned E3 base, nothing bought');
 }
 
 /* ── R4.2 · Repro (b): the same estate fires no headcount alarm (#8) ────── */
@@ -1281,9 +1296,16 @@ function talkFor(st) {
 }
 const partnerNote = makeUiFn('partnerNote', '\n  function renderNext', { E });
 /* ratioBlock reads `state`, so this is a per-state factory. */
+/* QA H-07: the promo wording helper, lifted from the page like the rest. */
+const promoTagUi = (function () {
+  const start = src.indexOf('  function promoTag(');
+  if (start < 0) return () => '';
+  const end = src.indexOf('\n  }\n', start) + 4;
+  return new Function('E', 'esc', src.slice(start, end) + '\nreturn promoTag;')(E, escUi);
+})();
 function ratioBlockFor(st) {
   return makeUiFn('ratioBlock', '\n  function renderBillOut',
-    { E, usd, num, state: st, provPill: () => '' });
+    { E, usd, num, state: st, provPill: () => '', promoTag: promoTagUi });
 }
 function ratioBlockUi(c, st) { return ratioBlockFor(st || E.defaults())(c); }
 function nextFor(st) { const r = E.compute(st); return E.nextStep(st, r.ctx); }
@@ -1549,7 +1571,7 @@ function nextText(pick) {
   // A0b: the two "same usage" ratios share one basis, so biz × 18 equals ent × 30.
   {
     const c0 = E.compute(E.defaults()).ctx;
-    const biz = c0.monthlyCowork / (c0.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd);
+    const biz = c0.coworkAtMsRate / (c0.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd);
     ok(Math.abs(biz * E.SKU_BY_ID['cop_biz'].usd - c0.ratioBench * E.SKU_BY_ID['cop_ent'].usd) < 1e-9,
        'Business-promo ratio and benchmark ratio share the per-licensed-user basis');
     ok(clean.indexOf(biz.toFixed(2) + '&times;</b> against the') >= 0, 'the clean block prints the same-basis Business ratio');
@@ -1588,13 +1610,13 @@ function nextText(pick) {
     small.org.vertical = v; small.org.totalEmployees = 20;
     const t = talkFor(small);
     ok(t.r.ctx.regulated, v + ': ctx flags the vertical regulated');
-    ok(/carries a supervision obligation/.test(t.text),
+    ok(/may carry a supervision obligation/.test(t.text),
        v + ' at 20 employees: the regulated talk-track line renders');
-    ok(/It applies at your size, not only at enterprise scale/.test(t.text),
+    ok(/It can apply at your size, not only at enterprise scale/.test(t.text),
        v + ': the line says the obligation does not scale with headcount');
   });
   const notReg = E.defaults(); notReg.org.vertical = 'none';
-  ok(!/carries a supervision obligation/.test(talkFor(notReg).text),
+  ok(!/supervision obligation/.test(talkFor(notReg).text),
      'an unregulated vertical stays silent');
 
   // the rung-5 floor is untouched
@@ -1970,6 +1992,9 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
     [cx.monthlyCowork, cx.licenseMonthly, cx.allInMonthly].forEach(v => safeFigs.add(usd(v)));
     safeFigs.add(num(cx.monthlyCredits));
   });
+  // The card also prints each safe figure's change. QA C-09 made the license
+  // delta (30 x $45 = $1,350) equal the current uplift by coincidence.
+  ['monthlyCowork', 'licenseMonthly', 'allInMonthly'].forEach(k => safeFigs.add(usd(Math.abs(cCur[k] - cPrev[k]))));
   [cPrev, cCur].forEach((cx, side) => {
     [cx.meterMarginAnnual, cx.partnerCostAnnual, cx.paygoPartnerCost, cx.p3PartnerCost,
      cx.coworkAtMsRate, cx.licenseUpliftMonthly, cx.licenseMarginMonthly, cx.licenseList,
@@ -2173,7 +2198,8 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
 
   // B4 tells the truth about a multi-plan mix.
   const b4 = E.compute(E.defaults()).trace.find(x => x.id === 'B4');
-  eq(b4.prov, 'ms-modeled', 'A1: a multi-plan mix is tagged modeled');
+  // QA M-03: several plans at once is Likely (ms-inferred), not modeled.
+  eq(b4.prov, 'ms-inferred', 'A1: a multi-plan mix is tagged Likely');
   ok(/confirm the mix with your distributor/.test(b4.note), 'A1: B4 carries the several-plans caveat');
   const one = E.defaults(); one.ramp.mode = 'none'; one.billing.commitCoveragePct = 15000 / 90600;
   eq(E.compute(one).trace.find(x => x.id === 'B4').prov, 'ms-verified', 'A1: a single plan is Microsoft-verified');
@@ -2220,8 +2246,13 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(!!m, 'A3: V-31 fires on stock defaults');
   ok(m.indexOf('4,000 Copilot Credits per user per month (about $40)') >= 0, 'A3: names the default and its dollar value');
   ok(/about 14,519 credits per active Cowork user/.test(m), 'A3: names the modeled per-user credits');
-  ok(/around day 8 of the month/.test(m), 'A3: names the cap day');
-  ok(m.indexOf('about 19,000 credits (the top of the band)') >= 0, 'A3: recommends the raised limit');
+  // QA L-11: the day the 4,000 is crossed, in working days (was "day 8",
+  // Math.round of a 30-day calendar): 4,000 / (14,519.23 / 22) = 6.06 -> 7.
+  ok(/around working day 7 of the month/.test(m), 'A3: names the cap day');
+  ok(!/around day \d/.test(m), 'L-11: no calendar-day rounding left in V-31');
+  // QA H-04 moved the raised limit from the average user (19,000) to the
+  // heaviest persona: Technical 22,800 x 1.3 = 29,640 -> 30,000.
+  ok(m.indexOf('about 30,000 credits') >= 0, 'A3: recommends the raised limit');
   ok(/December 1, 2026/.test(m) && /Not yet in effect in Australia/.test(m), 'A3: names the date and the exclusions');
   ok(!/7 days|seven days/.test(m), 'A3: the R6.4-banned phrase stays out');
   // Same across the three CSP motions; silent outside CSP.
@@ -2332,6 +2363,15 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
        'creditUsd','cspMotion','employees','licenses','monthlyCredits','rampCredits','rampSeats','screen','sellMode','version',
        'year1Credits'].sort().join(','), 'EMB: payload key set is exact');
   eq(m.employees, 120, 'EMB: payload carries the employee count (stock 120)');
+  // QA M-30: the planner spec's section 4.4 table is the exact key set, so
+  // it must list every key the page emits, employees included.
+  {
+    const spec = fs.readFileSync(path.join(__dirname, '..', 'specs', 'copilot-credit-planner.spec.md'), 'utf8').replace(/\r\n/g, '\n');
+    const s44 = spec.slice(spec.indexOf('### 4.4 The `cowork-lane` payload'), spec.indexOf('**Never in the payload:**'));
+    const specKeys = (s44.match(/^\| `([A-Za-z_0-9]+)` \|/gm) || []).map(x => x.replace(/^\| `|` \|$/g, ''));
+    eq(specKeys.slice().sort().join(','), Object.keys(m).sort().join(','), 'M-30: spec 4.4 lists exactly the emitted keys');
+    ok(specKeys.indexOf('employees') >= 0, 'M-30: spec 4.4 lists employees');
+  }
   ['margin','pec','provider','cost','uplift','p3','commit','partner'].forEach(k =>
     ok(JSON.stringify(m).toLowerCase().indexOf(k) === -1, 'EMB: payload carries nothing named ' + k));
   eq(m.__type, 'cowork-lane', 'EMB: payload type');
@@ -2361,6 +2401,439 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
      'HUB: the planner link renders inside the billing card');
   ok(src.indexOf('body.embedded .hub-link { display:none !important; }') >= 0, 'HUB: the link is hidden inside the hub frame');
   ok(src.indexOf('href="copilot-credit-planner.html"') >= 0, 'HUB: the link points at the planner');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QA audit 2026-10-11 (research/credit-planner-qa-audit-2026-10-11.md §2)
+   One block per finding id. Each block failed before its fix.
+   ══════════════════════════════════════════════════════════════════════════ */
+const QA_GOV_YES = { purviewLabels:'yes', dlpForAi:'yes', defenderCloudApps:'yes', namedCostOwner:'yes', insuranceRenewal:'no' };
+function qaLic(emp, inv, gov, extra) {
+  const s = E.defaults();
+  s.org = Object.assign(s.org, { totalEmployees: emp });
+  s.licenseInventory = inv;
+  if (gov) { s.governanceAsked = true; s.governance = Object.assign({}, QA_GOV_YES); }
+  if (extra) extra(s);
+  return E.compute(s);
+}
+function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id; })[0]; }
+
+/* ── C-01 · the 300-seat cap is inclusive ("for up to 300 users") ──────── */
+{
+  const r = qaLic(300, [{ skuId:'bprem_cop', seats:300 }], true), L = r.licensing;
+  ok(L.requirements.every(q => q.id !== 'scale'), 'C-01: 300 seats raises no scale gap');
+  const bp = qaPath(L, 'bprem_cop');
+  ok(bp && bp.feasible, 'C-01: Business Premium with Copilot is feasible at 300');
+  eq(bp && Math.round(bp.monthly), 9600, 'C-01: 300 x $32 = $9,600 a month');
+  ok(L.winner && ['cop_ent','e7'].indexOf(L.winner.id) === -1, 'C-01: 300 seats is not pushed to an enterprise path');
+  ok(L.why.join(' ').indexOf('past the 300-seat') === -1, 'C-01: "Why this one" never says past the cap at 300');
+  ok(r.next.pick.id !== 'at-scale', 'C-01: the at-scale next step does not fire at exactly 300');
+  const r301 = qaLic(301, [{ skuId:'bprem_cop', seats:301 }], true);
+  ok(r301.licensing.requirements.some(q => q.id === 'scale'), 'C-01: 301 seats does raise the scale gap');
+  ok(r301.licensing.requirements.filter(q => q.id === 'scale')[0].why.indexOf('at or past') === -1,
+     'C-01: the scale gap copy says past, not "at or past"');
+}
+
+/* ── C-02 · every path priced all-in on one basis ──────────────────────────
+   An add-on path carries the base each Copilot user sits on, owned or bought,
+   exactly as a bundle or E7 carries its base inside the price. Expected
+   figures read the catalog so a later price correction moves them with it. */
+{
+  const P = id => E.SKU_BY_ID[id].usd;
+  const usd0 = v => '$' + Math.round(v).toLocaleString();
+  // 1. 150 Business Premium + 150 Copilot Business add-on
+  let L = qaLic(150, [{ skuId:'bprem', seats:150 }, { skuId:'cop_biz', seats:150 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 150 * (P('bprem') + P('cop_biz')), 'C-02 #1: add-on on owned Premium is 150 x ($22 + $18) all-in');
+  eq(qaPath(L, 'bprem_cop').monthly, 150 * 32, 'C-02 #1: Business Premium with Copilot is 150 x $32');
+  ok(qaPath(L, 'bprem_cop').monthly < qaPath(L, 'cop_biz').monthly, 'C-02 #1: the bundle is cheaper than the add-on');
+  ok(L.winner.id !== 'cop_biz', 'C-02 #1: the add-on is not recommended over a cheaper bundle');
+  // 2. 250 Business Standard + 250 add-on
+  L = qaLic(250, [{ skuId:'bstd', seats:250 }, { skuId:'cop_biz', seats:250 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 250 * (P('bstd') + P('cop_biz')), 'C-02 #2: add-on on owned Standard priced all-in');
+  eq(qaPath(L, 'cop_biz').monthly - qaPath(L, 'bstd_cop').monthly, 250 * (P('bstd') + P('cop_biz') - P('bstd_cop')),
+     'C-02 #2: Standard with Copilot saves the full base-plus-add-on gap');
+  ok(L.winner.id !== 'cop_biz', 'C-02 #2: the add-on is not recommended');
+  // 3. 50 Business Basic + 50 add-on
+  L = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').monthly, 50 * (P('bbasic') + P('cop_biz')), 'C-02 #3: add-on on owned Basic priced all-in');
+  ok(qaPath(L, 'bbasic_cop').monthly < qaPath(L, 'cop_biz').monthly, 'C-02 #3: Basic + Copilot Business bundle is cheaper');
+  eq(L.winner.id, 'bbasic_cop', 'C-02 #3: the bundle wins for an owned-Basic estate');
+  // 4. 60 Business Premium, greenfield, 25-seat pilot
+  L = qaLic(60, [{ skuId:'bprem', seats:60 }], true).licensing;
+  eq(L.needed, 25, 'C-02 #4: pilot sized at 25');
+  eq(qaPath(L, 'cop_biz').monthly, 25 * (P('bprem') + P('cop_biz')), 'C-02 #4: pilot add-on carries the owned Premium base');
+  eq(qaPath(L, 'cop_biz').monthly - qaPath(L, 'bprem_cop').monthly, 25 * (P('bprem') + P('cop_biz') - 32),
+     'C-02 #4: the upgrade is cheaper by 25 x ($40 - $32)');
+  // 5. 1,200 E5 + enterprise Copilot: E7 is $9 a user more, not $69
+  L = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], false).licensing;
+  eq(qaPath(L, 'cop_ent').monthly, 1200 * (P('e5') + 30), 'C-02 #5: E5 + enterprise Copilot priced all-in');
+  // QA M-05 later stopped pushing E5 estates to E7 (E5 already licenses the
+  // gaps E7 was "closing"), so the gap is asserted on the path totals.
+  const gap5 = 99 - (P('e5') + 30);
+  eq(qaPath(L, 'e7').monthly - qaPath(L, 'cop_ent').monthly, gap5 * 1200, 'C-02 #5: E7 is $' + gap5.toFixed(2) + ' a user more on the same basis');
+  let w = L.why.join(' ');
+  ok(w.indexOf('$69.00') === -1, 'C-02 #5: the old net-of-base $69 gap is gone');
+  // 6. 500 E3 + enterprise Copilot
+  L = qaLic(500, [{ skuId:'e3', seats:500 }, { skuId:'cop_ent', seats:500 }], false).licensing;
+  eq(qaPath(L, 'cop_ent').monthly, 500 * (P('e3') + 30), 'C-02 #6: E3 + enterprise Copilot priced all-in');
+  const gap6 = 99 - (P('e3') + 30);
+  w = L.why.join(' ');
+  ok(w.indexOf('$' + gap6.toFixed(2) + '/user/month cheaper') >= 0, 'C-02 #6: "cheaper by" names $' + gap6.toFixed(2) + ' a user');
+  ok(w.indexOf(usd0(gap6 * 500) + '/month') >= 0, 'C-02 #6: "cheaper by" dollars match the per-user gap x 500');
+}
+
+/* ── C-09 / L-08 · base SKU prices match microsoft.com, 2026-10-11 ─────── */
+{
+  const want = { bbasic:[7, 'F-226'], bstd:[14, 'F-227'], e3:[39, 'F-228'], e5:[60, 'F-229'] };
+  Object.keys(want).forEach(function (id) {
+    const s = E.SKU_BY_ID[id];
+    eq(s.usd, want[id][0], 'C-09: ' + id + ' list price');
+    eq(s.prov, 'ms-verified', 'C-09: ' + id + ' tagged ms-verified');
+    eq(s.factId, want[id][1], 'C-09: ' + id + ' carries its fact id');
+    ok(s.src && s.src.indexOf('$' + want[id][0].toFixed(2)) >= 0 && s.src.indexOf('2026-10-11') >= 0,
+       'C-09: ' + id + ' source string names the price and the date');
+  });
+  const s = E.defaults();
+  eq(E.copilotComponent(s, 'bstd_cop'), 9.5, 'C-09: Copilot share of Business Standard with Copilot is $23.50 - $14.00');
+  eq(E.copilotComponent(s, 'bbasic_cop'), 14, 'C-09: Copilot share of Basic + Copilot Business is $21 - $7');
+  const facts = fs.readFileSync(path.join(__dirname, '..', 'data', 'facts.json'), 'utf8');
+  ['F-226', 'F-227', 'F-228', 'F-229'].forEach(function (id) {
+    ok(facts.indexOf('"id": "' + id + '"') >= 0, 'C-09: ' + id + ' is registered in data/facts.json');
+  });
+}
+
+/* ── H-03 · the highest owned base is a floor: no downgrade advice ──────── */
+{
+  [100, 299].forEach(function (n) {
+    const L = qaLic(n, [{ skuId:'bprem_cop', seats:n }], true).licensing;
+    eq(L.winner && L.winner.id, 'bprem_cop', 'H-03: ' + n + ' x Premium with Copilot is told to stay put');
+    ['bbasic_cop', 'bstd_cop'].forEach(function (id) {
+      const p = qaPath(L, id);
+      eq(p.feasible, false, 'H-03: ' + id + ' is not offered to a Premium estate (' + n + ')');
+      ok(p.violations.join(' ').indexOf('Business Premium') >= 0, 'H-03: ' + id + ' violation names the owned Premium base');
+    });
+    ok(L.why.join(' ').indexOf('Business Basic') === -1, 'H-03: "Why this one" never points ' + n + ' Premium seats at Basic');
+  });
+  // A Standard estate may still step up to Premium; only downward is barred.
+  const L = qaLic(40, [{ skuId:'bstd_cop', seats:40 }], true).licensing;
+  eq(qaPath(L, 'bprem_cop').feasible, true, 'H-03: a Standard estate can still move up to Premium');
+  eq(qaPath(L, 'bbasic_cop').feasible, false, 'H-03: a Standard estate is not moved down to Basic');
+  eq(qaPath(L, 'cop_biz').feasible, true, 'H-03: the add-on keeps the owned base, so it stays on the table');
+}
+
+/* ── H-04 · V-31 "raise the limit to" covers the heaviest persona ──────── */
+{
+  const r = E.compute(E.defaults());
+  const m = (r.warnings.find(w => w.id === 'V-31') || {}).message || '';
+  ok(m.indexOf('about 30,000 credits') >= 0, 'H-04: stock raise-to is 30,000 (Technical 22,800 x 1.3)');
+  ok(m.indexOf('19,000') === -1, 'H-04: the average-user 19,000 is gone');
+  ok(m.indexOf('Technical') >= 0, 'H-04: the copy names the persona it is sized on');
+  // Every allocated persona fits under the raised limit at the top of the band.
+  const hit = m.match(/about ([0-9,]+) credits \(/);
+  const lim = hit ? +hit[1].replace(/,/g, '') : 0;
+  const eff = E.defaults().personas.map(p => (p.light * 125 + p.medium * 500 + p.heavy * 1200));
+  ok(eff.every(c => c * 1.3 <= lim), 'H-04: every persona x 1.3 sits under ' + lim);
+}
+
+/* ── H-05 · the sell rate never changes the usage diagnosis ────────────── */
+{
+  // Governance confirmed and billing ready, so the rule list reaches the
+  // concentration rule instead of stopping at discovery.
+  const ready = () => {
+    const s = E.defaults();
+    s.governanceAsked = true; s.governance = Object.assign({}, QA_GOV_YES);
+    s.org = Object.assign(s.org, { azureCspPlan:'yes', usageBillingEnabled:'yes' });
+    return s;
+  };
+  const list = E.compute(ready());
+  const sell = ready();
+  sell.pricing = Object.assign(sell.pricing, { mode:'sell', creditSellUsd:0.012 });
+  const rs = E.compute(sell);
+  ok(Math.abs(rs.ctx.ratioBench - list.ctx.ratioBench) < 1e-9,
+     'H-05: ratioBench at a $0.012 sell rate equals the list ratio (' + rs.ctx.ratioBench.toFixed(3) + ' vs ' + list.ctx.ratioBench.toFixed(3) + ')');
+  ok(rs.ctx.ratioBench < 3.5, 'H-05: the 3.5 trigger is judged at $0.01 (3.146), not the sell rate (3.775)');
+  eq(rs.next.pick.id, list.next.pick.id, 'H-05: the next step does not flip to concentration on a markup');
+  ok(rs.next.pick.id !== 'concentration', 'H-05: no concentration step at stock usage');
+  ok(Math.abs(rs.ctx.monthlyCowork - 755000 * 0.012) < 1e-6, 'H-05: the customer meter is still priced at the sell rate');
+  // Even a markup large enough to cross $200 a user does not fire it.
+  const big = ready();
+  big.pricing = Object.assign(big.pricing, { mode:'sell', creditSellUsd:0.02 });
+  ok(E.compute(big).next.pick.id !== 'concentration', 'H-05: a $0.02 sell rate does not make usage "run hot"');
+  ok(/if \(c\.ratioBench > 3\.5\)/.test(src), 'H-05: the talk line reads the list-basis ratio');
+  ok(!/usd\(c\.perActiveMs/.test(src), 'H-05: the customer-visible ratio block never prints a $0.01 dollar figure');
+}
+
+/* ── H-07 · the promo end date travels with every promo price ──────────── */
+{
+  // Licensing paths carry the promo end date for the table to print.
+  const L = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').promoEnds, '2026-12-31', 'H-07: the add-on path carries its promo end');
+  eq(qaPath(L, 'bbasic_cop').promoEnds, '2026-12-31', 'H-07: the Basic bundle path carries its promo end');
+  ok(!qaPath(L, 'bprem_cop').promoEnds, 'H-07: a non-promo path carries none');
+  // "Why this one" names the end date when the winner is a promo SKU ...
+  eq(L.winner.id, 'bbasic_cop', 'H-07: precondition, the promo bundle wins here');
+  ok(L.why.join(' ').indexOf('promo through 2026-12-31') >= 0, 'H-07: "Why this one" dates the promo winner');
+  // ... and when the cheaper path it declines is one.
+  const L2 = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], false).licensing;
+  const declined = L2.why.filter(w => w.indexOf('We are not recommending') === 0)[0] || '';
+  ok(declined.indexOf('Business Basic + Copilot Business') >= 0, 'H-07: precondition, the declined path is the promo bundle');
+  ok(declined.indexOf('promo through 2026-12-31') >= 0, 'H-07: a declined promo path is dated');
+  // UI: one helper, used by the licensing table, the ratio block and the rate card.
+  ok(/function promoTag\(/.test(src), 'H-07: a single promoTag helper renders the wording');
+  ok((src.match(/promoTag\(/g) || []).length >= 4, 'H-07: promoTag is used at the table, ratio block and rate card');
+  ok(src.indexOf('Promo price \\u2014 ends') === -1, 'H-07: the old rate-card wording is replaced');
+  ok(/Business promo' \+ promoTag\('cop_biz'/.test(src), 'H-07: the ratio block dates the $18 Business promo');
+}
+
+/* ── M-01 · year-one buying guidance weighs capacity packs ─────────────── */
+{
+  const c = E.compute(E.defaults()).ctx;
+  const near = (got, want, label) => ok(got != null && Math.abs(got - want) < 0.01, 'M-01: ' + label + ' (got ' + got + ', want ' + want + ')');
+  near(c.p3Year1Annual, 73589.42, 'year-one P3 total incl. the PayGo remainder ($72,750 + $839.42)');
+  const Y = c.packYear1 || {};
+  eq(Y.packsOnly && Y.packsOnly.packs, 21, 'cheapest packs-only year one holds 21 packs');
+  near(Y.packsOnly && Y.packsOnly.usd, 68747.88, '21 packs all year + PayGo overflow');
+  eq(Y.packsP3 && Y.packsP3.packs, 16, 'cheapest packs + P3 year one holds 16 packs');
+  ok(Y.packsP3 && /1 × Tier 3/.test(Y.packsP3.label), 'packs + P3 adds 1 x Tier 3');
+  near(Y.packsP3 && Y.packsP3.usd, 67509.62, '16 packs + Tier 3 + remainder');
+  eq(Y.flat && Y.flat.packs, 30, 'flat comparison holds the steady-state 30 packs');
+  near(Y.flat && Y.flat.usd, 72350, '30 packs flat through year one');
+  ok(Y.flat && Math.abs(Y.flat.wasteCredits - 1151057.69) < 1, 'M-01: flat 30 packs waste 1,151,058 credits');
+  near(Y.flat && Y.flat.wasteUsd, 9208.46, 'the waste at $0.008 a pack credit');
+  // The page prints all of it beside the P3 mix.
+  let line = '';
+  try { line = makeUiFn('packYear1Line', '\n  function renderBillOut', { usd, num })(c); } catch (e) { line = ''; }
+  ['21 packs a month all year', '$68,747.88', '16 packs plus 1 × Tier 3', '$67,509.62', 'against $73,589.42',
+   'steady-state 30 packs', '$72,350.00', '1,151,058 pack credits unused', '$9,208.46'].forEach(function (t) {
+    ok(line.indexOf(t) >= 0, 'M-01: the billing card prints "' + t + '"');
+  });
+  ok(/usd\(c\.p3Year1Annual, 2\) \+ ' for year one/.test(src), 'M-01: the year-one P3 total is printed beside the mix');
+  // Flat ramp: year one = steady, so no pack guidance is needed beyond packSteady.
+  const flat = E.defaults(); flat.ramp.mode = 'none';
+  const cf = E.compute(flat).ctx;
+  ok(cf.packYear1 && cf.packYear1.packsOnly.usd <= cf.packSteady.annualUsd + 0.01, 'M-01: with no ramp the year-one pack answer is the steady one');
+}
+
+/* ── M-02 · the steady P3 headline is paired with the ramped year one ──── */
+{
+  const s = E.defaults(); s.billing.model = 'p3'; s.billing.p3Holder = 'partner';
+  const c = E.compute(s).ctx;
+  const near = (got, want, label) => ok(got != null && Math.abs(got - want) < 0.01, 'M-02: ' + label + ' (got ' + got + ', want ' + want + ')');
+  near(c.p3SteadyOnYear1 && c.p3SteadyOnYear1.usd, 83700, 'the steady 3 x Tier 3 bought for year one costs $83,700');
+  near(c.p3SteadyOnYear1 && c.p3SteadyOnYear1.saving, -4860.58, 'and loses $4,860.58 against $78,839.42 of year-one PayGo');
+  near(c.p3Year1StrandedCccu, 11160.58, 'stranded CCCU = 90,000 - 78,839.42');
+  near(c.p3Year1StrandedUsd, 10379.34, 'stranded dollars = 11,160.58 x $0.93');
+  // The page: the P3 cell and verdict say "steady state" and give the year-one loss ...
+  ok(/saves ' \+ usd\(Math\.max\(0, c\.p3Saving\)\) \+ ' at steady state'/.test(src), 'M-02: the P3 cell labels the saving steady state');
+  ok(/c\.p3SteadyOnYear1\.saving/.test(src), 'M-02: the card prints the ramped year-one result');
+  // ... and the risk block names $10,379.34, not $10,950.
+  const risk = makeUiFn('p3RiskBlock', '\n  /* The meter has two prices', { usd, num, E })(c);
+  ok(risk.indexOf('$10,379.34') >= 0, 'M-02: the risk block prints $10,379.34 of stranded credit');
+  ok(risk.indexOf('$10,950') === -1, 'M-02: the prepay difference $10,950 is gone');
+  ok(/the commit saves ' \+ '\$' \+ Math\.round\(p3Saving\)\.toLocaleString\(\) \+ ' a year at steady state/.test(src),
+     'M-02: V-21 labels its saving steady state');
+}
+
+/* ── M-03 · several P3 plans held at once is labeled Likely ────────────── */
+{
+  const r = E.compute(E.defaults());
+  const b4 = row(r, 'B4');
+  eq(b4.prov, 'ms-inferred', 'M-03: B4 is tagged ms-inferred for a multi-plan mix');
+  ok(/^Likely/.test(b4.note || ''), 'M-03: the B4 note opens with Likely');
+  eq(r.ctx.discount.prov, 'ms-inferred', 'M-03: the discount carries the same tag');
+  ok(r.assumptions.some(a => a.id === 'B4' && a.prov === 'ms-inferred'), 'M-03: the assumptions card lists it as Likely');
+  eq(E.weakest(['ms-inferred', 'ms-verified']), 'ms-inferred', 'M-03: Likely ranks below verified');
+  ok(src.indexOf('is how Azure reservations work') === -1, 'M-03: the "is how Azure reservations work" claim is gone');
+  ok(/'ms-inferred':\['modeled','Likely'\]/.test(src), 'M-03: the provenance pill prints Likely');
+  ok(/'P3 pre-purchase \/ year' \+ \(plan && plan\.plans > 1 \? ' ' \+ provPill\('ms-inferred'\)/.test(src),
+     'M-03: the P3 headline cell carries the Likely pill on a multi-plan mix');
+}
+
+/* ── M-04 · past 300: 300 on a Business bundle + the rest on enterprise ── */
+{
+  const P = id => E.SKU_BY_ID[id].usd;
+  let L = qaLic(301, [{ skuId:'bprem_cop', seats:301 }], true).licensing;
+  const sp = qaPath(L, 'split_bprem_cop');
+  ok(sp && sp.feasible, 'M-04: a 300 + enterprise split path exists and is feasible at 301');
+  eq(sp && sp.monthly, 300 * 32 + 1 * (30 + P('e3')), 'M-04: 300 x $32 + 1 x ($30 + E3) all-in');
+  eq(L.winner && L.winner.id, 'split_bprem_cop', 'M-04: the split wins when it is cheaper and closes the same gaps');
+  ok(L.winner && L.winner.monthly < qaPath(L, 'cop_ent').monthly, 'M-04: cheaper than moving all 301 to enterprise');
+  ok(L.why.join(' ').indexOf('mix in one tenant') >= 0, 'M-04: "Why this one" says Business and Enterprise plans mix');
+  // 400 Premium seats: 300 bundle + 100 enterprise.
+  L = qaLic(400, [{ skuId:'bprem_cop', seats:400 }], true).licensing;
+  eq(qaPath(L, 'split_bprem_cop').monthly, 300 * 32 + 100 * (30 + P('e3')), 'M-04: 400 seats split 300 + 100');
+  // An all-enterprise estate gets no Business split.
+  L = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], true).licensing;
+  ok(L.paths.filter(p => /^split_/.test(p.id)).every(p => !p.feasible), 'M-04: no Business split for an all-E5 estate');
+  // Under the cap there is no split row at all.
+  L = qaLic(299, [{ skuId:'bprem_cop', seats:299 }], true).licensing;
+  ok(L.paths.every(p => !/^split_/.test(p.id)), 'M-04: no split rows at 299 seats');
+}
+
+/* ── M-05 · E5 already licenses labels, DLP for AI and Defender for Cloud Apps ── */
+{
+  const r = qaLic(1200, [{ skuId:'e5', seats:1200 }, { skuId:'cop_ent', seats:1200 }], false);
+  const L = r.licensing;
+  ['labels', 'dlp', 'mdca'].forEach(function (id) {
+    const q = L.requirements.filter(x => x.id === id)[0];
+    ok(q && q.skuClosable === false, 'M-05: ' + id + ' is not a license gap on an E5 base');
+    ok(q && /E5 already licenses/.test(q.why), 'M-05: ' + id + ' says E5 already licenses it');
+  });
+  eq(L.winner && L.winner.id, 'cop_ent', 'M-05: an E5 estate keeps E5 + enterprise Copilot, not E7');
+  ok(L.why.join(' ').indexOf('E7') === -1 || L.winner.id !== 'e7', 'M-05: no push to E7');
+  // An E3 estate still has the license gaps E7 closes.
+  const L3 = qaLic(500, [{ skuId:'e3', seats:500 }, { skuId:'cop_ent', seats:500 }], false).licensing;
+  ok(L3.requirements.filter(x => x.id === 'labels')[0].skuClosable !== false, 'M-05: an E3 base still needs a license for labels');
+}
+
+/* ── L-02 · loadRateCard never merges a prototype key ─────────────────── */
+{
+  // The loader and the key-cleaning helper above it, lifted together.
+  const helperAt = src.indexOf('  var BAD_KEYS');
+  const body = helperAt >= 0 && helperAt < src.indexOf('  function loadRateCard(')
+    ? src.slice(helperAt, src.indexOf('\n  function renderBasisBar', helperAt))
+    : uiSource('loadRateCard', '\n  function renderBasisBar');
+  function load(json) {
+    let seen = null;
+    const E2 = Object.assign({}, E, { normalize: function (s) {
+      // defaults() objects come from the engine's own realm (vm context).
+      seen = { pricingProto: Object.getPrototypeOf(s.pricing) === Object.getPrototypeOf(E.defaults().pricing),
+               overridesProto: s.priceOverrides == null || Object.getPrototypeOf(s.priceOverrides) === Object.prototype,
+               servicesProto: s.partnerServices == null || Object.getPrototypeOf(s.partnerServices) === Object.prototype,
+               keys: Object.keys(s.pricing).concat(Object.keys(s.priceOverrides || {}), Object.keys(s.partnerServices || {})) };
+      return E.normalize(s);
+    } });
+    function FR() {}
+    FR.prototype.readAsText = function () { this.onload({ target: { result: json } }); };
+    const fn = new Function('E', 'alert', 'FileReader', 'renderPricing', 'refresh', 'state',
+      body + '\nreturn loadRateCard;')(E2, () => {}, FR, () => {}, () => {}, E.defaults());
+    fn({ target: { files: [{}], value: 'x' } });
+    return seen;
+  }
+  const evil = '{"__type":"cowork-rate-card","pricing":{"__proto__":{"polluted":1},"constructor":{"x":1},"mode":"sell"},' +
+               '"priceOverrides":{"__proto__":{"polluted":2},"bstd":15},"partnerServices":{"prototype":{"p":1},"__proto__":{"polluted":3},"retainerLo":4}}';
+  const seen = load(evil);
+  ok(seen && seen.pricingProto, 'L-02: pricing keeps a plain prototype through the merge');
+  ok(seen && seen.overridesProto, 'L-02: priceOverrides keeps a plain prototype');
+  ok(seen && seen.servicesProto, 'L-02: partnerServices keeps a plain prototype');
+  ok(seen && seen.keys.every(k => ['__proto__', 'constructor', 'prototype'].indexOf(k) === -1), 'L-02: no bad key survives into state');
+  ok(({}).polluted === undefined, 'L-02: Object.prototype untouched');
+}
+
+/* ── L-12 · hostile input never throws or prints machine text ─────────── */
+{
+  function tryCompute(s, label) {
+    try { return E.compute(s); } catch (e) { ok(false, 'L-12: ' + label + ' threw: ' + e.message); return null; }
+  }
+  ['__proto__', 'constructor', 'toString', 'hasOwnProperty'].forEach(function (k) {
+    const s = E.defaults(); s.personaPreset = k;
+    const r = tryCompute(s, 'personaPreset ' + k);
+    ok(r && !r.assumptions.some(a => a.id === 'preset'), 'L-12: personaPreset ' + k + ' is not a preset');
+    let threw = false;
+    try { E.applyPreset(E.defaults(), k); } catch (e) { threw = true; }
+    ok(!threw, 'L-12: applyPreset(' + k + ') does not throw');
+  });
+  ['a string', 42, true, [1, 2]].forEach(function (v) {
+    const r = tryCompute(v, 'state ' + JSON.stringify(v));
+    ok(r && Math.round(r.ctx.monthlyCredits) === 755000, 'L-12: a non-object state ' + JSON.stringify(v) + ' computes the defaults');
+  });
+  const r1 = tryCompute(st({ licenseInventory: [{ skuId: {}, seats: 5 }, { skuId: [1], seats: 5 }, { skuId: 'bprem_cop', seats: 60 }] }), 'skuId {}');
+  const v27 = r1 && r1.warnings.filter(w => w.id === 'V-27')[0];
+  ok(v27 && v27.message.indexOf('[object Object]') === -1, 'L-12: skuId {} never prints [object Object]');
+  const s2 = E.defaults(); s2.activation = { mode: 'rate', rate: 1e308, count: null };
+  const r2 = tryCompute(s2, 'activation.rate 1e308');
+  const f6 = r2 && row(r2, 'F6');
+  ok(f6 && !/Infinity/.test(f6.expression), 'L-12: activation.rate 1e308 never prints Infinity% (' + (f6 && f6.expression) + ')');
+  ok(f6 && /× 100%/.test(f6.expression), 'L-12: the rate clamps to 100%');
+}
+
+/* ── L-13 · a sell rate of $0 or below warns instead of vanishing ─────── */
+{
+  [0, -0.05].forEach(function (v) {
+    const s = E.defaults(); s.pricing = Object.assign(s.pricing, { mode:'sell', creditSellUsd:v });
+    const r = E.compute(s);
+    eq(r.ctx.creditUsd, 0.01, 'L-13: sell rate ' + v + ' still prices at $0.01');
+    const w = r.warnings.filter(x => x.id === 'V-32')[0];
+    ok(w && /not a price/.test(w.message) && /\$0\.01/.test(w.message), 'L-13: sell rate ' + v + ' raises V-32 saying it fell back to $0.01');
+  });
+  const ok1 = E.defaults(); ok1.pricing = Object.assign(ok1.pricing, { mode:'sell', creditSellUsd:0.012 });
+  ok(E.compute(ok1).warnings.every(x => x.id !== 'V-32'), 'L-13: a positive sell rate raises no V-32');
+  ok(E.compute(E.defaults()).warnings.every(x => x.id !== 'V-32'), 'L-13: list mode raises no V-32');
+}
+
+/* ── L-14 · "one light task every working day" is 22 working days ─────── */
+{
+  const sc = E.compute(E.defaults()).scenarios.filter(x => /every working day/.test(x.label))[0];
+  ok(sc && Math.abs(sc.credits - 52 * 125 * 22) < 1e-6, 'L-14: 52 users x 125 credits x 22 days (got ' + (sc && sc.credits) + ')');
+  ok(sc && Math.abs(sc.usd - 1430) < 0.005, 'L-14: $1,430 a month, matching the web estimator (got ' + (sc && sc.usd) + ')');
+}
+
+/* ── L-15 · the reconcile box tags the web band Microsoft and gives the ratio ── */
+{
+  const st0 = E.defaults();
+  const fn = makeUiFn('reconcileBox', '\n  /* ═══ STEP 5', { E, usd, num, esc: escUi, state: st0, provPill: p => '[' + p + ']' });
+  const html = fn(E.compute(st0));
+  const at = html.indexOf('$51');
+  ok(at > 0 && /\[ms-verified\]/.test(html.slice(at, at + 260)), 'L-15: the $51-$91 band carries the Microsoft tag');
+  ok(/data-fact="F-158"/.test(html), 'L-15: the band carries its fact id F-158');
+  ok(html.indexOf('[ms-modeled]</div>') === -1, 'L-15: the box header is no longer tagged Modeled as a whole');
+  ok(html.indexOf('1.57&times; to 2.79&times;') >= 0, 'L-15: $142.50 is 1.57x to 2.79x the web band');
+}
+
+/* ── L-16 · partner-economics warnings carry the partner-only marking ─── */
+{
+  const IDS = ['V-21', 'V-22', 'V-24', 'V-25', 'V-26', 'V-29'];
+  // Stock fires V-26; build states for the rest.
+  const states = [E.defaults()];
+  const p3p = E.defaults(); p3p.billing.model = 'p3'; p3p.billing.p3Holder = 'partner'; states.push(p3p);          // V-22
+  const ind = E.defaults(); ind.channel = { motion:'indirectReseller', providerCreditUsd:0.012 };
+  ind.billing.model = 'p3'; states.push(ind);                                                                       // V-24
+  const neg = E.defaults(); neg.channel = { motion:'indirectReseller', providerCreditUsd:0.012 }; states.push(neg);  // V-29
+  const nc = E.defaults(); nc.channel = { motion:'notCsp', providerCreditUsd:null };
+  nc.pricing = Object.assign(nc.pricing, { mode:'sell', creditSellUsd:0.012 }); states.push(nc);                    // V-25
+  const pec = E.defaults(); pec.channel = { motion:'direct', providerCreditUsd:null };
+  pec.pricing = Object.assign(pec.pricing, { pec:{ status:'yes', pct:15 } }); pec.billing.model = 'p3'; states.push(pec); // V-21
+  const seen = {};
+  states.forEach(function (s) {
+    E.compute(s).warnings.forEach(function (w) {
+      if (IDS.indexOf(w.id) > -1) { seen[w.id] = true; ok(w.partner === true, 'L-16: ' + w.id + ' is marked partner-only'); }
+      else ok(w.partner !== true || w.id === 'V-32', 'L-16: ' + w.id + ' is not marked partner-only');
+    });
+  });
+  IDS.forEach(id => ok(seen[id], 'L-16: precondition, ' + id + ' fired in the sweep'));
+  ok(/'<div class="flag' \+ \(w\.partner \? ' partner-only' : ''\) \+ '">/.test(src), 'L-16: the flags card renders the partner-only class');
+}
+
+/* ── L-17 · "Why this one" never offers SMB bundles that are all infeasible ── */
+{
+  const L = qaLic(500, [{ skuId:'e3', seats:500 }], false).licensing;
+  ok(L.paths.filter(p => p.smb).every(p => !p.feasible), 'L-17: precondition, every SMB path is infeasible on a 500-seat E3 estate');
+  const w = L.why.join(' ');
+  ok(w.indexOf('so the SMB bundles are available') === -1, 'L-17: no claim that the SMB bundles are available');
+  ok(/enterprise \(E3\/E5\)/.test(w), 'L-17: the first line says why the SMB SKUs are out');
+  // A Business estate under the cap keeps the original sentence.
+  const L2 = qaLic(50, [{ skuId:'bbasic', seats:50 }], false).licensing;
+  ok(L2.why.join(' ').indexOf('so the SMB bundles are available') >= 0, 'L-17: a Business estate still hears that the SMB bundles are available');
+}
+
+/* ── L-25 · unsourced claims are hedged; activation is "modeled" ───────── */
+{
+  const ins = E.defaults(); ins.governanceAsked = true;
+  ins.governance = Object.assign({}, QA_GOV_YES, { insuranceRenewal:'yes' });
+  ins.org = Object.assign(ins.org, { azureCspPlan:'yes', usageBillingEnabled:'yes' });
+  const pick = nextFor(ins).pick;
+  eq(pick.id, 'insurance', 'L-25: precondition, the insurance step fires');
+  ok(pick.why.join(' ').indexOf('often appear on renewal applications') >= 0, 'L-25: the attestation claim says "often"');
+  ok(pick.why.join(' ').indexOf('now appear') === -1, 'L-25: no flat "now appear"');
+  const reg = E.defaults(); reg.governanceAsked = true; reg.governance = Object.assign({}, QA_GOV_YES);
+  reg.org = Object.assign(reg.org, { vertical:'healthcare', azureCspPlan:'yes', usageBillingEnabled:'yes' });
+  const rp = nextFor(reg).pick;
+  eq(rp.id, 'regulated-vciso', 'L-25: precondition, the regulated vCISO step fires');
+  ok(rp.why.join(' ').indexOf('may carry a supervision obligation') >= 0, 'L-25: the supervision claim says "may"');
+  const talk = talkFor(E.defaults()).text;
+  ok(talk.indexOf('modeled activation of 65%') >= 0, 'L-25: the talk track calls the 65% a modeled activation');
+  ok(talk.indexOf("really use Cowork") === -1, 'L-25: no "people who\'d really use Cowork"');
+  ok(!/carries a supervision obligation/.test(src), 'L-25: no flat supervision claim left on the page');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
