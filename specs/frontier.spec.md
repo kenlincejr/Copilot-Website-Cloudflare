@@ -205,6 +205,24 @@ The `51%` block additionally asserts *"measured outcomes, not projections."* Tha
 
 ---
 
+## 2026-10-12 correction pass and sitewide sweep
+
+Microsoft Learn re-verification (`research/partner-program-journey/13-frontier-navigator-fact-audit.md` §4.10) corrected `frontier.html` in commit `02e1866`: the Action Pack stage became a free registered member (packages $350 / $925 / $4,125); Modern Work benefits became 200× E5, 20× Copilot and $4,000 Azure; Security became no extra fee, $10,000 Azure and 100× E5; the "second designation" rung was dropped; Frontier became the **Frontier Partner specialization** (live September 30, 2026; the badge retires at the end of June 2027); Modern Work skilling became intermediate 10 / advanced 15; and MS-102 became the advanced cert (retiring November 30, 2026). The earlier `$9,000` / `$4,500` figures were Microsoft's *specialization* benefit rows, not the designation rows. That supersedes the `F-047`, `F-048` and `F-095` rows in the out-of-scope table above.
+
+**Rule (DESIGN.md §8b.6): when this page fixes a stale or wrong fact, sweep the whole site for the same claim before shipping.** Pages that copy from this one are `index.html` (program cards), `cpb.html`, `cpb-earn-the-badge.html`, `cpb-field-guide.html`, `cpb-model-the-practice.html`, `copilot-specialization.html`, `customer-zero-starter-kit/build-sellable-services.{html,md}`, and the separate `frontier-navigator/` app.
+
+The 2026-10-12 sweep fixed the badge-to-specialization framing on all of those pages and refreshed the home page card. **Left on purpose:**
+- `frontier-navigator/` still has Action Pack, `$475` and "Second Designation" in `scoring.js`, `questions.json`, `benchmarks.json` and `continuum-stages.svg`. It is a separate system with its own audit (dossier 13, §4.1–4.8).
+- `data/facts.json` / `FACTS.md` still record the old `$9,000` / `$4,500` anchors, which `check-facts.py` now reports as MOVED (that is expected after an edit).
+
+**Still stale on `frontier.html`, not yet changed:**
+- AZ-500 is listed as a key Security cert; it retired August 31, 2026 and SC-500 replaces it.
+- The MS-4005 cert card is unverified.
+- Continuum stage 4 says "Published customer evidence. Top marketplace placement"; the Copilot specialization is audit-based and Marketplace is N/A.
+- The Partner Launch card claims "entry-level technical advisory", which Microsoft's benefits list does not include.
+
+---
+
 ## Verification
 
 ```bash
