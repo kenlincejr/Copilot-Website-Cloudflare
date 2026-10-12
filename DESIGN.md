@@ -489,7 +489,7 @@ Both files remain recoverable from git history.
 
 ---
 
-## 8b. Four rules that keep getting broken
+## 8b. Rules that keep getting broken
 
 All of these have been caught in review on more than one file. They are not
 preferences; treat them as prohibitions with the same weight as the colour and
@@ -677,6 +677,37 @@ and must print 100%.
 ```bash
 # tracked .html files with no matching <loc> in the sitemap
 comm -23 <(git ls-files '*.html' | sed 's#^#https://copilotplaybook.com/#' | sort) <(grep -o '<loc>[^<]*' sitemap.xml | sed 's/<loc>//' | sort)
+```
+
+### 8b.6 A stale fact fixed on one page is fixed on every page
+
+**Prohibition:** do not correct a stale or wrong fact on one page and ship
+without sweeping the rest of the site for the same claim.
+
+These pages are built from each other. `frontier.html` feeds the CPB pages, the
+home page cards, `copilot-specialization.html`, the Customer Zero starter kit
+and the Frontier Navigator, so an error in one is almost always copied into
+several. On 2026-10-12 the Frontier Partner corrections to `frontier.html`
+(Action Pack, designation benefits, the Frontier badge-to-specialization change)
+turned up the same stale "Frontier badge" framing on seven more pages.
+
+Whenever a page fixes a glaring error or stale data:
+
+1. **Grep every published file for the old claim** -- the old value, the old
+   name, and the old framing (for example `Action Pack`, `$9,000`,
+   `Frontier badge`, `second designation`). Include `.html`, `.md`, `.js`, `.json`
+   and `.svg`; skip `research/`, `specs/` and backups.
+2. **Read each hit in context.** A number that merely matches (a $4,500 service
+   price is not a $4,500 Azure credit) is a false positive; a reworded version
+   of the same claim is not.
+3. **Fix every true hit in the same commit**, or list the ones you are leaving
+   (with the reason) in the commit message and the page's spec.
+4. **Update the home page card** (`index.html`) if the page's description or
+   "Last updated" date changed.
+
+```bash
+# replace the patterns with the claims you just corrected
+git ls-files '*.html' '*.md' '*.js' '*.json' '*.svg' | grep -viE 'backup|^research/|^specs/'   | xargs grep -n -i -o -E 'action pack|frontier (partner )?badge|second designation'
 ```
 
 ---

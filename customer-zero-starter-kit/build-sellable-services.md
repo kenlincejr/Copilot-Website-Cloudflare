@@ -120,7 +120,7 @@ Do not build generic training first. Productize the role packs that proved value
 
 Do not quote remediation from vibes. Quote it from internal time-on-task, customer tenant size, number of red-zone sites, and whether sprawl exceeds the native ceiling.
 
-Microsoft commercial rails: package the practice through the CSP motion, Solutions Partner designations, Copilot specialization, Frontier Partner Badge recognition where applicable, and FastTrack where they fit the customer and partner model. Verify CSP accelerators, Copilot specialization requirements, Frontier Partner Badge criteria, and any three-year Copilot subscription packaging in Partner Center at delivery time; never quote a fixed figure or licensing term without re-checking it.
+Microsoft commercial rails: package the practice through the CSP motion, Solutions Partner designations, Copilot specialization, the Frontier Partner specialization where applicable, and FastTrack where they fit the customer and partner model. Verify CSP accelerators, Copilot specialization requirements, Frontier Partner specialization criteria, and any three-year Copilot subscription packaging in Partner Center at delivery time; never quote a fixed figure or licensing term without re-checking it.
 
 ## Ready-To-Sell Gate
 
