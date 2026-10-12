@@ -642,6 +642,25 @@ grep -noE '<td class="n">[^<]*[A-Za-z]{4,}[^<]*' <file>
 grep -c 'dtable cmp' <file>; grep -c 'cmp-key' <file>
 ```
 
+### 8b.5 A page that changes shape updates `sitemap.xml` in the same commit
+
+**Prohibition:** do not add, rename, or remove a public page without adding,
+updating, or removing its `<url>` entry in `sitemap.xml` in that same commit.
+
+Cloudflare AI Search crawls this site using **only** `sitemap.xml` -- it does
+not follow links. A page missing from the sitemap is invisible to site search
+no matter how many other pages link to it; a stale entry for a page that no
+longer exists is a dead crawl target. Whenever a page is added, renamed, or
+removed: add or remove its `<url>` block, and refresh `<lastmod>` if the entry
+already uses it (match the file's own last-commit date). Backups (`*backup*`,
+`*-original-backup*`), everything under `/ff/` (disallowed in `robots.txt`),
+and scratch/demo pages stay out of the sitemap even though they stay in the repo.
+
+```bash
+# tracked .html files with no matching <loc> in the sitemap
+comm -23 <(git ls-files '*.html' | sed 's#^#https://copilotplaybook.com/#' | sort) <(grep -o '<loc>[^<]*' sitemap.xml | sed 's/<loc>//' | sort)
+```
+
 ---
 
 ## 9. Design lint (Phase 6)

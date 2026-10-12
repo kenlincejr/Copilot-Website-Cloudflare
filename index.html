@@ -306,6 +306,106 @@ a:hover { text-decoration: underline; }
   text-transform: uppercase;
 }
 
+/* ── Site search: Cloudflare AI Search snippets ──────────────────────────
+   The components render in shadow DOM and read only --search-snippet-* and
+   --chat-bubble-* custom properties (list: github.com/cloudflare/ai-search-snippet,
+   packages/snippet/src/styles/theme.ts). Values set on the host element from
+   here override the component's own :host defaults. The page has no dark
+   mode, so the components are pinned to theme="light" to match it. */
+.site-search {
+  position: relative;
+  z-index: 2; /* keep the results dropdown above the hover-lifted cards below */
+  margin: 0 0 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #fff 0%, #f7fbfc 100%);
+  box-shadow: var(--shadow-sm);
+}
+.site-search-kicker {
+  margin: 0 0 7px;
+  color: var(--teal);
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.site-search h2 {
+  margin: 0 0 6px;
+  color: var(--navy);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+.site-search-note {
+  margin: 0 0 12px;
+  color: #475569;
+  font-size: .88rem;
+  line-height: 1.55;
+}
+search-bar-snippet,
+chat-bubble-snippet {
+  --search-snippet-primary-color: var(--teal);
+  --search-snippet-primary-hover: var(--teal-light);
+  --search-snippet-background: #fff;
+  --search-snippet-surface: var(--soft);
+  --search-snippet-hover-background: #f8fafc;
+  --search-snippet-text-color: var(--text);
+  --search-snippet-text-secondary: #6b7280;
+  --search-snippet-text-description: #374151;
+  --search-snippet-border-color: var(--line);
+  --search-snippet-focus-ring: rgba(72,202,228,.3);
+  --search-snippet-error-color: #dc2626;
+  --search-snippet-error-background: #fef2f2;
+  --search-snippet-success-color: #065f46;
+  --search-snippet-success-background: #dcfce7;
+  --search-snippet-warning-color: #92400e;
+  --search-snippet-warning-background: #fff8ed;
+  --search-snippet-user-message-bg: var(--teal);
+  --search-snippet-user-message-text: #fff;
+  --search-snippet-assistant-message-bg: var(--soft);
+  --search-snippet-assistant-message-text: var(--text);
+  --search-snippet-system-message-bg: #fff8ed;
+  --search-snippet-system-message-text: #5a3a18;
+  --search-snippet-font-family: "Segoe UI", Inter, Arial, sans-serif;
+  --search-snippet-font-family-mono: Consolas, Monaco, monospace;
+  --search-snippet-font-size-sm: .72rem;
+  --search-snippet-font-size-base: .9rem;
+  --search-snippet-font-size-lg: 1.05rem;
+  --search-snippet-font-size-xl: 1.25rem;
+  --search-snippet-border-radius: var(--radius);
+  --search-snippet-shadow-sm: var(--shadow-sm);
+  --search-snippet-shadow: var(--shadow-sm);
+  --search-snippet-shadow-md: var(--shadow-md);
+  --search-snippet-shadow-lg: var(--shadow-md);
+  --search-snippet-result-item-shadow: var(--shadow-sm);
+}
+search-bar-snippet {
+  position: relative; /* anchors the absolutely positioned results panel to the input */
+  --search-snippet-min-width: 0; /* default is 320px, which overflows a 375px phone */
+}
+/* Before the module defines the element, hold the input's height so the
+   section does not jump when it upgrades. No border: if the script never
+   loads, the onerror handler on it hides the whole section instead. */
+search-bar-snippet:not(:defined) {
+  display: block;
+  min-height: 44px;
+}
+chat-bubble-snippet {
+  --search-snippet-border-radius: var(--radius-lg);
+  --chat-bubble-button-shadow: var(--shadow-md);
+  --chat-bubble-window-shadow: var(--shadow-md);
+}
+@media (max-width: 640px) {
+  .site-search {
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+  chat-bubble-snippet {
+    --chat-bubble-button-bottom: 16px;
+    --chat-bubble-button-right: 16px;
+  }
+}
+
 .section-label {
   display: flex;
   align-items: center;
@@ -890,6 +990,13 @@ a:hover { text-decoration: underline; }
 </nav>
 
 <main>
+  <section class="site-search" id="site-search" aria-labelledby="site-search-heading">
+    <p class="site-search-kicker">Search The Playbook</p>
+    <h2 id="site-search-heading">Ask a question, get an answer from the playbook.</h2>
+    <p class="site-search-note">Answers are drawn from the pages on this site, and every one links back to the page it came from so you can open the full context.</p>
+    <search-bar-snippet api-url="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/" placeholder="Ask the playbook — e.g. How do Copilot Credits get billed?" max-results="8" theme="light" hide-branding></search-bar-snippet>
+  </section>
+
   <section class="field-frame" aria-labelledby="field-frame-heading">
     <div>
       <p class="field-frame-kicker">Field-Tested Partner Motion</p>
@@ -1394,6 +1501,11 @@ a:hover { text-decoration: underline; }
   </div>
   <p class="sig">TD SYNNEX - Copilot Practice Builder - Partner Enablement Series</p>
 </footer>
+
+<chat-bubble-snippet api-url="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/" theme="light" hide-branding></chat-bubble-snippet>
+<!-- Cloudflare AI Search snippets. If the module fails to load, hide the search
+     section rather than leave an inert box; the chat bubble simply never renders. -->
+<script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js" onerror="document.getElementById('site-search').hidden = true"></script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script>
 </body>
