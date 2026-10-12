@@ -5072,7 +5072,7 @@ body.embedded { padding-bottom:24px; }
         annualCredits: c.annualCredits, year1Credits: c.year1Credits,
         rampSeats: seats,
         rampCredits: seats.map(function (s) { return basis > 0 ? s * c.monthlyCredits / basis : 0; }),
-        basisSeats: basis, copilotLicensed: c.copilotLicensed, licenses: lic,
+        employees: c.employees, basisSeats: basis, copilotLicensed: c.copilotLicensed, licenses: lic,
         cspMotion: c.cspMotion, sellMode: !!c.sellMode, creditUsd: c.creditUsd
       }, location.origin);
     } catch (e) { /* the hub is optional; the calculator never fails on its account */ }

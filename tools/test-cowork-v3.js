@@ -2329,8 +2329,9 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   eq(sent[0].o, 'https://copilotplaybook.com', 'EMB: targetOrigin is pinned to the page origin, never *');
   eq(Object.keys(m).sort().join(','),
      ['__type','accountName','annualCredits','band','basisSeats','calibrated','copilotLicensed',
-       'creditUsd','cspMotion','licenses','monthlyCredits','rampCredits','rampSeats','screen','sellMode','version',
+       'creditUsd','cspMotion','employees','licenses','monthlyCredits','rampCredits','rampSeats','screen','sellMode','version',
        'year1Credits'].sort().join(','), 'EMB: payload key set is exact');
+  eq(m.employees, 120, 'EMB: payload carries the employee count (stock 120)');
   ['margin','pec','provider','cost','uplift','p3','commit','partner'].forEach(k =>
     ok(JSON.stringify(m).toLowerCase().indexOf(k) === -1, 'EMB: payload carries nothing named ' + k));
   eq(m.__type, 'cowork-lane', 'EMB: payload type');
