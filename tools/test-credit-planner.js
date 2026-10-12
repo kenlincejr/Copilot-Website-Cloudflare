@@ -1310,6 +1310,18 @@ sec('QA-E');
   eq(E.newAgent(se, 'bcPayables').studio.agents[0].env, '', 'QA-E L-31 a new Business Central card stays on the default environment');
   ok(/if \(a\.daysActive === 22\) a\.daysActive = 30;/.test(src), 'QA-E L-31 switching to autonomous moves 22 days to 30');
 }
+/* L-35: year1Credits is the exact sum of the ramp. A rounded figure within
+   1 credit (7,883,942 for 7,883,942.31) is replaced by the exact sum. */
+{
+  const ramp = Array(11).fill(656995).concat([656997.31]);
+  const exact = ramp.reduce((a, b) => a + b, 0);
+  let v = E.validateCoworkPayload(PAYLOAD({ rampCredits: ramp, year1Credits: 7883942 }));
+  ok(v.ok && v.payload.year1Credits === exact && Math.abs(exact - 7883942.31) < 1e-6, 'QA-E L-35 a rounded year one is accepted and replaced by the exact sum');
+  v = E.validateCoworkPayload(Object.assign(PAYLOAD({ rampCredits: ramp }), { year1Credits: undefined }));
+  eq(v.payload.year1Credits, exact, 'QA-E L-35 a missing year one is the ramp sum');
+  v = E.validateCoworkPayload(PAYLOAD({ rampCredits: ramp, year1Credits: 5000000 }));
+  eq(v.payload.year1Credits, 5000000, 'QA-E L-35 a figure further off is kept as sent');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

@@ -1636,7 +1636,7 @@ footer.pagefoot p { margin:0 0 10px; }
       accountName: cStr(own(p, 'accountName'), '', MAX.nameLen),
       monthlyCredits: monthly, band: band, calibrated: own(p, 'calibrated') === true,
       annualCredits: cNum(own(p, 'annualCredits'), monthly * HORIZON, 0, MAX.demand * HORIZON),
-      year1Credits: cNum(own(p, 'year1Credits'), monthly * HORIZON, 0, MAX.demand * HORIZON),
+      year1Credits: 0,
       rampSeats: arr12(own(p, 'rampSeats'), 0, MAX.seats),
       rampCredits: arr12(own(p, 'rampCredits'), monthly, MAX.demand),
       employees: cInt(own(p, 'employees'), 0, 0, MAX.users),
@@ -1647,6 +1647,11 @@ footer.pagefoot p { margin:0 0 10px; }
       sellMode: own(p, 'sellMode') === true,
       creditUsd: cNum(own(p, 'creditUsd'), RC.payg.v, 0, 1, 6)
     };
+    /* Year one is the exact sum of the ramp (QA L-35). A figure the Cowork
+       tab rounded is accepted within 1 credit and replaced by the exact sum;
+       a missing one is the sum; anything further off is kept as sent. */
+    var y1sum = sum(clean.rampCredits), y1 = toNum(own(p, 'year1Credits'));
+    clean.year1Credits = !isFinite(y1) || Math.abs(y1 - y1sum) <= 1 ? y1sum : cNum(y1, y1sum, 0, MAX.demand * HORIZON);
     return { ok: true, reason: '', payload: clean };
   }
   function coworkFromPayload(payload, include) {
