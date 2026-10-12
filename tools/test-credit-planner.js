@@ -386,11 +386,15 @@ sec('C');
   eq(JSON.stringify(r3s.purchase), JSON.stringify(r1.purchase), 'C sell-side inputs leave the purchase alone');
   function noDollars(v) {
     if (Array.isArray(v)) return v.filter((x) => !(x && x.label === 'Customer price')).map(noDollars);
-    // A per-agent seat-or-meter break-even and verdict are judged at the customer's prices (QA C-03), so they are price fields too.
-    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$|^breakEven$|^verdict$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
+    // A per-agent seat-or-meter break-even and verdict are judged at the customer's prices (QA C-03), and the customer's
+    // plan is chosen at the customer's prices (QA C-05), so the plan's approach, its enforcement timeline and the
+    // warnings drawn from them are price fields too. Credits still never move.
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$|^breakEven$|^verdict$|^approach$|^enforcement$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
     return v;
   }
+  const PRICE_W = ['P-50', 'P-51', 'P-52', 'P-59', 'P-75'];
   const cv1 = E.customerView(r1), cv3s = E.customerView(r3s);
+  [cv1, cv3s].forEach((c) => { c.warnings = c.warnings.filter((w) => PRICE_W.indexOf(w.id) < 0); });
   eq(JSON.stringify(noDollars(cv3s)), JSON.stringify(noDollars(cv1)), 'C sell-side inputs change only dollar fields in the customer view');
   ok(cv3s.pool.steadyUsd.hi !== cv1.pool.steadyUsd.hi && JSON.stringify(cv3s.pool.steadyCredits) === JSON.stringify(cv1.pool.steadyCredits), 'C sell rate moves dollars, never credits');
   // Licensed users never raise billed credits (total mode: shift; perUser: move a user across)
@@ -981,6 +985,37 @@ sec('QA-E');
     if (w.x.verdict === c.verdict && (c.savingUsdMonthly > 0) === (w.x.verdict === 'license') && c.savingUsdMonthly === w.x.savingUsdMonthly && !!w.p75 === (w.x.verdict === 'license') && w.nba === (w.x.verdict === 'license')) agree++;
   }
   eq(agree, 300, 'QA-E C-03 verdict, P-75, NBA-06 and the customer-view saving agree in sign over 300 random states');
+}
+/* C-05: with a sell pack or credit price, the customer's "cheapest way to buy
+   it" is chosen at the customer's prices, so it never costs more than
+   pay-as-you-go at those prices. SMB trio, 60 users, 20 Business seats, pack
+   sold at $300: 12 × $300 + 187,200 × $0.01 would be $5,472 against $4,872;
+   the customer run picks pay-as-you-go instead. The list run is kept for the
+   partner's cost view. */
+{
+  const trioS = () => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.account.totalUsers = 60; s.studio.account.seats.business = 20; return s; };
+  const s = trioS(); s.partner.sellPackUsd = 300;
+  const r = E.compute(s), cv = E.customerView(r);
+  ok(cv.buy.yearUsd <= cv.buy.paygYearUsd + 1e-6, 'QA-E C-05 sell pack $300: buy ' + cv.buy.yearUsd + ' ≤ pay-as-you-go ' + cv.buy.paygYearUsd);
+  eq(r.purchase.best.packs.flat, 1, 'QA-E C-05 the list run (partner cost view) still recommends one pack');
+  const pc = r.purchaseCustomer || { prices: {}, best: { packs: {} } };
+  eq(pc.prices.packUsd, 300, 'QA-E C-05 the customer run is priced at the sell pack price');
+  eq(pc.best.packs.packMonths, 0, 'QA-E C-05 at $300 a pack the customer plan holds no packs (Tier 1 + pay-as-you-go is cheaper)');
+  eq(JSON.stringify(E.compute(trioS()).purchaseCustomer), JSON.stringify(E.compute(trioS()).purchase), 'QA-E C-05 at list the two runs are one');
+  // Invariant over random sell prices and random portfolios
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const keys = E.SCENARIO_ORDER;
+  let held = 0, n = 0, worst = '';
+  for (let i = 0; i < 160; i++) {
+    const st = E.applyScenarioPreset(E.defaults(), keys[i % keys.length]);
+    st.studio.agents.forEach((a) => { if (a.traffic) a.traffic.count = Math.round(a.traffic.count * (0.2 + rnd() * 3) * 100) / 100; });
+    if (rnd() < 0.7) st.partner.sellPackUsd = Math.round((150 + rnd() * 250) * 100) / 100;
+    if (rnd() < 0.7) st.partner.sellCreditUsd = Math.round((0.006 + rnd() * 0.01) * 1e5) / 1e5;
+    if (rnd() < 0.3) st.combined.purchase.appetite = ['balanced', 'aggressive'][i % 2];
+    const c = E.customerView(E.compute(st)); n++;
+    if (c.buy.yearUsd <= c.buy.paygYearUsd + 1e-6) held++; else worst = c.buy.yearUsd + ' > ' + c.buy.paygYearUsd;
+  }
+  eq(held, n, 'QA-E C-05 buy.yearUsd ≤ buy.paygYearUsd over ' + n + ' random sell prices ' + worst);
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

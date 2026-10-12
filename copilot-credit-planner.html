@@ -2149,8 +2149,20 @@ footer.pagefoot p { margin:0 0 10px; }
   function stepUp(arr) { var mx = 0; return arr.map(function (k) { mx = Math.max(mx, k); return mx; }); }
   function schedKey(sched) { return sched.join(','); }
   function isFlat(sched) { return sched.every(function (k) { return k === sched[0]; }); }
-  function simulate(sched, plan, D) {
-    var PC = RC.pack.v.credits, PU = RC.pack.v.usd, C = plan.credits, out = {};
+  /* Prices the optimizer runs at: Microsoft list by default, or the
+     customer's (partner sell) pack and credit prices for every
+     customer-facing figure. Pre-purchase plans are always Microsoft's price. */
+  function optPrices(p) {
+    var pk = isObj(p) ? toNum(own(p, 'packUsd')) : NaN, cr = isObj(p) ? toNum(own(p, 'creditUsd')) : NaN;
+    var packUsd = isFinite(pk) && pk > 0 ? Math.min(pk, MAX.usd) : RC.pack.v.usd;
+    var creditUsd = isFinite(cr) && cr > 0 ? Math.min(cr, 1) : RC.payg.v;
+    return { packUsd: packUsd, creditUsd: creditUsd, list: packUsd === RC.pack.v.usd && creditUsd === RC.payg.v,
+             paygUsd: function (c) { return creditUsd === RC.payg.v ? usdOf(c) : c * creditUsd; },
+             packPerCredit: packUsd === RC.pack.v.usd ? packUsdPerCredit() : packUsd / RC.pack.v.credits };
+  }
+  function simulate(sched, plan, D, prices) {
+    var PR = isObj(prices) && typeof prices.paygUsd === 'function' ? prices : optPrices(null);
+    var PC = RC.pack.v.credits, PU = PR.packUsd, C = plan.credits, out = {};
     SCEN.forEach(function (s) {
       var bal = C, rows = [], packUsd = 0, unused = 0, payg = 0, consumed = 0, fromP3 = 0, exhaust = null;
       for (var m = 0; m < HORIZON; m++) {
@@ -2161,9 +2173,9 @@ footer.pagefoot p { margin:0 0 10px; }
         packUsd += k * PU; unused += cap - fp; payg += pg; consumed += d; fromP3 += f3;
         rows.push({ m: m, demand: d, packs: k, fromPacks: fp, packUnused: cap - fp, fromP3: f3, p3Balance: bal, fromPayg: pg });
       }
-      var paygUsd = usdOf(payg), total = packUsd + plan.usd + paygUsd;
+      var paygUsd = PR.paygUsd(payg), total = packUsd + plan.usd + paygUsd;
       out[s] = { usd: total, packUsd: packUsd, p3Usd: plan.usd, paygUsd: paygUsd, paygCredits: payg, fromP3: fromP3,
-                 strandedCredits: unused + bal, strandedUsd: unused * packUsdPerCredit() + (C > 0 ? bal * plan.usd / C : 0),
+                 strandedCredits: unused + bal, strandedUsd: unused * PR.packPerCredit + (C > 0 ? bal * plan.usd / C : 0),
                  consumed: consumed, exhaustMonth: exhaust, months: rows };
     });
     return out;
@@ -2186,7 +2198,8 @@ footer.pagefoot p { margin:0 0 10px; }
     var capPct = APPETITE[appetite];
     var allowPacks = own(o, 'allowPacks') !== false, allowP3 = own(o, 'allowP3') !== false;
     var holdings = normalizeHoldings(own(o, 'current'));
-    var PC = RC.pack.v.credits, PU = RC.pack.v.usd, UC = p3UnitCredits();
+    var PR = optPrices(own(o, 'prices'));
+    var PC = RC.pack.v.credits, PU = PR.packUsd, UC = p3UnitCredits();
     var maxD = Math.max.apply(null, D.lo.concat(D.mid, D.hi));
     var minCost = { lo: Infinity, mid: Infinity, hi: Infinity };
     var best = null, fam = {}, top = [], blocked = null, evaluated = 0;
@@ -2213,8 +2226,8 @@ footer.pagefoot p { margin:0 0 10px; }
       var C = plan.credits, cost = {}, strand = {}, exp = 0;
       SCEN.forEach(function (s) {
         var r = st.resid[s], pg = Math.max(0, r - C);
-        cost[s] = st.packUsd + plan.usd + usdOf(pg);
-        strand[s] = st.unused[s] * packUsdPerCredit() + (C > 0 ? Math.max(0, C - r) * plan.usd / C : 0);
+        cost[s] = st.packUsd + plan.usd + PR.paygUsd(pg);
+        strand[s] = st.unused[s] * PR.packPerCredit + (C > 0 ? Math.max(0, C - r) * plan.usd / C : 0);
         exp += SCEN_W[s] * cost[s];
         if (cost[s] < minCost[s]) minCost[s] = cost[s];
       });
@@ -2281,7 +2294,7 @@ footer.pagefoot p { margin:0 0 10px; }
     if (!best) best = paygRec;
     function build(rec) {
       if (!rec) return null;
-      var sim = simulate(rec.sched, rec.plan, D);
+      var sim = simulate(rec.sched, rec.plan, D, PR);
       var expUsd = 0, expPayg = 0, expStrand = 0, expStrandC = 0, expCons = 0, regret = {};
       SCEN.forEach(function (s) {
         var w = SCEN_W[s] / 100;
@@ -2312,6 +2325,7 @@ footer.pagefoot p { margin:0 0 10px; }
     var bestOpt = build(best);
     return {
       appetite: appetite, strandCapPct: capPct, weights: { lo: SCEN_W.lo, mid: SCEN_W.mid, hi: SCEN_W.hi },
+      prices: { packUsd: PR.packUsd, creditUsd: PR.creditUsd, basis: PR.list ? 'list' : 'customer' },
       demand: D, best: bestOpt, payg: families.payg, families: families, top: top.map(build), current: build(curRec),
       blocked: blocked && blocked.exp < best.exp - 1e-6 ? build(blocked) : null,
       overbuy: overbuy, evaluated: evaluated, savingsVsPayg: families.payg.expected.usd - bestOpt.expected.usd
@@ -2712,10 +2726,18 @@ footer.pagefoot p { margin:0 0 10px; }
     var pl = poolFrom(s, cw, agents);
     var demand = { lo: pl.months.map(function (r) { return r.total.lo; }), mid: pl.months.map(function (r) { return r.total.mid; }), hi: pl.months.map(function (r) { return r.total.hi; }) };
     var P = s.combined.purchase;
-    var pu = optimize(demand, { appetite: P.appetite, allowPacks: P.allowPacks, allowP3: P.allowP3, current: P.current });
-    var en = enforcementFrom(s, cw, agents, pl, pu);
-    var gv = governanceFrom(s, cw, agents, pl, en);
     var rate = customerRateFrom(s);
+    /* Two runs of the optimizer: at Microsoft list for the partner's cost
+       view (purchase), and at the customer's pack and credit prices for every
+       customer-facing figure (purchaseCustomer: the customer view's buy line,
+       the plain-words buy text, the print and the enforcement basis). At list
+       they are the same run. */
+    var popt = { appetite: P.appetite, allowPacks: P.allowPacks, allowP3: P.allowP3, current: P.current };
+    var pu = optimize(demand, popt);
+    var custPrices = { packUsd: rate.packUsd, creditUsd: rate.usdPerCredit };
+    var puC = optPrices(custPrices).list ? pu : optimize(demand, Object.assign({ prices: custPrices }, popt));
+    var en = enforcementFrom(s, cw, agents, pl, puC);
+    var gv = governanceFrom(s, cw, agents, pl, en);
     var cx = crossoverFrom(s, agents, rate);
     var configured = agents.some(function (a) { return !a.paused && a.hi > 0; });
     var dv = dataverseFrom(s, agents, configured);
@@ -2856,7 +2878,7 @@ footer.pagefoot p { margin:0 0 10px; }
     };
     return {
       version: VERSION, rateCardVersion: RATECARD_VERSION, schemaVersion: SCHEMA_VERSION, months: iso,
-      lanes: lanes, pool: pl, purchase: pu, enforcement: en, governance: gv, crossover: cx, dataverse: dv, adjacent: adj, customerRate: rate,
+      lanes: lanes, pool: pl, purchase: pu, purchaseCustomer: puC, enforcement: en, governance: gv, crossover: cx, dataverse: dv, adjacent: adj, customerRate: rate,
       value: val, specialization: sp, partner: pe, autopilot: ap, trace: trace, warnings: w2, assumptions: assume, state: s
     };
   }
@@ -3033,8 +3055,11 @@ footer.pagefoot p { margin:0 0 10px; }
       var CR = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : customerRateFrom(normalize(r.state));
       var rc = num(CR.usdPerCredit);
       function usdBand(o) { var b = band(o); return { lo: b.lo * rc, mid: b.mid * rc, hi: b.hi * rc }; }
-      var best = r.purchase.best, buyYear = num(best.packs.packMonths) * num(CR.packUsd) + num(best.p3.usd) + num(best.scen.mid.paygCredits) * rc;
-      var bf = r.purchase && r.purchase.best ? r.purchase.best.family : 'payg';
+      /* The buy line comes from the optimizer run at the customer's prices, so
+         the cheapest way to buy it can never cost more than pay-as-you-go. */
+      var PCU = isObj(r.purchaseCustomer) && isObj(r.purchaseCustomer.best) ? r.purchaseCustomer : r.purchase;
+      var best = PCU.best, buyYear = num(best.scen.mid.usd);
+      var bf = best.family || 'payg';
       var approach = { payg: 'Pay as you go', packs: 'Monthly prepaid capacity sized to steady use, overflow at pay-as-you-go',
                        p3: 'An annual pre-purchase commitment, overflow at pay-as-you-go',
                        mix: 'Monthly prepaid capacity plus an annual pre-purchase commitment, overflow at pay-as-you-go' }[bf] || 'Pay as you go';
@@ -5017,6 +5042,8 @@ footer.pagefoot p { margin:0 0 10px; }
     if (best.p3.units > 0) notes.push('<div class="callout warn"><div class="callout-title">A pre-purchase plan is final</div><div class="callout-body">It is a one-year commitment that cannot be canceled, renews automatically unless turned off, and its unused credits expire at the end of the term. ' + rcRef('cccu') + '</div></div>');
     if (best.packs.packMonths > 0) notes.push('<p class="srcline">Capacity packs reset every month with no rollover and are billed annually. ' + rcRef('pack') + ' Billing order: ' + rcRef('billingOrder') + '</p>');
     if (pu.overbuy) notes.push('<p class="srcline">A larger pre-purchase plan (' + fi(pu.overbuy.coverUnits * 3000) + ' commit units for ' + fu(pu.overbuy.coverUsd) + ') costs less than the exact need (' + fu(pu.overbuy.exactUsd) + '); it strands credits but saves money.</p>');
+    var puC = R.purchaseCustomer;
+    if (puC && puC.best && puC.best.key !== best.key) notes.push('<p class="srcline">At the customer&rsquo;s prices (' + fu(puC.prices.packUsd) + ' a pack, ' + E.fmtRate(puC.prices.creditUsd) + ' a credit) the cheapest plan is <b>' + esc(puC.best.label) + '</b>, about ' + fu(puC.best.expected.usd) + ' expected over the year. That is the plan the customer view and the report show; this table prices every option at Microsoft list.</p>');
     if (pu.blocked) notes.push('<p class="srcline">A cheaper option (' + esc(pu.blocked.label) + ', ' + fu(pu.blocked.expected.usd) + ') strands more than the ' + esc(pu.appetite) + ' appetite allows in the low scenario.</p>');
     if (state.combined.purchase.showAgentP3) notes.push('<p class="srcline">Microsoft Agent pre-purchase plans (' + E.RC.agentP3Tiers.v.map(function (t) { return fi(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') + ') are disclosed only, never chosen: Microsoft&rsquo;s pages disagree on where they sit in the drawdown order. ' + rcRef('agentP3Tiers') + '</p>');
     notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Appetite caps stranded spend in the low scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
