@@ -3391,15 +3391,21 @@ body.embedded .hub-link { display:none !important; }
     var r0 = r.ctx;
     var ckUsd = ck ? (ck.light * TC.light + ck.medium * TC.medium + ck.heavy * TC.heavy) *
       r0.effortMult * r0.modelMult * E.CONST.CREDIT_USD : 0;
-    return '<div class="whybox partner-only"><div class="wb-h">Two Microsoft estimators, two answers ' + provPill('ms-modeled') + '</div>' +
+    // QA L-15: each figure carries its own tag: the retired workbook's range
+    // is modeled, the web estimator's band is Microsoft-published (F-158).
+    return '<div class="whybox partner-only"><div class="wb-h">Two Microsoft estimators, two answers</div>' +
       '<p>The persona defaults here come from Microsoft\u2019s original Customer Cowork Estimator, an Excel workbook built on ' +
       'Frontier data from May 27, 2026. It priced Cowork by the task and put a user at $' + E.CONST.PER_USER_RANGE.lo + '&ndash;$' +
-      E.CONST.PER_USER_RANGE.hi + ' a month. On this page\u2019s current settings one ' + esc(ck ? ck.name : 'Corporate Knowledge Worker') +
+      E.CONST.PER_USER_RANGE.hi + ' a month ' + provPill('ms-modeled') + '. On this page\u2019s current settings one ' + esc(ck ? ck.name : 'Corporate Knowledge Worker') +
       ' comes out at <b>' + usd(ckUsd, 2) + '</b> a month at Microsoft\u2019s $0.01.</p>' +
       '<p>Microsoft has since replaced it with a <a class="docref" href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">web Copilot Credit Estimator</a> ' +
       'that prices a working day instead: credits per user per day across ' + W.days + ' working days, a ' + W.split +
-      ' light/medium/heavy split, and ' + W.model + ' as the model. It puts a corporate knowledge worker at <b>$' + W.ckwLo +
-      '&ndash;$' + W.ckwHi + '</b> a month.</p>' +
+      ' light/medium/heavy split, and ' + W.model + ' as the model. It puts a corporate knowledge worker at <b data-fact="F-158">$' + W.ckwLo +
+      '&ndash;$' + W.ckwHi + '</b> a month ' + provPill('ms-verified') +
+      (ckUsd > 0 && W.ckwLo > 0
+        ? ', so this page\u2019s ' + usd(ckUsd, 2) + ' is <b>' + (ckUsd / W.ckwHi).toFixed(2) + '&times; to ' +
+          (ckUsd / W.ckwLo).toFixed(2) + '&times;</b> Microsoft\u2019s current band'
+        : '') + '.</p>' +
       '<p>Neither is a measurement. If the customer has seen Microsoft\u2019s lower figure, raise the gap before they do: it is two ' +
       'models of the same work, and thirty days of /cost readings from a pilot settle it for this account &mdash; that is what the ' +
       'calibration below is for.</p></div>';

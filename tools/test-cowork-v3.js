@@ -2768,5 +2768,17 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(sc && Math.abs(sc.usd - 1430) < 0.005, 'L-14: $1,430 a month, matching the web estimator (got ' + (sc && sc.usd) + ')');
 }
 
+/* ── L-15 · the reconcile box tags the web band Microsoft and gives the ratio ── */
+{
+  const st0 = E.defaults();
+  const fn = makeUiFn('reconcileBox', '\n  /* ═══ STEP 5', { E, usd, num, esc: escUi, state: st0, provPill: p => '[' + p + ']' });
+  const html = fn(E.compute(st0));
+  const at = html.indexOf('$51');
+  ok(at > 0 && /\[ms-verified\]/.test(html.slice(at, at + 260)), 'L-15: the $51-$91 band carries the Microsoft tag');
+  ok(/data-fact="F-158"/.test(html), 'L-15: the band carries its fact id F-158');
+  ok(html.indexOf('[ms-modeled]</div>') === -1, 'L-15: the box header is no longer tagged Modeled as a whole');
+  ok(html.indexOf('1.57&times; to 2.79&times;') >= 0, 'L-15: $142.50 is 1.57x to 2.79x the web band');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
