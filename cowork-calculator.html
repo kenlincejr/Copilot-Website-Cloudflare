@@ -1807,7 +1807,12 @@ body.embedded .hub-link { display:none !important; }
 
     /* Ratios — two, because there are two questions */
     var ratioActual = copilotSpend > 0 ? monthlyCowork / copilotSpend : 0;
-    var ratioBench  = anchorSpend  > 0 ? monthlyCowork / anchorSpend  : 0;
+    /* QA H-05: the benchmark ratio is a usage diagnosis, so it is read at
+       Microsoft's $0.01 whatever the partner bills. At a $0.012 sell rate it
+       read 3.775 instead of 3.146, crossed the 3.5 trigger and flipped the
+       next step and the talk track with usage unchanged. */
+    var coworkAtMs = monthlyCredits * CONST.CREDIT_USD;
+    var ratioBench  = anchorSpend  > 0 ? coworkAtMs / anchorSpend  : 0;
     /* Both ratio rows compute their tag from their inputs (finding #9).
        R1 divides the modeled meter by what this customer actually pays —
        partner-entered seats at verified prices. R2 exists to be read against
@@ -1817,9 +1822,9 @@ body.embedded .hub-link { display:none !important; }
     T('R1','ratio','Ratio vs actual Copilot spend','Cowork ÷ Copilot component of the licenses',
       '$' + monthlyCowork.toFixed(0) + ' ÷ $' + copilotSpend.toFixed(0), ratioActual,'x',
       weakest([f11Prov, 'partner', 'ms-verified']));
-    T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork ÷ (licensed × $30)',
-      '$' + monthlyCowork.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x',
-      weakest([f11Prov, 'ms-verified', 'editorial']),
+    T('R2','ratio','Ratio vs the 2.6× benchmark basis','Cowork at $0.01 ÷ (licensed × $30)',
+      '$' + coworkAtMs.toFixed(0) + ' ÷ $' + anchorSpend.toFixed(0), ratioBench,'x',
+      weakest([f10Prov, 'ms-verified', 'editorial']),
       'This ratio is built to be read against the 2.6× benchmark, and that benchmark is TD SYNNEX ' +
       'editorial observation across partner accounts — not a Microsoft-published figure. The $30 anchor ' +
       'under it is Microsoft’s list price for the enterprise add-on; the 2.6× itself is not Microsoft’s.');
@@ -2687,10 +2692,11 @@ body.embedded .hub-link { display:none !important; }
         opener:'"You need someone accountable for this, and you cannot justify a full-time hire. That is the role I am offering to fill \u2014 with the assessment and the policy as the first ninety days of it."',
         then:'Land with Rung 1 and Rung 2 first. The retainer is the destination, not the opener.' },
 
-      { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActive > 200,
+      // At Microsoft's $0.01 (QA H-05): a markup is not heavier usage.
+      { id:'concentration', when: ctx.ratioBench > 3.5 || ctx.perActiveMs > 200,
         eyebrow:'Recommended next step', rung:3, name:byKey.govern.name,
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
-        why:['At $' + ctx.perActive.toFixed(0) + ' per active user per month this account runs hot against the 2.6\u00d7 benchmark.',
+        why:['At $' + ctx.perActiveMs.toFixed(0) + ' per active user per month at Microsoft\u2019s $0.01 a credit, this account runs hot against the 2.6\u00d7 benchmark.',
              /* Consumption framing, not value framing (finding #23): the tool
                 has no view on what the usage is worth, only on what it costs. */
              'Concentrated usage is the group whose usage is driving the number \u2014 understand it before you cap it.'],
@@ -4105,11 +4111,13 @@ body.embedded .hub-link { display:none !important; }
         : 'Your modeled activation falls outside the range the 2.6&times; benchmark was built on, so a direct comparison isn\u2019t meaningful here.';
     return '<div class="whybox"><div class="wb-h">The 2.6&times; benchmark, honestly ' + provPill('editorial') + '</div>' +
       '<p>This ratio only means something once you say which Copilot price it\u2019s measured against &mdash; by itself, &ldquo;2.6&times;&rdquo; isn\u2019t a Microsoft figure, it\u2019s a TD SYNNEX field observation priced against the $30 enterprise add-on. ' +
-      'Your persona mix models <b>' + usd(c.perActive, 2) + ' per active user per month</b>. Priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
+      // Credits, not dollars: in sell mode a $0.01 dollar figure here would put
+      // Microsoft's cost of the meter on a customer-visible card.
+      'Your persona mix models <b>' + num(Math.round(c.perActiveMs / E.CONST.CREDIT_USD)) + ' credits per active user per month</b>. Read at Microsoft\u2019s $0.01 list and priced against that $30 license, this account runs <b>' + c.ratioBench.toFixed(2) + '&times;</b>. ' +
       closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
       // Same basis as ratioBench (per licensed user), only the divisor changes.
-      (c.copilotLicensed > 0 ? c.monthlyCowork / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
+      (c.copilotLicensed > 0 ? c.coworkAtMsRate / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
       '</div>';
   }
 

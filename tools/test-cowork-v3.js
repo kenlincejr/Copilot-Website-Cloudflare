@@ -588,7 +588,8 @@ function assertCopyClean(r, m) {
   ok(!/personaPreset: 'even'/.test(src), 'defaults() no longer claims the even preset');
   ok(!/You have edited the split by hand, so no preset applies/.test(src),
      'the false custom-mix copy is gone');
-  ok(/c\.monthlyCowork \/ \(c\.copilotLicensed \* E\.SKU_BY_ID\['cop_biz'\]\.usd\)/.test(src),
+  // QA H-05: the same-basis ratios now read the meter at $0.01 (coworkAtMsRate).
+  ok(/c\.coworkAtMsRate \/ \(c\.copilotLicensed \* E\.SKU_BY_ID\['cop_biz'\]\.usd\)/.test(src),
      'ratio explainer divides by the cop_biz catalog price, per licensed user (A0b)');
   ok(/usd\(E\.SKU_BY_ID\['cop_ent'\]\.usd\)/.test(src),
      'ratio explainer names the cop_ent catalog price');
@@ -1563,7 +1564,7 @@ function nextText(pick) {
   // A0b: the two "same usage" ratios share one basis, so biz × 18 equals ent × 30.
   {
     const c0 = E.compute(E.defaults()).ctx;
-    const biz = c0.monthlyCowork / (c0.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd);
+    const biz = c0.coworkAtMsRate / (c0.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd);
     ok(Math.abs(biz * E.SKU_BY_ID['cop_biz'].usd - c0.ratioBench * E.SKU_BY_ID['cop_ent'].usd) < 1e-9,
        'Business-promo ratio and benchmark ratio share the per-licensed-user basis');
     ok(clean.indexOf(biz.toFixed(2) + '&times;</b> against the') >= 0, 'the clean block prints the same-basis Business ratio');
@@ -2515,6 +2516,34 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   const lim = hit ? +hit[1].replace(/,/g, '') : 0;
   const eff = E.defaults().personas.map(p => (p.light * 125 + p.medium * 500 + p.heavy * 1200));
   ok(eff.every(c => c * 1.3 <= lim), 'H-04: every persona x 1.3 sits under ' + lim);
+}
+
+/* ── H-05 · the sell rate never changes the usage diagnosis ────────────── */
+{
+  // Governance confirmed and billing ready, so the rule list reaches the
+  // concentration rule instead of stopping at discovery.
+  const ready = () => {
+    const s = E.defaults();
+    s.governanceAsked = true; s.governance = Object.assign({}, QA_GOV_YES);
+    s.org = Object.assign(s.org, { azureCspPlan:'yes', usageBillingEnabled:'yes' });
+    return s;
+  };
+  const list = E.compute(ready());
+  const sell = ready();
+  sell.pricing = Object.assign(sell.pricing, { mode:'sell', creditSellUsd:0.012 });
+  const rs = E.compute(sell);
+  ok(Math.abs(rs.ctx.ratioBench - list.ctx.ratioBench) < 1e-9,
+     'H-05: ratioBench at a $0.012 sell rate equals the list ratio (' + rs.ctx.ratioBench.toFixed(3) + ' vs ' + list.ctx.ratioBench.toFixed(3) + ')');
+  ok(rs.ctx.ratioBench < 3.5, 'H-05: the 3.5 trigger is judged at $0.01 (3.146), not the sell rate (3.775)');
+  eq(rs.next.pick.id, list.next.pick.id, 'H-05: the next step does not flip to concentration on a markup');
+  ok(rs.next.pick.id !== 'concentration', 'H-05: no concentration step at stock usage');
+  ok(Math.abs(rs.ctx.monthlyCowork - 755000 * 0.012) < 1e-6, 'H-05: the customer meter is still priced at the sell rate');
+  // Even a markup large enough to cross $200 a user does not fire it.
+  const big = ready();
+  big.pricing = Object.assign(big.pricing, { mode:'sell', creditSellUsd:0.02 });
+  ok(E.compute(big).next.pick.id !== 'concentration', 'H-05: a $0.02 sell rate does not make usage "run hot"');
+  ok(/if \(c\.ratioBench > 3\.5\)/.test(src), 'H-05: the talk line reads the list-basis ratio');
+  ok(!/usd\(c\.perActiveMs/.test(src), 'H-05: the customer-visible ratio block never prints a $0.01 dollar figure');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
