@@ -656,6 +656,15 @@ already uses it (match the file's own last-commit date). Backups (`*backup*`,
 `*-original-backup*`), everything under `/ff/` (disallowed in `robots.txt`),
 and scratch/demo pages stay out of the sitemap even though they stay in the repo.
 
+Every page in the sitemap also carries two things site search depends on:
+
+- `<meta name="title">`, `og:title`, `<meta name="description">` and
+  `og:description` in `<head>`. AI Search reads result titles and summaries
+  only from these tags; without them a result shows no title.
+- `<script src="/assets/site-search-jump.js" defer></script>` before
+  `</body>`. Search results link to `page.html?hl=<phrase>`, and this script
+  scrolls to and highlights the matching passage.
+
 ```bash
 # tracked .html files with no matching <loc> in the sitemap
 comm -23 <(git ls-files '*.html' | sed 's#^#https://copilotplaybook.com/#' | sort) <(grep -o '<loc>[^<]*' sitemap.xml | sed 's/<loc>//' | sort)

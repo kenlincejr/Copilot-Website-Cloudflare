@@ -342,7 +342,6 @@ a:hover { text-decoration: underline; }
   font-size: .88rem;
   line-height: 1.55;
 }
-search-bar-snippet,
 chat-bubble-snippet {
   --search-snippet-primary-color: var(--teal);
   --search-snippet-primary-hover: var(--teal-light);
@@ -379,16 +378,105 @@ chat-bubble-snippet {
   --search-snippet-shadow-lg: var(--shadow-md);
   --search-snippet-result-item-shadow: var(--shadow-sm);
 }
-search-bar-snippet {
-  position: relative; /* anchors the absolutely positioned results panel to the input */
-  --search-snippet-min-width: 0; /* default is 320px, which overflows a 375px phone */
+.site-search-form {
+  display: flex;
+  gap: 8px;
 }
-/* Before the module defines the element, hold the input's height so the
-   section does not jump when it upgrades. No border: if the script never
-   loads, the onerror handler on it hides the whole section instead. */
-search-bar-snippet:not(:defined) {
+.site-search-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-size: .9rem;
+}
+.site-search-form input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(72,202,228,.3);
+}
+.site-search-form button {
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--teal);
+  color: #fff;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.site-search-form button:hover { background: var(--teal-light); }
+.site-search-status {
+  margin: 10px 0 0;
+  color: #6b7280;
+  font-size: .78rem;
+}
+.site-search-status:empty { display: none; }
+.site-search-results {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.site-search-results li + li { margin-top: 8px; }
+.site-search-results a {
   display: block;
-  min-height: 44px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.site-search-results a:hover,
+.site-search-results a:focus-visible {
+  border-color: var(--teal);
+  box-shadow: var(--shadow-sm);
+}
+.site-search-results .r-title {
+  display: block;
+  color: var(--navy);
+  font-size: .95rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.site-search-results .r-url {
+  display: block;
+  margin-top: 2px;
+  color: var(--teal);
+  font-size: .72rem;
+  overflow-wrap: anywhere;
+}
+.site-search-results .r-text {
+  display: block;
+  margin-top: 6px;
+  color: #374151;
+  font-size: .85rem;
+  line-height: 1.5;
+}
+.site-search-chat {
+  margin: 12px 0 0;
+  color: #475569;
+  font-size: .82rem;
+}
+.site-search-chat button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--teal);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.site-search-results mark {
+  padding: 0 1px;
+  background: rgba(72,202,228,.25);
+  color: inherit;
 }
 chat-bubble-snippet {
   --search-snippet-border-radius: var(--radius-lg);
@@ -993,8 +1081,14 @@ chat-bubble-snippet {
   <section class="site-search" id="site-search" aria-labelledby="site-search-heading">
     <p class="site-search-kicker">Search The Playbook</p>
     <h2 id="site-search-heading">Ask a question, get an answer from the playbook.</h2>
-    <p class="site-search-note">Answers are drawn from the pages on this site, and every one links back to the page it came from so you can open the full context.</p>
-    <search-bar-snippet api-url="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/" placeholder="Ask the playbook — e.g. How do Copilot Credits get billed?" max-results="8" theme="light" hide-branding></search-bar-snippet>
+    <p class="site-search-note">Results come from the pages on this site. Each one shows the page and the passage that matched, so you can pick the one to open.</p>
+    <form class="site-search-form" id="site-search-form" role="search">
+      <input type="search" id="site-search-q" name="q" placeholder="Search the playbook, e.g. Copilot Credits billing" aria-label="Search the playbook" autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+    <p class="site-search-status" id="site-search-status" role="status" aria-live="polite"></p>
+    <ol class="site-search-results" id="site-search-results"></ol>
+    <p class="site-search-chat">Prefer to ask in plain English? <button type="button" id="site-search-open-chat">Ask the playbook assistant</button> and get an answer with links to its sources.</p>
   </section>
 
   <section class="field-frame" aria-labelledby="field-frame-heading">
@@ -1503,9 +1597,207 @@ chat-bubble-snippet {
 </footer>
 
 <chat-bubble-snippet api-url="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/" theme="light" hide-branding></chat-bubble-snippet>
-<!-- Cloudflare AI Search snippets. If the module fails to load, hide the search
-     section rather than leave an inert box; the chat bubble simply never renders. -->
-<script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js" onerror="document.getElementById('site-search').hidden = true"></script>
+<!-- Cloudflare AI Search chat bubble. If the module fails to load the bubble
+     simply never renders; the search box above does not depend on it. -->
+<script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js"></script>
+<script>
+/* Site search: calls the AI Search /search endpoint directly so each result can
+   show the page title and the passage that matched. The packaged search-bar
+   snippet requests metadata only, so it shows the page description (often
+   blank) and repeats a page once per matching chunk. */
+(function () {
+  var ENDPOINT = 'https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/search';
+  var MAX_PAGES = 6;
+  var form = document.getElementById('site-search-form');
+  var input = document.getElementById('site-search-q');
+  var status = document.getElementById('site-search-status');
+  var list = document.getElementById('site-search-results');
+  var pending = null;
+
+  function esc(t) {
+    return t.replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Metadata comes back entity-encoded (e.g. &amp;); decode before escaping again.
+  var decoder = document.createElement('textarea');
+  function decode(t) { decoder.innerHTML = t; return decoder.value; }
+
+  // Chunks arrive as Markdown converted from the page; flatten to readable prose.
+  function plain(md) {
+    return md
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/^\s*\|?\s*:?-{2,}.*$/gm, ' ')
+      .replace(/[#*_`>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Fallback when a page has no title metadata yet: turn the URL path into words.
+  function titleFromUrl(url) {
+    var path = url.replace(/^https?:\/\/[^/]+\/?/, '').replace(/(index)?\.html$/, '').replace(/\/$/, '');
+    var last = path.split('/').filter(Boolean).pop();
+    if (!last) return 'Home';
+    return last.replace(/[-_]+/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  // About 240 characters around the first query term found, terms highlighted.
+  function excerpt(text, terms) {
+    var lower = text.toLowerCase(), at = -1;
+    for (var i = 0; i < terms.length && at < 0; i++) at = lower.indexOf(terms[i]);
+    var start = Math.max(0, (at < 0 ? 0 : at) - 80);
+    var cut = text.slice(start, start + 240);
+    if (start > 0) cut = '\u2026' + cut.replace(/^\S*\s/, '');
+    if (start + 240 < text.length) cut = cut.replace(/\s\S*$/, '') + '\u2026';
+    var html = esc(cut);
+    if (!terms.length) return html;
+    var re = new RegExp('(' + terms.map(function (t) {
+      return esc(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }).join('|') + ')\\w*', 'gi');
+    return html.replace(re, '<mark>$&</mark>');
+  }
+
+  // Deep link into the page with a text fragment (#:~:text=...), which modern
+  // browsers scroll to and highlight. Use a few words from the line or table
+  // cell where a query term first appears; fragments cannot span cells, and if
+  // the phrase does not match the browser simply opens the top of the page.
+  function fragmentFor(md, terms, words0) {
+    var segments = md.split(/\n|\|/).map(plain).filter(Boolean);
+    for (var i = 0; i < terms.length; i++) {
+      for (var j = 0; j < segments.length; j++) {
+        var words = segments[j].split(' ');
+        for (var k = 0; k < words.length; k++) {
+          if (words[k].toLowerCase().indexOf(terms[i]) >= 0) {
+            // Stop at the first clause break so the phrase stays inside one element.
+            var phrase = [];
+            for (var n = k; n < words.length && phrase.length < 5; n++) {
+              phrase.push(words[n]);
+              if (/[.,;:!?”"')\]]$/.test(words[n])) break;
+            }
+            return phrase.join(' ').replace(/^[“‘"'(\[]+|[.,;:!?”’"')\]]+$/g, '');
+          }
+        }
+      }
+    }
+    // No term in this passage: fall back to the first whole query word, which
+    // jumps to its first occurrence on the page (fragments match whole words).
+    return words0[0] || '';
+  }
+
+  // ?hl= is read by assets/site-search-jump.js on the target page, which works
+  // in every browser; the text fragment is a native bonus where supported.
+  function deepLink(url, phrase) {
+    if (!phrase) return url;
+    return url + '?hl=' + encodeURIComponent(phrase) +
+      '#:~:text=' + encodeURIComponent(phrase).replace(/-/g, '%2D');
+  }
+
+  function clear() {
+    list.innerHTML = '';
+    status.textContent = '';
+  }
+
+  // A page's first chunk opens with a front-matter block (---, description: ...).
+  function body(md) {
+    return md.replace(/^---\n(?:[\w-]+:.*(?:\n|$))*(?:---\n?)?/, '');
+  }
+
+  function hasTerm(text, terms) {
+    var lower = text.toLowerCase();
+    return terms.some(function (t) { return lower.indexOf(t) >= 0; });
+  }
+
+  function render(chunks, query) {
+    // Crude stemming so "services" also finds "service" in the passage text.
+    var words0 = query.replace(/[^\w\s-]/g, ' ').split(/\s+/)
+      .filter(function (t) { return t.length > 2; });
+    var terms = words0.map(function (t) { return t.toLowerCase(); })
+      .map(function (t) { return t.length > 4 ? t.replace(/(es|s)$/, '') : t; });
+    // Group chunks by page in rank order; prefer the best-ranked chunk that
+    // actually contains a query term, since semantic matches may not.
+    var order = [], byUrl = {};
+    chunks.forEach(function (c) {
+      var url = c.item && c.item.key;
+      if (!url) return;
+      if (!byUrl[url]) { byUrl[url] = []; order.push(url); }
+      byUrl[url].push(c);
+    });
+    var pages = [];
+    order.slice(0, MAX_PAGES).forEach(function (url) {
+      var group = byUrl[url];
+      var meta = group[0].item.metadata || {};
+      var texts = group.map(function (c) { return body(decode(c.text || '')); });
+      var md = texts.filter(function (t) { return hasTerm(t, terms); })[0] ||
+        texts.filter(Boolean)[0] || decode(meta.description || '');
+      pages.push({
+        url: url,
+        href: deepLink(url, fragmentFor(md, terms, words0)),
+        title: meta.title ? decode(meta.title) : titleFromUrl(url),
+        text: plain(md)
+      });
+    });
+    list.innerHTML = pages.map(function (p) {
+      return '<li><a href="' + esc(p.href) + '">' +
+        '<span class="r-title">' + esc(p.title) + '</span>' +
+        '<span class="r-url">' + esc(p.url.replace(/^https?:\/\//, '')) + '</span>' +
+        (p.text ? '<span class="r-text">' + excerpt(p.text, terms) + '</span>' : '') +
+        '</a></li>';
+    }).join('');
+    status.textContent = pages.length
+      ? pages.length + (pages.length === 1 ? ' page matched.' : ' pages matched.')
+      : 'No pages matched. Try different words.';
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var query = input.value.trim();
+    if (!query) return;
+    if (pending) pending.abort();
+    pending = new AbortController();
+    status.textContent = 'Searching\u2026';
+    list.innerHTML = '';
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: query }],
+        ai_search_options: { retrieval: { max_num_results: 20 } }
+      }),
+      signal: pending.signal
+    })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) { render((d.result && d.result.chunks) || [], query); })
+      .catch(function (err) {
+        if (err.name !== 'AbortError') status.textContent = 'Search is unavailable right now. Please try again shortly.';
+      });
+  });
+
+  // Open the chat bubble from the search card. Its shadow root is open, so its
+  // own launcher button can be clicked; if the module never loaded, hide the offer.
+  var chatOffer = document.getElementById('site-search-open-chat');
+  chatOffer.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var bubble = document.querySelector('chat-bubble-snippet');
+    var launcher = bubble && bubble.shadowRoot && bubble.shadowRoot.querySelector('.bubble-button');
+    var win = bubble && bubble.shadowRoot && bubble.shadowRoot.querySelector('.chat-window');
+    // Deferred so the bubble's own outside-click handling doesn't close it again.
+    if (launcher && !(win && win.classList.contains('expanded'))) setTimeout(function () { launcher.click(); }, 0);
+  });
+  setTimeout(function () {
+    if (!customElements.get('chat-bubble-snippet')) chatOffer.parentElement.hidden = true;
+  }, 8000);
+
+  // Results close on Escape or on any click outside the search card.
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') clear();
+  });
+  document.addEventListener('click', function (e) {
+    if (list.firstChild && !e.target.closest('#site-search')) clear();
+  });
+})();
+</script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script>
 </body>
