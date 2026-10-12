@@ -2237,7 +2237,10 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(!!m, 'A3: V-31 fires on stock defaults');
   ok(m.indexOf('4,000 Copilot Credits per user per month (about $40)') >= 0, 'A3: names the default and its dollar value');
   ok(/about 14,519 credits per active Cowork user/.test(m), 'A3: names the modeled per-user credits');
-  ok(/around day 8 of the month/.test(m), 'A3: names the cap day');
+  // QA L-11: the day the 4,000 is crossed, in working days (was "day 8",
+  // Math.round of a 30-day calendar): 4,000 / (14,519.23 / 22) = 6.06 -> 7.
+  ok(/around working day 7 of the month/.test(m), 'A3: names the cap day');
+  ok(!/around day \d/.test(m), 'L-11: no calendar-day rounding left in V-31');
   // QA H-04 moved the raised limit from the average user (19,000) to the
   // heaviest persona: Technical 22,800 x 1.3 = 29,640 -> 30,000.
   ok(m.indexOf('about 30,000 credits') >= 0, 'A3: recommends the raised limit');
