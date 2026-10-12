@@ -2780,5 +2780,29 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(html.indexOf('1.57&times; to 2.79&times;') >= 0, 'L-15: $142.50 is 1.57x to 2.79x the web band');
 }
 
+/* ── L-16 · partner-economics warnings carry the partner-only marking ─── */
+{
+  const IDS = ['V-21', 'V-22', 'V-24', 'V-25', 'V-26', 'V-29'];
+  // Stock fires V-26; build states for the rest.
+  const states = [E.defaults()];
+  const p3p = E.defaults(); p3p.billing.model = 'p3'; p3p.billing.p3Holder = 'partner'; states.push(p3p);          // V-22
+  const ind = E.defaults(); ind.channel = { motion:'indirectReseller', providerCreditUsd:0.012 };
+  ind.billing.model = 'p3'; states.push(ind);                                                                       // V-24
+  const neg = E.defaults(); neg.channel = { motion:'indirectReseller', providerCreditUsd:0.012 }; states.push(neg);  // V-29
+  const nc = E.defaults(); nc.channel = { motion:'notCsp', providerCreditUsd:null };
+  nc.pricing = Object.assign(nc.pricing, { mode:'sell', creditSellUsd:0.012 }); states.push(nc);                    // V-25
+  const pec = E.defaults(); pec.channel = { motion:'direct', providerCreditUsd:null };
+  pec.pricing = Object.assign(pec.pricing, { pec:{ status:'yes', pct:15 } }); pec.billing.model = 'p3'; states.push(pec); // V-21
+  const seen = {};
+  states.forEach(function (s) {
+    E.compute(s).warnings.forEach(function (w) {
+      if (IDS.indexOf(w.id) > -1) { seen[w.id] = true; ok(w.partner === true, 'L-16: ' + w.id + ' is marked partner-only'); }
+      else ok(w.partner !== true || w.id === 'V-32', 'L-16: ' + w.id + ' is not marked partner-only');
+    });
+  });
+  IDS.forEach(id => ok(seen[id], 'L-16: precondition, ' + id + ' fired in the sweep'));
+  ok(/'<div class="flag' \+ \(w\.partner \? ' partner-only' : ''\) \+ '">/.test(src), 'L-16: the flags card renders the partner-only class');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

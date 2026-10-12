@@ -1524,7 +1524,13 @@ body.embedded .hub-link { display:none !important; }
       if (prov && prov !== 'ms-verified' && note) assume.push({ id:id, label:label, note:note, prov:prov });
       return value;
     }
-    function W(id, sev, msg, fixes) { warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [] }); }
+    /* QA L-16: partner-economics warnings carry the page's partner-only
+       marking on the warning itself, not only through the card that holds
+       it, so any surface that renders them strips them in customer view
+       and the customer print. */
+    function W(id, sev, msg, fixes) {
+      warn.push({ id:id, severity:sev, message:msg, fixes:fixes || [], partner:PARTNER_WARNINGS.indexOf(id) > -1 });
+    }
 
     var CU = creditUsd(state);                 // customer-facing credit rate
     var sellMode = state.pricing && state.pricing.mode === 'sell';
@@ -2370,6 +2376,9 @@ body.embedded .hub-link { display:none !important; }
                          public:'Public sector', eu:'EU/EFTA/UK' };
 
   var GOV_KEYS = ['purviewLabels','dlpForAi','defenderCloudApps','namedCostOwner','insuranceRenewal'];
+  // QA L-16: margin, PEC, commitment holder, Partner of Record, resale
+  // outside CSP, motion, and the partner's own sell rate (V-32, L-13).
+  var PARTNER_WARNINGS = ['V-21','V-22','V-24','V-25','V-26','V-29','V-32'];
 
   function requirements(state, ctx) {
     var g = state.governance, out = [];
@@ -2956,7 +2965,7 @@ body.embedded .hub-link { display:none !important; }
     skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
     addonPrice:addonPrice, addonListPrice:addonListPrice,
     skuCostPrice:skuCostPrice, creditUsd:creditUsd,
-    copilotComponent:copilotComponent, weakest:weakest, promoCliffs:promoCliffs
+    copilotComponent:copilotComponent, weakest:weakest, promoCliffs:promoCliffs, PARTNER_WARNINGS:PARTNER_WARNINGS
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 
@@ -4168,7 +4177,7 @@ body.embedded .hub-link { display:none !important; }
     $('flagTag').textContent = tagBits.length ? tagBits.join(' \u00b7 ') : 'all clear';
     var flagHtml = blocks.concat(clamps, infos).map(function (w) {
       var ic = w.severity === 'block' ? '<span class="cross">&#10007;</span>' : w.severity === 'info' ? '&#8505;' : '&#9888;';
-      return '<div class="flag"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
+      return '<div class="flag' + (w.partner ? ' partner-only' : '') + '"><div class="fi">' + ic + '</div><div class="ft">' + esc(w.message) +
         (w.fixes && w.fixes.length ? '<div class="fixrow">' + w.fixes.map(function (f) {
           return '<button class="linkbtn" data-fix="' + f.action + '">' + esc(f.label) + '</button>';
         }).join('') + '</div>' : '') + '</div></div>';
