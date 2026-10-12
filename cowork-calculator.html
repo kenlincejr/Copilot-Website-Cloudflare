@@ -1949,6 +1949,57 @@ body.embedded .hub-link { display:none !important; }
     var p3PlanYear1 = manualPct != null ? null : p3Plan(cccuYear1);
     var p3Year1Prepay = packUsd + (p3PlanYear1 ? p3PlanYear1.prepayUsd
       : cccuYear1 * CONST.CCCU.usdPer * (1 - disc.pct / 100));
+    // QA M-01: what the year-one P3 order actually costs, PayGo remainder
+    // included ($72,750 + $839.42 = $73,589.42 at stock).
+    var p3Year1Annual = p3Year1Prepay + (p3PlanYear1 ? p3PlanYear1.remainderCccu * CONST.CCCU.usdPer : 0);
+    /* QA M-01: capacity packs on the ramped year one. Packs are bought per
+       month with no rollover and drawn first; whatever a month needs above
+       them runs on P3 (a 12-month pool) and then PayGo. A flat pack count is
+       the shape Microsoft sells (annual term), so the search is over one
+       count held all year: packs alone, and packs plus the cheapest P3 mix
+       for the overflow. The flat steady-state count is priced too, because
+       holding it through the ramp wastes pack credit nobody can recover. */
+    var packYear1 = (function () {
+      var per = CONST.PACK.creditsPerMonth, usdM = CONST.PACK.usdPerMonth;
+      var perSeat = effTotal > 0 ? monthlyCredits / effTotal : 0;
+      var months = rampSeats.map(function (sx) { return sx * perSeat; });
+      var peak = months.reduce(function (a, v) { return Math.max(a, v); }, 0);
+      function overflowCccu(k) {
+        return months.reduce(function (a, v) { return a + Math.max(0, v - per * k); }, 0) / CONST.CCCU.creditsPer;
+      }
+      var kMax = Math.ceil(peak / per);
+      var bestP = null, bestM = null;
+      // Every count up to 400; past that a coarse pass then a fine pass around
+      // the best coarse point, so a hostile 1e6-seat estate stays fast.
+      function tryK(k) {
+        var ov = overflowCccu(k);
+        var po = usdM * 12 * k + ov * CONST.CCCU.usdPer;
+        if (!bestP || po < bestP.usd - 1e-9) bestP = { packs:k, usd:po };
+        var pl = p3Plan(ov);
+        if (pl.plans) {
+          var mx = usdM * 12 * k + pl.prepayUsd + pl.remainderCccu * CONST.CCCU.usdPer;
+          if (!bestM || mx < bestM.usd - 1e-9)
+            bestM = { packs:k, usd:mx, label:pl.label, prepayUsd:pl.prepayUsd, coveredCccu:pl.coveredCccu,
+                      remainderCccu:pl.remainderCccu };
+        }
+      }
+      var step = Math.max(1, Math.ceil(kMax / 400)), k;
+      for (k = 1; k <= kMax; k += step) tryK(k);
+      while (step > 1) {
+        var fine = Math.max(1, Math.ceil(step / 20)), span = step;
+        [bestP, bestM].filter(Boolean).map(function (b) { return b.packs; }).forEach(function (c0) {
+          for (var kk = Math.max(1, c0 - span); kk <= Math.min(kMax, c0 + span); kk += fine) tryK(kk);
+        });
+        step = fine;
+      }
+      var fk = packSteady.packs, flat = null;
+      if (fk > 0) {
+        var waste = months.reduce(function (a, v) { return a + Math.max(0, per * fk - v); }, 0);
+        flat = { packs:fk, usd:usdM * 12 * fk + overflowCccu(fk) * CONST.CCCU.usdPer,
+                 wasteCredits:waste, wasteUsd:waste * usdM / per };
+      }
+      return { packsOnly:bestP, packsP3:bestM, flat:flat };
+    })();
 
     /* ── What the meter costs the PARTNER, which is not what it costs the
        customer. Partner-earned credit is the only lever, and Microsoft does
@@ -2239,6 +2290,7 @@ body.embedded .hub-link { display:none !important; }
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
       p3Exposure:p3Exposure, packSteady:packSteady, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
+      p3Year1Annual:p3Year1Annual, packYear1:packYear1,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -4136,6 +4188,24 @@ body.embedded .hub-link { display:none !important; }
       '</div>';
   }
 
+  /* QA M-01: the year-one order weighed against capacity packs on the same
+     ramp. Shown only where a pack option beats the year-one P3 total, plus
+     what holding the steady-state pack count flat through the ramp wastes. */
+  function packYear1Line(c) {
+    var Y = c.packYear1 || {}, po = Y.packsOnly, pm = Y.packsP3, fl = Y.flat;
+    var best = [po, pm].filter(function (o) { return o && o.usd < c.p3Year1Annual - 0.005; });
+    if (!best.length) return '';
+    return '<p><b>Capacity packs cost less on the same ramp.</b> ' +
+      (po ? num(po.packs) + ' packs a month all year, with the overflow on PayGo, is <b>' + usd(po.usd, 2) + '</b>' : '') +
+      (po && pm ? '; ' : '') +
+      (pm ? num(pm.packs) + ' packs plus ' + pm.label + ' for the overflow is <b>' + usd(pm.usd, 2) + '</b>' : '') +
+      ', against ' + usd(c.p3Year1Annual, 2) + ' on the P3 mix above.' +
+      (fl && fl.wasteCredits >= 1
+        ? ' Holding the steady-state ' + num(fl.packs) + ' packs flat through year one costs ' + usd(fl.usd, 2) +
+          ' and leaves ' + num(Math.round(fl.wasteCredits)) + ' pack credits unused (' + usd(fl.wasteUsd, 2) +
+          '), because pack credits reset every month.'
+        : '') + '</p>';
+  }
   function renderBillOut(r) {
     var c = r.ctx, d = c.discount;
     /* Who is allowed to place this order is not a formality. Microsoft's
@@ -4191,7 +4261,8 @@ body.embedded .hub-link { display:none !important; }
           (plan.plans > 1 ? ' Holding several plans at once, each at its own discount, is how Azure reservations work; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
           (c.rampApplies && y1 && y1.plans
             ? '<p>Sized to year one instead, the order is <b>' + y1.label + '</b> (' + num(y1.coveredCccu) + ' CCCU, ' +
-              usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') + '.</p>'
+              usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') +
+              ': <b>' + usd(c.p3Year1Annual, 2) + ' for year one</b>, PayGo remainder included.</p>' + packYear1Line(c)
             : '');
     var verdict = c.p3Saving > 0
       ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +

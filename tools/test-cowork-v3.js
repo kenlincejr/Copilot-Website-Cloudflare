@@ -2575,5 +2575,34 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(/Business promo' \+ promoTag\('cop_biz'/.test(src), 'H-07: the ratio block dates the $18 Business promo');
 }
 
+/* ── M-01 · year-one buying guidance weighs capacity packs ─────────────── */
+{
+  const c = E.compute(E.defaults()).ctx;
+  const near = (got, want, label) => ok(got != null && Math.abs(got - want) < 0.01, 'M-01: ' + label + ' (got ' + got + ', want ' + want + ')');
+  near(c.p3Year1Annual, 73589.42, 'year-one P3 total incl. the PayGo remainder ($72,750 + $839.42)');
+  const Y = c.packYear1 || {};
+  eq(Y.packsOnly && Y.packsOnly.packs, 21, 'cheapest packs-only year one holds 21 packs');
+  near(Y.packsOnly && Y.packsOnly.usd, 68747.88, '21 packs all year + PayGo overflow');
+  eq(Y.packsP3 && Y.packsP3.packs, 16, 'cheapest packs + P3 year one holds 16 packs');
+  ok(Y.packsP3 && /1 × Tier 3/.test(Y.packsP3.label), 'packs + P3 adds 1 x Tier 3');
+  near(Y.packsP3 && Y.packsP3.usd, 67509.62, '16 packs + Tier 3 + remainder');
+  eq(Y.flat && Y.flat.packs, 30, 'flat comparison holds the steady-state 30 packs');
+  near(Y.flat && Y.flat.usd, 72350, '30 packs flat through year one');
+  ok(Y.flat && Math.abs(Y.flat.wasteCredits - 1151057.69) < 1, 'M-01: flat 30 packs waste 1,151,058 credits');
+  near(Y.flat && Y.flat.wasteUsd, 9208.46, 'the waste at $0.008 a pack credit');
+  // The page prints all of it beside the P3 mix.
+  let line = '';
+  try { line = makeUiFn('packYear1Line', '\n  function renderBillOut', { usd, num })(c); } catch (e) { line = ''; }
+  ['21 packs a month all year', '$68,747.88', '16 packs plus 1 × Tier 3', '$67,509.62', 'against $73,589.42',
+   'steady-state 30 packs', '$72,350.00', '1,151,058 pack credits unused', '$9,208.46'].forEach(function (t) {
+    ok(line.indexOf(t) >= 0, 'M-01: the billing card prints "' + t + '"');
+  });
+  ok(/usd\(c\.p3Year1Annual, 2\) \+ ' for year one/.test(src), 'M-01: the year-one P3 total is printed beside the mix');
+  // Flat ramp: year one = steady, so no pack guidance is needed beyond packSteady.
+  const flat = E.defaults(); flat.ramp.mode = 'none';
+  const cf = E.compute(flat).ctx;
+  ok(cf.packYear1 && cf.packYear1.packsOnly.usd <= cf.packSteady.annualUsd + 0.01, 'M-01: with no ramp the year-one pack answer is the steady one');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
