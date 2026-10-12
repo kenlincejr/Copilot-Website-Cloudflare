@@ -2804,5 +2804,17 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(/'<div class="flag' \+ \(w\.partner \? ' partner-only' : ''\) \+ '">/.test(src), 'L-16: the flags card renders the partner-only class');
 }
 
+/* ── L-17 · "Why this one" never offers SMB bundles that are all infeasible ── */
+{
+  const L = qaLic(500, [{ skuId:'e3', seats:500 }], false).licensing;
+  ok(L.paths.filter(p => p.smb).every(p => !p.feasible), 'L-17: precondition, every SMB path is infeasible on a 500-seat E3 estate');
+  const w = L.why.join(' ');
+  ok(w.indexOf('so the SMB bundles are available') === -1, 'L-17: no claim that the SMB bundles are available');
+  ok(/enterprise \(E3\/E5\)/.test(w), 'L-17: the first line says why the SMB SKUs are out');
+  // A Business estate under the cap keeps the original sentence.
+  const L2 = qaLic(50, [{ skuId:'bbasic', seats:50 }], false).licensing;
+  ok(L2.why.join(' ').indexOf('so the SMB bundles are available') >= 0, 'L-17: a Business estate still hears that the SMB bundles are available');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

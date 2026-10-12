@@ -2574,7 +2574,7 @@ body.embedded .hub-link { display:none !important; }
          the seats still to buy. */
       var ownedBaseUsd = c.addOn ? ownedBaseCost(BASE_FAMILY[c.id] || [], basesOwned) : 0;
       var monthly = c.per * needed + baseUsd + ownedBaseUsd;
-      return { id:c.id, label:c.label, perUser:c.per,
+      return { id:c.id, label:c.label, perUser:c.per, smb:!!c.cap,
                addOn:!!c.addOn, baseUsd:baseUsd, baseSeats:c.addOn ? needBase : 0,
                ownedBaseSeats:basesOwned, ownedBaseUsd:ownedBaseUsd,
                // QA H-07: the promo end date travels with the price (F-146, F-147).
@@ -2633,8 +2633,14 @@ body.embedded .hub-link { display:none !important; }
       .sort(function (a, b) { return a.monthly - b.monthly; })[0];
 
     var why = [];
+    // QA L-17: "the SMB bundles are available" only when one actually is.
+    var smbOpen = scored.some(function (p) { return p.smb && p.feasible; });
     if (winner) {
-      why.push(underCap
+      why.push(underCap && !smbOpen
+        ? 'This path has to cover ' + needed + ' Copilot user' + (needed === 1 ? '' : 's') +
+          ' \u2014 under the 300-seat cap, but every base this tenant owns is enterprise (E3/E5), so the SMB Copilot ' +
+          'SKUs cannot attach to it and only the enterprise paths are available.'
+        : underCap
         ? 'This path has to cover ' + needed + ' Copilot user' + (needed === 1 ? '' : 's') +
           ' — under the 300-seat cap, so the SMB bundles are available to you' +
           (ctx.employees > 300 ? ', even though the company itself is ' + ctx.employees + ' people' : '') + '.'
