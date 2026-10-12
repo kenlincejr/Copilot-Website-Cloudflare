@@ -36,7 +36,13 @@ body {
 a { color: var(--teal); text-decoration: none; }
 a:hover { text-decoration: underline; }
 h2 { color: var(--navy); font-size: 1.15rem; font-weight: 700; margin: 0 0 5px; }
+h3 { color: var(--teal); font-size: 1rem; font-weight: 700; margin: 0 0 12px; }
 p  { margin: .5rem 0; }
+.check { color: #0f766e; font-weight: 700; }
+.cross { color: #b91c1c; font-weight: 700; }
+.mono  { font-family: 'Consolas','Monaco',monospace; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+:focus-visible { outline:2px solid var(--ltblue); outline-offset:2px; }
 
 /* ═══ MASTHEAD ═══ */
 /* ═══ C14 · PAGE MASTHEAD — shared header system, see specs/header-system.spec.md ═══ */
@@ -60,33 +66,334 @@ p  { margin: .5rem 0; }
 .mh-eyebrow .lbl { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.18em; color:rgba(255,255,255,.5); }
 .masthead h1 { font-size: 1.85rem; color:#fff; margin: 0 0 8px; letter-spacing:-.3px; font-weight:800; line-height:1.15; }
 .masthead .sub { font-size: .93rem; color: rgba(255,255,255,.8); line-height:1.6; margin:0; }
-.mh-badges { display:flex; gap:12px; flex-wrap:wrap; }
-.mh-badge { font-size:.72rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:7px 16px; }
+.masthead .mh-meta { font-size:.76rem; color: rgba(255,255,255,.6); margin:8px 0 0; }
+.masthead .mh-meta b { color:#a8ecf5; font-weight:700; }
 [id] { scroll-margin-top: 58px; }
-@media (max-width:720px){ .mh-bar-in { padding: 0 16px; } .mh-crumb, .mh-date { display:none; } }
+.stage [id] { scroll-margin-top: 150px; }
+@media (max-width:720px){ .mh-bar-in { padding: 0 16px; } .mh-crumb, .mh-date { display:none; } .masthead-inner { padding: 18px 16px 20px; } .masthead h1 { font-size:1.5rem; } }
 
-/* ═══ HUB SHELL ═══ */
-.wrap { padding: 20px 48px 0; }
-.stage { max-width: 1320px; margin: 0 auto; }
-.hubtabs { display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--border); margin-bottom:20px; }
-.hubtab { font-family:inherit; font-size:.85rem; font-weight:700; color:var(--navy); background:var(--muted); border:1px solid var(--border);
-          border-bottom:none; border-radius:var(--radius) var(--radius) 0 0; padding:10px 18px; cursor:pointer; }
+/* ═══ HUB BAR — tabs and toolbar, pinned under the masthead bar ═══ */
+.hubbar { position: sticky; top: 46px; z-index: 45; background:#fff; border-bottom:1px solid var(--border); box-shadow: var(--shadow-sm); }
+.hubbar-in { max-width:1320px; margin:0 auto; padding:8px 48px; display:flex; align-items:center; justify-content:space-between; gap:10px 18px; flex-wrap:wrap; }
+.hubtabs { display:flex; gap:6px; flex-wrap:wrap; }
+.hubtab { font-family:inherit; font-size:.84rem; font-weight:700; color:var(--navy); background:var(--muted); border:1px solid var(--border);
+          border-radius:20px; padding:7px 16px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+.hubtab:hover { border-color:var(--ltblue); }
 .hubtab[aria-selected="true"] { background:var(--teal); border-color:var(--teal); color:#fff; }
-.panel { border:1px solid var(--border); border-radius:var(--radius-lg); background:var(--muted); padding:20px 22px; }
-.panel .note { font-size:.85rem; color:#6b7280; }
-.bootline { font-size:.95rem; color:var(--navy); font-weight:600; }
+.hubtab .tk { font-size:.62rem; font-weight:800; width:18px; height:18px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center; background:var(--muted-2); color:#6b7280; }
+.hubtab[aria-selected="true"] .tk { background:rgba(255,255,255,.2); color:#fff; }
+.hubtab .tb-badge { font-size:.65rem; font-weight:700; color:#6b7280; }
+.hubtab[aria-selected="true"] .tb-badge { color:#a8ecf5; }
+.hubtools { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.acct input { width:190px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:.82rem; font-family:inherit; color:var(--text); }
+.acct input:focus { outline:2px solid var(--ltblue); outline-offset:1px; border-color:var(--teal); }
+.motionpill { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; padding:4px 10px; border-radius:20px; background:var(--accent); color:var(--teal); margin:0 4px; white-space:nowrap; cursor:pointer; border:none; font-family:inherit; }
+.motionpill.unset { background:var(--warn); color:#92400e; }
+.tbtn { font-size:.78rem; font-weight:600; color:#374151; background:none; border:1px solid transparent; cursor:pointer; padding:6px 10px; border-radius:6px; font-family:inherit; white-space:nowrap; }
+.tbtn:hover { background:var(--muted); color:var(--teal); }
+.tbtn.on { background:var(--navy); color:#fff; }
+.tbtn kbd { font-family:inherit; font-size:.6rem; font-weight:700; border:1px solid var(--border); border-radius:4px; padding:0 4px; margin-left:4px; color:#6b7280; background:#fff; }
+.tbtn.on kbd { color:var(--navy); }
+.tb-sep { width:1px; height:18px; background:var(--border); margin:0 6px; }
+.menuwrap { position:relative; }
+.menu { position:absolute; right:0; top:calc(100% + 6px); z-index:60; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); padding:6px; min-width:270px; }
+.menu button { display:block; width:100%; text-align:left; font-family:inherit; font-size:.82rem; color:var(--text); background:none; border:none; border-radius:6px; padding:8px 10px; cursor:pointer; }
+.menu button:hover, .menu button:focus-visible { background:var(--accent); color:var(--teal); }
+.menu .m-h { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#6b7280; padding:6px 10px 2px; }
+@media (max-width:720px){ .hubbar { position:static; } .hubbar-in { padding:8px 16px; } .acct input { width:150px; } }
+
+/* ═══ LAYOUT ═══ */
+.wrap { padding: 22px 48px 0; }
+.stage { max-width: 1320px; margin: 0 auto; }
+.tabpanel > * + * { margin-top:20px; }
+.note { font-size:.82rem; color:#6b7280; }
+.notice { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; background:var(--accent); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:12px 16px; margin-bottom:16px; font-size:.86rem; color:#00474f; }
+.notice.warn { background:var(--warn); border-left-color:#d97706; color:#5a3a18; }
+.notice .n-acts { display:flex; gap:8px; flex-wrap:wrap; }
 @media (max-width:720px){ .wrap { padding: 16px 16px 0; } }
+
+/* ═══ CARDS ═══ */
+.wcard { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); overflow:hidden; }
+.wcard .wc-bar { height:4px; background:linear-gradient(to right,var(--teal),var(--ltblue),#a8ecf5); }
+.wcard .wc-body { padding:24px 28px 26px; }
+.wc-head { display:flex; align-items:flex-start; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+.wc-num { width:32px; height:32px; border-radius:8px; background:var(--teal); color:#fff; font-weight:700; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.wc-title { flex:1; min-width:0; }
+.wc-title .wc-sub { font-size:.84rem; color:#6b7280; margin-top:3px; }
+.wc-tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.sub-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin:20px 0 10px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+@media (max-width:720px){ .wcard .wc-body { padding:18px 16px 20px; } }
+
+/* ═══ FORM ═══ */
+.fgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px 18px; }
+.field label, .field .flabel { display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; margin-bottom:6px; }
+.field input[type=text], .field input[type=number], .field input[type=month], .field select, .field textarea {
+  width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:6px; font-size:.9rem; color:var(--text); background:#fff; font-family:inherit;
+}
+.field textarea { min-height:70px; resize:vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline:2px solid var(--ltblue); outline-offset:1px; border-color:var(--teal); }
+.field .hint { font-size:.72rem; color:#6b7280; margin-top:4px; line-height:1.45; }
+.field .fromcw { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:1px 6px; border-radius:20px; background:var(--accent); color:var(--teal); margin-left:6px; vertical-align:1px; }
+.field.check label { display:flex; gap:8px; align-items:flex-start; text-transform:none; letter-spacing:0; font-size:.84rem; font-weight:600; color:#374151; cursor:pointer; margin:0; }
+.field.check input { margin-top:4px; }
+.field.check { align-self:end; padding-bottom:8px; }
+.seg { display:inline-flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; flex-wrap:wrap; }
+.seg button { border:none; background:#fff; font-size:.82rem; font-weight:600; padding:8px 14px; cursor:pointer; color:#374151; border-right:1px solid var(--border); font-family:inherit; }
+.seg button:last-child { border-right:none; }
+.seg button[aria-pressed="true"] { background:var(--accent); color:var(--teal); font-weight:700; }
+.ctlrow { display:flex; gap:12px 22px; align-items:center; flex-wrap:wrap; }
+.ctlrow .ctl-l { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6b7280; }
+.btn { font-size:.84rem; font-weight:700; padding:9px 16px; border-radius:6px; border:1px solid var(--teal); cursor:pointer; background:#fff; color:var(--teal); font-family:inherit; }
+.btn.primary { background:var(--teal); color:#fff; }
+.btn:hover { background:var(--accent); }
+.btn.primary:hover { background:var(--teal-light); }
+.btn.small { font-size:.76rem; padding:6px 11px; }
+.btn.quiet { border-color:var(--border); color:#374151; }
+.btn.danger:hover { background:#fef2f2; color:#b91c1c; border-color:#fca5a5; }
+.actionsrow { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.linkbtn { font-size:.82rem; font-weight:700; color:var(--teal); background:none; border:none; cursor:pointer; padding:0; font-family:inherit; }
+.linkbtn:hover { text-decoration:underline; }
+
+/* ═══ COACHING, CALLOUTS ═══ */
+.coach { display:flex; gap:12px; align-items:flex-start; background:var(--accent); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:13px 18px; margin:0 0 18px; }
+.coach .co-txt { font-size:.86rem; color:#00474f; line-height:1.6; }
+.coach .co-txt b { color:var(--navy); }
+.callout { background:var(--accent); border:1px solid #c5dde3; border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:14px 18px; margin:14px 0 0; }
+.callout.warn { background:var(--warn); border-color:#f5ddb0; border-left-color:#d97706; }
+.callout.subtle { background:#f3fbfc; }
+.callout-title { font-weight:700; color:#00474f; margin:0 0 6px; font-size:.85rem; letter-spacing:.3px; text-transform:uppercase; }
+.callout.warn .callout-title { color:#92400e; }
+.callout-body { margin:0; font-size:.88rem; line-height:1.65; }
+.callout-body p { margin:.4rem 0; }
+.whybox { background:var(--muted); border-left:3px solid var(--teal); border-radius:0 6px 6px 0; padding:12px 16px; margin-top:14px; }
+.whybox .wb-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-bottom:6px; }
+.whybox p { font-size:.84rem; color:#374151; line-height:1.6; margin:0 0 6px; }
+.whybox p:last-child { margin-bottom:0; }
+a.docref { color:var(--teal); font-weight:600; border-bottom:1px solid #c5dde3; text-decoration:none; }
+a.docref:hover { border-bottom-color:var(--teal); background:var(--accent); text-decoration:none; }
+.srcline { font-size:.72rem; color:#6b7280; font-style:italic; margin-top:10px; line-height:1.6; }
+.srcline a { font-style:normal; }
+.ref { font-size:.72rem; color:#6b7280; }
+.ref a { font-weight:600; }
+
+/* ═══ PILLS AND CHIPS ═══ */
+.pill { display:inline-block; font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:2px 7px; border-radius:20px; vertical-align:1px; white-space:nowrap; }
+.pill.asked    { background:var(--accent);  color:var(--teal); }
+.pill.default  { background:var(--muted-2); color:#6b7280; }
+.pill.measured { background:#f3fbfc; color:#0f766e; }
+.pill.verified { background:#f3fbfc; color:#0f766e; }
+.pill.modeled  { background:var(--accent); color:var(--teal); }
+.pill.estimate { background:var(--warn); color:#92400e; }
+.pill.likely   { background:#fef9c3; color:#854d0e; }
+.chip { display:inline-block; font-size:.68rem; font-weight:700; padding:2px 9px; border-radius:20px; white-space:nowrap; margin:0 4px 4px 0; cursor:help; }
+.chip.billed { background:#fee2e2; color:#991b1b; }
+.chip.zero   { background:#dcfce7; color:#065f46; }
+.chip.likely { background:#fef9c3; color:#854d0e; }
+.chip.na     { background:#f3f4f6; color:#6b7280; }
+.light { display:inline-block; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:20px; }
+.light.ok { background:#dcfce7; color:#065f46; }
+.light.watch { background:#fef9c3; color:#854d0e; }
+.light.risk { background:#fee2e2; color:#991b1b; }
+.recbadge { display:inline-block; font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; padding:2px 8px; border-radius:20px; background:var(--teal); color:#fff; margin-left:6px; vertical-align:1px; }
+
+/* ═══ TABLES ═══ */
+.tablewrap { overflow-x:auto; }
+.dtable { width:100%; border-collapse:collapse; font-size:.86rem; }
+.dtable th { background:var(--muted-2); color:var(--navy); font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; padding:9px 10px; text-align:left; border-bottom:2px solid var(--teal); white-space:nowrap; }
+.dtable th.n { text-align:right; }
+.dtable td { padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+.dtable td.n { text-align:right; white-space:nowrap; font-family:'Consolas','Monaco',monospace; font-size:.82rem; }
+.dtable td .mini { display:block; font-size:.72rem; color:#6b7280; margin-top:2px; }
+.dtable tfoot td { background:var(--muted); font-weight:700; color:var(--navy); border-top:2px solid var(--teal); }
+.dtable tr.winner td { background:var(--accent); }
+.dtable tr.winner td:first-child { box-shadow:inset 3px 0 0 var(--teal); }
+.dtable input[type=number], .dtable input[type=text], .dtable select { padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:.84rem; font-family:inherit; color:var(--text); background:#fff; }
+.dtable input[type=number] { width:110px; text-align:right; }
+.dtable input[type=text] { width:100%; min-width:140px; }
+
+/* ═══ RESULTS ═══ */
+.rescard { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; box-shadow:var(--shadow-sm); overflow:hidden; }
+.rescard .rc-head { padding:12px 22px; background:var(--navy); color:#fff; font-size:.74rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.rescard .rc-body { padding:20px 24px; }
+@media (max-width:720px){ .rescard .rc-body { padding:16px; } }
+.numgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media (max-width:1080px){ .numgrid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:520px){ .numgrid { grid-template-columns:1fr; } }
+.numcell { border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); padding:14px 16px; background:#fff; }
+.numcell.alt { border-top-color:var(--navy); }
+.numcell .nk { font-size:1.5rem; font-weight:800; color:#004B87; letter-spacing:-.5px; line-height:1.15; }
+.numcell .nl { font-size:.82rem; color:#374151; margin-top:6px; }
+.numcell .ns { font-size:.72rem; color:#6b7280; margin-top:3px; }
+.copybtn { font-size:.68rem; font-weight:700; color:#a8ecf5; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); border-radius:6px; padding:5px 12px; cursor:pointer; font-family:inherit; }
+.copybtn:hover { background:rgba(255,255,255,.18); }
+.copybtn.done { background:#0f766e; color:#fff; }
+.copybtn.light-bg { color:var(--teal); background:#fff; border-color:var(--border); }
+.copybtn.light-bg:hover { background:var(--accent); }
+.flag { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.flag:last-child { border-bottom:none; }
+.flag .fi { flex:0 0 auto; width:62px; }
+.flag .ft { font-size:.86rem; color:var(--text); line-height:1.6; }
+.flag .fixrow { margin-top:6px; display:flex; gap:12px; flex-wrap:wrap; }
+
+/* ═══ COWORK EMBED ═══ */
+.cwstatus { display:flex; gap:12px 20px; align-items:center; justify-content:space-between; flex-wrap:wrap; border:1px solid var(--border); border-left:4px solid #6b7280; border-radius:0 var(--radius) var(--radius) 0; background:var(--muted); padding:11px 16px; font-size:.84rem; color:#374151; }
+.cwstatus.ok { border-left-color:var(--teal); background:#f3fbfc; }
+.cwstatus b { color:var(--navy); }
+#coworkFrame { display:block; width:100%; height:1400px; border:0; background:#fff; }
+
+/* ═══ STUDIO: PRESETS, ARCHETYPES, AGENT CARDS ═══ */
+.presetgrid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.archgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media (max-width:720px){ .presetgrid, .archgrid { grid-template-columns:1fr; } }
+.pcard { display:flex; flex-direction:column; justify-content:flex-start; align-items:stretch; text-align:left; border:1px solid var(--border); border-top:3px solid var(--teal); border-radius:var(--radius); background:#fff; padding:13px 15px; cursor:pointer; font-family:inherit; color:var(--text); }
+.pcard:hover { border-color:var(--ltblue); background:var(--muted); }
+.pcard .pc-t { font-size:.9rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
+.pcard .pc-d { font-size:.8rem; color:#6b7280; line-height:1.5; }
+.pcard .pc-f { font-size:.72rem; color:#374151; font-family:'Consolas','Monaco',monospace; margin-top:6px; line-height:1.5; }
+.archpick { border:1px solid var(--border); border-radius:var(--radius); background:var(--muted); padding:16px 18px; }
+.archpick .ap-h { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin:12px 0 8px; }
+.archpick .ap-h:first-child { margin-top:0; }
+.acard { border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:0 var(--radius-lg) var(--radius-lg) 0; background:#fff; box-shadow:var(--shadow-sm); }
+.acard + .acard { margin-top:14px; }
+.acard.paused { border-left-color:#6b7280; opacity:.75; }
+.acard.lane-bc { border-left-color:var(--navy); }
+.acard.lane-github { border-left-color:var(--ltblue); }
+.ahead { display:flex; gap:10px 16px; align-items:center; flex-wrap:wrap; padding:12px 18px; border-bottom:1px solid var(--border); background:var(--muted); border-radius:0 var(--radius-lg) 0 0; }
+.ahead .an { flex:1 1 220px; min-width:0; }
+.ahead .an input { width:100%; font-size:.95rem; font-weight:700; color:var(--navy); border:1px solid transparent; background:transparent; border-radius:6px; padding:5px 8px; font-family:inherit; }
+.ahead .an input:hover { border-color:var(--border); background:#fff; }
+.ahead .an input:focus { border-color:var(--teal); background:#fff; outline:2px solid var(--ltblue); outline-offset:1px; }
+.ahead .akind { font-size:.72rem; color:#6b7280; padding-left:9px; }
+.ahead .afig { text-align:right; }
+.ahead .afig .af-k { font-size:1.05rem; font-weight:800; color:#004B87; white-space:nowrap; }
+.ahead .afig .af-s { font-size:.72rem; color:#6b7280; white-space:nowrap; }
+.ahead .aacts { display:flex; gap:4px; flex-wrap:wrap; }
+.abody { padding:14px 18px 16px; }
+.abody details { border-top:1px dashed var(--border); padding:8px 0 4px; }
+.abody details:first-of-type { border-top:none; }
+.abody summary { cursor:pointer; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); padding:4px 0 8px; }
+.abody .fgrid { grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px 14px; margin-bottom:8px; }
+.abody .field input[type=text], .abody .field input[type=number], .abody .field select { padding:7px 9px; font-size:.86rem; }
+.afoot { padding:12px 18px 14px; border-top:1px solid var(--border); background:#fafbfc; border-radius:0 0 var(--radius-lg) 0; }
+.afoot .cover { font-size:.86rem; color:#374151; margin:6px 0 0; }
+.afoot .cover b { color:#065f46; }
+.afoot .why0 { font-size:.76rem; color:#6b7280; }
+.trace summary { cursor:pointer; font-size:.76rem; font-weight:700; color:var(--teal); margin-top:8px; }
+.trace .tablewrap { margin-top:8px; }
+.example { display:flex; gap:12px 18px; align-items:center; justify-content:space-between; flex-wrap:wrap; background:#f3fbfc; border:1px solid #c8e6eb; border-radius:6px; padding:10px 14px; margin-bottom:10px; }
+.example .ex-t { font-size:.82rem; color:#00474f; line-height:1.55; }
+.example .ex-t .mono { font-size:.76rem; }
+
+/* ═══ COMBINED: CHART, TIMELINE ═══ */
+.chartwrap { overflow-x:auto; }
+.chart { width:100%; min-width:640px; height:auto; display:block; }
+.chart text { font-family:'Segoe UI','Inter',Georgia,sans-serif; }
+.ch-ax { fill:#6b7280; font-size:.68rem; }
+.ch-grid { stroke:var(--border); stroke-width:1; }
+.ch-cov { stroke:var(--text); stroke-width:2; stroke-dasharray:6 4; fill:none; }
+.ch-hi { stroke:#6b7280; stroke-width:1.2; }
+.legend { display:flex; gap:8px 18px; flex-wrap:wrap; font-size:.76rem; color:#374151; margin-top:10px; }
+.legend i { display:inline-block; width:12px; height:12px; border-radius:4px; margin-right:6px; vertical-align:-1px; }
+.legend i.ln { height:0; border-top:2px dashed var(--text); border-radius:0; vertical-align:3px; }
+.legend i.hatch { background:repeating-linear-gradient(45deg,#004B87 0 3px,#fff8ed 3px 5px); border:1px solid #d97706; }
+.tl-ax { fill:#6b7280; font-size:.68rem; }
+.tl-ev { font-size:.72rem; }
+.evlist { margin:10px 0 0; padding-left:18px; font-size:.84rem; color:#374151; line-height:1.6; }
+
+/* ═══ CONVERSATION LAYER ═══ */
+.nextstep { border:1px solid var(--border); border-left:4px solid var(--teal); border-radius:0 var(--radius) var(--radius) 0; padding:16px 20px; background:var(--accent); }
+.nextstep .ns-e { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--teal); margin-bottom:4px; }
+.nextstep .ns-n { font-size:1.05rem; font-weight:800; color:var(--navy); }
+.nextstep .ns-why { margin:10px 0 0; padding-left:18px; font-size:.86rem; color:#374151; line-height:1.6; }
+.nextstep .ns-o { font-size:.9rem; color:#374151; font-style:italic; line-height:1.6; margin-top:10px; }
+.nextstep .ns-then { font-size:.84rem; color:#00474f; background:rgba(255,255,255,.6); border-radius:6px; padding:9px 12px; margin-top:10px; }
+.nextstep .ns-then b { color:var(--navy); }
+.nextstep .ns-acts { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+.alsolist { margin-top:14px; }
+.alsolist details { border:1px solid var(--border); border-radius:6px; padding:8px 12px; background:#fff; }
+.alsolist details + details { margin-top:8px; }
+.alsolist summary { cursor:pointer; font-size:.86rem; font-weight:700; color:var(--navy); }
+.alsolist summary .ns-e { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin-right:8px; }
+.talk p { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; font-size:.9rem; color:#374151; line-height:1.65; margin:0; padding:9px 0; border-bottom:1px solid var(--border); }
+.talk p:last-child { border-bottom:none; }
+.objgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media (max-width:1080px){ .objgrid { grid-template-columns:1fr; } }
+.objcard { border:1px solid var(--border); border-top:3px solid var(--navy); border-radius:var(--radius); padding:13px 15px; background:#fff; }
+.objcard .oq { font-size:.88rem; font-weight:700; color:var(--navy); margin-bottom:6px; }
+.objcard .oa { font-size:.82rem; color:#374151; line-height:1.6; }
+.objcard .on { font-size:.68rem; color:#6b7280; font-style:italic; margin-top:6px; }
+.ladder { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+@media (max-width:720px){ .ladder { grid-template-columns:1fr; } }
+.rung { border:1px solid var(--border); border-radius:6px; padding:10px 12px; background:#fff; }
+.rung.on { border-color:var(--teal); background:var(--accent); box-shadow:inset 0 0 0 1px var(--teal); }
+.rung .rg-n { font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; }
+.rung.on .rg-n { color:var(--teal); }
+.rung .rg-t { font-size:.82rem; font-weight:700; color:var(--navy); margin:3px 0 4px; line-height:1.3; }
+.rung .rg-p { font-family:'Consolas','Monaco',monospace; font-size:.72rem; color:#6b7280; }
+.progress { height:10px; border-radius:6px; background:var(--muted-2); overflow:hidden; margin:8px 0; }
+.progress span { display:block; height:100%; background:var(--teal); }
+
+/* ═══ CUSTOMER REPORT ═══ */
+.crep { border:1px solid var(--border); border-radius:var(--radius-lg); background:#fff; padding:26px 30px; }
+.crep .cr-head { border-bottom:2px solid var(--navy); padding-bottom:10px; margin-bottom:16px; display:flex; justify-content:space-between; gap:12px 20px; flex-wrap:wrap; }
+.crep .cr-title { font-size:1.25rem; font-weight:800; color:var(--navy); }
+.crep .cr-meta { font-size:.82rem; color:#374151; font-weight:600; }
+.crep .cr-disc { font-size:.72rem; color:#6b7280; font-style:italic; }
+.crep h4 { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--teal); margin:18px 0 8px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+.crep p, .crep li { font-size:.86rem; color:#374151; line-height:1.6; }
+.crep ul { margin:0; padding-left:18px; }
+.crep .cr-two { display:grid; grid-template-columns:1fr 1fr; gap:4px 28px; }
+@media (max-width:720px){ .crep { padding:16px; } .crep .cr-two { grid-template-columns:1fr; } }
+.crep .legendrow { display:flex; gap:6px 14px; flex-wrap:wrap; font-size:.74rem; color:#374151; }
+.crep .srcs li { font-size:.74rem; }
+
+/* ═══ CUSTOMER VIEW ═══ */
+body.customer-view .partner-only { display:none !important; }
+.cv-pill { display:none; }
+body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:translateX(-50%); bottom:18px;
+  z-index:60; align-items:center; gap:14px; background:var(--navy); color:#fff; border-radius:20px;
+  padding:10px 20px; font-size:.84rem; font-weight:700; box-shadow:var(--shadow-md); }
+.cv-pill .cv-exit { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:#a8ecf5;
+  border-radius:20px; padding:4px 12px; font-size:.74rem; font-weight:700; cursor:pointer; font-family:inherit; }
+.cv-pill .cv-exit:hover { background:rgba(255,255,255,.2); }
 
 footer.pagefoot { max-width:1320px; margin:52px auto 0; padding:24px 48px 0; border-top:1px solid var(--border); font-size:.78rem; color:#6b7280; line-height:1.7; }
 footer.pagefoot a { color:#6b7280; }
+footer.pagefoot p { margin:0 0 10px; }
 @media (max-width:720px){ footer.pagefoot { padding:24px 16px 0; } }
 
+/* ═══ PRINT — three hub documents, chosen by a body class ═══ */
+.printonly { display:none; }
 @media print {
-  .mh-bar, .hubtabs, footer.pagefoot, .no-print { display:none !important; }
+  @page { margin: 12mm 11mm; }
+  * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html, body { background:#fff; }
+  body { padding:0; margin:0; max-width:100%; font-size:11px; }
+  .mh-bar, .hubbar, footer.pagefoot, .no-print, .cv-pill, .copybtn, .btn, .linkbtn, #notice { display:none !important; }
   .masthead { background:#fff; }
-  .masthead h1 { color:var(--navy); }
-  .masthead .sub { color:var(--text); }
-  body { padding:0; max-width:100%; }
+  .masthead-inner { padding:0 0 10px; }
+  .masthead h1 { color:var(--navy); font-size:1.25rem; }
+  .masthead .sub, .masthead .mh-meta { color:var(--text); }
+  .mh-eyebrow { display:none; }
+  .wrap { padding:0; }
+  .wcard, .rescard, .acard, .crep { box-shadow:none; }
+  .rescard .rc-head { background:#fff; color:var(--navy); border-bottom:2px solid var(--navy); padding:6px 12px; }
+  a[href]::after { content:""; }
+  details > *:not(summary) { display:block; }
+  body.print-customer .masthead, body.print-customer .wrap,
+  body.print-governance .masthead, body.print-governance .wrap { display:none !important; }
+  body.print-customer #printCustomer { display:block !important; }
+  body.print-governance #printGov { display:block !important; }
+  body.print-customer .crep, body.print-governance .crep { border:none; padding:0; }
+  body.print-customer .crep p, body.print-customer .crep li { font-size:.74rem; line-height:1.4; }
+  body.print-customer .crep h4 { margin:10px 0 5px; }
+  body.print-customer .numcell { padding:8px 10px; }
+  body.print-customer .numcell .nk { font-size:1.05rem; }
+  body.print-customer .dtable td, body.print-customer .dtable th { padding:4px 6px; font-size:.68rem; }
+  body.print-internal .tabpanel[hidden] { display:block !important; }
+  body.print-internal #panel-cowork .cwhost { display:none !important; }
+  body.print-internal #printInternalHead { display:block !important; margin-bottom:12px; }
+  body.print-internal .acard, body.print-internal .rescard, body.print-internal .wcard { break-inside:avoid; page-break-inside:avoid; }
 }
 </style>
 </head>
@@ -98,35 +405,328 @@ footer.pagefoot a { color:#6b7280; }
       <svg width="23" height="23" viewBox="0 0 178 178" aria-hidden="true"><path class="ring" d="M88.6,0.8c48.9,0,88.6,39.8,88.6,88.6c0,48.9-39.8,88.6-88.6,88.6S0,138.2,0,89.4C0,40.5,39.8,0.8,88.6,0.8z M88.6,10.2c-43.7,0-79.2,35.5-79.2,79.2s35.5,79.2,79.2,79.2s79.2-35.5,79.2-79.2C167.8,45.7,132.3,10.2,88.6,10.2L88.6,10.2z M46.6,44.5L46.6,44.5C46.8,44.6,46.7,44.6,46.6,44.5c-5.3,8-8.5,17.4-8.5,27.7c0,27.2,22.1,49.3,49.3,49.3c2.2,0,4.5-0.2,6.6-0.5 c0,0,1.6-0.2,2.4-0.2c8.1,0,14.6,6.6,14.6,14.6c0,7.2-5.2,13.3-12.1,14.5c-3.4,0.6-6.8,0.9-10.3,0.9c-33.9,0-61.5-27.5-61.5-61.5 C27.2,71.7,34.6,55.8,46.6,44.5L46.6,44.5z M100.5,30.8l0.2,0.1c0,0,0.1,0,0.1,0.1c0,0,0,0.1-0.1,0.1h-0.1 c-19.6,4.5-34,22.5-34.7,44.2c-0.3,6.9,1,13.8,3.6,20.2c2.6,6.3,6.5,12,11.5,16.6l0.1,0.1c0,0,0,0,0,0.1c0,0,0,0-0.1,0l0,0 c-5.4-1.1-10.6-3.4-15.2-6.5c-4.7-3.2-8.6-7.3-11.6-12.1s-5-10.1-6-15.7c-0.9-5.6-0.7-11.3,0.7-16.8c1.4-5.7,4-11.1,7.6-15.7 s8.2-8.5,13.4-11.2C79.3,29.2,90.2,28,100.5,30.8z M123.2,43.1c8.5,3.2,15.5,9.4,19.5,17.5l0.1,0.2v0.1c0,0,0,0-0.1,0l-0.1-0.1 c-14-9.9-33.6-8.9-47.9,2.7c-4.6,3.7-8.3,8.3-10.9,13.5s-4,10.8-4.2,16.5v0.1c0,0,0,0-0.1,0.1l0,0l0,0c-2.3-4.1-3.9-8.6-4.4-13.2 c-0.6-4.7-0.2-9.5,1.2-14.1c1.4-4.6,3.6-8.8,6.7-12.5s6.9-6.7,11.2-8.9c4.5-2.3,9.4-3.6,14.4-3.9C113.5,40.6,118.5,41.4,123.2,43.1z"/></svg>
       <span class="lbl">Copilot Playbook</span>
     </a>
-    <div class="mh-crumb"><a href="index.html#cowork-heading">Cowork and Copilot Studio</a><span class="sep">/</span><span class="cur">Copilot Credit Planner</span></div>
-    <div class="mh-date no-print" id="rateCardStamp">Rate card October 11, 2026</div>
+    <div class="mh-crumb"><a href="index.html">Copilot Playbook</a><span class="sep">/</span><a href="index.html#cowork-heading">The Cowork Suite</a><span class="sep">/</span><span class="cur">Copilot Credit Planner</span></div>
+    <div class="mh-date no-print">Last updated: October 11, 2026 &middot; <span id="rateCardStamp">Rate card 2026-10-11</span></div>
   </div>
 </div>
 <div class="masthead">
   <div class="masthead-inner">
-    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Partner Tool &middot; Browser-Based &middot; Offline &middot; Nothing Saved</div></div>
+    <div class="mh-eyebrow"><div class="bar"></div><div class="lbl">Live Partner Tool &middot; Cowork + Copilot Studio &middot; Browser-Based &middot; Nothing Saved</div></div>
     <h1>Copilot Credit Planner</h1>
-    <p class="sub">TD SYNNEX partner planner, built on Microsoft&rsquo;s published rates. Cowork and Copilot Studio agents in one credit pool, the cheapest way to buy it, the guardrails to set, and the conversation to have.</p>
+    <p class="sub">A TD SYNNEX partner planner built on Microsoft&rsquo;s published rates. Size Cowork and Copilot Studio agents together in one credit pool, find the cheapest way to buy it, set the guardrails, and know what to say next.</p>
+    <p class="mh-meta">Rates checked <b id="rcChecked">2026-10-11</b>. Re-check after Ignite (November 17&ndash;20, 2026).</p>
+  </div>
+</div>
+
+<div class="hubbar no-print" id="hubbar">
+  <div class="hubbar-in">
+    <div class="hubtabs" role="tablist" aria-label="Planner sections">
+      <button class="hubtab" type="button" role="tab" id="tab-cowork" aria-selected="false" aria-controls="panel-cowork" tabindex="-1"><span class="tk" aria-hidden="true">1</span>Cowork <span class="tb-badge" id="badgeCowork"></span></button>
+      <button class="hubtab" type="button" role="tab" id="tab-studio" aria-selected="true" aria-controls="panel-studio" tabindex="0"><span class="tk" aria-hidden="true">2</span>Copilot Studio agents <span class="tb-badge" id="badgeStudio"></span></button>
+      <button class="hubtab" type="button" role="tab" id="tab-combined" aria-selected="false" aria-controls="panel-combined" tabindex="-1"><span class="tk" aria-hidden="true">3</span>Combined plan &amp; report <span class="tb-badge" id="badgeCombined"></span></button>
+    </div>
+    <div class="hubtools" role="toolbar" aria-label="Planner tools">
+      <label class="acct"><span class="sr-only">Account name</span><input type="text" id="tbAccount" maxlength="80" placeholder="Account name" autocomplete="off" data-bind="meta.accountName" data-type="text"></label>
+      <button type="button" class="motionpill partner-only" id="motionPill" title="Your CSP motion (partner-only). Click to set it in the partner layer."></button>
+      <button type="button" class="tbtn" id="btnCustView" aria-pressed="false" title="Hide partner-only content in both tabs (C; Esc exits)">Customer view<kbd>C</kbd></button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button type="button" class="tbtn" id="btnSave" title="Download this plan as a session file. Nothing is stored in the browser.">Save session</button>
+      <button type="button" class="tbtn" id="btnLoad">Load session</button>
+      <button type="button" class="tbtn partner-only" id="btnCardLoad" title="Load your pricing and services from a partner card file">Load partner card</button>
+      <button type="button" class="tbtn partner-only" id="btnCardSave" title="Save your pricing and services to reuse with other customers">Save partner card</button>
+      <div class="menuwrap">
+        <button type="button" class="tbtn" id="btnPrint" aria-haspopup="menu" aria-expanded="false" aria-controls="printMenu">Print &#9662;</button>
+        <div class="menu" id="printMenu" role="menu" aria-label="Print" hidden>
+          <div class="m-h">This planner</div>
+          <button type="button" role="menuitem" data-print="customer">Combined customer report (one page)</button>
+          <button type="button" role="menuitem" data-print="internal" class="partner-only">Partner working copy (everything)</button>
+          <button type="button" role="menuitem" data-print="governance">Governance settings sheet</button>
+          <div class="m-h">Cowork tab only</div>
+          <button type="button" role="menuitem" data-print="cowork-customer">Cowork customer leave-behind</button>
+          <button type="button" role="menuitem" data-print="cowork-internal" class="partner-only">Cowork internal working copy</button>
+          <div class="m-h partner-only">Exports</div>
+          <button type="button" role="menuitem" data-print="csv">Download the cost trace (.csv)</button>
+        </div>
+      </div>
+      <input type="file" id="fileSession" accept="application/json,.json" hidden>
+      <input type="file" id="fileCard" accept="application/json,.json" hidden>
+      <input type="file" id="fileCowork" accept="application/json,.json" hidden>
+    </div>
   </div>
 </div>
 
 <div class="wrap">
   <main class="stage" id="stage">
-    <div class="hubtabs no-print" role="tablist" aria-label="Planner sections">
-      <button class="hubtab" role="tab" id="tab-cowork" aria-selected="false" aria-controls="panel-main" disabled>Cowork</button>
-      <button class="hubtab" role="tab" id="tab-studio" aria-selected="true" aria-controls="panel-main" disabled>Copilot Studio agents</button>
-      <button class="hubtab" role="tab" id="tab-combined" aria-selected="false" aria-controls="panel-main" disabled>Combined plan and report</button>
-    </div>
-    <section class="panel" id="panel-main" role="tabpanel" aria-labelledby="tab-studio">
-      <h2>Planner interface under construction</h2>
-      <p class="note">The calculation engine is in place; the workspace is being built on top of it.</p>
-      <p class="bootline" id="bootline"></p>
+    <div id="notice" aria-live="polite"></div>
+    <div class="printonly" id="printInternalHead"></div>
+
+    <!-- ══════════ TAB 1 · COWORK ══════════ -->
+    <section class="tabpanel" id="panel-cowork" role="tabpanel" aria-labelledby="tab-cowork" hidden>
+      <div class="cwstatus no-print" id="cwStatus" role="status"></div>
+      <p class="note no-print" id="cwFallback" hidden>Customer view and auto-height need the page served over http(s). The Cowork calculator still works below, but its figures cannot reach the other tabs from a local file.</p>
+      <div class="cwhost">
+        <iframe id="coworkFrame" src="cowork-calculator.html?embed=1" title="Cowork Cost &amp; Conversation Simulator" scrolling="no"></iframe>
+      </div>
+    </section>
+
+    <!-- ══════════ TAB 2 · COPILOT STUDIO AGENTS ══════════ -->
+    <section class="tabpanel" id="panel-studio" role="tabpanel" aria-labelledby="tab-studio">
+
+      <div class="wcard" id="cardAccount">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">1</div><div class="wc-title">
+            <h2>The account</h2>
+            <div class="wc-sub">Who the agents serve and which Copilot licenses they already hold. Licensed people signed in with Microsoft, in Teams, SharePoint or Copilot Chat, cost nothing to run; everyone else is metered.</div></div></div>
+          <div class="coach no-print" id="acctFromCowork" hidden><div class="co-txt"></div></div>
+          <div class="fgrid">
+            <div class="field"><label for="fPrepared">Prepared by (your company)</label><input type="text" id="fPrepared" maxlength="80" data-bind="meta.preparedBy" data-type="text" placeholder="Shown on the customer report"></div>
+            <div class="field"><label for="fStart">Plan start month</label><input type="month" id="fStart" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"><div class="hint">Twelve months from here.</div></div>
+            <div class="field"><label for="fUsers">Total users <span class="fromcw" data-from="studio.account.totalUsers" hidden>from the Cowork tab</span></label><input type="number" id="fUsers" min="0" max="1000000" step="1" data-bind="studio.account.totalUsers" data-type="int"></div>
+            <div class="field"><label for="fWd">Working days a month</label><input type="number" id="fWd" min="1" max="31" step="1" data-bind="studio.account.workingDays" data-type="int"><div class="hint">Used for per-user limit timing.</div></div>
+            <div class="field"><label for="fBiz">Copilot Business seats <span class="fromcw" data-from="studio.account.seats.business" hidden>from the Cowork tab</span></label><input type="number" id="fBiz" min="0" max="1000000" step="1" data-bind="studio.account.seats.business" data-type="int"><div class="hint">Capped at 300 seats. <span data-fact="F-147">$18</span> promotional through December 31, 2026.</div></div>
+            <div class="field"><label for="fBizBill">Copilot Business billing after the promotion</label><select id="fBizBill" data-bind="studio.account.businessBilling" data-type="enum"><option value="annual">Annual commitment</option><option value="monthly">Monthly billing</option></select><div class="hint">Annual is <span data-fact="F-176">$21</span> a user a month.</div></div>
+            <div class="field"><label for="fEnt">Microsoft 365 Copilot (enterprise) seats <span class="fromcw" data-from="studio.account.seats.enterprise" hidden>from the Cowork tab</span></label><input type="number" id="fEnt" min="0" max="1000000" step="1" data-bind="studio.account.seats.enterprise" data-type="int"><div class="hint"><span data-fact="F-090">$30</span> a user a month.</div></div>
+            <div class="field"><label for="fE7">E7 seats <span class="fromcw" data-from="studio.account.seats.e7" hidden>from the Cowork tab</span></label><input type="number" id="fE7" min="0" max="1000000" step="1" data-bind="studio.account.seats.e7" data-type="int"></div>
+            <div class="field"><label for="fBase">Tenant base <span class="fromcw" data-from="studio.account.tenantBase" hidden>from the Cowork tab</span></label><select id="fBase" data-bind="studio.account.tenantBase" data-type="enum"><option value="basic">Business Basic</option><option value="standard">Business Standard</option><option value="premium">Business Premium</option><option value="e3">Microsoft 365 E3</option><option value="e5">Microsoft 365 E5 or E7</option><option value="unsure">Not sure</option></select><div class="hint">Decides Agent 365 eligibility.</div></div>
+            <div class="field"><label for="fBc">Business Central in use</label><select id="fBc" data-bind="studio.account.businessCentral" data-type="bool"><option value="false">No</option><option value="true">Yes</option></select></div>
+            <div class="field"><label for="fCountry">Country</label><select id="fCountry" data-bind="studio.account.country" data-type="enum"></select></div>
+            <div class="field"><label for="fCspNew">New CSP Copilot Business seats from December 1, 2026</label><select id="fCspNew" data-bind="studio.account.cspNewBusiness" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select><div class="hint">They come with a default monthly credit limit per user.</div></div>
+            <div class="field"><label for="fAzure">Azure subscription linked for pay-as-you-go</label><select id="fAzure" data-bind="studio.account.azurePayg" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select><div class="hint">A billing path: without one, uncovered agent use simply fails.</div></div>
+          </div>
+          <div class="sub-h">What this account looks like</div>
+          <div class="numgrid" id="acctRibbon"></div>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardAgents">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">2</div><div class="wc-title">
+            <h2>The agents</h2>
+            <div class="wc-sub">Load a whole scenario in one click, or add agents one at a time. Every count is an exact field; every line shows its rate, its source and whether a Copilot license covers it.</div></div></div>
+          <div class="sub-h">Start from a scenario (replaces the agents below; keeps the account)</div>
+          <div class="presetgrid" id="presetGrid"></div>
+          <div class="sub-h">The portfolio</div>
+          <div id="agentList"></div>
+          <div class="actionsrow" style="margin-top:14px;">
+            <button type="button" class="btn primary" id="btnAddAgent" aria-expanded="false" aria-controls="archPicker">+ Add an agent</button>
+            <span class="note" id="agentCount"></span>
+          </div>
+          <div class="archpick" id="archPicker" hidden style="margin-top:14px;"></div>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardEnv">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">3</div><div class="wc-title">
+            <h2>Build and environments</h2>
+            <div class="wc-sub">Where each agent draws its credits. The recommended layout keeps the default environment for personal use, gives published agents a capped production allocation, and builds in a sandbox with its tenant draw off.</div></div>
+            <div class="wc-tools"><button type="button" class="btn small" id="btnEnvLayout">Use the recommended layout</button><button type="button" class="btn small quiet" id="btnEnvAdd">+ Environment</button></div></div>
+          <div id="envBody"></div>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardAdj">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">4</div><div class="wc-title">
+            <h2>Dataverse and other costs outside the credit pool</h2>
+            <div class="wc-sub">Storage, Windows 365 for Agents, Agent 365 and your own models are billed separately from Copilot Credits. They are never added to the pool or the purchase.</div></div></div>
+          <div id="adjBody"></div>
+        </div>
+      </div>
+
+      <div class="rescard" id="cardStudioResults">
+        <div class="rc-head"><span>Copilot Studio agents: the result</span><span id="studioRate"></span></div>
+        <div class="rc-body" id="studioResults"></div>
+      </div>
+
+      <div class="rescard" id="cardValue">
+        <div class="rc-head"><span>Value: Microsoft&rsquo;s formula, your inputs</span><span>Optional</span></div>
+        <div class="rc-body" id="valueBody"></div>
+      </div>
+
+      <div class="rescard" id="cardStudioFlags">
+        <div class="rc-head"><span>What to watch on the agents</span><span id="studioFlagTag"></span></div>
+        <div class="rc-body" id="studioFlags"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ TAB 3 · COMBINED PLAN AND REPORT ══════════ -->
+    <section class="tabpanel" id="panel-combined" role="tabpanel" aria-labelledby="tab-combined" hidden>
+
+      <div class="wcard" id="cardPool">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">1</div><div class="wc-title">
+            <h2>One pool of credits</h2>
+            <div class="wc-sub">Cowork and every agent draw from the same tenant pool. Capacity packs (<span data-fact="F-013">$200</span> for 25,000 credits a month) draw first, then any pre-purchase plan, then pay-as-you-go at <span data-fact="F-149">$0.01</span> a credit.</div></div></div>
+          <div class="ctlrow">
+            <span class="ctl-l" id="incLbl">Include Cowork</span>
+            <div class="seg" role="group" aria-labelledby="incLbl" data-seg="combined.includeCowork">
+              <button type="button" data-v="auto">Auto (at results)</button><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button>
+            </div>
+            <span class="note" id="incStatus"></span>
+          </div>
+          <div class="fgrid" style="margin-top:14px;">
+            <div class="field"><label for="fStart2">Plan start month</label><input type="month" id="fStart2" min="2026-01" max="2030-12" data-bind="combined.horizon.startMonth" data-type="month"></div>
+            <div class="field"><label for="fRamp">Agent adoption ramp</label><select id="fRamp" data-bind="combined.ramp.mode" data-type="enum"><option value="none">None: full volume from go-live</option><option value="linear">Linear ramp</option></select></div>
+            <div class="field"><label for="fRampStart">Ramp starts at (%)</label><input type="number" id="fRampStart" min="0" max="100" step="1" data-bind="combined.ramp.startPct" data-type="int"></div>
+            <div class="field"><label for="fRampMonths">Months to full volume</label><input type="number" id="fRampMonths" min="1" max="12" step="1" data-bind="combined.ramp.months" data-type="int"></div>
+          </div>
+          <div class="numgrid" id="poolKpis" style="margin-top:18px;"></div>
+          <div class="sub-h">Month by month (middle scenario)</div>
+          <div class="chartwrap" id="poolChart"></div>
+          <div class="legend" id="poolLegend"></div>
+          <div class="sub-h">By lane</div>
+          <div class="tablewrap" id="poolTable"></div>
+          <p class="srcline">Low, middle and high move together across every lane. That overstates the spread a little; it is the honest way to show a plan that has not been measured yet.</p>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardBuy">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">2</div><div class="wc-title">
+            <h2>The cheapest way to buy it</h2>
+            <div class="wc-sub">Every option is simulated month by month in Microsoft&rsquo;s billing order, across the low, middle and high scenarios, weighted 25/50/25.</div></div>
+            <div class="wc-tools partner-only"><button type="button" class="btn small" id="btnQuote">Copy the quote request for your provider</button></div></div>
+          <div id="buyPlain"></div>
+          <div class="partner-only" id="buyOptionsWrap">
+            <div class="sub-h">Purchase options (partner view; Microsoft list prices)</div>
+            <div class="ctlrow">
+              <span class="ctl-l" id="appLbl">Commit appetite</span>
+              <div class="seg" role="group" aria-labelledby="appLbl" data-seg="combined.purchase.appetite">
+                <button type="button" data-v="conservative">Conservative</button><button type="button" data-v="balanced">Balanced</button><button type="button" data-v="aggressive">Aggressive</button>
+              </div>
+              <div class="field check"><label><input type="checkbox" data-bind="combined.purchase.allowPacks" data-type="bool"> Capacity packs</label></div>
+              <div class="field check"><label><input type="checkbox" data-bind="combined.purchase.allowP3" data-type="bool"> Pre-purchase plans</label></div>
+              <div class="field check"><label><input type="checkbox" data-bind="combined.purchase.showAgentP3" data-type="bool"> Disclose Agent pre-purchase plans</label></div>
+            </div>
+            <div class="tablewrap" id="buyOptions" style="margin-top:12px;"></div>
+            <div id="buyNotes"></div>
+            <details style="margin-top:12px;">
+              <summary class="linkbtn">What the customer already holds</summary>
+              <div class="fgrid" id="holdings" style="margin-top:10px;"></div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardEnforce">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">3</div><div class="wc-title">
+            <h2>Where the money runs out</h2>
+            <div class="wc-sub">Microsoft blocks agent flows at 100% of prepaid capacity and switches custom agents off at 125%. Power Platform pre-allocations come out first, and Microsoft 365 (Cowork) draws only what is left. This simulates the peak month, day by day.</div></div>
+            <div class="wc-tools"><button type="button" class="btn small quiet" id="btnMsExample" aria-expanded="false">Show Microsoft&rsquo;s example</button></div></div>
+          <div class="fgrid">
+            <div class="field"><label for="fEnfBasis">Simulate</label><select id="fEnfBasis" data-bind="combined.enforcement.basis" data-type="enum"><option value="recommended">The recommended purchase</option><option value="current">What the customer holds today</option></select></div>
+            <div class="field"><label for="fUserCap">Per-user monthly credit limit</label><input type="number" id="fUserCap" min="0" step="100" placeholder="None set" data-bind="combined.enforcement.perUserCap" data-type="nullint"><div class="hint">Blank: none, or the December 1 default when it applies.</div></div>
+            <div class="field"><label for="fCaps">Per-agent limits set</label><select id="fCaps" data-bind="combined.enforcement.perAgentCaps" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+            <div class="field check"><label><input type="checkbox" data-bind="combined.enforcement.defaultEnvPayg" data-type="bool"> The default environment and tenant pool are linked to pay-as-you-go</label></div>
+          </div>
+          <div id="msExample" hidden></div>
+          <div id="enfBody"></div>
+        </div>
+      </div>
+
+      <div class="wcard" id="cardGov">
+        <div class="wc-bar"></div>
+        <div class="wc-body">
+          <div class="wc-head"><div class="wc-num">4</div><div class="wc-title">
+            <h2>Governance settings sheet</h2>
+            <div class="wc-sub">Every setting, its value from this plan and where to set it. Customer-safe: hand it to whoever holds the admin keys.</div></div>
+            <div class="wc-tools"><button type="button" class="btn small" id="btnCopyGov">Copy settings</button><button type="button" class="btn small quiet" id="btnPrintGov">Print the sheet</button></div></div>
+          <div class="fgrid" style="margin-bottom:12px;">
+            <div class="field"><label for="fAutoApply">&ldquo;Auto-apply new services&rdquo; decision made</label><select id="fAutoApply" data-bind="autopilot.checklist.autoApplyDecision" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          </div>
+          <div id="govBody"></div>
+        </div>
+      </div>
+
+      <div class="rescard" id="cardReport">
+        <div class="rc-head"><span>The customer report</span><span><button type="button" class="copybtn" id="btnPrintCust2">Print it</button></span></div>
+        <div class="rc-body" id="custReportScreen"></div>
+      </div>
+
+      <div class="rescard" id="cardFlags">
+        <div class="rc-head"><span>What to watch</span><span id="flagTag"></span></div>
+        <div class="rc-body" id="flagBody"></div>
+      </div>
+
+      <!-- ══════════ PARTNER LAYER (partner-only) ══════════ -->
+      <div class="partner-only" id="partnerLayer">
+        <div class="wcard" id="cardWho">
+          <div class="wc-bar"></div>
+          <div class="wc-body">
+            <div class="wc-head"><div class="wc-num">P</div><div class="wc-title">
+              <h2>Who you are: your pricing</h2>
+              <div class="wc-sub">Partner-only. Your motion decides what your costs are; sell prices decide what the customer report shows. None of this changes the credits.</div></div></div>
+            <div class="ctlrow">
+              <span class="ctl-l" id="motLbl">Your CSP motion</span>
+              <div class="seg" role="group" aria-labelledby="motLbl" data-seg="partner.motion">
+                <button type="button" data-v="indirectReseller">Indirect reseller</button><button type="button" data-v="direct">Direct-bill partner</button><button type="button" data-v="notCsp">Outside CSP</button><button type="button" data-v="unsure">Not established</button>
+              </div>
+            </div>
+            <div class="fgrid" id="whoFields" style="margin-top:14px;"></div>
+            <p class="srcline" id="rateNote"></p>
+          </div>
+        </div>
+
+        <div class="rescard" id="cardEcon" style="margin-top:20px;">
+          <div class="rc-head"><span>Your economics on this deal</span><span id="econTag"></span></div>
+          <div class="rc-body" id="econBody"></div>
+        </div>
+
+        <div class="rescard" id="cardServices" style="margin-top:20px;">
+          <div class="rc-head"><span>Services around the credits</span><span>Saved in your partner card</span></div>
+          <div class="rc-body" id="svcBody"></div>
+        </div>
+
+        <div class="rescard" id="cardNext" style="margin-top:20px;">
+          <div class="rc-head"><span>The next best action</span><span id="nbaTag"></span></div>
+          <div class="rc-body" id="nbaBody"></div>
+        </div>
+
+        <div class="rescard" id="cardTalk" style="margin-top:20px;">
+          <div class="rc-head"><span>The talk track</span><button type="button" class="copybtn" id="btnCopyTalk">Copy all</button></div>
+          <div class="rc-body"><div class="talk" id="talkBody"></div></div>
+        </div>
+
+        <div class="rescard" id="cardObj" style="margin-top:20px;">
+          <div class="rc-head"><span>When they push back</span><span>Filled with this plan&rsquo;s numbers</span></div>
+          <div class="rc-body"><div class="objgrid" id="objBody"></div></div>
+        </div>
+
+        <div class="rescard" id="cardLadder" style="margin-top:20px;">
+          <div class="rc-head"><span>The upsell ladder</span><span id="ladderTag"></span></div>
+          <div class="rc-body" id="ladderBody"></div>
+        </div>
+
+        <div class="rescard" id="cardIncent" style="margin-top:20px;">
+          <div class="rc-head"><span>Incentives and specialization</span><span>Verified only</span></div>
+          <div class="rc-body" id="incentBody"></div>
+        </div>
+      </div>
     </section>
   </main>
 </div>
 
+<!-- Print-only documents. Each is rebuilt on every recalculation. -->
+<section class="printonly" id="printCustomer" aria-hidden="true"></section>
+<section class="printonly" id="printGov" aria-hidden="true"></section>
+
+<div class="cv-pill no-print" id="custViewPill" role="status">
+  <span>Customer view &mdash; partner detail hidden in both tabs</span>
+  <button type="button" class="cv-exit" id="custViewExit">Exit &middot; Esc</button>
+</div>
+
 <footer class="pagefoot no-print">
-  <p><b>Nothing you enter here is saved, stored, or transmitted anywhere</b> &mdash; not to a server, not to browser storage. Everything lives in this tab&rsquo;s memory only; the Cowork tab talks to this page inside the same browser tab and nowhere else. Microsoft rates come from Microsoft&rsquo;s own billing pages and licensing guides, each linked with its date in the cost trace, and the rate card is dated in the header. Microsoft&rsquo;s current Cowork model is the <a href="https://aka.ms/CopilotCreditPlanningModel" target="_blank" rel="noopener">Copilot Credit Estimator</a>. Partner service prices are Copilot Playbook starting points for you to edit, and margins are shown only to you. See the <a href="cowork-calculator.html">Cowork Cost &amp; Conversation Simulator</a> and the <a href="copilot-studio-agent-engagement.html">Copilot Studio agent engagement guide</a>.</p>
+  <p><b>Nothing you enter here is saved, stored or transmitted anywhere</b>: not to a server, not to browser storage, and no analytics are loaded. Everything lives in this browser tab&rsquo;s memory. The Cowork tab is the <a href="cowork-calculator.html">Cowork Cost &amp; Conversation Simulator</a> running inside this page; it hands its customer-safe figures (credits by month, its band, seats by license and its pricing basis) to the other tabs through a same-tab browser message and same-origin page access, inside this browser tab only. Margins, provider rates and service prices never leave the partner layer. Save your work with Save session; the file is the only memory this tool has, and no link carries your inputs.</p>
+  <p>Microsoft rates are as of the rate card dated <span id="footRc">2026-10-11</span>, each linked to its Microsoft source with that source&rsquo;s date. Re-check them after Ignite (November 17&ndash;20, 2026). Every figure carries a label: <b>Microsoft</b> is published by Microsoft and linked; <b>Modeled</b> applies Microsoft&rsquo;s method to assumptions on this page; <b>Estimate</b> is a planner placeholder for something Microsoft does not publish; <b>You said</b> is your input; <b>Measured</b> comes from the customer&rsquo;s own usage; <b>Likely</b> marks a rule applied as the most probable reading where Microsoft has not said it in one sentence. Partner service prices are Copilot Playbook starting points for you to edit. For the engagement around these numbers, see the <a href="copilot-studio-agent-engagement.html">Copilot Studio agent engagement guide</a> and <a href="agent-never-done.html">An Agent Is Never Done</a>.</p>
 </footer>
 
 <script id="planner-engine">
@@ -2487,19 +3087,1539 @@ footer.pagefoot a { color:#6b7280; }
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 </script>
 <script id="planner-ui">
-/* @ui:begin bootstrap */
+/* ═══════════════════════════════════════════════════════════════════════════
+   COPILOT CREDIT PLANNER — HUB UI
+   Every number on this page comes from window.PlannerEngine; this script only
+   reads inputs, calls the engine and renders what it returns. The one clock
+   read (today's date) happens here, never in the engine. Nothing is stored:
+   state lives in this tab's memory and leaves only as a file the partner
+   downloads. The Cowork tab is the Cowork calculator in a same-origin frame;
+   it posts its customer-safe lane to this page (same tab, this origin only).
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* @ui:begin hub */
 (function () {
   'use strict';
   var E = window.PlannerEngine;
-  var out = document.getElementById('bootline');
-  if (!E || !out) return;
-  var r = E.compute(E.defaults());
-  var stamp = document.getElementById('rateCardStamp');
-  if (stamp) stamp.textContent = 'Rate card ' + E.RATECARD_VERSION;
-  out.textContent = 'Default plan: pooled steady month ' + E.fmtInt(r.pool.steady.lo) + '\u2013' + E.fmtInt(r.pool.steady.hi) +
-    ' credits (' + E.fmtUsd(r.pool.steadyUsd.lo) + '\u2013' + E.fmtUsd(r.pool.steadyUsd.hi) + ' at pay-as-you-go list). Engine ' + E.VERSION + '.';
+  if (!E) return;
+  var $ = function (id) { return document.getElementById(id); };
+  var HOP = Object.prototype.hasOwnProperty;
+
+  /* ══ Formatting helpers ═══════════════════════════════════════════════ */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  var fi = E.fmtInt, fu = E.fmtUsd;
+  function fnum(x) {
+    x = typeof x === 'number' && isFinite(x) ? x : 0;
+    var r = Math.round(x * 100) / 100;
+    if (Math.abs(r - Math.round(r)) < 1e-9) return fi(r);
+    var neg = r < 0; r = Math.abs(r);
+    var ip = Math.floor(r), fp = Math.round((r - ip) * 100);
+    if (fp === 100) { ip++; fp = 0; }
+    return (neg ? '-' : '') + fi(ip) + '.' + (fp < 10 ? '0' : '') + fp;
+  }
+  function rng(lo, hi) { return Math.round(lo) === Math.round(hi) ? fi(lo) : fi(lo) + '–' + fi(hi); }
+  function urng(lo, hi) { return Math.round(lo) === Math.round(hi) ? fu(lo) : fu(lo) + '–' + fu(hi); }
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function longDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+    return m ? MONTHS[Number(m[2]) - 1] + ' ' + Number(m[3]) + ', ' + m[1] : String(iso || '');
+  }
+  function monLong(iso) { var m = /^(\d{4})-(\d{2})/.exec(String(iso || '')); return m ? MONTHS[Number(m[2]) - 1] + ' ' + m[1] : ''; }
+  function monShort(iso) { var m = /^(\d{4})-(\d{2})/.exec(String(iso || '')); return m ? MONTHS[Number(m[2]) - 1].slice(0, 3) + ' ' + m[1].slice(2) : ''; }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function todayIso() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function todayLabel() { return longDate(todayIso()); }
+  function nextMonthIso() {
+    var d = new Date(), y = d.getFullYear(), m = d.getMonth() + 2;
+    if (m > 12) { m -= 12; y++; }
+    var s = y + '-' + pad2(m);
+    return s < '2026-01' ? '2026-01' : (s > '2030-12' ? '2030-12' : s);
+  }
+  function slug(s) { return (String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'plan').slice(0, 40); }
+
+  /* Provenance pills and dated Microsoft sources. */
+  var PROV_CLASS = { 'ms-verified': 'verified', 'measured': 'measured', 'partner': 'asked', 'ms-modeled': 'modeled', 'editorial': 'estimate', 'ms-inferred': 'likely' };
+  function provPill(tag) {
+    var cls = PROV_CLASS[tag] || 'default', lbl = E.PROV_LABEL[tag] || 'Estimate';
+    return '<span class="pill ' + cls + '">' + esc(lbl) + '</span>';
+  }
+  function srcLink(key) {
+    var s = key && HOP.call(E.SRC, key) ? E.SRC[key] : null;
+    if (!s) return '';
+    var ext = /^https?:/.test(s.url);
+    return '<a href="' + esc(s.url) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + esc(s.title) + '</a>, ' + esc(longDate(s.date));
+  }
+  var FACT_SRC = {};
+  Object.keys(E.RC).forEach(function (k) { var r = E.RC[k]; if (r.fact && !FACT_SRC[r.fact]) FACT_SRC[r.fact] = r.src; });
+  function rcRef(key) {
+    var row = E.RC[key];
+    if (!row) return '';
+    return '<span class="ref">' + provPill(row.prov) + ' ' + srcLink(row.src) + ' &middot; ' + esc(row.fact) + '</span>';
+  }
+  function factRef(fact, prov) {
+    var src = FACT_SRC[fact];
+    return '<span class="ref">' + provPill(prov || 'ms-verified') + ' ' + (src ? srcLink(src) + ' &middot; ' : '') + esc(fact) + '</span>';
+  }
+
+  /* ══ State ═════════════════════════════════════════════════════════════ */
+  var state = E.defaults();
+  state.combined.horizon.startMonth = nextMonthIso();
+  var R = null, CV = null;
+  var touched = {};          // bound paths the partner has edited (the Cowork tab never overwrites them)
+  var fromCw = {};           // bound paths currently prefilled from the Cowork tab
+  var uiArch = {};           // agent id -> archetype, kept once a preset card has been edited
+  var uiOpen = {};           // open/closed state of <details> blocks, by key
+  var uiHide = {};           // agent id -> inputs collapsed
+  var lastPayload = null, lastScreen = null;
+  var activeTab = 'cowork', cvOn = false, showMsExample = false;
+  var frame = $('coworkFrame'), frameOk = false;
+  var PREFILL_PATHS = ['meta.accountName', 'studio.account.totalUsers', 'studio.account.seats.business', 'studio.account.seats.enterprise',
+                       'studio.account.seats.e7', 'studio.account.tenantBase', 'partner.motion'];
+
+  function getPath(o, path) {
+    var p = String(path).split('.');
+    for (var i = 0; i < p.length; i++) { if (o == null) return undefined; o = o[Array.isArray(o) ? Number(p[i]) : p[i]]; }
+    return o;
+  }
+  function setPath(o, path, v) {
+    var p = String(path).split('.');
+    for (var i = 0; i < p.length - 1; i++) {
+      var k = Array.isArray(o) ? Number(p[i]) : p[i];
+      if (o == null || typeof o[k] !== 'object' || o[k] === null) return false;
+      o = o[k];
+    }
+    var last = Array.isArray(o) ? Number(p[p.length - 1]) : p[p.length - 1];
+    if (/^(__proto__|constructor|prototype)$/.test(String(last))) return false;
+    o[last] = v;
+    return true;
+  }
+  function findAgent(id) { var a = state.studio.agents; for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+  function agentRes(id) { if (!R) return null; var a = R.lanes.agents; for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
+
+  /* ══ Recompute ════════════════════════════════════════════════════════ */
+  var timer = null;
+  function schedule(ms) { clearTimeout(timer); timer = setTimeout(recompute, ms || 0); }
+  function recompute() {
+    clearTimeout(timer);
+    var r = E.compute(state);
+    if (!r) return;
+    R = r; state = r.state; CV = E.customerView(r);
+    try { renderAll(); }
+    catch (err) { showNotice('Something on this page could not be drawn (' + esc(err && err.message) + '). The numbers above are the last good ones; undo the most recent change.', 'warn'); }
+  }
+
+  /* ══ Focus-safe mounting: rebuild a block only when its structure changes ═ */
+  function focusKey(el) {
+    if (!el || !el.getAttribute) return null;
+    return { bind: el.getAttribute('data-bind'), a: el.getAttribute('data-a'), k: el.getAttribute('data-k'), id: el.id,
+             s: (function () { try { return [el.selectionStart, el.selectionEnd]; } catch (e) { return null; } })() };
+  }
+  function findByKey(root, f) {
+    if (!f) return null;
+    if (f.bind) return root.querySelector('[data-bind="' + f.bind + '"]');
+    if (f.a && f.k) return root.querySelector('[data-a="' + f.a + '"][data-k="' + f.k + '"]');
+    if (f.id) return root.querySelector('#' + f.id.replace(/[^A-Za-z0-9_-]/g, ''));
+    return null;
+  }
+  function mount(el, key, build) {
+    if (!el || el.__key === key) return false;
+    var act = document.activeElement, f = act && el.contains(act) ? focusKey(act) : null;
+    el.innerHTML = build();
+    el.__key = key;
+    if (f) {
+      var n = findByKey(el, f);
+      if (n) { n.focus(); if (f.s && f.s[0] != null) { try { n.setSelectionRange(f.s[0], f.s[1]); } catch (e) { /* number inputs */ } } }
+    }
+    return true;
+  }
+  function isFocused(el) { return el === document.activeElement; }
+
+  /* ══ Reading and writing bound inputs ═════════════════════════════════ */
+  function readVal(el, type) {
+    var v = el.value;
+    if (type === 'bool') return el.type === 'checkbox' ? el.checked : v === 'true';
+    if (type === 'text') return v;
+    if (type === 'enum') return v;
+    if (type === 'month') return /^\d{4}-\d{2}$/.test(v) ? v : undefined;
+    if (type === 'int-enum') return parseInt(v, 10);
+    if (type === 'nullnum' || type === 'nullint') {
+      if (v === '' || v == null) return null;
+      var n0 = Number(v); return isFinite(n0) ? n0 : undefined;
+    }
+    if (type === 'pctfactor') { if (v === '') return 0; var p = Number(v); return isFinite(p) ? p / 100 : undefined; }
+    if (v === '') return 0;
+    var n = Number(v);
+    return isFinite(n) ? n : undefined;
+  }
+  function putVal(el, v) {
+    var type = el.getAttribute('data-type');
+    if (el.type === 'checkbox') { el.checked = !!v; return; }
+    var s = v == null ? '' : (type === 'pctfactor' ? String(Math.round(v * 10000) / 100) : String(v));
+    if (el.value !== s) el.value = s;
+  }
+  function hydrate() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-bind]'), function (el) {
+      if (isFocused(el)) return;
+      putVal(el, getPath(state, el.getAttribute('data-bind')));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-a][data-k]'), function (el) {
+      if (isFocused(el)) return;
+      var a = findAgent(el.getAttribute('data-a'));
+      if (a) putVal(el, getPath(a, el.getAttribute('data-k')));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-seg]'), function (g) {
+      var v = getPath(state, g.getAttribute('data-seg'));
+      Array.prototype.forEach.call(g.querySelectorAll('button[data-v]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === String(v))); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-from]'), function (t) { t.hidden = !fromCw[t.getAttribute('data-from')]; });
+  }
+
+  function onEdit(e) {
+    var el = e.target;
+    if (!el || !el.getAttribute) return;
+    var bind = el.getAttribute('data-bind'), ak = el.getAttribute('data-k'), aid = el.getAttribute('data-a');
+    if (!bind && !(ak && aid)) return;
+    var type = el.getAttribute('data-type') || 'text';
+    var typing = (el.tagName === 'INPUT' && /^(text|number)$/.test(el.type)) || el.tagName === 'TEXTAREA';
+    if (e.type === 'input' && !typing) return;
+    if (e.type === 'change' && typing) { schedule(0); return; }   // blur: re-show the normalized value
+    var v = readVal(el, type);
+    if (v === undefined) return;
+    if (bind) {
+      var m = /^studio\.environments\.(\d+)\.name$/.exec(bind);
+      if (m) {   // renaming an environment keeps its agents attached
+        var old = getPath(state, bind);
+        state.studio.agents.forEach(function (a) { if (a.env && a.env === old) a.env = String(v).trim().slice(0, 40); });
+      }
+      setPath(state, bind, v);
+      touched[bind] = true; delete fromCw[bind];
+    } else {
+      var a = findAgent(aid);
+      if (!a) return;
+      if (ak !== 'name' && a.archetype) { uiArch[a.id] = a.archetype; a.archetype = ''; }
+      setPath(a, ak, v);
+    }
+    schedule(typing ? 120 : 0);
+  }
+  document.addEventListener('input', onEdit, true);
+  document.addEventListener('change', onEdit, true);
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (d && d.getAttribute && d.getAttribute('data-open')) uiOpen[d.getAttribute('data-open')] = d.open;
+  }, true);
+
+  /* ══ Notices ══════════════════════════════════════════════════════════ */
+  function showNotice(html, kind, actions) {
+    var n = $('notice');
+    n.innerHTML = '<div class="notice' + (kind === 'warn' ? ' warn' : '') + '" role="status"><div>' + html + '</div><div class="n-acts">' +
+      (actions || '') + '<button type="button" class="btn small quiet" data-act="dismiss">Dismiss</button></div></div>';
+  }
+  function clearNotice() { $('notice').innerHTML = ''; }
+
+  /* ══ Clipboard and downloads ══════════════════════════════════════════ */
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) { /* manual select remains */ } document.body.removeChild(ta);
+  }
+  function copyText(text, btn) {
+    var label = btn ? btn.textContent : '';
+    var done = function () { if (!btn) return; btn.textContent = 'Copied'; btn.classList.add('done'); setTimeout(function () { btn.textContent = label; btn.classList.remove('done'); }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+    else { fallbackCopy(text); done(); }
+  }
+  function download(text, mime, name) {
+    var blob = new Blob([text], { type: mime }), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* ══ Tabs ═════════════════════════════════════════════════════════════ */
+  var TABS = ['cowork', 'studio', 'combined'];
+  function barsHeight() {
+    var h = 0, mh = document.querySelector('.mh-bar'), hb = $('hubbar');
+    if (mh) h += mh.getBoundingClientRect().height;
+    if (hb && getComputedStyle(hb).position === 'sticky') h += hb.getBoundingClientRect().height;
+    return h;
+  }
+  function scrollUnderBars(el) {
+    if (!el) return;
+    var top = el.getBoundingClientRect().top + window.pageYOffset - barsHeight() - 10;
+    if (Math.abs(window.pageYOffset - top) > 4) window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  }
+  function selectTab(name, focus) {
+    if (TABS.indexOf(name) < 0) return;
+    activeTab = name;
+    TABS.forEach(function (t) {
+      var b = $('tab-' + t), p = $('panel-' + t), on = t === name;
+      b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+      p.hidden = !on;
+    });
+    if (focus) $('tab-' + name).focus();
+    var stage = $('stage'), top = stage.getBoundingClientRect().top;
+    if (top < barsHeight()) scrollUnderBars(stage);
+    if (name === 'cowork') sizeFrame();
+  }
+  TABS.forEach(function (t) { $('tab-' + t).addEventListener('click', function () { selectTab(t); }); });
+  document.querySelector('.hubtabs').addEventListener('keydown', function (e) {
+    var i = TABS.indexOf(activeTab), j = -1;
+    if (e.key === 'ArrowRight') j = (i + 1) % 3; else if (e.key === 'ArrowLeft') j = (i + 2) % 3;
+    else if (e.key === 'Home') j = 0; else if (e.key === 'End') j = 2;
+    if (j > -1) { e.preventDefault(); selectTab(TABS[j], true); }
+  });
+
+  /* ══ Customer view: one toggle, both documents ════════════════════════ */
+  function frameDoc() { try { var d = frame.contentDocument; return d && d.body ? d : null; } catch (e) { return null; } }
+  function setCustomerView(on) {
+    cvOn = !!on;
+    document.body.classList.toggle('customer-view', cvOn);
+    var b = $('btnCustView'); b.setAttribute('aria-pressed', String(cvOn)); b.classList.toggle('on', cvOn);
+    var d = frameDoc();
+    if (d && d.body.classList.contains('customer-view') !== cvOn) d.body.classList.toggle('customer-view', cvOn);
+  }
+  $('btnCustView').addEventListener('click', function () { setCustomerView(!cvOn); });
+  $('custViewExit').addEventListener('click', function () { setCustomerView(false); });
+  function onKey(e) {
+    var t = e.target, tag = t && t.tagName;
+    if (e.key === 'Escape') {
+      if (!$('printMenu').hidden) { closeMenu(true); return; }
+      if (cvOn) setCustomerView(false);
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    if (e.key === '1' || e.key === '2' || e.key === '3') { selectTab(TABS[Number(e.key) - 1], true); e.preventDefault(); }
+    else if (e.key === 'c' || e.key === 'C') { setCustomerView(!cvOn); e.preventDefault(); }
+  }
+  document.addEventListener('keydown', onKey);
+
+  /* ══ The Cowork tab: same-origin frame, auto-height, its result ════════ */
+  var lastFrameH = 0;
+  function sizeFrame() {
+    var d = frameDoc();
+    if (!d) return;
+    var h = Math.ceil(Math.max(d.body.scrollHeight, d.body.getBoundingClientRect().height));
+    if (h > 80 && Math.abs(h - lastFrameH) > 1) { lastFrameH = h; frame.style.height = h + 'px'; }
+  }
+  frame.addEventListener('load', function () {
+    var d = frameDoc();
+    if (d && d.__hubWired) return;
+    if (d) d.__hubWired = true;
+    if (!d) { frameOk = false; $('cwFallback').hidden = false; frame.setAttribute('scrolling', 'auto'); renderCoworkStatus(); return; }
+    frameOk = true;
+    $('cwFallback').hidden = true;
+    /* The hub owns the customer-view toggle and pill; the embedded page's own
+       toggle button is hidden so there is exactly one. */
+    var st = d.createElement('style');
+    st.textContent = '#btnCustView{display:none !important;}';
+    d.head.appendChild(st);
+    if (cvOn) d.body.classList.add('customer-view');
+    d.addEventListener('keydown', onKey);
+    try { new ResizeObserver(sizeFrame).observe(d.body); } catch (e) { setInterval(sizeFrame, 1000); }
+    try {
+      new MutationObserver(function () {
+        var has = d.body.classList.contains('customer-view');
+        if (has !== cvOn) setCustomerView(has);
+      }).observe(d.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (e) { /* older browsers: the hub toggle still works */ }
+    sizeFrame();
+    renderCoworkStatus();
+  });
+  window.addEventListener('message', function (ev) {
+    if (ev.origin !== location.origin) return;
+    if (!frame || ev.source !== frame.contentWindow) return;
+    var d = ev.data;
+    if (!d || typeof d !== 'object' || d.__type !== 'cowork-lane' || d.version !== 1) return;
+    var v = E.validateCoworkPayload(d);
+    if (!v.ok) return;
+    var prev = lastScreen;
+    lastPayload = v.payload; lastScreen = v.payload.screen;
+    state.coworkSession = v.payload;
+    if (v.payload.screen !== 'intro') prefillFromCowork(v.payload);
+    schedule(60);
+    if (prev !== null && prev !== v.payload.screen && activeTab === 'cowork') setTimeout(function () { sizeFrame(); scrollUnderBars(frame); }, 30);
+  });
+  function prefillFromCowork(p) {
+    var acc = E.accountFromPayload(p);
+    if (!acc) return;
+    function put(path, v) { if (touched[path]) return; setPath(state, path, v); fromCw[path] = true; }
+    put('studio.account.seats.business', acc.seats.business);
+    put('studio.account.seats.enterprise', acc.seats.enterprise);
+    put('studio.account.seats.e7', acc.seats.e7);
+    if (acc.tenantBase !== 'unsure') put('studio.account.tenantBase', acc.tenantBase);
+    var seats = acc.seats.business + acc.seats.enterprise + acc.seats.e7;
+    if (p.basisSeats > 0 || seats > 0) put('studio.account.totalUsers', Math.max(p.basisSeats, seats));
+    if (p.accountName) put('meta.accountName', p.accountName);
+    if (acc.motion !== 'unsure') put('partner.motion', acc.motion);
+  }
+  var SCREEN_LBL = { intro: 'the cover page', step0: 'its set-up screen', results: 'its results' };
+  function screenLabel(s) { var m = /^step(\d)$/.exec(s || ''); return m && m[1] !== '0' ? 'question ' + m[1] : (SCREEN_LBL[s] || 'loading'); }
+  function renderCoworkStatus() {
+    var el = $('cwStatus'), cw = R ? R.lanes.cowork : null, p = state.coworkSession;
+    var html, ok = false;
+    if (!frameOk && !p) html = 'The Cowork calculator is loading. Its figures reach the Combined tab once it reports.';
+    else if (!p) html = 'The Cowork calculator has not reported yet.';
+    else if (cw && cw.included) {
+      ok = true;
+      html = '<span><b>Included in the combined plan:</b> ' + rng(cw.steady.lo, cw.steady.hi) + ' credits in a steady month (&plusmn;' + E.fmtPct(cw.band * 100) +
+        (cw.calibrated ? ', calibrated' : ', modeled') + '), ' + fi(cw.basisSeats) + ' Cowork users.</span><span class="note">Now on ' + esc(screenLabel(p.screen)) + '.</span>';
+    } else {
+      html = '<span><b>Cowork tab: not yet at results.</b> It is on ' + esc(screenLabel(p.screen)) + '. Its figures join the combined plan when it reaches results (skip the cover, answer the questions, then &ldquo;See the full picture&rdquo;), or when you include it on the Combined tab.</span>';
+    }
+    el.className = 'cwstatus no-print' + (ok ? ' ok' : '');
+    el.innerHTML = html;
+  }
+
+  /* ══ Print menu ═══════════════════════════════════════════════════════ */
+  function openMenu() { $('printMenu').hidden = false; $('btnPrint').setAttribute('aria-expanded', 'true'); var f = $('printMenu').querySelector('button:not([hidden])'); if (f) f.focus(); }
+  function closeMenu(refocus) { $('printMenu').hidden = true; $('btnPrint').setAttribute('aria-expanded', 'false'); if (refocus) $('btnPrint').focus(); }
+  $('btnPrint').addEventListener('click', function (e) { e.stopPropagation(); if ($('printMenu').hidden) openMenu(); else closeMenu(); });
+  document.addEventListener('click', function (e) { if (!$('printMenu').hidden && !e.target.closest('.menuwrap')) closeMenu(); });
+  $('printMenu').addEventListener('keydown', function (e) {
+    var items = Array.prototype.filter.call($('printMenu').querySelectorAll('button'), function (b) { return b.offsetParent !== null; });
+    var i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  });
+  $('printMenu').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-print]'); if (!b) return;
+    closeMenu(); doPrint(b.getAttribute('data-print'));
+  });
+
+  /* ══ Render: everything, after every recalculation ════════════════════ */
+  function renderAll() {
+    renderStatic();
+    var fc = $('fCountry'), cc = state.studio.account.country;
+    if (!fc.querySelector('option[value="' + cc + '"]')) { var o = document.createElement('option'); o.value = cc; o.textContent = cc; fc.appendChild(o); }
+    renderAgentsStructure();
+    renderEnvStructure();
+    renderAdjStructure();
+    renderValueStructure();
+    renderHoldingsStructure();
+    renderWhoStructure();
+    renderServicesStructure();
+    hydrate();
+    renderBadges();
+    renderMotionPill();
+    renderCoworkStatus();
+    renderAccount();
+    renderAgentOutputs();
+    renderEnvOutputs();
+    renderAdjOutputs();
+    renderStudioResults();
+    renderValueOutputs();
+    renderFlags($('studioFlags'), $('studioFlagTag'), STUDIO_W);
+    renderPool();
+    renderBuy();
+    renderEnforce();
+    renderGov();
+    var html = renderCustomer(CV);
+    $('custReportScreen').innerHTML = html;
+    $('printCustomer').innerHTML = html;
+    $('printGov').innerHTML = govDocHtml();
+    renderFlags($('flagBody'), $('flagTag'), null);
+    renderPartner();
+  }
+
+  var staticDone = false;
+  var COUNTRIES = [['US', 'United States'], ['CA', 'Canada'], ['GB', 'United Kingdom'], ['IE', 'Ireland'], ['AU', 'Australia'], ['NZ', 'New Zealand'],
+    ['ZA', 'South Africa'], ['SG', 'Singapore'], ['JP', 'Japan'], ['KR', 'South Korea'], ['IN', 'India'], ['DE', 'Germany'], ['FR', 'France'], ['IT', 'Italy'],
+    ['ES', 'Spain'], ['NL', 'Netherlands'], ['BE', 'Belgium'], ['PL', 'Poland'], ['SE', 'Sweden'], ['NO', 'Norway'], ['DK', 'Denmark'], ['FI', 'Finland'],
+    ['CH', 'Switzerland'], ['AT', 'Austria'], ['PT', 'Portugal'], ['BR', 'Brazil'], ['MX', 'Mexico'], ['AE', 'United Arab Emirates'], ['IL', 'Israel']];
+  function renderStatic() {
+    if (staticDone) return;
+    staticDone = true;
+    var ex = E.RC.capExcluded.v;
+    var cur = state.studio.account.country, list = COUNTRIES.slice();
+    if (!list.some(function (c) { return c[0] === cur; })) list.push([cur, cur]);
+    $('fCountry').innerHTML = list.map(function (c) {
+      return '<option value="' + c[0] + '">' + esc(c[1]) + (ex.indexOf(c[0]) > -1 ? ' (December 1 default not available at first)' : '') + '</option>';
+    }).join('');
+    $('rateCardStamp').textContent = 'Rate card ' + E.RATECARD_VERSION;
+    $('rcChecked').textContent = E.RATECARD_VERSION;
+    $('footRc').textContent = E.RATECARD_VERSION;
+    var groups = E.SCENARIO_ORDER.map(function (k) {
+      var p = E.SCENARIO_PRESETS[k];
+      return '<button type="button" class="pcard" data-preset="' + k + '"><div class="pc-t">' + esc(p.label) + '</div><div class="pc-d">' + esc(p.blurb) + '</div></button>';
+    });
+    $('presetGrid').innerHTML = groups.join('');
+  }
+
+  function renderBadges() {
+    var p = state.coworkSession;
+    $('badgeCowork').textContent = !p ? '' : (p.screen === 'results' ? '· at results' : '· ' + screenLabel(p.screen));
+    var n = state.studio.agents.filter(function (a) { return !a.paused; }).length;
+    $('badgeStudio').textContent = n ? '· ' + n + ' active' : '';
+    $('badgeCombined').textContent = R && R.pool.steady.hi > 0 ? '· ' + rng(R.pool.steady.lo, R.pool.steady.hi) + ' a month' : '';
+  }
+  function renderMotionPill() {
+    var m = state.partner.motion, b = $('motionPill');
+    b.textContent = m === 'unsure' ? 'Motion not set' : E.MOTIONS[m].label;
+    b.classList.toggle('unset', m === 'unsure');
+  }
+  $('motionPill').addEventListener('click', function () { selectTab('combined'); setTimeout(function () { scrollUnderBars($('cardWho')); }, 30); });
+
+  /* ══ Studio §1: the account ═══════════════════════════════════════════ */
+  function renderAccount() {
+    var ac = state.studio.account, en = R.enforcement, adj = R.adjacent;
+    var lic = ac.seats.business + ac.seats.enterprise + ac.seats.e7, unl = Math.max(0, ac.totalUsers - lic);
+    var cap = en.userCap, dec;
+    if (cap.auto) dec = ['Applies', 'New CSP Copilot Business seats get a ' + fi(E.RC.capDefault.v) + '-credit monthly limit per user from ' + monLong(cap.firstMonth) + '.'];
+    else if (cap.excluded && ac.seats.business > 0) dec = ['Excluded', 'Not available at first in this country.'];
+    else if (ac.seats.business > 0 && ac.cspNewBusiness === 'unsure') dec = ['Confirm', 'Applies if these Business seats are new CSP purchases from December 1.'];
+    else dec = ['Does not apply', ac.seats.business > 0 ? 'The Business seats are not new CSP purchases.' : 'No Copilot Business seats entered.'];
+    var a365 = adj.agent365.eligible ? ['Eligible', 'The tenant base qualifies.'] : (ac.tenantBase === 'unsure' ? ['Not sure', 'Confirm the tenant base.'] : ['Needs Business Premium', 'Or E5/E7, or the Defender and Purview suites.']);
+    $('acctRibbon').innerHTML =
+      cellHtml(fi(lic), 'Copilot-licensed users', 'Business, enterprise and E7 seats') +
+      cellHtml(fi(unl), 'Users without a Copilot license', ac.totalUsers > 300 ? 'Above 300 users: Copilot Business caps at 300 seats.' : 'Their agent use is metered') +
+      cellHtml(dec[0], 'December 1 default limit', dec[1], 'alt') +
+      cellHtml(a365[0], 'Agent 365', a365[1], 'alt');
+    var co = $('acctFromCowork'), keys = Object.keys(fromCw);
+    if (keys.length && state.coworkSession) {
+      co.hidden = false;
+      co.querySelector('.co-txt').innerHTML = '<b>Prefilled from the Cowork tab</b>' + (state.coworkSession.accountName ? ' (' + esc(state.coworkSession.accountName) + ')' : '') +
+        ': the fields tagged &ldquo;from the Cowork tab&rdquo; follow it until you edit them.';
+    } else co.hidden = true;
+  }
+  function cellHtml(k, l, s, cls) {
+    return '<div class="numcell ' + (cls || '') + '"><div class="nk">' + k + '</div><div class="nl">' + l + '</div>' + (s ? '<div class="ns">' + s + '</div>' : '') + '</div>';
+  }
+
+  /* ══ Studio §2: agent cards ═══════════════════════════════════════════ */
+  var TYPE_OPTS = [['conversational', 'Conversational'], ['autonomous', 'Autonomous (runs on a trigger)'], ['bc', 'Business Central agent']];
+  var HARNESS_OPTS = [['standard', 'Standard agent'], ['chat', 'Copilot Chat (Agent Builder)'], ['github', 'GitHub Copilot harness']];
+  var AUD_OPTS = [['internal', 'Internal (employees)'], ['external', 'External (customers, visitors)']];
+  var AUTH_OPTS = [['microsoft', 'Microsoft sign-in'], ['none', 'No sign-in'], ['manual', 'Manual sign-in (your own identity provider)']];
+  var CHAN_OPTS = Object.keys(E.CHANNELS).map(function (k) { return [k, E.CHANNELS[k]]; });
+  var MODE_OPTS_C = [['total', 'Total conversations'], ['perUser', 'Per user']];
+  var MODE_OPTS_A = [['total', 'Total runs'], ['perUser', 'Per user']];
+  var PER_OPTS = [['month', 'a month'], ['day', 'a day']];
+  var BUNDLE_OPTS = [['itemized', 'Itemize the run'], ['blueprint', 'A Microsoft blueprint'], ['fixed', 'My own credits per run']];
+  var BLUEPRINT_OPTS = [['expense', 'Expense receipt (15 a run)'], ['approval', 'Approval routing (12 a run)'], ['timesheet', 'Timesheet assistant (77 a run)']];
+  var FLOW_OPTS = [['agent', 'When an agent calls the flow'], ['other', 'Any other trigger (always billed)']];
+  var AIPRICE_OPTS = [['response', 'Per response'], ['tokens', 'Per 1,000 tokens (started units round up)']];
+  var CUA_OPTS = [['standard', 'Standard model'], ['premium', 'Premium model']];
+  var BCKIND_OPTS = [['salesOrder', 'Sales Order Agent'], ['payables', 'Payables Agent'], ['expense', 'Expense Agent (preview)']];
+  var LANE_LBL = { studio: 'Copilot Studio agent', github: 'GitHub Copilot harness', bc: 'Business Central' };
+  function laneOf(a) { return a.type === 'bc' ? 'bc' : (a.harness === 'github' ? 'github' : 'studio'); }
+
+  function fld(a, k, label, type, o) {
+    o = o || {};
+    var id = 'ag-' + a.id + '-' + k.replace(/\./g, '-');
+    var v = getPath(a, k);
+    var attrs = ' id="' + id + '" data-a="' + a.id + '" data-k="' + k + '" data-type="' + type + '"';
+    var hint = o.hint ? '<div class="hint">' + o.hint + '</div>' : '';
+    var tag = o.tag ? ' ' + o.tag : '';
+    if (type === 'bool') return '<div class="field check"><label><input type="checkbox"' + attrs + (v ? ' checked' : '') + '> <span>' + label + tag + '</span></label>' + hint + '</div>';
+    if (type === 'enum' || type === 'int-enum') {
+      return '<div class="field"><label for="' + id + '">' + label + tag + '</label><select' + attrs + '>' +
+        o.options.map(function (op) { return '<option value="' + esc(op[0]) + '"' + (String(op[0]) === String(v) ? ' selected' : '') + '>' + esc(op[1]) + '</option>'; }).join('') +
+        '</select>' + hint + '</div>';
+    }
+    var num = type !== 'text';
+    return '<div class="field"><label for="' + id + '">' + label + tag + '</label><input type="' + (num ? 'number' : 'text') + '"' + attrs +
+      (num ? ' min="' + (o.min != null ? o.min : 0) + '"' + (o.max != null ? ' max="' + o.max + '"' : '') + ' step="' + (o.step || 'any') + '"' : ' maxlength="80"') +
+      (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + ' value="' + esc(v == null ? '' : v) + '">' + hint + '</div>';
+  }
+  function grp(a, key, title, inner, openDefault) {
+    var k = a.id + ':' + key, open = HOP.call(uiOpen, k) ? uiOpen[k] : openDefault;
+    return '<details data-open="' + k + '"' + (open ? ' open' : '') + '><summary>' + title + '</summary><div class="fgrid">' + inner + '</div></details>';
+  }
+  function envOptions(a) {
+    var names = state.studio.environments.map(function (e) { return e.name; }), out = [['', 'Default environment and tenant pool']];
+    names.forEach(function (n) { out.push([n, n]); });
+    if (a.env && names.indexOf(a.env) < 0) out.push([a.env, a.env + ' (not in the environment plan)']);
+    return out;
+  }
+  function monthOpts() {
+    var iso = E.horizonMonths(state.combined.horizon.startMonth);
+    return iso.map(function (m, i) { return [i, 'Month ' + (i + 1) + ' (' + monShort(m) + ')']; });
+  }
+  function anyNonZero(a, keys) { return keys.some(function (k) { return Number(getPath(a, k)) > 0; }); }
+  function agentStructKey(a) {
+    return [a.id, a.type, a.harness, a.bundleMode, a.traffic.mode, a.audience, a.channel, a.reasoning.on, a.bc.kind, a.paused, a.archetype || uiArch[a.id] || '',
+            uiHide[a.id] ? 1 : 0, state.studio.environments.map(function (e) { return e.name; }).join('|'), state.combined.horizon.startMonth].join('~');
+  }
+  function agentInputs(a) {
+    var conv = a.type === 'conversational', auto = a.type === 'autonomous', bc = a.type === 'bc', gh = !bc && a.harness === 'github';
+    var per = conv ? 'conversation' : 'run', h = '';
+    var basics = fld(a, 'type', 'Kind', 'enum', { options: TYPE_OPTS }) +
+      (bc ? '' : fld(a, 'harness', 'Harness', 'enum', { options: HARNESS_OPTS, hint: a.harness === 'chat' ? 'Internal only, on Microsoft channels.' : '' })) +
+      fld(a, 'env', 'Environment', 'enum', { options: envOptions(a), hint: bc && !a.env ? 'Business Central agents draw from the default environment unless relinked.' : '' }) +
+      fld(a, 'startMonth', 'Go-live month', 'int-enum', { options: monthOpts() }) +
+      (bc ? '' : fld(a, 'daysActive', 'Days active a month', 'int', { min: 1, max: 31, step: 1 })) +
+      fld(a, 'ramped', 'Follows the adoption ramp', 'bool');
+    h += grp(a, 'basics', 'Basics', basics, true);
+    if (bc) {
+      var noun = a.bc.kind === 'salesOrder' ? 'Emails' : a.bc.kind === 'payables' ? 'Invoices' : 'Receipts';
+      var bcf = fld(a, 'bc.kind', 'Business Central agent', 'enum', { options: BCKIND_OPTS }) +
+        fld(a, 'bc.volume', noun + ' a month', 'num', { step: 'any', hint: a.bc.kind === 'payables' ? 'At most 500 invoices and 100 emails a day; PDFs up to 10 pages and 5 MB.' : '' });
+      if (a.bc.kind === 'salesOrder') bcf += fld(a, 'bc.checks', 'Availability checks per email', 'num') + fld(a, 'bc.orders', 'Quote or order writes per email', 'num') +
+        fld(a, 'bc.attachData', 'Attachments with sales data per email', 'num', { max: 10, hint: '0.5 means half the emails carry one.' }) +
+        fld(a, 'bc.attachNoData', 'Attachments without sales data per email', 'num', { max: 10 });
+      if (a.bc.kind === 'payables') bcf += fld(a, 'bc.lines', 'Lines per invoice', 'num');
+      h += grp(a, 'bc', 'Volume', bcf, true);
+      return h;
+    }
+    if (gh) {
+      var g = fld(a, 'github.users', 'People using it', 'int', { step: 1 }) + fld(a, 'github.perUserPerDay', 'Tasks per person a day', 'num') +
+        fld(a, 'github.split.0', 'Light tasks (%)', 'int', { max: 100, step: 1 }) + fld(a, 'github.split.1', 'Medium tasks (%)', 'int', { max: 100, step: 1 }) +
+        fld(a, 'github.split.2', 'Heavy tasks (%)', 'int', { max: 100, step: 1, hint: 'Shares are rescaled to total 100%.' }) +
+        fld(a, 'github.heavyObserved', 'Observed credits per heavy task', 'nullnum', { ph: 'Not measured: a minimum', hint: 'Without it, heavy tasks count at 500, a minimum.' });
+      h += grp(a, 'gh', 'Run', g, true);
+      var b = fld(a, 'github.buildSessions', 'Build sessions a month', 'num') + fld(a, 'github.buildMonths', 'Months of building before go-live', 'int', { max: 12, step: 1 }) +
+        fld(a, 'github.buildSplit.0', 'Light sessions (%)', 'int', { max: 100, step: 1 }) + fld(a, 'github.buildSplit.1', 'Medium sessions (%)', 'int', { max: 100, step: 1 }) +
+        fld(a, 'github.buildSplit.2', 'Heavy sessions (%)', 'int', { max: 100, step: 1 });
+      h += grp(a, 'ghb', 'Build (billed from the first session)', b, a.github.buildSessions > 0);
+      return h;
+    }
+    if (conv) {
+      var w = fld(a, 'audience', 'Audience', 'enum', { options: AUD_OPTS }) + fld(a, 'channel', 'Channel', 'enum', { options: CHAN_OPTS }) +
+        fld(a, 'auth', 'Authentication', 'enum', { options: AUTH_OPTS }) +
+        fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1 }) +
+        (a.audience === 'internal' ? fld(a, 'users.licensed', 'Of whom Copilot-licensed', 'int', { step: 1, hint: 'A headcount, subtracted once.' }) : '');
+      h += grp(a, 'who', 'Who and where', w, true);
+      var vol = fld(a, 'traffic.mode', 'Volume is', 'enum', { options: MODE_OPTS_C }) + fld(a, 'traffic.count', a.traffic.mode === 'perUser' ? 'Conversations per user' : 'Conversations', 'num') +
+        fld(a, 'traffic.per', 'Per', 'enum', { options: PER_OPTS });
+      h += grp(a, 'vol', 'Volume', vol, true);
+      var sh = fld(a, 'shape.turns', 'Turns per conversation', 'num') + fld(a, 'shape.genPct', 'Generative answers (%)', 'num', { max: 100, hint: 'The rest are classic answers.' }) +
+        fld(a, 'shape.groundedPct', 'Turns grounded on tenant data (%)', 'num', { max: 100 }) + fld(a, 'shape.greeting', 'The agent sends a greeting', 'bool');
+      h += grp(a, 'shape', 'Conversation shape', sh, true);
+    } else {
+      var rv = fld(a, 'traffic.mode', 'Runs are', 'enum', { options: MODE_OPTS_A }) +
+        (a.traffic.mode === 'perUser' ? fld(a, 'users.total', 'Users (headcount)', 'int', { step: 1 }) : '') +
+        fld(a, 'traffic.count', a.traffic.mode === 'perUser' ? 'Runs per user' : 'Runs', 'num') + fld(a, 'traffic.per', 'Per', 'enum', { options: PER_OPTS });
+      h += grp(a, 'vol', 'Runs', rv, true);
+      var pr = fld(a, 'bundleMode', 'How a run is priced', 'enum', { options: BUNDLE_OPTS }) +
+        (a.bundleMode === 'blueprint' ? fld(a, 'blueprint', 'Blueprint', 'enum', { options: BLUEPRINT_OPTS }) : '') +
+        (a.bundleMode === 'fixed' ? fld(a, 'fixedPerRun', 'Credits per run', 'num') : '') +
+        fld(a, 'autonomous.countTriggerAsAction', 'Count the trigger as an action', 'bool', { tag: provPill('ms-inferred') }) +
+        fld(a, 'autonomous.countPromptAsAction', 'Count each prompt call as an action', 'bool');
+      h += grp(a, 'price', 'How a run is priced', pr, true);
+    }
+    var item = a.bundleMode === 'itemized';
+    var ans = conv
+      ? fld(a, 'bundle.classic', 'Extra classic answers per conversation', 'num') + fld(a, 'bundle.generative', 'Extra generative answers', 'num') + fld(a, 'bundle.grounded', 'Extra grounded answers', 'num')
+      : fld(a, 'bundle.classic', 'Classic answers per run', 'num') + fld(a, 'bundle.generative', 'Generative answers per run', 'num') + fld(a, 'bundle.grounded', 'Grounded answers per run', 'num');
+    var tools = (item ? ans + fld(a, 'bundle.actions', 'Actions per ' + per, 'num') : '') +
+      fld(a, 'bundle.flowActions', 'Agent-flow actions per ' + per, 'num') + fld(a, 'flowTrigger', 'Flow trigger', 'enum', { options: FLOW_OPTS }) +
+      (item ? fld(a, 'bundle.aiBasic', 'AI tools, basic responses', 'num') + fld(a, 'bundle.aiStandard', 'AI tools, standard responses', 'num') +
+              fld(a, 'bundle.aiPremium', 'AI tools, premium responses', 'num') + fld(a, 'aiPricing', 'AI tools priced', 'enum', { options: AIPRICE_OPTS }) +
+              fld(a, 'aiTokensPerCall', 'Tokens per response', 'int', { min: 1, step: 1 }) + fld(a, 'bundle.contentPages', 'Content pages per ' + per, 'num') : '') +
+      fld(a, 'reasoning.on', 'Uses a reasoning model', 'bool') + (a.reasoning.on ? fld(a, 'reasoning.tokens', 'Reasoning tokens per ' + per, 'int', { step: 1 }) : '') +
+      fld(a, 'bundle.voiceClassic', 'Voice minutes, classic', 'num') + fld(a, 'bundle.voiceGen', 'Voice minutes, generative', 'num') + fld(a, 'bundle.voicePremium', 'Voice minutes, premium', 'num') +
+      fld(a, 'bundle.cuaSteps', 'Computer-use steps per ' + per, 'num') + fld(a, 'cua.model', 'Computer-use model', 'enum', { options: CUA_OPTS }) +
+      fld(a, 'cua.w365Hours', 'Windows 365 for Agents hours a month', 'num') + fld(a, 'cua.w365AlwaysOn', 'Always-on Cloud PCs', 'int', { step: 1 }) +
+      fld(a, 'bundle.workiqCalls', 'Work IQ API calls per ' + per, 'num');
+    var toolKeys = ['bundle.classic', 'bundle.generative', 'bundle.grounded', 'bundle.actions', 'bundle.flowActions', 'bundle.aiBasic', 'bundle.aiStandard', 'bundle.aiPremium',
+      'bundle.contentPages', 'bundle.voiceClassic', 'bundle.voiceGen', 'bundle.voicePremium', 'bundle.cuaSteps', 'bundle.workiqCalls'];
+    h += grp(a, 'tools', 'Actions, tools and add-ons', tools, auto || anyNonZero(a, toolKeys) || a.reasoning.on);
+    h += grp(a, 'data', 'Data kept', fld(a, 'data.retentionDays', 'Transcript retention (days)', 'int', { max: 3650, step: 1, hint: '0 turns transcripts off and breaks enhanced reporting.' }) +
+      fld(a, 'data.knowledgeGb', 'Knowledge files (GB)', 'num'), false);
+    return h;
+  }
+  function agentCardHtml(a) {
+    var lane = laneOf(a);
+    return '<div class="ahead">' +
+        '<div class="an"><label class="sr-only" for="ag-' + a.id + '-name">Agent name</label><input type="text" maxlength="80" id="ag-' + a.id + '-name" data-a="' + a.id + '" data-k="name" data-type="text" value="' + esc(a.name) + '">' +
+          '<div class="akind" id="agkind-' + a.id + '"></div></div>' +
+        '<div class="afig" id="agfig-' + a.id + '"></div>' +
+        '<div class="aacts no-print">' +
+          '<button type="button" class="btn small quiet" data-act="hide" data-a="' + a.id + '" aria-expanded="' + (!uiHide[a.id]) + '">' + (uiHide[a.id] ? 'Show inputs' : 'Hide inputs') + '</button>' +
+          '<button type="button" class="btn small quiet" data-act="dup" data-a="' + a.id + '">Duplicate</button>' +
+          '<button type="button" class="btn small quiet" data-act="pause" data-a="' + a.id + '">' + (a.paused ? 'Resume' : 'Pause') + '</button>' +
+          '<button type="button" class="btn small quiet danger" data-act="del" data-a="' + a.id + '">Delete</button>' +
+        '</div></div>' +
+      '<div class="abody"' + (uiHide[a.id] ? ' hidden' : '') + '>' +
+        '<div id="agex-' + a.id + '"></div>' + agentInputs(a) + '</div>' +
+      '<div class="afoot" id="agfoot-' + a.id + '"></div>';
+  }
+  function renderAgentsStructure() {
+    var list = $('agentList'), agents = state.studio.agents;
+    var ids = agents.map(function (a) { return a.id; }).join(',');
+    if (list.__ids !== ids) {
+      var act = document.activeElement, f = act && list.contains(act) ? focusKey(act) : null;
+      var have = {};
+      Array.prototype.forEach.call(list.children, function (c) { have[c.getAttribute('data-card')] = c; });
+      var frag = document.createDocumentFragment();
+      agents.forEach(function (a) {
+        var c = have[a.id];
+        if (!c) { c = document.createElement('div'); c.className = 'acard'; c.setAttribute('data-card', a.id); c.id = 'card-' + a.id; }
+        frag.appendChild(c);
+      });
+      list.innerHTML = ''; list.appendChild(frag); list.__ids = ids;
+      if (f) { var n = findByKey(list, f); if (n) n.focus(); }
+    }
+    agents.forEach(function (a) {
+      var c = list.querySelector('[data-card="' + a.id + '"]');
+      c.className = 'acard lane-' + laneOf(a) + (a.paused ? ' paused' : '');
+      mount(c, agentStructKey(a), function () { return agentCardHtml(a); });
+    });
+    $('agentCount').textContent = agents.length ? agents.length + ' of ' + E.MAX.agents + ' agents' + (agents.length >= E.MAX.agents ? ' (the limit)' : '') : 'No agents yet: pick a scenario above, or add one.';
+    $('btnAddAgent').disabled = agents.length >= E.MAX.agents;
+  }
+  var EXPECT = {
+    website: { v: 15000, f: function (x) { return x.lo; }, u: 'credits a month' },
+    helpdesk: { v: 9600, f: function (x) { return x.lo; }, u: 'credits a month billed' },
+    invoice: { v: 16000, f: function (x) { return x.lo; }, u: 'credits a month' },
+    bcSalesOrder: { v: 1650, f: function (x) { return x.lo; }, u: 'credits a month' },
+    bcPayables: { v: 6500, f: function (x) { return x.lo; }, u: 'credits a month' },
+    bcExpense: { v: 5000, f: function (x) { return x.lo; }, u: 'credits a month' },
+    support: { v: 7200, f: function (x) { return x.perPeriod.billed; }, u: 'credits a day' },
+    sales: { v: 4800, f: function (x) { return x.perPeriod.billed; }, u: 'credits a day billed' },
+    order: { v: 20, f: function (x) { return x.perUnit.total; }, u: 'credits a run' },
+    expense: { v: 15, f: function (x) { return x.perUnit.total; }, u: 'credits a run' },
+    approval: { v: 12, f: function (x) { return x.perUnit.total; }, u: 'credits a run' },
+    timesheet: { v: 77, f: function (x) { return x.perUnit.total; }, u: 'credits a run' }
+  };
+  function chipFor(code) {
+    var why = E.ZERO_CODES[code] || '';
+    if (code === 'Z-LIC') return '<span class="chip zero" title="' + esc(why) + '">Zero-rated &middot; ' + code + '</span>';
+    if (code === 'Z-CHAT') return '<span class="chip zero" title="' + esc(why) + '">Zero-rated (Likely) &middot; ' + code + '</span>';
+    if (code === 'Z-AUTO' || code === 'Z-VOICE') return '<span class="chip likely" title="' + esc(why) + '">Billed (Likely) &middot; ' + code + '</span>';
+    return '<span class="chip billed" title="' + esc(why) + '">Billed &middot; ' + code + '</span>';
+  }
+  function treatment(t) {
+    if (!t.billed) return t.zeroReason === 'Z-CHAT' ? 'Zero-rated (Likely)' : 'Zero-rated';
+    return t.zeroReason === 'Z-AUTO' || t.zeroReason === 'Z-VOICE' || t.rateProv === 'ms-inferred' ? 'Billed (Likely)' : 'Billed';
+  }
+  function traceTable(rows) {
+    if (!rows.length) return '<p class="note">No lines yet: add volume to see the arithmetic.</p>';
+    return '<div class="tablewrap"><table class="dtable"><thead><tr><th>Line</th><th class="n">Quantity a month</th><th class="n">Rate</th><th class="n">Credits a month</th><th>Treatment</th><th>Source</th></tr></thead><tbody>' +
+      rows.map(function (t) {
+        return '<tr><td>' + esc(t.label) + (t.scen !== 'point' ? '<span class="mini">' + (t.scen === 'lo' ? 'Low end' : t.scen === 'hi' ? 'High end' : 'Middle') + '</span>' : '') +
+          '<span class="mini">' + esc(t.qtyExpr) + '</span></td>' +
+          '<td class="n">' + fnum(t.qty) + '</td><td class="n">' + fnum(t.rate) + '</td><td class="n">' + fnum(t.credits) + '</td>' +
+          '<td>' + esc(treatment(t)) + (t.zeroReason ? '<span class="mini" title="' + esc(E.ZERO_CODES[t.zeroReason] || '') + '">' + esc(t.zeroReason) + '</span>' : '') + '<span class="mini">' + esc(t.rateUnit) + '</span></td>' +
+          '<td>' + provPill(t.prov) + (t.src ? ' <span class="ref">' + srcLink(t.src) + (t.fact ? ' &middot; ' + esc(t.fact) : '') + '</span>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function renderAgentOutputs() {
+    var rate = R.customerRate.usdPerCredit;
+    state.studio.agents.forEach(function (a) {
+      var x = agentRes(a.id);
+      if (!x) return;
+      var lane = laneOf(a);
+      var kind = $('agkind-' + a.id);
+      if (kind) kind.textContent = [LANE_LBL[lane], a.type === 'bc' ? '' : (a.type === 'autonomous' ? 'Autonomous' : (a.audience === 'external' ? 'External' : 'Internal')),
+        a.type === 'conversational' && lane !== 'github' ? E.CHANNELS[a.channel] : ''].filter(Boolean).join(' · ') + (a.paused ? ' · Paused (not in totals)' : '');
+      var fig = $('agfig-' + a.id);
+      if (fig) fig.innerHTML = '<div class="af-k">' + rng(x.lo, x.hi) + (x.floor ? '+' : '') + '</div><div class="af-s">credits a month' + (x.floor ? ', a minimum' : '') +
+        ' &middot; ' + urng(x.lo * rate, x.hi * rate) + '</div>';
+      var ex = $('agex-' + a.id), arch = a.archetype || uiArch[a.id];
+      if (ex) {
+        var P = arch ? E.AGENT_PRESETS[arch] : null;
+        if (P) {
+          var X = EXPECT[arch], got = X ? X.f(x) : null, match = X && Math.abs(got - X.v) < 1e-6;
+          ex.innerHTML = '<div class="example"><div class="ex-t"><b>Microsoft&rsquo;s example:</b> <span class="mono">' + esc(P.example) + '</span><br>' + factRef(P.fact) +
+            (X ? '<br>' + (match ? '<span class="check">&#10003;</span> This card reproduces it: ' : 'This card now computes ') + fnum(got) + ' ' + esc(X.u) + (match ? '.' : ' against Microsoft&rsquo;s ' + fi(X.v) + '.') : '') +
+            '</div><button type="button" class="btn small" data-act="example" data-a="' + a.id + '" data-arch="' + esc(arch) + '">Reproduce Microsoft&rsquo;s example</button></div>';
+        } else ex.innerHTML = '';
+      }
+      var foot = $('agfoot-' + a.id);
+      if (!foot) return;
+      var codes = x.codes.map(chipFor).join('');
+      var cover = x.licensedCovered;
+      var blockers = x.codes.filter(function (c) { return c !== 'Z-LIC' && c !== 'Z-CHAT'; });
+      var why0 = cover > 0 ? '' : (blockers.length ? '<div class="why0">Not covered: ' + esc(blockers[0]) + ', ' + esc(E.ZERO_CODES[blockers[0]] || '') + '.</div>' : '');
+      var perLine = '';
+      if (a.type !== 'bc' && lane === 'studio' && a.traffic.per === 'day') perLine = ' &middot; ' + fnum(x.perPeriod.billed) + ' billed a day';
+      if (lane === 'studio' && x.perUnit.total > 0) perLine += ' &middot; ' + fnum(x.perUnit.total) + ' credits a ' + (a.type === 'autonomous' ? 'run' : 'conversation') + ' before coverage';
+      var build = x.build && x.build.hi > 0 ? '<div class="why0">Build phase: ' + rng(x.build.lo, x.build.hi) + ' credits a month in ' + x.build.months.length + ' month(s) before go-live' + (x.build.floor ? ' (a minimum)' : '') + '.</div>' : '';
+      var warnAuth = a.type === 'conversational' && E.MS_CHANNELS.indexOf(a.channel) > -1 && a.auth !== 'microsoft' && lane === 'studio'
+        ? '<div class="why0">Teams, SharePoint and Copilot Chat sign people in with Microsoft; with another sign-in nothing is covered.</div>' : '';
+      var tk = 'trace:' + a.id;
+      var rows = R.trace.filter(function (t) { return t.ref === a.id; });
+      foot.innerHTML = '<div>' + codes + '</div>' +
+        '<p class="cover"><b>' + fi(cover) + '</b> credits a month your Copilot licenses already cover.' + perLine + '</p>' + why0 + build + warnAuth +
+        '<details class="trace" data-open="' + tk + '"' + (uiOpen[tk] ? ' open' : '') + '><summary>Show the arithmetic (' + rows.length + ' lines)</summary>' + traceTable(rows) + '</details>';
+    });
+  }
+  function archPickerHtml() {
+    var groups = [['smb', 'SMB scenarios'], ['bc', 'Business Central agents'], ['ms', 'Microsoft&rsquo;s worked examples']];
+    if (state.studio.account.businessCentral) groups = [groups[1], groups[0], groups[2]];
+    return groups.map(function (g) {
+      var keys = E.AGENT_PRESET_ORDER.filter(function (k) { return E.AGENT_PRESETS[k].group === g[0]; });
+      return '<div class="ap-h">' + g[1] + '</div><div class="archgrid">' + keys.map(function (k) {
+        var p = E.AGENT_PRESETS[k];
+        return '<button type="button" class="pcard" data-arch-add="' + k + '"><div class="pc-t">' + esc(p.label) + '</div><div class="pc-f">' + esc(p.example) + '</div></button>';
+      }).join('') + '</div>';
+    }).join('') + '<div class="actionsrow" style="margin-top:12px;"><button type="button" class="btn quiet" data-arch-add="">Blank agent</button><button type="button" class="linkbtn" data-act="closepick">Close</button></div>';
+  }
+  $('btnAddAgent').addEventListener('click', function () {
+    var p = $('archPicker'), open = p.hidden;
+    if (open) p.innerHTML = archPickerHtml();
+    p.hidden = !open; this.setAttribute('aria-expanded', String(open));
+  });
+
+  /* ══ Studio §3: environments ══════════════════════════════════════════ */
+  var KIND_OPTS = [['default', 'Default'], ['production', 'Production'], ['sandbox', 'Sandbox'], ['developer', 'Developer']];
+  function renderEnvStructure() {
+    var envs = state.studio.environments;
+    var key = envs.length + ':' + envs.map(function (e) { return e.kind; }).join(',');
+    mount($('envBody'), key, function () {
+      var rows = envs.map(function (e, i) {
+        var p = 'studio.environments.' + i + '.';
+        return '<tr><td><input type="text" maxlength="40" aria-label="Environment name" data-bind="' + p + 'name" data-type="text"></td>' +
+          '<td><select aria-label="Kind" data-bind="' + p + 'kind" data-type="enum">' + KIND_OPTS.map(function (o) { return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('') + '</select></td>' +
+          '<td><input type="number" min="0" step="1000" aria-label="Allocation, credits a month" data-bind="' + p + 'allocation" data-type="int"></td>' +
+          '<td><input type="checkbox" aria-label="Linked to pay-as-you-go" data-bind="' + p + 'payg" data-type="bool"></td>' +
+          '<td><input type="checkbox" aria-label="Draws from the tenant pool" data-bind="' + p + 'tenantDraw" data-type="bool"></td>' +
+          '<td><input type="checkbox" aria-label="Managed Environments on" data-bind="' + p + 'managed" data-type="bool"></td>' +
+          '<td id="envout-' + i + '"></td>' +
+          '<td><button type="button" class="linkbtn" data-env-del="' + i + '" aria-label="Remove this environment">Remove</button></td></tr>';
+      }).join('');
+      return (envs.length ? '<div class="tablewrap"><table class="dtable"><thead><tr><th>Environment</th><th>Kind</th><th class="n">Allocation a month</th><th>Pay-as-you-go</th><th>Tenant draw</th><th>Managed</th><th>In this plan</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+        : '<p class="note">No environments yet. Every agent then draws from the default environment and the tenant pool. Use the recommended layout to give agents a capped home.</p>') +
+        '<div class="actionsrow" style="margin-top:12px;"><button type="button" class="btn small" id="btnEnvAlloc">Set allocations to this plan&rsquo;s figures</button></div>' +
+        '<div id="envNotes"></div>';
+    });
+  }
+  function renderEnvOutputs() {
+    var en = R.enforcement, gv = R.governance;
+    state.studio.environments.forEach(function (e, i) {
+      var cell = $('envout-' + i);
+      if (!cell) return;
+      var agents = state.studio.agents.filter(function (a) { return a.env === e.name && !a.paused; }).map(function (a) { return a.name; });
+      var ee = en.environments[i], g = gv.allocations.filter(function (x) { return x.name === e.name; })[0];
+      cell.innerHTML = '<span class="mini">' + (agents.length ? esc(agents.join(', ')) : 'No agents') + '</span>' +
+        (ee ? '<span class="mini">Peak month: ' + rng(ee.consumption.mid, ee.consumption.hi) + ' credits</span>' : '') +
+        (g && !e.payg ? '<span class="mini">Suggested allocation: ' + fi(g.credits) + '</span>' : '');
+    });
+    var gh = R.lanes.agents.filter(function (a) { return a.build && a.build.hi > 0 && !a.paused; });
+    var notes = '<div class="whybox cust-ok"><div class="wb-h">Build burn</div>' +
+      '<p>Testing a standard agent in its test chat is free, so there is nothing to pad in the statement of work for it.</p>' +
+      (gh.length ? '<p>GitHub Copilot harness agents bill every build session from the first one: ' + gh.map(function (a) { return esc(a.name) + ' ' + rng(a.build.lo, a.build.hi) + ' credits a month while building'; }).join('; ') +
+        '. Run the build in a sandbox with a fixed allocation. ' + rcRef('ghBuild') + '</p>' : '<p>GitHub Copilot harness agents would bill build sessions from the first one. ' + rcRef('ghBuild') + '</p>') + '</div>';
+    if (state.studio.environments.some(function (e) { return e.managed; })) notes += '<div class="callout warn"><div class="callout-body">Once Managed Environments is on, everyone active in that environment needs a premium license; enforcement starts in February 2027. ' + rcRef('managedEnv') + '</div></div>';
+    var n = $('envNotes'); if (n) n.innerHTML = notes;
+  }
+  function recommendedLayout() {
+    var hasGh = state.studio.agents.some(function (a) { return a.harness === 'github' && a.type !== 'bc'; });
+    state.studio.environments = [
+      { name: 'Default', kind: 'default', allocation: 0, payg: false, tenantDraw: true, managed: false },
+      { name: 'Production', kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false },
+      { name: 'Sandbox', kind: 'sandbox', allocation: hasGh ? 0 : 5000, payg: false, tenantDraw: false, managed: false }
+    ];
+    state.studio.agents.forEach(function (a) { if (a.type !== 'bc') a.env = 'Production'; });
+    recompute();
+    applyAllocations(true);
+    showNotice('Recommended layout applied: published agents in Production with a capped allocation and tenant draw off; a Sandbox for builds' +
+      (hasGh ? '' : ' (5,000 credits a month, a planner placeholder)') + '; Business Central agents left on the default environment until you relink them.');
+  }
+  function applyAllocations(keepSandbox) {
+    var gv = R.governance, ghBuild = 0;
+    R.lanes.agents.forEach(function (a) { if (!a.paused && a.build) ghBuild = Math.max(ghBuild, a.build.hi); });
+    state.studio.environments.forEach(function (e) {
+      var g = gv.allocations.filter(function (x) { return x.name === e.name; })[0];
+      if (e.payg) return;
+      if (e.kind === 'sandbox') { if (ghBuild > 0) e.allocation = Math.ceil(ghBuild * 1.1 / 1000) * 1000; else if (!e.allocation) e.allocation = 5000; return; }
+      if (g) e.allocation = g.credits;
+    });
+    recompute();
+  }
+
+  /* ══ Studio §4: Dataverse and adjacent costs ══════════════════════════ */
+  function renderAdjStructure() {
+    mount($('adjBody'), 'adj', function () {
+      return '<div class="fgrid">' +
+        '<div class="field"><label for="fKb">Transcript size per session (KB) ' + provPill('editorial') + '</label><input type="number" id="fKb" min="0" step="1" data-bind="studio.dataverse.kbPerSession" data-type="num"><div class="hint">Microsoft publishes no figure; measure one tenant to replace it.</div></div>' +
+        '<div class="field"><label for="fIdx">Search index, % of knowledge files ' + provPill('editorial') + '</label><input type="number" id="fIdx" min="0" step="1" data-bind="studio.dataverse.searchIndexFactor" data-type="pctfactor"><div class="hint">Measure after the first upload.</div></div>' +
+        '<div class="field"><label for="fDb">Database already used (GB)</label><input type="number" id="fDb" min="0" step="any" data-bind="studio.dataverse.existingDbGb" data-type="num"></div>' +
+        '<div class="field"><label for="fFile">File storage already used (GB)</label><input type="number" id="fFile" min="0" step="any" data-bind="studio.dataverse.existingFileGb" data-type="num"></div>' +
+        '<div class="field"><label for="fLog">Log storage already used (GB)</label><input type="number" id="fLog" min="0" step="any" data-bind="studio.dataverse.existingLogGb" data-type="num"></div>' +
+        '<div class="field"><label for="fA365">Agent 365: owners and sponsors</label><input type="number" id="fA365" min="0" step="1" data-bind="studio.adjacent.agent365Owners" data-type="int"><div class="hint">The people who own or sponsor agents, not everyone who uses them (Likely).</div></div>' +
+        '<div class="field"><label for="fByom">Your own models (Azure AI Foundry), a month</label><input type="number" id="fByom" min="0" step="any" data-bind="studio.adjacent.byomUsdMonthly" data-type="num"><div class="hint">Dollars, from the customer&rsquo;s Azure bill.</div></div>' +
+        '<div class="field check"><label><input type="checkbox" data-bind="studio.adjacent.premiumFlows" data-type="bool"> <span>Cloud flows use premium connectors</span></label></div>' +
+        '</div><div id="adjOut" style="margin-top:16px;"></div>';
+    });
+  }
+  function renderAdjOutputs() {
+    var dv = R.dataverse, adj = R.adjacent, out = $('adjOut');
+    if (!out) return;
+    var ent = dv.entitlement;
+    var rows = [
+      ['Dataverse database', fnum(ent.db) + ' GB', fnum(dv.usage.db) + ' GB', fnum(dv.overageGb.db) + ' GB'],
+      ['Dataverse file', fnum(ent.file) + ' GB', fnum(dv.usage.file) + ' GB', fnum(dv.overageGb.file) + ' GB'],
+      ['Dataverse log', fnum(ent.log) + ' GB', fnum(dv.usage.log) + ' GB', fnum(dv.overageGb.log) + ' GB']
+    ];
+    out.innerHTML = '<div class="tablewrap"><table class="dtable"><thead><tr><th>Storage</th><th class="n">Included</th><th class="n">Used at steady state</th><th class="n">Over by</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td class="n">' + r[1] + '</td><td class="n">' + r[2] + '</td><td class="n">' + r[3] + '</td></tr>'; }).join('') +
+      '</tbody></table></div>' +
+      '<p class="srcline">Included capacity: ' + (dv.configured ? 'the one-time Copilot Studio default once a pack or pay-as-you-go is set up ' + rcRef('dvStudio') : 'the default environment&rsquo;s own capacity ' + rcRef('dvBaseline')) +
+      '. Transcripts: ' + fi(dv.sessions) + ' sessions a month, ' + fnum(dv.transcriptGb) + ' GB at each agent&rsquo;s retention.</p>' +
+      '<div class="tablewrap" style="margin-top:12px;"><table class="dtable"><thead><tr><th>Outside the credit pool</th><th class="n">A month</th><th>Basis</th></tr></thead><tbody>' +
+      '<tr><td>Dataverse capacity add-ons</td><td class="n">' + fu(adj.dataverse.usdMonthly) + '</td><td>' + rcRef('dvAddOn') + '<span class="mini">On pay-as-you-go meters instead: ' + fu(adj.dataverse.paygUsdMonthly) + ' a month ' + '</span><span class="mini">' + rcRef('dvPayg') + '</span></td></tr>' +
+      '<tr><td>Windows 365 for Agents</td><td class="n">' + fu(adj.w365.usdMonthly) + '</td><td>' + rcRef('w365Hour') + '</td></tr>' +
+      '<tr><td>Agent 365 (' + fi(adj.agent365.owners) + ' owners and sponsors)</td><td class="n">' + fu(adj.agent365.usdMonthly) + '</td><td>' + rcRef('agent365') + (adj.agent365.owners > 0 && !adj.agent365.eligible ? '<span class="mini"><b class="cross">Blocked:</b> needs Business Premium (or E5/E7, or the Defender and Purview suites).</span>' : '') + '</td></tr>' +
+      '<tr><td>Your own models</td><td class="n">' + fu(adj.byom.usdMonthly) + '</td><td>' + provPill('partner') + '</td></tr>' +
+      '</tbody><tfoot><tr><td>Total a month, outside the pool</td><td class="n">' + fu(adj.totalMonthlyUsd) + '</td><td></td></tr></tfoot></table></div>' +
+      (adj.premiumFlowsFlag ? '<div class="callout warn"><div class="callout-body">Cloud flows with premium connectors, or a Managed Environment, may need Power Automate Premium licenses. That is a license, not credits; price it separately.</div></div>' : '');
+  }
+
+  /* ══ Studio §5: results, crossover ════════════════════════════════════ */
+  var SKU_LBL = { enterprise: 'Microsoft 365 Copilot (enterprise)', business: 'Copilot Business (annual)', promo: 'Copilot Business (promotional)', monthly: 'Copilot Business (monthly billing)' };
+  var SKU_RC = { enterprise: 'seatEnt', business: 'seatBiz', promo: 'seatBizPromo', monthly: 'seatBizMonthly' };
+  function renderStudioResults() {
+    var rate = R.customerRate.usdPerCredit, ag = R.lanes.agents.filter(function (a) { return !a.paused; });
+    var lo = 0, mid = 0, hi = 0, z = 0, floor = false;
+    ag.forEach(function (a) { lo += a.lo; mid += a.mid; hi += a.hi; z += a.licensedCovered; floor = floor || a.floor; });
+    $('studioRate').textContent = R.customerRate.basis === 'sell' ? 'At your price, ' + E.fmtRate(rate) + ' a credit' : 'At Microsoft list, ' + E.fmtRate(rate) + ' a credit';
+    var el = $('studioResults');
+    if (!state.studio.agents.length) { el.innerHTML = '<p class="note">Add agents to see their monthly credits, what licenses already cover, and whether a seat beats the meter.</p>'; return; }
+    var html = '<div class="numgrid">' +
+      cellHtml(rng(lo, hi) + (floor ? '+' : ''), 'Agent credits a month, billed', 'Full volume, after go-live and ramp. ' + provPill('ms-modeled')) +
+      cellHtml(urng(lo * rate, hi * rate), 'A month at ' + (R.customerRate.basis === 'sell' ? 'your price' : 'Microsoft list'), esc(R.customerRate.note)) +
+      cellHtml(fi(z), 'Credits a month your Copilot licenses cover', 'Zero-rated; fair use applies', 'alt') +
+      cellHtml(fu(R.adjacent.totalMonthlyUsd), 'Outside the credit pool, a month', 'Dataverse, Windows 365, Agent 365, your models', 'alt') + '</div>';
+    html += '<div class="tablewrap" style="margin-top:16px;"><table class="dtable"><thead><tr><th>Agent</th><th>Lane</th><th class="n">Low</th><th class="n">Middle</th><th class="n">High</th><th class="n">Covered by licenses</th><th class="n">A month (low&ndash;high)</th></tr></thead><tbody>' +
+      R.lanes.agents.map(function (a) {
+        return '<tr' + (a.paused ? ' style="opacity:.55"' : '') + '><td>' + esc(a.name) + (a.paused ? '<span class="mini">Paused</span>' : '') + (a.floor ? '<span class="mini">A minimum</span>' : '') + '</td><td>' + esc(LANE_LBL[laneOf(a)]) + '</td>' +
+          '<td class="n">' + fi(a.lo) + '</td><td class="n">' + fi(a.mid) + '</td><td class="n">' + fi(a.hi) + '</td><td class="n">' + fi(a.licensedCovered) + '</td><td class="n">' + urng(a.lo * rate, a.hi * rate) + '</td></tr>';
+      }).join('') + '</tbody><tfoot><tr><td>Active agents</td><td></td><td class="n">' + fi(lo) + '</td><td class="n">' + fi(mid) + '</td><td class="n">' + fi(hi) + '</td><td class="n">' + fi(z) + '</td><td class="n">' + urng(lo * rate, hi * rate) + '</td></tr></tfoot></table></div>' +
+      '<p class="srcline">Low is the itemized figure; high adds 20%, the top of Microsoft&rsquo;s recommended 10&ndash;20% estimate buffer. ' + rcRef('buffer') + '</p>';
+    var cx = R.crossover, li = CV.licenseInstead;
+    html += '<div class="sub-h">A seat or the meter?</div><div class="tablewrap"><table class="dtable"><thead><tr><th>Copilot seat</th><th class="n">A user a month</th><th class="n">Break-even, credits a user a month</th><th>Source</th></tr></thead><tbody>' +
+      ['enterprise', 'business', 'promo', 'monthly'].map(function (k) {
+        return '<tr><td>' + SKU_LBL[k] + '</td><td class="n">' + fu(E.RC[SKU_RC[k]].v) + '</td><td class="n">' + fi(cx.breakEvens[k]) + '</td><td>' + rcRef(SKU_RC[k]) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The promotional price applies while the plan starts by December 2026.' : '') + '</p>';
+    if (cx.agents.length) {
+      html += cx.agents.map(function (row, i) {
+        var c = li.agents[i] || {};
+        return row.verdict === 'license'
+          ? '<div class="callout"><div class="callout-title">License instead: ' + esc(row.name) + '</div><div class="callout-body">License these ' + fi(row.unlicensedUsers) + ' users instead: each would stop costing ' + fi(row.freeIfLicensedPerUser) + ' credits a month against a ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + '. It saves about ' + fu(Math.max(0, c.savingUsdMonthly || 0)) + ' a month, and they get Copilot.' + (row.businessCapped ? ' Copilot Business has no room under its 300-seat cap, so this is priced on the enterprise seat.' : '') + '</div></div>'
+          : '<div class="callout subtle"><div class="callout-title">Metering is cheaper: ' + esc(row.name) + '</div><div class="callout-body">Its ' + fi(row.unlicensedUsers) + ' unlicensed users average ' + fi(row.freeIfLicensedPerUser) + ' credits a month that a license would cover, below the ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + '. Justify seats by what Copilot and Cowork do for them, not by this agent.</div></div>';
+      }).join('');
+    } else html += '<p class="note">No internal conversational agent with unlicensed users, so there is no seat-or-meter call to make.</p>';
+    el.innerHTML = html;
+  }
+  function renderValueStructure() {
+    mount($('valueBody'), 'value', function () {
+      return '<div class="fgrid">' +
+        '<div class="field check"><label><input type="checkbox" data-bind="studio.value.on" data-type="bool"> <span>Include on the customer report</span></label></div>' +
+        '<div class="field"><label for="fHr">Value of an hour</label><input type="number" id="fHr" min="0" step="any" data-bind="studio.value.hourlyUsd" data-type="num"><div class="hint" id="hrHint"></div></div>' +
+        '<div class="field"><label for="fMs">Minutes saved per session</label><input type="number" id="fMs" min="0" step="any" data-bind="studio.value.minutesPerSession" data-type="num"></div>' +
+        '<div class="field"><label for="fMa">Minutes saved per action</label><input type="number" id="fMa" min="0" step="any" data-bind="studio.value.minutesPerAction" data-type="num"></div>' +
+        '<div class="field"><label for="fRes">Sessions resolved (%)</label><input type="number" id="fRes" min="0" max="100" step="1" data-bind="studio.value.resolvedPct" data-type="num"></div>' +
+        '<div class="field"><label for="fCpc">Cost of a human contact</label><input type="number" id="fCpc" min="0" step="any" placeholder="Not set" data-bind="studio.value.costPerContactUsd" data-type="nullnum"><div class="hint" id="cpcHint"></div></div>' +
+        '</div><div id="valueOut" style="margin-top:14px;"></div>';
+    });
+  }
+  function renderValueOutputs() {
+    var v = R.value, out = $('valueOut');
+    if (!out) return;
+    var h = $('hrHint'); if (h) h.innerHTML = 'Microsoft&rsquo;s default is ' + fu(E.RC.aavRate.v) + '. ' + rcRef('aavRate');
+    var c = $('cpcHint'); if (c) c.textContent = 'Microsoft’s 2024 guidance suggested $5–$10 per human contact; dated, so use your own figure.';
+    out.innerHTML = '<div class="numgrid">' +
+      cellHtml(fnum(v.aah), 'Agent Assisted Hours a month', fi(v.sessions) + ' sessions, ' + fi(v.actions) + ' autonomous actions') +
+      cellHtml(fu(v.aavUsd), 'Agent Assisted Value a month', 'Hours × ' + fu(v.hourlyUsd)) +
+      cellHtml(v.deflectionUsd === null ? '—' : fu(v.deflectionUsd), 'Deflection a month', v.deflectionUsd === null ? 'Enter the cost of a human contact' : fi(v.resolvedSessions) + ' resolved sessions, net of agent credits', 'alt') +
+      cellHtml(fu(v.agentCostUsdMonthly), 'What the agents cost a month', 'Middle scenario, at Microsoft list', 'alt') + '</div>' +
+      '<p class="srcline">Microsoft&rsquo;s formula: 6 minutes per session and 2.8 minutes per autonomous action. ' + rcRef('aahSession') + ' Microsoft&rsquo;s own agents report needs ' + fi(v.reportMin) + '+ Copilot licenses and 4 weeks of data, so most SMB tenants rely on this calculation' + (v.eligibleForMsReport ? '; this tenant qualifies for the report' : '') + '. ' + rcRef('reportMin') + '</p>';
+  }
+
+  /* ══ Warnings with fixes ══════════════════════════════════════════════ */
+  var STUDIO_W = ['P-13', 'P-14', 'P-15', 'P-16', 'P-17', 'P-18', 'P-20', 'P-21', 'P-22', 'P-23', 'P-24', 'P-25', 'P-26', 'P-27', 'P-28', 'P-29',
+                  'P-60', 'P-61', 'P-62', 'P-64', 'P-65', 'P-75', 'P-76', 'P-77'];
+  var SEV = { info: ['ok', 'Note'], warn: ['watch', 'Watch'], risk: ['risk', 'Risk'] };
+  function renderFlags(el, tagEl, only) {
+    var ws = R.warnings.filter(function (w) { return !only || only.indexOf(w.id) > -1; });
+    var nRisk = ws.filter(function (w) { return w.sev === 'risk'; }).length;
+    if (tagEl) tagEl.textContent = ws.length ? ws.length + ' item' + (ws.length === 1 ? '' : 's') + (nRisk ? ', ' + nRisk + ' risk' : '') : '';
+    el.innerHTML = ws.length ? ws.map(function (w) {
+      var s = SEV[w.sev] || SEV.info;
+      return '<div class="flag' + (w.aud === 'partner' ? ' partner-only' : '') + '"><div class="fi"><span class="light ' + s[0] + '">' + s[1] + '</span></div><div class="ft">' + esc(w.msg) +
+        (w.aud === 'partner' ? ' <span class="pill default">Partner</span>' : '') +
+        (w.fixes.length ? '<div class="fixrow no-print">' + w.fixes.map(function (f, i) { return '<button type="button" class="linkbtn" data-fixw="' + esc(w.id) + '" data-fixi="' + i + '">' + esc(f.label) + '</button>'; }).join('') + '</div>' : '') +
+        '</div></div>';
+    }).join('') : '<p class="note">Nothing to flag.</p>';
+  }
+
+  /* ══ Combined: pool, chart ════════════════════════════════════════════ */
+  var LANE_COLORS = { cowork: '#004B87', studio: '#005F6B', github: '#4daab8', bc: '#a8ecf5' };
+  function niceMax(v) {
+    if (!(v > 0)) return 1000;
+    var p = Math.pow(10, Math.floor(Math.log(v) / Math.LN10)), n = v / p;
+    var s = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+    return s * p;
+  }
+  function shortNum(v) { var t = function (x) { return String(Math.round(x * 10) / 10); }; return v >= 1e6 ? t(v / 1e6) + 'M' : v >= 1e3 ? t(v / 1e3) + 'k' : fi(v); }
+  function chartSvg() {
+    var W = 1000, H = 300, L = 64, Rt = 14, T = 14, B = 34, pw = W - L - Rt, ph = H - T - B;
+    var months = R.pool.months, best = R.purchase.best, sim = best.scen.mid.months, PC = E.RC.pack.v.credits;
+    var maxV = 0;
+    months.forEach(function (m, i) { maxV = Math.max(maxV, m.total.hi, best.packs.schedule[i] * PC); });
+    var ymax = niceMax(maxV * 1.04), y = function (v) { return T + ph - (v / ymax) * ph; };
+    var bw = pw / 12 * 0.6, out = [];
+    out.push('<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Credits by month and lane, middle scenario; the table below has the figures">');
+    out.push('<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#fff8ed" stroke-width="3"/></pattern></defs>');
+    for (var g = 0; g <= 4; g++) {
+      var gv = ymax * g / 4, gy = y(gv);
+      out.push('<line class="ch-grid" x1="' + L + '" x2="' + (W - Rt) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ch-ax" x="' + (L - 8) + '" y="' + (gy + 4) + '" text-anchor="end">' + shortNum(gv) + '</text>');
+    }
+    var cov = [];
+    months.forEach(function (m, i) {
+      var cx = L + pw / 12 * (i + 0.5), x0 = cx - bw / 2, base = 0;
+      var parts = [['cowork', m.lanes.cowork.mid], ['studio', m.lanes.studio.mid], ['github', m.lanes.github.mid + m.lanes.build.mid], ['bc', m.lanes.bc.mid]];
+      parts.forEach(function (p) {
+        if (!(p[1] > 0)) return;
+        out.push('<rect x="' + x0 + '" width="' + bw + '" y="' + y(base + p[1]) + '" height="' + Math.max(0, y(base) - y(base + p[1])) + '" fill="' + LANE_COLORS[p[0]] + '"><title>' + monShort(m.iso) + ': ' + fi(p[1]) + ' credits</title></rect>');
+        base += p[1];
+      });
+      var pg = sim[i] ? sim[i].fromPayg : 0;
+      if (pg > 0) out.push('<rect class="partner-only" x="' + x0 + '" width="' + bw + '" y="' + y(base) + '" height="' + Math.max(0, y(base - pg) - y(base)) + '" fill="url(#hatch)" stroke="#d97706" stroke-width="1.5"><title>Pay-as-you-go overflow ' + fi(pg) + '</title></rect>');
+      if (m.total.hi > m.total.mid) out.push('<line class="ch-hi" x1="' + cx + '" x2="' + cx + '" y1="' + y(m.total.mid) + '" y2="' + y(m.total.hi) + '"/><line class="ch-hi" x1="' + (cx - 5) + '" x2="' + (cx + 5) + '" y1="' + y(m.total.hi) + '" y2="' + y(m.total.hi) + '"/>');
+      out.push('<text class="ch-ax" x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle">' + monShort(m.iso) + '</text>');
+      var c = best.packs.schedule[i] * PC, xl = L + pw / 12 * i, xr = L + pw / 12 * (i + 1);
+      cov.push((i === 0 ? 'M' : 'L') + xl + ' ' + y(c) + ' L' + xr + ' ' + y(c));
+    });
+    if (best.packs.packMonths > 0) out.push('<path class="ch-cov partner-only" d="' + cov.join(' ') + '"/>');
+    out.push('</svg>');
+    return out.join('');
+  }
+  function renderPool() {
+    var P = R.pool, cw = R.lanes.cowork, rate = R.customerRate.usdPerCredit, cv = CV;
+    var inc = state.combined.includeCowork, p = state.coworkSession;
+    $('incStatus').textContent = !p ? 'Cowork tab: no figures yet.' : (cw.included ? 'Cowork tab: included (' + rng(cw.steady.lo, cw.steady.hi) + ' credits a month, ±' + E.fmtPct(cw.band * 100) + ').'
+      : (inc === 'off' ? 'Cowork tab: left out.' : 'Cowork tab: not yet at results (' + screenLabel(p.screen) + ').'));
+    $('poolKpis').innerHTML =
+      cellHtml(rng(P.steady.lo, P.steady.hi), 'Credits in a steady month', 'Cowork and agents, low to high. ' + provPill('ms-modeled')) +
+      cellHtml(urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi), 'A steady month at ' + (cv.pricing.basis === 'sell' ? 'your price' : 'Microsoft list'), 'If it were all pay-as-you-go') +
+      cellHtml(fu(cv.buy.yearUsd), 'Year one on the recommended plan', 'Middle scenario; ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone', 'alt') +
+      cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month licenses already cover', 'Agent use by licensed people', 'alt');
+    $('poolChart').innerHTML = P.year.hi > 0 ? chartSvg() : '<p class="note">Nothing in the pool yet: run the Cowork tab to results or add agents.</p>';
+    $('poolLegend').innerHTML = P.year.hi > 0 ? [['cowork', 'Cowork (from the Cowork tab)'], ['studio', 'Copilot Studio agents'], ['github', 'GitHub Copilot harness, run and build'], ['bc', 'Business Central agents']]
+      .map(function (x) { return '<span><i style="background:' + LANE_COLORS[x[0]] + '"></i>' + x[1] + '</span>'; }).join('') +
+      '<span><i style="background:#6b7280;width:2px;"></i>High end</span>' +
+      '<span class="partner-only"><i class="ln"></i>Prepaid pack capacity</span><span class="partner-only"><i class="hatch"></i>Pay-as-you-go overflow</span>' +
+      (R.purchase.best.p3.units > 0 ? '<span class="partner-only">A pre-purchase plan covers ' + fi(R.purchase.best.p3.credits) + ' credits across the year</span>' : '') : '';
+    var lanes = [['cowork', 'Cowork (from the Cowork tab' + (cw.included ? ', ±' + E.fmtPct(cw.band * 100) : ', not included') + ')'], ['studio', 'Copilot Studio agents'], ['github', 'GitHub Copilot harness, run'], ['build', 'GitHub Copilot harness, build'], ['bc', 'Business Central agents']];
+    var last = P.months[11];
+    $('poolTable').innerHTML = '<table class="dtable"><thead><tr><th>Lane</th><th class="n">Steady month, low</th><th class="n">Middle</th><th class="n">High</th><th class="n">Year one, low</th><th class="n">Middle</th><th class="n">High</th></tr></thead><tbody>' +
+      lanes.map(function (l) {
+        var s = last.lanes[l[0]], y = P.laneYear[l[0]];
+        return '<tr><td>' + l[1] + '</td><td class="n">' + fi(s.lo) + '</td><td class="n">' + fi(s.mid) + '</td><td class="n">' + fi(s.hi) + '</td><td class="n">' + fi(y.lo) + '</td><td class="n">' + fi(y.mid) + '</td><td class="n">' + fi(y.hi) + '</td></tr>';
+      }).join('') + '</tbody><tfoot><tr><td>The pool</td><td class="n">' + fi(P.steady.lo) + '</td><td class="n">' + fi(P.steady.mid) + '</td><td class="n">' + fi(P.steady.hi) + '</td><td class="n">' + fi(P.year.lo) + '</td><td class="n">' + fi(P.year.mid) + '</td><td class="n">' + fi(P.year.hi) + '</td></tr></tfoot></table>';
+  }
+
+  /* ══ Combined: purchase ═══════════════════════════════════════════════ */
+  var FAMILY_LBL = { payg: 'Pay-as-you-go', packs: 'Capacity packs', p3: 'Pre-purchase plan', mix: 'Packs and a pre-purchase plan', current: 'What the customer holds' };
+  function renderBuy() {
+    var cv = CV, pu = R.purchase, best = pu.best;
+    $('buyPlain').innerHTML = '<div class="callout"><div class="callout-title">How to buy it, in plain words</div><div class="callout-body"><p><b>' + esc(cv.buy.approach) + '.</b> About ' + fu(cv.buy.yearUsd) +
+      ' over the first year in the middle scenario, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone.</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p><p class="note">' + esc(cv.pricing.note) + '</p></div></div>';
+    var opts = [], seen = {};
+    function add(o, tag) { if (!o || seen[o.key + tag]) return; if (tag !== 'current' && seen[o.key]) return; seen[o.key] = 1; seen[o.key + tag] = 1; opts.push({ o: o, tag: tag }); }
+    add(best, 'best');
+    pu.top.forEach(function (o) { add(o, 'top'); });
+    ['payg', 'packs', 'p3', 'mix'].forEach(function (f) { add(pu.families[f], f); });
+    if (pu.current) add(pu.current, 'current');
+    $('buyOptions').innerHTML = '<table class="dtable"><thead><tr><th>Option</th><th class="n">Year one</th><th class="n">Saves against pay-as-you-go</th><th class="n">Per credit used</th><th class="n">Wasted</th><th class="n">Plan runs out</th><th class="n">Worst-case regret</th></tr></thead><tbody>' +
+      opts.map(function (x) {
+        var o = x.o, e = o.expected;
+        return '<tr' + (x.tag === 'best' ? ' class="winner"' : '') + '><td>' + esc(o.label) + (x.tag === 'best' ? '<span class="recbadge">Recommended</span>' : '') +
+          (o.p3.count > 1 ? ' <span class="pill likely" title="Holding several plans at once, each at its own discount, is Likely but not stated by Microsoft">Likely</span>' : '') +
+          '<span class="mini">' + esc(x.tag === 'current' ? FAMILY_LBL.current : FAMILY_LBL[o.family] || '') + (o.admissible === false ? ' &middot; outside the commit appetite' : '') + '</span></td>' +
+          '<td class="n">' + fu(e.usd) + '</td><td class="n">' + fu(pu.payg.expected.usd - e.usd) + '</td><td class="n">' + E.fmtRate(Math.round(e.effUsdPerCredit * 100000) / 100000) + '</td>' +
+          '<td class="n">' + E.fmtPct(e.wastePct, 1) + '</td><td class="n">' + (o.p3ExhaustMonth ? 'Month ' + o.p3ExhaustMonth : '—') + '</td><td class="n">' + fu(o.regret.max) + '</td></tr>';
+      }).join('') + '</tbody></table>';
+    var notes = [];
+    if (best.p3.units > 0) notes.push('<div class="callout warn"><div class="callout-title">A pre-purchase plan is final</div><div class="callout-body">It is a one-year commitment that cannot be canceled, renews automatically unless turned off, and its unused credits expire at the end of the term. ' + rcRef('cccu') + '</div></div>');
+    if (best.packs.packMonths > 0) notes.push('<p class="srcline">Capacity packs reset every month with no rollover and are billed annually. ' + rcRef('pack') + ' Billing order: ' + rcRef('billingOrder') + '</p>');
+    if (pu.overbuy) notes.push('<p class="srcline">A larger pre-purchase plan (' + fi(pu.overbuy.coverUnits * 3000) + ' commit units for ' + fu(pu.overbuy.coverUsd) + ') costs less than the exact need (' + fu(pu.overbuy.exactUsd) + '); it strands credits but saves money.</p>');
+    if (pu.blocked) notes.push('<p class="srcline">A cheaper option (' + esc(pu.blocked.label) + ', ' + fu(pu.blocked.expected.usd) + ') strands more than the ' + esc(pu.appetite) + ' appetite allows in the low scenario.</p>');
+    if (state.combined.purchase.showAgentP3) notes.push('<p class="srcline">Microsoft Agent pre-purchase plans (' + E.RC.agentP3Tiers.v.map(function (t) { return fi(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') + ') are disclosed only, never chosen: Microsoft&rsquo;s pages disagree on where they sit in the drawdown order. ' + rcRef('agentP3Tiers') + '</p>');
+    notes.push('<p class="srcline">P3 tiers and prices: ' + rcRef('p3Tiers') + '. Appetite caps stranded spend in the low scenario at ' + (pu.strandCapPct === null ? 'no limit' : pu.strandCapPct + '%') + '.</p>');
+    $('buyNotes').innerHTML = notes.join('');
+  }
+  function renderHoldingsStructure() {
+    mount($('holdings'), 'h', function () {
+      return '<div class="field"><label for="fHoldPacks">Capacity packs a month</label><input type="number" id="fHoldPacks" min="0" step="1" data-bind="combined.purchase.current.packs" data-type="int"></div>' +
+        E.RC.p3Tiers.v.map(function (t, i) {
+          return '<div class="field"><label for="fHoldP3' + i + '">Tier ' + t.tier + ' plans (' + fi(t.cccu) + ' units, ' + t.pct + '% off)</label><input type="number" id="fHoldP3' + i + '" min="0" step="1" data-bind="combined.purchase.current.p3.' + i + '" data-type="int"></div>';
+        }).join('');
+    });
+  }
+
+  /* ══ Combined: enforcement ════════════════════════════════════════════ */
+  var LIGHT_LBL = { ok: 'Clear', watch: 'High end only', risk: 'Expected' };
+  function dayCell(d) { return d.mid ? 'Day ' + d.mid + (d.hi && d.hi !== d.mid ? ' (high: ' + d.hi + ')' : '') : (d.hi ? 'High end: day ' + d.hi : '—'); }
+  function timelineSvg(events) {
+    var W = 1000, H = 90, L = 30, Rt = 20, pw = W - L - Rt, x = function (d) { return L + (Math.min(30, Math.max(1, d)) - 0.5) / 30 * pw; };
+    var COL = { flows: '#d97706', agents: '#b91c1c', userCap: '#004B87' };
+    var o = ['<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Days of the peak month when limits bite; listed below">'];
+    o.push('<line class="ch-grid" x1="' + L + '" x2="' + (W - Rt) + '" y1="50" y2="50"/>');
+    [1, 5, 10, 15, 20, 25, 30].forEach(function (d) { o.push('<line class="ch-grid" x1="' + x(d) + '" x2="' + x(d) + '" y1="46" y2="54"/><text class="tl-ax" x="' + x(d) + '" y="74" text-anchor="middle">Day ' + d + '</text>'); });
+    events.forEach(function (e, i) {
+      o.push('<circle cx="' + x(e.day) + '" cy="' + (50 - 14 - (i % 2) * 14) + '" r="6" fill="' + (COL[e.kind] || '#6b7280') + '"><title>Day ' + e.day + ': ' + esc(e.text) + '</title></circle>' +
+        '<line x1="' + x(e.day) + '" x2="' + x(e.day) + '" y1="' + (50 - 8 - (i % 2) * 14) + '" y2="50" stroke="' + (COL[e.kind] || '#6b7280') + '" stroke-width="1.5"/>');
+    });
+    o.push('</svg>');
+    return o.join('');
+  }
+  function renderEnforce() {
+    var en = R.enforcement, cap = en.userCap;
+    var lights = '<div class="ctlrow">' + [['flows', 'Agent flows'], ['agents', 'Custom agents'], ['userCap', 'Per-user limits'], ['m365', 'Cowork&rsquo;s share of the pool']].map(function (l) {
+      var v = en.lights[l[0]]; return '<span><span class="ctl-l">' + l[1] + '</span> <span class="light ' + v + '">' + LIGHT_LBL[v] + '</span></span>';
+    }).join('') + '</div>';
+    var rows = en.environments.map(function (e) {
+      var kl = KIND_OPTS.filter(function (o) { return o[0] === e.kind; })[0];
+      return '<tr><td>' + esc(e.name) + '<span class="mini">' + esc(kl ? kl[1] : '') + (e.payg ? ', pay-as-you-go (exempt)' : '') + '</span></td><td class="n">' + fi(e.allocation) + '</td><td class="n">' + rng(e.consumption.mid, e.consumption.hi) + '</td><td class="n">' + dayCell(e.cuts.flowsDay) + '</td><td class="n">' + dayCell(e.cuts.agentsDay) + '</td></tr>';
+    });
+    var tp = en.tenantPool;
+    rows.push('<tr><td>Default environment and tenant pool<span class="mini">' + (tp.payg ? 'Linked to pay-as-you-go (exempt)' : 'What is left after allocations') + '</span></td><td class="n">' + fi(en.remainder) + '</td><td class="n">' + rng(tp.consumption.mid, tp.consumption.hi) + '</td><td class="n">' + dayCell(tp.cuts.flowsDay) + '</td><td class="n">' + dayCell(tp.cuts.agentsDay) + '</td></tr>');
+    var html = lights + '<p class="note" style="margin-top:10px;">Peak month: <b>' + esc(monLong(en.peakMonth)) + '</b>. Prepaid capacity simulated: ' + fi(en.prepaidMonthly) + ' credits a month (' + (en.basis === 'recommended' ? 'the recommended purchase' : 'what the customer holds') + '); ' + fi(en.allocated) + ' pre-allocated to environments.</p>' +
+      '<div class="tablewrap"><table class="dtable"><thead><tr><th>Where</th><th class="n">Allocation a month</th><th class="n">Peak-month agent use</th><th class="n">Flows stop</th><th class="n">Agents switch off</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+    html += '<div class="whybox cust-ok"><div class="wb-h">Microsoft 365 and Cowork</div><p>Microsoft 365 can draw ' + fi(en.m365.available) + ' credits a month after Power Platform pre-allocations; Cowork needs ' + rng(en.m365.demand.mid, en.m365.demand.hi) + '. ' +
+      (en.m365.starvation.mid ? '<b>The pre-allocations push Cowork onto pay-as-you-go in the middle scenario.</b>' : en.m365.starvation.hi ? 'The pre-allocations push Cowork onto pay-as-you-go at the high end.' :
+        (en.m365.demand.hi > en.m365.available ? 'No pre-allocation is squeezing it; Cowork use above prepaid capacity simply runs on pay-as-you-go.' : 'That covers it.')) + ' ' + rcRef('m365Share') + '</p>' +
+      '<p>' + (cap.cap === null ? 'No per-user monthly limit applies.' : 'Per-user limit: <b>' + fi(cap.cap) + '</b> credits a month (' + (cap.source === 'manual' ? 'set here' : 'the December 1 default from ' + esc(monLong(cap.firstMonth))) + ')' +
+        (cap.perUser ? '; the average Cowork user runs ' + rng(cap.perUser.mid, cap.perUser.hi) + ' a month' + (cap.day.hi ? ' and reaches it on working day ' + (cap.day.mid || cap.day.hi) + (cap.day.mid ? '' : ' at the high end') : ', under it') : '') + '. ' + rcRef('capDefault')) + '</p></div>';
+    html += '<div class="sub-h">The peak month, day by day</div>' + (en.events.length ? timelineSvg(en.events) + '<ol class="evlist">' + en.events.map(function (e) { return '<li><b>Day ' + e.day + ':</b> ' + esc(e.text) + '</li>'; }).join('') + '</ol>'
+      : '<p class="note">No limit bites in the peak month at these volumes.</p>') +
+      '<p class="srcline">Flows block at 100% and custom agents switch off at 125% of prepaid capacity; pay-as-you-go environments are exempt. ' + rcRef('enforceAgents') + '</p>';
+    $('enfBody').innerHTML = html;
+    var mx = $('msExample');
+    mx.hidden = !showMsExample;
+    if (showMsExample) {
+      var X = E.MS_ENFORCEMENT_EXAMPLE, te = E.tenantEnforcement(X.prepaid, X.environments);
+      mx.innerHTML = '<div class="callout subtle"><div class="callout-title">Microsoft&rsquo;s worked example, reproduced</div><div class="callout-body"><p>' + fi(te.prepaid) + ' credits prepaid; ' +
+        te.environments.map(function (e) { return esc(e.name) + ' allocated ' + fi(e.allocation) + (e.exempt ? ' (pay-as-you-go, exempt)' : ' (flows stop at ' + fi(e.flowsCutoff) + ', agents at ' + fi(e.agentsCutoff) + ')'); }).join('; ') +
+        '. The tenant keeps <b>' + fi(te.remainder) + '</b>: flows stop at ' + fi(te.flowsCutoff) + ' and custom agents switch off at <b>' + fi(te.agentsCutoff) + '</b>, 125% of what is left.</p><p>' + rcRef('enforceAgents') + '</p></div></div>';
+    }
+  }
+
+  /* ══ Combined: governance settings sheet (customer-safe: built from the customer view) ═ */
+  var GOV_WHERE = {
+    tenant: 'Microsoft 365 admin center → Billing → Cost management → Spending policies',
+    user: 'Microsoft 365 admin center → Spending policies → user and group limits',
+    agents: 'Power Platform admin center → Licensing → Copilot Studio → Manage agents',
+    env: 'Power Platform admin center → Licensing → Copilot Studio → Environments; Environment groups → Rules → Cost controls (draw from the tenant credit pool)',
+    alerts: 'Spending policy threshold emails; per-agent notification threshold; an Azure budget (alerts only)',
+    auto: 'Within each spending policy',
+    retention: 'Copilot Studio → agent settings → conversation transcripts',
+    ids: 'Microsoft Entra admin center → Agent ID'
+  };
+  function govRows(cv) {
+    var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [];
+    rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', GOV_WHERE.tenant]);
+    rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', GOV_WHERE.user]);
+    rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', GOV_WHERE.agents]);
+    rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', GOV_WHERE.env]);
+    rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', GOV_WHERE.alerts]);
+    rows.push(['“Auto-apply new services”', g.autoApply, GOV_WHERE.auto]);
+    rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', GOV_WHERE.retention]);
+    rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', GOV_WHERE.ids]);
+    return rows;
+  }
+  function govTable(cv) {
+    return '<div class="tablewrap"><table class="dtable"><thead><tr><th>Setting</th><th>Value from this plan</th><th>Where to set it</th></tr></thead><tbody>' +
+      govRows(cv).map(function (r) { return '<tr><td><b>' + esc(r[0]) + '</b></td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+  }
+  function renderGov() {
+    $('govBody').innerHTML = govTable(CV) + '<p class="srcline">Limits carry a ' + CV.guardrails.bufferPct + '% buffer inside Microsoft&rsquo;s recommended 10&ndash;20%. ' + rcRef('buffer') + ' Click paths are this planner&rsquo;s reading of the admin centers ' + provPill('editorial') + '; menus move, so confirm them on the day.</p>';
+  }
+  function govText(cv) {
+    return ['Copilot Credit governance settings' + (cv.accountName ? ' for ' + cv.accountName : ''), 'Rate card ' + cv.rateCardVersion + ' · ' + todayLabel(), '']
+      .concat(govRows(cv).map(function (r) { return r[0] + ': ' + r[1] + '\n  Where: ' + r[2]; })).join('\n');
+  }
+  function govDocHtml() {
+    var cv = CV;
+    return '<div class="crep"><div class="cr-head"><div><div class="cr-title">Governance settings' + (cv.accountName ? ': ' + esc(cv.accountName) : '') + '</div>' +
+      '<div class="cr-meta">' + (cv.preparedBy ? 'Prepared by ' + esc(cv.preparedBy) + ' &middot; ' : '') + esc(todayLabel()) + ' &middot; Rate card ' + esc(cv.rateCardVersion) + '</div></div></div>' +
+      govTable(cv) + legendHtml(cv) + '<p class="cr-disc">Click paths are a planner reading of the admin centers and can move; confirm them on the day. Re-check rates after Ignite (November 17&ndash;20, 2026).</p></div>';
+  }
+
+  /* ══ The customer report: built ONLY from the engine's customer view ══ */
+  function legendHtml(cv) {
+    var expl = { 'ms-verified': 'published by Microsoft, linked and dated', 'ms-modeled': 'Microsoft&rsquo;s method applied to this plan&rsquo;s inputs', 'editorial': 'a planner placeholder where Microsoft publishes none',
+                 'partner': 'a figure you gave us', 'measured': 'from your own usage', 'ms-inferred': 'the most probable reading where Microsoft has not said it in one sentence' };
+    return '<h4>How to read the labels</h4><div class="legendrow">' + Object.keys(expl).map(function (k) {
+      return '<span>' + provPill(k) + ' ' + expl[k] + '</span>';
+    }).join('') + '</div>';
+  }
+  /* @ui:begin renderCustomer */
+  function renderCustomer(cv) {
+    if (!cv || !cv.pool || !cv.pool.steadyCredits || !cv.pricing || !cv.guardrails || !cv.guardrails.alerts || !cv.buy) return '<p class="note">The report appears once the plan computes.</p>';
+    var sell = cv.pricing.basis === 'sell', at = sell ? 'at your partner&rsquo;s price' : 'at Microsoft list';
+    var agLo = 0, agHi = 0;
+    cv.agents.forEach(function (a) { agLo += a.lo; agHi += a.hi; });
+    var cw = cv.cowork || {}, rate = cv.pricing.usdPerCredit;
+    var h = '<div class="crep"><div class="cr-head"><div><div class="cr-title">Copilot Credit plan' + (cv.accountName ? ': ' + esc(cv.accountName) : '') + '</div>' +
+      '<div class="cr-meta">' + (cv.preparedBy ? 'Prepared by ' + esc(cv.preparedBy) + ' &middot; ' : '') + esc(todayLabel()) + ' &middot; Rate card ' + esc(cv.rateCardVersion) + '</div></div>' +
+      '<div class="cr-disc">' + esc(cv.pricing.disclaimer) + '</div></div>';
+    h += '<div class="numgrid">' +
+      cellHtml(cw.included ? rng(cw.steady.lo, cw.steady.hi) : '—', 'Cowork, credits a month', cw.included ? 'From the Cowork tab, &plusmn;' + E.fmtPct(cw.bandPct) : 'Not included in this plan') +
+      cellHtml(cv.agents.length ? rng(agLo, agHi) : '—', 'Copilot Studio agents, credits a month', cv.agents.length + ' agent' + (cv.agents.length === 1 ? '' : 's')) +
+      cellHtml(rng(cv.pool.steadyCredits.lo, cv.pool.steadyCredits.hi), 'All in, a steady month', urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi) + ' ' + at, 'alt') +
+      cellHtml(fi(cv.zeroRatedMonthly), 'Credits a month your Copilot licenses already cover', 'Licensed people, signed in, on Microsoft channels', 'alt') + '</div>';
+    h += '<h4>Per tool, a steady month ' + provPill('ms-modeled') + '</h4><div class="tablewrap"><table class="dtable"><thead><tr><th>Tool</th><th class="n">Credits a month</th><th class="n">A month ' + at + '</th><th>Note</th></tr></thead><tbody>';
+    if (cw.included) h += '<tr><td>Cowork</td><td class="n">' + rng(cw.steady.lo, cw.steady.hi) + '</td><td class="n">' + urng(cw.steady.lo * rate, cw.steady.hi * rate) + '</td><td>From the Cowork tab, &plusmn;' + E.fmtPct(cw.bandPct) + '</td></tr>';
+    cv.agents.forEach(function (a) {
+      var note = [];
+      if (a.minimum) note.push('a minimum');
+      if (a.zeroRated > 0) note.push(fi(a.zeroRated) + ' more covered by licenses');
+      if (a.buildHi > 0) note.push('build phase ' + rng(a.buildLo, a.buildHi) + ' a month before go-live');
+      h += '<tr><td>' + esc(a.name) + '</td><td class="n">' + rng(a.lo, a.hi) + (a.minimum ? '+' : '') + '</td><td class="n">' + urng(a.lo * rate, a.hi * rate) + '</td><td>' + esc(note.join('; ')) + '</td></tr>';
+    });
+    h += '</tbody><tfoot><tr><td>The pool</td><td class="n">' + rng(cv.pool.steadyCredits.lo, cv.pool.steadyCredits.hi) + '</td><td class="n">' + urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi) + '</td><td>Year one: ' + rng(cv.pool.yearCredits.lo, cv.pool.yearCredits.hi) + ' credits</td></tr></tfoot></table></div>';
+    var g = cv.guardrails, guard = [];
+    guard.push('A tenant spending limit of ' + fi(g.tenantMonthlyLimit) + ' credits a month, with a ' + g.bufferPct + '% buffer.');
+    if (g.agentLimits.length) guard.push('A monthly limit on every agent: ' + g.agentLimits.slice(0, 3).map(function (a) { return esc(a.name) + ' ' + fi(a.credits); }).join(', ') + (g.agentLimits.length > 3 ? ' and ' + (g.agentLimits.length - 3) + ' more' : '') + '.');
+    guard.push('Alerts at ' + g.alerts.map(function (a) { return a.pct + '%'; }).join(', ') + ' of the limit, so nothing switches off by surprise.');
+    if (g.userLimit !== null) guard.push('A per-user limit of ' + fi(g.userLimit) + ' credits a month.');
+    if (g.allocations.length) guard.push('Environment allocations: ' + g.allocations.map(function (a) { return esc(a.name) + ' ' + fi(a.credits) + (a.tenantDraw ? '' : ', tenant draw off'); }).join('; ') + '.');
+    else guard.push(esc(g.autoApply));
+    h += '<div class="cr-two"><div><h4>How to buy it</h4><p><b>' + esc(cv.buy.approach) + '.</b> About ' + fu(cv.buy.yearUsd) + ' over the first year in the middle scenario, against ' + fu(cv.buy.paygYearUsd) + ' on pay-as-you-go alone.</p><p>' + esc(cv.buy.billingOrder) + ' ' + esc(cv.buy.finality) + '</p></div>' +
+      '<div><h4>Guardrails we will set</h4><ul>' + guard.slice(0, 5).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div></div>';
+    var li = (cv.licenseInstead && cv.licenseInstead.agents) || [];
+    var lic = li.filter(function (a) { return a.verdict === 'license'; }), met = li.filter(function (a) { return a.verdict !== 'license'; });
+    if (lic.length) h += '<div class="callout"><div class="callout-title">License instead of metering</div><div class="callout-body">' + lic.map(function (a) {
+      return 'License the ' + fi(a.users) + ' people using ' + esc(a.name) + ' instead: it saves about ' + fu(Math.max(0, a.savingUsdMonthly)) + ' a month ' + at + ', and they get Copilot.';
+    }).join(' ') + '</div></div>';
+    else if (met.length) h += '<p>For the people using ' + met.map(function (a) { return esc(a.name); }).join(' and ') + ', metering is cheaper than a Copilot seat, so seats are justified by what Copilot and Cowork do for them, not by these agents.</p>';
+    h += '<p><b>' + fi(cv.zeroRatedMonthly) + ' credits a month</b> of agent use are already covered by the Copilot licenses you own: licensed people, signed in with Microsoft, in Teams, SharePoint or Copilot Chat. Fair use applies. Website visitors, unlicensed staff, scheduled runs and anything that drives a computer are billed.</p>';
+    var adj = cv.adjacent, lines = [];
+    if (adj.dataverseUsdMonthly > 0) lines.push('Dataverse storage ' + fu(adj.dataverseUsdMonthly));
+    if (adj.w365UsdMonthly > 0) lines.push('Windows 365 for Agents ' + fu(adj.w365UsdMonthly));
+    if (adj.agent365UsdMonthly > 0) lines.push('Agent 365 ' + fu(adj.agent365UsdMonthly));
+    if (adj.byomUsdMonthly > 0) lines.push('your own models ' + fu(adj.byomUsdMonthly));
+    h += '<h4>Outside the credit pool</h4><p>' + (lines.length ? 'Separately from credits, budget about ' + fu(adj.totalUsdMonthly) + ' a month at Microsoft list: ' + lines.join(', ') + '.' : 'Nothing at these settings: storage stays inside the included Dataverse capacity (' + fnum(cv.dataverse.entitlement.db) + ' GB database, ' + fnum(cv.dataverse.entitlement.file) + ' GB file).') +
+      (adj.premiumFlowsFlag ? ' Premium cloud flows may also need Power Automate Premium licenses.' : '') + '</p>';
+    var ev = (cv.enforcement && cv.enforcement.events) || [];
+    h += '<h4>If usage runs past what you buy</h4>' + (ev.length ? '<ul>' + ev.slice(0, 3).map(function (e) { return '<li>Day ' + e.day + ': ' + esc(e.text) + '</li>'; }).join('') + '</ul>' : '<p>At these volumes nothing stops in the busiest month.</p>');
+    if (cv.value) h += '<h4>The value, by Microsoft&rsquo;s formula with your inputs</h4><p>About ' + fnum(cv.value.hours) + ' hours a month of agent-assisted work, worth ' + fu(cv.value.valueUsd) + ' at ' + fu(cv.value.hourlyUsd) + ' an hour' +
+      (cv.value.deflectionUsd !== null ? ', plus ' + fu(cv.value.deflectionUsd) + ' a month in deflected contacts' : '') + '.</p>';
+    var w = (cv.warnings || []).filter(function (x) { return x.sev !== 'info' || /license|Dataverse|default/i.test(x.msg); }).slice(0, 5);
+    if (w.length) h += '<h4>Things to know</h4><ul>' + w.map(function (x) { return '<li>' + esc(x.msg) + '</li>'; }).join('') + '</ul>';
+    h += legendHtml(cv);
+    h += '<h4>Sources</h4><ul class="srcs">' + (cv.sources || []).map(function (s) {
+      return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.title) + '</a>, ' + esc(longDate(s.date)) + '</li>';
+    }).join('') + '</ul>';
+    h += '<p class="cr-disc">' + (cv.preparedBy ? 'Prepared by ' + esc(cv.preparedBy) + '. ' : '') + 'Rates from Microsoft&rsquo;s rate card dated ' + esc(cv.rateCardVersion) + '; re-check after Ignite (November 17&ndash;20, 2026). ' + esc(cv.pricing.note) + '</p></div>';
+    return h;
+  }
+  /* @ui:end renderCustomer */
+
+  /* ══ Partner layer ════════════════════════════════════════════════════ */
+  function renderWhoStructure() {
+    var m = state.partner.motion;
+    mount($('whoFields'), 'who:' + m, function () {
+      function nf(path, label, o) {
+        o = o || {};
+        return '<div class="field"><label for="w-' + path.replace(/\./g, '-') + '">' + label + (o.tag ? ' ' + o.tag : '') + '</label><input type="number" id="w-' + path.replace(/\./g, '-') + '" min="0" step="' + (o.step || 'any') + '"' +
+          (o.max != null ? ' max="' + o.max + '"' : '') + ' placeholder="' + esc(o.ph || 'Not set') + '" data-bind="' + path + '" data-type="' + (o.type || 'nullnum') + '">' + (o.hint ? '<div class="hint">' + o.hint + '</div>' : '') + '</div>';
+      }
+      var h = '';
+      if (m === 'indirectReseller') h += nf('partner.providerCreditUsd', 'Your provider&rsquo;s rate per credit', { step: '0.0001', hint: 'What your provider charges you for pay-as-you-go.' }) +
+        nf('partner.providerPackUsd', 'Your provider&rsquo;s price per pack', { hint: 'Ask your provider; no CSP price point is assumed.' }) +
+        nf('partner.providerP3Pct', 'Your provider&rsquo;s discount on a pre-purchase plan (%)', { max: 100 });
+      if (m === 'direct') h += nf('partner.providerPackUsd', 'Your CSP buy price per pack', { hint: 'From your price list; no price point is assumed.' }) +
+        nf('partner.pecPct', 'Partner-earned credit on the meter (%)', { type: 'num', max: 100, tag: '<span class="pill estimate">Unverified</span>', hint: 'Default 0: not confirmed for this meter. A pre-purchase plan never earns it.' });
+      if (m === 'notCsp') h += '<p class="note">Outside CSP the customer buys from Microsoft directly: there is no meter margin, only services.</p>';
+      if (m === 'unsure') h += '<p class="note">Pick your motion to see what your costs are. Until then no margin is shown.</p>';
+      h += nf('partner.sellCreditUsd', 'Your sell price per credit', { step: '0.0001', hint: 'Blank: the customer report uses Microsoft list (or the Cowork tab&rsquo;s sell price).' }) +
+        nf('partner.sellPackUsd', 'Your sell price per pack') +
+        nf('partner.sellSeatUsd.business', 'Your sell price, Copilot Business seat') +
+        nf('partner.sellSeatUsd.enterprise', 'Your sell price, enterprise Copilot seat') +
+        nf('partner.seatMarginPct', 'Your margin on Copilot seats (%)', { max: 100 }) +
+        '<div class="field" style="grid-column:1/-1;"><label for="fNotes">Your notes (partner-only; saved in the session file)</label><textarea id="fNotes" maxlength="2000" data-bind="meta.notes" data-type="text"></textarea></div>';
+      return h;
+    });
+    $('rateNote').innerHTML = esc(R.customerRate.note) + ' The customer report says so: &ldquo;' + esc(R.customerRate.disclaimer) + '&rdquo;';
+  }
+  var BASIS_LBL = { 'one-time': 'one-time', 'per-agent-one-time': 'per agent, one-time', 'per-agent-month': 'per agent a month', 'per-user-month': 'per user a month', 'pct-meter': '% of pooled consumption' };
+  function renderServicesStructure() {
+    var sv = state.partner.services;
+    mount($('svcBody'), 'svc:' + sv.length + ':' + sv.map(function (s) { return s.key; }).join(','), function () {
+      return '<div class="tablewrap"><table class="dtable"><thead><tr><th>On</th><th>Service</th><th>Basis</th><th class="n">Your price</th><th class="n">Your delivery cost</th><th>Playbook range</th><th class="n">Year one</th><th></th></tr></thead><tbody>' +
+        sv.map(function (s, i) {
+          var p = 'partner.services.' + i + '.', pre = E.SERVICE_PREFILLS.filter(function (x) { return x.key === s.key; })[0];
+          var range = pre ? (pre.basis === 'pct-meter' ? pre.price + '%' + (pre.priceHi !== pre.price ? '–' + pre.priceHi + '%' : '') : fu(pre.price) + (pre.priceHi !== pre.price ? '–' + fu(pre.priceHi) : '')) + ' &middot; <span class="ref">' + srcLink('playbook') + ' &middot; ' + esc(pre.fact) + '</span>' : '<span class="note">Your own line</span>';
+          return '<tr><td><input type="checkbox" aria-label="Include this service" data-bind="' + p + 'on" data-type="bool"></td>' +
+            '<td><input type="text" maxlength="80" aria-label="Service name" data-bind="' + p + 'label" data-type="text"></td>' +
+            '<td><select aria-label="Basis" data-bind="' + p + 'basis" data-type="enum">' + Object.keys(BASIS_LBL).map(function (b) { return '<option value="' + b + '">' + BASIS_LBL[b] + '</option>'; }).join('') + '</select></td>' +
+            '<td class="n"><input type="number" min="0" step="any" aria-label="Your price" data-bind="' + p + 'price" data-type="num"></td>' +
+            '<td class="n"><input type="number" min="0" step="any" placeholder="Not set" aria-label="Your delivery cost" data-bind="' + p + 'cost" data-type="nullnum"></td>' +
+            '<td>' + range + '</td><td class="n" id="svcout-' + i + '"></td>' +
+            '<td>' + (pre ? '' : '<button type="button" class="linkbtn" data-svc-del="' + i + '">Remove</button>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<div class="actionsrow" style="margin-top:10px;"><button type="button" class="btn small quiet" id="btnSvcAdd"' + (sv.length >= E.MAX.services ? ' disabled' : '') + '>+ Your own service line</button>' +
+        '<span class="note">Environment and governance setup has no Playbook price yet: add it as your own line.</span></div>';
+    });
+  }
+  function renderPartner() {
+    var pe = R.partner;
+    renderWhoStructure();
+    pe.services.forEach(function (s, i) {
+      var c = $('svcout-' + i);
+      if (c) c.innerHTML = s.on ? fu(s.revenueYear) + (s.costYear !== null ? '<span class="mini">cost ' + fu(s.costYear) + '</span>' : '') : '<span class="mini">off</span>';
+    });
+    var LINES = [['packs', 'Capacity packs'], ['p3', 'Pre-purchase plan'], ['payg', 'Pay-as-you-go overflow (middle scenario)'], ['services', 'Services switched on'], ['licenses', 'Copilot seats (license instead)']];
+    var rows = LINES.filter(function (l) { return pe.revenue[l[0]] > 0 || pe.cost[l[0]] > 0; }).map(function (l) {
+      var rev = pe.revenue[l[0]], cost = pe.cost[l[0]];
+      return '<tr><td>' + l[1] + '</td><td class="n">' + fu(rev) + '</td><td class="n">' + (cost === null ? '—' : fu(cost)) + '</td><td class="n">' + (cost === null ? '—' : fu(rev - cost)) + '</td></tr>';
+    });
+    $('econTag').textContent = pe.motionLabel;
+    $('econBody').innerHTML = (rows.length ? '<div class="tablewrap"><table class="dtable"><thead><tr><th>Line, year one</th><th class="n">Revenue</th><th class="n">Your cost</th><th class="n">Margin</th></tr></thead><tbody>' + rows.join('') +
+      '</tbody><tfoot><tr><td>Total</td><td class="n">' + fu(pe.revenueTotal) + '</td><td class="n"></td><td class="n">' + (pe.margin === null ? '—' : fu(pe.margin)) + '</td></tr></tfoot></table></div>' : '<p class="note">No revenue lines yet.</p>') +
+      (pe.margin !== null ? '<p><b>Margin: ' + fu(pe.margin) + (pe.marginPct !== null ? ' (' + E.fmtPct(pe.marginPct, 1) + ')' : '') + '</b> on ' + esc(pe.option) + '.</p>'
+        : '<div class="callout warn"><div class="callout-title">Margin needs</div><div class="callout-body">' + esc(pe.asks.join('; ')) + '.</div></div>') +
+      (pe.pecUnverified ? '<p class="srcline">Partner-earned credit on the Copilot Credit meter is not confirmed; it stays at your figure until you verify it. A pre-purchase plan is costed at list.</p>' : '') +
+      (!pe.meterMargin ? '<p class="srcline">Outside CSP there is no meter margin; only services count.</p>' : '') +
+      '<p class="srcline">Revenue uses the customer&rsquo;s price: ' + esc(R.customerRate.note) + '</p>';
+    var nba = E.nextBestAction(R), p = nba.primary;
+    $('nbaTag').textContent = p ? p.id : '';
+    function ruleHtml(x, primary) {
+      return '<div class="ns-e">' + esc(x.eyebrow) + '</div>' + (primary ? '<div class="ns-n">' + esc(x.name) + '</div>' : '') +
+        '<ul class="ns-why">' + x.why.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul>' +
+        '<div class="ns-o">&ldquo;' + esc(x.opener) + '&rdquo;</div><div class="ns-then"><b>Then:</b> ' + esc(x.then) + '</div>' +
+        '<div class="ns-acts">' + (x.fix ? '<button type="button" class="btn small primary" data-nbafix="' + esc(x.id) + '">Apply: ' + esc(x.fix.label) + '</button>' : '') +
+        '<a class="docref" href="' + esc(x.link) + '">Read the guide section</a></div>';
+    }
+    $('nbaBody').innerHTML = p ? '<div class="nextstep">' + ruleHtml(p, true) + '</div>' +
+      (nba.matches.length > 1 ? '<div class="alsolist"><div class="sub-h">Also on the table</div>' + nba.matches.slice(1).map(function (x) {
+        var k = 'nba:' + x.id;
+        return '<details data-open="' + k + '"' + (uiOpen[k] ? ' open' : '') + '><summary><span class="ns-e">' + esc(x.eyebrow) + '</span>' + esc(x.name) + '</summary><div class="nextstep" style="margin-top:8px;">' + ruleHtml(x, false) + '</div></details>';
+      }).join('') + '</div>' : '') : '';
+    var talk = E.talk(R);
+    $('talkBody').innerHTML = talk.map(function (l, i) { return '<p><span data-talk="' + i + '">' + esc(l) + '</span><button type="button" class="copybtn light-bg" data-copytalk="' + i + '">Copy</button></p>'; }).join('');
+    $('objBody').innerHTML = E.objections(R).map(function (o) {
+      var generic = !/\d/.test(o.a);
+      return '<div class="objcard"><div class="oq">&ldquo;' + esc(o.q) + '&rdquo;</div><div class="oa">' + esc(o.a) + '</div>' + (generic ? '<div class="on">No figures in this scenario.</div>' : '') + '</div>';
+    }).join('');
+    var lad = E.ladder(R), recN = 0;
+    lad.forEach(function (x) { if (x.recommended) recN = x.n; });
+    $('ladderTag').textContent = 'Next to sell: rung ' + recN;
+    $('ladderBody').innerHTML = '<div class="ladder">' + lad.map(function (x) {
+      var price = x.price === null ? 'Your price' : (x.basis === 'pct-meter' ? x.price + '% of pooled consumption' : fu(x.price) + ' ' + (BASIS_LBL[x.basis] || ''));
+      return '<div class="rung' + (x.recommended ? ' on' : '') + '"><div class="rg-n">Rung ' + x.n + (x.recommended ? ' &middot; next to sell' : (x.n < recN ? ' &middot; <span class="check">&#10003;</span>' : '')) + '</div><div class="rg-t">' + esc(x.name) + '</div><div class="rg-p">' + esc(price) + '</div></div>';
+    }).join('') + '</div><p class="srcline">The next rung to sell, in order: nothing goes live before the billing path, per-agent limits and a production allocation are in place.</p>';
+    var ac = state.studio.account, seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7, sp = R.specialization;
+    var inc = E.INCENTIVES.map(function (x) {
+      var na = x.key === 'copilot-in-30' && !(ac.totalUsers < 300 && seats === 0) ? ' <span class="pill default">Not for this account</span>' : '';
+      var csp = x.key === 'agents-voucher' ? ' <span class="pill default">Rules out a CSP deal</span>' : '';
+      return '<li>' + esc(x.text) + na + csp + ' <span class="ref">' + provPill('ms-verified') + ' ' + srcLink(x.src) + (x.fact ? ' &middot; ' + esc(x.fact) : '') + '</span></li>';
+    }).join('');
+    var pct = sp.thresholdUsd > 0 ? Math.min(100, 100 * sp.ttmUsd / sp.thresholdUsd) : 0;
+    $('incentBody').innerHTML = '<ul class="evlist">' + inc + '</ul>' +
+      '<div class="sub-h">Agentic Business Solutions specialization, Pathway Two</div>' +
+      '<div class="progress" role="img" aria-label="' + Math.round(pct) + '% of the deployment bar"><span style="width:' + pct.toFixed(1) + '%"></span></div>' +
+      '<p>' + (sp.reached ? 'This deployment clears the ' + fu(sp.thresholdUsd) + ' trailing-twelve-month bar in month ' + sp.monthReached + ' (' + esc(monLong(sp.monthIso)) + '). It counts as one of the two deployments Pathway Two needs.'
+        : 'Copilot Studio consumption here reaches ' + fu(sp.ttmUsd) + ' in twelve months, ' + fu(Math.max(0, sp.thresholdUsd - sp.ttmUsd)) + ' short of the ' + fu(sp.thresholdUsd) + ' bar per deployment.') +
+      ' The association type must be CPOR, CSP T1 or CSP T2. ' + rcRef('specialization') + ' <a class="docref" href="copilot-specialization.html#s4">The specialization guide</a></p>';
+  }
+
+  /* ══ Quote / handoff text for the provider (no margin, no cost) ═══════ */
+  function quoteText() {
+    var r = R, s = state, best = r.purchase.best, m = s.partner.motion;
+    var to = m === 'indirectReseller' ? 'To: your provider (TD SYNNEX)' : m === 'direct' ? 'To: Partner Center (direct-bill order)' : m === 'notCsp' ? 'To: the customer’s Microsoft purchase (outside CSP)' : 'To: your provider or Partner Center (confirm your CSP motion first)';
+    var L = [to, 'Subject: Copilot Credit order' + (s.meta.accountName ? ' for ' + s.meta.accountName : ''), '',
+      'Account: ' + (s.meta.accountName || '(not named)') + '   Plan start: ' + monLong(s.combined.horizon.startMonth) + '   Rate card: ' + E.RATECARD_VERSION, '',
+      'Year-one need by month (credits, middle / high):'];
+    r.pool.months.forEach(function (mo) { L.push('  ' + monShort(mo.iso) + ': ' + fi(mo.total.mid) + ' / ' + fi(mo.total.hi)); });
+    L.push('  Year: ' + fi(r.pool.year.mid) + ' / ' + fi(r.pool.year.hi), '', 'Order as:');
+    if (best.packs.packMonths > 0) {
+      if (best.packs.flat !== null) L.push('  - Copilot Credit capacity packs: ' + best.packs.flat + ' a month × 12 months (' + fi(E.RC.pack.v.credits) + ' credits each; billed annually; no rollover)');
+      else { L.push('  - Copilot Credit capacity packs, stepping up (each addition carries its own annual term):'); best.packs.schedule.forEach(function (k, i) { L.push('      ' + monShort(r.pool.months[i].iso) + ': ' + k); }); }
+    }
+    if (best.p3.units > 0) best.p3.plans.forEach(function (p) { L.push('  - Copilot Credit pre-purchase plan: ' + p.count + ' × Tier ' + p.tier + ' (' + fi(p.cccu) + ' commit units each)' + (best.p3.count > 1 ? ' [several plans at once: confirm in the Azure portal]' : '')); });
+    L.push('  - Pay-as-you-go overflow: about ' + fi(best.scen.mid.paygCredits) + ' credits over the year (middle scenario), through an Azure subscription linked to a billing policy');
+    L.push('', 'Environment allocations:');
+    if (r.governance.allocations.length) r.governance.allocations.forEach(function (a) { L.push('  - ' + a.name + ': ' + fi(a.credits) + ' credits a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off')); });
+    else L.push('  - None planned: agents draw from the default environment and tenant pool');
+    L.push('', 'Finality: a pre-purchase plan is a one-year, non-cancelable commitment that renews automatically unless turned off; capacity packs are billed annually with no rollover.');
+    return L.join('\n');
+  }
+
+  /* ══ CSV cost trace (consumption rows only; customer-safe columns) ═══ */
+  function csvCell(v) {
+    var s = v == null ? '' : (typeof v === 'number' ? String(Math.round(v * 100000) / 100000) : String(v));
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function csvTrace() {
+    var names = {};
+    R.lanes.agents.forEach(function (a) { names[a.id] = a.name; });
+    var head = ['id', 'lane', 'agent', 'label', 'quantity', 'quantityExpression', 'rate', 'rateUnit', 'credits', 'treatment', 'reasonCode', 'scenario', 'factId', 'sourceUrl', 'sourceDate', 'rateProvenance', 'quantityProvenance'];
+    var rows = R.trace.filter(function (t) { return E.POOLED_LANES.indexOf(t.lane) > -1 && t.prov !== 'ms-retired' && t.prov !== 'what-if'; }).map(function (t) {
+      var src = t.src && HOP.call(E.SRC, t.src) ? E.SRC[t.src] : null;
+      return [t.id, t.lane, names[t.ref] || (t.lane === 'cowork' ? 'Cowork' : ''), t.label, t.qty, t.qtyExpr, t.rate, t.rateUnit, t.credits, treatment(t), t.zeroReason || '', t.scen,
+              t.fact || '', src ? src.url : '', src ? src.date : '', E.PROV_LABEL[t.rateProv] || t.rateProv, E.PROV_LABEL[t.qtyProv] || t.qtyProv].map(csvCell).join(',');
+    });
+    return [head.join(',')].concat(rows).join('\r\n') + '\r\n';
+  }
+
+  /* ══ Print ════════════════════════════════════════════════════════════ */
+  function stampInternal() {
+    var cw = R.lanes.cowork;
+    $('printInternalHead').innerHTML = '<div class="crep"><div class="cr-head"><div><div class="cr-title">Copilot Credit plan, partner working copy' + (state.meta.accountName ? ': ' + esc(state.meta.accountName) : '') + '</div>' +
+      '<div class="cr-meta">' + (state.meta.preparedBy ? 'Prepared by ' + esc(state.meta.preparedBy) + ' &middot; ' : '') + esc(todayLabel()) + ' &middot; Rate card ' + esc(E.RATECARD_VERSION) + '</div></div>' +
+      '<div class="cr-disc">Partner-only: contains margins, provider pricing and coaching. Do not hand this to the customer.</div></div>' +
+      '<p>Cowork lane: ' + (cw.included ? rng(cw.steady.lo, cw.steady.hi) + ' credits in a steady month from the Cowork tab (&plusmn;' + E.fmtPct(cw.band * 100) + ', ' + fi(cw.basisSeats) + ' users).' : 'not included.') + '</p>' + legendHtml(CV) + '</div>';
+  }
+  function doPrint(kind) {
+    if (kind === 'csv') { recompute(); download(csvTrace(), 'text/csv', 'credit-planner-trace-' + slug(state.meta.accountName) + '-' + todayIso() + '.csv'); return; }
+    if (kind === 'cowork-customer' || kind === 'cowork-internal') {
+      var d = frameDoc();
+      if (!d) { showNotice('The Cowork-only print needs the page served over http(s).', 'warn'); return; }
+      var cls = kind === 'cowork-customer' ? 'print-customer' : 'print-internal';
+      d.body.classList.remove('print-customer', 'print-internal'); d.body.classList.add(cls);
+      try { frame.contentWindow.focus(); frame.contentWindow.print(); } catch (e) { /* print dialog unavailable */ }
+      setTimeout(function () { d.body.classList.remove(cls); }, 1000);
+      return;
+    }
+    recompute();
+    if (kind === 'internal') stampInternal();
+    var c = 'print-' + kind;
+    document.body.classList.remove('print-customer', 'print-internal', 'print-governance');
+    document.body.classList.add(c);
+    var done = function () { document.body.classList.remove(c); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1000);
+  }
+  $('btnPrintGov').addEventListener('click', function () { doPrint('governance'); });
+  $('btnPrintCust2').addEventListener('click', function () { doPrint('customer'); });
+
+  /* ══ Sessions and partner cards (files only; nothing in the browser) ══ */
+  $('btnSave').addEventListener('click', function () {
+    var txt = E.serializeSession(state, { savedAt: new Date().toISOString() });
+    download(txt, 'application/json', 'credit-planner-' + slug(state.meta.accountName || 'session') + '-' + todayIso() + '.json');
+  });
+  $('btnLoad').addEventListener('click', function () { $('fileSession').click(); });
+  $('fileSession').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) { loadSessionText(String(ev.target.result || ''), f.name); };
+    rd.readAsText(f); e.target.value = '';
+  });
+  function loadSessionText(text, name) {
+    var p = E.parseSession(text);
+    if (!p.ok) { showNotice(esc(p.warnings.length ? p.warnings[0].msg : 'That file could not be read.'), 'warn'); return false; }
+    state = p.state; touched = {}; fromCw = {}; uiArch = {};
+    PREFILL_PATHS.forEach(function (k) { touched[k] = true; });
+    lastScreen = state.coworkSession ? state.coworkSession.screen : lastScreen;
+    recompute();
+    var msg = '<b>Loaded ' + esc(name || 'the session') + '</b>' + (p.savedAt ? ', saved ' + esc(longDate(p.savedAt)) : '') + '.' +
+      p.warnings.map(function (w) { return ' ' + esc(w.msg); }).join('');
+    var act = '';
+    if (state.coworkSession) {
+      msg += ' It carries the Cowork figures it was saved with; they stand in until the Cowork tab sends fresh ones. To rebuild the Cowork tab itself, reload its own session file.';
+      act = '<button type="button" class="btn small primary" data-act="cwreload">Reload the Cowork session file into the Cowork tab</button>';
+    }
+    showNotice(msg, '', act);
+    return true;
+  }
+  $('fileCowork').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    e.target.value = '';
+    var d = frameDoc();
+    try {
+      var win = frame.contentWindow, inp = d.getElementById('loadFile');
+      var dt = new win.DataTransfer(); dt.items.add(f);
+      inp.files = dt.files;
+      inp.dispatchEvent(new win.Event('change', { bubbles: true }));
+      selectTab('cowork');
+      showNotice('Sent ' + esc(f.name) + ' to the Cowork tab&rsquo;s own loader.');
+    } catch (err) {
+      showNotice('This browser would not hand the file to the Cowork tab. Open the Cowork tab and use its own Load session control.', 'warn');
+      selectTab('cowork');
+    }
+  });
+  $('btnCardSave').addEventListener('click', function () {
+    download(E.serializePartnerCard(state), 'application/json', 'credit-planner-partner-card-' + slug(state.meta.preparedBy || 'partner') + '-' + todayIso() + '.json');
+  });
+  $('btnCardLoad').addEventListener('click', function () { $('fileCard').click(); });
+  $('fileCard').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function (ev) {
+      var p = E.parsePartnerCard(String(ev.target.result || ''));
+      if (!p.ok) { showNotice(esc(p.warnings[0].msg), 'warn'); return; }
+      state.partner = p.partner; touched['partner.motion'] = true; delete fromCw['partner.motion'];
+      recompute();
+      showNotice('<b>Partner card loaded</b> from ' + esc(f.name) + ': your motion, provider and sell prices, and services.');
+    };
+    rd.readAsText(f); e.target.value = '';
+  });
+
+  /* ══ Clicks: one delegated handler ════════════════════════════════════ */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('button, [data-act]');
+    if (!t) return;
+    var act = t.getAttribute('data-act'), id = t.getAttribute('data-a');
+    if (act === 'dismiss') { clearNotice(); return; }
+    if (act === 'cwreload') { $('fileCowork').click(); return; }
+    if (act === 'closepick') { $('archPicker').hidden = true; $('btnAddAgent').setAttribute('aria-expanded', 'false'); return; }
+    if (act === 'hide') { uiHide[id] = !uiHide[id]; recompute(); return; }
+    if (act === 'dup') { state = E.duplicateAgent(state, id); recompute(); return; }
+    if (act === 'pause') { var a = findAgent(id); state = E.pauseAgent(state, id, !(a && a.paused)); recompute(); return; }
+    if (act === 'del') { var b = findAgent(id); if (b && confirm('Delete “' + b.name + '”? Nothing is saved, so this cannot be undone.')) { state = E.deleteAgent(state, id); delete uiArch[id]; recompute(); } return; }
+    if (act === 'example') { state = E.applyAgentPreset(state, id, t.getAttribute('data-arch')); delete uiArch[id]; recompute(); return; }
+    if (t.hasAttribute('data-preset')) {
+      var k = t.getAttribute('data-preset');
+      if (state.studio.agents.length && !confirm('Replace the ' + state.studio.agents.length + ' agent(s) on this page with “' + E.SCENARIO_PRESETS[k].label + '”? The account and your pricing stay.')) return;
+      state = E.applyScenarioPreset(state, k); uiArch = {}; recompute();
+      showNotice('Loaded the scenario: ' + esc(E.SCENARIO_PRESETS[k].label) + '. ' + esc(E.SCENARIO_PRESETS[k].blurb));
+      return;
+    }
+    if (t.hasAttribute('data-arch-add')) {
+      var before = state.studio.agents.length;
+      state = E.newAgent(state, t.getAttribute('data-arch-add'));
+      $('archPicker').hidden = true; $('btnAddAgent').setAttribute('aria-expanded', 'false');
+      recompute();
+      if (state.studio.agents.length > before) { var na = state.studio.agents[state.studio.agents.length - 1]; setTimeout(function () { scrollUnderBars($('card-' + na.id)); var n = $('ag-' + na.id + '-name'); if (n) n.focus({ preventScroll: true }); }, 30); }
+      return;
+    }
+    if (t.hasAttribute('data-env-del')) {
+      var i = Number(t.getAttribute('data-env-del')), nm = state.studio.environments[i] && state.studio.environments[i].name;
+      state.studio.environments.splice(i, 1);
+      state.studio.agents.forEach(function (x) { if (x.env === nm) x.env = ''; });
+      recompute(); return;
+    }
+    if (t.hasAttribute('data-svc-del')) { state.partner.services.splice(Number(t.getAttribute('data-svc-del')), 1); recompute(); return; }
+    if (t.id === 'btnSvcAdd') {
+      if (state.partner.services.length < E.MAX.services) state.partner.services.push({ key: 'custom' + (state.partner.services.length + 1), label: 'Environment and governance setup', basis: 'one-time', price: 0, cost: null, on: false });
+      recompute(); return;
+    }
+    if (t.id === 'btnEnvAdd') {
+      if (state.studio.environments.length < E.MAX.environments) state.studio.environments.push({ name: 'Environment ' + (state.studio.environments.length + 1), kind: 'production', allocation: 0, payg: false, tenantDraw: false, managed: false });
+      recompute(); return;
+    }
+    if (t.id === 'btnEnvLayout') { recommendedLayout(); return; }
+    if (t.id === 'btnEnvAlloc') { applyAllocations(false); showNotice('Allocations set to this plan&rsquo;s high-end use plus the governance buffer.'); return; }
+    if (t.id === 'btnMsExample') { showMsExample = !showMsExample; t.setAttribute('aria-expanded', String(showMsExample)); t.textContent = showMsExample ? 'Hide Microsoft’s example' : 'Show Microsoft’s example'; renderEnforce(); return; }
+    if (t.id === 'btnCopyGov') { copyText(govText(CV), t); return; }
+    if (t.id === 'btnQuote') { recompute(); copyText(quoteText(), t); return; }
+    if (t.id === 'btnCopyTalk') { copyText(E.talk(R).join('\n\n'), t); return; }
+    if (t.hasAttribute('data-copytalk')) { copyText(E.talk(R)[Number(t.getAttribute('data-copytalk'))] || '', t); return; }
+    if (t.hasAttribute('data-fixw')) {
+      var w = R.warnings.filter(function (x) { return x.id === t.getAttribute('data-fixw'); })[0], fx = w && w.fixes[Number(t.getAttribute('data-fixi'))];
+      if (fx) { state = E.applyFix(state, fx); touched[fx.path] = true; recompute(); showNotice('Applied: ' + esc(fx.label) + '.'); }
+      return;
+    }
+    if (t.hasAttribute('data-nbafix')) {
+      var rule = E.nextBestAction(R).matches.filter(function (x) { return x.id === t.getAttribute('data-nbafix'); })[0];
+      if (rule && rule.fix) { state = E.applyFix(state, rule.fix); touched[rule.fix.path] = true; recompute(); showNotice('Applied: ' + esc(rule.fix.label) + '.'); }
+      return;
+    }
+    var seg = t.closest('[data-seg]');
+    if (seg && t.hasAttribute('data-v')) {
+      var path = seg.getAttribute('data-seg');
+      setPath(state, path, t.getAttribute('data-v')); touched[path] = true; delete fromCw[path];
+      recompute(); return;
+    }
+  });
+
+  /* ══ Boot ═════════════════════════════════════════════════════════════ */
+  recompute();
+  selectTab('cowork');
+  try { if (frame.contentDocument && frame.contentDocument.readyState === 'complete' && frame.contentDocument.getElementById('loadFile')) frame.dispatchEvent(new Event('load')); } catch (e) { /* not same-origin */ }
+  window.PlannerUI = { renderCustomer: renderCustomer, quoteText: quoteText, csvTrace: csvTrace, getState: function () { return state; }, getResult: function () { return R; },
+                       loadSessionText: loadSessionText, setCustomerView: setCustomerView, selectTab: selectTab };
 })();
-/* @ui:end bootstrap */
+/* @ui:end hub */
 </script>
 </body>
 </html>
