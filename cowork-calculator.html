@@ -2378,7 +2378,24 @@ body.embedded .hub-link { display:none !important; }
     }
     var ownedSmbBases = ownedBaseSeats(['bbasic','bstd','bprem']);
     var ownedEntBases = ownedBaseSeats(['e3','e5']);
-    var BASE_FOR   = { cop_biz:'bbasic', cop_ent:'e3' };
+    /* The highest Business base the tenant owns is a floor (QA H-03). A
+       Copilot path is a way to add Copilot, not a reason to drop the base
+       the customer bought: Business Premium with Copilot at $32 is never
+       "cheaper" as Business Basic + Copilot Business at $21, because the move
+       takes away Premium's security and management. Add-ons keep the owned
+       base, so only the Business bundles are ranked. */
+    var BIZ_RANK = { bbasic:1, bstd:2, bprem:3 };
+    var BIZ_BUNDLE_BASE = { bbasic_cop:'bbasic', bstd_cop:'bstd', bprem_cop:'bprem', bprem_cop_suites:'bprem' };
+    var floorBase = null;
+    Object.keys(ownedBySku).forEach(function (id) {
+      var sk = SKU_BY_ID[id];
+      if (!sk || !(n(ownedBySku[id], 0) > 0)) return;
+      var b = sk.copilot ? sk.base : id;
+      if (BIZ_RANK[b] && (!floorBase || BIZ_RANK[b] > BIZ_RANK[floorBase])) floorBase = b;
+    });
+    // The add-on's seats still to buy sit on the cheapest Business base at or
+    // above that floor: a Premium estate adding Copilot Business pays Premium.
+    var BASE_FOR   = { cop_biz:floorBase || 'bbasic', cop_ent:'e3' };
 
     var candidates = [
       { id:'bbasic_cop', label:'Business Basic + Copilot Business', per:skuPrice(state,'bbasic_cop'), cap:300 },
@@ -2391,9 +2408,14 @@ body.embedded .hub-link { display:none !important; }
       { id:'e7',         label:'Microsoft 365 E7', per:skuPrice(state,'e7'), cap:null }
     ];
 
+
     var maxNeedBase = 0;
     var scored = candidates.map(function (c) {
       var violations = [];
+      var bb = BIZ_BUNDLE_BASE[c.id];
+      if (floorBase && bb && BIZ_RANK[bb] < BIZ_RANK[floorBase])
+        violations.push(c.label + ' would move this tenant down from the ' + SKU_BY_ID[floorBase].name +
+          ' base it already owns. Adding Copilot is not a reason to drop the base license.');
       if (c.cap && needed > c.cap)
         violations.push(c.label + ' caps at ' + c.cap + ' licenses; this account needs ' + needed + '.');
       /* An estate whose owned bases are all enterprise has no SMB path: the

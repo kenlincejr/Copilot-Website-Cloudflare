@@ -623,15 +623,19 @@ function assertCopyClean(r, m) {
   eq(L.needed, 80, 'stock needed unchanged');
   eq(L.baseSeatsNeeded, 40, 'stock baseSeatsNeeded unchanged');
   const EXPECT = {
-    bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    // QA H-03: stock owns Business Premium (60 bundle seats), so the two
+    // lower Business bundles are a downgrade and drop out (feasible true ->
+    // false), and the add-on buys Premium, not Basic, for the seats it lacks:
+    // cop_biz 28.50 -> 36.00 ($2,280 -> $2,880, base $280 -> $880).
+    bbasic_cop:       { perUserAllIn: 21,   monthly: 1680, baseSeats: 0,  baseUsd: 0,    feasible: false },
     // QA C-02 moved the two add-on rows onto the all-in basis: they now carry
     // the 40 owned Business Standard bases ($12.50 x 40 = $500) as well.
     // cop_biz 21 -> 27.25 ($1,680 -> $2,180); cop_ent 48 -> 54.25 ($3,840 -> $4,340).
     // QA C-09 moved them again on the corrected base prices (Standard $14,
     // Basic $7, E3 $39): cop_biz 27.25 -> 28.50 ($2,180 -> $2,280, base $240 -> $280);
     // cop_ent 54.25 -> 56.50 ($4,340 -> $4,520, base $1,440 -> $1,560).
-    cop_biz:          { perUserAllIn: 28.5, monthly: 2280, baseSeats: 40, baseUsd: 280,  feasible: true },
-    bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: true },
+    cop_biz:          { perUserAllIn: 36,   monthly: 2880, baseSeats: 40, baseUsd: 880,  feasible: true },
+    bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: false },
     bprem_cop:        { perUserAllIn: 32,   monthly: 2560, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop_suites: { perUserAllIn: 47,   monthly: 3760, baseSeats: 0,  baseUsd: 0,    feasible: true },
     cop_ent:          { perUserAllIn: 56.5, monthly: 4520, baseSeats: 40, baseUsd: 1560, feasible: true },
@@ -2473,6 +2477,25 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ['F-205', 'F-206', 'F-207', 'F-208'].forEach(function (id) {
     ok(facts.indexOf('"id": "' + id + '"') >= 0, 'C-09: ' + id + ' is registered in data/facts.json');
   });
+}
+
+/* ── H-03 · the highest owned base is a floor: no downgrade advice ──────── */
+{
+  [100, 299].forEach(function (n) {
+    const L = qaLic(n, [{ skuId:'bprem_cop', seats:n }], true).licensing;
+    eq(L.winner && L.winner.id, 'bprem_cop', 'H-03: ' + n + ' x Premium with Copilot is told to stay put');
+    ['bbasic_cop', 'bstd_cop'].forEach(function (id) {
+      const p = qaPath(L, id);
+      eq(p.feasible, false, 'H-03: ' + id + ' is not offered to a Premium estate (' + n + ')');
+      ok(p.violations.join(' ').indexOf('Business Premium') >= 0, 'H-03: ' + id + ' violation names the owned Premium base');
+    });
+    ok(L.why.join(' ').indexOf('Business Basic') === -1, 'H-03: "Why this one" never points ' + n + ' Premium seats at Basic');
+  });
+  // A Standard estate may still step up to Premium; only downward is barred.
+  const L = qaLic(40, [{ skuId:'bstd_cop', seats:40 }], true).licensing;
+  eq(qaPath(L, 'bprem_cop').feasible, true, 'H-03: a Standard estate can still move up to Premium');
+  eq(qaPath(L, 'bbasic_cop').feasible, false, 'H-03: a Standard estate is not moved down to Basic');
+  eq(qaPath(L, 'cop_biz').feasible, true, 'H-03: the add-on keeps the owned base, so it stays on the table');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
