@@ -513,7 +513,7 @@ The partner can rename environments, add up to 20, mark one PAYG-linked (exempt 
 | Service | Unit | Prefill | Range | Fact | Playbook source |
 |---|---|---|---|---|---|
 | Assessment (Shadow AI / discovery) | one-time | $1,500 | $1,500–$7,500 | F-204 | the Cowork simulator's ladder rung (`RUNG_FIXED` in `cowork-calculator.html`) |
-| Agent build | per agent, one-time | $3,500 | $3,500–$8,000 | F-010 / F-004 | `cpb.html` Stage 2 |
+| Agent build | per agent, one-time | $3,500 | $3,500–$8,000 | F-010 / F-004 | `cpb-model-the-practice.html` (also `cpb-field-guide.html`) |
 | Environment and governance setup | one-time | **empty**: "enter your price" | — | none until Ken sets one (open register OR-09) | No Playbook figure exists |
 | Governance base (run) | per user a month | $12 | $12 (Tier 2) – $15 (Tier 3) | F-201 | `cpb-model-the-practice.html` |
 | AgentCare managed service | per agent a month | $350 | $350 (Tier 2) – $400 (Tier 3) | F-199, F-200 | `cpb-model-the-practice.html`, `cpb-field-guide.html` |

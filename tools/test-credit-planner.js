@@ -1201,6 +1201,37 @@ sec('QA-C');
     ok(!wOf(E.compute(fx), 'P-77') && /enterprise/.test(w77.fixes[0].label), 'M-22 the fix clears P-77 and says what it does');
   }
 
+  // M-25..M-29, L-04..L-07, L-10, L-24, L-26 · citations (values unchanged)
+  {
+    const S = E.SRC, R = E.RC, G = 'https://go.microsoft.com/fwlink/?linkid=2368800';
+    ok(S[R.payg.src].url === G && R.payg.page === 'p.4' && R.payg.v === 0.01, 'M-25 PAYG $0.01 cites the Copilot Credits Guide p.4');
+    ok(S[R.p3Tiers.src].url === G && /p\.5/.test(R.p3Tiers.page) && /Studio Licensing Guide p\.14/.test(R.p3Tiers.page), 'M-26 P3 tiers cite the Credits Guide p.5 and the Studio Licensing Guide p.14');
+    eq(S['ms-p3'].date, '2026-07-17', 'M-26 ms-p3 carries the page ms.date');
+    eq(S['ms-cop-ent'].date, '2026-10-11', 'M-27 ms-cop-ent refreshed');
+    ok(/Pre-purchase plan discounts don(&rsquo;|.)t combine with other discounts/.test(src), 'M-28 the P3 note carries Microsoft\'s no-combining caveat');
+    ok(/ubb-setup|Set up usage-based billing/.test(wOf(E.compute(Object.assign(helpdesk(4), { combined: Object.assign(E.defaults().combined, { purchase: Object.assign(E.defaults().combined.purchase, { showAgentP3: true }) }) })), 'P-31').msg)
+       && /Agent pre-purchase plan first/.test(wOf(E.compute(Object.assign(helpdesk(4), { combined: Object.assign(E.defaults().combined, { purchase: Object.assign(E.defaults().combined.purchase, { showAgentP3: true }) }) })), 'P-31').msg), 'M-29 P-31 discloses which Learn page says which drawdown order');
+    ok(S[R.ghSplit.src].url === 'https://aka.ms/CopilotCreditPlanningModel', 'L-04 ghSplit cites the web estimator');
+    ok(S[R.agentP3Tiers.src] && R.agentP3Tiers.src === 'ms-licensing-guide' && R.agentP3Tiers.page === 'p.14', 'L-04 Agent P3 tiers cite the Studio Licensing Guide p.14');
+    eq(S['ms-value'].date, '2026-06-04', 'L-05 ms-value date');
+    eq(S['ms-bc-billing'].date, '2026-02-04', 'L-05 ms-bc-billing uses ms.date');
+    ok(S['ms-cop-biz'].url === 'https://www.microsoft.com/en-us/copilot/solutions/business' && S['ms-cop-ent'].url === 'https://www.microsoft.com/en-us/copilot/solutions/enterprise', 'L-06 redirected Copilot URLs updated');
+    const inc = E.INCENTIVES.filter((x) => x.key === 'copilot-in-30')[0];
+    ok(/December 31, 2026/.test(inc.text) && inc.src === 'ms-pc-aug', 'L-07 Copilot in 30 states its 2026-12-31 end (Partner Center August)');
+    ok(src.indexOf('Not for this account') < 0, 'L-07 Copilot in 30 is hidden, not labeled "Not for this account"');
+    ok(/x\.fact \? provPill\('ms-verified'\)/.test(src), 'L-24 the ms-verified pill only on incentives with a fact');
+    const cw = E.SERVICE_PREFILLS.filter((x) => x.key === 'finops')[0];
+    ok(cw.priceLo === 25 && cw.priceHi === 35 && cw.price === 30, 'L-24 Credit Wrap range 25–35%, prefill 30%');
+    const facts = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'facts.json'), 'utf8')).facts, F = (id) => facts.filter((f) => f.id === id)[0];
+    ok(F('F-149').source_url === G && F('F-155').source_url === G, 'M-25/M-26 F-149 and F-155 cite the Credits Guide');
+    ok(F('F-049').source_url === 'https://www.microsoft.com/en-us/microsoft-365/enterprise/e7' && F('F-090').source_url === 'https://www.microsoft.com/en-us/copilot/solutions/enterprise', 'M-27 F-049 and F-090 cite microsoft.com');
+    eq(F('F-182').as_of, '2026-08-03', 'L-05 F-182 date');
+    ok(/2026-12-31/.test(F('F-195').notes) && !/not confirmed/.test(F('F-195').notes), 'L-07 F-195 note carries the confirmed end date');
+    ok(/cpb-model-the-practice\.html/.test(F('F-010').source_url), 'L-26 F-010 points at cpb-model-the-practice.html');
+    const spec = fs.readFileSync(path.join(ROOT, 'specs', 'copilot-credit-planner.spec.md'), 'utf8');
+    ok(/\| F-010 \/ F-004 \| `cpb-model-the-practice\.html`/.test(spec), 'L-26 the spec points the build fee at cpb-model-the-practice.html');
+  }
+
   /* QA-C end */
 }
 
