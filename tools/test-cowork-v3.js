@@ -2354,5 +2354,14 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
   ok(!threw, 'EMB: a failing parent never throws into refresh()');
 }
 
+/* Link to the Copilot Credit Planner: inside the (stripped) billing card, and
+   hidden when this page is the hub's own Cowork tab. */
+{
+  ok(src.indexOf('<p class="srcline hub-link">Copilot Studio agents in the same tenant draw on this same credit pool.') > src.indexOf('function renderBillOut'),
+     'HUB: the planner link renders inside the billing card');
+  ok(src.indexOf('body.embedded .hub-link { display:none !important; }') >= 0, 'HUB: the link is hidden inside the hub frame');
+  ok(src.indexOf('href="copilot-credit-planner.html"') >= 0, 'HUB: the link points at the planner');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

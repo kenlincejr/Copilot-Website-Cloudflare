@@ -528,6 +528,8 @@ body.customer-view .cv-pill { display:flex; position:fixed; left:50%; transform:
 body.embedded .mh-bar, body.embedded .masthead, body.embedded footer.pagefoot,
 body.embedded #custViewPill { display:none !important; }
 body.embedded { padding-bottom:24px; }
+/* Links that would load the hub inside its own frame are hidden there. */
+body.embedded .hub-link { display:none !important; }
 </style>
 </head>
 <body>
@@ -539,7 +541,7 @@ body.embedded { padding-bottom:24px; }
       <span class="lbl">Copilot Playbook</span>
     </a>
     <div class="mh-crumb"><a href="coworksession40.html">The 40-Minute Cowork Session</a><span class="sep">/</span><span class="cur">Cost &amp; Conversation Simulator</span></div>
-    <div class="mh-date no-print">Last updated: August 27, 2026</div>
+    <div class="mh-date no-print">Last updated: October 11, 2026</div>
   </div>
 </div>
 <div class="masthead">
@@ -4139,6 +4141,9 @@ body.embedded { padding-bottom:24px; }
           ' on PayGo. Pack credits reset every month and never roll over, so packs only pay on a load that is steady month ' +
           'to month: during the ramp, hold fewer and let PayGo carry the rest.</p>'
         : '') +
+      '<p class="srcline hub-link">Copilot Studio agents in the same tenant draw on this same credit pool. Size them together in the ' +
+        '<a class="docref" href="copilot-credit-planner.html">Copilot Credit Planner</a>, which opens this simulator as its first tab and ' +
+        'pools both into one purchase plan.</p>' +
       p3RiskBlock(c) + partnerCostBlock(c) +
       '<p class="srcline">The billing model does not change how many credits a task burns &mdash; it changes the unit price of a credit. Everything above the meter is identical either way.</p>';
   }
