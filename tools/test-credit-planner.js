@@ -934,5 +934,34 @@ sec('S');
      'the card label follows exampleBy');
 }
 
+/* ═══ QA-C · conversation and citation regressions ═══ */
+sec('QA-C');
+{
+  const objOf = (r, id) => (E.objections(r).filter((o) => o.id === id)[0] || { a: '' }).a;
+  const nbaIds = (r) => E.nextBestAction(r).matches.map((x) => x.id);
+  const nbaOf = (r, id) => E.nextBestAction(r).matches.filter((x) => x.id === id)[0] || null;
+  const wOf = (r, id) => r.warnings.filter((w) => w.id === id)[0] || null;
+  const helpdesk = (count, over) => { const s = presetState('helpdesk'); if (count != null) s.studio.agents[0].traffic.count = count; return Object.assign(s, over || {}); };
+
+  // C-06 · OBJ-08 and OBJ-01 quote the customer's rate; "Microsoft list" only when credits are at list
+  {
+    const list = E.compute(helpdesk(4));
+    ok(/Microsoft.s list rate/.test(objOf(list, 'OBJ-08')) && objOf(list, 'OBJ-08').indexOf('$0.01 a credit') > -1, 'C-06 OBJ-08 at list names Microsoft list and $0.01');
+    const sell = helpdesk(4); sell.partner.sellCreditUsd = 0.013;
+    const rs = E.compute(sell), o8 = objOf(rs, 'OBJ-08'), o1 = objOf(rs, 'OBJ-01');
+    ok(!/priced at Microsoft.s list|priced at Microsoft list/.test(o8) && o8.indexOf('$0.013') > -1, 'C-06 OBJ-08 at a partner rate quotes $0.013, never "priced at Microsoft list" (' + o8 + ')');
+    ok(o1.indexOf('$0.013 a credit') > -1 && o1.indexOf('2,308') > -1, 'C-06 OBJ-01 meter and enterprise break-even at the customer rate: $30 / $0.013 = 2,308 (' + o1 + ')');
+    const cw = helpdesk(4); cw.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.012 });
+    const o8c = objOf(E.compute(cw), 'OBJ-08');
+    ok(o8c.indexOf('$0.012') > -1 && !/priced at Microsoft.s list|priced at Microsoft list/.test(o8c), 'C-06 OBJ-08 follows a Cowork sell rate');
+    const seat = helpdesk(4); seat.partner.sellSeatUsd.business = 25;
+    const o1s = objOf(E.compute(seat), 'OBJ-01');
+    ok(o1s.indexOf('$25') > -1 && o1s.indexOf('2,500') > -1, 'C-06 OBJ-01 uses the partner Business seat price and its break-even (2,500) (' + o1s + ')');
+    ok(objOf(list, 'OBJ-01').indexOf('3,000') > -1 && objOf(list, 'OBJ-01').indexOf('1,800') > -1, 'C-06 OBJ-01 at list keeps 3,000 and 1,800');
+  }
+
+  /* QA-C end */
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

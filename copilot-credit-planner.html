@@ -2946,9 +2946,19 @@ footer.pagefoot p { margin:0 0 10px; }
     var r = isObj(result) ? result : compute(defaults());
     var out = [];
     try {
-      var s = r.state, be = r.crossover.breakEvens;
-      out.push({ id: 'OBJ-01', q: 'Why is the meter more than a seat?', a: 'A Copilot seat is a flat ' + fmtUsd(RC.seatEnt.v) + ' a month (' + fmtUsd(RC.seatBizPromo.v) + '–' + fmtUsd(RC.seatBizMonthly.v) +
-        ' for Copilot Business). The meter is ' + fmtUsd(RC.payg.v, true) + ' a credit, so a user above ' + fmtInt(be.enterprise) + ' credits a month (' + fmtInt(be.promo) + ' at the promotional Business price) costs more on the meter than on a seat.' });
+      var s = r.state;
+      /* The customer's basis: the partner's credit and seat prices when set,
+         Microsoft list otherwise. Break-evens are seat price ÷ credit price. */
+      var cr = isObj(r.customerRate) && r.customerRate.usdPerCredit > 0 ? r.customerRate : customerRateFrom(s);
+      var rate = cr.usdPerCredit, cs = cr.seats, listCredit = cr.creditSource === 'list';
+      var bizSell = s.partner.sellSeatUsd.business !== null && s.partner.sellSeatUsd.business > 0;
+      var entSell = s.partner.sellSeatUsd.enterprise !== null && s.partner.sellSeatUsd.enterprise > 0;
+      function beAt(usd) { return rate > 0 ? Math.round(usd / rate) : 0; }
+      var meterTxt = listCredit ? fmtRate(rate) + ' a credit at Microsoft list' : fmtRate(rate) + ' a credit at our price';
+      out.push({ id: 'OBJ-01', q: 'Why is the meter more than a seat?', a: 'A Copilot seat is a flat ' + fmtUsd(cs.enterprise) + ' a month' + (entSell ? ' at our price' : '') +
+        (bizSell ? ' (' + fmtUsd(cs.business) + ' at our price for Copilot Business)' : ' (' + fmtUsd(cs.promo) + '–' + fmtUsd(cs.monthly) + ' for Copilot Business)') +
+        '. The meter is ' + meterTxt + ', so a user above ' + fmtInt(beAt(cs.enterprise)) + ' credits a month (' + fmtInt(beAt(bizSell ? cs.business : cs.promo)) +
+        (bizSell ? ' on Copilot Business' : ' at the promotional Business price') + ') costs more on the meter than on a seat.' });
       var eq = s.studio.agents.map(function (a) { return { name: a.name, e: msEstimatorEquivalent(a, s) }; }).filter(function (x) { return x.e; })[0];
       out.push({ id: 'OBJ-02', q: 'Microsoft’s estimator says less.', a: (eq ? 'For ' + eq.name + ', Microsoft’s Studio estimator shows ' + fmtInt(eq.e.msTool) + ' credits where the rate card gives ' + fmtInt(eq.e.rateCard) +
         ': it subtracts the ' + fmtInt(eq.e.licensed) + ' licensed users twice. ' : '') + 'Its estimator also leaves out greetings and classic answers, and its flows do not scale with traffic. Every line here cites Microsoft’s billing rates page.' });
@@ -2960,7 +2970,10 @@ footer.pagefoot p { margin:0 0 10px; }
         '$' + String(packUsdPerCredit()) + ' a credit already beat every tier below Tier 9 for steady use. The recommendation here: ' + r.purchase.best.label + '.' });
       out.push({ id: 'OBJ-07', q: 'Why do we need Dataverse or Agent 365?', a: 'Transcripts and knowledge files are stored in Dataverse, which has its own entitlement (' + r.dataverse.entitlement.db + ' GB database here). Agent 365 is ' +
         fmtUsd(RC.agent365.v) + ' a user a month for the people who own and sponsor agents, once several agents need one control plane.' });
-      out.push({ id: 'OBJ-08', q: 'You’re marking up credits.', a: 'Credits are priced at Microsoft list in this plan. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be.' });
+      out.push({ id: 'OBJ-08', q: 'You’re marking up credits.', a: listCredit
+        ? 'Credits are priced at Microsoft’s list rate in this plan, ' + fmtRate(rate) + ' a credit. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be, shown as its own line so you can see it.'
+        : 'Credits in this plan are priced at our rate of ' + fmtRate(rate) + ' a credit' + (cr.creditSource === 'cowork' ? ', the same rate the Cowork tab quotes' : '') +
+          ', and every figure here uses that rate openly; Microsoft’s published list rate is ' + fmtRate(RC.payg.v) + '. The difference pays for the work around the credits: limits, monitoring and the monthly true-up that keeps the bill where we said it would be.' });
       out.push({ id: 'OBJ-09', q: 'What will Autopilot cost?', a: r.autopilot.rateStatus + ' Decide now whether new services join your spending policy automatically.' });
     } catch (e) { return out; }
     return out;
