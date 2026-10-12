@@ -797,7 +797,14 @@ footer.pagefoot p { margin:0 0 10px; }
      newAgent(state, archetype?) duplicateAgent(state, id) renameAgent(state, id, name)
      deleteAgent(state, id) pauseAgent(state, id, bool) applyAgentPreset(state, id, archetype)
      applyScenarioPreset(state, key)
-   Formatting: fmtInt, fmtUsd, fmtPct. Constants: SRC, RC, RANK, PROV_LABEL, MAX, AGENT_PRESETS,
+   Plan type and partner helpers (pure)
+     state.meta.mode: 'cowork'|'agents'|'full' (default 'full'); 'agents' keeps Cowork out of every total
+     setupEnvironments(state) → { state, created[], moved[], allocations:[{name,kind,from,to,basis}], production }
+     recalcAllocations(state) → { state, allocations[], none }     none: no environments to fill
+     dataverse(...).verdict → { level:'ok'|'watch'|'over', text }   adjacentCosts(...).summary → string
+     advancedPaths(agent) → paths   agentAdvanced(agent, state) → { paths, set[], credits, covered, w365Usd, buildHi, storageOnly }
+     fieldImpact(agent, state, paths) → { credits, covered, w365Usd, buildHi }   current minus those paths at FIELD_DEFAULTS
+   Formatting: fmtInt, fmtUsd, fmtPct. Constants: SRC, RC, RANK, PROV_LABEL, MAX, AGENT_PRESETS, MODES, MODE_LABEL, FIELD_DEFAULTS,
      AGENT_PRESET_ORDER, SCENARIO_PRESETS, SCENARIO_ORDER, SERVICE_PREFILLS, INCENTIVES, ZERO_CODES,
      CHANNELS, MS_ENFORCEMENT_EXAMPLE, POOLED_LANES, RATECARD_VERSION, SESSION_TYPE, CARD_TYPE.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -851,6 +858,8 @@ footer.pagefoot p { margin:0 0 10px; }
     'ms-value':           { title: 'Agent business value: measure impact', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/guidance/agent-business-value-measure-impact', date: '2026-08-28' },
     'ms-managed-env':     { title: 'Licensing requirements for managed environments', url: 'https://learn.microsoft.com/en-us/power-platform/admin/managed-environment-licensing', date: '2026-08-31' },
     'ms-voucher':         { title: 'FY27 Copilot Agents Voucher Program (Featured Program Center KB-01841)', url: 'https://fpc.microsoft.com/knowledgebase/article/KB-01841/en-us', date: '2026-07-01' },
+    'ms-transcripts':     { title: 'Control how transcripts are retained and accessed (Copilot Studio)', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-transcript-controls', date: '2026-08-27' },
+    'ms-transcript-retention': { title: 'Change the default transcript retention period (Copilot Studio)', url: 'https://learn.microsoft.com/en-us/microsoft-copilot-studio/analytics-transcripts-powerapps#change-the-default-retention-period', date: '2026-08-27' },
     'playbook':           { title: 'Copilot Playbook partner price sheet (TD SYNNEX)', url: 'cpb-model-the-practice.html', date: '2026-08-26' }
   });
 
@@ -973,6 +982,10 @@ footer.pagefoot p { margin:0 0 10px; }
     unsure:           { label: 'Not established' }
   });
   var TENANT_BASES = deepFreeze(['basic', 'standard', 'premium', 'e3', 'e5', 'unsure']);
+  /* Plan type chosen on the Start view: Cowork only, Copilot Studio agents
+     only, or both in one pool. 'agents' keeps Cowork out of every total. */
+  var MODES = deepFreeze(['cowork', 'agents', 'full']);
+  var MODE_LABEL = deepFreeze({ cowork: 'Cowork only', agents: 'Copilot Studio agents only', full: 'Full plan: Cowork + agents' });
   var BUFFER_PCT = 15;        // planner's choice inside Microsoft's 10–20% (F-179)
   var STUDIO_BAND_PCT = 20;   // standard-harness band runs point..point×1.20, the top of F-179
   var KB_PER_GB = 1048576;
@@ -1116,7 +1129,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function defaults() {
     return {
       schemaVersion: SCHEMA_VERSION,
-      meta: { accountName: '', preparedBy: '', notes: '' },
+      meta: { accountName: '', preparedBy: '', notes: '', mode: 'full' },
       coworkSession: null,
       studio: {
         account: { totalUsers: 50, seats: { business: 0, enterprise: 0, e7: 0 }, businessBilling: 'annual', tenantBase: 'premium',
@@ -1291,6 +1304,7 @@ footer.pagefoot p { margin:0 0 10px; }
     s.meta.accountName = cStr(own(meta, 'accountName'), '', MAX.nameLen);
     s.meta.preparedBy = cStr(own(meta, 'preparedBy'), '', MAX.nameLen);
     s.meta.notes = cStr(own(meta, 'notes'), '', MAX.textLen);
+    s.meta.mode = cEnum(own(meta, 'mode'), MODES, 'full');
     var cs = own(i, 'coworkSession');
     s.coworkSession = cs === null || cs === undefined ? null : (validateCoworkPayload(cs).payload || null);
     var st = own(i, 'studio'), ac = own(st, 'account'), seats = own(ac, 'seats');
@@ -1486,6 +1500,8 @@ footer.pagefoot p { margin:0 0 10px; }
     return { seats: { business: biz, enterprise: L.cop_ent || 0, e7: L.e7 || 0 }, tenantBase: base,
              motion: v.payload.cspMotion, copilotLicensed: v.payload.copilotLicensed, employees: v.payload.employees };
   }
+  /* An agents-only plan never pools Cowork, whatever the include switch says. */
+  function coworkInclude(s) { return s.meta.mode === 'agents' ? 'off' : s.combined.includeCowork; }
 
   /* ══ 12 · Bundles and zero-rating ═══════════════════════════════════════ */
   /* Exact: counts carry 2 decimals and rates are [credits, per] with
@@ -1867,7 +1883,7 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   function pool(state) {
     var s = normalize(state);
-    return poolFrom(s, coworkFromPayload(s.coworkSession, s.combined.includeCowork), s.studio.agents.map(function (a) { return agentResult(a, s); }));
+    return poolFrom(s, coworkFromPayload(s.coworkSession, coworkInclude(s)), s.studio.agents.map(function (a) { return agentResult(a, s); }));
   }
 
   /* ══ 16 · P3 frontier ═══════════════════════════════════════════════════
@@ -2294,10 +2310,39 @@ footer.pagefoot p { margin:0 0 10px; }
     var use = { db: dv.existingDbGb + transcriptGb + indexGb, file: dv.existingFileGb + knowledgeGb, log: dv.existingLogGb };
     var over = { db: Math.max(0, use.db - ent.db), file: Math.max(0, use.file - ent.file), log: Math.max(0, use.log - ent.log) };
     function price(p) { return over.db * p.db + over.file * p.file + over.log * p.log; }
-    return { configured: !!configured, entitlement: { db: ent.db, file: ent.file, log: ent.log }, entitlementFact: configured ? 'F-190' : 'F-189',
+    var res = { configured: !!configured, entitlement: { db: ent.db, file: ent.file, log: ent.log }, entitlementFact: configured ? 'F-190' : 'F-189',
              usage: use, transcriptGb: transcriptGb, knowledgeGb: knowledgeGb, indexGb: indexGb, sessions: sessions, perAgent: rows,
              overageGb: over, addOnUsd: price(RC.dvAddOn.v), paygUsd: price(RC.dvPayg.v),
              headroomPct: { db: ent.db > 0 ? 100 * use.db / ent.db : 0, file: ent.file > 0 ? 100 * use.file / ent.file : 0 } };
+    res.verdict = storageVerdict(res);
+    return res;
+  }
+  /* One plain sentence on Dataverse storage, for the collapsed storage
+     section: fine as it is, close to the included amount, or an overage
+     with its dollar figure. */
+  function gbWords(x) {
+    if (!(x > 0)) return '0 GB';
+    if (x < 0.1) return 'under 0.1 GB';
+    return String(x < 10 ? roundTo(x, 1) : Math.round(x)) + ' GB';
+  }
+  function storageVerdict(dv) {
+    var e = dv.entitlement, u = dv.usage, o = dv.overageGb;
+    var where = dv.configured ? 'included with Copilot Studio' : 'that comes with the default environment';
+    if (o.db + o.file + o.log > 0) {
+      var parts = [];
+      if (o.db > 0) parts.push(gbWords(u.db) + ' of database against the ' + fmtInt(e.db) + ' GB included');
+      if (o.file > 0) parts.push(gbWords(u.file) + ' of file storage against the ' + fmtInt(e.file) + ' GB included');
+      if (o.log > 0) parts.push(gbWords(u.log) + ' of log storage against the ' + fmtInt(e.log) + ' GB included');
+      return { level: 'over', text: 'Storage runs past what is included: ' + parts.join('; ') + '. That is about ' + fmtUsd(dv.addOnUsd) +
+        ' a month in Dataverse capacity add-ons (' + fmtUsd(dv.paygUsd) + ' on pay-as-you-go), billed separately from Copilot Credits. Shorter transcript retention is the usual fix.' };
+    }
+    if (!(u.db > 0) && !(u.file > 0) && !(u.log > 0))
+      return { level: 'ok', text: 'No transcripts or knowledge files modeled yet, so storage stays inside the ' + fmtInt(e.db) + ' GB Dataverse database ' + where + '. No extra storage needed.' };
+    var near = dv.headroomPct.db >= 80 || dv.headroomPct.file >= 80;
+    var txt = 'Transcripts and knowledge files use about ' + gbWords(u.db) + ' of the ' + fmtInt(e.db) + ' GB Dataverse database ' + where +
+      (u.file > 0 ? ', and ' + gbWords(u.file) + ' of the ' + fmtInt(e.file) + ' GB of file storage' : '');
+    return near ? { level: 'watch', text: txt + '. That is close to the included amount: check the tenant’s real storage use before quoting.' }
+                : { level: 'ok', text: txt + ': no extra storage needed at these volumes.' };
   }
   function dataverse(state, agents, configured) {
     var s = normalize(state);
@@ -2312,7 +2357,14 @@ footer.pagefoot p { margin:0 0 10px; }
     var eligible = base === 'premium' || base === 'e5';
     var a365 = adj.agent365Owners * RC.agent365.v;
     var flowFlag = adj.premiumFlows || s.studio.environments.some(function (e) { return e.managed; });
+    var other = [];
+    if (w365 > 0) other.push('Windows 365 for Agents ' + fmtUsd(w365));
+    if (a365 > 0) other.push('Agent 365 ' + fmtUsd(a365) + (eligible ? '' : ' (blocked: needs Business Premium, E5 or E7)'));
+    if (adj.byomUsdMonthly > 0) other.push('your own models ' + fmtUsd(adj.byomUsdMonthly));
+    var summary = (other.length ? 'Other costs outside the pool: ' + other.join(', ') + ' a month.' : 'No Windows 365, Agent 365 or own-model costs entered.') +
+      (flowFlag ? ' Premium cloud flows may also need Power Automate Premium licenses.' : '');
     return {
+      summary: summary,
       w365: { usdMonthly: w365, fact: 'F-171' },
       agent365: { owners: adj.agent365Owners, usdMonthly: a365, eligible: eligible, fact: 'F-009' },
       byom: { usdMonthly: adj.byomUsdMonthly, prov: 'partner' },
@@ -2346,7 +2398,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function valueModel(state, agents, poolResult) {
     var s = normalize(state);
     var ag = Array.isArray(agents) ? agents : s.studio.agents.map(function (a) { return agentResult(a, s); });
-    var pl = isObj(poolResult) && Array.isArray(poolResult.months) ? poolResult : poolFrom(s, coworkFromPayload(s.coworkSession, s.combined.includeCowork), ag);
+    var pl = isObj(poolResult) && Array.isArray(poolResult.months) ? poolResult : poolFrom(s, coworkFromPayload(s.coworkSession, coworkInclude(s)), ag);
     return valueFrom(s, ag, pl);
   }
 
@@ -2453,7 +2505,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function computeInner(raw) {
     var s = normalize(raw);
     var warn = [], assume = [], trace = [];
-    var cw = coworkFromPayload(s.coworkSession, s.combined.includeCowork);
+    var cw = coworkFromPayload(s.coworkSession, coworkInclude(s));
     var agents = s.studio.agents.map(function (a) { return agentResult(a, s); });
     var ap = autopilotPanel(s);
     var pl = poolFrom(s, cw, agents);
@@ -2479,10 +2531,12 @@ footer.pagefoot p { margin:0 0 10px; }
     trace = trace.concat(ap.trace);
 
     /* Cowork lane */
-    if (s.coworkSession && !cw.valid) warn.push(W('P-10', 'warn', 'The Cowork tab sent a result this planner cannot read (' + cw.reason + '), so Cowork is left out of the pool.'));
-    if (cw.valid && !cw.included && s.combined.includeCowork === 'auto') warn.push(W('P-11', 'info', 'Cowork joins the combined plan once the Cowork tab reaches its results, or when you include it here.',
+    var agentsOnly = s.meta.mode === 'agents';
+    if (agentsOnly) { /* Cowork is out of this plan by choice: nothing to warn about. */ }
+    else if (s.coworkSession && !cw.valid) warn.push(W('P-10', 'warn', 'The Cowork tab sent a result this planner cannot read (' + cw.reason + '), so Cowork is left out of the pool.'));
+    if (!agentsOnly && cw.valid && !cw.included && s.combined.includeCowork === 'auto') warn.push(W('P-11', 'info', 'Cowork joins the combined plan once the Cowork tab reaches its results, or when you include it here.',
       { fixes: [{ label: 'Include Cowork now', path: 'combined.includeCowork', value: 'on' }] }));
-    if (!s.coworkSession) warn.push(W('P-12', 'info', 'No Cowork figures yet: the combined plan covers Copilot Studio only until the Cowork tab sends its result.'));
+    if (!agentsOnly && !s.coworkSession) warn.push(W('P-12', 'info', 'No Cowork figures yet: the combined plan covers Copilot Studio only until the Cowork tab sends its result.'));
     if (cw.included) assume.push(A('cowork-source', 'Cowork lane', 'Taken from the Cowork tab: its month-by-month credits, with a ±' + fmtPct(cw.band * 100) +
       ' band. The Cowork tab discloses how Microsoft’s current estimator compares; this planner does not model Cowork a second time.', cw.calibrated ? 'measured' : 'ms-modeled', 'customer'));
     var seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7;
@@ -2786,6 +2840,7 @@ footer.pagefoot p { margin:0 0 10px; }
       return {
         version: String(r.version), rateCardVersion: String(r.rateCardVersion), months: (r.months || []).slice(),
         accountName: String(r.state.meta.accountName), preparedBy: String(r.state.meta.preparedBy),
+        mode: MODES.indexOf(r.state.meta.mode) > -1 ? r.state.meta.mode : 'full',
         cowork: { included: L.cowork.included === true, steady: band(L.cowork.steady), year: band(L.cowork.year), bandPct: num(L.cowork.band) * 100, source: 'Cowork tab' },
         agents: L.agents.filter(function (a) { return !a.paused; }).map(function (a) {
           return { name: a.name, type: a.type, harness: a.harness, lo: num(a.lo), hi: num(a.hi), zeroRated: num(a.licensedCovered), minimum: a.floor === true,
@@ -2830,7 +2885,7 @@ footer.pagefoot p { margin:0 0 10px; }
         sources: Object.keys(srcUsed).sort().map(function (k) { return { title: SRC[k].title, url: SRC[k].url, date: SRC[k].date }; })
       };
     } catch (e) {
-      return { version: VERSION, rateCardVersion: RATECARD_VERSION, months: [], accountName: '', preparedBy: '', cowork: {}, agents: [], pool: {}, pricing: {}, buy: {},
+      return { version: VERSION, rateCardVersion: RATECARD_VERSION, months: [], accountName: '', preparedBy: '', mode: 'full', cowork: {}, agents: [], pool: {}, pricing: {}, buy: {},
                adjacent: {}, dataverse: {}, guardrails: {}, enforcement: {}, licenseInstead: {}, zeroRatedMonthly: 0, value: null,
                warnings: [], assumptions: [], provenance: PROV_LABEL, trace: [], sources: [] };
     }
@@ -3060,6 +3115,137 @@ footer.pagefoot p { margin:0 0 10px; }
     return { total: total, atDefault: total - changed.length, changed: changed };
   }
 
+  /* ══ 30b · Environment set-up (pure: new state plus what changed) ══════
+     The recommended layout: Default for personal use (tenant draw on),
+     Production for published agents and Sandbox for builds (tenant draw
+     off). Missing kinds are created; agents still on the default
+     environment and tenant pool move to Production (Business Central agents
+     stay where they are until the partner relinks them). Allocations then
+     come from the governance figures: an environment's high-end peak-month
+     use plus the buffer, sized so agents switch off at 125% of it. A sandbox
+     gets the GitHub build high end plus 10%, or keeps its own figure, or a
+     5,000-credit planner placeholder. Pay-as-you-go environments are exempt
+     and keep their allocation. */
+  var SANDBOX_PLACEHOLDER = 5000;
+  function fillAllocations(s) {
+    var r = computeInner(s), ghBuild = 0, out = [];
+    r.lanes.agents.forEach(function (a) { if (!a.paused && a.build) ghBuild = Math.max(ghBuild, a.build.hi); });
+    s.studio.environments.forEach(function (e) {
+      var from = e.allocation, to = from, basis = 'unchanged';
+      if (e.payg) basis = 'payg';
+      else if (e.kind === 'sandbox') {
+        if (ghBuild > 0) { to = roundUp(ghBuild * 1.1, 1000); basis = 'build'; }
+        else if (!(from > 0)) { to = SANDBOX_PLACEHOLDER; basis = 'placeholder'; }
+        else basis = 'kept';
+      } else {
+        var g = r.governance.allocations.filter(function (x) { return x.name === e.name; })[0];
+        if (g) { to = g.credits; basis = 'governance'; }
+      }
+      e.allocation = cInt(to, 0, 0, MAX.allocation);
+      out.push({ name: e.name, kind: e.kind, from: from, to: e.allocation, basis: basis });
+    });
+    return out;
+  }
+  function setupEnvironments(state) {
+    try { return setupEnvironmentsInner(state); } catch (e) { return { state: normalize(state), created: [], moved: [], allocations: [], production: null }; }
+  }
+  function setupEnvironmentsInner(state) {
+    var s = normalize(state), created = [], moved = [];
+    var want = [['Default', 'default'], ['Production', 'production'], ['Sandbox', 'sandbox']];
+    want.forEach(function (w) {
+      if (s.studio.environments.some(function (e) { return e.kind === w[1]; }) || s.studio.environments.length >= MAX.environments) return;
+      var name = w[0], k = 2;
+      while (s.studio.environments.some(function (e) { return e.name === name; })) name = w[0] + ' ' + (k++);
+      s.studio.environments.push({ name: name, kind: w[1], allocation: 0, payg: false, tenantDraw: w[1] === 'default', managed: false });
+      created.push(name);
+    });
+    var prod = s.studio.environments.filter(function (e) { return e.kind === 'production'; })[0];
+    var defNames = s.studio.environments.filter(function (e) { return e.kind === 'default'; }).map(function (e) { return e.name; });
+    if (prod) s.studio.agents.forEach(function (a) {
+      if (a.type === 'bc') return;
+      if (a.env === '' || defNames.indexOf(a.env) > -1) { a.env = prod.name; moved.push(a.name); }
+    });
+    s = normalize(s);
+    var alloc = fillAllocations(s);
+    return { state: normalize(s), created: created, moved: moved, allocations: alloc, production: prod ? prod.name : null };
+  }
+  function recalcAllocations(state) {
+    try { return recalcAllocationsInner(state); } catch (e) { return { state: normalize(state), allocations: [], none: true }; }
+  }
+  function recalcAllocationsInner(state) {
+    var s = normalize(state);
+    if (!s.studio.environments.length) return { state: s, allocations: [], none: true };
+    var alloc = fillAllocations(s);
+    return { state: normalize(s), allocations: alloc, none: false };
+  }
+
+  /* ══ 30c · Advanced cost drivers on an agent card ══════════════════════
+     Which inputs sit behind "Advanced", which of them are set away from
+     their defaults, and what they add: the engine prices the card with
+     those inputs at their defaults and reports the difference. */
+  var FIELD_DEFAULTS = deepFreeze({
+    'harness': 'standard', 'shape.genPct': 100, 'shape.greeting': false, 'shape.groundedPct': 0,
+    'bundle.classic': 0, 'bundle.generative': 0, 'bundle.grounded': 0, 'bundle.actions': 0, 'bundle.flowActions': 0, 'flowTrigger': 'agent',
+    'bundle.aiBasic': 0, 'bundle.aiStandard': 0, 'bundle.aiPremium': 0, 'aiPricing': 'response', 'aiTokensPerCall': 1000,
+    'reasoning.on': false, 'reasoning.tokens': 0, 'bundle.contentPages': 0,
+    'bundle.voiceClassic': 0, 'bundle.voiceGen': 0, 'bundle.voicePremium': 0,
+    'bundle.cuaSteps': 0, 'cua.model': 'standard', 'cua.w365Hours': 0, 'cua.w365AlwaysOn': 0, 'bundle.workiqCalls': 0,
+    'autonomous.countTriggerAsAction': false, 'autonomous.countPromptAsAction': false,
+    'data.retentionDays': 30, 'data.knowledgeGb': 0,
+    'github.split': [40, 40, 20], 'github.heavyObserved': null, 'github.buildSessions': 0, 'github.buildMonths': 0, 'github.buildSplit': [40, 40, 20]
+  });
+  var STORAGE_ONLY = deepFreeze(['data.retentionDays', 'data.knowledgeGb']);
+  function advancedPaths(agent) {
+    var a = normalizeAgent(agent, 0);
+    if (a.type === 'bc') return [];
+    if (a.harness === 'github') return ['harness', 'github.split', 'github.heavyObserved', 'github.buildSessions', 'github.buildMonths', 'github.buildSplit'];
+    var p = ['harness'];
+    if (a.type === 'conversational') p.push('shape.genPct', 'shape.greeting');
+    p.push('bundle.classic', 'bundle.generative', 'bundle.grounded', 'bundle.flowActions', 'flowTrigger',
+      'bundle.aiBasic', 'bundle.aiStandard', 'bundle.aiPremium', 'aiPricing', 'aiTokensPerCall', 'reasoning.on', 'reasoning.tokens', 'bundle.contentPages',
+      'bundle.voiceClassic', 'bundle.voiceGen', 'bundle.voicePremium', 'bundle.cuaSteps', 'cua.model', 'cua.w365Hours', 'cua.w365AlwaysOn', 'bundle.workiqCalls');
+    if (a.type === 'autonomous') p.push('autonomous.countTriggerAsAction', 'autonomous.countPromptAsAction');
+    if (a.type === 'conversational') p.push('data.retentionDays', 'data.knowledgeGb');
+    return p;
+  }
+  function agentGetPath(a, path) {
+    var o = a, parts = String(path).split('.');
+    for (var i = 0; i < parts.length; i++) { if (!isObj(o) || !HOP.call(o, parts[i])) return undefined; o = o[parts[i]]; }
+    return o;
+  }
+  function agentSetPath(a, path, v) {
+    var o = a, parts = String(path).split('.');
+    for (var i = 0; i < parts.length - 1; i++) { if (!isObj(o) || !HOP.call(o, parts[i])) return; o = o[parts[i]]; }
+    if (isObj(o) && HOP.call(o, parts[parts.length - 1])) o[parts[parts.length - 1]] = clone(v === undefined ? null : v);
+  }
+  /* A qualifier only counts once the thing it qualifies is in use. */
+  function fieldIsSet(a, path) {
+    if (!HOP.call(FIELD_DEFAULTS, path)) return false;
+    if (JSON.stringify(agentGetPath(a, path)) === JSON.stringify(FIELD_DEFAULTS[path])) return false;
+    var b = a.bundle;
+    if (path === 'aiPricing' || path === 'aiTokensPerCall') return b.aiBasic + b.aiStandard + b.aiPremium > 0 && (path === 'aiPricing' || a.aiPricing === 'tokens');
+    if (path === 'reasoning.tokens') return a.reasoning.on;
+    if (path === 'cua.model' || path === 'cua.w365Hours' || path === 'cua.w365AlwaysOn') return b.cuaSteps > 0;
+    if (path === 'flowTrigger') return b.flowActions > 0;
+    return true;
+  }
+  function fieldImpact(agent, state, paths) {
+    var a = normalizeAgent(agent, 0), alt = clone(a);
+    (Array.isArray(paths) ? paths : [paths]).forEach(function (p) {
+      if (typeof p === 'string' && HOP.call(FIELD_DEFAULTS, p)) agentSetPath(alt, p, FIELD_DEFAULTS[p]);
+    });
+    var cur = agentResult(a, state), was = agentResult(alt, state);
+    return { credits: cur.lo - was.lo, covered: cur.licensedCovered - was.licensedCovered, w365Usd: cur.w365Usd - was.w365Usd, buildHi: cur.build.hi - was.build.hi };
+  }
+  function agentAdvanced(agent, state) {
+    var a = normalizeAgent(agent, 0), paths = advancedPaths(a);
+    var set = paths.filter(function (p) { return fieldIsSet(a, p); });
+    var reset = set.filter(function (p) { return !(p === 'harness' && a.harness === 'github'); });
+    var imp = reset.length ? fieldImpact(a, state, reset) : { credits: 0, covered: 0, w365Usd: 0, buildHi: 0 };
+    return { paths: paths, set: set, credits: imp.credits, covered: imp.covered, w365Usd: imp.w365Usd, buildHi: imp.buildHi,
+             storageOnly: set.length > 0 && set.every(function (p) { return STORAGE_ONLY.indexOf(p) > -1; }) };
+  }
+
   /* ══ 31 · Export ════════════════════════════════════════════════════════ */
   root.PlannerEngine = {
     VERSION: VERSION, SCHEMA_VERSION: SCHEMA_VERSION, RATECARD_VERSION: RATECARD_VERSION,
@@ -3082,7 +3268,10 @@ footer.pagefoot p { margin:0 0 10px; }
     parseSession: parseSession, serializeSession: serializeSession, parsePartnerCard: parsePartnerCard, serializePartnerCard: serializePartnerCard,
     newAgent: newAgent, duplicateAgent: duplicateAgent, renameAgent: renameAgent, deleteAgent: deleteAgent, pauseAgent: pauseAgent,
     applyAgentPreset: applyAgentPreset, applyScenarioPreset: applyScenarioPreset, patch: patch, applyFix: applyFix, defaultsDelta: defaultsDelta,
-    fmtInt: fmtInt, fmtUsd: fmtUsd, fmtPct: fmtPct, fmtRate: fmtRate, hasBillingPath: hasBillingPath
+    fmtInt: fmtInt, fmtUsd: fmtUsd, fmtPct: fmtPct, fmtRate: fmtRate, hasBillingPath: hasBillingPath,
+    MODES: MODES, MODE_LABEL: MODE_LABEL, FIELD_DEFAULTS: FIELD_DEFAULTS, SANDBOX_PLACEHOLDER: SANDBOX_PLACEHOLDER,
+    setupEnvironments: setupEnvironments, recalcAllocations: recalcAllocations, storageVerdict: storageVerdict,
+    advancedPaths: advancedPaths, agentAdvanced: agentAdvanced, fieldImpact: fieldImpact
   };
 })(typeof module !== 'undefined' && module.exports ? module.exports : (typeof window !== 'undefined' ? window : this));
 </script>

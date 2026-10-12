@@ -807,5 +807,107 @@ sec('R');
      'the UI prefills total users from the employee count when present');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   S · UX polish: plan type, environment set-up, storage verdict and the
+   agent card's advanced cost drivers. None of these may move a credit.
+   ══════════════════════════════════════════════════════════════════════════ */
+sec('S');
+{
+  // Plan type: state, normalize, session
+  eq(E.defaults().meta.mode, 'full', 'S default plan type is full');
+  ok(E.MODES.join() === 'cowork,agents,full' && E.MODES.every((k) => E.MODE_LABEL[k]), 'S three plan types, each labeled');
+  ['cowork', 'agents', 'full'].forEach((m) => { const s = E.defaults(); s.meta.mode = m; eq(E.normalize(s).meta.mode, m, 'S normalize keeps ' + m); });
+  [null, 'x', 7, {}, [], '__proto__', 'Agents'].forEach((v) => { const s = E.defaults(); s.meta.mode = v; eq(E.normalize(s).meta.mode, 'full', 'S hostile mode ' + JSON.stringify(v) + ' becomes full'); });
+  const old = JSON.parse(E.serializeSession(E.defaults())); delete old.meta.mode;
+  eq(E.parseSession(JSON.stringify(old)).state.meta.mode, 'full', 'S an older session without a plan type loads as full');
+  const ag = E.applyScenarioPreset(E.defaults(), 'smb-trio'); ag.meta.mode = 'agents';
+  eq(E.parseSession(E.serializeSession(ag)).state.meta.mode, 'agents', 'S the plan type survives a session round trip');
+  eq(E.applyScenarioPreset(ag, 'business-central').meta.mode, 'agents', 'S a scenario preset keeps the plan type');
+  // Agents-only keeps Cowork out of every total, even when it is switched on
+  const withCw = E.applyScenarioPreset(E.defaults(), 'smb-trio'); withCw.coworkSession = PAYLOAD(); withCw.combined.includeCowork = 'on';
+  const agOnly = J(withCw); agOnly.meta.mode = 'agents';
+  const rFull = E.compute(withCw), rAg = E.compute(agOnly);
+  eq(rFull.pool.steady.lo, 40600 + 70000, 'S full plan pools Cowork and the trio');
+  eq(rAg.pool.steady.lo, 40600, 'S agents-only pools the trio alone (40,600)');
+  eq(rAg.lanes.cowork.included, false, 'S agents-only: Cowork lane not included');
+  ok(wids(rAg).indexOf('P-11') < 0 && wids(rAg).indexOf('P-12') < 0, 'S agents-only: no Cowork reminders');
+  eq(E.pool(agOnly).steady.lo, 40600, 'S pool() honors agents-only');
+  eq(E.customerView(rAg).mode, 'agents', 'S the customer view carries the plan type');
+  eq(E.customerView(rAg).cowork.included, false, 'S agents-only customer view has no Cowork lane');
+  const cwMode = J(withCw); cwMode.meta.mode = 'cowork';
+  eq(JSON.stringify(E.compute(cwMode).pool), JSON.stringify(rFull.pool), 'S cowork-only changes no number');
+  // Environment set-up
+  const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const su = E.setupEnvironments(trio);
+  eq(su.created.join(), 'Default,Production,Sandbox', 'S set-up creates the recommended three environments');
+  eq(su.moved.length, 3, 'S set-up moves the three agents off the default environment');
+  ok(su.state.studio.agents.every((a) => a.env === 'Production'), 'S every agent lands in Production');
+  const env = (n) => su.state.studio.environments.filter((e) => e.name === n)[0];
+  ok(env('Default').tenantDraw === true && env('Production').tenantDraw === false && env('Sandbox').tenantDraw === false, 'S tenant draw on for Default only');
+  eq(env('Sandbox').allocation, E.SANDBOX_PLACEHOLDER, 'S sandbox gets the 5,000 placeholder without a GitHub build');
+  const rsu = E.compute(su.state), gProd = rsu.governance.allocations.filter((x) => x.name === 'Production')[0];
+  ok(gProd && env('Production').allocation === gProd.credits && gProd.credits > 0, 'S Production allocation equals the governance figure (' + (gProd && gProd.credits) + ')');
+  ok(su.allocations.some((x) => x.name === 'Production' && x.from === 0 && x.to === gProd.credits && x.basis === 'governance'), 'S the change list says what moved');
+  eq(JSON.stringify(rsu.pool), JSON.stringify(E.compute(trio).pool), 'S set-up never moves a credit');
+  const su2 = E.setupEnvironments(su.state);
+  ok(su2.created.length === 0 && su2.moved.length === 0, 'S set-up twice creates nothing new');
+  eq(JSON.stringify(su2.state.studio.environments), JSON.stringify(su.state.studio.environments), 'S set-up is idempotent');
+  const rc0 = E.recalcAllocations(trio);
+  ok(rc0.none === true && rc0.allocations.length === 0 && rc0.state.studio.environments.length === 0, 'S recalculate with no environments changes nothing and says so');
+  const bumped = J(su.state); bumped.studio.agents[0].traffic.count = 3000;
+  const rc1 = E.recalcAllocations(bumped), p1 = rc1.allocations.filter((x) => x.name === 'Production')[0];
+  ok(p1.to > p1.from, 'S recalculate raises Production when demand grows (' + p1.from + ' → ' + p1.to + ')');
+  const bcS = E.applyScenarioPreset(E.defaults(), 'full-estate'), su3 = E.setupEnvironments(bcS);
+  ok(su3.state.studio.agents.filter((a) => a.type === 'bc').every((a) => a.env === ''), 'S Business Central agents stay put until relinked');
+  const gb = su3.state.studio.environments.filter((e) => e.kind === 'sandbox')[0], ghHi = E.compute(bcS).lanes.agents.filter((a) => a.build.hi > 0)[0].build.hi;
+  eq(gb.allocation, Math.ceil(ghHi * 1.1 / 1000) * 1000, 'S sandbox sized to the GitHub build plus 10%');
+  const pg = J(su.state); pg.studio.environments[1].payg = true; pg.studio.environments[1].allocation = 777;
+  eq(E.recalcAllocations(pg).state.studio.environments[1].allocation, 777, 'S a pay-as-you-go environment keeps its allocation');
+  ok(E.setupEnvironments(null).state && E.recalcAllocations('x').state, 'S set-up helpers are total');
+  // Storage verdict
+  const v0 = E.compute(trio).dataverse.verdict;
+  ok(v0.level === 'ok' && /no extra storage needed/.test(v0.text) && /15 GB/.test(v0.text), 'S trio storage verdict: fine, 15 GB included');
+  const vEmpty = E.compute(E.defaults()).dataverse.verdict;
+  ok(vEmpty.level === 'ok' && /No transcripts/.test(vEmpty.text) && /default environment/.test(vEmpty.text), 'S empty plan: default environment wording');
+  const big = J(trio); big.studio.dataverse.existingDbGb = 20;
+  const vb = E.compute(big).dataverse;
+  ok(vb.verdict.level === 'over' && vb.verdict.text.indexOf(E.fmtUsd(vb.addOnUsd)) > -1 && vb.verdict.text.indexOf(E.fmtUsd(vb.paygUsd)) > -1, 'S overage verdict carries both dollar figures');
+  const near = J(trio); near.studio.dataverse.existingDbGb = 12.5;
+  eq(E.compute(near).dataverse.verdict.level, 'watch', 'S above 80% of the database is a watch');
+  ok(!/NaN|undefined|Infinity/.test(v0.text + vb.verdict.text + vEmpty.text), 'S verdict copy is clean');
+  ok(/No Windows 365/.test(E.compute(trio).adjacent.summary), 'S adjacent summary with nothing entered');
+  const a3 = J(trio); a3.studio.adjacent.agent365Owners = 2; a3.studio.account.tenantBase = 'standard';
+  ok(/Agent 365 \$30 \(blocked/.test(E.compute(a3).adjacent.summary), 'S adjacent summary prices Agent 365 and says when it is blocked');
+  // Advanced cost drivers
+  const advOf = (k) => { const s = presetState(k); return E.agentAdvanced(s.studio.agents[0], s); };
+  const inv = advOf('invoice');
+  ok(inv.set.join() === 'bundle.aiPremium' && inv.credits === 4000, 'S invoice intake: the premium prompt is the one advanced driver, +4,000');
+  ok(advOf('helpdesk').set.length === 0 && advOf('website').set.length === 0, 'S helpdesk and website FAQ need nothing advanced');
+  const sup = advOf('support');
+  ok(sup.set.join() === 'bundle.classic,bundle.generative' && sup.credits === 216000, 'S support bot: extra answers are advanced, +216,000 a month');
+  ok(advOf('bcPayables').paths.length === 0, 'S Business Central agents have no advanced drivers');
+  const ret = presetState('helpdesk'); ret.studio.agents[0].data.retentionDays = 90;
+  const ra = E.agentAdvanced(ret.studio.agents[0], ret);
+  ok(ra.set.join() === 'data.retentionDays' && ra.credits === 0 && ra.storageOnly, 'S retention is storage only');
+  const q = presetState('website'); q.studio.agents[0].aiPricing = 'tokens'; q.studio.agents[0].cua.model = 'premium';
+  eq(E.agentAdvanced(q.studio.agents[0], q).set.length, 0, 'S qualifiers do not count until what they qualify is in use');
+  const hd = presetState('helpdesk');
+  eq(E.fieldImpact(hd.studio.agents[0], hd, 'shape.groundedPct').credits, 40 * 4 * 5 * 10, 'S grounding adds 8,000 billed on the helpdesk');
+  eq(E.fieldImpact(hd.studio.agents[0], hd, ['shape.groundedPct']).covered, 20 * 4 * 5 * 10, 'S and 4,000 of covered use');
+  const rs = presetState('website'); rs.studio.agents[0].reasoning = { on: true, tokens: 2500 };
+  eq(E.agentAdvanced(rs.studio.agents[0], rs).credits, 1500 * 30, 'S reasoning adds 30 credits a conversation (bills twice)');
+  const gh = E.applyScenarioPreset(E.defaults(), 'full-estate'), gha = gh.studio.agents.filter((a) => a.harness === 'github')[0];
+  const ga = E.agentAdvanced(gha, gh);
+  ok(ga.set.indexOf('harness') > -1 && ga.set.indexOf('github.buildSessions') > -1 && ga.buildHi > 0 && ga.credits === 0, 'S GitHub harness: build is advanced and never resets the harness');
+  ok(E.fieldImpact(null, null, 'x').credits === 0 && E.agentAdvanced(undefined).set.length === 0, 'S advanced helpers are total');
+  const before = JSON.stringify(inv);
+  ['website', 'helpdesk', 'invoice'].forEach((k) => { const s = presetState(k); const snap = JSON.stringify(s); E.agentAdvanced(s.studio.agents[0], s); E.fieldImpact(s.studio.agents[0], s, E.advancedPaths(s.studio.agents[0])); eq(JSON.stringify(s), snap, 'S advanced helpers never mutate (' + k + ')'); });
+  ok(before.length > 0, 'S snapshot');
+  // The SMB trio still prices exactly
+  eq(firstAgent(presetState('website')).lo, 15000, 'S website FAQ still 15,000');
+  eq(firstAgent(presetState('helpdesk')).lo, 9600, 'S helpdesk still 9,600'); eq(firstAgent(presetState('helpdesk')).licensedCovered, 4800, 'S helpdesk still 4,800 covered');
+  eq(firstAgent(presetState('invoice')).lo, 16000, 'S invoice intake still 16,000');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
