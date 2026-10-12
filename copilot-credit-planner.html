@@ -1568,7 +1568,10 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ 9 · Warnings, assumptions and trace rows ═══════════════════════════ */
   function W(id, sev, msg, opt) {
     var o = isObj(opt) ? opt : {};
-    return { id: id, sev: sev, msg: msg, aud: o.aud === 'customer' ? 'customer' : 'partner', fixes: Array.isArray(o.fixes) ? o.fixes : [] };
+    var w = { id: id, sev: sev, msg: msg, aud: o.aud === 'customer' ? 'customer' : 'partner', fixes: Array.isArray(o.fixes) ? o.fixes : [] };
+    /* note: partner-only coaching that never reaches the customer view or the talk track */
+    if (typeof o.note === 'string' && o.note) w.note = o.note;
+    return w;
   }
   function A(id, label, note, prov, aud) { return { id: id, label: label, note: note, prov: prov, aud: aud === 'customer' ? 'customer' : 'partner' }; }
   function TR(o) {
@@ -2675,7 +2678,7 @@ footer.pagefoot p { margin:0 0 10px; }
     var covered = sum(agents.filter(function (a) { return !a.paused; }).map(function (a) { return a.licensedCovered; }));
     if (covered > 0) warn.push(W('P-27', 'info', 'Copilot licenses already cover ' + fmtInt(covered) + ' credits a month of agent use. Fair-use limits apply and Microsoft does not quantify them.', { aud: 'customer' }));
     if ((n = names(agents, function (a) { return a.flags.unauthExternal; })).length)
-      warn.push(W('P-28', 'info', 'External agents with no sign-in bill every conversation: ' + list(n) + '. Say it plainly: a website agent is a metered service.', { aud: 'customer' }));
+      warn.push(W('P-28', 'info', 'External agents with no sign-in bill every conversation: ' + list(n) + '.', { aud: 'customer', note: 'Say it plainly: a website agent is a metered service.' }));
     if ((n = names(agents, function (a) { return a.flags.assumedUnlicensed; })).length)
       warn.push(W('P-29', 'info', 'No users entered, so all internal traffic is treated as unlicensed and billed: ' + list(n) + '.'));
     if ((n = names(agents, function (a) { return a.type === 'bc' && a.defaultEnv; })).length)
@@ -3036,7 +3039,8 @@ footer.pagefoot p { margin:0 0 10px; }
       lines.push((cr.basis === 'sell' ? 'At our price' : 'At list price') + ' your plan runs about ' + fmtInt(r.pool.steady.lo) + '–' + fmtInt(r.pool.steady.hi) + ' credits a month once it is running, roughly ' +
         fmtUsd(r.pool.steady.lo * cr.usdPerCredit) + '–' + fmtUsd(r.pool.steady.hi * cr.usdPerCredit) + ' a month at pay-as-you-go.');
       cv.warnings.forEach(function (w) { lines.push(w.msg); });
-      nextBestAction(r).matches.forEach(function (m) { lines.push(m.opener); });
+      /* NBA-13 (the specialization) is addressed to the partner, never the customer. */
+      nextBestAction(r).matches.forEach(function (m) { if (m.id !== 'NBA-13') lines.push(m.opener); });
       var seen = {};
       return lines.filter(function (l) { if (seen[l]) return false; seen[l] = 1; return true; });
     } catch (e) { return []; }
@@ -5051,6 +5055,7 @@ footer.pagefoot p { margin:0 0 10px; }
       var s = SEV[w.sev] || SEV.info;
       return '<div class="flag' + (w.aud === 'partner' ? ' partner-only' : '') + '"><div class="fi"><span class="light ' + s[0] + '">' + s[1] + '</span></div><div class="ft">' + esc(w.msg) +
         (w.aud === 'partner' ? ' <span class="pill default">Partner</span>' : '') +
+        (w.note ? '<div class="mini partner-only">' + esc(w.note) + '</div>' : '') +
         (w.fixes.length ? '<div class="fixrow no-print">' + w.fixes.map(function (f, i) { return '<button type="button" class="linkbtn" data-fixw="' + esc(w.id) + '" data-fixi="' + i + '">' + esc(f.label) + '</button>'; }).join('') + '</div>' : '') +
         '</div></div>';
     }).join('') : '<p class="note">Nothing to flag.</p>';

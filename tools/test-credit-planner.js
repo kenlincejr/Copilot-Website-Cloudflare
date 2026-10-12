@@ -1074,6 +1074,20 @@ sec('QA-C');
     ok(ids.indexOf('NBA-01') > -1 && ids.indexOf('NBA-14') < 0, 'M-10 a rule that throws (no dataverse) skips only itself (' + ids.join() + ')');
   }
 
+  // M-11 · no partner-only text in the talk track (NBA-13 opener, P-28 coaching)
+  {
+    const fe = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
+    const n13 = nbaOf(fe, 'NBA-13');
+    ok(fe.specialization.reached && n13, 'M-11 setup: the full estate reaches the specialization bar');
+    const tk = E.talk(fe);
+    ok(n13 && tk.indexOf(n13.opener) < 0, 'M-11 the NBA-13 opener never enters the talk track');
+    ok(tk.every((l) => !/Say it plainly/.test(l)), 'M-11 no "Say it plainly" coaching in the talk track');
+    const w28 = wOf(fe, 'P-28');
+    ok(w28 && !/Say it plainly/.test(w28.msg) && /Say it plainly/.test(w28.note || ''), 'M-11 P-28 keeps the coaching as a partner-only note');
+    ok(E.customerView(fe).warnings.every((w) => !/Say it plainly/.test(w.msg) && !('note' in w)), 'M-11 the customer view carries no coaching');
+    ok(/w\.note \? '<div class="mini partner-only">/.test(src), 'M-11 the flags render a note as partner-only');
+  }
+
   /* QA-C end */
 }
 
