@@ -1408,7 +1408,7 @@ footer.pagefoot p { margin:0 0 10px; }
     t.fixedPerRun = cNum(own(a, 'fixedPerRun'), 0, 0, MAX.fixedPerRun, 2);
     t.flowTrigger = cEnum(own(a, 'flowTrigger'), ['agent', 'other'], 'agent');
     t.aiPricing = cEnum(own(a, 'aiPricing'), ['response', 'tokens'], 'response');
-    t.aiTokensPerCall = cInt(own(a, 'aiTokensPerCall'), 1000, 1, MAX.tokens);
+    t.aiTokensPerCall = cInt(own(a, 'aiTokensPerCall'), 1000, 0, MAX.tokens);
     var r = own(a, 'reasoning');
     t.reasoning.on = cBool(own(r, 'on'), false);
     t.reasoning.tokens = cInt(own(r, 'tokens'), 0, 0, MAX.tokens);
@@ -1711,6 +1711,8 @@ footer.pagefoot p { margin:0 0 10px; }
   function featureItems(a, origin) {
     var b = a.bundle, out = [], sh = a.shape;
     var aiCalls = b.aiBasic + b.aiStandard + b.aiPremium;
+    /* Per 1K tokens: started 1K units (the planner's reading; Microsoft says
+       "per 1K tokens"), so 0 tokens bills 0 units (QA L-09). */
     var tokUnits = a.aiPricing === 'tokens' ? Math.ceil(a.aiTokensPerCall / 1000) : 1;
     if (a.bundleMode === 'blueprint') {
       out.push({ key: 'blueprint', label: 'Microsoft blueprint (' + a.blueprint + ')', kind: 'standard', count: 1, rate: [RC.blueprints.v[a.blueprint], 1],
@@ -3336,8 +3338,8 @@ footer.pagefoot p { margin:0 0 10px; }
                    agent: { name: 'Sales Order Agent', type: 'bc', bc: { kind: 'salesOrder', volume: 100, checks: 1, orders: 1, attachData: 0.5, attachNoData: 0 } } },
     bcPayables:  { label: 'Business Central Payables Agent', example: '(50 + 5 × 3 lines) × 100 invoices = 6,500 a month', fact: 'F-186', exampleBy: 'microsoft', group: 'bc',
                    agent: { name: 'Payables Agent', type: 'bc', bc: { kind: 'payables', volume: 100, lines: 3 } } },
-    bcExpense:   { label: 'Business Central Expense Agent (preview)', example: '50 credits a receipt × 100 receipts = 5,000 a month', fact: 'F-187', exampleBy: 'rates', group: 'bc',
-                   agent: { name: 'Expense Agent', type: 'bc', bc: { kind: 'expense', volume: 100 } } },
+    bcExpense:   { label: 'Business Central Expense Agent (preview)', example: '50 credits a receipt × 50 receipts = 2,500 a month', fact: 'F-187', exampleBy: 'rates', group: 'bc',
+                   agent: { name: 'Expense Agent', type: 'bc', bc: { kind: 'expense', volume: 50 } } },
     support:     { label: 'Customer support bot (Microsoft example)', example: '[(4 × 1) + (2 × 2)] × 900 = 7,200 credits a day', fact: 'F-161', exampleBy: 'microsoft', group: 'ms',
                    agent: { name: 'Customer support bot', type: 'conversational', audience: 'external', channel: 'website', auth: 'none',
                             traffic: { mode: 'total', count: 900, per: 'day' }, daysActive: 30, bundle: { classic: 4, generative: 2 } } },
@@ -4664,7 +4666,7 @@ footer.pagefoot p { margin:0 0 10px; }
           }
           if (at !== 'none') {
             g2.push(fld(a, 'aiPricing', 'Prompts priced', 'enum', { options: AIPRICE_OPTS, help: 'aiPricing', imp: ['aiPricing'] }));
-            if (a.aiPricing === 'tokens') g2.push(fld(a, 'aiTokensPerCall', 'Tokens per response', 'int', { min: 1, step: 1, help: 'aiTokens' }));
+            if (a.aiPricing === 'tokens') g2.push(fld(a, 'aiTokensPerCall', 'Tokens per response', 'int', { min: 0, step: 1, help: 'aiTokens' }));
           }
         }
         b += subh('Flows and prompt tools') + grid(g2);
@@ -4739,7 +4741,7 @@ footer.pagefoot p { margin:0 0 10px; }
     invoice: { v: 16000, f: function (x) { return x.lo; }, u: 'credits a month' },
     bcSalesOrder: { v: 1650, f: function (x) { return x.lo; }, u: 'credits a month' },
     bcPayables: { v: 6500, f: function (x) { return x.lo; }, u: 'credits a month' },
-    bcExpense: { v: 5000, f: function (x) { return x.lo; }, u: 'credits a month' },
+    bcExpense: { v: 2500, f: function (x) { return x.lo; }, u: 'credits a month' },
     support: { v: 7200, f: function (x) { return x.perPeriod.billed; }, u: 'credits a day' },
     sales: { v: 4800, f: function (x) { return x.perPeriod.billed; }, u: 'credits a day billed' },
     order: { v: 20, f: function (x) { return x.perUnit.total; }, u: 'credits a run' },

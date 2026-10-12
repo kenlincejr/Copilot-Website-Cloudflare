@@ -149,7 +149,7 @@ sec('A');
   // Business Central
   eq(firstAgent(presetState('bcSalesOrder')).lo, 1650, 'A-BC Sales Order [2+5+5+2+(5×0.5)]×100');
   eq(firstAgent(presetState('bcPayables')).lo, 6500, 'A-BC Payables (50+5×3)×100');
-  eq(firstAgent(presetState('bcExpense')).lo, 5000, 'A-BC Expense 50 × 100 receipts');
+  eq(firstAgent(presetState('bcExpense')).lo, 2500, 'A-BC Expense 50 × 50 receipts (spec A15; QA L-28)');
   ok(firstAgent(presetState('bcPayables')).codes.join() === 'Z-BC', 'A-BC billed per use');
   // Microsoft blueprints
   eq(firstAgent(presetState('expense')).perUnit.total, 15, 'A-MS expense 15'); eq(firstAgent(presetState('approval')).perUnit.total, 12, 'A-MS approval 12');
@@ -1241,6 +1241,17 @@ sec('QA-E');
   ok(r.adjacent.agent365.status === 'blocked' && r.warnings.some((w) => w.id === 'P-65' && /does not qualify/.test(w.msg)), 'QA-E M-24 Standard without the suites is blocked');
   ok(st('premium', 'unsure').adjacent.agent365.eligible, 'QA-E M-24 Business Premium qualifies');
   ok(/data-bind="studio\.account\.suites"/.test(src), 'QA-E M-24 the account form has the suites field');
+}
+/* L-09: AI tools priced per 1K tokens at 0 tokens bill 0 units.
+   L-28: the BC Expense preset is 50 receipts × 50 = 2,500 (spec A15). */
+{
+  const s = presetState('invoice'), a = s.studio.agents[0];
+  a.aiPricing = 'tokens'; a.aiTokensPerCall = 0;
+  eq(E.normalize(s).studio.agents[0].aiTokensPerCall, 0, 'QA-E L-09 0 tokens per response is kept');
+  eq(firstAgent(s).lo, 400 * 30, 'QA-E L-09 premium prompt at 0 tokens adds nothing: 400 × 6 actions × 5 = 12,000');
+  a.aiTokensPerCall = 1500;
+  eq(firstAgent(s).lo, 20000, 'QA-E L-09 1,500 tokens = 2 started units (A18c: 20,000)');
+  eq(firstAgent(presetState('bcExpense')).lo, 2500, 'QA-E L-28 BC Expense preset 50 × 50 = 2,500');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
