@@ -1,0 +1,547 @@
+tool,scenario,line,independent_value,tool_value,delta,source,note
+planner,1 support bot (preset),credits a day,7200,7200,0,"ms-rates (Copilot Studio billing rates) classic 1, generative 2",
+planner,1 support bot (preset),credits a conversation,8,8,0,ms-rates (Copilot Studio billing rates),
+planner,1 support bot (preset),credits a month (30 days),216000,216000,0,ms-rates (Copilot Studio billing rates),"7,200 x 30"
+planner,1 support bot (by hand),credits a day,7200,7200,0,ms-rates (Copilot Studio billing rates),
+planner,1 sales research (preset),billed a day,4800,4800,0,ms-rates (Copilot Studio billing rates) generative 2 + grounding 10,
+planner,1 sales research (preset),zero-rated a day,2400,2400,0,licensed users zero-rated,50 x 48
+planner,1 sales research (preset),credits a run,48,48,0,blueprint salesResearch 48,
+planner,"1 sales research (total mode, by hand)",billed a day (150 conv split by headcount),4800,4800,0,headcount subtracted once,
+planner,"1 sales research (total mode, by hand)",zero-rated a day,2400,2400,0,headcount subtracted once,
+planner,1 order processing (preset),credits a run,20,20,0,ms-rates (Copilot Studio billing rates) action 5,
+planner,1 order processing (preset),billed a run even if maker licensed,20,20,0,Z-AUTO (Likely),
+planner,1 grounded generative answer,credits,12,12,0,ms-rates (Copilot Studio billing rates) 2 + 10,
+planner,1 enforcement example,tenant remainder,14500,14500,0,ms-rates enforcement; allocations come out first,
+planner,1 enforcement example,agents cutoff (125% of remainder),18125,18125,0,F-175,"125% x 14,500 = 18,125"
+planner,1 enforcement example,flows cutoff (100% of remainder),14500,14500,0,F-175,
+planner,1 enforcement example,env A agents cutoff,12500,12500,0,F-175,"125% x 10,000"
+planner,1 enforcement example,env D (PAYG) exempt,null,null,0,PAYG-linked environments exempt,
+planner,1 computer use 4 steps,standard,20,20,0,ms-cua 5 a step,
+planner,1 computer use 4 steps,premium,60,60,0,ms-cua 15 a step,
+planner,"1 computer use, licensed internal user",billed,200,200,0,CUA never covered by a license,
+planner,1 P3 tier 1,price $,2850,2850,0,ms-p3 tier table,"p3Plan(1) = [[1,1]]"
+planner,1 P3 tier 2,price $,14100,14100,0,ms-p3 tier table,"p3Plan(5) = [[2,1]]"
+planner,1 P3 tier 3,price $,27900,27900,0,ms-p3 tier table,"p3Plan(10) = [[3,1]]"
+planner,1 P3 tier 4,price $,138000,138000,0,ms-p3 tier table,"p3Plan(50) = [[4,1]]"
+planner,1 P3 tier 5,price $,270000,270000,0,ms-p3 tier table,"p3Plan(100) = [[5,1]]"
+planner,1 P3 tier 6,price $,660000,660000,0,ms-p3 tier table,"p3Plan(250) = [[6,1]]"
+planner,1 P3 tier 7,price $,1290000,1290000,0,ms-p3 tier table,"p3Plan(500) = [[7,1]]"
+planner,1 P3 tier 8,price $,1867500,1867500,0,ms-p3 tier table,"p3Plan(750) = [[8,1]]"
+planner,1 P3 tier 9,price $,2400000,2400000,0,ms-p3 tier table,"p3Plan(1000) = [[9,1]]"
+planner,1 P3 Tier 2 vs PAYG,PAYG for 1.5M credits $,15000,15000,0,PAYG $0.01,
+planner,1 P3 Tier 2 vs PAYG,best with packs off $,14100,14100,0,ms-p3 Tier 2,
+planner,1 BC Sales Order (preset),credits a month,1650,1650,0,ms-bc-billing,(2+5+5+2+2.5) x 100
+planner,1 BC Payables (preset),credits a month,6500,6500,0,ms-bc-billing,(50+15) x 100
+planner,1 BC Expense 50 receipts (by hand),credits a month,2500,2500,0,ms-bc-billing 50 a receipt,
+planner,1 BC Expense (preset),"credits a month, preset volume",2500,5000,2500,"spec §S2 says 50 receipts = 2,500","MISMATCH. Preset ships volume 100 (5,000); spec and brief say 50 receipts (2,500). Rate is right; preset volume differs from spec."
+planner,1 BC Payables (preset),hi (tool adds 20% buffer),7800,7800,0,F-179 buffer,
+planner,1 GitHub 10x2x22,tasks,440,440,0,ms-harness,
+planner,1 GitHub 10x2x22,lo (minimum),114400,114400,0,ms-harness 100/300/500,
+planner,1 GitHub 10x2x22,hi,184800,184800,0,ms-harness 300/500/500(min),
+planner,1 GitHub 10x2x22,heavy treated as minimum,true,true,0,ms-harness heavy is 500+,
+planner,1 December 1 default,"100 users x 4,000",400000,400000,0,F-157,
+planner,1 blueprint expense,credits a run,15,15,0,F-184 blueprint,
+planner,1 blueprint approval,credits a run,12,12,0,F-184 blueprint,
+planner,1 blueprint timesheet,credits a run,77,77,0,F-184 blueprint,
+planner,1 break-even,$30 enterprise,3000,3000,0,seat / $0.01,
+planner,1 break-even,$21 business,2100,2100,0,seat / $0.01,
+planner,1 break-even,$18 promo,1800,1800,0,seat / $0.01,
+planner,1 break-even,$25.20 monthly,2520,2520,0,seat / $0.01,
+planner,2A website FAQ (preset),billed a month,15000,15000,0,ms-rates (Copilot Studio billing rates) generative 2,
+planner,2B helpdesk (preset),billed a month,9600,9600,0,ms-rates (Copilot Studio billing rates) 2 + 10 grounding,
+planner,2B helpdesk (preset),zero-rated a month,4800,4800,0,licensed users zero-rated,
+planner,2C invoice (preset),billed a month,16000,16000,0,ms-rates (Copilot Studio billing rates) 6x5 + 10,
+planner,2 SMB portfolio,pool steady lo (point) a month,40600,40600,0,sum,
+planner,2 SMB portfolio,pool steady mid a month,44660,44660,0,tool: point x 1.10 (half the 20% buffer),"The ""middle scenario"" is point x 1.10, not the rate-card point estimate."
+planner,2 SMB portfolio,pool year lo,487200,487200,0,sum x 12,
+planner,"2 SMB 40,600 flat, conservative",best year $,4272,4272,0,"pack $200/25,000; PAYG $0.01",indep best = 1 packs + 0 P3 units
+planner,"2 SMB 40,600 flat, conservative",PAYG year $,4872,4872,0,PAYG,
+planner,"2 SMB 40,600 flat, balanced",best year $,4272,4272,0,"pack $200/25,000; PAYG $0.01",indep best = 1 packs + 0 P3 units
+planner,"2 SMB 40,600 flat, balanced",PAYG year $,4872,4872,0,PAYG,
+planner,"2 SMB 40,600 flat, aggressive",best year $,4272,4272,0,"pack $200/25,000; PAYG $0.01",indep best = 1 packs + 0 P3 units
+planner,"2 SMB 40,600 flat, aggressive",PAYG year $,4872,4872,0,PAYG,
+planner,"2 SMB 40,600 flat","1 pack + PAYG, a month $",356,356,0,"pack + 15,600 x $0.01",
+planner,"2 SMB 40,600 flat",2 packs a year $,4800,4800,0,packs,
+planner,"2 SMB 40,600 flat",Tier 1 + PAYG a year $,4722,4722,0,P3 Tier 1,
+planner,"2 SMB tool demand (lo/mid/hi = 40,600/44,660/48,720), conservative",best expected year $,4759.200000000001,4759.2,0,brute force over packs x P3,"tool: 1 capacity pack a month, then pay-as-you-go"
+planner,"2 SMB tool demand (lo/mid/hi = 40,600/44,660/48,720), balanced",best expected year $,4759.200000000001,4759.2,0,brute force over packs x P3,"tool: 1 capacity pack a month, then pay-as-you-go"
+planner,"2 SMB tool demand (lo/mid/hi = 40,600/44,660/48,720), aggressive",best expected year $,4759.200000000001,4759.2,0,brute force over packs x P3,"tool: 1 capacity pack a month, then pay-as-you-go"
+planner,2 SMB customer view,"buy.yearUsd (customer-visible, ""middle scenario"")",4272,4759.200000000001,487.2,"rate-card point: 1 pack + 15,600 PAYG x 12","MISMATCH. Customer sees the buffered middle scenario (44,660/mo), not the rate-card figure."
+planner,2 SMB customer view,buy.paygYearUsd,4872,5359.2,487.2,"rate-card point 487,200 x $0.01","MISMATCH. Customer sees 535,920 credits x $0.01."
+planner,2B on website,billed,14400,14400,0,non-Microsoft channel billed,60x4x5x12
+planner,2B on website,zero-rated,0,0,0,non-Microsoft channel billed,
+planner,2B manual auth,billed,14400,14400,0,not Microsoft-authenticated,
+planner,"2B genPct 50, groundedPct 100",billed (grounding only on generative answers),5200,9200,4000,F-164 grounding is +10 on a generative answer,"MISMATCH. Tool grounds every turn incl. classic answers: 40x4x(2.5x1 + 2.5x2 + 5x10) = 9,200 vs 40x4x(2.5+5+25) = 5,200."
+planner,2C trigger as action,billed,18000,18000,0,action 5,400 x 45
+planner,"2C prompt per 1K, 1,500 tokens",billed,20000,20000,0,AI premium 10 per 1K started,400 x (30 + 2x10)
+planner,2C + 1 content page,billed,19200,19200,0,content 8,"+3,200"
+planner,2C prompt-as-action,billed,18000,18000,0,action 5,
+planner,2A 20% classic,billed,13500,13500,0,"classic 1, generative 2","1,500x(1x1+4x2)"
+planner,2A 20% log a lead,billed,16500,16500,0,action 5,"+1,500"
+planner,2A greeting,billed,16500,16500,0,classic 1 per conversation,"+1,500"
+planner,"2 flows 1 actions/run, 1 run",credits,0.13,0.13,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 7 actions/run, 1 run",credits,0.91,0.91,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 50 actions/run, 1 run",credits,6.5,6.5,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 99 actions/run, 1 run",credits,12.870000000000001,12.87,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 100 actions/run, 1 run",credits,13,13,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 101 actions/run, 1 run",credits,13.13,13.13,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 0.5 actions/run, 1 run",credits,0.065,0.065,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,"2 flows 33.33 actions/run, 1 run",credits,4.3328999999999995,4.3329,0,F-165 13 per 100,"prorated, no rounding to blocks of 100"
+planner,2 flows 33.333 actions (3dp input),credits,4333.29,4332.9,-0.39,F-165,MISMATCH. tool rounds counts to 2 dp
+planner,"2 flows, licensed user, agent trigger",billed,0,0,0,zero-rated via agent trigger,
+planner,"2 flows, licensed user, other trigger",billed,1300,1300,0,Z-FLOW billed,
+planner,"2C reasoning 2,000 tokens",billed,24000,24000,0,F-167 +10 per started 1K,+20 a run
+planner,"2 reasoning 1 tokens, 1 run",credits,10,10,0,F-167 started 1K,
+planner,"2 reasoning 999 tokens, 1 run",credits,10,10,0,F-167 started 1K,
+planner,"2 reasoning 1000 tokens, 1 run",credits,10,10,0,F-167 started 1K,
+planner,"2 reasoning 1001 tokens, 1 run",credits,20,20,0,F-167 started 1K,
+planner,"2 reasoning 0 tokens, 1 run",credits,0,0,0,F-167 started 1K,
+planner,"2 AI premium per1K, 1 tokens",credits a call,10,10,0,F-166 per 10 x 1K started tokens,
+planner,"2 AI premium per1K, 999 tokens",credits a call,10,10,0,F-166 per 10 x 1K started tokens,
+planner,"2 AI premium per1K, 1000 tokens",credits a call,10,10,0,F-166 per 10 x 1K started tokens,
+planner,"2 AI premium per1K, 1001 tokens",credits a call,20,20,0,F-166 per 10 x 1K started tokens,
+planner,"2 AI premium per1K, 0 tokens",credits a call,0,10,10,F-166 per 10 x 1K started tokens,"MISMATCH. Microsoft wording bills started 1K units; 0 tokens starts none, so 0. Tool clamps tokens to a minimum of 1 and bills 1 unit (10 credits)."
+planner,2 voice 1/2/3 minutes x 10,credits,3050,3050,0,F-169 10/35/75,10x(10+70+225)
+planner,"2 Work IQ 50 calls x 30 conv, licensed",billed,150,150,0,F-174 0.1 a call; not license-covered,
+planner,2A genPct 33.33,billed,9999.75,10005,5.25,"classic 1, generative 2",MISMATCH. tool rounds per-conversation counts to 2 dp
+planner,3 studio band,lo = point,2000,2000,0,spec,
+planner,3 studio band,mid = point x 1.10,2200,2200,0,spec mid = average,
+planner,3 studio band,hi = point x 1.20,2400,2400,0,F-179 top of 10-20%,
+planner,3 constants,BUFFER_PCT (governance limits),15,15,0,planner choice in 10-20%,
+planner,3 constants,STUDIO_BAND_PCT,20,20,0,F-179,
+planner,"4 755,000 flat",packs family year $,72600,72600,0,pack/PAYG,"30 packs + 5,000 PAYG/mo"
+planner,"4 755,000 flat","P3 family year $ (3 x Tier 3 + 60,000 PAYG)",84300,84300,0,P3 tiers,
+planner,"4 755,000 flat",PAYG year $,90600,90600,0,PAYG,
+planner,"4 755,000 flat",best year $,72600,72600,0,brute force,"indep: 30 packs, 0 units"
+planner,"4 755,000 flat",single-plan-only P3 family $ (no packs),88500,88500,0,if Microsoft allows one plan per enrollment,"Tier 3 x1 + 6.06M PAYG = $88,500 (vs 3 x Tier 3 $84,300)"
+planner,"4 755,000 flat",P3 family plan count,3,3,0,p3Stacking ms-inferred,
+planner,4 combined flat 755k + SMB,pool month 1 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 1 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 1 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 2 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 2 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 2 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 3 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 3 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 3 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 4 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 4 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 4 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 5 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 5 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 5 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 6 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 6 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 6 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 7 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 7 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 7 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 8 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 8 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 8 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 9 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 9 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 9 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 10 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 10 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 10 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 11 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 11 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 11 hi,1030220,1030220,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 12 lo,569100,569100,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 12 mid,799660,799660,0,sum of lanes,
+planner,4 combined flat 755k + SMB,pool month 12 hi,1030220,1030220,0,sum of lanes,
+planner,"4 combined flat 755k + SMB, conservative",best expected year $,82336.2,82336.2,0,brute force,"tool: 23 capacity packs a month, then pay-as-you-go | indep: 23 packs + P3 {}"
+planner,"4 combined flat 755k + SMB, conservative",best <= PAYG,true,true,0,optimizer,
+planner,"4 combined flat 755k + SMB, conservative, drawdown lo",year $,55200,55200,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, conservative, drawdown lo",PAYG credits,0,0,0,billing order,
+planner,"4 combined flat 755k + SMB, conservative, drawdown lo",stranded credits,70800,70800,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, conservative, drawdown lo",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, conservative, drawdown mid",year $,82159.2,82159.2,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, conservative, drawdown mid",PAYG credits,2695920,2695920,0,billing order,
+planner,"4 combined flat 755k + SMB, conservative, drawdown mid",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, conservative, drawdown mid",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, conservative, drawdown hi",year $,109826.4,109826.4,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, conservative, drawdown hi",PAYG credits,5462640,5462640,0,billing order,
+planner,"4 combined flat 755k + SMB, conservative, drawdown hi",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, conservative, drawdown hi",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, balanced",best expected year $,82336.2,82336.2,0,brute force,"tool: 23 capacity packs a month, then pay-as-you-go | indep: 23 packs + P3 {}"
+planner,"4 combined flat 755k + SMB, balanced",best <= PAYG,true,true,0,optimizer,
+planner,"4 combined flat 755k + SMB, balanced, drawdown lo",year $,55200,55200,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, balanced, drawdown lo",PAYG credits,0,0,0,billing order,
+planner,"4 combined flat 755k + SMB, balanced, drawdown lo",stranded credits,70800,70800,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, balanced, drawdown lo",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, balanced, drawdown mid",year $,82159.2,82159.2,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, balanced, drawdown mid",PAYG credits,2695920,2695920,0,billing order,
+planner,"4 combined flat 755k + SMB, balanced, drawdown mid",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, balanced, drawdown mid",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, balanced, drawdown hi",year $,109826.4,109826.4,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, balanced, drawdown hi",PAYG credits,5462640,5462640,0,billing order,
+planner,"4 combined flat 755k + SMB, balanced, drawdown hi",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, balanced, drawdown hi",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, aggressive",best expected year $,82336.2,82336.2,0,brute force,"tool: 23 capacity packs a month, then pay-as-you-go | indep: 23 packs + P3 {}"
+planner,"4 combined flat 755k + SMB, aggressive",best <= PAYG,true,true,0,optimizer,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown lo",year $,55200,55200,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown lo",PAYG credits,0,0,0,billing order,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown lo",stranded credits,70800,70800,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown lo",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown mid",year $,82159.2,82159.2,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown mid",PAYG credits,2695920,2695920,0,billing order,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown mid",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown mid",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown hi",year $,109826.4,109826.4,0,billing order packs -> P3 -> PAYG,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown hi",PAYG credits,5462640,5462640,0,billing order,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown hi",stranded credits,0,0,0,no pack rollover,
+planner,"4 combined flat 755k + SMB, aggressive, drawdown hi",P3 exhaust month,null,null,0,P3 12-month pool,
+planner,4 combined flat 755k + SMB,customer buy.yearUsd (mid scenario),82159.2,82159.2,0,mid drawdown,
+planner,4 combined flat 755k + SMB,customer buy.paygYearUsd,95959.2,95959.2,0,PAYG,
+planner,4 combined flat 755k + SMB,customer buy.approach family,packs,"Monthly prepaid capacity sized to steady use, overflow at pay-as-you-go",DIFF,whitelist,MISMATCH. customer sees no tier or plan count
+planner,4 combined ramp 25->100 + SMB,pool month 1 lo,172725,172725,0,sum of lanes,seats 25
+planner,4 combined ramp 25->100 + SMB,pool month 1 mid,233410,233410,0,sum of lanes,seats 25
+planner,4 combined ramp 25->100 + SMB,pool month 1 hi,294095,294095,0,sum of lanes,seats 25
+planner,4 combined ramp 25->100 + SMB,pool month 2 lo,252000,252000,0,sum of lanes,seats 40
+planner,4 combined ramp 25->100 + SMB,pool month 2 mid,346660,346660,0,sum of lanes,seats 40
+planner,4 combined ramp 25->100 + SMB,pool month 2 hi,441320,441320,0,sum of lanes,seats 40
+planner,4 combined ramp 25->100 + SMB,pool month 3 lo,331275,331275,0,sum of lanes,seats 55
+planner,4 combined ramp 25->100 + SMB,pool month 3 mid,459910,459910,0,sum of lanes,seats 55
+planner,4 combined ramp 25->100 + SMB,pool month 3 hi,588545,588545,0,sum of lanes,seats 55
+planner,4 combined ramp 25->100 + SMB,pool month 4 lo,410550,410550,0,sum of lanes,seats 70
+planner,4 combined ramp 25->100 + SMB,pool month 4 mid,573160,573160,0,sum of lanes,seats 70
+planner,4 combined ramp 25->100 + SMB,pool month 4 hi,735770,735770,0,sum of lanes,seats 70
+planner,4 combined ramp 25->100 + SMB,pool month 5 lo,489825,489825,0,sum of lanes,seats 85
+planner,4 combined ramp 25->100 + SMB,pool month 5 mid,686410,686410,0,sum of lanes,seats 85
+planner,4 combined ramp 25->100 + SMB,pool month 5 hi,882995,882995,0,sum of lanes,seats 85
+planner,4 combined ramp 25->100 + SMB,pool month 6 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 6 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 6 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 7 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 7 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 7 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 8 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 8 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 8 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 9 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 9 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 9 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 10 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 10 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 10 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 11 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 11 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 11 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 12 lo,569100,569100,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 12 mid,799660,799660,0,sum of lanes,seats 100
+planner,4 combined ramp 25->100 + SMB,pool month 12 hi,1030220,1030220,0,sum of lanes,seats 100
+planner,"4 combined ramp 25->100 + SMB, conservative",best expected year $ (tool <= flat brute force),71146.1125,68071.7,-3074.4125,brute force (flat packs only),"MISMATCH. tool: Capacity packs stepping up from 6 to 22 a month, then pay-as-you-go | indep flat: 14 packs + P3 {""2"":1}. Tool may legitimately beat flat via step-up packs."
+planner,"4 combined ramp, conservative, drawdown lo",year $,45500.75,45500.75,0,billing order,
+planner,"4 combined ramp, conservative, drawdown lo",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, conservative, drawdown mid",year $,68071.7,68071.7,0,billing order,
+planner,"4 combined ramp, conservative, drawdown mid",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, conservative, drawdown hi",year $,90642.65,90642.65,0,billing order,
+planner,"4 combined ramp, conservative, drawdown hi",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp 25->100 + SMB, balanced",best expected year $ (tool <= flat brute force),71046.1125,68071.7,-2974.4125,brute force (flat packs only),"MISMATCH. tool: Capacity packs stepping up from 6 to 22 a month, then pay-as-you-go | indep flat: 15 packs + P3 {""2"":1}. Tool may legitimately beat flat via step-up packs."
+planner,"4 combined ramp, balanced, drawdown lo",year $,45500.75,45500.75,0,billing order,
+planner,"4 combined ramp, balanced, drawdown lo",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, balanced, drawdown mid",year $,68071.7,68071.7,0,billing order,
+planner,"4 combined ramp, balanced, drawdown mid",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, balanced, drawdown hi",year $,90642.65,90642.65,0,billing order,
+planner,"4 combined ramp, balanced, drawdown hi",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp 25->100 + SMB, aggressive",best expected year $ (tool <= flat brute force),71046.1125,68071.7,-2974.4125,brute force (flat packs only),"MISMATCH. tool: Capacity packs stepping up from 6 to 22 a month, then pay-as-you-go | indep flat: 15 packs + P3 {""2"":1}. Tool may legitimately beat flat via step-up packs."
+planner,"4 combined ramp, aggressive, drawdown lo",year $,45500.75,45500.75,0,billing order,
+planner,"4 combined ramp, aggressive, drawdown lo",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, aggressive, drawdown mid",year $,68071.7,68071.7,0,billing order,
+planner,"4 combined ramp, aggressive, drawdown mid",stranded credits,0,0,0,no rollover,
+planner,"4 combined ramp, aggressive, drawdown hi",year $,90642.65,90642.65,0,billing order,
+planner,"4 combined ramp, aggressive, drawdown hi",stranded credits,0,0,0,no rollover,
+planner,"4 starvation 30 packs, 100,000 to Prod",M365 remainder,650000,650000,0,F-183 purchased minus pre-allocated,
+planner,"4 starvation 30 packs, 100,000 to Prod","starvation mid (755,000 > 650,000)",true,true,0,F-183,
+planner,"5 zero agents, no Cowork",pool year hi,0,0,0,,
+planner,"5 zero agents, no Cowork",best family,payg,payg,0,,
+planner,5 one agent with 1e6 users x 5 gen turns,billed,10000000,10000000,0,generative 2,
+planner,5 301 Business seats,P-77 cap warning present,true,true,0,F-147 300 cap,
+planner,5 301 Business seats,crossover SKU for the unlicensed 50,enterprise,enterprise,0,no Business room,
+planner,5 299 seats + 2 unlicensed,"crossover SKU (1 fits Business, 2nd needs Enterprise)",split: 1 promo + 1 enterprise,enterprise,DIFF,F-147 cap at 300,MISMATCH. Tool prices the whole group on one SKU: all-or-nothing against the remaining Business room.
+planner,"5 December 1 default, country AU",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country BE",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country BR",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country FR",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country DE",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country IN",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country IT",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country KR",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country NL",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country PL",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country ES",cap source,none,none,0,F-156 exclusions,
+planner,"5 December 1 default, country US",cap source,december-default,december-default,0,F-156 exclusions,
+planner,"5 December 1 default, country GB",cap source,december-default,december-default,0,F-156 exclusions,
+planner,5 start 2026-10,December 1 default applies within horizon,true,true,0,F-156 from 2026-12-01,
+planner,5 start 2026-10,promo price live (crossover),true,true,0,F-147 promo ends 2026-12-31,
+planner,5 start 2026-11,December 1 default applies within horizon,true,true,0,F-156 from 2026-12-01,
+planner,5 start 2026-11,promo price live (crossover),true,true,0,F-147 promo ends 2026-12-31,
+planner,5 start 2026-12,December 1 default applies within horizon,true,true,0,F-156 from 2026-12-01,
+planner,5 start 2026-12,promo price live (crossover),true,true,0,F-147 promo ends 2026-12-31,
+planner,5 start 2027-01,December 1 default applies within horizon,true,true,0,F-156 from 2026-12-01,
+planner,5 start 2027-01,promo price live (crossover),false,false,0,F-147 promo ends 2026-12-31,
+planner,5 start 2025-10,December 1 default applies within horizon,false,false,0,F-156 from 2026-12-01,
+planner,5 start 2025-10,promo price live (crossover),true,true,0,F-147 promo ends 2026-12-31,
+planner,5 rampFactors 0% over 6,month 1,0,0,0,,
+planner,5 rampFactors 100% over 6,month 1,1,1,0,,
+planner,5 rampFactors 10% over 6,month 2,0.28,0.28,0,,
+planner,5 rampFactors months 24,clamped to 12; month 12,1,1,0,cInt clamps months to 12,
+planner,5 ramp months 24 via state,normalized months,12,12,0,clamped,
+planner,5 paused website card,pool steady lo,25600,25600,0,paused contributes 0,
+planner,5 PAYG-linked env,agents cutoff day,null,null,0,PAYG exempt,
+planner,5 autonomous card default ramped,ramped,false,true,DIFF,spec §S2: true internal; false autonomous and BC,MISMATCH. 
+planner,5 BC card default ramped,ramped,false,true,DIFF,spec §S2,MISMATCH. 
+planner,5 per-agent cap field,exists on agent card,true,false,DIFF,spec §S2 perAgentCap,MISMATCH. Engine has only a tenant-level tri-state combined.enforcement.perAgentCaps.
+planner,"Dataverse transcripts 100,000 sessions x 20 KB x 30 d","GB (spec: 1 GB = 1,000,000 KB)",2,1.9073486328125,-0.092651,spec §S4,"MISMATCH. Tool uses 1 GB = 1,048,576 KB"
+planner,Dataverse entitlement once configured,db GB,15,15,0,F-190,
+planner,Dataverse default kbPerSession,KB,50,20,-30,spec §S2 default 50 (Estimate),MISMATCH. 
+planner,SMB trio + sellPackUsd 300 (credits at list),customer buy.yearUsd vs buy.paygYearUsd,5359.2,5959.2,600,pack $200 list; partner sells at $300 = $0.012/credit > $0.01 PAYG,"MISMATCH. Customer sees recommended option $600/yr dearer than the PAYG figure printed beside it; optimizer runs at list only (extra.js §3; props.js: 1,343 of 2,000 random states)"
+planner,"License instead, 10 unlicensed x 2,400 covered credits, sell Business seat $30",customer verdict,meter (saving -$60/mo at $30 seat),license,DIFF,"break-even at customer price = $30/$0.01 = 3,000 > 2,400",MISMATCH. Verdict uses list $18 break-even; customer report prints 'License ... saves about $0'; P-75 says saves $60 (extra.js §4)
+planner,"License instead, enterprise sku, sell seat $33.33, sell credit $0.0123",customer verdict,license (saves $3.47/user/mo),meter,DIFF,"2,750 x $0.0123 = $33.83 > $33.33",MISMATCH. Inverse case from props.js
+planner,Governance with no Cowork lane (SMB trio),customer tenant spending limit,"undefined for agents (>= 48,720 x 1.15 = 56,028 -> 57,000 if it covered the pool)",0,DIFF,F-179 buffer; spending policy,MISMATCH. Customer report: 'A tenant spending limit of 0 credits a month' (extra.js §10)
+planner,"Conservative appetite, demand lo/mid/hi 20k/25k/30k",recommended option,1 pack ($2,550 expected; strands $0 in mid = spec 5%-of-mid rule),PAYG only ($3000),450,spec §6.2 appetite = stranded <= 5% of the mid scenario,MISMATCH. Engine caps stranding in the LOW scenario (20% strand) and blocks the pack
+planner,"Ramp 25->100 seats + SMB, best step-up 6->22 packs",committed pack spend past month 12,9200,0,-9200,packs billed annually; P-37 says each added pack carries its own annual term,"MISMATCH. With the tail counted the step-up costs $77,271.70 vs flat 14 packs + Tier 2 at $71,146.11"
+planner,"755k Cowork + SMB, 30 packs held, Cowork drawing same remainder",agents 125% cut day (hi) / flows 100% day (mid/hi),28 / 29 / 22,none / none / none,DIFF,F-175 + F-183,MISMATCH. tenant cut ignores Cowork draw on the same 750,000 (Likely reading)
+planner,"Starvation 30 packs, 100,000 allocated",Cowork starvation day (mid),26,not computed (boolean only),DIFF,F-183,Tool reports starvation as a boolean; brief asked for the day
+planner,"SMB trio, 1 pack",flows / agents cut day (mid),17 / 21,16 / 20 (labeled mid),-1,F-175,"Tool's event day is the high-end day, tagged 'mid' when mid also fires; text says 'around day 20' without 'high end'"
+cowork,1 stock,Copilot-licensed seats,80,80,0,inventory 60 bprem_cop + 20 cop_biz,
+cowork,1 stock,active users round(0.65x80),52,52,0,activation rate 65%,
+cowork,1 stock,allocated persona seats (basis),52,52,0,26+13+6+7,
+cowork,1 stock,credits/user/month CKW 22x125+11x500+5x1200,14250,14250,0,tier weights 125/500/1200,"engine F10 detail: 26×14,250 + 13×14,625 + 6×22,800 + 7×8,225"
+cowork,1 stock,credits/user/month Customer-facing 17x125+13x500+5x1200,14625,14625,0,tier weights 125/500/1200,"engine F10 detail: 26×14,250 + 13×14,625 + 6×22,800 + 7×8,225"
+cowork,1 stock,credits/user/month Technical 12x125+9x500+14x1200,22800,22800,0,tier weights 125/500/1200,"engine F10 detail: 26×14,250 + 13×14,625 + 6×22,800 + 7×8,225"
+cowork,1 stock,credits/user/month Manager 13x125+6x500+3x1200,8225,8225,0,tier weights 125/500/1200,"engine F10 detail: 26×14,250 + 13×14,625 + 6×22,800 + 7×8,225"
+cowork,1 stock,monthly credits,755000,755000,0,sum seats x credits,
+cowork,1 stock,monthly Cowork $ at $0.01,7550,7550,0,PAYG $0.01,
+cowork,1 stock,band low (-30%),5285,5285,0,editorial band,
+cowork,1 stock,band high (+30%),9815,9815,0,editorial band,
+cowork,1 stock,$ per active user,145.192308,145.192308,0,,
+cowork,1 stock,annual credits steady,9060000,9060000,0,,
+cowork,1 stock,PAYG annual steady,90600,90600,0,PAYG $0.01,
+cowork,1 stock,CCCU steady,90600,90600,0,1 CCCU = 100 credits,
+cowork,1 stock,ramp month 1 active seats,25,25,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 2 active seats,30.4,30.4,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 3 active seats,35.8,35.8,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 4 active seats,41.2,41.2,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 5 active seats,46.6,46.6,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 6 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 7 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 8 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 9 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 10 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 11 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 12 active seats,52,52,0,"pilot 25, 6 months, linear",
+cowork,1 stock,ramp month 1 credits,362980.769231,362980.769231,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 2 credits,441384.615385,441384.615385,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 3 credits,519788.461538,519788.461538,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 4 credits,598192.307692,598192.307692,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 5 credits,676596.153846,676596.153846,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 6 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 7 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 8 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 9 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 10 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 11 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,ramp month 12 credits,755000,755000,0,seats_m x 755000/52,tool value = rampSeats x monthly/basis (emitted as rampCredits)
+cowork,1 stock,year-one credits (rounded),7883942,7883942,0,,
+cowork,1 stock,year-one credits exact sum of months,7883942.307692,7883942,-0.307692,,engine rounds to whole credits
+cowork,1 stock,year-one CCCU,78839.42,78839.42,0,,
+cowork,1 stock,year-one PAYG $,78839.42,78839.42,0,,
+cowork,1 stock,licenses $/month list,2780,2780,0,"bprem_cop $32, cop_biz $18 promo, bstd $12.50 (editorial)",bstd $12.50 is not on the 2026-10-11 rate card
+cowork,1 stock,all-in year one,112199.42,112199.42,0,,cop_biz at $18 for all 12 months although promo ends 2026-12-31
+cowork,1 stock,"all-in year one if cop_biz reverts to $21 list from Jan 2027 (12 months from 2026-10-11: 3 promo months, 9 list)",112739.42,112199.42,-540,"Copilot Business $18 promo through 2026-12-31, $21 list",tool prices all 12 months at $18; promo cliff note is shown on the cell
+cowork,2 P3,steady: cheapest never-over mix,3 x Tier 3,"3 × Tier 3 (30,000 CCCU at 7%)",DIFF,P3 tiers,"tool label: 3 × Tier 3 (30,000 CCCU at 7%)"
+cowork,2 P3,steady: mix prepay $,83700,83700,0,"T3 $27,900",
+cowork,2 P3,steady: CCCU covered,90000,90000,0,,
+cowork,2 P3,steady: remainder CCCU on PAYG,600,600,0,,
+cowork,2 P3,steady: P3 total incl PAYG overflow ($ shown in bP3 cell),84300,84300,0,billing order packs > P3 > PAYG,"displayed P3 / year = $84,300 (includes $600 PAYG)"
+cowork,2 P3,steady: saving vs PAYG,6300,6300,0,,
+cowork,2 P3,steady: effective discount % on covered,7,7,0,,
+cowork,2 P3,steady: break-even utilization,0.93,0.93,0,,
+cowork,2 P3,steady: cheapest COVERING mix (over-buy allowed),3 x Tier 3 + 1 x Tier 1 $86550,not offered,DIFF,,"tool deliberately never over-buys; covering mix costs $2,250 more than mix+PAYG"
+cowork,2 P3,steady: global cheapest (any mix + PAYG),84300,84300,0,,3 x Tier 3
+cowork,2 P3,year one: cheapest never-over mix,2 x Tier 3 + 1 x Tier 2 + 1 x Tier 1,"2 × Tier 3 (30,000 CCCU at 7%) + 1 × Tier 2 (15,000 CCCU at 6%) + 1 × Tier 1 (3,000 CCCU at 5%)",DIFF,,
+cowork,2 P3,year one: prepay $,72750,72750,0,,
+cowork,2 P3,year one: covered CCCU,78000,78000,0,,
+cowork,2 P3,year one: PAYG remainder CCCU,839.42,839.42,0,,"page: ""with the last 839 CCCU on PayGo"" (rounded; $839.42 not priced)"
+cowork,2 P3,year one: total cost (prepay + PAYG remainder),73589.42,72750,-839.42,,tool p3Year1Prepay excludes the $839.42 PAYG; no year-one total is displayed anywhere
+cowork,2 P3,year one: saving vs year-one PAYG,5250,,,,not displayed
+cowork,2 P3,year one: cheapest COVERING mix,2 x Tier 3 + 1 x Tier 2 + 2 x Tier 1 $75600,not offered,DIFF,,
+cowork,2 P3,year one: global cheapest,73589.42,,,,2 x Tier 3 + 1 x Tier 2 + 1 x Tier 1
+cowork,2 P3,P3 chosen: exposure (V-23 / risk block),83700,83700,0,,"steady-state plan, not the year-one order the page recommends"
+cowork,2 P3,"P3 chosen: risk-block ""pre-paid credit nobody burns in year one"" $",10379.3394,10950,570.6606,T3 $0.93/CCCU,"tool = prepay(steady plan) - prepay(year-one plan) = 83,700-72,750; unburned = 90,000-78,839.42 = 11,160.58 CCCU x $0.93"
+cowork,2 P3,P3 chosen: true extra year-one cost of steady plan vs year-one plan+PAYG,10110.58,10950,839.42,,"83,700 - 73,589.42"
+cowork,2 P3,steady plan bought in ramp year one vs PAYG (P3 worse by),4860.58,,,,"year-one usage 78,839 CCCU is below the 83,700 break-even; the bP3 cell says ""saves $6,300"""
+cowork,3 packs,steady: packs per month,30,30,0,"$200 / 25,000",
+cowork,3 packs,steady: pack $/yr,72000,72000,0,30x200x12,
+cowork,3 packs,steady: PAYG remainder $/yr,600,600,0,"5,000x0.01x12",
+cowork,3 packs,steady: total $/yr,72600,72600,0,,
+cowork,3 packs,year one: flat 30 packs total $,72350,,,no rollover,not computed or displayed by the tool
+cowork,3 packs,year one: flat 30 packs wasted credits,1151057.692308,,,,waste not shown; $9208.46 of pack value
+cowork,3 packs,year one: cheapest fixed pack count,21,,,,"total $68747.88 (packs $50400 + PAYG $18347.88), waste 250846 credits"
+cowork,3 packs,year one: cheapest pack total vs page year-one P3 order (+PAYG),68747.884615,73589.42,4841.535385,,page steers year one to the P3 mix; 21 packs are $4841.54 cheaper
+cowork,3 packs,year one: cheapest packs + P3 + PAYG combination,67509.615385,,,billing order packs > P3 > PAYG,16 packs + 1 x Tier 3 on 31209.62 CCCU overflow
+cowork,3 packs,page claim: pack $/credit vs Tier 9,0.008,0.008,0,T9 20% off,"claim ""only matches the largest"" is correct"
+cowork,4 Dec 1 cap,credits per active user / month (divides by basisSeats 52),14519.230769,14519,-0.230769,"4,000/user limit",displayed rounded
+cowork,4 Dec 1 cap,"cap day, 30-day calendar spread, Math.round",8,8,0,,exact 8.265
+cowork,4 Dec 1 cap,"calendar day the 4,000 is actually crossed (ceil)",9,8,-1,,"after 8 days a user has 3,872 credits; crossed during day 9"
+cowork,4 Dec 1 cap,working day crossed (22 working days),7,8,1,F-158 22 working days,exact 6.061 working days; usage accrues on working days
+cowork,4 Dec 1 cap,raise-to suggestion = ceil(perUser x 1.3 / 500) x 500,19000,19000,0,,
+cowork,4 Dec 1 cap,"persona CKW credits/user vs 4,000 and vs raise-to 19000",14250,19000,4750,,cap day 8.4
+cowork,4 Dec 1 cap,"persona Customer-facing credits/user vs 4,000 and vs raise-to 19000",14625,19000,4375,,cap day 8.2
+cowork,4 Dec 1 cap,"persona Technical credits/user vs 4,000 and vs raise-to 19000",22800,19000,-3800,,"cap day 5.3; EXCEEDS the raised limit, cut off again around day 25.0"
+cowork,4 Dec 1 cap,"persona Manager credits/user vs 4,000 and vs raise-to 19000",8225,19000,10775,,cap day 14.6
+cowork,4 Dec 1 cap,V-31 outside CSP fires?,false,false,match,CSP only,
+cowork,4 Dec 1 cap,V-31 on enterprise Copilot only fires?,false,false,match,Copilot Business only,
+cowork,4 Dec 1 cap,V-31 with EU/EEA/UK residency fires?,conditional (country input absent),true,DIFF,excluded countries AU BE BR FR DE IN IT KR NL PL ES,no country input; text names the exclusions
+cowork,5 single plan,"steady: cheapest single tier that covers 90,600",1 x Tier 4 $138000,,,,"over-buys 59,400 CCCU"
+cowork,5 single plan,steady: cheapest single tier + PAYG,88500,,,,1 x Tier 3 $27900 + PAYG $60600
+cowork,5 single plan,steady: single-plan saving vs PAYG,2100,6300,4200,,"tool multi-plan saving $6,300"
+cowork,5 single plan,year one: cheapest single tier that covers,1 x Tier 4 $138000,,,,
+cowork,5 single plan,year one: cheapest single tier + PAYG,76739.42,,,,1 x Tier 3 $27900 + PAYG $48839.42
+cowork,5 single plan,year one: single-plan saving vs PAYG,2100,,,,
+cowork,5 single plan,how multi-plan is labeled in the Cowork page,Likely,"B4 trace tag ms-modeled (""Modeled"" pill); prose ""is how Azure reservations work; confirm the mix""",DIFF,,the word Likely appears only in copilot-credit-planner.html (pill + P-30)
+cowork,6 sell,rate 0.009: monthly Cowork $,6795,6795,0,,
+cowork,6 sell,rate 0.009: meter billed annual,81540,81540,0,,
+cowork,6 sell,"rate 0.009 direct, PEC unsure: margin",null,null,match,,withheld until PEC known
+cowork,6 sell,"rate 0.009 direct, PEC no: margin",-9060,-9060,0,,V-29 fires
+cowork,6 sell,"rate 0.009 direct, PEC yes 15%: margin",4530,4530,0,,V-29 silent
+cowork,6 sell,rate 0.01: monthly Cowork $,7550,7550,0,,
+cowork,6 sell,rate 0.01: meter billed annual,90600,90600,0,,
+cowork,6 sell,"rate 0.01 direct, PEC unsure: margin",null,null,match,,withheld until PEC known
+cowork,6 sell,"rate 0.01 direct, PEC no: margin",0,0,0,,V-29 silent
+cowork,6 sell,"rate 0.01 direct, PEC yes 15%: margin",13590,13590,0,,V-29 silent
+cowork,6 sell,rate 0.012: monthly Cowork $,9060,9060,0,,
+cowork,6 sell,rate 0.012: meter billed annual,108720,108720,0,,
+cowork,6 sell,"rate 0.012 direct, PEC unsure: margin",null,null,match,,withheld until PEC known
+cowork,6 sell,"rate 0.012 direct, PEC no: margin",18120,18120,0,,V-29 silent
+cowork,6 sell,"rate 0.012 direct, PEC yes 15%: margin",31710,31710,0,,V-29 silent
+cowork,6 sell,"indirect, provider 0.011 > sell 0.01: margin",-9060,-9060,0,,V-29 fires
+cowork,6 sell,"indirect, provider rate unset: margin",null,null,match,,
+cowork,6 sell,"indirect, provider rate 0: margin",null,null,match,,zero treated as unanswered
+cowork,6 sell,"sell 0.009, P3, direct PEC 15%: margin",-2760,-2760,0,,"P3 cost = 84,300 (no PEC on reservations); V-29 fires; V-21 fires"
+cowork,6 sell,PEC default,"status unsure, pct 15 (not applied)","{""status"":""unsure"",""pct"":15}",DIFF,,
+cowork,6 sell,sell rate 0 falls back to,0.01,0.01,0,,"no warning that the entered rate was ignored: V-17,V-31"
+cowork,6 sell,sell rate -0.005 falls back to,0.01,0.01,0,,normalize clamps to 0 then falls back silently
+cowork,6 sell,sell 0.012: PayGo / year cell (Microsoft $0.01 by design),90600,90600,0,,"cell labeled ""$0.01 per credit""; customer is billed 108720 -- two PayGo figures for one customer in sell mode"
+cowork,6 sell,sell 0.012: ratioBench uses sell meter / list license,3.775,3.775,0,,mixed basis vs 2.6x benchmark
+cowork,8 estimators,web estimator CKW low $/month (F-159 bands x 40/40/20 x 22 days),51.04,51,-0.04,F-158/F-159,232 credits/day x 22
+cowork,8 estimators,web estimator CKW high $/month,90.64,91,0.36,F-158/F-159,412 credits/day x 22; displayed rounded to $91
+cowork,8 estimators,"page CKW $/month (reconcile box) 14,250 x $0.01",142.5,142.5,0,,"reconcileBox formula, Medium effort"
+cowork,8 estimators,CKW page vs web high (x),1.572154,,,,not displayed; gap 1.57x to 2.79x
+cowork,8 estimators,CKW page vs web low (x),2.791928,,,,
+cowork,8 estimators,CKW page credits/day equivalent (/22),647.727273,,,,vs web 232-412 credits/day
+cowork,8 estimators,ratioBench = Cowork / (80 x $30),3.145833,3.145833,0,F-090 $30,displayed 3.15x
+cowork,8 estimators,ratio vs $18 Business promo = 7550/(80x18),5.243056,5.243056,0,$18 promo,displayed 5.24x; no promo end date beside it
+cowork,8 estimators,ratio vs $21 Copilot Business list,4.494048,,,$21 list,not shown
+cowork,8 estimators,copilotSpend = 60x(32-22) + 20x18,960,960,0,bundle component = bundle - base,
+cowork,8 estimators,ratioActual = 7550 / 960,7.864583,7.864583,0,,displayed 7.86x
+cowork,8 estimators,perActive,145.192308,145.192308,0,,
+cowork,8 estimators,implied activation = 2.6 / (perActive/30),0.537219,0.537219,0,TD SYNNEX editorial 2.6x,displayed 54%
+cowork,8 estimators,actual activation = 52/80,0.65,0.65,0,,displayed 65%
+cowork,8 estimators,retired estimator per-user range check (V-09 silent),82-228 contains 145.19,V-09 silent,DIFF,F-150,
+cowork,10 emitEmbed,key set,__type|version|screen|accountName|monthlyCredits|band|calibrated|annualCredits|year1Credits|rampSeats|rampCredits|basisSeats|copilotLicensed|licenses|cspMotion|sellMode|creditUsd,__type|version|screen|accountName|monthlyCredits|band|calibrated|annualCredits|year1Credits|rampSeats|rampCredits|employees|basisSeats|copilotLicensed|licenses|cspMotion|sellMode|creditUsd,DIFF,spec list,extra: employees; missing: 
+cowork,10 emitEmbed,sum(rampCredits) vs year1Credits,7883942.307692,7883942,-0.307692,,rounding only
+cowork,10 emitEmbed,partner figures leaking into payload,none,none,match,,"creditUsd carries the customer sell rate 0.0123 (customer price, not margin)"
+cowork,10 emitEmbed,flat ramp: year1 == annual,9060000,9060000,0,,
+cowork,10 emitEmbed,greenfield basis 0: rampCredits all 0,0,0,0,,
+cowork,7 licensing,50 Business Basic (no Copilot yet) [gov unasked] recommended path,gated by governance,bprem_cop_suites $1175.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 25; engine: bbasic_cop $525; cop_biz $450; bstd_cop $588; bprem_cop $800; bprem_cop_suites $1175; cop_ent $750; e7 $2475 | indep incremental: bbasic_cop +$375; cop_biz +$450; bstd_cop +$588; cop_ent +$750; bprem_cop +$800; e7 +$2325 | why: We are not recommending Copilot Business (add-on) even though it is $29.00/user/month cheaper all-in — $725/month across 25 seats — because it leaves 3 of those gaps open on a tenant that is about to send its own data th | V-05 silent
+cowork,7 licensing,50 Business Basic (no Copilot yet) [gov all-yes] recommended path,bbasic_cop (+$375.00/mo on top of current bases),cop_biz $450.00/mo ($18.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 25; engine: bbasic_cop $525; cop_biz $450; bstd_cop $588; bprem_cop $800; bprem_cop_suites $1175; cop_ent $750; e7 $2475 | indep incremental: bbasic_cop +$375; cop_biz +$450; bstd_cop +$588; cop_ent +$750; bprem_cop +$800; e7 +$2325 | V-05 silent
+cowork,7 licensing,50 Business Basic + 50 Copilot Business add-on [gov unasked] recommended path,gated by governance,bprem_cop_suites $2350.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 50; engine: bbasic_cop $1050; cop_biz $900; bstd_cop $1175; bprem_cop $1600; bprem_cop_suites $2350; cop_ent $1500; e7 $4950 | indep incremental: bbasic_cop +$750; cop_biz +$900; bstd_cop +$1175; cop_ent +$1500; bprem_cop +$1600; e7 +$4650 | why: We are not recommending Copilot Business (add-on) even though it is $29.00/user/month cheaper all-in — $1,450/month across 50 seats — because it leaves 3 of those gaps open on a tenant that is about to send its own data  | V-05 silent"
+cowork,7 licensing,50 Business Basic + 50 Copilot Business add-on [gov all-yes] recommended path,bbasic_cop (+$750.00/mo on top of current bases),cop_biz $900.00/mo ($18.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 50; engine: bbasic_cop $1050; cop_biz $900; bstd_cop $1175; bprem_cop $1600; bprem_cop_suites $2350; cop_ent $1500; e7 $4950 | indep incremental: bbasic_cop +$750; cop_biz +$900; bstd_cop +$1175; cop_ent +$1500; bprem_cop +$1600; e7 +$4650 | V-05 silent
+cowork,7 licensing,250 Business Standard + 250 Copilot Business add-on [gov unasked] recommended path,gated by governance,bprem_cop_suites $11750.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 250; engine: bbasic_cop $5250; cop_biz $4500; bstd_cop $5875; bprem_cop $8000; bprem_cop_suites $11750; cop_ent $7500; e7 $24750 | indep incremental: bstd_cop +$2750; cop_biz +$4500; bbasic_cop +$5250; cop_ent +$7500; bprem_cop +$8000; e7 +$21625 | why: We are not recommending Copilot Business (add-on) even though it is $29.00/user/month cheaper all-in — $7,250/month across 250 seats — because it leaves 3 of those gaps open on a tenant that is about to send its own data | V-05 silent"
+cowork,7 licensing,250 Business Standard + 250 Copilot Business add-on [gov all-yes] recommended path,bstd_cop (+$2750.00/mo on top of current bases),cop_biz $4500.00/mo ($18.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 250; engine: bbasic_cop $5250; cop_biz $4500; bstd_cop $5875; bprem_cop $8000; bprem_cop_suites $11750; cop_ent $7500; e7 $24750 | indep incremental: bstd_cop +$2750; cop_biz +$4500; bbasic_cop +$5250; cop_ent +$7500; bprem_cop +$8000; e7 +$21625 | V-05 silent
+cowork,7 licensing,150 Business Premium + 150 Copilot Business add-on [gov unasked] recommended path,gated by governance,bprem_cop_suites $7050.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 150; engine: bbasic_cop $3150; cop_biz $2700; bstd_cop $3525; bprem_cop $4800; bprem_cop_suites $7050; cop_ent $4500; e7 $14850 | indep incremental: bprem_cop +$1500; cop_biz +$2700; bbasic_cop +$3150; bstd_cop +$3525; cop_ent +$4500; e7 +$11550 | why: We are not recommending Copilot Business (add-on) even though it is $29.00/user/month cheaper all-in — $4,350/month across 150 seats — because it leaves 3 of those gaps open on a tenant that is about to send its own data | V-05 silent"
+cowork,7 licensing,150 Business Premium + 150 Copilot Business add-on [gov all-yes] recommended path,bprem_cop (+$1500.00/mo on top of current bases),cop_biz $2700.00/mo ($18.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 150; engine: bbasic_cop $3150; cop_biz $2700; bstd_cop $3525; bprem_cop $4800; bprem_cop_suites $7050; cop_ent $4500; e7 $14850 | indep incremental: bprem_cop +$1500; cop_biz +$2700; bbasic_cop +$3150; bstd_cop +$3525; cop_ent +$4500; e7 +$11550 | V-05 silent
+cowork,7 licensing,299 Business Premium with Copilot [gov unasked] recommended path,gated by governance,bprem_cop_suites $14053.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 299; engine: bbasic_cop $6279; cop_biz $7176; bstd_cop $7027; bprem_cop $9568; bprem_cop_suites $14053; cop_ent $19734; e7 $29601 | indep incremental: bprem_cop +$2990; cop_biz +$5382; bbasic_cop +$6279; bstd_cop +$7027; cop_ent +$8970; e7 +$23023 | why: We are not recommending Business Basic + Copilot Business even though it is $26.00/user/month cheaper all-in — $7,774/month across 299 seats — because it leaves 3 of those gaps open on a tenant that is about to send its  | V-05 silent"
+cowork,7 licensing,299 Business Premium with Copilot [gov all-yes] recommended path,bprem_cop (+$2990.00/mo on top of current bases),bbasic_cop $6279.00/mo ($21.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 299; engine: bbasic_cop $6279; cop_biz $7176; bstd_cop $7027; bprem_cop $9568; bprem_cop_suites $14053; cop_ent $19734; e7 $29601 | indep incremental: bprem_cop +$2990; cop_biz +$5382; bbasic_cop +$6279; bstd_cop +$7027; cop_ent +$8970; e7 +$23023 | V-05 silent
+cowork,7 licensing,300 Business Premium with Copilot [gov unasked] recommended path,gated by governance,e7 $29700.00/mo ($99.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 300; engine: bbasic_cop $6300; cop_biz $7200; bstd_cop $7050; bprem_cop $9600; bprem_cop_suites $14100; cop_ent $19800; e7 $29700 | indep incremental: bprem_cop +$3000; cop_biz +$5400; bbasic_cop +$6300; bstd_cop +$7050; cop_ent +$9000; e7 +$23100 | why: We are not recommending Business Basic + Copilot Business even though it is $78.00/user/month cheaper all-in — $23,400/month across 300 seats — because it leaves 4 of those gaps open on a tenant that is about to send its | V-05 silent"
+cowork,7 licensing,300 Business Premium with Copilot [gov all-yes] recommended path,bprem_cop (+$3000.00/mo on top of current bases),cop_ent $19800.00/mo ($66.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 300; engine: bbasic_cop $6300; cop_biz $7200; bstd_cop $7050; bprem_cop $9600; bprem_cop_suites $14100; cop_ent $19800; e7 $29700 | indep incremental: bprem_cop +$3000; cop_biz +$5400; bbasic_cop +$6300; bstd_cop +$7050; cop_ent +$9000; e7 +$23100 | why: We are not recommending Business Basic + Copilot Business even though it is $45.00/user/month cheaper all-in — $13,500/month across 300 seats — because it leaves 1 of those gaps open on a tenant that is about to send its | V-05 silent"
+cowork,7 licensing,301 Business Premium with Copilot [gov unasked] recommended path,gated by governance,e7 $29799.00/mo ($99.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 301; engine: bbasic_cop(infeasible) $6321; cop_biz(infeasible) $7224; bstd_cop(infeasible) $7074; bprem_cop(infeasible) $9632; bprem_cop_suites(infeasible) $14147; cop_ent $19866; e7 $29799 | indep incremental: bprem_cop(invalid) +$3010; cop_biz(invalid) +$5418; bbasic_cop(invalid) +$6321; bstd_cop(invalid) +$7074; cop_ent +$9030; e7 +$23177 | why: We are not recommending M365 Copilot enterprise add-on even though it is $33.00/user/month cheaper all-in — $9,933/month across 301 seats, and that already counts the Microsoft 365 E3 base it needs underneath it — becaus | V-05 fires"
+cowork,7 licensing,301 Business Premium with Copilot [gov all-yes] recommended path,cop_ent (+$9030.00/mo on top of current bases),cop_ent $19866.00/mo ($66.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 301; engine: bbasic_cop(infeasible) $6321; cop_biz(infeasible) $7224; bstd_cop(infeasible) $7074; bprem_cop(infeasible) $9632; bprem_cop_suites(infeasible) $14147; cop_ent $19866; e7 $29799 | indep incremental: bprem_cop(invalid) +$3010; cop_biz(invalid) +$5418; bbasic_cop(invalid) +$6321; bstd_cop(invalid) +$7074; cop_ent +$9030; e7 +$23177 | V-05 fires
+cowork,7 licensing,500 E3 + 500 enterprise Copilot [gov unasked] recommended path,gated by governance,e7 $49500.00/mo ($99.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 500; engine: bbasic_cop(infeasible) $10500; cop_biz(infeasible) $12000; bstd_cop(infeasible) $11750; bprem_cop(infeasible) $16000; bprem_cop_suites(infeasible) $23500; cop_ent $15000; e7 $49500 | indep incremental: bbasic_cop(invalid) +$10500; bstd_cop(invalid) +$11750; cop_biz(invalid) +$12000; cop_ent +$15000; bprem_cop(invalid) +$16000; e7 +$31500 | why: We are not recommending M365 Copilot enterprise add-on even though it is $69.00/user/month cheaper all-in — $34,500/month across 500 seats — because it leaves 3 of those gaps open on a tenant that is about to send its ow | V-05 silent"
+cowork,7 licensing,500 E3 + 500 enterprise Copilot [gov all-yes] recommended path,cop_ent (+$15000.00/mo on top of current bases),cop_ent $15000.00/mo ($30.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 500; engine: bbasic_cop(infeasible) $10500; cop_biz(infeasible) $12000; bstd_cop(infeasible) $11750; bprem_cop(infeasible) $16000; bprem_cop_suites(infeasible) $23500; cop_ent $15000; e7 $49500 | indep incremental: bbasic_cop(invalid) +$10500; bstd_cop(invalid) +$11750; cop_biz(invalid) +$12000; cop_ent +$15000; bprem_cop(invalid) +$16000; e7 +$31500 | V-05 silent
+cowork,7 licensing,"1,200 E5 + 1,200 enterprise Copilot [gov unasked] recommended path",gated by governance,e7 $118800.00/mo ($99.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 1200; engine: bbasic_cop(infeasible) $25200; cop_biz(infeasible) $28800; bstd_cop(infeasible) $28200; bprem_cop(infeasible) $38400; bprem_cop_suites(infeasible) $56400; cop_ent $36000; e7 $118800 | indep incremental: bbasic_cop(invalid) +$25200; bstd_cop(invalid) +$28200; cop_biz(invalid) +$28800; cop_ent +$36000; bprem_cop(invalid) +$38400; e7 +$46800 | why: We are not recommending M365 Copilot enterprise add-on even though it is $69.00/user/month cheaper all-in — $82,800/month across 1200 seats — because it leaves 3 of those gaps open on a tenant that is about to send its o | V-05 silent"
+cowork,7 licensing,"1,200 E5 + 1,200 enterprise Copilot [gov all-yes] recommended path",cop_ent (+$36000.00/mo on top of current bases),cop_ent $36000.00/mo ($30.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 1200; engine: bbasic_cop(infeasible) $25200; cop_biz(infeasible) $28800; bstd_cop(infeasible) $28200; bprem_cop(infeasible) $38400; bprem_cop_suites(infeasible) $56400; cop_ent $36000; e7 $118800 | indep incremental: bbasic_cop(invalid) +$25200; bstd_cop(invalid) +$28200; cop_biz(invalid) +$28800; cop_ent +$36000; bprem_cop(invalid) +$38400; e7 +$46800 | V-05 silent
+cowork,7 licensing,200 Basic + 150 Premium + 350 Copilot (Business add-on entered) [gov unasked] recommended path,gated by governance,e7 $34650.00/mo ($99.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 350; engine: bbasic_cop(infeasible) $7350; cop_biz(infeasible) $6300; bstd_cop(infeasible) $8225; bprem_cop(infeasible) $11200; bprem_cop_suites(infeasible) $16450; cop_ent $10500; e7 $34650 | indep incremental: bbasic_cop(invalid) +$6150; cop_biz(invalid) +$6300; bprem_cop(invalid) +$7900; bstd_cop(invalid) +$8225; cop_ent +$10500; e7 +$30150 | why: We are not recommending M365 Copilot enterprise add-on even though it is $69.00/user/month cheaper all-in — $24,150/month across 350 seats — because it leaves 3 of those gaps open on a tenant that is about to send its ow | V-05 fires"
+cowork,7 licensing,200 Basic + 150 Premium + 350 Copilot (Business add-on entered) [gov all-yes] recommended path,cop_ent (+$10500.00/mo on top of current bases),cop_ent $10500.00/mo ($30.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 350; engine: bbasic_cop(infeasible) $7350; cop_biz(infeasible) $6300; bstd_cop(infeasible) $8225; bprem_cop(infeasible) $11200; bprem_cop_suites(infeasible) $16450; cop_ent $10500; e7 $34650 | indep incremental: bbasic_cop(invalid) +$6150; cop_biz(invalid) +$6300; bprem_cop(invalid) +$7900; bstd_cop(invalid) +$8225; cop_ent +$10500; e7 +$30150 | V-05 fires
+cowork,7 licensing,"60 users, 0 Copilot seats (Business Premium) [gov unasked] recommended path",gated by governance,bprem_cop_suites $1175.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 25; engine: bbasic_cop $525; cop_biz $450; bstd_cop $588; bprem_cop $800; bprem_cop_suites $1175; cop_ent $750; e7 $2475 | indep incremental: bprem_cop +$250; cop_biz +$450; bbasic_cop +$525; bstd_cop +$588; cop_ent +$750; e7 +$1925 | why: We are not recommending Copilot Business (add-on) even though it is $29.00/user/month cheaper all-in — $725/month across 25 seats — because it leaves 3 of those gaps open on a tenant that is about to send its own data th | V-05 silent
+cowork,7 licensing,"60 users, 0 Copilot seats (Business Premium) [gov all-yes] recommended path",bprem_cop (+$250.00/mo on top of current bases),cop_biz $450.00/mo ($18.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 25; engine: bbasic_cop $525; cop_biz $450; bstd_cop $588; bprem_cop $800; bprem_cop_suites $1175; cop_ent $750; e7 $2475 | indep incremental: bprem_cop +$250; cop_biz +$450; bbasic_cop +$525; bstd_cop +$588; cop_ent +$750; e7 +$1925 | V-05 silent
+cowork,7 licensing,"100 users, 100 Business Premium with Copilot, 40 idle [gov unasked] recommended path",gated by governance,bprem_cop_suites $4700.00/mo ($47.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,"needed 100; engine: bbasic_cop $2100; cop_biz $2400; bstd_cop $2350; bprem_cop $3200; bprem_cop_suites $4700; cop_ent $6600; e7 $9900 | indep incremental: bprem_cop +$1000; cop_biz +$1800; bbasic_cop +$2100; bstd_cop +$2350; cop_ent +$3000; e7 +$7700 | why: We are not recommending Business Basic + Copilot Business even though it is $26.00/user/month cheaper all-in — $2,600/month across 100 seats — because it leaves 3 of those gaps open on a tenant that is about to send its  | V-05 silent"
+cowork,7 licensing,"100 users, 100 Business Premium with Copilot, 40 idle [gov all-yes] recommended path",bprem_cop (+$1000.00/mo on top of current bases),bbasic_cop $2100.00/mo ($21.00/user),DIFF,seat rate card; bases bbasic $6 bstd $12.50 e3 $36 e5 $60 editorial,needed 100; engine: bbasic_cop $2100; cop_biz $2400; bstd_cop $2350; bprem_cop $3200; bprem_cop_suites $4700; cop_ent $6600; e7 $9900 | indep incremental: bprem_cop +$1000; cop_biz +$1800; bbasic_cop +$2100; bstd_cop +$2350; cop_ent +$3000; e7 +$7700 | V-05 silent
+cowork,7 licensing,300 seats: SMB bprem_cop feasible under 300 cap,"feasible, complete (cap is 300 inclusive)","feasible=true, gaps=usage_billing|scale",DIFF,Copilot Business 300-seat cap,"requirements(): ""scale"" fires at copilotLicensed >= 300; why[0] says ""under the 300-seat cap"" and why[1] says it closes ""A path above the 300-seat SMB cap"""
+cowork,7 licensing,300 seats all-yes: monthly of recommended vs staying on bprem_cop,9600,19800,10200,,winner cop_ent = 300 x $30 + 300 x $36 E3 base
+cowork,7 licensing,301 seats: mixed 300 bprem_cop + 1 (E3 + enterprise Copilot),9666,19866,10200,Business plans cap at 300; mixing Business and Enterprise plans is allowed,"solver comment: ""you cannot put half a tenant on a different SKU"""
+cowork,7 licensing,licensing table shows Copilot Business $18.00 with promo end date,"should show ""promo, ends 2026-12-31"" or price at $21","no date on the table, no date in why[]; date only on the Step 2 line blurb, Step 0 rate table and x12/x36 cells",DIFF,Copilot Business $18 promo through 2026-12-31,
+cowork,7 licensing,cop_biz winner at $21 list instead of $18 promo (150 Premium shape),3150,2700,-450,$21 list,quote understated $450/mo from 2027-01
+cowork,7 licensing,bbasic_cop tagged promo (promoEnds 2026-12-31),rate card lists bundle at $21 with no promo end,2026-12-31,DIFF,rate card,unverified against rate card
+cowork,7 licensing,Copilot Business monthly-billing price $25.20,25.2,not modeled,DIFF,rate card,every price is annual-term
+cowork,9 warnings,V-01 fires on trigger state,true,true,match,,You have 100 licensed seats against 10 employees. Check the headcount in Step 1 or the seat counts in Step 2.
+cowork,9 warnings,V-01 silent on control state,true,true,match,,
+cowork,9 warnings,V-02 fires on trigger state,true,true,match,,"Only users with an assigned Microsoft 365 Copilot license can use Cowork, so I capped active users at 80. If more people need it, that is a license conversation — add seats in Step 2."
+cowork,9 warnings,V-02 silent on control state,true,true,match,,
+cowork,9 warnings,V-03 fires on trigger state,true,true,match,,"No Copilot-bearing license in the inventory, so the Cowork bill is $0 today. This is a licensing conversation first — and Copilot in 30 is the way to start it."
+cowork,9 warnings,V-03 silent on control state,true,true,match,,
+cowork,9 warnings,V-04 fires on trigger state,true,true,match,,Persona seats total 52 but only 40 users are active in Cowork. Figures below are capped at 40.
+cowork,9 warnings,V-04 silent on control state,true,true,match,,
+cowork,9 warnings,V-05 fires on trigger state,true,true,match,,M365 Copilot Business (standalone add-on) caps at 300 licenses; you entered 301. Above the cap the enterprise M365 Copilot add-on at $30 is the available path.
+cowork,9 warnings,V-05 silent on control state,true,true,match,,
+cowork,9 warnings,V-06 fires on trigger state,true,true,match,,Cowork PayGo billing routes through an Azure subscription on your CSP channel. Confirm this exists before quoting.
+cowork,9 warnings,V-06 silent on control state,true,true,match,,
+cowork,9 warnings,V-07 fires on trigger state,true,true,match,,"Microsoft lists ""usage-based and Cowork billing has been enabled"" as a prerequisite. No SKU closes this — it is an admin action."
+cowork,9 warnings,V-07 silent on control state,true,true,match,,
+cowork,9 warnings,V-08 fires on trigger state,true,true,match,,"A heavy task at Medium effort models at $16.00, outside the typical $0.70–$15 per-task range from Microsoft’s original Cowork estimator."
+cowork,9 warnings,V-08 silent on control state,true,true,match,,
+cowork,9 warnings,V-09 fires on trigger state,true,true,match,,"At $62.91 per active user per month you are outside the $82–$228 range of Microsoft’s original Cowork estimator (since replaced). Defensible, but say it as a modeled figure."
+cowork,9 warnings,V-09 silent on control state,true,true,match,,
+cowork,9 warnings,V-10 fires on trigger state,true,true,match,,"This is well outside what we normally see. Before you say it out loud, check these two: total heavy tasks per user per month across your allocated groups is 160, and active users is 52."
+cowork,9 warnings,V-10 silent on control state,true,true,match,,
+cowork,9 warnings,V-13 fires on trigger state,true,true,match,,"At 1,710 CCCU you are below the lowest published P3 entry point of 3,000 CCCU. PayGo is the path here."
+cowork,9 warnings,V-13 silent on control state,true,true,match,,
+cowork,9 warnings,V-14 fires on trigger state,true,true,match,,In the EU/EFTA/UK an admin must opt in to the Anthropic sub-processor — it is off by default.
+cowork,9 warnings,V-14 silent on control state,true,true,match,,
+cowork,9 warnings,V-15 fires on trigger state,true,true,match,,"Cowork is unavailable in GCC, GCC High, DoD and sovereign clouds. No licensing path changes this."
+cowork,9 warnings,V-15 silent on control state,true,true,match,,
+cowork,9 warnings,V-16 fires on trigger state,true,true,match,,"Then the Cowork bill is $0. That is a real answer — and it is also the problem. The conversation here is adoption, not cost."
+cowork,9 warnings,V-16 silent on control state,true,true,match,,
+cowork,9 warnings,V-17 fires on trigger state,true,true,match,,"You are in sell-price mode but no sell price has been entered, so every license is still priced at Microsoft list. Set your rate card before you show this to a customer."
+cowork,9 warnings,V-17 silent on control state,true,true,match,,
+cowork,9 warnings,V-18 fires on trigger state,true,true,match,,"You entered a cost price on some license lines but not all, so a margin cannot be computed without substituting list price for the rest. The margin figure is withheld rather than guessed — fill in every line, or leave them all blank."
+cowork,9 warnings,V-18 silent on control state,true,true,match,,
+cowork,9 warnings,V-19 fires on trigger state,true,true,match,,This session was saved at “Max” effort. That setting has been retired: at the default tier weights it priced a heavy task above the $15 ceiling and a heavy persona mix above the $228 per-user range in Microsoft’s original Cowork estimator. 
+cowork,9 warnings,V-19 silent on control state,true,true,match,,
+cowork,9 warnings,V-21 fires on trigger state,true,true,match,,"Careful — P3 looks cheaper and is not, for you. At 7.0% the commit saves $6,300 off the customer-facing meter, but a pre-purchase plan is a reservation and earns no partner-earned credit. Pay-as-you-go at 15% PEC costs you $77,010 a year ag"
+cowork,9 warnings,V-21 silent on control state,true,true,match,,"partner-only content (PEC rate and partner cost); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-22 fires on trigger state,true,true,match,,"You would be carrying $83,700 of non-refundable commitment on this account. A P3 is a one-year, paid-up-front purchase: cancellations and exchanges are not supported, and it auto-renews by default — so the same amount commits again next yea"
+cowork,9 warnings,V-22 silent on control state,true,true,match,,"partner-only content (partner exposure); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-23 fires on trigger state,true,true,match,,"Before you quote a commit, settle who signs for it. A P3 is $83,700 paid up front for a year, non-cancellable, non-exchangeable and auto-renewing. That is a real financial position and it belongs to whoever holds it."
+cowork,9 warnings,V-23 silent on control state,true,true,match,,
+cowork,9 warnings,V-24 fires on trigger state,true,true,match,,"You cannot place this order yourself. Buying reservations on behalf of a customer is a direct-bill and indirect-provider motion — as an indirect reseller you hand the 78,839 CCCU year-one figure to your provider and they place it — the 90,6"
+cowork,9 warnings,V-24 silent on control state,true,true,match,,"partner-only content (reseller motion / PoR); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-25 fires on trigger state,true,true,match,,"You are showing the meter at $0.0120 a credit against Microsoft’s published $0.01, on a motion where you do not hold the billing relationship. Outside CSP the meter lands on the customer’s own Azure invoice at Microsoft’s rate — there is no"
+cowork,9 warnings,V-25 silent on control state,true,true,match,,"partner-only content (partner sell rate); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-26 fires on trigger state,true,true,match,,"One answer decides every partner-economics figure on this page: do you hold the Azure billing account for this customer, or do you buy through an indirect provider? Set it at the top of the pricing screen. Until then the tool shows the cust"
+cowork,9 warnings,V-26 silent on control state,true,true,match,,"partner-only content (partner motion); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-27 fires on trigger state,true,true,match,,The license inventory names an id this build does not recognize: toString. Those lines are dropped rather than priced blind — re-pick the SKU in Step 2.
+cowork,9 warnings,V-27 silent on control state,true,true,match,,
+cowork,9 warnings,V-28 fires on trigger state,true,true,match,,A manual discount of 25.0% is above Microsoft’s top published P3 tier of 20%. Confirm it with your distributor before you quote it.
+cowork,9 warnings,V-28 silent on control state,true,true,match,,
+cowork,9 warnings,V-29 fires on trigger state,true,true,match,,"You are billing this meter at $0.0090 a credit and it costs you more than that: $81,540 billed against $90,600 of cost is $9,060 a year against you. Reprice the credit or renegotiate your rate before you quote it."
+cowork,9 warnings,V-29 silent on control state,true,true,match,,"partner-only content (partner margin); rendered in #cardFlags, which is hidden only in customer view / customer print"
+cowork,9 warnings,V-30 fires on trigger state,true,true,match,,"This session is flagged as calibrated, but all three tier weights still equal the modelled defaults of 125/500/1200 — there is no measured number behind the flag. The band stays at ±30% and every figure reads as modelled until at least one "
+cowork,9 warnings,V-30 silent on control state,true,true,match,,
+cowork,9 warnings,V-31 fires on trigger state,true,true,match,,"New Copilot Business licenses bought through CSP from December 1, 2026 switch usage-based billing on by default, with a default limit of 4,000 Copilot Credits per user per month (about $40). This account models about 14,519 credits per acti"
+cowork,9 warnings,V-31 silent on control state,true,true,match,,
+cowork,9 warnings,V-11 exists in engine,n/a,absent,DIFF,,ID not emitted anywhere in the engine (retired or never built)
+cowork,9 warnings,V-12 exists in engine,n/a,absent,DIFF,,ID not emitted anywhere in the engine (retired or never built)
+cowork,9 warnings,V-20 exists in engine,n/a,absent,DIFF,,ID not emitted anywhere in the engine (retired or never built)
+cowork,11 hostile,compute() runs,1131,1126,-5,,"throws: personaPreset=__proto__: Cannot read properties of undefined (reading 'replace') | personaPreset=constructor: Cannot read properties of undefined (reading 'replace') | personaPreset=toString: Cannot read properties of undefined (reading 'replace') | whole state ""abc"": Cannot create property 'schemaVersion' on string 'abc' | whole state 42: Cannot create property 'schemaVersion' on number '42'"
+cowork,11 hostile,outputs containing NaN/Infinity/undefined,0,3,3,,licenseInventory.0.skuId={} -> .warnings.0.message text: The license inventory names an id this build does not recognize: [object Object] || activation.rate=1e+308 -> .trace.3.expression text: 80 licensed × Infinity% || activation.rate=-1e+308 -> .trace.3.expression text: 80 licensed × -Infinity%
+cowork,11 hostile,negative currency outputs,0,0,0,,
+cowork,11 hostile,p3Plan(hostile) finite,all ok,all ok,match,,
+cowork,11 hostile,commit coverage 150%: plan covers more than annual need,"p3Plan label claims ""never more than the ask""",135000 CCCU covered vs 90600 needed; p3Annual $125700,DIFF,,"UI caps the field at 150; B4 text still says ""never more than the ask"""
+cowork,6 sell,"sell 0.012, governance all yes, billing confirmed: next step",well-governed (usage unchanged),concentration,DIFF,,"ratioBench 3.775 (sell meter / list licenses) crosses the 3.5 trigger; at list 3.146 -> well-governed. buildTalk adds the customer line ""running above the 2.6x benchmark"""
+cowork,6 sell,sell 0.012: perActive shown in concentration why,145.19,174.23,29.04,,$ per active user at the partner sell rate presented as usage intensity
+cowork,1 stock,scenarios row: one light task every working day (days used),22,21,-1,F-158 22 working days,"52 x 125 x 21 = 136,500 credits $1,365; at 22 days 143,000 $1,430"
