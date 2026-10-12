@@ -2198,7 +2198,8 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
 
   // B4 tells the truth about a multi-plan mix.
   const b4 = E.compute(E.defaults()).trace.find(x => x.id === 'B4');
-  eq(b4.prov, 'ms-modeled', 'A1: a multi-plan mix is tagged modeled');
+  // QA M-03: several plans at once is Likely (ms-inferred), not modeled.
+  eq(b4.prov, 'ms-inferred', 'A1: a multi-plan mix is tagged Likely');
   ok(/confirm the mix with your distributor/.test(b4.note), 'A1: B4 carries the several-plans caveat');
   const one = E.defaults(); one.ramp.mode = 'none'; one.billing.commitCoveragePct = 15000 / 90600;
   eq(E.compute(one).trace.find(x => x.id === 'B4').prov, 'ms-verified', 'A1: a single plan is Microsoft-verified');
@@ -2622,6 +2623,21 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(risk.indexOf('$10,950') === -1, 'M-02: the prepay difference $10,950 is gone');
   ok(/the commit saves ' \+ '\$' \+ Math\.round\(p3Saving\)\.toLocaleString\(\) \+ ' a year at steady state/.test(src),
      'M-02: V-21 labels its saving steady state');
+}
+
+/* ── M-03 · several P3 plans held at once is labeled Likely ────────────── */
+{
+  const r = E.compute(E.defaults());
+  const b4 = row(r, 'B4');
+  eq(b4.prov, 'ms-inferred', 'M-03: B4 is tagged ms-inferred for a multi-plan mix');
+  ok(/^Likely/.test(b4.note || ''), 'M-03: the B4 note opens with Likely');
+  eq(r.ctx.discount.prov, 'ms-inferred', 'M-03: the discount carries the same tag');
+  ok(r.assumptions.some(a => a.id === 'B4' && a.prov === 'ms-inferred'), 'M-03: the assumptions card lists it as Likely');
+  eq(E.weakest(['ms-inferred', 'ms-verified']), 'ms-inferred', 'M-03: Likely ranks below verified');
+  ok(src.indexOf('is how Azure reservations work') === -1, 'M-03: the "is how Azure reservations work" claim is gone');
+  ok(/'ms-inferred':\['modeled','Likely'\]/.test(src), 'M-03: the provenance pill prints Likely');
+  ok(/'P3 pre-purchase \/ year' \+ \(plan && plan\.plans > 1 \? ' ' \+ provPill\('ms-inferred'\)/.test(src),
+     'M-03: the P3 headline cell carries the Likely pill on a multi-plan mix');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

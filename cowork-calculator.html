@@ -1017,7 +1017,10 @@ body.embedded .hub-link { display:none !important; }
   'use strict';
 
   /* ── Provenance ───────────────────────────────────────────────────────── */
-  var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'editorial': 1 };
+  // 'ms-inferred' (shown as Likely, QA M-03): a rule applied as the most
+  // probable reading where Microsoft has not said it in one sentence. Same
+  // rank and label as the Copilot Credit Planner.
+  var RANK = { 'ms-verified': 4, 'measured': 4, 'partner': 3, 'ms-modeled': 2, 'ms-inferred': 2, 'editorial': 1 };
   /* Weakest-link tag for a derived value. Ties keep the FIRST-listed tag, so
      callers put the headline input first — the old 'ms-verified' seed won
      every rank-4 tie, which made 'measured' literally unreachable through
@@ -1203,7 +1206,7 @@ body.embedded .hub-link { display:none !important; }
      is final, and credit bought past the need expires unused.
      Holding several plans at once, each at its own tier, is the Azure
      reservation pattern; Microsoft does not state it for Copilot Credit P3,
-     so a multi-plan answer is tagged ms-modeled where it is shown (B4).
+     so a multi-plan answer is tagged ms-inferred (Likely) where it is shown (B4).
      Unit: 3,000 CCCU, the smallest plan; every tier is a whole number of
      units, so the search is an exact integer knapsack. */
   var P3_UNIT = P3_TIERS[0].cccu;
@@ -1908,7 +1911,7 @@ body.embedded .hub-link { display:none !important; }
     var plan = manualPct != null ? null : p3Plan(commitCccu);
     var disc = manualPct != null
       ? { pct:clamp(manualPct, 0, 30), prov:'partner', exact:true, tier:'manual' }
-      : { pct:plan.pct, prov:plan.plans > 1 ? 'ms-modeled' : 'ms-verified', exact:true,
+      : { pct:plan.pct, prov:plan.plans > 1 ? 'ms-inferred' : 'ms-verified', exact:true,
           tier:plan.plans ? 'plan' : 'below-entry', plan:plan };
     var P3_TOP = P3_TIERS[P3_TIERS.length - 1];
     if (manualPct != null && disc.pct > P3_TOP.pct)
@@ -2173,9 +2176,9 @@ body.embedded .hub-link { display:none !important; }
           ? ' + ' + Math.round(plan.remainderCccu).toLocaleString() + ' CCCU on PayGo' : '')
           : 'below the smallest plan (' + P3_TIERS[0].cccu.toLocaleString() + ' CCCU)',
         disc.pct,'pct', disc.prov,
-        plan.plans > 1 ? 'Microsoft publishes the nine plan sizes. Holding several plans at once, each at its own ' +
-          'discount, follows the Azure reservation pattern but is not stated for Copilot Credit P3 — confirm the ' +
-          'mix with your distributor before it is ordered.' : null);
+        plan.plans > 1 ? 'Likely: Microsoft publishes the nine plan sizes but does not say in one sentence that a ' +
+          'customer may hold several Copilot Credit P3 plans at once, each at its own discount. This mix assumes it ' +
+          'can; confirm the mix with your distributor before it is ordered.' : null);
 
     /* Residency + prerequisite gates */
     if (state.org.dataResidency === 'gov_cloud')
@@ -2924,7 +2927,8 @@ body.embedded .hub-link { display:none !important; }
   }
   function provPill(p) {
     var m = { 'ms-verified':['verified','Microsoft'], 'measured':['measured','Measured'],
-              'ms-modeled':['modeled','Modeled'], 'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
+              'ms-modeled':['modeled','Modeled'], 'ms-inferred':['modeled','Likely'],
+              'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
     var x = m[p] || ['default','—']; return pill(x[0], x[1]);
   }
 
@@ -4269,7 +4273,7 @@ body.embedded .hub-link { display:none !important; }
           ' CCCU for <b>' + usd(plan.prepayUsd) + '</b> up front, an effective <b>' + plan.pct.toFixed(1) + '%</b>' +
           (plan.remainderCccu >= 1 ? ', with the remaining ' + num(Math.round(plan.remainderCccu)) + ' CCCU on PayGo' : '') +
           '. Rounding up to a bigger plan would strand credit that expires unused.' +
-          (plan.plans > 1 ? ' Holding several plans at once, each at its own discount, is how Azure reservations work; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
+          (plan.plans > 1 ? ' ' + provPill('ms-inferred') + ' Holding several plans at once, each at its own discount, is likely but not stated by Microsoft for Copilot Credit P3; confirm the mix with your distributor before it is ordered.' : '') + '</p>' +
           (c.rampApplies && y1 && y1.plans
             ? '<p>Sized to year one instead, the order is <b>' + y1.label + '</b> (' + num(y1.coveredCccu) + ' CCCU, ' +
               usd(y1.prepayUsd) + ' up front)' + (y1.remainderCccu >= 1 ? ', with the last ' + num(Math.round(y1.remainderCccu)) + ' CCCU on PayGo' : '') +
@@ -4287,7 +4291,7 @@ body.embedded .hub-link { display:none !important; }
     $('billOut').innerHTML =
       '<div class="numgrid">' +
         cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
-        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year',
+        cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year' + (plan && plan.plans > 1 ? ' ' + provPill('ms-inferred') : ''),
           (d.tier === 'manual' ? d.pct + '% your rate' : d.pct.toFixed(1) + '% on ' + num(plan ? plan.coveredCccu : 0) + ' CCCU') +
           ' · saves ' + usd(Math.max(0, c.p3Saving)) + ' at steady state' +
           (c.rampApplies && c.p3SteadyOnYear1
