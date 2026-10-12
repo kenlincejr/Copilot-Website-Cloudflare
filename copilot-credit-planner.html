@@ -2448,9 +2448,19 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ 20 · License-or-meter crossover ════════════════════════════════════ */
-  function crossoverFrom(s, agents) {
-    var ac = s.studio.account;
+  /* The verdict is judged at the customer's prices: the credits a seat would
+     cover, times the customer's $/credit, against the customer's seat price
+     (Microsoft list when no sell price is set). The SKU is chosen before the
+     price: monthly billing is $25.20 whatever the date; the $18 promotion
+     applies only on the annual basis and only while it is live (F-176,
+     F-147). Every figure P-75, NBA-06 and customerView().licenseInstead
+     print comes from the row, so the verdict sign always equals the sign of
+     savingUsdMonthly. breakEvens stays the list table (A12). */
+  function crossoverFrom(s, agents, rate) {
+    var ac = s.studio.account, cr = isObj(rate) ? rate : customerRateFrom(s);
+    var rc = cr.usdPerCredit > 0 ? cr.usdPerCredit : RC.payg.v;
     var be = { enterprise: breakEven(RC.seatEnt.v), business: breakEven(RC.seatBiz.v), promo: breakEven(RC.seatBizPromo.v), monthly: breakEven(RC.seatBizMonthly.v) };
+    var listSeat = { enterprise: RC.seatEnt.v, business: RC.seatBiz.v, promo: RC.seatBizPromo.v, monthly: RC.seatBizMonthly.v };
     var promoLive = s.combined.horizon.startMonth <= RC.seatBizPromo.ends.slice(0, 7);
     var bizRoom = Math.max(0, RC.bizSeatCap.v - ac.seats.business);
     var rows = [];
@@ -2467,13 +2477,18 @@ footer.pagefoot p { margin:0 0 10px; }
       });
       var freePerUser = free * perUserVol;
       var fitsBiz = U <= bizRoom;
-      var sku = fitsBiz ? (promoLive ? 'promo' : (ac.businessBilling === 'monthly' ? 'monthly' : 'business')) : 'enterprise';
-      var price = { enterprise: RC.seatEnt.v, business: RC.seatBiz.v, promo: RC.seatBizPromo.v, monthly: RC.seatBizMonthly.v }[sku];
-      rows.push({ id: a.id, name: a.name, unlicensedUsers: U, freeIfLicensedPerUser: freePerUser, breakEven: be[sku], sku: sku,
-                  verdict: freePerUser > be[sku] ? 'license' : 'meter', seatUsd: price,
-                  savingUsdMonthly: U * (usdOf(freePerUser) - price), businessCapped: !fitsBiz });
+      var sku = fitsBiz ? (ac.businessBilling === 'monthly' ? 'monthly' : (promoLive ? 'promo' : 'business')) : 'enterprise';
+      var seat = cr.seats && cr.seats[sku] > 0 ? cr.seats[sku] : listSeat[sku];
+      var coveredUsd = roundTo(freePerUser * rc, 6);
+      var perUserSaving = roundTo(coveredUsd - seat, 6);
+      var saving = roundTo(U * perUserSaving, 2);
+      rows.push({ id: a.id, name: a.name, unlicensedUsers: U, freeIfLicensedPerUser: freePerUser, sku: sku,
+                  breakEven: roundTo(seat / rc, 2), seatUsd: seat, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list',
+                  coveredUsdPerUser: coveredUsd, savingUsdPerUser: perUserSaving, savingUsdMonthly: saving,
+                  verdict: saving > 0 ? 'license' : 'meter',
+                  listBreakEven: be[sku], listSeatUsd: listSeat[sku], businessCapped: !fitsBiz });
     });
-    return { breakEvens: be, promoLive: promoLive, promoEnds: RC.seatBizPromo.ends, bizSeatRoom: bizRoom, agents: rows };
+    return { breakEvens: be, promoLive: promoLive, promoEnds: RC.seatBizPromo.ends, bizSeatRoom: bizRoom, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list', agents: rows };
   }
 
   /* ══ 21 · Dataverse ═════════════════════════════════════════════════════
@@ -2700,14 +2715,14 @@ footer.pagefoot p { margin:0 0 10px; }
     var pu = optimize(demand, { appetite: P.appetite, allowPacks: P.allowPacks, allowP3: P.allowP3, current: P.current });
     var en = enforcementFrom(s, cw, agents, pl, pu);
     var gv = governanceFrom(s, cw, agents, pl, en);
-    var cx = crossoverFrom(s, agents);
+    var rate = customerRateFrom(s);
+    var cx = crossoverFrom(s, agents, rate);
     var configured = agents.some(function (a) { return !a.paused && a.hi > 0; });
     var dv = dataverseFrom(s, agents, configured);
     var adj = adjacentFrom(s, agents, dv);
     var val = valueFrom(s, agents, pl);
     var sp = specializationFrom(pl);
     var svc = servicesFrom(s, agents, pu);
-    var rate = customerRateFrom(s);
     var pe = partnerFrom(s, pu, cx, svc, rate);
     assume.push(A('customer-rate', 'Customer price', rate.note, rate.creditSource === 'list' ? 'ms-verified' : 'partner', 'customer'));
     var ac = s.studio.account;
@@ -3057,9 +3072,9 @@ footer.pagefoot p { margin:0 0 10px; }
         licenseInstead: { breakEvens: { enterprise: num(X.breakEvens.enterprise), business: num(X.breakEvens.business), promo: num(X.breakEvens.promo), monthly: num(X.breakEvens.monthly) },
                           seatPrices: { enterprise: num(CR.seats.enterprise), business: num(CR.seats.business), promo: num(CR.seats.promo), monthly: num(CR.seats.monthly) },
                           agents: X.agents.map(function (a) {
-                            var seat = num(CR.seats[a.sku]);
-                            return { name: a.name, users: num(a.unlicensedUsers), freeIfLicensedPerUser: num(a.freeIfLicensedPerUser), verdict: a.verdict, sku: String(a.sku),
-                                     breakEven: num(a.breakEven), seatUsd: seat, savingUsdMonthly: num(a.unlicensedUsers) * (num(a.freeIfLicensedPerUser) * rc - seat) };
+                            /* The engine's own row: one set of figures for the verdict, P-75 and this view. */
+                            return { name: a.name, users: num(a.unlicensedUsers), freeIfLicensedPerUser: num(a.freeIfLicensedPerUser), verdict: a.verdict === 'license' ? 'license' : 'meter', sku: String(a.sku),
+                                     breakEven: num(a.breakEven), seatUsd: num(a.seatUsd), usdPerCredit: num(a.usdPerCredit), savingUsdMonthly: num(a.savingUsdMonthly) };
                           }) },
         zeroRatedMonthly: num(sum(L.agents.map(function (a) { return a.paused ? 0 : a.licensedCovered; }))),
         value: V.on ? { hours: num(V.aah), valueUsd: num(V.aavUsd), hourlyUsd: num(V.hourlyUsd), deflectionUsd: V.deflectionUsd === null ? null : num(V.deflectionUsd),
@@ -4849,7 +4864,7 @@ footer.pagefoot p { margin:0 0 10px; }
           '<td class="n">' + fi(a.lo) + '</td><td class="n">' + fi(a.mid) + '</td><td class="n">' + fi(a.hi) + '</td><td class="n">' + fi(a.licensedCovered) + '</td><td class="n">' + urng(a.lo * rate, a.hi * rate) + '</td></tr>';
       }).join('') + '</tbody><tfoot><tr><td>Active agents</td><td></td><td class="n">' + fi(lo) + '</td><td class="n">' + fi(mid) + '</td><td class="n">' + fi(hi) + '</td><td class="n">' + fi(z) + '</td><td class="n">' + urng(lo * rate, hi * rate) + '</td></tr></tfoot></table></div>' +
       '<p class="srcline">Low is the itemized figure; high adds 20%, the top of Microsoft&rsquo;s recommended 10&ndash;20% estimate buffer. ' + rcRef('buffer') + '</p>';
-    var cx = R.crossover, li = CV.licenseInstead;
+    var cx = R.crossover;
     html += '<div class="sub-h">A seat or the meter?</div><div class="tablewrap"><table class="dtable"><thead><tr><th>Copilot seat</th><th class="n">A user a month</th><th class="n">Break-even, credits a user a month</th><th>Source</th></tr></thead><tbody>' +
       ['enterprise', 'business', 'promo', 'monthly'].map(function (k) {
         return '<tr><td>' + SKU_LBL[k] + '</td><td class="n">' + fu(E.RC[SKU_RC[k]].v) + '</td><td class="n">' + fi(cx.breakEvens[k]) + '</td><td>' + rcRef(SKU_RC[k]) + '</td></tr>';
@@ -4857,10 +4872,11 @@ footer.pagefoot p { margin:0 0 10px; }
       '<p class="srcline">Break-evens at Microsoft list: a seat price divided by the pay-as-you-go rate. ' + rcRef('payg') + (cx.promoLive ? ' The promotional price applies while the plan starts by December 2026.' : '') + '</p>';
     if (cx.agents.length) {
       html += cx.agents.map(function (row, i) {
-        var c = li.agents[i] || {};
+        /* One set of figures: the engine's row, at the customer's prices. */
+        var at = row.priceBasis === 'sell' ? ' at your price (' + fu(row.seatUsd, true) + ' a seat, ' + E.fmtRate(row.usdPerCredit) + ' a credit)' : '';
         return row.verdict === 'license'
-          ? '<div class="callout"><div class="callout-title">License instead: ' + esc(row.name) + '</div><div class="callout-body">License these ' + fi(row.unlicensedUsers) + ' users instead: each would stop costing ' + fi(row.freeIfLicensedPerUser) + ' credits a month against a ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + '. It saves about ' + fu(Math.max(0, c.savingUsdMonthly || 0)) + ' a month, and they get Copilot.' + (row.businessCapped ? ' Copilot Business has no room under its 300-seat cap, so this is priced on the enterprise seat.' : '') + '</div></div>'
-          : '<div class="callout subtle"><div class="callout-title">Metering is cheaper: ' + esc(row.name) + '</div><div class="callout-body">Its ' + fi(row.unlicensedUsers) + ' unlicensed users average ' + fi(row.freeIfLicensedPerUser) + ' credits a month that a license would cover, below the ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + '. Justify seats by what Copilot and Cowork do for them, not by this agent.</div></div>';
+          ? '<div class="callout"><div class="callout-title">License instead: ' + esc(row.name) + '</div><div class="callout-body">License these ' + fi(row.unlicensedUsers) + ' users instead: each would stop costing ' + fi(row.freeIfLicensedPerUser) + ' credits a month (about ' + fu(row.coveredUsdPerUser, true) + ') against a ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + at + '. It saves about ' + fu(row.savingUsdMonthly) + ' a month, and they get Copilot.' + (row.businessCapped ? ' Copilot Business has no room under its 300-seat cap, so this is priced on the enterprise seat.' : '') + '</div></div>'
+          : '<div class="callout subtle"><div class="callout-title">Metering is cheaper: ' + esc(row.name) + '</div><div class="callout-body">Its ' + fi(row.unlicensedUsers) + ' unlicensed users average ' + fi(row.freeIfLicensedPerUser) + ' credits a month that a license would cover, below the ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + at + '. Justify seats by what Copilot and Cowork do for them, not by this agent.</div></div>';
       }).join('');
     } else html += '<p class="note">No internal conversational agent with unlicensed users, so there is no seat-or-meter call to make.</p>';
     el.innerHTML = html;

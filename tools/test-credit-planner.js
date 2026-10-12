@@ -386,7 +386,8 @@ sec('C');
   eq(JSON.stringify(r3s.purchase), JSON.stringify(r1.purchase), 'C sell-side inputs leave the purchase alone');
   function noDollars(v) {
     if (Array.isArray(v)) return v.filter((x) => !(x && x.label === 'Customer price')).map(noDollars);
-    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
+    // A per-agent seat-or-meter break-even and verdict are judged at the customer's prices (QA C-03), so they are price fields too.
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach((k) => { if (!/usd|^pricing$|^seatPrices$|^breakEven$|^verdict$/i.test(k)) o[k] = noDollars(v[k]); }); return o; }
     return v;
   }
   const cv1 = E.customerView(r1), cv3s = E.customerView(r3s);
@@ -932,6 +933,54 @@ sec('S');
   });
   ok(src.indexOf("(byMs ? 'Microsoft&rsquo;s example' : 'Worked example on Microsoft&rsquo;s rates')") >= 0,
      'the card label follows exampleBy');
+}
+
+/* ═══ QA-E · engine audit regressions ═══ */
+sec('QA-E');
+/* C-03 + C-04: the seat-or-meter verdict is judged at the customer's prices,
+   monthly billing before the promotion, and P-75, NBA-06 and the customer view
+   read the same row. Helpdesk: 60 users, 20 licensed, 5 grounded turns = 60
+   credits a conversation; count = conversations a user a month. */
+{
+  const hdq = (count, over) => { const s = E.newAgent(E.defaults(), 'helpdesk'); s.combined.horizon.startMonth = '2026-11'; s.studio.agents[0].traffic.count = count; if (over) over(s); return s; };
+  const view = (s) => { const r = E.compute(s); return { r: r, x: r.crossover.agents[0], cv: E.customerView(r), nba: E.nextBestAction(r).matches.some((m) => m.id === 'NBA-06'), p75: r.warnings.filter((w) => w.id === 'P-75')[0] }; };
+  // A: seat sell $25, 2,400 a user: 40 × (24.00 − 25) = −$40 → meter, no P-75, no NBA-06
+  let v = view(hdq(40, (s) => { s.partner.sellSeatUsd.business = 25; }));
+  eq(v.x.verdict, 'meter', 'QA-E C-03 A: seat sell $25 at 2,400 a user meters');
+  near(v.x.savingUsdMonthly, -40, 'QA-E C-03 A: saving −$40', 1e-9);
+  near(v.cv.licenseInstead.agents[0].savingUsdMonthly, -40, 'QA-E C-03 A: customer view shows the same −$40', 1e-9);
+  ok(!v.p75 && !v.nba, 'QA-E C-03 A: no P-75 and no NBA-06');
+  // B: sell credit $0.013 at 28.33 × 60 = 1,699.8 a user: 40 × (22.0974 − 18) = +$163.90 → license
+  v = view(hdq(1700 / 60, (s) => { s.partner.sellCreditUsd = 0.013; }));
+  eq(v.x.verdict, 'license', 'QA-E C-03 B: sell credit $0.013 at 1,700 a user licenses');
+  near(v.x.savingUsdMonthly, 163.9, 'QA-E C-03 B: saving $163.90', 1e-9);
+  near(v.cv.licenseInstead.agents[0].savingUsdMonthly, 163.9, 'QA-E C-03 B: customer view agrees', 1e-9);
+  ok(v.p75 && v.p75.msg.indexOf(E.fmtUsd(163.9)) > -1 && v.nba, 'QA-E C-03 B: P-75 prints the same saving and NBA-06 fires');
+  near(v.x.breakEven, 1384.62, 'QA-E C-03 B: break-even at the customer price = 18 / 0.013', 1e-9);
+  // C-04: monthly billing at 33.34 × 60 = 2,000.4 a user → $25.20, 2,520, meter (the promo is annual only)
+  v = view(hdq(33.34, (s) => { s.studio.account.businessBilling = 'monthly'; }));
+  ok(v.x.sku === 'monthly' && v.x.seatUsd === 25.2 && v.x.breakEven === 2520 && v.x.verdict === 'meter', 'QA-E C-04 monthly billing: $25.20, 2,520, meter');
+  ok(!v.p75 && !v.nba, 'QA-E C-04 monthly billing: no P-75, no NBA-06');
+  v = view(hdq(33.34, (s) => { s.combined.horizon.startMonth = '2027-02'; }));
+  ok(v.x.sku === 'business' && v.x.breakEven === 2100, 'QA-E C-04 annual after the promo: $21, 2,100');
+  // List baseline unchanged: 240 a user against 1,800
+  v = view(hdq(4));
+  ok(v.x.sku === 'promo' && v.x.freeIfLicensedPerUser === 240 && v.x.breakEven === 1800 && v.x.verdict === 'meter' && v.x.listBreakEven === 1800, 'QA-E C-03 list baseline: 240 against 1,800, meter');
+  near(v.x.savingUsdMonthly, -624, 'QA-E C-03 list baseline: 40 × (2.40 − 18)', 1e-9);
+  // Invariant: verdict sign = sign of the customer-view saving, everywhere
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let agree = 0;
+  for (let i = 0; i < 300; i++) {
+    const s = hdq(1 + Math.round(rnd() * 8000) / 100, (st) => {
+      if (rnd() < 0.5) st.partner.sellCreditUsd = Math.round((0.008 + rnd() * 0.01) * 1e5) / 1e5;
+      if (rnd() < 0.5) st.partner.sellSeatUsd.business = Math.round((15 + rnd() * 15) * 100) / 100;
+      if (rnd() < 0.3) st.studio.account.businessBilling = 'monthly';
+      if (rnd() < 0.3) st.combined.horizon.startMonth = '2027-03';
+    });
+    const w = view(s), c = w.cv.licenseInstead.agents[0];
+    if (w.x.verdict === c.verdict && (c.savingUsdMonthly > 0) === (w.x.verdict === 'license') && c.savingUsdMonthly === w.x.savingUsdMonthly && !!w.p75 === (w.x.verdict === 'license') && w.nba === (w.x.verdict === 'license')) agree++;
+  }
+  eq(agree, 300, 'QA-E C-03 verdict, P-75, NBA-06 and the customer-view saving agree in sign over 300 random states');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
