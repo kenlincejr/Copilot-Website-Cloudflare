@@ -1952,6 +1952,16 @@ body.embedded .hub-link { display:none !important; }
     // QA M-01: what the year-one P3 order actually costs, PayGo remainder
     // included ($72,750 + $839.42 = $73,589.42 at stock).
     var p3Year1Annual = p3Year1Prepay + (p3PlanYear1 ? p3PlanYear1.remainderCccu * CONST.CCCU.usdPer : 0);
+    /* QA M-02: the P3 headline is the steady-state year, but the order is
+       sized on the ramp. The same steady-state commit bought for the ramped
+       year one: 3 x Tier 3 = $83,700 against $78,839.42 of year-one PayGo
+       loses $4,860.58. Stranded credit is the commit year one cannot burn,
+       priced at what it cost: 11,160.58 CCCU x $0.93 = $10,379.34. */
+    var steadyCovered = plan ? plan.coveredCccu : commitCccu;
+    var steadyOnY1Usd = packUsd + p3Prepay + Math.max(0, cccuYear1 - steadyCovered) * CONST.CCCU.usdPer;
+    var p3SteadyOnYear1 = { usd:steadyOnY1Usd, saving:year1PaygoAnnual - steadyOnY1Usd };
+    var p3Year1StrandedCccu = Math.max(0, steadyCovered - cccuYear1);
+    var p3Year1StrandedUsd = p3Year1StrandedCccu * breakeven;
     /* QA M-01: capacity packs on the ramped year one. Packs are bought per
        month with no rollover and drawn first; whatever a month needs above
        them runs on P3 (a 12-month pool) and then PayGo. A flat pack count is
@@ -2099,7 +2109,7 @@ body.embedded .hub-link { display:none !important; }
     // customer, which is exactly why it goes unnoticed.
     if (pecKnown && pecPct > 0 && p3PartnerCost != null && paygoPartnerCost < p3PartnerCost)
       W('V-21','warn','Careful \u2014 P3 looks cheaper and is not, for you. At ' + disc.pct.toFixed(1) +
-        '% the commit saves ' + '$' + Math.round(p3Saving).toLocaleString() + ' off the customer-facing meter, but a ' +
+        '% the commit saves ' + '$' + Math.round(p3Saving).toLocaleString() + ' a year at steady state off the customer-facing meter, but a ' +
         'pre-purchase plan is a reservation and earns no partner-earned credit. Pay-as-you-go at ' + pecPct +
         '% PEC costs you $' + Math.round(paygoPartnerCost).toLocaleString() + ' a year against $' +
         Math.round(p3PartnerCost).toLocaleString() + ' on P3 \u2014 a difference of $' +
@@ -2290,7 +2300,8 @@ body.embedded .hub-link { display:none !important; }
       partnerCostAnnual:partnerCostAnnual, meterBilledAnnual:meterBilledAnnual,
       meterMarginAnnual:meterMarginAnnual,
       p3Exposure:p3Exposure, packSteady:packSteady, p3PlanYear1:p3PlanYear1, p3Year1Prepay:p3Year1Prepay, p3Holder:p3Holder, billingModel:state.billing.model,
-      p3Year1Annual:p3Year1Annual, packYear1:packYear1,
+      p3Year1Annual:p3Year1Annual, packYear1:packYear1, p3SteadyOnYear1:p3SteadyOnYear1,
+      p3Year1StrandedCccu:p3Year1StrandedCccu, p3Year1StrandedUsd:p3Year1StrandedUsd,
       allInMonthly: licenseMonthly + monthlyCowork,
       allInAnnual: (licenseMonthly + monthlyCowork) * 12,
       allInThreeYear: (licenseMonthly + monthlyCowork) * 36,
@@ -4265,7 +4276,12 @@ body.embedded .hub-link { display:none !important; }
               ': <b>' + usd(c.p3Year1Annual, 2) + ' for year one</b>, PayGo remainder included.</p>' + packYear1Line(c)
             : '');
     var verdict = c.p3Saving > 0
-      ? '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +
+      ? (c.rampApplies && c.p3SteadyOnYear1 && c.p3SteadyOnYear1.saving < 0
+          ? '<p><b>That saving is the steady-state year.</b> Bought for the ramped year one, the same commit costs ' +
+            usd(c.p3SteadyOnYear1.usd, 2) + ' against ' + usd(c.year1PaygoAnnual, 2) + ' of year-one PayGo: it <b>loses ' +
+            usd(-c.p3SteadyOnYear1.saving, 2) + '</b>, because year one burns only ' + num(Math.round(c.cccuYear1)) + ' CCCU.</p>'
+          : '') +
+        '<p><b>Break-even is ' + (c.breakeven * 100).toFixed(1) + '% utilization.</b> If they consume less than that share of the commit, P3 costs more than PayGo. Your low estimate is ' + num(Math.round(c.annualCredits * (1 - c.band))) + ' credits against a ' + num(Math.round((plan ? plan.coveredCccu : c.commitCccu) * 100)) + '-credit commit.</p>' +
         '<p><b>Our recommendation: stay on PayGo for the first 90 days.</b> They don\'t have a real baseline yet, and a commit sized on a model is a commit sized on a guess.</p>'
       : '<p>At this volume PayGo is the right answer.</p>';
     $('billOut').innerHTML =
@@ -4273,7 +4289,11 @@ body.embedded .hub-link { display:none !important; }
         cell('bPay', usd(c.paygoAnnual), 'PayGo / year', '$0.01 per credit, no commitment', num(c.annualCredits) + ' credits × $0.01') +
         cell('bP3', usd(c.p3Annual), 'P3 pre-purchase / year',
           (d.tier === 'manual' ? d.pct + '% your rate' : d.pct.toFixed(1) + '% on ' + num(plan ? plan.coveredCccu : 0) + ' CCCU') +
-          ' · saves ' + usd(Math.max(0, c.p3Saving)),
+          ' · saves ' + usd(Math.max(0, c.p3Saving)) + ' at steady state' +
+          (c.rampApplies && c.p3SteadyOnYear1
+            ? ' · bought for the ramped year one it ' + (c.p3SteadyOnYear1.saving >= 0 ? 'saves ' : 'loses ') +
+              usd(Math.abs(c.p3SteadyOnYear1.saving), 2)
+            : ''),
           d.tier === 'manual'
             ? num(Math.round(c.commitCccu)) + ' CCCU × $1 × (1 − ' + (d.pct / 100).toFixed(3) + ')'
             : (plan && plan.plans ? plan.label : 'no plan') +
@@ -4428,10 +4448,12 @@ body.embedded .hub-link { display:none !important; }
     /* The exposure figure follows the commit as configured on this step \u2014
        but when that commit exceeds what the ramped year needs, the gap is
        named in dollars rather than left implicit (v2 \u00a71.5c). */
-    if (c.rampApplies && c.commitCccu > c.cccuYear1)
-      body += '<p>And the commit as configured is <b>' + num(Math.round(c.commitCccu)) + ' CCCU</b> against a ' +
+    // QA M-02: unburned CCCU x what a CCCU of this commit cost, not the
+    // difference between two prepay totals ($10,379.34, not $10,950).
+    if (c.rampApplies && c.p3Year1StrandedCccu >= 1)
+      body += '<p>And the commit as configured is <b>' + num(Math.round(c.cccuYear1 + c.p3Year1StrandedCccu)) + ' CCCU</b> against a ' +
         'year-one need of about ' + num(Math.round(c.cccuYear1)) + ' \u2014 <b>' +
-        usd(Math.max(0, c.p3Exposure - c.p3Year1Prepay)) +
+        usd(c.p3Year1StrandedUsd, 2) +
         '</b> of pre-paid credit the ramp says nobody burns in year one. Size the order to the year-one ' +
         'figure, or carry that gap knowingly.</p>';
     return '<div class="whybox partner-only" style="border-left-color:#b45309;">' +

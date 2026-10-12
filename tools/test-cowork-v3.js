@@ -2604,5 +2604,25 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(cf.packYear1 && cf.packYear1.packsOnly.usd <= cf.packSteady.annualUsd + 0.01, 'M-01: with no ramp the year-one pack answer is the steady one');
 }
 
+/* ── M-02 · the steady P3 headline is paired with the ramped year one ──── */
+{
+  const s = E.defaults(); s.billing.model = 'p3'; s.billing.p3Holder = 'partner';
+  const c = E.compute(s).ctx;
+  const near = (got, want, label) => ok(got != null && Math.abs(got - want) < 0.01, 'M-02: ' + label + ' (got ' + got + ', want ' + want + ')');
+  near(c.p3SteadyOnYear1 && c.p3SteadyOnYear1.usd, 83700, 'the steady 3 x Tier 3 bought for year one costs $83,700');
+  near(c.p3SteadyOnYear1 && c.p3SteadyOnYear1.saving, -4860.58, 'and loses $4,860.58 against $78,839.42 of year-one PayGo');
+  near(c.p3Year1StrandedCccu, 11160.58, 'stranded CCCU = 90,000 - 78,839.42');
+  near(c.p3Year1StrandedUsd, 10379.34, 'stranded dollars = 11,160.58 x $0.93');
+  // The page: the P3 cell and verdict say "steady state" and give the year-one loss ...
+  ok(/saves ' \+ usd\(Math\.max\(0, c\.p3Saving\)\) \+ ' at steady state'/.test(src), 'M-02: the P3 cell labels the saving steady state');
+  ok(/c\.p3SteadyOnYear1\.saving/.test(src), 'M-02: the card prints the ramped year-one result');
+  // ... and the risk block names $10,379.34, not $10,950.
+  const risk = makeUiFn('p3RiskBlock', '\n  /* The meter has two prices', { usd, num, E })(c);
+  ok(risk.indexOf('$10,379.34') >= 0, 'M-02: the risk block prints $10,379.34 of stranded credit');
+  ok(risk.indexOf('$10,950') === -1, 'M-02: the prepay difference $10,950 is gone');
+  ok(/the commit saves ' \+ '\$' \+ Math\.round\(p3Saving\)\.toLocaleString\(\) \+ ' a year at steady state/.test(src),
+     'M-02: V-21 labels its saving steady state');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
