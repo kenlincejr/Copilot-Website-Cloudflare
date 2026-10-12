@@ -1296,9 +1296,16 @@ function talkFor(st) {
 }
 const partnerNote = makeUiFn('partnerNote', '\n  function renderNext', { E });
 /* ratioBlock reads `state`, so this is a per-state factory. */
+/* QA H-07: the promo wording helper, lifted from the page like the rest. */
+const promoTagUi = (function () {
+  const start = src.indexOf('  function promoTag(');
+  if (start < 0) return () => '';
+  const end = src.indexOf('\n  }\n', start) + 4;
+  return new Function('E', 'esc', src.slice(start, end) + '\nreturn promoTag;')(E, escUi);
+})();
 function ratioBlockFor(st) {
   return makeUiFn('ratioBlock', '\n  function renderBillOut',
-    { E, usd, num, state: st, provPill: () => '' });
+    { E, usd, num, state: st, provPill: () => '', promoTag: promoTagUi });
 }
 function ratioBlockUi(c, st) { return ratioBlockFor(st || E.defaults())(c); }
 function nextFor(st) { const r = E.compute(st); return E.nextStep(st, r.ctx); }
@@ -2544,6 +2551,28 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(E.compute(big).next.pick.id !== 'concentration', 'H-05: a $0.02 sell rate does not make usage "run hot"');
   ok(/if \(c\.ratioBench > 3\.5\)/.test(src), 'H-05: the talk line reads the list-basis ratio');
   ok(!/usd\(c\.perActiveMs/.test(src), 'H-05: the customer-visible ratio block never prints a $0.01 dollar figure');
+}
+
+/* ── H-07 · the promo end date travels with every promo price ──────────── */
+{
+  // Licensing paths carry the promo end date for the table to print.
+  const L = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], true).licensing;
+  eq(qaPath(L, 'cop_biz').promoEnds, '2026-12-31', 'H-07: the add-on path carries its promo end');
+  eq(qaPath(L, 'bbasic_cop').promoEnds, '2026-12-31', 'H-07: the Basic bundle path carries its promo end');
+  ok(!qaPath(L, 'bprem_cop').promoEnds, 'H-07: a non-promo path carries none');
+  // "Why this one" names the end date when the winner is a promo SKU ...
+  eq(L.winner.id, 'bbasic_cop', 'H-07: precondition, the promo bundle wins here');
+  ok(L.why.join(' ').indexOf('promo through 2026-12-31') >= 0, 'H-07: "Why this one" dates the promo winner');
+  // ... and when the cheaper path it declines is one.
+  const L2 = qaLic(50, [{ skuId:'bbasic', seats:50 }, { skuId:'cop_biz', seats:50 }], false).licensing;
+  const declined = L2.why.filter(w => w.indexOf('We are not recommending') === 0)[0] || '';
+  ok(declined.indexOf('Business Basic + Copilot Business') >= 0, 'H-07: precondition, the declined path is the promo bundle');
+  ok(declined.indexOf('promo through 2026-12-31') >= 0, 'H-07: a declined promo path is dated');
+  // UI: one helper, used by the licensing table, the ratio block and the rate card.
+  ok(/function promoTag\(/.test(src), 'H-07: a single promoTag helper renders the wording');
+  ok((src.match(/promoTag\(/g) || []).length >= 4, 'H-07: promoTag is used at the table, ratio block and rate card');
+  ok(src.indexOf('Promo price \\u2014 ends') === -1, 'H-07: the old rate-card wording is replaced');
+  ok(/Business promo' \+ promoTag\('cop_biz'/.test(src), 'H-07: the ratio block dates the $18 Business promo');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');

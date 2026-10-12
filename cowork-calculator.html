@@ -2469,6 +2469,8 @@ body.embedded .hub-link { display:none !important; }
       return { id:c.id, label:c.label, perUser:c.per,
                addOn:!!c.addOn, baseUsd:baseUsd, baseSeats:c.addOn ? needBase : 0,
                ownedBaseSeats:basesOwned, ownedBaseUsd:ownedBaseUsd,
+               // QA H-07: the promo end date travels with the price (F-146, F-147).
+               promoEnds:(SKU_BY_ID[c.id] && SKU_BY_ID[c.id].promoEnds) || null,
                baseName:c.baseId ? SKU_BY_ID[c.baseId].name : null, basePer:basePer,
                // The figure every comparison runs on: what this path actually
                // bills per Copilot user once its prerequisite is paid for.
@@ -2505,7 +2507,9 @@ body.embedded .hub-link { display:none !important; }
         // Both figures come from the same all-in monthly totals (QA C-02).
         var deltaMonthly = winner.monthly - cheapestFeasible.monthly;
         var delta = needed > 0 ? deltaMonthly / needed : 0;
-        if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label + ' even though it is $' +
+        if (delta > 0) why.push('We are not recommending ' + cheapestFeasible.label +
+          (cheapestFeasible.promoEnds ? ' (a promo through ' + cheapestFeasible.promoEnds + ')' : '') +
+          ' even though it is $' +
           delta.toFixed(2) + '/user/month cheaper all-in — $' + Math.round(deltaMonthly).toLocaleString() +
           '/month across ' + needed + ' seats' +
           (cheapestFeasible.addOn
@@ -2515,6 +2519,9 @@ body.embedded .hub-link { display:none !important; }
           cheapestFeasible.gaps.filter(function(g){return g.skuClosable!==false;}).length +
           ' of those gaps open on a tenant that is about to send its own data through an agent.');
       }
+      if (winner.promoEnds)
+        why.push(winner.label + ' is priced at a promo through ' + winner.promoEnds + ' (annual commitment, first year). ' +
+          'Seats bought or renewed after that date are priced at list, so re-quote before then.');
       var residual = winner.gaps.filter(function (g) { return g.skuClosable === false; });
       if (residual.length) why.push('Still open after any license change: ' +
         residual.map(function (r) { return r.label; }).join(', ') + ' — ' + residual[0].why);
@@ -2844,6 +2851,14 @@ body.embedded .hub-link { display:none !important; }
   function num(v) { return Number(v || 0).toLocaleString(); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c]; }); }
   function pill(kind, label) { return '<span class="pill ' + kind + '">' + label + '</span>'; }
+  /* QA H-07: one wording for every promo price on the page (F-146, F-147).
+     Empty for a SKU with no promo. */
+  function promoTag(id, wrap) {
+    var k = E.SKU_BY_ID[id];
+    if (!k || !k.promoEnds) return '';
+    var t = 'promo through ' + esc(k.promoEnds);
+    return wrap === 'paren' ? ' (' + t + ')' : t;
+  }
   function provPill(p) {
     var m = { 'ms-verified':['verified','Microsoft'], 'measured':['measured','Measured'],
               'ms-modeled':['modeled','Modeled'], 'editorial':['estimate','Estimate'], 'partner':['asked','You said'] };
@@ -3568,7 +3583,7 @@ body.embedded .hub-link { display:none !important; }
       return '<tr>' +
         '<td><b>' + esc(k.name) + '</b>' + (k.copilot ? ' <span class="check" title="Includes Copilot \u2014 can use Cowork">&#10003;</span>' : '') +
           (k.addonRow ? '<div style="font-size:.7rem;color:#6b7280;margin-top:3px;">Governance add-on \u2014 drives the licensing recommendation</div>' : '') +
-          (k.promoEnds ? '<div style="font-size:.7rem;color:#6b7280;margin-top:3px;">Promo price \u2014 ends ' + k.promoEnds + '</div>' : '') + '</td>' +
+          (k.promoEnds ? '<div style="font-size:.7rem;color:#92400e;margin-top:3px;">Price is a ' + promoTag(k.id) + '</div>' : '') + '</td>' +
         '<td class="money"><input type="number" step="0.5" min="0" data-plist="' + k.id + '" value="' + list + '"></td>' +
         '<td class="money partner-only"><input type="number" step="0.5" min="0" placeholder="\u2014" data-pcost="' + k.id + '" value="' + money(cost) + '"></td>' +
         '<td class="money"><input type="number" step="0.5" min="0" class="sell" data-psell="' + k.id + '" value="' + sp.toFixed(2) + '"></td>' +
@@ -4117,7 +4132,7 @@ body.embedded .hub-link { display:none !important; }
       closing + '</p>' +
       '<p style="font-size:.8rem;color:#6b7280;">Same usage, different headline depending which price you divide by: <b>' +
       // Same basis as ratioBench (per licensed user), only the divisor changes.
-      (c.copilotLicensed > 0 ? c.coworkAtMsRate / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo, <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
+      (c.copilotLicensed > 0 ? c.coworkAtMsRate / (c.copilotLicensed * E.SKU_BY_ID['cop_biz'].usd) : 0).toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_biz'].usd) + ' Business promo' + promoTag('cop_biz', 'paren') + ', <b>' + c.ratioBench.toFixed(2) + '&times;</b> against the ' + usd(E.SKU_BY_ID['cop_ent'].usd) + ' enterprise add-on (the benchmark\u2019s own basis), and <b>' + c.ratioActual.toFixed(2) + '&times;</b> against what this customer actually pays (' + usd(c.copilotSpend) + '/mo). Quoting a bare &ldquo;2.6&times;&rdquo; without naming one of these is the mistake.</p>' +
       '</div>';
   }
 
@@ -4477,6 +4492,7 @@ body.embedded .hub-link { display:none !important; }
             (p.baseSeats > 0
               ? ' + ' + usd(p.basePer, 2) + ' ' + esc(p.baseName) + ' base × ' + p.baseSeats + ' seat' + (p.baseSeats === 1 ? '' : 's')
               : '') + '</span>' : '') +
+          (p.promoEnds ? '<br><span style="font-size:.72rem;color:#92400e;font-weight:400;">' + promoTag(p.id) + '</span>' : '') +
           (win ? '<br>' + pill('verified','Recommended') : '') + '</td>' +
         '<td class="num">' + usd(p.perUserAllIn, 2) + '</td>' +
         '<td class="num">' + (p.feasible ? usd(p.monthly) : '<span style="color:#6b7280;">n/a</span>') + '</td>' +
