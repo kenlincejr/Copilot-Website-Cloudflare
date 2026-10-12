@@ -2363,6 +2363,15 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
        'creditUsd','cspMotion','employees','licenses','monthlyCredits','rampCredits','rampSeats','screen','sellMode','version',
        'year1Credits'].sort().join(','), 'EMB: payload key set is exact');
   eq(m.employees, 120, 'EMB: payload carries the employee count (stock 120)');
+  // QA M-30: the planner spec's section 4.4 table is the exact key set, so
+  // it must list every key the page emits, employees included.
+  {
+    const spec = fs.readFileSync(path.join(__dirname, '..', 'specs', 'copilot-credit-planner.spec.md'), 'utf8').replace(/\r\n/g, '\n');
+    const s44 = spec.slice(spec.indexOf('### 4.4 The `cowork-lane` payload'), spec.indexOf('**Never in the payload:**'));
+    const specKeys = (s44.match(/^\| `([A-Za-z_0-9]+)` \|/gm) || []).map(x => x.replace(/^\| `|` \|$/g, ''));
+    eq(specKeys.slice().sort().join(','), Object.keys(m).sort().join(','), 'M-30: spec 4.4 lists exactly the emitted keys');
+    ok(specKeys.indexOf('employees') >= 0, 'M-30: spec 4.4 lists employees');
+  }
   ['margin','pec','provider','cost','uplift','p3','commit','partner'].forEach(k =>
     ok(JSON.stringify(m).toLowerCase().indexOf(k) === -1, 'EMB: payload carries nothing named ' + k));
   eq(m.__type, 'cowork-lane', 'EMB: payload type');
