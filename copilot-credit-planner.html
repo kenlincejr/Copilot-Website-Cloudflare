@@ -3037,35 +3037,49 @@ footer.pagefoot p { margin:0 0 10px; }
     } catch (e) { return out; }
     return out;
   }
+  /* The spec's six rungs. Rung 3 (environment and governance setup) has no
+     Playbook price: it shows "your price" unless the partner adds a service
+     line keyed 'setup'. The $12 governance run base is its own service line,
+     never this rung's price. */
   var LADDER = deepFreeze([
     { n: 1, key: 'assessment', name: 'Assessment' },
     { n: 2, key: 'build', name: 'First agent build' },
-    { n: 3, key: 'governance', name: 'Environment and governance setup' },
+    { n: 3, key: 'setup', name: 'Environment and governance setup' },
     { n: 4, key: 'agentcare', name: 'AgentCare managed service' },
     { n: 5, key: 'finops', name: 'Credit management (FinOps)' },
     { n: 6, key: 'agent365', name: 'Agent 365 governance' }
   ]);
+  /* Which rungs hold (spec §S7): the highest one that holds is recommended,
+     lower rungs that hold are ticked, and rung 1 is recommended when nothing
+     else holds. */
+  function ladderHolds(r) {
+    var s = r.state, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
+    var prodEnvs = s.studio.environments.filter(function (e) { return e.kind === 'production'; }).map(function (e) { return e.name; });
+    var live = ag.filter(function (a) { return a.startMonth === 0 && prodEnvs.indexOf(a.env) > -1; });
+    var ids = nextBestAction(r).matches.map(function (m) { return m.id; });
+    var b = r.purchase.best, prepaid = b.packs.packMonths > 0 || b.p3.units > 0;
+    return {
+      assessment: !live.length || s.studio.account.tenantBase === 'unsure',
+      build: ag.some(function (a) { return a.startMonth > 0; }) || (ag.length > 0 && !prodEnvs.length),
+      setup: ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-07'].some(function (id) { return ids.indexOf(id) > -1; }),
+      agentcare: live.length > 0,
+      finops: (prepaid && b.scen.mid.paygCredits > 0) || b.family === 'mix',
+      agent365: ids.indexOf('NBA-12') > -1
+    };
+  }
   function ladder(result) {
     var r = isObj(result) ? result : compute(defaults());
+    var holds = {};
+    try { holds = ladderHolds(r); } catch (e) { holds = {}; }
     var rec = 'assessment';
-    try {
-      /* The NEXT rung to sell, in sequence: nothing goes live before the
-         environment and governance setup (a billing path, per-agent limits
-         and a production environment with an allocation). */
-      var s = r.state, ag = r.lanes.agents.filter(function (a) { return !a.paused; }), base = s.studio.account.tenantBase;
-      var billing = hasBillingPath(s), caps = s.combined.enforcement.perAgentCaps === 'yes';
-      var prod = s.studio.environments.some(function (e) { return e.kind === 'production' && e.allocation > 0; });
-      if (!ag.length) rec = 'assessment';
-      else if (!billing || !caps || !prod) rec = 'governance';
-      else if (ag.length >= 3 && (base === 'premium' || base === 'e5')) rec = 'agent365';
-      else if (r.pool.steadyUsd.mid >= 1000) rec = 'finops';
-      else rec = 'agentcare';
-      var svc = r.state.partner.services;
-      return LADDER.map(function (x) {
-        var p = svc.filter(function (y) { return y.key === x.key; })[0];
-        return { n: x.n, key: x.key, name: x.name, price: p ? p.price : null, basis: p ? p.basis : null, recommended: x.key === rec };
-      });
-    } catch (e) { return LADDER.map(function (x) { return { n: x.n, key: x.key, name: x.name, price: null, basis: null, recommended: x.key === rec }; }); }
+    LADDER.forEach(function (x) { if (holds[x.key]) rec = x.key; });
+    var svc = [];
+    try { svc = r.state.partner.services; } catch (e) { svc = []; }
+    return LADDER.map(function (x) {
+      var p = svc.filter(function (y) { return y.key === x.key; })[0];
+      return { n: x.n, key: x.key, name: x.name, price: p ? p.price : null, basis: p ? p.basis : null, holds: holds[x.key] === true || x.key === rec, recommended: x.key === rec,
+               note: x.key === 'agent365' ? 'Microsoft’s Agent 365 license (' + fmtUsd(RC.agent365.v) + ' a user a month) is separate from this governance overlay.' : null };
+    });
   }
 
   /* ══ 28 · Customer view: an explicit whitelist projection ═══════════════
@@ -5357,8 +5371,9 @@ footer.pagefoot p { margin:0 0 10px; }
     $('ladderTag').textContent = 'Next to sell: rung ' + recN;
     $('ladderBody').innerHTML = '<div class="ladder">' + lad.map(function (x) {
       var price = x.price === null ? 'Your price' : (x.basis === 'pct-meter' ? x.price + '% of pooled consumption' : fu(x.price) + ' ' + (BASIS_LBL[x.basis] || ''));
-      return '<div class="rung' + (x.recommended ? ' on' : '') + '"><div class="rg-n">Rung ' + x.n + (x.recommended ? ' &middot; next to sell' : (x.n < recN ? ' &middot; <span class="check">&#10003;</span>' : '')) + '</div><div class="rg-t">' + esc(x.name) + '</div><div class="rg-p">' + esc(price) + '</div></div>';
-    }).join('') + '</div><p class="srcline">The next rung to sell, in order: nothing goes live before the billing path, per-agent limits and a production allocation are in place.</p>';
+      return '<div class="rung' + (x.recommended ? ' on' : '') + '"><div class="rg-n">Rung ' + x.n + (x.recommended ? ' &middot; next to sell' : (x.holds && !x.recommended ? ' &middot; <span class="check">&#10003;</span>' : '')) + '</div><div class="rg-t">' + esc(x.name) + '</div><div class="rg-p">' + esc(price) + '</div>' +
+        (x.note ? '<div class="mini">' + esc(x.note) + '</div>' : '') + '</div>';
+    }).join('') + '</div><p class="srcline">The highest rung whose condition holds is the next to sell; a tick marks a lower rung that also holds. Rung 3 has no Playbook price: quote your own.</p>';
     var ac = state.studio.account, seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7, sp = R.specialization;
     var inc = E.INCENTIVES.map(function (x) {
       var na = x.key === 'copilot-in-30' && !(ac.totalUsers < 300 && seats === 0) ? ' <span class="pill default">Not for this account</span>' : '';

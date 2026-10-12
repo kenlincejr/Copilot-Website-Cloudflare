@@ -715,8 +715,10 @@ sec('R');
 {
   const trio = E.applyScenarioPreset(E.defaults(), 'smb-trio');
   const rec = (st) => E.ladder(E.compute(st)).filter((x) => x.recommended)[0].key;
-  // Ladder: the NEXT rung to sell
-  eq(rec(trio), 'governance', 'R ladder: smb-trio at defaults recommends environment and governance setup');
+  const holds = (st, k) => E.ladder(E.compute(st)).filter((x) => x.key === k)[0].holds;
+  // Ladder (spec §S7, H-09): the highest rung whose condition holds; lower rungs that hold are ticked
+  eq(rec(trio), 'agent365', 'R ladder: smb-trio at defaults: NBA-12 holds on the default Business Premium base, so rung 6 is highest');
+  ok(holds(trio, 'setup'), 'R ladder: smb-trio at defaults: setup holds (NBA-01) and is ticked');
   eq(E.nextBestAction(E.compute(trio)).primary.id, 'NBA-01', 'R smb-trio at defaults: next best action is the billing path');
   eq(rec(E.defaults()), 'assessment', 'R ladder: no agents recommends the assessment');
   const ready = J(trio);
@@ -724,15 +726,15 @@ sec('R');
   ready.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: false, tenantDraw: false, managed: false }];
   eq(rec(ready), 'agent365', 'R ladder: 3 agents + caps + billing path + production allocation + Business Premium → Agent 365');
   const std = J(ready); std.studio.account.tenantBase = 'standard';
-  eq(rec(std), 'agentcare', 'R ladder: set up, under $1,000 a month, no Agent 365 eligibility → AgentCare');
+  eq(rec(std), 'finops', 'R ladder: no Agent 365 eligibility, pay-as-you-go overflow beyond the pack → credit management');
   const big = J(std); big.studio.agents[0].traffic.count = 150000;
-  eq(rec(big), 'finops', 'R ladder: set up, $1,000+ a month → credit management');
+  eq(rec(big), 'finops', 'R ladder: a larger plan with overflow → credit management');
   const noCaps = J(ready); noCaps.combined.enforcement.perAgentCaps = 'unsure';
-  eq(rec(noCaps), 'governance', 'R ladder: caps not confirmed → governance first, even with Agent 365 eligibility');
+  ok(holds(noCaps, 'setup'), 'R ladder: caps not confirmed → setup holds (NBA-04)');
   const noProd = J(ready); noProd.studio.environments = [];
-  eq(rec(noProd), 'governance', 'R ladder: no production allocation → governance first');
+  ok(holds(noProd, 'setup') && holds(noProd, 'build'), 'R ladder: no production environment → the build rung holds');
   const noBill = J(ready); noBill.studio.account.azurePayg = 'unsure';
-  eq(rec(noBill), 'governance', 'R ladder: no billing path → governance first');
+  ok(holds(noBill, 'setup'), 'R ladder: no billing path → setup holds (NBA-01)');
 
   // P-50 / P-51: PAYG overflow needs a PAYG-linked environment
   const r0 = E.compute(trio);
@@ -746,7 +748,7 @@ sec('R');
   eq(rl.state.combined.enforcement.perAgentCaps, 'unsure', 'R the PAYG link leaves per-agent limits unconfirmed');
   ok(wids(rl).indexOf('P-63') > -1, 'R P-63 still asks for per-agent limits after the PAYG link');
   ok(wids(rl).indexOf('P-41') < 0 && E.nextBestAction(rl).primary.id !== 'NBA-01', 'R a PAYG-linked environment counts as a billing path');
-  eq(rec(linked), 'governance', 'R ladder stays at governance until per-agent limits are set');
+  ok(holds(linked, 'setup'), 'R ladder: setup holds until per-agent limits are set');
   const capped = E.applyFix(linked, w50.fixes[1]);
   eq(E.compute(capped).state.combined.enforcement.perAgentCaps, 'yes', 'R the caps fix is what governance and the ladder see');
   capped.studio.environments = [{ name: 'Production', kind: 'production', allocation: 60000, payg: true, tenantDraw: false, managed: false }];
@@ -1015,6 +1017,31 @@ sec('QA-C');
     const ind = J(big); ind.partner.motion = 'indirectReseller'; ok(wids(E.compute(ind)).indexOf('P-74') > -1, 'H-08 P-74 reachable');
     const dir = J(big); dir.partner.motion = 'direct'; ok(wids(E.compute(dir)).indexOf('P-73') > -1, 'H-08 P-73 reachable');
     ok(wOf(rb, 'P-32') && /instead/.test(wOf(rb, 'P-32').msg), 'H-08 P-3x name the pre-purchase alternative when it is not the recommendation');
+  }
+
+  // H-09 · ladder: a separate 'setup' rung with no price; the spec's per-rung conditions; ticks only where a rung holds
+  {
+    const lad = (st) => E.ladder(E.compute(st));
+    const one = helpdesk(4); one.studio.account.tenantBase = 'standard';
+    const L1 = lad(one), by = (L, k) => L.filter((x) => x.key === k)[0];
+    eq(L1.map((x) => x.key).join(), 'assessment,build,setup,agentcare,finops,agent365', 'H-09 rung keys: setup is its own rung');
+    ok(by(L1, 'setup').price === null, 'H-09 setup shows "your price", never the $12 governance base');
+    ok(E.defaults().partner.services.some((x) => x.key === 'governance' && x.price === 12), 'H-09 the $12 governance base stays its own service line');
+    eq(L1.filter((x) => x.recommended).map((x) => x.key).join(), 'setup', 'H-09 no billing path, nothing higher holds: setup is recommended');
+    ok(by(L1, 'build').holds && !by(L1, 'agentcare').holds && !by(L1, 'finops').holds, 'H-09 build holds (no production environment); AgentCare and FinOps do not');
+    const later = helpdesk(4); later.studio.account.tenantBase = 'standard'; later.studio.account.azurePayg = 'yes'; later.combined.enforcement.perAgentCaps = 'yes';
+    later.studio.environments = [{ name: 'Production', kind: 'production', allocation: 20000, payg: false, tenantDraw: false, managed: false }];
+    later.studio.agents[0].env = 'Production'; later.studio.agents[0].startMonth = 4;
+    const L2 = lad(later);
+    ok(!by(L2, 'agentcare').holds && by(L2, 'build').holds, 'H-09 an agent not yet live (startMonth 4) does not get AgentCare; the build rung holds');
+    const live = J(later); live.studio.agents[0].startMonth = 0;
+    const L3 = lad(live);
+    eq(L3.filter((x) => x.recommended).map((x) => x.key).join(), 'agentcare', 'H-09 a live agent in production: AgentCare is the highest rung that holds');
+    ok(!by(L3, 'build').holds && !by(L3, 'setup').holds, 'H-09 rungs that do not hold are not ticked');
+    const L6 = lad(E.applyScenarioPreset(E.defaults(), 'smb-trio'));
+    ok(by(L6, 'agent365').recommended && /\$15/.test(by(L6, 'agent365').note) && /separate/.test(by(L6, 'agent365').note), 'H-09 rung 6 says the $15 Agent 365 license is separate from the overlay');
+    eq(lad(E.defaults()).filter((x) => x.recommended).map((x) => x.key).join(), 'assessment', 'H-09 nothing modeled: the assessment');
+    ok(/x\.holds && !x\.recommended/.test(src), 'H-09 the UI ticks only rungs that hold');
   }
 
   /* QA-C end */
