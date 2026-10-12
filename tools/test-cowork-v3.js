@@ -2720,5 +2720,32 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   ok(({}).polluted === undefined, 'L-02: Object.prototype untouched');
 }
 
+/* ── L-12 · hostile input never throws or prints machine text ─────────── */
+{
+  function tryCompute(s, label) {
+    try { return E.compute(s); } catch (e) { ok(false, 'L-12: ' + label + ' threw: ' + e.message); return null; }
+  }
+  ['__proto__', 'constructor', 'toString', 'hasOwnProperty'].forEach(function (k) {
+    const s = E.defaults(); s.personaPreset = k;
+    const r = tryCompute(s, 'personaPreset ' + k);
+    ok(r && !r.assumptions.some(a => a.id === 'preset'), 'L-12: personaPreset ' + k + ' is not a preset');
+    let threw = false;
+    try { E.applyPreset(E.defaults(), k); } catch (e) { threw = true; }
+    ok(!threw, 'L-12: applyPreset(' + k + ') does not throw');
+  });
+  ['a string', 42, true, [1, 2]].forEach(function (v) {
+    const r = tryCompute(v, 'state ' + JSON.stringify(v));
+    ok(r && Math.round(r.ctx.monthlyCredits) === 755000, 'L-12: a non-object state ' + JSON.stringify(v) + ' computes the defaults');
+  });
+  const r1 = tryCompute(st({ licenseInventory: [{ skuId: {}, seats: 5 }, { skuId: [1], seats: 5 }, { skuId: 'bprem_cop', seats: 60 }] }), 'skuId {}');
+  const v27 = r1 && r1.warnings.filter(w => w.id === 'V-27')[0];
+  ok(v27 && v27.message.indexOf('[object Object]') === -1, 'L-12: skuId {} never prints [object Object]');
+  const s2 = E.defaults(); s2.activation = { mode: 'rate', rate: 1e308, count: null };
+  const r2 = tryCompute(s2, 'activation.rate 1e308');
+  const f6 = r2 && row(r2, 'F6');
+  ok(f6 && !/Infinity/.test(f6.expression), 'L-12: activation.rate 1e308 never prints Infinity% (' + (f6 && f6.expression) + ')');
+  ok(f6 && /× 100%/.test(f6.expression), 'L-12: the rate clamps to 100%');
+}
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

@@ -1155,6 +1155,12 @@ body.embedded .hub-link { display:none !important; }
                why:'Engineers and developers dominate, and the Technical persona carries roughly three times the heavy-task load of a knowledge worker. Expect the highest per-user credit figure of any shape here \u2014 which is exactly why running this on your own tenant first is the cheapest lesson available.' }
   };
 
+  /* QA L-12: own keys only. A session saying personaPreset "toString" must
+     not resolve to a prototype method and throw three lines later. */
+  function presetOf(key) {
+    return (typeof key === 'string' && Object.prototype.hasOwnProperty.call(PRESETS, key)) ? PRESETS[key] : null;
+  }
+
   /* ── Effort ───────────────────────────────────────────────────────────── */
   // Step size: envelope 15.00/0.70 = 21.43x; the tiers consume 1200/125 = 9.6x;
   // the residual 2.232x spread geometrically over four notional steps.
@@ -1432,7 +1438,8 @@ body.embedded .hub-link { display:none !important; }
 
   /* Shallow-merge a possibly-partial state over defaults so compute() is total. */
   function hydrate(input) {
-    var d = defaults(), s = input || {};
+    // QA L-12: a whole state that is a string, number or array is no state.
+    var d = defaults(), s = (input && typeof input === 'object' && !Array.isArray(input)) ? input : {};
     Object.keys(d).forEach(function (k) {
       if (s[k] == null) { s[k] = d[k]; return; }
       if (Array.isArray(d[k])) { if (!Array.isArray(s[k])) s[k] = d[k]; return; }
@@ -1468,6 +1475,8 @@ body.embedded .hub-link { display:none !important; }
         return p;
       });
     if (s.activation.count != null) s.activation.count = clamp(n(s.activation.count, 0), 0, CONST.MAX.seats);
+    // QA L-12: a share is 0 to 1; 1e308 printed "Infinity%" in the F6 trace.
+    if (s.activation.rate != null) s.activation.rate = clamp(n(s.activation.rate, 0.65), 0, 1);
     ['light','medium','heavy'].forEach(function (t) {
       s.tierCredits[t] = clamp(n(s.tierCredits[t], CONST.TIER_DEFAULT[t]), 0, CONST.MAX.tierCredits);
     });
@@ -1529,7 +1538,9 @@ body.embedded .hub-link { display:none !important; }
     var unknownSkuIds = [];
     var inv = (state.licenseInventory || []).filter(function (l) {
       if (SKU_BY_ID[l.skuId]) return true;
-      if (l.skuId != null) unknownSkuIds.push(String(l.skuId));
+      // QA L-12: name a text id; describe anything else rather than print "[object Object]".
+      if (l.skuId != null) unknownSkuIds.push(typeof l.skuId === 'string' || typeof l.skuId === 'number'
+        ? String(l.skuId) : 'an id that is not text (' + (Array.isArray(l.skuId) ? 'a list' : typeof l.skuId) + ')');
       return false;
     });
     if (unknownSkuIds.length)
@@ -1694,10 +1705,10 @@ body.embedded .hub-link { display:none !important; }
     /* Every chosen preset is disclosed \u2014 including 'even', which used to be
        exempt only because it was the (falsely labeled) default. The default
        is now '': no preset, no claim, no entry (finding #10). */
-    if (state.personaPreset && PRESETS[state.personaPreset])
+    if (presetOf(state.personaPreset))
       assume.push({ id:'preset', label:'Persona mix shape',
         note:'The split across the four personas came from the \u201c' +
-             PRESETS[state.personaPreset].label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. ' +
+             presetOf(state.personaPreset).label.replace(/&amp;/g,'&') + '\u201d shape \u2014 a modeled staffing pattern for that kind of business, not a Microsoft-published figure. ' +
              (state.personaTasksTouched
                ? 'The task counts inside each persona have been edited by hand as well \u2014 both the split and the counts are this partner\u2019s, not Microsoft\u2019s.'
                : 'The task mix inside each persona is Microsoft\u2019s; only this split is ours.'),
@@ -2869,7 +2880,7 @@ body.embedded .hub-link { display:none !important; }
 
   /* ── Presets & actions ────────────────────────────────────────────────── */
   function applyPreset(state, key) {
-    var p = PRESETS[key] || PRESETS.even;
+    var p = presetOf(key) || PRESETS.even;
     var alloc = largestRemainder(computeActiveTarget(state), p.w);
     /* A preset is a whole claim: this split, with Microsoft's task counts
        inside it. Reallocating seats while hand-edited counts silently
@@ -2933,7 +2944,7 @@ body.embedded .hub-link { display:none !important; }
     EFFORT_ORDER:EFFORT_ORDER, EFFORT_RETIRED:EFFORT_RETIRED,
     P3_TIERS:P3_TIERS, p3Plan:p3Plan,
     MOTIONS:MOTIONS, MOTION_ORDER:MOTION_ORDER, motionOf:motionOf,
-    defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, largestRemainder:largestRemainder,
+    defaults:defaults, compute:compute, normalize:normalize, applyPreset:applyPreset, presetOf:presetOf, largestRemainder:largestRemainder,
     RUNGS:RUNGS, nextStep:nextStep,
     balancePersonas:balancePersonas, computeActiveTarget:computeActiveTarget,
     skuPrice:skuPrice, skuListPrice:skuListPrice, skuSellPrice:skuSellPrice,
@@ -3171,7 +3182,7 @@ body.embedded .hub-link { display:none !important; }
         E.PRESETS[k].label + '</button>';
     }).join('');
 
-    var sel = E.PRESETS[state.personaPreset];
+    var sel = E.presetOf(state.personaPreset);
     $('presetDesc').innerHTML = sel
       ? '<div class="shapenote"><div class="sn-eg">' + sel.eg + '</div><p>' + sel.why + '</p>' +
         '<p class="sn-prov">Modeled staffing shape &mdash; ours, not Microsoft\'s. ' +
