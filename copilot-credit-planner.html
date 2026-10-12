@@ -2525,7 +2525,15 @@ footer.pagefoot p { margin:0 0 10px; }
     var be = { enterprise: breakEven(RC.seatEnt.v), business: breakEven(RC.seatBiz.v), promo: breakEven(RC.seatBizPromo.v), monthly: breakEven(RC.seatBizMonthly.v) };
     var listSeat = { enterprise: RC.seatEnt.v, business: RC.seatBiz.v, promo: RC.seatBizPromo.v, monthly: RC.seatBizMonthly.v };
     var promoLive = s.combined.horizon.startMonth <= RC.seatBizPromo.ends.slice(0, 7);
-    var bizRoom = Math.max(0, RC.bizSeatCap.v - ac.seats.business);
+    /* Copilot Business is sold to organizations of up to 300 users on
+       Business plans (F-147): it is offered only when the account's total
+       users are within the cap and the estate holds no E3/E5 base and no
+       enterprise or E7 Copilot seats. Inside that, unlicensed users fill the
+       room left under the 300-seat cap and the rest are priced on the
+       enterprise seat (a split row pair; QA H-06). */
+    var bizEligible = ac.totalUsers <= RC.bizSeatCap.v && ac.tenantBase !== 'e3' && ac.tenantBase !== 'e5' && ac.seats.enterprise === 0 && ac.seats.e7 === 0;
+    var bizRoom = bizEligible ? Math.max(0, RC.bizSeatCap.v - ac.seats.business) : 0;
+    var bizSku = ac.businessBilling === 'monthly' ? 'monthly' : (promoLive ? 'promo' : 'business');
     var rows = [];
     s.studio.agents.forEach(function (a) {
       if (a.paused || a.type !== 'conversational' || a.harness === 'github' || a.audience !== 'internal') return;
@@ -2539,19 +2547,24 @@ footer.pagefoot p { margin:0 0 10px; }
         if (now.billed && !lic.billed) free += bundleCredits([it]).credits;
       });
       var freePerUser = free * perUserVol;
-      var fitsBiz = U <= bizRoom;
-      var sku = fitsBiz ? (ac.businessBilling === 'monthly' ? 'monthly' : (promoLive ? 'promo' : 'business')) : 'enterprise';
-      var seat = cr.seats && cr.seats[sku] > 0 ? cr.seats[sku] : listSeat[sku];
       var coveredUsd = roundTo(freePerUser * rc, 6);
-      var perUserSaving = roundTo(coveredUsd - seat, 6);
-      var saving = roundTo(U * perUserSaving, 2);
-      rows.push({ id: a.id, name: a.name, unlicensedUsers: U, freeIfLicensedPerUser: freePerUser, sku: sku,
-                  breakEven: roundTo(seat / rc, 2), seatUsd: seat, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list',
-                  coveredUsdPerUser: coveredUsd, savingUsdPerUser: perUserSaving, savingUsdMonthly: saving,
-                  verdict: saving > 0 ? 'license' : 'meter',
-                  listBreakEven: be[sku], listSeatUsd: listSeat[sku], businessCapped: !fitsBiz });
+      var nBiz = Math.min(U, bizRoom), parts = [];
+      if (nBiz > 0) parts.push([bizSku, nBiz]);
+      if (U - nBiz > 0) parts.push(['enterprise', U - nBiz]);
+      parts.forEach(function (p) {
+        var sku = p[0], n = p[1];
+        var seat = cr.seats && cr.seats[sku] > 0 ? cr.seats[sku] : listSeat[sku];
+        var perUserSaving = roundTo(coveredUsd - seat, 6);
+        var saving = roundTo(n * perUserSaving, 2);
+        rows.push({ id: a.id, name: a.name, unlicensedUsers: n, agentUnlicensedUsers: U, split: parts.length > 1, freeIfLicensedPerUser: freePerUser, sku: sku,
+                    breakEven: roundTo(seat / rc, 2), seatUsd: seat, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list',
+                    coveredUsdPerUser: coveredUsd, savingUsdPerUser: perUserSaving, savingUsdMonthly: saving,
+                    verdict: saving > 0 ? 'license' : 'meter',
+                    listBreakEven: be[sku], listSeatUsd: listSeat[sku], businessCapped: sku === 'enterprise',
+                    businessBlocked: sku === 'enterprise' && !bizEligible });
+      });
     });
-    return { breakEvens: be, promoLive: promoLive, promoEnds: RC.seatBizPromo.ends, bizSeatRoom: bizRoom, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list', agents: rows };
+    return { breakEvens: be, promoLive: promoLive, promoEnds: RC.seatBizPromo.ends, bizEligible: bizEligible, bizSeatRoom: bizRoom, usdPerCredit: rc, priceBasis: cr.basis === 'sell' ? 'sell' : 'list', agents: rows };
   }
 
   /* ══ 21 · Dataverse ═════════════════════════════════════════════════════
@@ -4959,7 +4972,7 @@ footer.pagefoot p { margin:0 0 10px; }
         /* One set of figures: the engine's row, at the customer's prices. */
         var at = row.priceBasis === 'sell' ? ' at your price (' + fu(row.seatUsd, true) + ' a seat, ' + E.fmtRate(row.usdPerCredit) + ' a credit)' : '';
         return row.verdict === 'license'
-          ? '<div class="callout"><div class="callout-title">License instead: ' + esc(row.name) + '</div><div class="callout-body">License these ' + fi(row.unlicensedUsers) + ' users instead: each would stop costing ' + fi(row.freeIfLicensedPerUser) + ' credits a month (about ' + fu(row.coveredUsdPerUser, true) + ') against a ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + at + '. It saves about ' + fu(row.savingUsdMonthly) + ' a month, and they get Copilot.' + (row.businessCapped ? ' Copilot Business has no room under its 300-seat cap, so this is priced on the enterprise seat.' : '') + '</div></div>'
+          ? '<div class="callout"><div class="callout-title">License instead: ' + esc(row.name) + '</div><div class="callout-body">License these ' + fi(row.unlicensedUsers) + ' users instead: each would stop costing ' + fi(row.freeIfLicensedPerUser) + ' credits a month (about ' + fu(row.coveredUsdPerUser, true) + ') against a ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + at + '. It saves about ' + fu(row.savingUsdMonthly) + ' a month, and they get Copilot.' + (row.businessBlocked ? ' Copilot Business is for estates of up to 300 users with no enterprise plans, so this is priced on the enterprise seat.' : row.businessCapped ? ' Copilot Business has no room left under its 300-seat cap for these users, so they are priced on the enterprise seat.' : '') + '</div></div>'
           : '<div class="callout subtle"><div class="callout-title">Metering is cheaper: ' + esc(row.name) + '</div><div class="callout-body">Its ' + fi(row.unlicensedUsers) + ' unlicensed users average ' + fi(row.freeIfLicensedPerUser) + ' credits a month that a license would cover, below the ' + fi(row.breakEven) + '-credit break-even on ' + SKU_LBL[row.sku] + at + '. Justify seats by what Copilot and Cowork do for them, not by this agent.</div></div>';
       }).join('');
     } else html += '<p class="note">No internal conversational agent with unlicensed users, so there is no seat-or-meter call to make.</p>';

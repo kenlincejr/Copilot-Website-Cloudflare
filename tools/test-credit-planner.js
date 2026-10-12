@@ -1078,6 +1078,30 @@ sec('QA-E');
   const prod = run('Production');
   ok(prod.enforcement.events.some((e) => e.scope === 'Production' && e.day === 1), 'QA-E H-02 draw off with no allocation still stops on day 1');
 }
+/* H-06: Copilot Business only for estates that can buy it (total users ≤ 300,
+   no E3/E5 base, no enterprise or E7 seats); otherwise enterprise; split at
+   the 300-seat cap when only part of the unlicensed headcount fits. */
+{
+  const hd6 = (fn) => { const s = E.newAgent(E.defaults(), 'helpdesk'); s.combined.horizon.startMonth = '2026-11'; fn(s); return E.compute(s); };
+  // E5 estate: 500 enterprise seats, 50 unlicensed at 60 × 60 = 3,600 a user → enterprise $30: 50 × (36 − 30) = $300
+  let r = hd6((s) => { const ac = s.studio.account; ac.tenantBase = 'e5'; ac.totalUsers = 550; ac.seats.enterprise = 500; s.studio.agents[0].users = { total: 550, licensed: 500 }; s.studio.agents[0].traffic.count = 60; });
+  let x = r.crossover.agents;
+  ok(x.length === 1 && x[0].sku === 'enterprise' && x[0].seatUsd === 30 && x[0].businessBlocked === true, 'QA-E H-06 an E5 estate is priced on the enterprise seat');
+  near(x[0].savingUsdMonthly, 300, 'QA-E H-06 E5 estate saves 50 × (36 − 30) = $300, not $900', 1e-9);
+  // An E3 base with no Copilot seats is enterprise too
+  r = hd6((s) => { s.studio.account.tenantBase = 'e3'; });
+  eq(r.crossover.agents[0].sku, 'enterprise', 'QA-E H-06 an E3 base is enterprise');
+  // More than 300 users on Business plans: enterprise
+  r = hd6((s) => { s.studio.account.totalUsers = 400; s.studio.account.tenantBase = 'premium'; });
+  eq(r.crossover.agents[0].sku, 'enterprise', 'QA-E H-06 401+ users cannot buy Copilot Business');
+  // Split: 100 Business seats held, 250 unlicensed → 200 on Business (promo), 50 on enterprise
+  r = hd6((s) => { const ac = s.studio.account; ac.totalUsers = 300; ac.seats.business = 100; s.studio.agents[0].users = { total: 270, licensed: 20 }; });
+  x = r.crossover.agents;
+  ok(x.length === 2 && x[0].sku === 'promo' && x[0].unlicensedUsers === 200 && x[1].sku === 'enterprise' && x[1].unlicensedUsers === 50 && x[0].split && x[1].split, 'QA-E H-06 250 unlicensed split 200 Business + 50 enterprise at the cap');
+  eq(E.customerView(r).licenseInstead.agents.length, 2, 'QA-E H-06 the customer view carries both parts');
+  // Default small estate unchanged
+  eq(hd6(() => {}).crossover.agents[0].sku, 'promo', 'QA-E H-06 a 50-user Business Premium estate still gets Copilot Business');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
