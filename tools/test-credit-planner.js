@@ -992,6 +992,31 @@ sec('QA-C');
     ok(/promo: 'Copilot Business \(promo through 2026-12-31\)'/.test(src), 'H-07 the seat table labels the promo SKU with its end date');
   }
 
+  // H-08 · NBA-11 fires on packs > 1 or any P3 with nothing measured; opener and Apply fix to spec; P3 warnings reachable
+  {
+    const big = helpdesk(4); big.coworkSession = PAYLOAD(); big.combined.includeCowork = 'on';
+    const rb = E.compute(big);
+    ok(Math.max.apply(null, rb.purchase.best.packs.schedule) > 1 && rb.purchase.best.p3.units === 0, 'H-08 setup: best plan is several packs, no P3');
+    const n11 = nbaOf(rb, 'NBA-11');
+    ok(!!n11, 'H-08 NBA-11 fires when the plan holds more than one pack and nothing is measured');
+    ok(n11 && /one pack/i.test(n11.opener + n11.then) && /pay-as-you-go/.test(n11.opener + n11.then) && !/for a quarter/.test(n11.opener) && /billed annually/.test(n11.why.join(' ') + n11.then), 'H-08 opener: start with one pack and PAYG overflow; packs are billed annually');
+    ok(n11 && n11.fix && n11.fix.path === 'combined', 'H-08 NBA-11 has an Apply fix');
+    if (n11 && n11.fix) {
+      const fx = E.applyFix(rb.state, n11.fix);
+      ok(fx.combined.purchase.appetite === 'conservative' && fx.combined.purchase.current.packs === 1 && fx.combined.purchase.current.p3.every((x) => x === 0) && fx.combined.enforcement.basis === 'current',
+        'H-08 the fix plans on 1 pack + pay-as-you-go at a conservative appetite');
+      ok(!nbaOf(E.compute(fx), 'NBA-11'), 'H-08 once applied, NBA-11 clears');
+    }
+    const meas = J(big); meas.actuals = { 'agent-1': { credits: 1000 } };
+    ok(!nbaOf(E.compute(meas), 'NBA-11'), 'H-08 NBA-11 silent once a quantity is measured');
+    ok(!nbaOf(E.compute(presetState('helpdesk')), 'NBA-11'), 'H-08 NBA-11 silent on a one-pack or pay-as-you-go plan');
+    const ids = wids(rb);
+    ['P-30', 'P-32', 'P-38'].forEach((id) => ok(ids.indexOf(id) > -1, 'H-08 ' + id + ' reachable on the NBA-11 condition (pre-purchase alternative)'));
+    const ind = J(big); ind.partner.motion = 'indirectReseller'; ok(wids(E.compute(ind)).indexOf('P-74') > -1, 'H-08 P-74 reachable');
+    const dir = J(big); dir.partner.motion = 'direct'; ok(wids(E.compute(dir)).indexOf('P-73') > -1, 'H-08 P-73 reachable');
+    ok(wOf(rb, 'P-32') && /instead/.test(wOf(rb, 'P-32').msg), 'H-08 P-3x name the pre-purchase alternative when it is not the recommendation');
+  }
+
   /* QA-C end */
 }
 

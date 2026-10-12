@@ -2744,18 +2744,32 @@ footer.pagefoot p { margin:0 0 10px; }
 
     /* Purchase */
     var b = pu.best;
-    if (b.p3.count > 1) warn.push(W('P-30', 'info', 'The recommendation holds ' + b.p3.count + ' pre-purchase plans at once. Holding several plans, each at its own tier discount, is Likely but not stated by Microsoft; confirm it in the Azure portal before quoting.'));
+    /* When the plan commits (more than one pack a month, or any pre-purchase
+       plan) and nothing is measured, the customer will ask about pre-buying:
+       the pre-purchase caveats then apply to the cheapest pre-purchase option
+       even when it is not the recommendation (H-08). */
+    var commitCase = commitWithoutActuals(s, b), p3o = b.p3.units > 0 ? b : null;
+    if (!p3o && commitCase) [pu.families.p3, pu.families.mix].forEach(function (o) { if (!p3o && o && o.p3.units > 0) p3o = o; });
+    var p3pre = p3o && p3o !== b ? 'If the customer pre-buys instead (' + p3o.label + '): ' : '';
+    if (p3o && p3o.p3.count > 1) warn.push(W('P-30', 'info', p3pre + (p3pre ? 'that holds ' : 'The recommendation holds ') + p3o.p3.count + ' pre-purchase plans at once. Holding several plans, each at its own tier discount, is Likely but not stated by Microsoft; confirm it in the Azure portal before quoting.'));
     if (P.showAgentP3) warn.push(W('P-31', 'info', 'Microsoft Agent pre-purchase plans (' + RC.agentP3Tiers.v.map(function (t) { return fmtInt(t.acu) + ' units at ' + t.pct + '%'; }).join(', ') +
       ') are shown for disclosure only and never optimized: Microsoft’s Learn pages disagree on where they sit in the drawdown order.'));
-    if (b.p3.units > 0) warn.push(W('P-32', 'info', 'A pre-purchase plan is final: one-year term, no cancellation, renews automatically unless turned off, and unused credits expire at term end.'));
+    if (p3o) warn.push(W('P-32', 'info', p3pre + 'a pre-purchase plan is final: one-year term, no cancellation, renews automatically unless turned off, and unused credits expire at term end.'));
     if (b.packs.packMonths > 0) warn.push(W('P-33', 'info', 'Capacity packs reset every month with no rollover; unused credits in a month are lost. Expected unused: ' + fmtInt(b.expected.strandedCredits) + ' credits over the year.'));
-    if (pu.overbuy) warn.push(W('P-34', 'info', 'Buying ' + fmtInt(pu.overbuy.coverUnits * p3UnitCccu()) + ' commit units costs ' + fmtUsd(pu.overbuy.coverUsd) + ', less than the ' + fmtUsd(pu.overbuy.exactUsd) +
-      ' that exactly matches the need of ' + fmtInt(pu.overbuy.needUnits * p3UnitCccu()) + ' units. The larger plan strands credits but costs less.'));
+    var ob = pu.overbuy;
+    if (!ob && p3o && p3o !== b && P.allowP3) {
+      var resid = 0, sch = p3o.packs.schedule;
+      for (var mo = 0; mo < HORIZON; mo++) resid += Math.max(0, (pu.demand.mid[mo] || 0) - sch[mo] * RC.pack.v.credits);
+      var needU = p3UnitsFor(resid), exP = p3Plan(needU), cvP = p3Cover(needU);
+      if (needU > 0 && cvP.units > needU && cvP.usd < exP.usd) ob = { needUnits: needU, exactUsd: exP.usd, coverUnits: cvP.units, coverUsd: cvP.usd };
+    }
+    if (ob) warn.push(W('P-34', 'info', (ob === pu.overbuy ? '' : p3pre) + 'Buying ' + fmtInt(ob.coverUnits * p3UnitCccu()) + ' commit units costs ' + fmtUsd(ob.coverUsd) + ', less than the ' + fmtUsd(ob.exactUsd) +
+      ' that exactly matches the need of ' + fmtInt(ob.needUnits * p3UnitCccu()) + ' units. The larger plan strands credits but costs less.'));
     if (pu.current && pu.current.expected.usd > b.expected.usd + 0.5) warn.push(W('P-35', 'warn', 'What the customer holds today costs about ' + fmtUsd(pu.current.expected.usd - b.expected.usd) + ' more over the year than the recommendation.'));
     if (pu.blocked) warn.push(W('P-36', 'info', 'A cheaper option (' + pu.blocked.label + ', ' + fmtUsd(pu.blocked.expected.usd) + ') was set aside because it strands more than the ' +
       P.appetite + ' limit of ' + APPETITE[P.appetite] + '% in the low scenario.', { fixes: [{ label: 'Use a balanced commit appetite', path: 'combined.purchase.appetite', value: 'balanced' }] }));
     if (b.packs.packMonths > 0 && b.packs.flat === null) warn.push(W('P-37', 'info', 'Packs added mid-year carry their own annual term past this horizon. The planner counts only the months inside it.'));
-    if (b.p3ExhaustMonth) warn.push(W('P-38', 'info', 'In the middle scenario the pre-purchase plan runs out in month ' + b.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
+    if (p3o && p3o.p3ExhaustMonth) warn.push(W('P-38', 'info', p3pre + 'in the middle scenario the pre-purchase plan runs out in month ' + p3o.p3ExhaustMonth + '; usage after that bills at pay-as-you-go.'));
     if (!(pl.year.hi > 0)) warn.push(W('P-40', 'info', 'No billable usage modeled yet, so there is nothing to buy.', { aud: 'customer' }));
     if (pl.year.hi > 0 && !hasBillingPath(s))
       warn.push(W('P-41', 'risk', 'No billing path yet: no capacity pack, no pre-purchase plan and no Azure subscription for pay-as-you-go. Nothing on this plan runs until one exists.', { aud: 'customer',
@@ -2817,8 +2831,8 @@ footer.pagefoot p { margin:0 0 10px; }
     if (s.partner.motion === 'unsure') warn.push(W('P-70', 'info', 'Your CSP motion is not established, so no margin is shown.', { fixes: [{ label: 'Indirect reseller', path: 'partner.motion', value: 'indirectReseller' }, { label: 'Direct-bill partner', path: 'partner.motion', value: 'direct' }] }));
     if (pe.margin === null && s.partner.motion !== 'unsure' && pe.asks.length) warn.push(W('P-71', 'info', 'Margin needs a cost basis for every line. Ask: ' + pe.asks.join('; ') + '.'));
     if (s.partner.motion === 'notCsp') warn.push(W('P-72', 'info', 'Outside CSP the customer buys from Microsoft directly, so there is no meter margin; only services count.'));
-    if (s.partner.motion === 'direct' && b.p3.units > 0) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
-    if (s.partner.motion === 'indirectReseller' && b.p3.units > 0) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
+    if (s.partner.motion === 'direct' && p3o) warn.push(W('P-73', 'info', 'Partner-earned credit does not apply to a pre-purchase plan; it is a reservation, so the plan is costed at list.'));
+    if (s.partner.motion === 'indirectReseller' && p3o) warn.push(W('P-74', 'info', 'An indirect reseller cannot place a pre-purchase plan order; your provider places it for the customer.'));
     var lic = cx.agents.filter(function (r) { return r.verdict === 'license'; });
     if (lic.length) warn.push(W('P-75', 'info', 'License instead: ' + lic.map(function (r) { return fmtInt(r.unlicensedUsers) + ' users of ' + r.name + ' would save about ' + fmtUsd(r.savingUsdMonthly) + ' a month on a Copilot seat'; }).join('; ') + '.' +
       (lic.some(function (r) { return r.sku === 'promo'; }) ? ' That uses the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price, a ' + PROMO_TXT + '; new seats after that cost ' + fmtUsd(RC.seatBiz.v) + '.' : ''), { aud: 'customer' }));
@@ -2881,6 +2895,15 @@ footer.pagefoot p { margin:0 0 10px; }
     var a = s.studio.agents.filter(function (x) { return x.id === row.id; })[0];
     return addMonths(cMonth(s.combined.horizon.startMonth, '2026-11'), a ? a.startMonth : 0);
   }
+  /* The plan commits (more than one capacity pack in any month, or any
+     pre-purchase plan) while nothing has been measured, and the customer has
+     not already been planned on the 1-pack start NBA-11 recommends. */
+  function commitWithoutActuals(s, best) {
+    if (!best || Object.keys(s.actuals).length) return false;
+    var pc = s.combined.purchase.current;
+    if (s.combined.enforcement.basis === 'current' && pc.packs === 1 && pc.p3.every(function (x) { return x === 0; })) return false;
+    return Math.max.apply(null, best.packs.schedule) > 1 || best.p3.units > 0;
+  }
   function promoLate(s, row) { return !!row && row.sku === 'promo' && promoBuyMonth(s, row) > RC.seatBizPromo.ends.slice(0, 7); }
   var GUIDE = deepFreeze({
     billing: 'azure-billing-setup.html#section-13', budgets: 'azure-billing-setup.html#section-9', economics: 'copilot-studio-agent-engagement.html#section-6',
@@ -2931,9 +2954,18 @@ footer.pagefoot p { margin:0 0 10px; }
       var rsn = ag.filter(function (a) { return a.flags.reasoning; });
       if (rsn.length) out.push(rule('NBA-10', 'Cost driver', 'Reasoning bills twice', [rsn.map(function (a) { return a.name; }).join(', ') + ' pay the feature rate plus 10 credits per 1,000 reasoning tokens.'],
         'Reasoning makes answers better and costs twice; we only turn it on where it pays.', 'Test with reasoning off first and compare quality.', null, GUIDE.economics));
-      var commit = r.purchase.best.family === 'p3' || r.purchase.best.family === 'mix';
-      if (commit && !Object.keys(s.actuals).length) out.push(rule('NBA-11', 'Commit', 'Measure 90 days, then commit', ['The cheapest option includes a one-year commitment, and nothing has been measured yet.'],
-        'Let’s run on capacity packs or pay-as-you-go for a quarter, then commit on real numbers.', 'Book the 90-day true-up now.', null, GUIDE.economics));
+      var bp = r.purchase.best;
+      if (commitWithoutActuals(s, bp)) {
+        var cmb = clone(s.combined);
+        cmb.purchase.appetite = 'conservative'; cmb.purchase.current = { packs: 1, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; cmb.enforcement.basis = 'current';
+        var mp = Math.max.apply(null, bp.packs.schedule);
+        out.push(rule('NBA-11', 'Commit', 'Measure 90 days, then commit', [
+          'The cheapest option is ' + bp.label + (mp > 1 ? '; each pack is billed annually, so every pack is a commitment for the year' : '') + (bp.p3.units > 0 ? '; it includes a one-year pre-purchase commitment' : '') + '.',
+          'Nothing has been measured yet: every volume is an estimate.'],
+          'These volumes are our best estimate, not your history. Let’s start with one pack and pay-as-you-go overflow, the smallest commitment, and buy more once we’ve seen 90 days of real usage.',
+          'Start on 1 pack + pay-as-you-go overflow; packs are billed annually, so each pack added is a year’s commitment. Re-run with actuals at day 90.',
+          { label: 'Plan on 1 pack + pay-as-you-go, conservative appetite', path: 'combined', value: cmb }, GUIDE.economics));
+      }
       if (ag.length >= 3 && (ac.tenantBase === 'premium' || ac.tenantBase === 'e5'))
         out.push(rule('NBA-12', 'Governance', 'Three agents or more: Agent 365', [ag.length + ' agents on a tenant base that qualifies for Agent 365.'],
           'With several agents running, you need one place to see and control them.', 'Scope Agent 365 for the agent owners and sponsors.', null, GUIDE.agent365));
