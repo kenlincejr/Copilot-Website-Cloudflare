@@ -5298,26 +5298,35 @@ footer.pagefoot p { margin:0 0 10px; }
   }
 
   /* ══ Combined: governance settings sheet (customer-safe: built from the customer view) ═ */
+  /* Click paths: the engine's governance.clickPaths (carried by the customer
+     view) are the source for the settings they cover; GOV_WHERE holds only
+     the rows the engine has no path for, plus detail the engine row lacks. */
   var GOV_WHERE = {
-    tenant: 'Microsoft 365 admin center → Billing → Cost management → Spending policies',
-    user: 'Microsoft 365 admin center → Spending policies → user and group limits',
-    agents: 'Power Platform admin center → Licensing → Copilot Studio → Manage agents',
-    env: 'Power Platform admin center → Licensing → Copilot Studio → Environments; Environment groups → Rules → Cost controls (draw from the tenant credit pool)',
     alerts: 'Spending policy threshold emails; per-agent notification threshold; an Azure budget (alerts only)',
     auto: 'Within each spending policy',
-    retention: 'Power Platform admin center → Manage → Environments → (environment) → Settings → Product → Features (transcripts on or off); retention: a Power Apps bulk-delete job on the conversation transcript table, 30 days by default',
-    ids: 'Microsoft Entra admin center → Agent ID'
+    ids: 'Microsoft Entra admin center → Agent ID',
+    envExtra: 'Environment groups → Rules → Cost controls (draw from the tenant credit pool)'
   };
+  function govWhere(cv) {
+    var cp = (cv.guardrails && cv.guardrails.clickPaths) || [], by = {};
+    cp.forEach(function (c) { by[c.setting] = c.where; });
+    var spend = by['Spending policy, user and group limits'] || '';
+    return {
+      tenant: spend, user: spend, agents: by['Per-agent limits'] || '',
+      env: (by['Environment allocations and tenant draw'] || '') + '; ' + GOV_WHERE.envExtra,
+      retention: by['Transcript retention'] || '', alerts: GOV_WHERE.alerts, auto: GOV_WHERE.auto, ids: GOV_WHERE.ids
+    };
+  }
   function govRows(cv) {
-    var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [];
-    rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', GOV_WHERE.tenant]);
-    rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', GOV_WHERE.user]);
-    rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', GOV_WHERE.agents]);
-    rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', GOV_WHERE.env]);
-    rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', GOV_WHERE.alerts]);
-    rows.push(['“Auto-apply new services”', g.autoApply, GOV_WHERE.auto]);
-    rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', GOV_WHERE.retention]);
-    rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', GOV_WHERE.ids]);
+    var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [], WH = govWhere(cv);
+    rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', WH.tenant]);
+    rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', WH.user]);
+    rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', WH.agents]);
+    rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', WH.env]);
+    rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', WH.alerts]);
+    rows.push(['“Auto-apply new services”', g.autoApply, WH.auto]);
+    rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', WH.retention]);
+    rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', WH.ids]);
     return rows;
   }
   function govTable(cv) {

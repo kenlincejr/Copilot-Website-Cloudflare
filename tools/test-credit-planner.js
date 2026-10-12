@@ -1252,6 +1252,14 @@ sec('QA-C');
     ok(mq && /left:16px; right:16px; transform:none;/.test(mq[1]) && Number(mq[2]) >= 72, 'M-32 the pill spans the 16px gutters and the page reserves space beneath it at 375 px');
   }
 
+  // L-01 · the governance sheet reads the engine's click paths; every engine path is used
+  {
+    const cp = E.customerView(E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'))).guardrails.clickPaths;
+    const gw = (/function govWhere\(cv\) \{([\s\S]*?)\n  \}/.exec(src) || [])[1] || '';
+    ok(cp.length === 4 && cp.every((c) => gw.indexOf("by['" + c.setting + "']") > -1), 'L-01 govWhere maps every engine click path (' + cp.map((c) => c.setting).join('; ') + ')');
+    ok(/cv\.guardrails\.clickPaths/.test(gw) && /WH = govWhere\(cv\)/.test(src), 'L-01 govRows takes its paths from the customer view, not a second copy');
+  }
+
   /* QA-C end */
 }
 
