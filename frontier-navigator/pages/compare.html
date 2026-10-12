@@ -10,11 +10,11 @@
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Compare | Frontier Navigator</title>
+  <title>Benchmark | Frontier Navigator</title>
   <meta name="title" content="Frontier Navigator Benchmark">
   <meta property="og:title" content="Frontier Navigator Benchmark">
-  <meta name="description" content="See your estimated readiness score against SMB partner cohorts as planning bands, then turn the comparison into a 90-day roadmap.">
-  <meta property="og:description" content="See your estimated readiness score against SMB partner cohorts as planning bands, then turn the comparison into a 90-day roadmap.">
+  <meta name="description" content="See each metric of your estimated score against the maximum Microsoft publishes and the 70-point qualifying bar, then turn the gaps into a 90-day roadmap.">
+  <meta property="og:description" content="See each metric of your estimated score against the maximum Microsoft publishes and the 70-point qualifying bar, then turn the gaps into a 90-day roadmap.">
   <meta name="page_type" content="tool">
   <meta name="priority" content="1">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -27,30 +27,35 @@
         <div class="section-head">
           <div>
             <p class="section-kicker">Benchmark</p>
-            <h2>Your score versus SMB readiness cohorts.</h2>
-            <p class="lede">Current stage: <strong data-compare-stage></strong>. Peer comparison: <strong data-compare-delta></strong>.</p>
+            <h2>Your score against Microsoft's bar.</h2>
+            <p class="lede">Every line is measured against Microsoft's own published maximum for <strong data-compare-area></strong>. Current stage: <strong data-compare-stage></strong>.</p>
           </div>
           <a class="button primary" href="roadmap.html">Turn into roadmap</a>
         </div>
       </section>
-      <section class="panel">
-        <div class="compare-bars" data-compare></div>
+
+      <section class="metric-strip" data-compare-strip></section>
+
+      <section class="section panel">
+        <div class="bench-head" aria-hidden="true"><span>Metric</span><span>Your points against the maximum</span><span>Points</span></div>
+        <div data-compare></div>
       </section>
+
       <section class="section grid three">
         <article class="card">
-          <div class="card-label">Interpretation</div>
-          <h3>Use cohorts as planning bands</h3>
-          <p>Benchmarks are static planning references, not Microsoft-published performance rankings.</p>
+          <div class="card-label">Why no peer averages</div>
+          <h3>Microsoft does not publish score distributions</h3>
+          <p>Any "average partner" number would be invented. This page compares you to the rules that decide qualification instead.</p>
         </article>
         <article class="card">
           <div class="card-label">Close to 70</div>
-          <h3>Prioritize fast points</h3>
-          <p>If you are within 10 points of 70, skilling and deployment proof are often the fastest levers.</p>
+          <h3>Fix zeros before adding points</h3>
+          <p>A metric at zero blocks the designation at any total. After that, spend effort where one unit buys the most points; the what-if sliders on the results page show which.</p>
         </article>
         <article class="card">
           <div class="card-label">Above 70</div>
-          <h3>Prepare evidence</h3>
-          <p>At designation range, the next constraint is often customer documentation, specialization proof, and incentive setup.</p>
+          <h3>Qualified is not enrolled</h3>
+          <p>Qualification lets you buy the designation for $4,875 a year, and that one fee covers every designation you qualify for. Specializations come next.</p>
         </article>
       </section>
     </main>
@@ -59,6 +64,6 @@
   <script src="../assets/js/scoring.js"></script>
   <script src="../assets/js/app.js"></script>
   <script src="../assets/js/compare.js"></script>
-<script src="/assets/site-search.js?v=7" defer></script>
+<script src="/assets/site-search.js?v=8" defer></script>
 </body>
 </html>

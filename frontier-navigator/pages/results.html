@@ -29,10 +29,10 @@
             <div>
               <p class="section-kicker">Results</p>
               <h2>Your readiness position</h2>
-              <p class="lede">Directional estimate only. Use this for planning, then validate the official score in Partner Center.</p>
+              <p class="lede">A directional estimate built on Microsoft's published scoring rules. Use it to plan, then confirm the official score in Partner Center.</p>
             </div>
             <div class="action-row">
-              <a class="button secondary" href="assessment.html">Edit assessment</a>
+              <a class="button secondary" href="assessment.html">Edit answers</a>
               <a class="button primary" href="roadmap.html">View roadmap</a>
             </div>
           </div>
@@ -41,9 +41,10 @@
         <section class="panel">
           <div class="score-hero">
             <div class="score-ring" data-score-ring>
+              <div class="ring-tick" aria-hidden="true"><span>70</span></div>
               <div class="score-ring-content">
                 <span class="score-number" data-score-number>0</span>
-                <span class="score-caption">estimated PCS</span>
+                <span class="score-caption" data-score-caption>estimated points</span>
               </div>
             </div>
             <div>
@@ -51,8 +52,8 @@
               <h2 data-stage-name>Stage</h2>
               <p class="lede">Next milestone: <strong data-next-stage></strong></p>
               <div class="action-row" style="margin-top:14px;">
+                <span data-qualify class="status-pill"></span>
                 <span data-priority class="status-pill">Priority</span>
-                <span class="status-pill" data-confidence></span>
               </div>
               <p style="margin-top:14px;" data-priority-detail></p>
             </div>
@@ -62,8 +63,9 @@
         <section class="section">
           <div class="section-head">
             <div>
-              <p class="section-kicker">PCS breakdown</p>
-              <h2>Where the points are coming from</h2>
+              <p class="section-kicker">Score breakdown</p>
+              <h2>Where the points come from</h2>
+              <p class="lede">Microsoft requires 70 of 100 points <strong>and</strong> at least one point in every metric.</p>
             </div>
           </div>
           <div class="panel">
@@ -74,16 +76,51 @@
         <section class="section">
           <div class="section-head">
             <div>
-              <p class="section-kicker">Continuum</p>
+              <p class="section-kicker">What if</p>
+              <h2>Move a lever, watch the score</h2>
+              <p class="lede">Drag a slider to see what one more customer, certification, or deployment is worth. Your saved answers do not change.</p>
+            </div>
+          </div>
+          <div class="panel whatif">
+            <div class="whatif-levers" data-levers></div>
+            <div class="whatif-result" aria-live="polite">
+              <span class="whatif-number" data-whatif-score>0</span>
+              <span class="score-caption">projected points</span><br>
+              <span class="whatif-delta" data-whatif-delta></span>
+              <p class="whatif-note" data-whatif-note></p>
+              <button class="button ghost" type="button" data-whatif-reset style="margin-top:10px;">Reset</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">Program ladder</p>
               <h2>Stage map</h2>
             </div>
           </div>
           <div class="stage-map" data-stage-map></div>
         </section>
 
+        <section class="section grid two" data-readiness hidden>
+          <article class="panel" data-copilot-panel hidden>
+            <p class="section-kicker">Copilot specialization</p>
+            <h2>Readiness check</h2>
+            <ul class="readiness" data-copilot-checks></ul>
+            <p class="fact-note">Audit required once every line is met: about $2,700, roughly four hours. <a href="https://copilotplaybook.com/copilot-specialization.html">Designation to Specialization guide</a></p>
+          </article>
+          <article class="panel" data-frontier-panel hidden>
+            <p class="section-kicker">Frontier Partner specialization</p>
+            <h2>Readiness check</h2>
+            <ul class="readiness" data-frontier-checks></ul>
+            <p class="fact-note">Live since September 30, 2026. Audit about $4,000, booked only after everything else is met. <a href="https://learn.microsoft.com/en-us/partner-center/membership/specializations-apply" target="_blank" rel="noopener">Microsoft's requirements</a></p>
+          </article>
+        </section>
+
         <section class="section grid two">
           <article class="panel">
-            <p class="section-kicker">Blocking issues</p>
+            <p class="section-kicker">What is blocking you</p>
             <h2>What to fix next</h2>
             <ul data-gaps></ul>
           </article>
@@ -96,10 +133,11 @@
 
         <section class="section">
           <div class="action-row">
-            <a class="button primary" href="roadmap.html">Generate 90-day plan</a>
-            <a class="button secondary" href="compare.html">Compare to peers</a>
+            <a class="button primary" href="roadmap.html">Build the 90-day plan</a>
+            <a class="button secondary" href="compare.html">Compare to Microsoft's bar</a>
             <a class="button secondary" href="export.html">Export scorecard</a>
           </div>
+          <p class="fact-note">Scoring rules checked against <a href="https://learn.microsoft.com/en-us/partner-center/membership/partner-capability-score" target="_blank" rel="noopener">Microsoft Learn</a> on <span data-model-date></span>. SMB track shown; for Modern Work and Security, Microsoft also scores an Enterprise track and counts the higher total.</p>
         </section>
       </div>
     </main>
@@ -108,6 +146,6 @@
   <script src="../assets/js/scoring.js"></script>
   <script src="../assets/js/app.js"></script>
   <script src="../assets/js/results.js"></script>
-<script src="/assets/site-search.js?v=7" defer></script>
+<script src="/assets/site-search.js?v=8" defer></script>
 </body>
 </html>

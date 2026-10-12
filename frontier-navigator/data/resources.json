@@ -1,66 +1,154 @@
 [
   {
-    "title": "MAICPP Readiness Clinic",
-    "type": "TD SYNNEX enablement",
-    "stage": ["0", "1", "2"],
-    "focus": ["modern_work", "security", "azure", "not_sure"],
-    "description": "A guided working session for decoding designation requirements, PCS gaps, and the 90-day plan.",
-    "url": "https://www.tdsynnex.com/na/us/microsoft/"
-  },
-  {
-    "title": "Partner Center Association Checklist",
-    "type": "TD SYNNEX template",
-    "stage": ["0", "1", "2", "3"],
-    "focus": ["modern_work", "security", "azure", "not_sure"],
-    "description": "A practical checklist for PAL association, customer proof, and deployment documentation.",
-    "url": "https://partner.microsoft.com/"
-  },
-  {
-    "title": "Microsoft Learn: Teams Administrator",
-    "type": "Certification path",
-    "stage": ["1", "2"],
-    "focus": ["modern_work"],
-    "description": "Recommended Modern Work certification path for partners targeting Teams and collaboration motions.",
-    "url": "https://learn.microsoft.com/credentials/certifications/m365-teams-administrator-associate/"
-  },
-  {
-    "title": "Microsoft Learn: Security Operations Analyst",
-    "type": "Certification path",
-    "stage": ["1", "2", "3"],
-    "focus": ["security"],
-    "description": "Recommended Security certification path for partners building Defender and Sentinel capacity.",
-    "url": "https://learn.microsoft.com/credentials/certifications/security-operations-analyst/"
-  },
-  {
-    "title": "Microsoft Learn: Azure Solutions Architect",
-    "type": "Certification path",
-    "stage": ["1", "2", "3"],
-    "focus": ["azure"],
-    "description": "Recommended Azure certification path for partners targeting Azure designations and project services.",
-    "url": "https://learn.microsoft.com/credentials/certifications/azure-solutions-architect/"
-  },
-  {
-    "title": "Copilot Customer Proof Packet",
-    "type": "TD SYNNEX template",
-    "stage": ["2", "3", "4"],
-    "focus": ["modern_work", "security", "not_sure"],
-    "description": "A field-ready packet for capturing customer outcomes, deployment evidence, and attestation details.",
-    "url": "https://www.tdsynnex.com/na/us/microsoft/"
-  },
-  {
-    "title": "Microsoft Commerce Incentives Overview",
-    "type": "Microsoft program guide",
-    "stage": ["1", "2", "3", "4"],
-    "focus": ["modern_work", "security", "azure", "not_sure"],
-    "description": "Use this to validate incentive enrollment requirements before applying for designation benefits.",
-    "url": "https://partner.microsoft.com/membership/incentives"
-  },
-  {
     "title": "Microsoft AI Cloud Partner Program",
     "type": "Microsoft program guide",
-    "stage": ["0", "1", "2", "3", "4"],
-    "focus": ["modern_work", "security", "azure", "not_sure"],
-    "description": "Official program entry point for designations, specializations, benefits, and Partner Center guidance.",
-    "url": "https://partner.microsoft.com/membership"
+    "stage": ["0", "1", "2", "3", "4", "5"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "Official entry point for enrollment, designations, specializations, and benefits packages.",
+    "url": "https://partner.microsoft.com/en-us/partnership"
+  },
+  {
+    "title": "Partner Capability Score",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "How the 100-point score works: the 70-point bar, the every-metric-above-zero rule, and the qualification window.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/partner-capability-score"
+  },
+  {
+    "title": "TD SYNNEX MAICPP Clinics",
+    "type": "TD SYNNEX enablement",
+    "stage": ["0", "1", "2", "3"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "Guided working sessions on designation requirements, score gaps, and the next milestone. Ask your BDM to book one.",
+    "url": "https://www.tdsynnex.com/na/us/microsoft/"
+  },
+  {
+    "title": "Solutions Partner for Modern Work",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2"],
+    "focus": ["modern_work"],
+    "description": "The exact SMB and Enterprise scoring rules, eligible workloads, and certifications for Modern Work.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-modern-work"
+  },
+  {
+    "title": "Solutions Partner for Security",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2", "3"],
+    "focus": ["security"],
+    "description": "The gated skilling steps, protected-user growth, and deployment rules for the Security designation.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-security"
+  },
+  {
+    "title": "Solutions Partner for Azure designations",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2", "3"],
+    "focus": ["data_ai", "digital_app", "infrastructure"],
+    "description": "Scoring for Data & AI, Digital & App Innovation, and Infrastructure, including the AZ-104 and AZ-305 gates.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-azure"
+  },
+  {
+    "title": "Solutions Partner for Business Applications",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2"],
+    "focus": ["business_apps"],
+    "description": "Workload-based customer adds, monthly consumption value growth, and certifications for Business Applications.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/solutions-partner-business"
+  },
+  {
+    "title": "Link your PartnerID with Partner Admin Link",
+    "type": "Microsoft Learn",
+    "stage": ["0", "1", "2"],
+    "focus": ["security", "data_ai", "digital_app", "infrastructure"],
+    "description": "Associate Azure subscriptions you manage so customer adds, growth, and deployments count toward your score.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/link-partner-id-for-azure-performance-pal-dpor"
+  },
+  {
+    "title": "Microsoft 365 Administrator Expert (MS-102)",
+    "type": "Certification",
+    "stage": ["0", "1", "2"],
+    "focus": ["modern_work"],
+    "description": "The advanced Modern Work certification, worth 15 points to an SMB partner. It retires November 30, 2026.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/m365-administrator-expert/"
+  },
+  {
+    "title": "Teams Administrator Associate (MS-700)",
+    "type": "Certification",
+    "stage": ["0", "1", "2"],
+    "focus": ["modern_work"],
+    "description": "An intermediate Modern Work certification: 5 points per person, two people for the full 10.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/m365-teams-administrator-associate/"
+  },
+  {
+    "title": "Cloud and AI Security Engineer Associate (SC-500)",
+    "type": "Certification",
+    "stage": ["0", "1", "2"],
+    "focus": ["security"],
+    "description": "Step 1 gate for Security skilling. AZ-500 retired August 31, 2026.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/cloud-and-ai-security-engineer-associate/"
+  },
+  {
+    "title": "Security Operations Analyst (SC-200)",
+    "type": "Certification",
+    "stage": ["0", "1", "2"],
+    "focus": ["security"],
+    "description": "Step 2 gate for Security skilling. Step 3 points only count once this and SC-500 are in place.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/security-operations-analyst/"
+  },
+  {
+    "title": "Information Security Administrator (SC-401)",
+    "type": "Certification",
+    "stage": ["1", "2", "3", "4"],
+    "focus": ["modern_work", "security", "business_apps"],
+    "description": "Counts toward Security skilling, and five holders are required for the Microsoft 365 Copilot specialization.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/information-security-administrator/"
+  },
+  {
+    "title": "Azure Solutions Architect Expert (AZ-305)",
+    "type": "Certification",
+    "stage": ["0", "1", "2", "3"],
+    "focus": ["data_ai", "digital_app", "infrastructure"],
+    "description": "A mandatory gate for every Azure designation's skilling score.",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/azure-solutions-architect/"
+  },
+  {
+    "title": "Designation to Specialization guide",
+    "type": "Copilot Playbook",
+    "stage": ["2", "3"],
+    "focus": ["modern_work", "security", "business_apps"],
+    "description": "The Microsoft 365 Copilot specialization from the designation up, with a live readiness check and what the audit examines.",
+    "url": "https://copilotplaybook.com/copilot-specialization.html"
+  },
+  {
+    "title": "Copilot specialization audit checklist",
+    "type": "Microsoft audit checklist",
+    "stage": ["2", "3"],
+    "focus": ["modern_work", "security", "business_apps"],
+    "description": "Microsoft's published checklist the third-party auditor works from. Read it before you book the audit.",
+    "url": "https://assetsprod.microsoft.com/en-us/copilot-specialization-audit-checklist.pdf"
+  },
+  {
+    "title": "Apply for specializations",
+    "type": "Microsoft Learn",
+    "stage": ["2", "3", "4", "5"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "Current requirements for every specialization, including Microsoft 365 Copilot and Frontier Partner.",
+    "url": "https://learn.microsoft.com/en-us/partner-center/membership/specializations-apply"
+  },
+  {
+    "title": "Frontier Partner specialization audit checklist",
+    "type": "Microsoft audit checklist",
+    "stage": ["3", "4", "5"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "Program guide, audit checklist, and FAQ for the Frontier Partner specialization, live since September 30, 2026.",
+    "url": "https://assetsprod.microsoft.com/en-us/frontier-partner-specialization-audit-checklist.pdf"
+  },
+  {
+    "title": "Microsoft Commercial Incentives for Partners",
+    "type": "Microsoft program guide",
+    "stage": ["0", "1", "2", "3", "4", "5"],
+    "focus": ["modern_work", "security", "data_ai", "digital_app", "infrastructure", "business_apps"],
+    "description": "Incentive programs and eligibility. Most CSP incentives are not gated on a designation.",
+    "url": "https://partner.microsoft.com/en-us/partnership/partner-incentives"
   }
 ]

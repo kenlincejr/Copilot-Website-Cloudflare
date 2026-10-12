@@ -13,3 +13,4 @@ __pycache__/
 # Yahoo probe: real credentials and cached OAuth tokens — never commit
 ff/tools/.yahoo-creds.json
 ff/tools/.yahoo-token.json
+tools/traces/frontier-navigator/

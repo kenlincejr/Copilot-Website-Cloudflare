@@ -1,4 +1,4 @@
-/* assets/site-search.js?v=7: the one site search module
+/* assets/site-search.js?v=8: the one site search module
    (specs/site-search-v2.spec.md §3.1, specs/site-search-v2.1-hero-pill.spec.md).
    Loaded by every page in sitemap.xml
    (see DESIGN.md 8b.5) except copilot-credit-planner.html, which stays free
@@ -32,7 +32,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '7';
+  var VERSION = '8';
   var ENDPOINT = 'https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/';
   var MAX_PAGES = 6;
 

@@ -1380,10 +1380,10 @@ ok(/key\.textContent = core\.shortcutHint\(navigator\)/.test(src), 'pill hint se
 ok(/core\.restoreQuery\(location\.hash, true\)/.test(src) && /panel\.run\(query, pill\)/.test(src), 'a shared #search= opens the panel with the query run, focus returning to the pill');
 ok(/ui\.input\.addEventListener\('input', syncSuggest\)/.test(src) && /ui\.suggest\.hidden = !core\.suggestVisible\(ui\.input\.value\)/.test(src), 'Try line follows the box');
 ok(/opener\.setAttribute\('aria-expanded', 'true'\)/.test(src) && /else if \(opener\) opener\.focus\(\)/.test(src), 'the opener (pill or button) reports aria-expanded and gets focus back');
-eq(C.VERSION, '7', 'module version');
-eq(C.CONFIG_URL, '/data/site-search-config.json?v=7', 'config fetched with the same ?v as the script');
-eq(C.RELATED_URL, '/data/related.json?v=7', 'related.json fetched with the same ?v');
-ok(/assets\/site-search\.js\?v=7/.test(src.split('\n')[0]), 'header names ?v=7');
+eq(C.VERSION, '8', 'module version');
+eq(C.CONFIG_URL, '/data/site-search-config.json?v=8', 'config fetched with the same ?v as the script');
+eq(C.RELATED_URL, '/data/related.json?v=8', 'related.json fetched with the same ?v');
+ok(/assets\/site-search\.js\?v=8/.test(src.split('\n')[0]), 'header names ?v=8');
 ok(!fs.existsSync(path.join(ROOT, 'assets', 'site-search-jump.js')), 'assets/site-search-jump.js deleted');
 {
   const idx = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
@@ -1428,7 +1428,7 @@ ok(!fs.existsSync(path.join(ROOT, 'assets', 'site-search-jump.js')), 'assets/sit
     ok(/<a href="\/use-with-your-ai\.html">Use the playbook in your AI assistant<\/a>/.test(foot), 'home footer links the AI-assistant guide');
     ok(/<p class="footer-links">/.test(foot) && /\n\.footer-links \{/.test(idx), 'footer links styled by the page');
   }
-  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=7" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=7');
+  eq((idx.match(/<script src="\/assets\/site-search\.js\?v=8" defer><\/script>/g) || []).length, 1, 'index.html loads the module once, ?v=8');
   eq((idx.match(/<script[^>]*site-search\.js/g) || []).length, 1, 'index.html has exactly one script tag for the module');
   ok(!/site-search\.js\?v=[34]"/.test(idx), 'index.html no longer loads ?v=3 or ?v=4');
   ok(idx.indexOf('site-search-jump.js') < 0, 'index.html no longer loads the jump file');

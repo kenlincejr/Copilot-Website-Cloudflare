@@ -522,6 +522,19 @@ chat-bubble-snippet {
   letter-spacing: 0;
   color: #a3abb5;
 }
+/* Three-step path: assess -> destination -> drill-in. Wider shell so three
+   cards and two connectors fit one row; stacks vertically below 1100px rather
+   than wrapping 2 + 1. */
+.card-grid.path-pair.path-trio { max-width: 1180px; }
+.card-grid.path-pair.path-trio > .resource-card { flex: 1 1 0; }
+.card-grid.path-pair.path-trio > .path-connector { flex-basis: 88px; }
+@media (max-width: 1100px) {
+  .card-grid.path-pair.path-trio { max-width: 460px; }
+  .card-grid.path-pair.path-trio > .resource-card { flex: 1 1 100%; }
+  .card-grid.path-pair.path-trio > .path-connector { flex-basis: 100%; flex-direction: row; padding: 2px 0; }
+  .card-grid.path-pair.path-trio .path-connector-arrow { width: 24px; height: 48px; transform: rotate(90deg); }
+  .card-grid.path-pair.path-trio .path-connector-label { text-align: left; }
+}
 @media (max-width: 760px) {
   .card-grid.path-pair { max-width: 460px; }
   .path-connector { flex-basis: 100%; flex-direction: row; padding: 2px 0; }
@@ -1170,9 +1183,35 @@ chat-bubble-snippet {
 
   <section aria-labelledby="program-path-heading">
     <div class="section-label" id="program-path-heading">Navigate The Program - Designations, Specializations, And The Frontier Badge</div>
-    <p class="section-note">Two questions every partner eventually asks: which rung am I on, and is the next one worth climbing? These two assets split the ladder between them.</p>
+    <p class="section-note">Two questions every partner eventually asks: which rung am I on, and is the next one worth climbing? Start with the five-minute assessment, then use the two guides to plan the climb.</p>
 
-    <div class="card-grid center-two path-pair">
+    <div class="card-grid center-two path-pair path-trio">
+      <article class="resource-card accent-amber">
+        <div class="resource-head">
+          <div class="resource-badge">
+            <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+            <span class="resource-kicker">Start Here - Assessment</span>
+          </div>
+          <h2 class="resource-title">Frontier Navigator</h2>
+          <p class="resource-format">HTML - Five-minute readiness assessment</p>
+          <p class="resource-updated">Last updated October 12, 2026</p>
+        </div>
+        <div class="resource-body">
+          <p class="resource-field"><strong>What it is</strong>A guided self-assessment that places you on the program ladder, estimates your Partner Capability Score, names the blockers, and builds a 90-day plan you can export.</p>
+          <p class="resource-field"><strong>When to use it</strong>Use it first, or with a partner on a call, to answer "which rung are we on and what moves us up" before you open either guide.</p>
+        </div>
+        <div class="resource-cta-wrap"><a class="resource-cta" href="https://copilotplaybook.com/frontier-navigator/">Start the assessment <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+      </article>
+
+      <div class="path-connector" aria-hidden="true">
+        <svg viewBox="0 0 48 24" class="path-connector-arrow">
+          <line x1="2" y1="12" x2="38" y2="12"/>
+          <path d="M31,5 L40,12 L31,19" fill="none"/>
+        </svg>
+        <span class="path-connector-label">find your rung</span>
+        <span class="path-connector-label path-connector-label-sub">then see the destination</span>
+      </div>
+
       <article class="resource-card accent-purple">
         <div class="resource-head">
           <div class="resource-badge">
@@ -1216,7 +1255,7 @@ chat-bubble-snippet {
         <div class="resource-cta-wrap"><a class="resource-cta" href="https://copilotplaybook.com/copilot-specialization.html">Open the Navigator <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
       </article>
     </div>
-    <div class="fit-bar"><strong>Where they meet:</strong> the Frontier Playbook sets the destination and tells you whether the badge is worth chasing at your size - the Navigator starts from the designation you already hold and prices the very next rung in customers, certifications and cash.</div>
+    <div class="fit-bar"><strong>How they fit:</strong> the Frontier Navigator tells you where you stand today, the Frontier Playbook sets the destination and tells you whether the badge is worth chasing at your size - the Designation to Specialization guide starts from the designation you already hold and prices the very next rung in customers, certifications and cash.</div>
   </section>
 
   <section aria-labelledby="customer-zero-heading">
@@ -1528,6 +1567,6 @@ chat-bubble-snippet {
 <script type="module" src="https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/assets/v0.0.43/search-snippet.es.js"></script>
 
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "2cbc3a172bb74e7b883296aaddf17a34"}'></script>
-<script src="/assets/site-search.js?v=7" defer></script>
+<script src="/assets/site-search.js?v=8" defer></script>
 </body>
 </html>

@@ -755,10 +755,645 @@ h3 {
   display: none;
 }
 
+/* ── Wizard v2: answer cards, steppers, live estimate ───────────────────── */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.option-card,
+.check-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.option-card:hover,
+.check-option:hover {
+  border-color: var(--teal-2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.option-card:focus-visible,
+.check-option:focus-within {
+  outline: 3px solid rgba(0, 95, 107, .22);
+  outline-offset: 1px;
+}
+
+.option-card.selected,
+.check-option.selected {
+  border-color: var(--teal);
+  background: #effafb;
+  box-shadow: 0 0 0 3px rgba(0, 95, 107, .1);
+}
+
+.option-key {
+  flex: 0 0 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--soft-2);
+  color: var(--navy);
+  font-size: .78rem;
+  font-weight: 850;
+}
+
+.option-card.selected .option-key {
+  background: var(--teal);
+  color: var(--white);
+}
+
+.option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.option-label {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.option-hint {
+  color: var(--muted);
+  font-size: .8rem;
+  line-height: 1.35;
+}
+
+.check-option {
+  align-items: flex-start;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-control .stepper input {
+  width: 120px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.stepper-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--white);
+  color: var(--navy);
+  font-size: 1.35rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.stepper-btn:hover {
+  border-color: var(--teal);
+  background: #effafb;
+}
+
+.stepper-unit {
+  color: var(--muted);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.question-section {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #92400e;
+  letter-spacing: .08em;
+}
+
+.question-actions {
+  margin-top: 22px;
+}
+
+.key-hint {
+  color: #94a3b8;
+  font-size: .78rem;
+  margin-left: auto;
+}
+
+.question-inner.enter {
+  animation: fn-enter .28s ease both;
+}
+
+.question-card.shake {
+  animation: fn-shake .32s ease;
+}
+
+@keyframes fn-enter {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fn-shake {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.wizard-progress {
+  margin-top: 18px;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.progress-fill {
+  transition: width .3s ease;
+}
+
+.step-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.step-dot {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: var(--white);
+  cursor: pointer;
+}
+
+.step-dot.done {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.step-dot.current {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, .2);
+}
+
+.step-dot:disabled {
+  cursor: default;
+  opacity: .6;
+}
+
+.live-estimate {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy-2), var(--navy) 55%, var(--teal));
+  color: var(--white);
+}
+
+.panel .live-empty {
+  margin: 0;
+  color: rgba(255, 255, 255, .8);
+  font-size: .86rem;
+}
+
+.live-score {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.live-number {
+  font-size: 2.4rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.live-of {
+  color: rgba(255, 255, 255, .7);
+  font-weight: 700;
+}
+
+.live-caption {
+  color: rgba(255, 255, 255, .78);
+  font-size: .78rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.live-track {
+  position: relative;
+  height: 8px;
+  margin: 12px 0 10px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .18);
+}
+
+.live-track span {
+  display: block;
+  height: 100%;
+  width: var(--w, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7dd3e0, #fbbf24);
+  transition: width .35s ease;
+}
+
+.live-track i {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 16px;
+  background: var(--white);
+}
+
+.live-stage {
+  font-size: .84rem;
+  color: rgba(255, 255, 255, .85);
+}
+
+/* ── Results v2: ring, ladder, what-if ─────────────────────────────────── */
+.score-ring {
+  background: conic-gradient(var(--ring-color, var(--teal)) calc(var(--score, 0) * 1%), #e8eef4 0);
+}
+
+.score-ring .ring-tick {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform: rotate(252deg);
+  pointer-events: none;
+}
+
+.score-ring .ring-tick::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 3px;
+  height: 24px;
+  margin-left: -1.5px;
+  background: var(--navy);
+  border-radius: 2px;
+}
+
+.score-ring .ring-tick span {
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%) rotate(-252deg);
+  font-size: .7rem;
+  font-weight: 850;
+  color: var(--navy);
+}
+
+.stage-node {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.stage-node.done {
+  border-top-color: var(--teal);
+  background: #f6fbfc;
+}
+
+.stage-node.done .stage-id {
+  background: #cfeef2;
+  color: var(--teal);
+}
+
+.stage-node.active {
+  transform: translateY(-3px);
+}
+
+.stage-here {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: var(--white);
+  font-size: .66rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+.stage-cost {
+  margin-top: 6px;
+  color: var(--navy);
+  font-size: .76rem;
+  font-weight: 800;
+}
+
+.whatif {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 22px;
+  align-items: center;
+}
+
+.whatif-levers {
+  display: grid;
+  gap: 14px;
+}
+
+.lever {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 54px;
+  gap: 12px;
+  align-items: center;
+}
+
+.lever label {
+  font-weight: 700;
+  color: #344154;
+  font-size: .9rem;
+}
+
+.lever input[type="range"] {
+  width: 100%;
+  accent-color: var(--teal);
+}
+
+.lever output {
+  font-weight: 850;
+  color: var(--navy);
+  text-align: right;
+}
+
+.gate-toggle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -6px;
+  color: #92400e;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.gate-toggle input {
+  accent-color: var(--amber);
+}
+
+.whatif-result {
+  text-align: center;
+  padding: 18px;
+  border-radius: 12px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+}
+
+.whatif-number {
+  display: block;
+  font-size: 2.6rem;
+  font-weight: 850;
+  color: var(--navy);
+  line-height: 1;
+}
+
+.whatif-delta {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 850;
+  color: var(--green);
+}
+
+.panel .whatif-note {
+  margin-top: 8px;
+  font-size: .84rem;
+}
+
+.fact-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--amber);
+  background: #fffbeb;
+  border-radius: 0 8px 8px 0;
+  color: #57534e;
+  font-size: .86rem;
+}
+
+.fact-note a {
+  font-weight: 700;
+}
+
+.roadmap-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.roadmap-progress .progress-track {
+  flex: 1;
+}
+
+.roadmap-progress strong {
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.checklist label:has(input:checked) span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Results v2 detail: metric flags, readiness lists ───────────────────── */
+.bar-cat {
+  display: block;
+  color: #94a3b8;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.bar-row.is-zero .bar-track {
+  background: #fde8e8;
+}
+
+.zero-flag {
+  display: block;
+  color: var(--red);
+  font-size: .7rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.readiness {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.readiness li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #344154;
+}
+
+.check-mark {
+  flex: 0 0 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  color: var(--white);
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.readiness li.met .check-mark {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
+.readiness li strong {
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.section[hidden],
+.panel[hidden] {
+  display: none;
+}
+
+.metric-card.accent {
+  border-top-color: var(--amber);
+}
+
+.bench-head {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 90px;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.bench-row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.bench-row .bar-track {
+  position: relative;
+  overflow: visible;
+}
+
+.bench-row .bench-need {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 19px;
+  background: var(--navy);
+}
+
+.bench-units {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.score-hero.export-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+}
+
+/* Resource cards: flex so a partial last row centers instead of stranding a card. */
+.resource-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.resource-grid > * {
+  flex: 0 1 calc((100% - 28px) / 3);
+  min-width: 0;
+}
+
+.news-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid #f5ddb0;
+  border-left: 4px solid var(--amber);
+  border-radius: var(--radius);
+  background: #fffbeb;
+}
+
+.news-banner p {
+  margin: 0;
+  color: #44403c;
+}
+
+.news-tag {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: var(--white);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 980px) {
   .hero-grid,
   .wizard-layout,
-  .score-hero {
+  .score-hero,
+  .score-hero.export-hero {
     grid-template-columns: 1fr;
   }
 
@@ -766,9 +1401,19 @@ h3 {
     position: static;
   }
 
+  /* Phones and tablets: the question comes first, progress and the live
+     estimate follow it, so nobody scrolls past the sidebar on every step. */
+  .wizard-layout .question-card {
+    order: -1;
+  }
+
   .grid.three,
   .metric-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resource-grid > * {
+    flex-basis: calc((100% - 14px) / 2);
   }
 
   .stage-map {
@@ -803,6 +1448,10 @@ h3 {
     padding: 24px 18px;
   }
 
+  .resource-grid > * {
+    flex-basis: 100%;
+  }
+
   .grid.two,
   .grid.three,
   .metric-strip,
@@ -812,6 +1461,8 @@ h3 {
   }
 
   .bar-row,
+  .bench-row,
+  .bench-head,
   .compare-row,
   .timeline-item {
     grid-template-columns: 1fr;
@@ -820,6 +1471,20 @@ h3 {
 
   .question-card {
     min-height: 0;
+  }
+
+  .option-grid,
+  .whatif,
+  .lever {
+    grid-template-columns: 1fr;
+  }
+
+  .lever {
+    gap: 4px;
+  }
+
+  .key-hint {
+    display: none;
   }
 
   .section-head {

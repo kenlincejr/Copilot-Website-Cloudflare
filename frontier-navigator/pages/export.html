@@ -46,11 +46,13 @@
       </section>
 
       <section class="section panel" data-export-preview>
-        <div class="score-hero">
+        <div class="score-hero export-hero">
           <div>
             <p class="section-kicker">Scorecard</p>
-            <h2><span data-export-score></span>/100 estimated PCS</h2>
-            <p class="lede">Current stage: <strong data-export-stage></strong>. Engagement priority: <strong data-export-priority></strong>.</p>
+            <h2><span data-export-score></span>/100 estimated <span data-export-area></span> points</h2>
+            <p class="lede">Current stage: <strong data-export-stage></strong>.</p>
+            <p class="lede">Designation status: <strong data-export-qualify></strong>.</p>
+            <p class="lede">Engagement priority: <strong data-export-priority></strong>.</p>
           </div>
           <div class="bar-list" data-export-bars></div>
         </div>
@@ -66,12 +68,13 @@
           <p class="section-kicker">Outputs</p>
           <h2>Download or share</h2>
           <div class="action-row" style="margin-top:14px;">
-            <button class="button primary" type="button" data-download-pdf>Download PDF</button>
+            <button class="button primary" type="button" data-download-pdf>Print or save as PDF</button>
             <button class="button secondary" type="button" data-email-bdm>Email BDM</button>
             <button class="button secondary" type="button" data-download-text>Text report</button>
             <button class="button ghost" type="button" data-download-json>Raw JSON</button>
           </div>
-          <p style="margin-top:14px;">If PDF libraries are blocked by the browser, the PDF button opens the print dialog as a fallback.</p>
+          <p style="margin-top:14px;" data-bdm-note></p>
+          <p style="margin-top:8px;">Print opens your browser's print dialog with a clean one-page scorecard. Choose "Save as PDF" as the printer to keep a file.</p>
         </article>
       </section>
     </main>
@@ -81,6 +84,6 @@
   <script src="../assets/js/scoring.js"></script>
   <script src="../assets/js/app.js"></script>
   <script src="../assets/js/export.js"></script>
-<script src="/assets/site-search.js?v=7" defer></script>
+<script src="/assets/site-search.js?v=8" defer></script>
 </body>
 </html>

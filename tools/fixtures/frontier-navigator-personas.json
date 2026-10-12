@@ -1,0 +1,98 @@
+[
+  {
+    "id": "P01", "name": "Not-enrolled MSP starting on Modern Work",
+    "answers": { "programStatus": "not_enrolled", "targetArea": "modern_work", "mw_netAdds": "3", "mw_intPeople": "1", "mw_advPeople": "0", "mw_association": "csp", "mw_mauGrowth": "300", "mw_deployments": "1", "goal12Mo": "first_designation", "hasBdm": "no" },
+    "expect": { "total": 18, "qualified": false, "stage": 0, "nextStage": "Solutions Partner", "priority": "Foundational", "zeroMetrics": ["advanced"],
+      "mentions": ["Enroll in the Microsoft AI Cloud Partner Program", "MS-102", "Advanced certifications is at zero"], "never": ["Action Pack", "Benefits Package"] }
+  },
+  {
+    "id": "P02", "name": "Modern Work member one point short",
+    "answers": { "programStatus": "member", "targetArea": "modern_work", "mw_netAdds": "8", "mw_intPeople": "2", "mw_advPeople": "1", "mw_association": "cpor", "mw_mauGrowth": "300", "mw_deployments": "2", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 69, "qualified": false, "stage": 0, "priority": "High", "zeroMetrics": [],
+      "mentions": ["about 1 more point to reach 70", "1 more deployment would add about 5 points"], "never": ["1 more points"] }
+  },
+  {
+    "id": "P03", "name": "85 points but no advanced certification",
+    "answers": { "programStatus": "member", "targetArea": "modern_work", "mw_netAdds": "10", "mw_intPeople": "2", "mw_advPeople": "0", "mw_association": "csp", "mw_mauGrowth": "2000", "mw_deployments": "10", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 85, "qualified": false, "priority": "High", "zeroMetrics": ["advanced"],
+      "mentions": ["Advanced certifications is at zero", "blocks the designation whatever the total", "MS-102"], "never": ["Purchase the Solutions Partner designation"] }
+  },
+  {
+    "id": "P04", "name": "Partner Launch holder who already qualifies",
+    "answers": { "programStatus": "package", "targetArea": "modern_work", "mw_netAdds": "10", "mw_intPeople": "2", "mw_advPeople": "1", "mw_association": "cpor", "mw_mauGrowth": "500", "mw_deployments": "5", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 100, "qualified": true, "stage": 1, "nextStage": "Solutions Partner", "priority": "High",
+      "mentions": ["Qualified is not enrolled", "$4,875/yr", "Purchase the Solutions Partner designation"], "never": ["more points to reach 70"] }
+  },
+  {
+    "id": "P05", "name": "Security MSP missing the SC-500 gate",
+    "answers": { "programStatus": "member", "targetArea": "security", "sec_netAdds": "5", "sec_sc500": "0", "sec_sc200": "1", "sec_step3": "3", "sec_userGrowth": "1000", "sec_deployments": "6", "goal12Mo": "first_designation", "hasBdm": "unknown" },
+    "expect": { "total": 64, "qualified": false, "priority": "High", "zeroMetrics": [],
+      "mentions": ["capped at 4 of 40", "Certify one SC-500 holder to unlock the rest of skilling."], "never": ["AZ-500", "SC-200 holder"] }
+  },
+  {
+    "id": "P06", "name": "Modern Work partner adding Security",
+    "answers": { "programStatus": "designated", "designationsHeld": ["modern_work"], "specializationsHeld": [], "targetArea": "security", "sec_netAdds": "5", "sec_sc500": "1", "sec_sc200": "1", "sec_step3": "4", "sec_userGrowth": "1000", "sec_deployments": "6", "goal12Mo": "grow_revenue", "hasBdm": "yes" },
+    "expect": { "total": 100, "qualified": true, "stage": 2, "nextStage": "Microsoft 365 Copilot Specialization", "priority": "Medium",
+      "mentions": ["added at no extra cost"], "never": ["Purchase the Solutions Partner designation", "+$4,875"] }
+  },
+  {
+    "id": "P07", "name": "Azure Infrastructure shop without AZ-305",
+    "answers": { "programStatus": "member", "targetArea": "infrastructure", "infra_netAdds": "2", "infra_az104": "1", "infra_intPeople": "2", "infra_az305": "0", "infra_advPeople": "0", "infra_acrGrowth": "15", "infra_services": "3", "goal12Mo": "first_designation", "hasBdm": "no" },
+    "expect": { "total": 53, "qualified": false, "priority": "Medium", "zeroMetrics": ["advanced"],
+      "mentions": ["needs at least one AZ-305 holder first", "Partner Admin Link", "in Azure Network Engineer or Windows Server Hybrid Administrator"], "never": ["MS-102", "MAU", "AZ-104 first (gate), then"] }
+  },
+  {
+    "id": "P08", "name": "Data & AI startup ten points out",
+    "answers": { "programStatus": "member", "targetArea": "data_ai", "dai_netAdds": "1", "dai_az104": "1", "dai_az305": "1", "dai_people": "3", "dai_acrGrowth": "25", "dai_services": "5", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 60, "qualified": false, "priority": "High", "zeroMetrics": [],
+      "mentions": ["about 10 more points to reach 70", "1 more customer would add about 10 points", "$500+ Azure consumed revenue"], "never": ["MAU"] }
+  },
+  {
+    "id": "P09", "name": "Business Applications partner, full marks",
+    "answers": { "programStatus": "package", "targetArea": "business_apps", "ba_netAdds": "5", "ba_intPeople": "5", "ba_advPeople": "2", "ba_mcvGrowth": "30", "ba_deployments": "5", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 100, "qualified": true, "stage": 1, "priority": "High",
+      "mentions": ["Purchase the Solutions Partner designation", "AB-100"], "never": ["$500"] }
+  },
+  {
+    "id": "P10", "name": "Modern Work partner ready for the Copilot audit",
+    "answers": { "programStatus": "designated", "designationsHeld": ["modern_work"], "specializationsHeld": [], "targetArea": "modern_work", "mw_netAdds": "10", "mw_intPeople": "2", "mw_advPeople": "1", "mw_association": "csp", "mw_mauGrowth": "2000", "mw_deployments": "10", "goal12Mo": "copilot_spec", "cop_mauGrowth": "1500", "cop_customers": "6", "cop_sc401": "5", "cop_agentCerts": "5", "hasBdm": "yes" },
+    "expect": { "total": 100, "stage": 2, "nextStage": "Microsoft 365 Copilot Specialization", "priority": "High", "copilotReady": true,
+      "mentions": ["Book the Microsoft 365 Copilot specialization audit", "about $2,700"], "never": ["Second Designation", "case stud"] }
+  },
+  {
+    "id": "P11", "name": "Infrastructure-only partner chasing Copilot",
+    "answers": { "programStatus": "designated", "designationsHeld": ["infrastructure"], "specializationsHeld": [], "targetArea": "infrastructure", "infra_netAdds": "3", "infra_az104": "1", "infra_intPeople": "4", "infra_az305": "1", "infra_advPeople": "4", "infra_acrGrowth": "20", "infra_services": "5", "goal12Mo": "copilot_spec", "cop_mauGrowth": "1200", "cop_customers": "5", "cop_sc401": "5", "cop_agentCerts": "5", "hasBdm": "yes" },
+    "expect": { "total": 100, "stage": 2, "copilotReady": false,
+      "mentions": ["needs a Modern Work, Business Applications, or Security designation"], "never": ["Book the Microsoft 365 Copilot specialization audit"] }
+  },
+  {
+    "id": "P12", "name": "Copilot specialist working toward Frontier",
+    "answers": { "programStatus": "designated", "designationsHeld": ["modern_work", "security", "data_ai"], "specializationsHeld": ["copilot", "data_security"], "targetArea": "security", "sec_netAdds": "5", "sec_sc500": "1", "sec_sc200": "1", "sec_step3": "4", "sec_userGrowth": "1000", "sec_deployments": "6", "goal12Mo": "frontier_spec", "fr_titan": "2", "fr_dp600": "3", "cop_sc401": "1", "hasBdm": "yes" },
+    "expect": { "total": 100, "stage": 3, "nextStage": "Frontier Prerequisites", "priority": "High", "frontierMet": 3,
+      "mentions": ["Frontier Partner specialization: 3 of 6 requirements still open", "Titan"], "never": ["Book the Microsoft 365 Copilot specialization audit"] }
+  },
+  {
+    "id": "P13", "name": "All Frontier prerequisites in hand",
+    "answers": { "programStatus": "designated", "designationsHeld": ["security", "data_ai"], "specializationsHeld": ["copilot", "data_security", "iam", "ai_apps"], "targetArea": "data_ai", "dai_netAdds": "3", "dai_az104": "2", "dai_az305": "1", "dai_people": "8", "dai_acrGrowth": "20", "dai_services": "5", "goal12Mo": "frontier_spec", "fr_titan": "5", "fr_dp600": "3", "hasBdm": "yes" },
+    "expect": { "total": 100, "stage": 4, "nextStage": "Frontier Partner Specialization", "frontierMet": 6,
+      "mentions": ["Book the Frontier Partner specialization audit", "about $4,000"], "never": ["requirements still open"] }
+  },
+  {
+    "id": "P14", "name": "Frontier Partner maintaining status",
+    "answers": { "programStatus": "designated", "designationsHeld": ["modern_work", "security", "data_ai"], "specializationsHeld": ["copilot", "data_security", "iam", "ai_platform", "frontier"], "targetArea": "modern_work", "mw_netAdds": "10", "mw_intPeople": "2", "mw_advPeople": "1", "mw_association": "cpor", "mw_mauGrowth": "500", "mw_deployments": "5", "goal12Mo": "grow_revenue", "hasBdm": "yes" },
+    "expect": { "total": 100, "stage": 5, "priority": "Strategic",
+      "mentions": ["Keep all four prerequisite specializations active", "renewal looks safe", "Frontier Partner depends on every one of them"], "never": ["Purchase the Solutions Partner designation"] }
+  },
+  {
+    "id": "P15", "name": "Brand-new member with nothing yet",
+    "answers": { "programStatus": "member", "targetArea": "modern_work", "mw_netAdds": "0", "mw_intPeople": "0", "mw_advPeople": "0", "mw_association": "not_sure", "mw_mauGrowth": "0", "mw_deployments": "0", "goal12Mo": "unsure", "hasBdm": "unknown" },
+    "expect": { "total": 0, "qualified": false, "stage": 0, "priority": "Foundational", "zeroMetrics": ["netAdds", "intermediate", "advanced", "usage", "deployments"],
+      "mentions": ["about 70 more points to reach 70"], "never": ["NaN"] }
+  },
+  {
+    "id": "P16", "name": "Modern Work partner unsure of association type",
+    "answers": { "programStatus": "member", "targetArea": "modern_work", "mw_netAdds": "10", "mw_intPeople": "2", "mw_advPeople": "1", "mw_association": "not_sure", "mw_mauGrowth": "500", "mw_deployments": "5", "goal12Mo": "first_designation", "hasBdm": "yes" },
+    "expect": { "total": 65, "qualified": false, "priority": "High",
+      "mentions": ["about 5 more points to reach 70", "CSP or a CPOR claim"], "never": [] }
+  }
+]
