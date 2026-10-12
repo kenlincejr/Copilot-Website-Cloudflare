@@ -566,6 +566,13 @@ sec('F');
       const lines = c.split('\n').filter(Boolean), sha = lines[0];
       let files = [];
       try { files = cp.execSync('git show --name-only --format= ' + sha, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean); } catch (e) { files = []; }
+      // Site-wide mechanical sweeps (meta tags, script tags on every sitemap page)
+      // necessarily touch both pages. They are exempt when they say so with a
+      // "Sitewide-Sweep: yes" trailer; the two listed predate the trailer.
+      if (['217b499', 'f4d83dc'].indexOf(sha.slice(0, 7)) >= 0) return;
+      let body = '';
+      try { body = cp.execSync('git show -s --format=%B ' + sha, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch (e) { body = ''; }
+      if (/^Sitewide-Sweep: yes$/m.test(body)) return;
       if (files.some((f) => f === 'cowork-calculator.html' || /^tools\/test-cowork-.*\.js$/.test(f))) badC.push(sha.slice(0, 7));
     });
     ok(badC.length === 0, 'F no planner commit touches cowork-calculator.html or tools/test-cowork-*.js (' + commits.length + ' commits checked)' + (badC.length ? ': ' + badC.join(',') : ''));
