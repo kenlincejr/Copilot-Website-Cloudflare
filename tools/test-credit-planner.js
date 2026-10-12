@@ -1069,7 +1069,7 @@ sec('QA-E');
   eq(evs(dflt), evs(none), 'QA-E H-02 cards in Default (draw on) stop when unassigned cards do');
   ok(dflt.enforcement.events.every((e) => e.day > 1), 'QA-E H-02 no day-1 stop');
   const fl = none.enforcement.events.filter((e) => e.kind === 'flows')[0], ag = none.enforcement.events.filter((e) => e.kind === 'agents')[0];
-  ok(fl && ag && fl.day === 13 && ag.day === 16, 'QA-E H-02 flows day 13, agents day 16 (high end)');
+  ok(fl && ag && fl.dayHigh === 13 && ag.dayHigh === 16 && fl.day === 14 && ag.day === 17, 'QA-E H-02 flows day 13, agents day 16 at the high end (14 and 17 in the middle scenario)');
   const d = dflt.enforcement.environments[0];
   ok(d.cuts.flowsDay.hi === 13 && d.cuts.agentsDay.hi === 16, 'QA-E H-02 the Default row is cut against allocation + remainder');
   eq((dflt.enforcement.m365.drawOnSpill || {}).hi, 48720, 'QA-E H-02 the draw-on spill joins the tenant pool');
@@ -1142,6 +1142,32 @@ sec('QA-E');
   eq(firstAgent(s2).lo, 40 * 4 * (2.5 + 5 + 1 * 10), 'QA-E H-13 grounded below the generative share is unchanged (20% of 5 turns = 1)');
   eq(firstAgent(presetState('helpdesk')).lo, 9600, 'QA-E H-13 the helpdesk anchor stays 9,600');
   ok(src.indexOf('Generative turns grounded on tenant data (%)') > -1, 'QA-E H-13 the field is relabeled');
+}
+/* H-14: each enforcement day is the day of the scenario it is labeled with;
+   recommended allocations cover the high end plus the buffer; a partner
+   warning when they exceed prepaid capacity; P-54 reads the actual allocation.
+   SMB trio, 1 pack, no environments: tenant pool 25,000; agents at 31,250:
+   44,660 ÷ 30 → day 21 (middle), 48,720 ÷ 30 → day 20 (high); flows 17 / 16. */
+{
+  const r = E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio'));
+  const ag = r.enforcement.events.filter((e) => e.kind === 'agents')[0], fl = r.enforcement.events.filter((e) => e.kind === 'flows')[0];
+  ok(ag.scen === 'mid' && ag.day === 21 && ag.dayMid === 21 && ag.dayHigh === 20, 'QA-E H-14 agents: day 21 in the middle scenario (20 at the high end)');
+  ok(fl.scen === 'mid' && fl.day === 17 && fl.dayHigh === 16, 'QA-E H-14 flows: day 17 in the middle scenario (16 at the high end)');
+  ok(/middle scenario/.test(ag.text) && /day 20 at the high end/.test(ag.text), 'QA-E H-14 the event text names both scenarios');
+  const p50 = r.warnings.filter((w) => w.id === 'P-50')[0];
+  ok(p50 && /around day 21 of November 2026 in the middle scenario/.test(p50.msg), 'QA-E H-14 P-50 cites the middle-scenario day and says so');
+  // Allocations ≥ high × buffer; Σ > prepaid warns the partner
+  const envs = (prod) => [{ name: 'Production', kind: 'production', allocation: prod, payg: false, tenantDraw: false, managed: false },
+                          { name: 'Sandbox', kind: 'sandbox', allocation: 5000, payg: false, tenantDraw: false, managed: false }];
+  const st = (prod) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.environments = envs(prod); s.studio.agents.forEach((a) => { a.env = 'Production'; }); return E.compute(s); };
+  let rr = st(50000);
+  const g = rr.governance.allocations.filter((a) => a.name === 'Production')[0];
+  eq(g.credits, 57000, 'QA-E H-14 Production allocation = roundUp(48,720 × 1.15) = 57,000');
+  ok(g.credits >= 48720 && !g.flowsBelowHigh, 'QA-E H-14 flows never block inside the modeled range');
+  ok(rr.governance.overPrepaid && rr.governance.allocatedTotal === 62000 && rr.warnings.some((w) => w.id === 'P-66' && w.aud === 'partner' && /62,000/.test(w.msg) && /25,000/.test(w.msg)), 'QA-E H-14 P-66: 62,000 allocated against 25,000 prepaid');
+  ok(!rr.warnings.some((w) => w.id === 'P-54'), 'QA-E H-14 P-54 stays quiet when the actual allocation (50,000) covers the high end');
+  rr = st(45000);
+  ok(rr.warnings.some((w) => w.id === 'P-54' && /Production/.test(w.msg)), 'QA-E H-14 P-54 fires on an actual allocation of 45,000 under 48,720');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

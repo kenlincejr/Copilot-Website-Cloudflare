@@ -2415,6 +2415,16 @@ footer.pagefoot p { margin:0 0 10px; }
     });
     SCEN.forEach(function (sc) { tenantPpac[sc] += spill[sc]; });
     var events = [], CAL = 30;
+    /* Each event carries the day of the scenario it is labeled with (QA
+       H-14): the middle-scenario day when the middle scenario reaches it,
+       else the high-end day, marked "high end only". */
+    function dayEvent(d, ev) {
+      var mid = d.mid || null, hi = d.hi || null;
+      ev.day = mid || hi; ev.dayMid = mid; ev.dayHigh = hi; ev.scen = mid ? 'mid' : 'hi';
+      ev.inScen = mid ? ' in the middle scenario' : ' at the high end';
+      ev.text += (mid ? ' (middle scenario' + (hi && hi !== mid ? '; day ' + hi + ' at the high end' : '') + ')' : ' (high end only)') + '.';
+      return ev;
+    }
     function cut(scope, cons, cap, payg, envIndex, quiet) {
       var out = { flowsDay: { mid: null, hi: null }, agentsDay: { mid: null, hi: null } };
       if (payg) return out;
@@ -2424,10 +2434,10 @@ footer.pagefoot p { margin:0 0 10px; }
         if (cons[sc] > cap * RC.enforceAgents.v / 100) out.agentsDay[sc] = dayOf(cap * RC.enforceAgents.v / 100, perDay);
       });
       if (quiet) return out;
-      if (out.flowsDay.hi) events.push({ day: out.flowsDay.hi, kind: 'flows', scope: scope, envIndex: envIndex, scen: out.flowsDay.mid ? 'mid' : 'hi',
-        text: 'Agent flows in ' + scope + ' are blocked at 100% of ' + fmtInt(cap) + ' credits' + (out.flowsDay.mid ? '' : ' (high end only)') + '.' });
-      if (out.agentsDay.hi) events.push({ day: out.agentsDay.hi, kind: 'agents', scope: scope, envIndex: envIndex, scen: out.agentsDay.mid ? 'mid' : 'hi',
-        text: 'Custom agents in ' + scope + ' are disabled at 125% (' + fmtInt(cap * RC.enforceAgents.v / 100) + ' credits)' + (out.agentsDay.mid ? '' : ' (high end only)') + '.' });
+      if (out.flowsDay.hi) events.push(dayEvent(out.flowsDay, { kind: 'flows', scope: scope, envIndex: envIndex,
+        text: 'Agent flows in ' + scope + ' are blocked at 100% of ' + fmtInt(cap) + ' credits' }));
+      if (out.agentsDay.hi) events.push(dayEvent(out.agentsDay, { kind: 'agents', scope: scope, envIndex: envIndex,
+        text: 'Custom agents in ' + scope + ' are disabled at 125% (' + fmtInt(cap * RC.enforceAgents.v / 100) + ' credits)' }));
       return out;
     }
     var envOut = te.environments.map(function (e, k) {
@@ -2461,7 +2471,8 @@ footer.pagefoot p { margin:0 0 10px; }
         var txt = 'The average Cowork user reaches the ' + fmtInt(cap) + '-credit monthly limit on working day ' + capDay.hi + ' at the high end' +
           (capDay.mid ? ' (day ' + capDay.mid + ' in the middle scenario).' : '; the middle scenario stays under it.');
         capEvents.push({ dayMid: capDay.mid, dayHigh: capDay.hi, text: txt });
-        events.push({ day: capDay.hi, kind: 'userCap', scope: 'Cowork users', scen: capDay.mid ? 'mid' : 'hi', text: txt });
+        events.push({ day: capDay.mid || capDay.hi, dayMid: capDay.mid, dayHigh: capDay.hi, kind: 'userCap', scope: 'Cowork users', scen: capDay.mid ? 'mid' : 'hi',
+                      inScen: capDay.mid ? ' in the middle scenario' : ' at the high end', text: txt });
       }
     }
     events.sort(function (a, b) { return a.day - b.day || (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0); });
@@ -2497,14 +2508,21 @@ footer.pagefoot p { margin:0 0 10px; }
     var allocations = en.environments.filter(function (e) { return !e.payg; }).map(function (e) {
       /* A sandbox runs builds and tests, not published agents: with no agents
          in it, its own allocation is the figure to set. */
-      var al = e.kind === 'sandbox' && !(e.consumption.hi > 0) ? e.allocation : roundUp(e.consumption.hi * buf * 100 / RC.enforceAgents.v, 1000);
+      /* Sized at the high end plus the buffer (QA H-14), so flows (100%) never
+         block inside the modeled range; agents switch off only at 125% of it. */
+      var al = e.kind === 'sandbox' && !(e.consumption.hi > 0) ? e.allocation : roundUp(e.consumption.hi * buf, 1000);
       return { name: e.name, credits: al, agentsCutoff: al * RC.enforceAgents.v / 100, flowsBelowHigh: al < e.consumption.hi, tenantDraw: e.kind === 'sandbox' ? false : e.tenantDraw };
     });
+    var allocatedTotal = sum(allocations.map(function (a) { return a.credits; }));
+    /* The partner's own allocations: an environment with tenant draw off whose
+       allocation sits below its high-end use blocks flows before agents reach 125%. */
+    var actualBelowHigh = en.environments.filter(function (e) { return !e.payg && !e.tenantDraw && e.allocation > 0 && e.consumption.hi > e.allocation; }).map(function (e) { return e.name; });
     var retention = agents.filter(function (a) { return !a.paused && a.sessions > 0; }).map(function (a) { return { name: a.name, days: a.retentionDays }; });
     return {
       bufferPct: BUFFER_PCT, tenantLimit: tenantLimit === null ? null : { credits: tenantLimit, usd: usdOf(tenantLimit) },
       userLimit: userLimit === null ? null : { credits: userLimit, usd: usdOf(userLimit), aboveDefault: userLimit > RC.capDefault.v },
       agentLimits: agentLimits, allocations: allocations, retention: retention,
+      allocatedTotal: allocatedTotal, prepaidMonthly: en.prepaidMonthly, overPrepaid: en.prepaidMonthly > 0 && allocatedTotal > en.prepaidMonthly, actualBelowHigh: actualBelowHigh,
       alerts: tenantLimit === null ? [] : [50, 80, 100].map(function (p) { return { pct: p, credits: tenantLimit * p / 100 }; }),
       alertPcts: [50, 80, 100],
       autoApply: { decided: s.autopilot.checklist.autoApplyDecision === 'yes', status: s.autopilot.checklist.autoApplyDecision,
@@ -2875,20 +2893,22 @@ footer.pagefoot p { margin:0 0 10px; }
     }
     var evA = en.events.filter(function (e) { return e.kind === 'agents'; })[0];
     if (evA) warn.push(W('P-50', evA.scen === 'mid' ? 'risk' : 'warn', en.basisPaygOverflow
-      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, custom agents go dark at 125% of prepaid capacity, around day ' + evA.day + ' of ' + monthName(en.peakMonth) + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
-      : 'Custom agents go dark at 125% of prepaid capacity: around day ' + evA.day + ' of ' + monthName(en.peakMonth) + '. Treat it as a service-level event and set per-agent limits on day one.',
+      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, custom agents go dark at 125% of prepaid capacity, around day ' + evA.day + ' of ' + monthName(en.peakMonth) + evA.inScen + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
+      : 'Custom agents go dark at 125% of prepaid capacity: around day ' + evA.day + ' of ' + monthName(en.peakMonth) + evA.inScen + '. Treat it as a service-level event and set per-agent limits on day one.',
       { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evA) : [] }));
     var evF = en.events.filter(function (e) { return e.kind === 'flows'; })[0];
     if (evF) warn.push(W('P-51', evF.scen === 'mid' ? 'risk' : 'warn', en.basisPaygOverflow
-      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, agent flows stop at 100% of prepaid capacity, around day ' + evF.day + ' of ' + monthName(en.peakMonth) + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
-      : 'Agent flows stop at 100% of prepaid capacity: around day ' + evF.day + ' of ' + monthName(en.peakMonth) + '.',
+      ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, agent flows stop at 100% of prepaid capacity, around day ' + evF.day + ' of ' + monthName(en.peakMonth) + evF.inScen + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
+      : 'Agent flows stop at 100% of prepaid capacity: around day ' + evF.day + ' of ' + monthName(en.peakMonth) + evF.inScen + '.',
       { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evF) : [] }));
     if (en.m365.starvation.hi) warn.push(W('P-52', en.m365.starvation.mid ? 'risk' : 'warn', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits) leave ' + fmtInt(en.remainder) +
       ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.hi) + ' at the high end. Cowork spills to pay-as-you-go sooner.', { aud: 'customer' }));
     if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + monthName(cap.firstMonth) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
       '-credit monthly limit per user (about ' + fmtUsd(usdOf(RC.capDefault.v)) + '). ' + (cap.day.hi ? 'The average Cowork user reaches it as early as working day ' + cap.day.hi + '. Raise the limit to the governance figure or users stop mid-month.' : 'Modeled users stay under it.'),
       { aud: 'customer' }));
-    if (gv.allocations.some(function (a) { return a.flowsBelowHigh; })) warn.push(W('P-54', 'info', 'At least one environment allocation sits below its own high-end use, so its flows can block at 100% before agents reach 125%.'));
+    if (gv.actualBelowHigh.length) warn.push(W('P-54', 'info', 'The allocation for ' + list(gv.actualBelowHigh) + ' sits below its own high-end use, so its flows can block at 100% before agents reach 125%.'));
+    if (gv.overPrepaid) warn.push(W('P-66', 'warn', 'The recommended environment allocations add up to ' + fmtInt(gv.allocatedTotal) + ' credits a month, more than the ' + fmtInt(gv.prepaidMonthly) +
+      ' the recommended plan prepays. Applied as they are, they leave nothing for Microsoft 365 and the tenant pool: buy more packs, or link the environments to pay-as-you-go and allocate less.'));
     if (cap.source === 'manual' && cap.day.hi) warn.push(W('P-55', 'warn', 'The per-user limit of ' + fmtInt(cap.cap) + ' credits is below modeled Cowork use.', { aud: 'customer' }));
     if (s.autopilot.checklist.autoApplyDecision !== 'yes') warn.push(W('P-56', 'info', 'Spending policies have “Auto-apply new services” on by default. Decide whether new services such as Autopilot should join existing policies automatically.', { aud: 'customer' }));
     if (cap.excluded && ac.seats.business > 0 && ac.cspNewBusiness === 'yes') warn.push(W('P-57', 'info', 'The December 1 default is not available at first in this country, so no automatic limit is modeled.'));
@@ -3428,7 +3448,7 @@ footer.pagefoot p { margin:0 0 10px; }
      environment and tenant pool move to Production (Business Central agents
      stay where they are until the partner relinks them). Allocations then
      come from the governance figures: an environment's high-end peak-month
-     use plus the buffer, sized so agents switch off at 125% of it. A sandbox
+     use plus the buffer, so flows never block inside the modeled range. A sandbox
      gets the GitHub build high end plus 10%, or keeps its own figure, or a
      5,000-credit planner placeholder. Pay-as-you-go environments are exempt
      and keep their allocation. */
