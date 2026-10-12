@@ -1083,13 +1083,19 @@ body.embedded .hub-link { display:none !important; }
       copilotComponent:30.00, prov:'ms-verified', factId:'F-049',
       blurb:'Includes Copilot + Agent 365 + Entra Suite.' },
     // Non-Copilot bases → NOT Cowork-eligible
-    { id:'bbasic', name:'M365 Business Basic', usd:6.00, cap:300, copilot:false, prov:'editorial' },
-    { id:'bstd',   name:'M365 Business Standard', usd:12.50, cap:300, copilot:false, prov:'editorial' },
+    // QA C-09 / L-08: the four base prices re-read from microsoft.com plans
+    // and pricing, live 2026-10-11 (Basic $6.00 -> $7.00, Standard $12.50 ->
+    // $14.00, E3 $36.00 -> $39.00; E5 $60 now published, no longer implied).
+    { id:'bbasic', name:'M365 Business Basic', usd:7.00, cap:300, copilot:false, prov:'ms-verified', factId:'F-205',
+      src:'M365 Business Basic $7.00 user/month, microsoft.com plans and pricing, 2026-10-11 (F-205)' },
+    { id:'bstd',   name:'M365 Business Standard', usd:14.00, cap:300, copilot:false, prov:'ms-verified', factId:'F-206',
+      src:'M365 Business Standard $14.00 user/month, microsoft.com plans and pricing, 2026-10-11 (F-206)' },
     { id:'bprem',  name:'M365 Business Premium', usd:22.00, cap:300, copilot:false, prov:'ms-verified',
       src:'Microsoft SMB pricing, US annual' },
-    { id:'e3',     name:'Microsoft 365 E3', usd:36.00, cap:null, copilot:false, prov:'editorial' },
-    { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-modeled',
-      note:'Implied by the E7 a-la-carte arithmetic ($60+$30+$12+$15=$117).' }
+    { id:'e3',     name:'Microsoft 365 E3', usd:39.00, cap:null, copilot:false, prov:'ms-verified', factId:'F-207',
+      src:'Microsoft 365 E3 $39.00 user/month, microsoft.com enterprise plans and pricing, 2026-10-11 (F-207)' },
+    { id:'e5',     name:'Microsoft 365 E5', usd:60.00, cap:null, copilot:false, prov:'ms-verified', factId:'F-208',
+      src:'Microsoft 365 E5 $60.00 user/month, microsoft.com enterprise plans and pricing, 2026-10-11 (F-208)' }
   ];
   // Null prototype: a lookup keyed by user-supplied text must not resolve
   // 'toString' to a function and price a license off Object.prototype.
@@ -2343,7 +2349,7 @@ body.embedded .hub-link { display:none !important; }
        seats this tenant already owns. */
     // Each add-on carries its OWN prerequisite, not a single global floor:
     // Copilot Business sits on an SMB base, the enterprise add-on requires E3
-    // or better. Pricing the enterprise add-on on a $6 Business Basic base
+    // or better. Pricing the enterprise add-on on a $7 Business Basic base
     // would understate it by $30 a seat.
     /* An owned base only qualifies for an add-on it can actually carry.
        Counting every non-Copilot seat as a base let a 250-seat E3 estate
@@ -4450,7 +4456,7 @@ body.embedded .hub-link { display:none !important; }
               (L.baseSeatsNeeded === 1 ? '' : 's') + ' those owned licenses do not already cover'
             : '') + '.</p>' +
           '<div class="tablewrap"><table class="dtable"><thead><tr><th>Path</th><th style="text-align:right;">$/user</th><th style="text-align:right;">$/month</th><th>Gaps closed</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60 &mdash; a price implied by this E7 a-la-carte arithmetic, not read from a price list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
+          '<p class="srcline">At <b>Microsoft list</b>, E7 at ' + usd(L.e7.list) + '/user/mo bundles E5 ($60, Microsoft list), Copilot ($30), Entra Suite ($12) and Agent 365 ($15) &mdash; ' + usd(L.e7.alacarte) + ' assembled separately, so E7 ' + (L.e7.delta >= 0
             ? 'saves ' + usd(L.e7.delta) + '/user/mo (' + L.e7.pct.toFixed(1) + '%)'
             : 'costs ' + usd(-L.e7.delta) + '/user/mo more than its own components at the price you entered') + '. That comparison stays on list prices whichever basis you are quoting, because it is an argument about Microsoft\'s bundle against Microsoft\'s own components. Suites list at $10 each, $15 combined, 300-seat cap. Confirm current pricing before quoting, and read it beside <a class="docref" href="coworksession40.html#section-6" target="_blank" rel="noopener">section 6, the Licensing Snapshot</a>.</p>' +
           /* NCE term line (R6e, finding #16) — customer-visible, mirroring

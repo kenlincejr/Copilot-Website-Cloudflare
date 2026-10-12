@@ -2,8 +2,8 @@
  "schema_version": 1,
  "generated": "2026-08-26",
  "phase": "3 - researched; values in `new_value` are verified, `value` is what the site still says",
- "fact_count": 204,
- "occurrence_count": 295,
+ "fact_count": 208,
+ "occurrence_count": 299,
  "facts": [
   {
    "id": "F-001",
@@ -4840,6 +4840,94 @@
    "notes": "Same range as the Cowork simulator's first ladder rung. Prefill for the planner's assessment service line. 2026-10-11 research pass for the Copilot Credit Planner (Track B).",
    "occurrences": [],
    "new_value": "",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-205",
+   "kind": "money",
+   "value": "$7.00",
+   "label": "M365 Business Basic list price (no Copilot), US annual",
+   "type": "microsoft-reported",
+   "source_url": "https://www.microsoft.com/en-us/microsoft-365/business/compare-all-microsoft-365-business-products",
+   "as_of": "2026-10-11",
+   "verified": true,
+   "notes": "Cowork calculator SKU catalog base price. Was $6.00 in the tool; microsoft.com plans and pricing shows $7.00 user/month paid yearly, live 2026-10-11 (QA audit C-09).",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1090,
+     "anchor_unique": true,
+     "anchor": "M365 Business Basic $7.00 user/month",
+     "context": "SKU catalog src string: M365 Business Basic $7.00 user/month"
+    }
+   ],
+   "new_value": "$7.00/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-206",
+   "kind": "money",
+   "value": "$14.00",
+   "label": "M365 Business Standard list price (no Copilot), US annual",
+   "type": "microsoft-reported",
+   "source_url": "https://www.microsoft.com/en-us/microsoft-365/business/compare-all-microsoft-365-business-products",
+   "as_of": "2026-10-11",
+   "verified": true,
+   "notes": "Cowork calculator SKU catalog base price. Was $12.50 in the tool; microsoft.com plans and pricing shows $14.00 user/month paid yearly, live 2026-10-11 (QA audit C-09).",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1092,
+     "anchor_unique": true,
+     "anchor": "M365 Business Standard $14.00 user/month",
+     "context": "SKU catalog src string: M365 Business Standard $14.00 user/month"
+    }
+   ],
+   "new_value": "$14.00/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-207",
+   "kind": "money",
+   "value": "$39.00",
+   "label": "Microsoft 365 E3 list price (no Copilot), US annual",
+   "type": "microsoft-reported",
+   "source_url": "https://www.microsoft.com/en-us/microsoft-365/enterprise/microsoft365-plans-and-pricing",
+   "as_of": "2026-10-11",
+   "verified": true,
+   "notes": "Cowork calculator SKU catalog base price. Was $36.00 in the tool; microsoft.com enterprise plans and pricing shows $39.00 user/month annual commitment, live 2026-10-11 (QA audit C-09).",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1096,
+     "anchor_unique": true,
+     "anchor": "Microsoft 365 E3 $39.00 user/month",
+     "context": "SKU catalog src string: Microsoft 365 E3 $39.00 user/month"
+    }
+   ],
+   "new_value": "$39.00/user/mo",
+   "status": "CONFIRMED"
+  },
+  {
+   "id": "F-208",
+   "kind": "money",
+   "value": "$60",
+   "label": "Microsoft 365 E5 list price (no Copilot), US annual",
+   "type": "microsoft-reported",
+   "source_url": "https://www.microsoft.com/en-us/microsoft-365/enterprise/microsoft365-plans-and-pricing",
+   "as_of": "2026-10-11",
+   "verified": true,
+   "notes": "Cowork calculator SKU catalog base price and the E5 line of the E7 a-la-carte comparison. Previously labeled implied by the E7 arithmetic; now published on microsoft.com enterprise plans and pricing, live 2026-10-11 (QA audit L-08).",
+   "occurrences": [
+    {
+     "file": "cowork-calculator.html",
+     "line": 1098,
+     "anchor_unique": true,
+     "anchor": "Microsoft 365 E5 $60.00 user/month",
+     "context": "SKU catalog src string: Microsoft 365 E5 $60.00 user/month"
+    }
+   ],
+   "new_value": "$60/user/mo",
    "status": "CONFIRMED"
   }
  ],

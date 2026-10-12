@@ -75,8 +75,10 @@ function assertCopyClean(r, m) {
   const near = (got, want, label) => ok(Math.abs(got - want) < 0.01, 'golden: ' + label + ' (got ' + got + ', want ' + want + ')');
   near(c.monthlyCredits, 755000, 'monthlyCredits');
   near(c.monthlyCowork, 7550, 'monthlyCowork');
-  near(c.licenseMonthly, 2780, 'licenseMonthly');
-  near(c.allInMonthly, 10330, 'allInMonthly');
+  // QA C-09 moved these deliberately (Business Standard $12.50 -> $14.00 on
+  // the 40 stock seats): licenseMonthly 2,780 -> 2,840; allInMonthly 10,330 -> 10,390.
+  near(c.licenseMonthly, 2840, 'licenseMonthly');
+  near(c.allInMonthly, 10390, 'allInMonthly');
   near(c.coworkLo, 5285, 'coworkLo');
   near(c.coworkHi, 9815, 'coworkHi');
   near(c.annualCredits, 9060000, 'annualCredits');
@@ -592,8 +594,9 @@ function assertCopyClean(r, m) {
      'ratio explainer names the cop_ent catalog price');
   ok(!/perActiveMs \/ 18/.test(src) && !/perActiveMs \/ 30/.test(src),
      'no bare price literal left in the ratio-explainer math');
-  ok(/implied by this E7 a-la-carte arithmetic, not read from a price list/.test(src),
-     'the E5 srcline matches its ms-modeled tag');
+  // QA L-08: E5 $60 is now published on microsoft.com, so the srcline says list.
+  ok(/bundles E5 \(\$60, Microsoft list\)/.test(src) && !/implied by this E7 a-la-carte arithmetic/.test(src),
+     'the E5 srcline matches its ms-verified tag');
   ok(/The 2\.6&times; benchmark, honestly ' \+ provPill\('editorial'\)/.test(src),
      'ratio whybox header carries the editorial pill');
   ok(/TD SYNNEX editorial observation<\/b>/.test(src),
@@ -624,11 +627,14 @@ function assertCopyClean(r, m) {
     // QA C-02 moved the two add-on rows onto the all-in basis: they now carry
     // the 40 owned Business Standard bases ($12.50 x 40 = $500) as well.
     // cop_biz 21 -> 27.25 ($1,680 -> $2,180); cop_ent 48 -> 54.25 ($3,840 -> $4,340).
-    cop_biz:          { perUserAllIn: 27.25, monthly: 2180, baseSeats: 40, baseUsd: 240,  feasible: true },
+    // QA C-09 moved them again on the corrected base prices (Standard $14,
+    // Basic $7, E3 $39): cop_biz 27.25 -> 28.50 ($2,180 -> $2,280, base $240 -> $280);
+    // cop_ent 54.25 -> 56.50 ($4,340 -> $4,520, base $1,440 -> $1,560).
+    cop_biz:          { perUserAllIn: 28.5, monthly: 2280, baseSeats: 40, baseUsd: 280,  feasible: true },
     bstd_cop:         { perUserAllIn: 23.5, monthly: 1880, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop:        { perUserAllIn: 32,   monthly: 2560, baseSeats: 0,  baseUsd: 0,    feasible: true },
     bprem_cop_suites: { perUserAllIn: 47,   monthly: 3760, baseSeats: 0,  baseUsd: 0,    feasible: true },
-    cop_ent:          { perUserAllIn: 54.25, monthly: 4340, baseSeats: 40, baseUsd: 1440, feasible: true },
+    cop_ent:          { perUserAllIn: 56.5, monthly: 4520, baseSeats: 40, baseUsd: 1560, feasible: true },
     e7:               { perUserAllIn: 99,   monthly: 7920, baseSeats: 0,  baseUsd: 0,    feasible: true }
   };
   L.paths.forEach(function (p) {
@@ -1974,6 +1980,9 @@ const LEAK9 = ['Set your rate card','your loss, not theirs','before you show thi
     [cx.monthlyCowork, cx.licenseMonthly, cx.allInMonthly].forEach(v => safeFigs.add(usd(v)));
     safeFigs.add(num(cx.monthlyCredits));
   });
+  // The card also prints each safe figure's change. QA C-09 made the license
+  // delta (30 x $45 = $1,350) equal the current uplift by coincidence.
+  ['monthlyCowork', 'licenseMonthly', 'allInMonthly'].forEach(k => safeFigs.add(usd(Math.abs(cCur[k] - cPrev[k]))));
   [cPrev, cCur].forEach((cx, side) => {
     [cx.meterMarginAnnual, cx.partnerCostAnnual, cx.paygoPartnerCost, cx.p3PartnerCost,
      cx.coworkAtMsRate, cx.licenseUpliftMonthly, cx.licenseMarginMonthly, cx.licenseList,
@@ -2444,6 +2453,26 @@ function qaPath(L, id) { return L.paths.filter(function (p) { return p.id === id
   w = L.why.join(' ');
   ok(w.indexOf('$' + gap6.toFixed(2) + '/user/month cheaper') >= 0, 'C-02 #6: "cheaper by" names $' + gap6.toFixed(2) + ' a user');
   ok(w.indexOf(usd0(gap6 * 500) + '/month') >= 0, 'C-02 #6: "cheaper by" dollars match the per-user gap x 500');
+}
+
+/* ── C-09 / L-08 · base SKU prices match microsoft.com, 2026-10-11 ─────── */
+{
+  const want = { bbasic:[7, 'F-205'], bstd:[14, 'F-206'], e3:[39, 'F-207'], e5:[60, 'F-208'] };
+  Object.keys(want).forEach(function (id) {
+    const s = E.SKU_BY_ID[id];
+    eq(s.usd, want[id][0], 'C-09: ' + id + ' list price');
+    eq(s.prov, 'ms-verified', 'C-09: ' + id + ' tagged ms-verified');
+    eq(s.factId, want[id][1], 'C-09: ' + id + ' carries its fact id');
+    ok(s.src && s.src.indexOf('$' + want[id][0].toFixed(2)) >= 0 && s.src.indexOf('2026-10-11') >= 0,
+       'C-09: ' + id + ' source string names the price and the date');
+  });
+  const s = E.defaults();
+  eq(E.copilotComponent(s, 'bstd_cop'), 9.5, 'C-09: Copilot share of Business Standard with Copilot is $23.50 - $14.00');
+  eq(E.copilotComponent(s, 'bbasic_cop'), 14, 'C-09: Copilot share of Basic + Copilot Business is $21 - $7');
+  const facts = fs.readFileSync(path.join(__dirname, '..', 'data', 'facts.json'), 'utf8');
+  ['F-205', 'F-206', 'F-207', 'F-208'].forEach(function (id) {
+    ok(facts.indexOf('"id": "' + id + '"') >= 0, 'C-09: ' + id + ' is registered in data/facts.json');
+  });
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
