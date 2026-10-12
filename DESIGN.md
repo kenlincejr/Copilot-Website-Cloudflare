@@ -661,11 +661,18 @@ Every page in the sitemap also carries two things site search depends on:
 - `<meta name="title">`, `og:title`, `<meta name="description">` and
   `og:description` in `<head>`. AI Search reads result titles and summaries
   only from these tags; without them a result shows no title.
-- `<script src="/assets/site-search-jump.js?v=2" defer></script>` before
+- `<meta name="page_type">` and `<meta name="priority">`, values from
+  `specs/site-search-v2.spec.md` §3.2. They drive the filter chips and boosting.
+- `<script src="/assets/site-search.js?v=3" defer></script>` before
   `</body>`. Search results link to `page.html?hl=<phrase>`, and this script
   scrolls to and highlights the matching passage. When the script changes,
   bump `?v=` on every page so browsers stop serving the cached copy
-  (GitHub Pages caches for 10 minutes).
+  (GitHub Pages caches for 10 minutes). **Exception:**
+  `copilot-credit-planner.html` loads no external script by design; it never
+  gets this tag.
+
+Run `node tools/site-gate.js` before committing; it checks all of the above
+and must print 100%.
 
 ```bash
 # tracked .html files with no matching <loc> in the sitemap

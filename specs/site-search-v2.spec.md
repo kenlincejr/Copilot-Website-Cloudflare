@@ -225,7 +225,7 @@ Each phase ships on its own, is verified live, and can be reverted alone. A swee
 
 | Run | hit@1 | hit@3 | MRR | Notes |
 |---|---|---|---|---|
-| Baseline (A1) | | | | |
+| Baseline (A1), 2026-10-12, after the schema re-index | 0.76 | 0.92 | 0.841 | keyword 0.80 / 0.95; conversational 0.60 / 0.80. Misses: E13 (not in top 10), E24 (rank 5) |
 | + boosting (B3) | | | | |
 | + rewrite (B4) | | | | |
 | + rerank (B4) | | | | |

@@ -22,7 +22,7 @@ function section(n) { sectionName = n; }
 function ok(c, msg) { if (c) pass++; else { fail++; fails.push('[' + sectionName + '] ' + msg); } }
 
 // The search script every sitemap page loads. Bump with the asset's ?v=.
-const SEARCH_SCRIPT = /<script src="\/assets\/(site-search|site-search-jump)\.js\?v=\d+" defer><\/script>/g;
+const SEARCH_SCRIPT = /<script src="\/assets\/site-search\.js\?v=\d+" defer><\/script>/g;
 // Pages that must stay script-isolated (their own suites forbid external scripts).
 const NO_SEARCH_SCRIPT = ['copilot-credit-planner.html'];
 // Tracked public HTML deliberately left out of the sitemap, with the reason.
