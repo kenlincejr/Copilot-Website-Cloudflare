@@ -633,6 +633,7 @@ footer.pagefoot p { margin:0 0 10px; }
     <!-- ══════════ TAB 1 · COWORK ══════════ -->
     <section class="tabpanel" id="panel-cowork" role="tabpanel" aria-labelledby="tab-cowork" hidden>
       <div class="cwstatus no-print" id="cwStatus" role="status"></div>
+      <div class="callout warn no-print partner-only" id="cwRateWarn" role="status" hidden></div>
       <p class="note no-print" id="cwFallback" hidden>Customer view and auto-height need the page served over http(s). The Cowork calculator still works below, but its figures cannot reach the other tabs from a local file.</p>
       <div class="cwhost">
         <iframe id="coworkFrame" src="cowork-calculator.html?embed=1" title="Cowork Cost &amp; Conversation Simulator" scrolling="no"></iframe>
@@ -2727,6 +2728,16 @@ footer.pagefoot p { margin:0 0 10px; }
       ' band. The Cowork tab discloses how Microsoft’s current estimator compares; this planner does not model Cowork a second time.', cw.calibrated ? 'measured' : 'ms-modeled', 'customer'));
     var seats = ac.seats.business + ac.seats.enterprise + ac.seats.e7;
     if (cw.included && cw.basisSeats > seats && seats > 0) warn.push(W('P-13', 'warn', 'Cowork users (' + fmtInt(cw.basisSeats) + ') exceed the Copilot seats entered here (' + fmtInt(seats) + '). Cowork needs a Copilot license for every user.', { aud: 'customer' }));
+    /* The hub prices Cowork credits at the partner's rate; the embedded Cowork
+       tab prices them at its own pricing step. When they differ, both tabs say
+       so (the hub cannot change the Cowork page's pricing for it). */
+    if (!agentsOnly && cw.valid && rate.creditSource === 'partner') {
+      var cwp = validateCoworkPayload(s.coworkSession).payload;
+      var cwRate = cwp && cwp.sellMode && cwp.creditUsd > 0 ? cwp.creditUsd : RC.payg.v;
+      if (Math.abs(cwRate - rate.usdPerCredit) > 1e-9)
+        warn.push(W('P-19', 'warn', 'The Cowork tab prices Cowork credits at ' + (cwp && cwp.sellMode && cwp.creditUsd > 0 ? 'a rate of ' : 'Microsoft list, ') + fmtRate(cwRate) +
+          ' a credit, while this plan prices them at your partner’s rate of ' + fmtRate(rate.usdPerCredit) + '. The credits are the same; the dollar figures on the two tabs differ for that reason only. Set the Cowork tab’s pricing step to the same rate before you show either tab.'));
+    }
     agentWarnings(s, agents, warn);
     if (pl.months.some(function (r) { return r.total.hi >= MAX.demand; }))
       warn.push(W('P-39', 'warn', 'Demand is beyond the planner’s range; the purchase options are capped. Check the inputs for a typo.'));
@@ -4160,6 +4171,17 @@ footer.pagefoot p { margin:0 0 10px; }
     el.innerHTML = html;
   }
 
+  /* The Cowork tab and the plan price Cowork credits at different rates (P-19):
+     say so above the frame and in the Combined tab's flags. Partner-only: the
+     partner aligns the two before showing either tab. */
+  function renderCoworkRate() {
+    var el = $('cwRateWarn'), w = R ? R.warnings.filter(function (x) { return x.id === 'P-19'; })[0] : null;
+    if (!el) return;
+    el.hidden = !w;
+    el.innerHTML = w ? '<div class="callout-title">Two prices for the same credits</div><div class="callout-body">' + esc(w.msg) +
+      ' On the Cowork tab&rsquo;s pricing step, choose &ldquo;My sell price&rdquo; and enter ' + esc(String(R.customerRate.usdPerCredit)) + ' a credit.</div>' : '';
+  }
+
   /* ══ Print menu ═══════════════════════════════════════════════════════ */
   /* Two toolbar menus (Print, Files) share one open/close model: one open at
      a time, Esc or a click outside closes it, arrow keys move inside it. */
@@ -4213,6 +4235,7 @@ footer.pagefoot p { margin:0 0 10px; }
     renderBadges();
     renderMotionPill();
     renderCoworkStatus();
+    renderCoworkRate();
     renderAccount();
     renderAgentOutputs();
     renderEnvOutputs();

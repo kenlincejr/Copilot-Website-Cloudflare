@@ -960,6 +960,20 @@ sec('QA-C');
     ok(objOf(list, 'OBJ-01').indexOf('3,000') > -1 && objOf(list, 'OBJ-01').indexOf('1,800') > -1, 'C-06 OBJ-01 at list keeps 3,000 and 1,800');
   }
 
+  // C-08 · the Cowork tab at list while the plan uses the partner's price: one warning, shown on both tabs
+  {
+    const st = helpdesk(4); st.coworkSession = PAYLOAD(); st.combined.includeCowork = 'on'; st.partner.sellCreditUsd = 0.0123;
+    const w19 = wOf(E.compute(st), 'P-19');
+    ok(w19 && w19.aud === 'partner' && w19.msg.indexOf('$0.0123') > -1 && /Microsoft list/.test(w19.msg), 'C-08 P-19 fires when the Cowork tab is at list and the plan at $0.0123');
+    const same = J(st); same.coworkSession = PAYLOAD({ sellMode: true, creditUsd: 0.0123 });
+    ok(!wOf(E.compute(same), 'P-19'), 'C-08 P-19 silent when both tabs use the same rate');
+    const none = J(st); none.partner.sellCreditUsd = null;
+    ok(!wOf(E.compute(none), 'P-19'), 'C-08 P-19 silent with no partner sell price');
+    const ag = J(st); ag.meta.mode = 'agents';
+    ok(!wOf(E.compute(ag), 'P-19'), 'C-08 P-19 silent on an agents-only plan');
+    ok(/id="cwRateWarn"/.test(src) && /function renderCoworkRate\(\)[\s\S]{0,400}'P-19'/.test(src), 'C-08 the Cowork tab shows the P-19 warning above the frame');
+  }
+
   /* QA-C end */
 }
 
