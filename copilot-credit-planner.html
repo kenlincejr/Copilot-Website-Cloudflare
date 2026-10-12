@@ -3142,7 +3142,14 @@ footer.pagefoot p { margin:0 0 10px; }
         ? 'Credits are priced at Microsoft’s list rate in this plan, ' + fmtRate(rate) + ' a credit. What we charge for is the work around them: limits, monitoring and the monthly true-up that keeps the bill where we said it would be, shown as its own line so you can see it.'
         : 'Credits in this plan are priced at our rate of ' + fmtRate(rate) + ' a credit' + (cr.creditSource === 'cowork' ? ', the same rate the Cowork tab quotes' : '') +
           ', and every figure here uses that rate openly; Microsoft’s published list rate is ' + fmtRate(RC.payg.v) + '. The difference pays for the work around the credits: limits, monitoring and the monthly true-up that keeps the bill where we said it would be.' });
-      out.push({ id: 'OBJ-09', q: 'What will Autopilot cost?', a: r.autopilot.rateStatus + ' Decide now whether new services join your spending policy automatically.' });
+      /* Build credits before go-live: the per-month build burn over every build
+         month, including any that fall before the horizon. */
+      var bld = r.lanes.agents.filter(function (a) { return !a.paused && a.build.hi > 0; });
+      var bLo = sum(bld.map(function (a) { return a.build.lo * (a.build.months.length + a.build.outside); }));
+      var bHi = sum(bld.map(function (a) { return a.build.hi * (a.build.months.length + a.build.outside); }));
+      out.push({ id: 'OBJ-09', q: 'Why do we pay while we’re still building?', a: bHi > 0
+        ? 'On the GitHub Copilot harness, Microsoft bills building and testing as well as running: ' + fmtInt(bLo) + '–' + fmtInt(bHi) + ' credits before go-live here. It’s in the statement of work as its own line, it runs in a sandbox with a fixed allocation, and it stops when the build does. Standard agents don’t bill for test chat.'
+        : 'Only agents built on the GitHub Copilot harness bill for building and testing, and none is modeled here. Standard agents don’t bill for test chat, so the meter starts when the agent goes live.' });
     } catch (e) { return out; }
     return out;
   }

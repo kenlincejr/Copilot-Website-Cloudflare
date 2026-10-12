@@ -1152,6 +1152,17 @@ sec('QA-C');
     ok(!/shows 0 credits/.test(o2h) && /twice/.test(o2h), 'M-16 at half licensed O-2 never claims the estimator shows 0 credits (' + o2h.slice(0, 120) + ')');
   }
 
+  // M-17 · O-9 is the spec's build-burn objection ({buildLo}–{buildHi}); no Autopilot text
+  {
+    const fe = E.compute(E.applyScenarioPreset(E.defaults(), 'full-estate'));
+    const o9 = E.objections(fe).filter((o) => o.id === 'OBJ-09')[0];
+    const tot = (k) => fe.lanes.agents.filter((a) => !a.paused).reduce((t, a) => t + a.build[k] * (a.build.months.length + a.build.outside), 0);
+    ok(/still building/.test(o9.q) && !/Autopilot/.test(o9.a), 'M-17 O-9 asks why they pay while building, not about Autopilot');
+    ok(tot('hi') > 0 && o9.a.indexOf(E.fmtInt(tot('lo')) + '–' + E.fmtInt(tot('hi'))) > -1, 'M-17 O-9 gives build credits before go-live ' + E.fmtInt(tot('lo')) + '–' + E.fmtInt(tot('hi')) + ' (' + o9.a.slice(0, 160) + ')');
+    const g = objOf(E.compute(helpdesk(4)), 'OBJ-09');
+    ok(!/Autopilot/.test(g) && /GitHub Copilot harness/.test(g), 'M-17 with no harness build, O-9 gives the generic line');
+  }
+
   /* QA-C end */
 }
 
