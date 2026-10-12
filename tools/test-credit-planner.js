@@ -1051,6 +1051,19 @@ sec('QA-C');
     ok(w53 && /December 1, 2026/.test(w53.msg) && !/March 2027/.test(w53.msg), 'H-10 P-53 says December 1, 2026 for a 2027-03 start (' + (w53 && w53.msg.slice(0, 60)) + ')');
   }
 
+  // M-09 · NBA-05 says "in the high scenario" when only the high end crosses; Apply sets the per-user cap to hi rounded up to 500
+  {
+    const cwSt = (mc) => { const s = helpdesk(4); s.coworkSession = PAYLOAD({ monthlyCredits: mc, rampCredits: Array(12).fill(mc), annualCredits: mc * 12, year1Credits: mc * 12 });
+      s.combined.includeCowork = 'on'; s.studio.account.seats.business = 100; s.studio.account.cspNewBusiness = 'yes'; return s; };
+    const rh = E.compute(cwSt(350000)), n5 = nbaOf(rh, 'NBA-05');
+    ok(rh.enforcement.userCap.day.hi && !rh.enforcement.userCap.day.mid, 'M-09 setup: only the high scenario crosses 4,000');
+    ok(n5 && /high scenario/.test(n5.why.join(' ') + n5.opener) && !/will hit it/.test(n5.opener), 'M-09 NBA-05 hedges to the high scenario (' + (n5 && n5.opener) + ')');
+    ok(n5 && n5.fix && n5.fix.path === 'combined.enforcement.perUserCap' && n5.fix.value === 5000, 'M-09 Apply sets the per-user cap to the modeled high 4,550 rounded up to 5,000');
+    if (n5 && n5.fix) ok(!nbaOf(E.compute(E.applyFix(rh.state, n5.fix)), 'NBA-05'), 'M-09 the fix clears NBA-05');
+    const n5m = nbaOf(E.compute(cwSt(500000)), 'NBA-05');
+    ok(n5m && /working day \d+/.test(n5m.opener) && !/high scenario/.test(n5m.opener), 'M-09 when the middle scenario crosses, NBA-05 states the middle day');
+  }
+
   /* QA-C end */
 }
 

@@ -2936,9 +2936,19 @@ footer.pagefoot p { margin:0 0 10px; }
         out.push(rule('NBA-04', 'Service level', 'The 125% switch turns agents off', [agentsCut ? 'Agents are disabled around day ' + agentsCut.day + ' of the peak month.' : 'No per-agent limits are confirmed, and there is no tenant-wide default.'],
           'If an agent runs out of credits it simply stops; your users find out by the agent breaking.', 'Set per-agent limits and alerts on day one.',
           { label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }, GUIDE.limits));
-      if (r.enforcement.userCap.source === 'december-default' && r.enforcement.userCap.day.hi)
-        out.push(rule('NBA-05', 'December 1', 'The default 4,000-credit limit stops users mid-month', ['The average Cowork user reaches it around working day ' + r.enforcement.userCap.day.hi + '.'],
-          'New Copilot Business licenses come with a monthly credit limit per user, and your people will hit it.', 'Raise the limit to the governance figure when the seats are bought.', null, GUIDE.budgets));
+      var uc = r.enforcement.userCap;
+      if (uc.source === 'december-default' && uc.day.hi) {
+        /* State the middle-scenario day as the expectation; when only the
+           high scenario crosses, say so instead of stating it as fact. */
+        var capFix = uc.perUser && uc.perUser.hi > 0 ? { label: 'Set the per-user limit to ' + fmtInt(roundUp(uc.perUser.hi, 500)) + ' credits', path: 'combined.enforcement.perUserCap', value: roundUp(uc.perUser.hi, 500) } : null;
+        out.push(rule('NBA-05', 'December 1', 'The default ' + fmtInt(RC.capDefault.v) + '-credit limit can stop users mid-month', [uc.day.mid
+            ? 'The average Cowork user reaches it around working day ' + uc.day.mid + ' (working day ' + uc.day.hi + ' in the high scenario).'
+            : 'In the high scenario the average Cowork user reaches it around working day ' + uc.day.hi + '; the middle scenario stays under it.'],
+          'New Copilot Business licenses bought through CSP from December 1 come with a ' + fmtInt(RC.capDefault.v) + '-credit monthly limit per user. ' + (uc.day.mid
+            ? 'At the usage we’ve modeled, your heavier users hit it around working day ' + uc.day.mid + '.'
+            : 'At the usage we’ve modeled most months stay under it, but in the high scenario your heavier users would hit it around working day ' + uc.day.hi + '.'),
+          'Decide the per-user limit now, and write it into the governance sheet.', capFix, GUIDE.budgets));
+      }
       var lic = r.crossover.agents.filter(function (x) { return x.verdict === 'license'; });
       if (lic.length) out.push(rule('NBA-06', 'License instead', 'A seat is cheaper than the meter', lic.map(function (x) { return x.name + ': ' + fmtInt(x.freeIfLicensedPerUser) + ' credits a user a month would be covered, against a ' + fmtInt(x.breakEven) + '-credit break-even' +
         (x.sku === 'promo' ? ' at the ' + fmtUsd(RC.seatBizPromo.v) + ' Copilot Business price (' + PROMO_TXT + ')' : '') +
