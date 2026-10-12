@@ -183,19 +183,20 @@ sec('A');
   const me = E.msEstimatorEquivalent(hd.studio.agents[0], hd);
   eq(me.msTool, 4800, 'A-OBJ Microsoft tool shows 4,800'); eq(me.rateCard, 9600, 'A-OBJ rate card 9,600');
   ok(/4,800/.test(E.objections(E.compute(hd))[1].a) && /9,600/.test(E.objections(E.compute(hd))[1].a), 'A-OBJ objection carries both numbers');
-  // Dataverse transcript growth: 10,240 sessions × 100 KB × 90/30 days = 3,072,000 KB = 2.9296875 GB
-  const dv = E.defaults(); dv.studio.dataverse.kbPerSession = 100;
+  // Dataverse transcript growth: 10,240 sessions × 100 KB × 90/30 days = 3,072,000 KB = 3.072 GB (spec §S4: 1 GB = 1,000,000 KB; QA L-29)
+  // The 15 GB Copilot Studio default needs a billing path (QA L-29): an Azure subscription for pay-as-you-go here.
+  const dv = E.defaults(); dv.studio.dataverse.kbPerSession = 100; dv.studio.account.azurePayg = 'yes';
   const da = E.agentTemplate(); da.audience = 'external'; da.traffic = { mode: 'total', count: 10240, per: 'month' }; da.shape.turns = 1; da.data.retentionDays = 90;
   dv.studio.agents = [da];
   const rdv = E.compute(dv);
-  eq(rdv.dataverse.transcriptGb, 2.9296875, 'A-DV transcript growth');
+  near(rdv.dataverse.transcriptGb, 3.072, 'A-DV transcript growth', 1e-9);
   eq(rdv.dataverse.entitlement.db, 15, 'A-DV Copilot Studio default 15 GB database once a purchase option exists');
   eq(E.dataverse(E.defaults(), [], false).entitlement.db, 3, 'A-DV default environment 3 GB before any purchase');
   const dv2 = J(dv); dv2.studio.dataverse.existingDbGb = 20;
   const rdv2 = E.compute(dv2);
-  near(rdv2.dataverse.overageGb.db, 20 + 2.9296875 - 15, 'A-DV database overage');
-  near(rdv2.dataverse.addOnUsd, (20 + 2.9296875 - 15) * 40, 'A-DV add-on at $40/GB');
-  near(rdv2.dataverse.paygUsd, (20 + 2.9296875 - 15) * 48, 'A-DV PAYG at $48/GB');
+  near(rdv2.dataverse.overageGb.db, 20 + 3.072 - 15, 'A-DV database overage');
+  near(rdv2.dataverse.addOnUsd, (20 + 3.072 - 15) * 40, 'A-DV add-on at $40/GB');
+  near(rdv2.dataverse.paygUsd, (20 + 3.072 - 15) * 48, 'A-DV PAYG at $48/GB');
   // Agent Assisted Hours: 1,000 sessions × 6 + 500 actions × 2.8 = 7,400 min = 123.33 h; × $72 = $8,880
   const vs = E.defaults(); vs.studio.value.on = true;
   const v1 = E.agentTemplate(); v1.audience = 'external'; v1.traffic = { mode: 'total', count: 1000, per: 'month' }; v1.shape.turns = 1;
@@ -872,14 +873,15 @@ sec('S');
   eq(E.recalcAllocations(pg).state.studio.environments[1].allocation, 777, 'S a pay-as-you-go environment keeps its allocation');
   ok(E.setupEnvironments(null).state && E.recalcAllocations('x').state, 'S set-up helpers are total');
   // Storage verdict
-  const v0 = E.compute(trio).dataverse.verdict;
+  const trioPaid = J(trio); trioPaid.studio.account.azurePayg = 'yes'; // the 15 GB default needs a billing path (QA L-29)
+  const v0 = E.compute(trioPaid).dataverse.verdict;
   ok(v0.level === 'ok' && /no extra storage needed/.test(v0.text) && /15 GB/.test(v0.text), 'S trio storage verdict: fine, 15 GB included');
   const vEmpty = E.compute(E.defaults()).dataverse.verdict;
   ok(vEmpty.level === 'ok' && /No transcripts/.test(vEmpty.text) && /default environment/.test(vEmpty.text), 'S empty plan: default environment wording');
-  const big = J(trio); big.studio.dataverse.existingDbGb = 20;
+  const big = J(trioPaid); big.studio.dataverse.existingDbGb = 20;
   const vb = E.compute(big).dataverse;
   ok(vb.verdict.level === 'over' && vb.verdict.text.indexOf(E.fmtUsd(vb.addOnUsd)) > -1 && vb.verdict.text.indexOf(E.fmtUsd(vb.paygUsd)) > -1, 'S overage verdict carries both dollar figures');
-  const near = J(trio); near.studio.dataverse.existingDbGb = 12.5;
+  const near = J(trioPaid); near.studio.dataverse.existingDbGb = 12.5;
   eq(E.compute(near).dataverse.verdict.level, 'watch', 'S above 80% of the database is a watch');
   ok(!/NaN|undefined|Infinity/.test(v0.text + vb.verdict.text + vEmpty.text), 'S verdict copy is clean');
   ok(/No Windows 365/.test(E.compute(trio).adjacent.summary), 'S adjacent summary with nothing entered');
@@ -1252,6 +1254,23 @@ sec('QA-E');
   a.aiTokensPerCall = 1500;
   eq(firstAgent(s).lo, 20000, 'QA-E L-09 1,500 tokens = 2 started units (A18c: 20,000)');
   eq(firstAgent(presetState('bcExpense')).lo, 2500, 'QA-E L-28 BC Expense preset 50 × 50 = 2,500');
+}
+/* L-29: Dataverse in decimal gigabytes (spec A22: 10,000 sessions × 50 KB ×
+   30/30 = 0.5 GB; at 90 days 1.5 GB), 50 KB a session by default, and the
+   15/20/2 GB default only once a billing path exists. */
+{
+  const st = (days, paid) => {
+    const s = E.defaults(); if (paid) s.studio.account.azurePayg = 'yes';
+    const a = E.agentTemplate(); a.audience = 'external'; a.traffic = { mode: 'total', count: 10000, per: 'month' }; a.shape.turns = 1; a.data.retentionDays = days;
+    s.studio.agents = [a]; return E.compute(s).dataverse;
+  };
+  eq(E.defaults().studio.dataverse.kbPerSession, 50, 'QA-E L-29 50 KB a session by default');
+  near(st(30, true).transcriptGb, 0.5, 'QA-E L-29 A22: 0.5 GB at 30 days', 1e-12);
+  near(st(90, true).transcriptGb, 1.5, 'QA-E L-29 A22: 1.5 GB at 90 days', 1e-12);
+  ok(st(30, false).entitlement.db === 3 && st(30, false).entitlementFact === 'F-189', 'QA-E L-29 no billing path: the default environment 3/3/1');
+  ok(st(30, true).entitlement.db === 15 && st(30, true).entitlementFact === 'F-190', 'QA-E L-29 a billing path: the 15/20/2 Copilot Studio default');
+  const held = E.defaults(); held.combined.purchase.current.packs = 1;
+  eq(E.dataverse(held, [], undefined).entitlement.file, 20, 'QA-E L-29 a pack held is a billing path');
 }
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');

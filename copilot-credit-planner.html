@@ -1172,7 +1172,7 @@ footer.pagefoot p { margin:0 0 10px; }
   var MODE_LABEL = deepFreeze({ cowork: 'Cowork only', agents: 'Copilot Studio agents only', full: 'Full plan: Cowork + agents' });
   var BUFFER_PCT = 15;        // planner's choice inside Microsoft's 10–20% (F-179)
   var STUDIO_BAND_PCT = 20;   // standard-harness band runs point..point×1.20, the top of F-179
-  var KB_PER_GB = 1048576;
+  var KB_PER_GB = 1000000;   // spec §S4: 1 GB = 1,000,000 KB (QA L-29)
 
   /* ══ 6 · Coercers and formatting ════════════════════════════════════════ */
   function isObj(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
@@ -1320,7 +1320,7 @@ footer.pagefoot p { margin:0 0 10px; }
                    businessCentral: false, country: 'US', cspNewBusiness: 'unsure', azurePayg: 'unsure', workingDays: 22 },
         agents: [],
         environments: [],
-        dataverse: { kbPerSession: 20, searchIndexFactor: 0.25, existingDbGb: 0, existingFileGb: 0, existingLogGb: 0 },
+        dataverse: { kbPerSession: 50, searchIndexFactor: 0.25, existingDbGb: 0, existingFileGb: 0, existingLogGb: 0 },
         adjacent: { agent365Owners: 0, byomUsdMonthly: 0, premiumFlows: false },
         value: { on: false, hourlyUsd: RC.aavRate.v, minutesPerSession: RC.aahSession.v, minutesPerAction: RC.aahAction.v,
                  resolvedPct: 60, costPerContactUsd: null }
@@ -1516,7 +1516,7 @@ footer.pagefoot p { margin:0 0 10px; }
                payg: cBool(own(e, 'payg'), false), tenantDraw: cBool(own(e, 'tenantDraw'), true), managed: cBool(own(e, 'managed'), false) };
     });
     var dv = own(st, 'dataverse');
-    s.studio.dataverse.kbPerSession = cNum(own(dv, 'kbPerSession'), 20, 0, MAX.kb, 2);
+    s.studio.dataverse.kbPerSession = cNum(own(dv, 'kbPerSession'), 50, 0, MAX.kb, 2);
     s.studio.dataverse.searchIndexFactor = cNum(own(dv, 'searchIndexFactor'), 0.25, 0, 10, 3);
     s.studio.dataverse.existingDbGb = cNum(own(dv, 'existingDbGb'), 0, 0, MAX.gb, 3);
     s.studio.dataverse.existingFileGb = cNum(own(dv, 'existingFileGb'), 0, 0, MAX.gb, 3);
@@ -2674,7 +2674,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function dataverse(state, agents, configured) {
     var s = normalize(state);
     var ag = Array.isArray(agents) ? agents : s.studio.agents.map(function (a) { return agentResult(a, s); });
-    return dataverseFrom(s, ag, configured === undefined ? ag.some(function (a) { return !a.paused && a.hi > 0; }) : !!configured);
+    return dataverseFrom(s, ag, configured === undefined ? hasBillingPath(s) : !!configured);
   }
 
   /* ══ 22 · Adjacent costs (outside the credit pool) ══════════════════════ */
@@ -2707,7 +2707,7 @@ footer.pagefoot p { margin:0 0 10px; }
   function adjacentCosts(state, agents, dvResult) {
     var s = normalize(state);
     var ag = Array.isArray(agents) ? agents : s.studio.agents.map(function (a) { return agentResult(a, s); });
-    return adjacentFrom(s, ag, isObj(dvResult) ? dvResult : dataverseFrom(s, ag, ag.some(function (a) { return !a.paused && a.hi > 0; })));
+    return adjacentFrom(s, ag, isObj(dvResult) ? dvResult : dataverseFrom(s, ag, hasBillingPath(s)));
   }
 
   /* ══ 23 · Value model (Microsoft's formula, simplified, your inputs) ═════ */
@@ -2856,8 +2856,10 @@ footer.pagefoot p { margin:0 0 10px; }
     var en = enforcementFrom(s, cw, agents, pl, puC);
     var gv = governanceFrom(s, cw, agents, pl, en);
     var cx = crossoverFrom(s, agents, rate);
-    var configured = agents.some(function (a) { return !a.paused && a.hi > 0; });
-    var dv = dataverseFrom(s, agents, configured);
+    /* The 15/20/2 GB Copilot Studio default applies once a billing path
+       exists (a pack or pre-purchase plan held, or an Azure subscription for
+       pay-as-you-go); until then the default environment's 3/3/1 (QA L-29). */
+    var dv = dataverseFrom(s, agents, hasBillingPath(s));
     var adj = adjacentFrom(s, agents, dv);
     var val = valueFrom(s, agents, pl);
     var sp = specializationFrom(pl);
