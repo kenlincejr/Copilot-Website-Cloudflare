@@ -1223,6 +1223,25 @@ sec('QA-E');
   eq(E.normalize({ studio: { agents: [{ type: 'autonomous' }] } }).studio.agents[0].ramped, false, 'QA-E M-08 an autonomous card with no ramp flag defaults to full volume');
   ok(/if \(a\.type !== 'autonomous'\) a\.ramped = false/.test(src), 'QA-E M-08 switching a card to autonomous turns the ramp off');
 }
+/* M-23 + M-24: the tenant base defaults to 'unsure' (spec §S1), and
+   tenant.suites (Defender + Purview) is an alternative Agent 365 prerequisite. */
+{
+  const d = E.defaults();
+  ok(d.studio.account.tenantBase === 'unsure' && d.studio.account.suites === 'unsure', 'QA-E M-23/M-24 defaults: base unsure, suites unsure');
+  eq(E.normalize({}).studio.account.tenantBase, 'unsure', 'QA-E M-23 normalize defaults the base to unsure');
+  eq(E.normalize({ studio: { account: { suites: 'maybe' } } }).studio.account.suites, 'unsure', 'QA-E M-24 suites is a yes/no/unsure enum');
+  const st = (base, suites) => { const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.studio.account.tenantBase = base; s.studio.account.suites = suites; s.studio.adjacent.agent365Owners = 2; return E.compute(s); };
+  let r = st('unsure', 'unsure');
+  ok(!r.adjacent.agent365.eligible && r.adjacent.agent365.status === 'unsure', 'QA-E M-23 an unconfirmed base is not eligible');
+  ok(r.warnings.some((w) => w.id === 'P-65' && w.aud === 'customer' && /confirm/.test(w.msg)), 'QA-E M-23 P-65 asks to confirm the base');
+  ok(!E.nextBestAction(r).matches.some((m) => m.id === 'NBA-12'), 'QA-E M-23 NBA-12 does not fire on an unconfirmed base');
+  r = st('e3', 'yes');
+  ok(r.adjacent.agent365.eligible && !r.warnings.some((w) => w.id === 'P-65'), 'QA-E M-24 an E3 tenant with the suites qualifies');
+  r = st('standard', 'no');
+  ok(r.adjacent.agent365.status === 'blocked' && r.warnings.some((w) => w.id === 'P-65' && /does not qualify/.test(w.msg)), 'QA-E M-24 Standard without the suites is blocked');
+  ok(st('premium', 'unsure').adjacent.agent365.eligible, 'QA-E M-24 Business Premium qualifies');
+  ok(/data-bind="studio\.account\.suites"/.test(src), 'QA-E M-24 the account form has the suites field');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);

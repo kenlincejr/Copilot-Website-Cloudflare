@@ -660,6 +660,7 @@ footer.pagefoot p { margin:0 0 10px; }
           <div class="sub-h">Tenant and billing</div>
           <div class="fgrid" data-pack="6">
             <div class="field" data-help="tenantBase"><div class="flab"><label for="fBase">Tenant base</label></div><div class="fctl"><select id="fBase" data-bind="studio.account.tenantBase" data-type="enum"><option value="basic">Business Basic</option><option value="standard">Business Standard</option><option value="premium">Business Premium</option><option value="e3">Microsoft 365 E3</option><option value="e5">Microsoft 365 E5 or E7</option><option value="unsure">Not sure</option></select></div><div class="ffoot"><span class="fromcw" data-from="studio.account.tenantBase" hidden>From the Cowork tab</span></div></div>
+            <div class="field" data-help="suites"><div class="flab"><label for="fSuites">Defender and Purview suites owned</label></div><div class="fctl"><select id="fSuites" data-bind="studio.account.suites" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div><div class="ffoot"></div></div>
             <div class="field" data-help="businessCentral"><div class="flab"><label for="fBc">Business Central in use</label></div><div class="fctl"><select id="fBc" data-bind="studio.account.businessCentral" data-type="bool"><option value="false">No</option><option value="true">Yes</option></select></div><div class="ffoot"></div></div>
             <div class="field" data-help="businessBilling"><div class="flab"><label for="fBizBill">Copilot Business billing after the promotion</label></div><div class="fctl"><select id="fBizBill" data-bind="studio.account.businessBilling" data-type="enum"><option value="annual">Annual commitment</option><option value="monthly">Monthly billing</option></select></div><div class="ffoot"></div></div>
             <div class="field" data-help="azurePayg"><div class="flab"><label for="fAzure">Azure subscription linked for pay-as-you-go</label></div><div class="fctl"><select id="fAzure" data-bind="studio.account.azurePayg" data-type="enum"><option value="unsure">Not sure</option><option value="yes">Yes</option><option value="no">No</option></select></div><div class="ffoot"></div></div>
@@ -1315,7 +1316,7 @@ footer.pagefoot p { margin:0 0 10px; }
       meta: { accountName: '', preparedBy: '', notes: '', mode: 'full' },
       coworkSession: null,
       studio: {
-        account: { totalUsers: 50, seats: { business: 0, enterprise: 0, e7: 0 }, businessBilling: 'annual', tenantBase: 'premium',
+        account: { totalUsers: 50, seats: { business: 0, enterprise: 0, e7: 0 }, businessBilling: 'annual', tenantBase: 'unsure', suites: 'unsure',
                    businessCentral: false, country: 'US', cspNewBusiness: 'unsure', azurePayg: 'unsure', workingDays: 22 },
         agents: [],
         environments: [],
@@ -1498,7 +1499,8 @@ footer.pagefoot p { margin:0 0 10px; }
     s.studio.account.seats.enterprise = cInt(own(seats, 'enterprise'), 0, 0, MAX.seats);
     s.studio.account.seats.e7 = cInt(own(seats, 'e7'), 0, 0, MAX.seats);
     s.studio.account.businessBilling = cEnum(own(ac, 'businessBilling'), ['annual', 'monthly'], 'annual');
-    s.studio.account.tenantBase = cEnum(own(ac, 'tenantBase'), TENANT_BASES, 'premium');
+    s.studio.account.tenantBase = cEnum(own(ac, 'tenantBase'), TENANT_BASES, 'unsure');
+    s.studio.account.suites = cTri(own(ac, 'suites'));
     s.studio.account.businessCentral = cBool(own(ac, 'businessCentral'), false);
     s.studio.account.country = cCountry(own(ac, 'country'), 'US');
     s.studio.account.cspNewBusiness = cTri(own(ac, 'cspNewBusiness'));
@@ -2677,19 +2679,23 @@ footer.pagefoot p { margin:0 0 10px; }
   function adjacentFrom(s, agents, dv) {
     var adj = s.studio.adjacent, base = s.studio.account.tenantBase;
     var w365 = sum(agents.filter(function (a) { return !a.paused; }).map(function (a) { return a.w365Usd; }));
-    var eligible = base === 'premium' || base === 'e5';
+    /* Agent 365 prerequisite (F-009; spec §S1/§S4; QA M-24): Business
+       Premium or E5/E7, or the Defender and Purview suites. */
+    var suites = s.studio.account.suites;
+    var eligible = base === 'premium' || base === 'e5' || suites === 'yes';
+    var a365Status = eligible ? 'eligible' : (base === 'unsure' || suites === 'unsure' ? 'unsure' : 'blocked');
     var a365 = adj.agent365Owners * RC.agent365.v;
     var flowFlag = adj.premiumFlows || s.studio.environments.some(function (e) { return e.managed; });
     var other = [];
     if (w365 > 0) other.push('Windows 365 for Agents ' + fmtUsd(w365));
-    if (a365 > 0) other.push('Agent 365 ' + fmtUsd(a365) + (eligible ? '' : ' (blocked: needs Business Premium, E5 or E7)'));
+    if (a365 > 0) other.push('Agent 365 ' + fmtUsd(a365) + (eligible ? '' : a365Status === 'blocked' ? ' (blocked: needs Business Premium, E5 or E7, or the Defender and Purview suites)' : ' (blocked until the tenant base or the Defender and Purview suites are confirmed)'));
     if (adj.byomUsdMonthly > 0) other.push('your own models ' + fmtUsd(adj.byomUsdMonthly));
     var summary = (other.length ? 'Other costs outside the pool: ' + other.join(', ') + ' a month.' : 'No Windows 365, Agent 365 or own-model costs entered.') +
       (flowFlag ? ' Premium cloud flows may also need Power Automate Premium licenses.' : '');
     return {
       summary: summary,
       w365: { usdMonthly: w365, fact: 'F-171' },
-      agent365: { owners: adj.agent365Owners, usdMonthly: a365, eligible: eligible, fact: 'F-009' },
+      agent365: { owners: adj.agent365Owners, usdMonthly: a365, eligible: eligible, status: a365Status, fact: 'F-009' },
       byom: { usdMonthly: adj.byomUsdMonthly, prov: 'partner' },
       premiumFlowsFlag: flowFlag,
       dataverse: { usdMonthly: dv.addOnUsd, paygUsdMonthly: dv.paygUsd, fact: 'F-191' },
@@ -2945,7 +2951,8 @@ footer.pagefoot p { margin:0 0 10px; }
       warn.push(W('P-63', 'info', 'Per-agent limits are not confirmed. There is no tenant-wide default agent limit, so each agent needs one.', { aud: 'customer',
         fixes: [{ label: 'Per-agent limits are set', path: 'combined.enforcement.perAgentCaps', value: 'yes' }] }));
     if (adj.premiumFlowsFlag) warn.push(W('P-64', 'info', 'Cloud flows with premium connectors or Managed Environments may need Power Automate Premium licenses; that is outside the credit pool.', { aud: 'customer' }));
-    if (adj.agent365.owners > 0 && !adj.agent365.eligible) warn.push(W('P-65', 'warn', 'New Agent 365 purchases need Business Premium, E5/A5, or the Defender and Purview suites; this tenant base does not qualify.', { aud: 'customer' }));
+    if (adj.agent365.owners > 0 && !adj.agent365.eligible) warn.push(W('P-65', 'warn', 'New Agent 365 purchases need Business Premium, E5/A5, or the Defender and Purview suites; ' +
+      (adj.agent365.status === 'blocked' ? 'this tenant does not qualify.' : 'confirm the tenant base or the suites before quoting it.'), { aud: 'customer' }));
     assume.push(A('buffer', 'Governance buffer', 'Limits and allocations carry a ' + BUFFER_PCT + '% buffer, inside Microsoft’s recommended 10–20%.', 'editorial', 'customer'));
     assume.push(A('enforcement-days', 'Enforcement timing', 'Agent consumption is spread evenly over a 30-day month; Cowork limits count working days.', 'editorial', 'customer'));
     assume.push(A('dataverse', 'Dataverse estimate', 'Transcripts at ' + fmtInt(s.studio.dataverse.kbPerSession) + ' KB a session (an estimate) for each agent’s retention period; search index at ' +
@@ -3714,6 +3721,7 @@ footer.pagefoot p { margin:0 0 10px; }
     seatsE7: { w: 'Microsoft 365 E7 licenses. E7 includes Microsoft 365 Copilot.', a: 'These users count as Copilot-licensed when they use an agent.' },
     tenantBase: { w: 'The Microsoft 365 plan most of the customer&rsquo;s users are on.', a: 'Agent 365 needs Business Premium, E5 or E7 (or the Defender and Purview suites).',
       c: function () { return 'Agent 365 is ' + fu(E.RC.agent365.v) + ' a user a month.'; }, rc: 'agent365' },
+    suites: { w: 'Whether the customer owns both the Microsoft Defender Suite and the Microsoft Purview Suite.', a: 'Owning both qualifies a tenant on another base for Agent 365.', rc: 'agent365' },
     businessCentral: { w: 'Whether the customer runs Dynamics 365 Business Central.', a: 'When yes, the Business Central agents are listed first when you add an agent. They bill per document and draw from the default environment unless relinked.', rc: 'bcDefaultEnv' },
     businessBilling: { w: 'How Copilot Business renews once the promotion ends.', a: 'Sets the seat price the seat-or-meter test uses after December 2026.',
       c: function () { return 'Annual ' + fu(E.RC.seatBiz.v) + ' or monthly ' + fu(E.RC.seatBizMonthly.v, true) + ' a user a month.'; }, rc: 'seatBiz' },
@@ -4431,7 +4439,8 @@ footer.pagefoot p { margin:0 0 10px; }
     else if (cap.excluded && ac.seats.business > 0) dec = ['Excluded', 'Not available at first in this country.'];
     else if (ac.seats.business > 0 && ac.cspNewBusiness === 'unsure') dec = ['Confirm', 'Applies if these Business seats are new CSP purchases from December 1.'];
     else dec = ['Does not apply', ac.seats.business > 0 ? 'The Business seats are not new CSP purchases.' : 'No Copilot Business seats entered.'];
-    var a365 = adj.agent365.eligible ? ['Eligible', 'The tenant base qualifies.'] : (ac.tenantBase === 'unsure' ? ['Not sure', 'Confirm the tenant base.'] : ['Needs Business Premium', 'Or E5/E7, or the Defender and Purview suites.']);
+    var a365 = adj.agent365.eligible ? ['Eligible', ac.tenantBase === 'premium' || ac.tenantBase === 'e5' ? 'The tenant base qualifies.' : 'The Defender and Purview suites qualify.']
+      : (adj.agent365.status === 'unsure' ? ['Not sure', 'Confirm the tenant base or the Defender and Purview suites.'] : ['Needs Business Premium', 'Or E5/E7, or the Defender and Purview suites.']);
     $('acctRibbon').innerHTML =
       cellHtml(fi(lic), 'Copilot-licensed users', 'Business, enterprise and E7 seats') +
       cellHtml(fi(unl), 'Users without a Copilot license', ac.totalUsers > 300 ? 'Above 300 users: Copilot Business caps at 300 seats.' : 'Their agent use is metered') +
