@@ -2455,10 +2455,21 @@ footer.pagefoot p { margin:0 0 10px; }
     var m365 = peak.m365;
     var tenantAll = { lo: tenantPpac.lo + m365.lo, mid: tenantPpac.mid + m365.mid, hi: tenantPpac.hi + m365.hi };
     var tenantCuts = cut('the default environment and tenant pool' + (m365.hi > 0 ? ' (shared with Cowork)' : ''), tenantAll, te.remainder, s.combined.enforcement.defaultEnvPayg || prepaid === 0 || !(tenantPpac.hi > 0), -1);
-    /* Draw-on spill is taken from the tenant remainder before Microsoft 365 sees it. */
-    var m365Avail = { mid: Math.max(0, te.remainder - spill.mid), hi: Math.max(0, te.remainder - spill.hi) };
-    var starvation = { mid: prepaid > 0 && (te.allocated > 0 || spill.mid > 0) && m365.mid > m365Avail.mid,
-                       hi: prepaid > 0 && (te.allocated > 0 || spill.hi > 0) && m365.hi > m365Avail.hi };
+    /* Cowork starvation (spec NBA-03; QA M-07). Microsoft 365 can draw the
+       remainder less what agents take from the tenant pool (unassigned cards
+       and draw-on spill, QA H-02). It is starved by the allocations only when
+       its demand is above that share AND would fit if each environment were
+       allocated no more than its agents use: otherwise the shortfall is the
+       purchase plan, not the allocations. Judged on the middle scenario (the
+       high end is kept for the light); starvationDay is the day the shared
+       pool runs dry in that scenario. */
+    var envUsed = { mid: 0, hi: 0 };
+    envOut.forEach(function (e) { if (!e.payg) ['mid', 'hi'].forEach(function (sc) { envUsed[sc] += Math.min(e.consumption[sc], e.allocation); }); });
+    var m365Avail = { mid: Math.max(0, te.remainder - tenantPpac.mid), hi: Math.max(0, te.remainder - tenantPpac.hi) };
+    function starved(sc) { return prepaid > 0 && te.allocated > 0 && m365[sc] > m365Avail[sc] + 1e-9 && m365[sc] <= prepaid - envUsed[sc] - tenantPpac[sc] + 1e-9; }
+    var starvation = { mid: starved('mid'), hi: starved('hi') };
+    var starvationDay = { mid: starvation.mid ? dayOf(te.remainder, (tenantPpac.mid + m365.mid) / CAL) : null,
+                          hi: starvation.hi ? dayOf(te.remainder, (tenantPpac.hi + m365.hi) / CAL) : null };
     /* Per-user caps: manual, or the December 1 default when it applies. */
     var excluded = RC.capExcluded.v.indexOf(ac.country) > -1, first = null;
     iso.forEach(function (m, k) { if (first === null && m >= RC.capDate.v.slice(0, 7)) first = k; });
@@ -2489,7 +2500,8 @@ footer.pagefoot p { margin:0 0 10px; }
       basisPaygOverflow: basis.scen.hi.paygCredits > 0,
       overAllocated: te.overAllocated, flowsCutoff: te.flowsCutoff, agentsCutoff: te.agentsCutoff,
       environments: envOut, tenantPool: { consumption: tenantAll, agents: tenantPpac, m365: { lo: m365.lo, mid: m365.mid, hi: m365.hi }, cuts: tenantCuts, payg: s.combined.enforcement.defaultEnvPayg },
-      m365: { demand: m365, available: m365Avail.mid, availableHi: m365Avail.hi, drawOnSpill: spill, starvation: starvation },
+      m365: { demand: m365, available: m365Avail.mid, availableHi: m365Avail.hi, drawOnSpill: spill, starvation: starvation, starvationDay: starvationDay,
+              overAllocated: { mid: Math.max(0, te.allocated - envUsed.mid), hi: Math.max(0, te.allocated - envUsed.hi) } },
       userCap: { cap: cap, source: capSource, auto: auto, firstMonth: first === null ? null : iso[first], excluded: excluded,
                  cappedUsers: cappedUsers, capTotal: cap !== null ? cappedUsers * cap : 0, perUser: perUser, day: capDay, events: capEvents },
       peakMonth: peak.iso, events: events,
@@ -2907,8 +2919,9 @@ footer.pagefoot p { margin:0 0 10px; }
       ? (en.basis === 'recommended' ? 'The recommended plan' : 'The current plan') + ' lets usage above the pack run on pay-as-you-go, which only happens once the environment is linked to a pay-as-you-go billing policy. Until it is, agent flows stop at 100% of prepaid capacity, around day ' + evF.day + ' of ' + monthName(en.peakMonth) + evF.inScen + '. Linking it removes that hard stop, so set per-agent limits at the same time.'
       : 'Agent flows stop at 100% of prepaid capacity: around day ' + evF.day + ' of ' + monthName(en.peakMonth) + evF.inScen + '.',
       { aud: 'customer', fixes: en.basisPaygOverflow ? paygFixes(evF) : [] }));
-    if (en.m365.starvation.hi) warn.push(W('P-52', en.m365.starvation.mid ? 'risk' : 'warn', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits) leave ' + fmtInt(en.remainder) +
-      ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.hi) + ' at the high end. Cowork spills to pay-as-you-go sooner.', { aud: 'customer' }));
+    if (en.m365.starvation.mid) warn.push(W('P-52', 'risk', 'Power Platform pre-allocations (' + fmtInt(en.allocated) + ' credits, ' + fmtInt(en.m365.overAllocated.mid) + ' more than the agents in those environments use) leave ' + fmtInt(en.m365.available) +
+      ' a month for Microsoft 365, below the Cowork demand of ' + fmtInt(en.m365.demand.mid) + ' in the middle scenario. The shared pool runs dry around day ' + en.m365.starvationDay.mid + ' of ' + monthName(en.peakMonth) +
+      ', and Cowork runs on pay-as-you-go from then. Allocate each environment only what its agents use.', { aud: 'customer' }));
     if (cap.source === 'december-default') warn.push(W('P-53', cap.day.hi ? 'warn' : 'info', 'From ' + monthName(cap.firstMonth) + ', new CSP Copilot Business licenses get usage-based billing on by default with a ' + fmtInt(RC.capDefault.v) +
       '-credit monthly limit per user (about ' + fmtUsd(usdOf(RC.capDefault.v)) + '). ' + (cap.day.hi ? 'The average Cowork user reaches it as early as working day ' + cap.day.hi + '. Raise the limit to the governance figure or users stop mid-month.' : 'Modeled users stay under it.'),
       { aud: 'customer' }));

@@ -1187,6 +1187,30 @@ sec('QA-E');
   c.combined.purchase.current = { packs: 30, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; c.combined.enforcement.basis = 'current';
   eq(E.compute(c).enforcement.events.filter((e) => e.kind !== 'userCap').length, 0, 'QA-E M-06 Cowork alone raises no agent or flow stop');
 }
+/* M-07: Cowork starvation is blamed on the allocations only when they cause
+   it, judged on the middle scenario, with a day. SMB trio in Production (draw
+   off) + Cowork 100,000 mid. */
+{
+  const st = (packs, alloc) => {
+    const s = E.applyScenarioPreset(E.defaults(), 'smb-trio'); s.coworkSession = PAYLOAD();
+    s.studio.environments = [{ name: 'Production', kind: 'production', allocation: alloc, payg: false, tenantDraw: false, managed: false }];
+    s.studio.agents.forEach((a) => { a.env = 'Production'; });
+    s.combined.purchase.current = { packs: packs, p3: [0, 0, 0, 0, 0, 0, 0, 0, 0] }; s.combined.enforcement.basis = 'current';
+    return E.compute(s);
+  };
+  // 10 packs = 250,000; Production allocated 200,000 for 44,660 of use → remainder 50,000 < 100,000,
+  // though 250,000 − 44,660 = 205,340 would cover Cowork: the allocations starve it. Day 50,000 ÷ (100,000 ÷ 30) = 15.
+  let r = st(10, 200000), m = r.enforcement.m365;
+  ok(m.starvation.mid === true && (m.starvationDay || {}).mid === 15, 'QA-E M-07 over-allocation starves Cowork from day 15 (middle scenario)');
+  const p52 = r.warnings.filter((w) => w.id === 'P-52')[0];
+  ok(p52 && /day 15/.test(p52.msg) && /middle scenario/.test(p52.msg) && /155,340 more than the agents/.test(p52.msg), 'QA-E M-07 P-52 gives the day and the over-allocation');
+  // 2 packs = 50,000; Production allocated 10,000 (below its 44,660 use): Cowork's shortfall is the purchase plan
+  r = st(2, 10000); m = r.enforcement.m365;
+  ok(!m.starvation.mid && !m.starvation.hi && !r.warnings.some((w) => w.id === 'P-52'), 'QA-E M-07 a purchase shortfall is not blamed on allocations');
+  // No allocations: never starvation
+  r = st(10, 0);
+  ok(!r.enforcement.m365.starvation.hi && (r.enforcement.m365.starvationDay || {}).mid == null, 'QA-E M-07 no allocations, no starvation');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
