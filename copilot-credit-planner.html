@@ -2433,7 +2433,11 @@ footer.pagefoot p { margin:0 0 10px; }
   /* ══ 19 · Governance ════════════════════════════════════════════════════ */
   function governanceFrom(s, cw, agents, pl, en) {
     var buf = (100 + BUFFER_PCT) / 100, peak = pl.months[pl.peakMonth];
-    var tenantLimit = roundUp(peak.m365.hi * buf, 1000);
+    /* The Microsoft 365 spending policy covers the Microsoft 365 lane
+       (Cowork). With no Cowork demand there is nothing for it to size on, so
+       the tenant limit and its 50/80/100% alerts are omitted (null and [])
+       rather than printed as a 0-credit limit that would stop everything. */
+    var tenantLimit = peak.m365.hi > 0 ? roundUp(peak.m365.hi * buf, 1000) : null;
     var userLimit = en.userCap.perUser ? roundUp(en.userCap.perUser.hi * buf, 100) : null;
     var agentLimits = agents.filter(function (a) { return !a.paused && a.hi > 0; }).map(function (a) {
       return { id: a.id, name: a.name, credits: roundUp(a.hi * buf, 1000) };
@@ -2446,10 +2450,11 @@ footer.pagefoot p { margin:0 0 10px; }
     });
     var retention = agents.filter(function (a) { return !a.paused && a.sessions > 0; }).map(function (a) { return { name: a.name, days: a.retentionDays }; });
     return {
-      bufferPct: BUFFER_PCT, tenantLimit: { credits: tenantLimit, usd: usdOf(tenantLimit) },
+      bufferPct: BUFFER_PCT, tenantLimit: tenantLimit === null ? null : { credits: tenantLimit, usd: usdOf(tenantLimit) },
       userLimit: userLimit === null ? null : { credits: userLimit, usd: usdOf(userLimit), aboveDefault: userLimit > RC.capDefault.v },
       agentLimits: agentLimits, allocations: allocations, retention: retention,
-      alerts: [50, 80, 100].map(function (p) { return { pct: p, credits: tenantLimit * p / 100 }; }),
+      alerts: tenantLimit === null ? [] : [50, 80, 100].map(function (p) { return { pct: p, credits: tenantLimit * p / 100 }; }),
+      alertPcts: [50, 80, 100],
       autoApply: { decided: s.autopilot.checklist.autoApplyDecision === 'yes', status: s.autopilot.checklist.autoApplyDecision,
                    recommendation: 'Decide before Autopilot is priced: either turn “Auto-apply new services” off on existing spending policies, or accept that new services join them automatically.' },
       clickPaths: [
@@ -3084,7 +3089,7 @@ footer.pagefoot p { margin:0 0 10px; }
                      usage: { db: num(D.usage.db), file: num(D.usage.file), log: num(D.usage.log) },
                      overageGb: { db: num(D.overageGb.db), file: num(D.overageGb.file), log: num(D.overageGb.log) } },
         guardrails: {
-          bufferPct: num(G.bufferPct), tenantMonthlyLimit: num(G.tenantLimit.credits), userLimit: G.userLimit ? num(G.userLimit.credits) : null,
+          bufferPct: num(G.bufferPct), tenantMonthlyLimit: G.tenantLimit ? num(G.tenantLimit.credits) : null, userLimit: G.userLimit ? num(G.userLimit.credits) : null,
           agentLimits: G.agentLimits.map(function (a) { return { name: a.name, credits: num(a.credits) }; }),
           allocations: G.allocations.map(function (a) { return { name: a.name, credits: num(a.credits), tenantDraw: a.tenantDraw === true }; }),
           alerts: G.alerts.map(function (a) { return { pct: num(a.pct), credits: num(a.credits) }; }),
@@ -5119,11 +5124,12 @@ footer.pagefoot p { margin:0 0 10px; }
   };
   function govRows(cv) {
     var g = cv.guardrails, rate = cv.pricing.usdPerCredit, rows = [];
-    rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', GOV_WHERE.tenant]);
+    if (g.tenantMonthlyLimit !== null) rows.push(['Tenant monthly spending limit', fi(g.tenantMonthlyLimit) + ' credits (about ' + fu(g.tenantMonthlyLimit * rate) + '), including a ' + g.bufferPct + '% buffer', GOV_WHERE.tenant]);
     rows.push(['Per-user monthly limit', g.userLimit === null ? 'Not needed for the users modeled' : fi(g.userLimit) + ' credits a user', GOV_WHERE.user]);
     rows.push(['Per-agent monthly limits', g.agentLimits.length ? g.agentLimits.map(function (a) { return a.name + ': ' + fi(a.credits); }).join('; ') : 'No billed agents', GOV_WHERE.agents]);
     rows.push(['Environment allocations and tenant draw', g.allocations.length ? g.allocations.map(function (a) { return a.name + ': ' + fi(a.credits) + ' a month, tenant draw ' + (a.tenantDraw ? 'on' : 'off'); }).join('; ') : 'No environments planned; agents draw from the tenant pool', GOV_WHERE.env]);
-    rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', GOV_WHERE.alerts]);
+    if (g.alerts.length) rows.push(['Alerts', g.alerts.map(function (a) { return a.pct + '% at ' + fi(a.credits); }).join('; ') + ' credits', GOV_WHERE.alerts]);
+    else if (g.agentLimits.length) rows.push(['Alerts', 'At 50, 80 and 100% of each agent’s monthly limit', GOV_WHERE.alerts]);
     rows.push(['“Auto-apply new services”', g.autoApply, GOV_WHERE.auto]);
     rows.push(['Transcript retention', g.retention.length ? g.retention.map(function (x) { return x.name + ': ' + x.days + ' days'; }).join('; ') : 'No conversational agents', GOV_WHERE.retention]);
     rows.push(['Agent identities', 'Created automatically for each agent; review them with the owners', GOV_WHERE.ids]);
@@ -5182,9 +5188,10 @@ footer.pagefoot p { margin:0 0 10px; }
     });
     h += '</tbody><tfoot><tr><td>The pool</td><td class="n">' + rng(cv.pool.steadyCredits.lo, cv.pool.steadyCredits.hi) + '</td><td class="n">' + urng(cv.pool.steadyUsd.lo, cv.pool.steadyUsd.hi) + '</td><td>Year one: ' + rng(cv.pool.yearCredits.lo, cv.pool.yearCredits.hi) + ' credits</td></tr></tfoot></table></div>';
     var g = cv.guardrails, guard = [];
-    guard.push('A tenant spending limit of ' + fi(g.tenantMonthlyLimit) + ' credits a month, with a ' + g.bufferPct + '% buffer.');
+    if (g.tenantMonthlyLimit !== null) guard.push('A tenant spending limit of ' + fi(g.tenantMonthlyLimit) + ' credits a month, with a ' + g.bufferPct + '% buffer.');
     if (g.agentLimits.length) guard.push('A monthly limit on every agent: ' + g.agentLimits.slice(0, 3).map(function (a) { return esc(a.name) + ' ' + fi(a.credits); }).join(', ') + (g.agentLimits.length > 3 ? ' and ' + (g.agentLimits.length - 3) + ' more' : '') + '.');
-    guard.push('Alerts at ' + g.alerts.map(function (a) { return a.pct + '%'; }).join(', ') + ' of the limit, so nothing switches off by surprise.');
+    if (g.alerts.length) guard.push('Alerts at ' + g.alerts.map(function (a) { return a.pct + '%'; }).join(', ') + ' of the limit, so nothing switches off by surprise.');
+    else if (g.agentLimits.length) guard.push('Alerts at 50%, 80% and 100% of each agent&rsquo;s limit, so nothing switches off by surprise.');
     if (g.userLimit !== null) guard.push('A per-user limit of ' + fi(g.userLimit) + ' credits a month.');
     if (g.allocations.length) guard.push('Environment allocations: ' + g.allocations.map(function (a) { return esc(a.name) + ' ' + fi(a.credits) + (a.tenantDraw ? '' : ', tenant draw off'); }).join('; ') + '.');
     else guard.push(esc(g.autoApply));

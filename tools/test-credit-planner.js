@@ -1017,6 +1017,19 @@ sec('QA-E');
   }
   eq(held, n, 'QA-E C-05 buy.yearUsd ≤ buy.paygYearUsd over ' + n + ' random sell prices ' + worst);
 }
+/* C-07: with no Microsoft 365 (Cowork) lane, the tenant spending limit and its
+   50/80/100% alerts are omitted, never a 0-credit limit. */
+{
+  const s = E.applyScenarioPreset(E.defaults(), 'smb-trio');
+  const r = E.compute(s), cv = E.customerView(r);
+  ok(r.governance.tenantLimit === null && r.governance.alerts.length === 0, 'QA-E C-07 no Cowork lane: no tenant limit, no tenant alerts');
+  ok(cv.guardrails.tenantMonthlyLimit === null && cv.guardrails.alerts.length === 0, 'QA-E C-07 the customer view carries no 0-credit tenant limit');
+  ok(!cv.guardrails.alerts.some((a) => a.credits === 0), 'QA-E C-07 no 0-credit alert');
+  const sc = E.applyScenarioPreset(E.defaults(), 'smb-trio'); sc.coworkSession = PAYLOAD();
+  const g = E.compute(sc).governance;
+  ok(g.tenantLimit && g.tenantLimit.credits === 150000 && g.alerts.length === 3 && g.alerts[1].credits === 120000, 'QA-E C-07 with Cowork: 130,000 × 1.15 → 150,000, alerts 75,000 / 120,000 / 150,000');
+  ok((src.match(/if \(g\.tenantMonthlyLimit !== null\)/g) || []).length === 2, 'QA-E C-07 the governance sheet and the report print the tenant limit only when there is one');
+}
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed, ' + skip + ' skipped');
 process.exit(fail ? 1 : 0);
