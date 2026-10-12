@@ -1176,6 +1176,22 @@ sec('QA-C');
     ok(n2.fix === null || /perAgentCap/.test(n2.fix.path), 'M-18 the Apply fix only ever sets a per-agent cap (omitted while the engine has none)');
   }
 
+  // M-19 · blockers first: 01, 03, 04, 05, 07, then 02, 06, 08–13; the spec table matches
+  {
+    const order = ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-07', 'NBA-02', 'NBA-06', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13', 'NBA-14'];
+    const sorted = (ids) => ids.every((id, i) => i === 0 || order.indexOf(ids[i - 1]) < order.indexOf(id));
+    const fe = E.applyScenarioPreset(E.defaults(), 'full-estate'); fe.studio.agents[0].traffic.count = 40;
+    [E.applyScenarioPreset(E.defaults(), 'smb-trio'), fe, helpdesk(40)].forEach((st, k) => {
+      const ids = nbaIds(E.compute(st));
+      ok(sorted(ids), 'M-19 rules come out in blocker-first order, case ' + k + ' (' + ids.join(',') + ')');
+    });
+    const tri = nbaIds(E.compute(E.applyScenarioPreset(E.defaults(), 'smb-trio')));
+    ok(tri.indexOf('NBA-04') > -1 && tri.indexOf('NBA-02') > -1 && tri.indexOf('NBA-04') < tri.indexOf('NBA-02'), 'M-19 NBA-04 outranks NBA-02');
+    const spec = fs.readFileSync(path.join(ROOT, 'specs', 'copilot-credit-planner.spec.md'), 'utf8');
+    const rows = (spec.match(/^\| NBA-\d\d \|/gm) || []).map((x) => x.slice(2, 8));
+    eq(rows.join(','), order.join(','), 'M-19 the spec table lists the rules in the same order');
+  }
+
   /* QA-C end */
 }
 

@@ -2922,7 +2922,9 @@ footer.pagefoot p { margin:0 0 10px; }
   }
   /* Each rule is its own function: a rule that throws is skipped, never the
      others. NBA-14 (the default motion) appears only when nothing matched. */
-  var NBA_ORDER = ['NBA-01', 'NBA-02', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-06', 'NBA-07', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13'];
+  /* Blockers first (M-19): billing path, pool starvation, the 125% switch, the
+     December 1 cap, Business Central on the default environment; then the rest. */
+  var NBA_ORDER = ['NBA-01', 'NBA-03', 'NBA-04', 'NBA-05', 'NBA-07', 'NBA-02', 'NBA-06', 'NBA-08', 'NBA-09', 'NBA-10', 'NBA-11', 'NBA-12', 'NBA-13'];
   function nbaRules(r) {
     var s = r.state, ac = s.studio.account, ag = r.lanes.agents.filter(function (a) { return !a.paused; });
     return {
