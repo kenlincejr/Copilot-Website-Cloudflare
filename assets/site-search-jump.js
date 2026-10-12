@@ -1,7 +1,7 @@
 /* Site search landing: when a page is opened from the home-page search with
    ?hl=<phrase>, scroll to the first place that phrase appears and highlight it.
-   Browser text fragments (#:~:text=) do the same thing natively, but not every
-   browser or embedded viewer honors them, so this is the dependable path.
+   Browser text fragments (#:~:text=) are meant to do this natively but did not
+   scroll reliably in testing, so the search links use ?hl= and this script.
    Every page listed in sitemap.xml loads this file (see DESIGN.md 8b.5). */
 (function () {
   var phrase;
@@ -48,7 +48,10 @@
     }
     var block = node.parentElement.closest('p, li, td, th, dd, dt, blockquote, figcaption, h1, h2, h3, h4, h5, h6') || node.parentElement;
     block.classList.add('site-search-hit');
-    block.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // Instant scroll, then once more after late layout (fonts, images, scripted
+    // content) has had a chance to move the target.
+    block.scrollIntoView({ block: 'center' });
+    setTimeout(function () { block.scrollIntoView({ block: 'center' }); }, 450);
     setTimeout(function () { block.classList.remove('site-search-hit'); }, 6000);
     return true;
   }

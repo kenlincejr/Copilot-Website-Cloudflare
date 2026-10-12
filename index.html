@@ -1686,12 +1686,12 @@ chat-bubble-snippet {
     return words0[0] || '';
   }
 
-  // ?hl= is read by assets/site-search-jump.js on the target page, which works
-  // in every browser; the text fragment is a native bonus where supported.
+  // ?hl= is read by assets/site-search-jump.js on the target page, which scrolls
+  // to the phrase. No #:~:text= fragment: Chrome's own handling of it reset the
+  // scroll position the script had just set.
   function deepLink(url, phrase) {
     if (!phrase) return url;
-    return url + '?hl=' + encodeURIComponent(phrase) +
-      '#:~:text=' + encodeURIComponent(phrase).replace(/-/g, '%2D');
+    return url + '?hl=' + encodeURIComponent(phrase);
   }
 
   function clear() {
