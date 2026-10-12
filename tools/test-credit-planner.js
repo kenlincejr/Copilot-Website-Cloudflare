@@ -1232,6 +1232,20 @@ sec('QA-C');
     ok(/\| F-010 \/ F-004 \| `cpb-model-the-practice\.html`/.test(spec), 'L-26 the spec points the build fee at cpb-model-the-practice.html');
   }
 
+  // M-31 · every static control in the hub has a label (the Cowork iframe's own inputs belong to that page)
+  {
+    const html = src.replace(/<script[\s\S]*?<\/script>/g, '');
+    const ctl = html.match(/<(input|select|textarea)\b[^>]*>/g) || [];
+    const bad = ctl.filter((tag) => {
+      if (/aria-label="[^"]+"/.test(tag) || /aria-labelledby=/.test(tag)) return false;
+      const id = (/\bid="([^"]+)"/.exec(tag) || [])[1];
+      if (id && html.indexOf('for="' + id + '"') > -1) return false;
+      const at = html.indexOf(tag), before = html.slice(Math.max(0, at - 300), at);
+      return !(before.lastIndexOf('<label') > before.lastIndexOf('</label>'));
+    });
+    ok(ctl.length > 10 && bad.length === 0, 'M-31 every hub control is labeled (' + bad.map((b) => b.slice(0, 60)).join(' | ') + ')');
+  }
+
   /* QA-C end */
 }
 
