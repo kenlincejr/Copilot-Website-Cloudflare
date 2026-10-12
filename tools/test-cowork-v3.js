@@ -431,7 +431,7 @@ function assertCopyClean(r, m) {
 
 /* ── R2 · UI-side invariants, asserted against the raw source ───────────── */
 {
-  ok(src.indexOf('Nothing here has changed from the modelled defaults, so there is nothing to calibrate yet') >= 0,
+  ok(src.indexOf('Nothing here has changed from the modeled defaults, so there is nothing to calibrate yet') >= 0,
      'calApply refuses with the specced sentence');
   ok(/state\.tierCredits = \{ light:E\.CONST\.TIER_DEFAULT\.light/.test(src),
      'calReset reads CONST.TIER_DEFAULT instead of hardcoding');
@@ -1382,10 +1382,10 @@ function nextText(pick) {
 
 /* ── R7.2 · The displacement question goes live (#17) ───────────────────── */
 {
-  // the toggle exists, follows the y/n/u segment pattern, and is labelled
+  // the toggle exists, follows the y/n/u segment pattern, and is labeled
   ok(/data-org="competingAi"/.test(src), 'step 7 carries a competingAi segment');
   ok(/role="group" aria-label="Are they already paying for Claude, ChatGPT or another AI tool\?" data-org="competingAi"/.test(src),
-     'the segment is a labelled group, matching the other toggle rows');
+     'the segment is a labeled group, matching the other toggle rows');
   ok(/Are they already paying for Claude, ChatGPT or another AI tool\?<\/div>|Are they already paying for Claude, ChatGPT or another AI tool\?'/.test(src),
      'the question renders as the row label');
   ok(/var on = state\.org\.competingAi === v;/.test(src), 'the segment reflects state.org.competingAi');
@@ -1663,7 +1663,7 @@ const FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, t
   ok(q.c.rampApplies, 'stock defaults ramp (precondition — the ask must be year one)');
   ok(/Ask \(year one\): 78,839 CCCU/.test(q.text), 'the ask is the ramped year-one CCCU figure');
   ok(/Reference only \(steady state\): 90,600 CCCU/.test(q.text),
-     'the steady-state figure rides along, labelled as reference');
+     'the steady-state figure rides along, labeled as reference');
   ok(/Do not order this figure/.test(q.text), 'the reference figure says it is not the order');
   ok(q.text.indexOf(FINALITY) >= 0, 'the export carries the finality sentence verbatim');
   ok(/re-size at renewal on measured usage/.test(q.text), 'the export says to re-size at renewal');
@@ -1671,7 +1671,7 @@ const FINALITY = 'A Copilot Credit P3 is non-cancellable and non-exchangeable, t
      'the export carries the ±band and the range it implies');
   ok(/PayGo fallback: \$78,839 across year one/.test(q.text), 'the PayGo year-one fallback is present');
   ok(/\$90,600 a year at full adoption/.test(q.text), 'the steady-state PayGo figure is named as such');
-  ok(/^Account: Unnamed account$/m.test(q.text), 'an unnamed account is labelled, not blank');
+  ok(/^Account: Unnamed account$/m.test(q.text), 'an unnamed account is labeled, not blank');
   ok(/^Date: \d{4}-\d{2}-\d{2}$/m.test(q.text), 'the date is stamped (UI layer — compute stays pure)');
   ok(!/Date\.now\(\)/.test(uiSource('compute', 'root.CoworkEngine')) ||
      src.indexOf('function compute(rawState)') > 0, 'engine purity is unchanged by the export');

@@ -606,7 +606,7 @@ body.embedded .hub-link { display:none !important; }
           <div class="introsec">
             <h3>The path you will walk</h3>
             <div class="flowwrap">
-              <svg class="flowdiag" viewBox="0 0 1040 330" role="img" aria-labelledby="flowTitle flowDesc">
+              <svg class="flowdiag" viewBox="0 0 1040 330" role="img" aria-labeledby="flowTitle flowDesc">
                 <title id="flowTitle">How the Cowork Cost Simulator works</title>
                 <desc id="flowDesc">Three stages. First narrow the company down: total employees, then the people holding a Copilot license, then the people who actually use Cowork. Then price it: how many tasks each of them runs, and what a task costs. That produces the full picture — the number, the licensing recommendation and the talk track. Underneath it all sits your pricing basis, set up front, which every dollar figure follows.</desc>
 
@@ -1055,7 +1055,7 @@ body.embedded .hub-link { display:none !important; }
     BENCHMARK: { ratio: 2.6, anchorUsd: 30 },// editorial (TD SYNNEX) / ms-verified anchor F-090
     BAND: { modeled: 0.30, measured: 0.15 },// editorial: ±30% default, ±15% once calibrated
     SANITY: { ratioLo: 0.5, ratioHi: 6.0 },
-    // The modelled tier weights, single-sourced: defaults(), calReset and the
+    // The modeled tier weights, single-sourced: defaults(), calReset and the
     // calibration guard must all agree on what "unchanged" means.
     TIER_DEFAULT: { light:125, medium:500, heavy:1200 },
     // Magnitude ceilings for every count and price the engine multiplies.
@@ -1632,16 +1632,16 @@ body.embedded .hub-link { display:none !important; }
 
     /* The calibrated flag is asserted by the UI but never trusted — a loaded
        session file can set it directly. Measured status requires the strict
-       boolean AND at least one tier weight that differs from the modelled
+       boolean AND at least one tier weight that differs from the modeled
        defaults. */
     var tiersDiffer = n(TC.light, 0) !== CONST.TIER_DEFAULT.light ||
                       n(TC.medium, 0) !== CONST.TIER_DEFAULT.medium ||
                       n(TC.heavy, 0) !== CONST.TIER_DEFAULT.heavy;
     var calibrated = state.calibrated === true && tiersDiffer;
     if (state.calibrated === true && !tiersDiffer)
-      W('V-30','warn','This session is flagged as calibrated, but all three tier weights still equal the modelled ' +
+      W('V-30','warn','This session is flagged as calibrated, but all three tier weights still equal the modeled ' +
         'defaults of ' + CONST.TIER_DEFAULT.light + '/' + CONST.TIER_DEFAULT.medium + '/' + CONST.TIER_DEFAULT.heavy +
-        ' — there is no measured number behind the flag. The band stays at ±30% and every figure reads as modelled ' +
+        ' — there is no measured number behind the flag. The band stays at ±30% and every figure reads as modeled ' +
         'until at least one measured tier weight differs from the defaults.', []);
 
     function creditsPerUser(p) {
@@ -2162,7 +2162,7 @@ body.embedded .hub-link { display:none !important; }
     }
     /* Partner of Record on a reservation is inherited from the subscription at
        purchase and cannot be changed afterwards; Microsoft's documented remedy
-       is to cancel and re-buy. A Copilot Credit P3 cannot be cancelled. The two
+       is to cancel and re-buy. A Copilot Credit P3 cannot be canceled. The two
        rules together mean a Partner of Record mistake on this order is
        permanent for the full twelve-month term, and nothing on the purchase
        screen says so. */
@@ -2180,7 +2180,7 @@ body.embedded .hub-link { display:none !important; }
           ' CCCU steady-state number is reference, not the order' : '') + '. Settle two ' +
         'things before they do. Partner of Record is inherited from the subscription they select and cannot be ' +
         'changed after purchase; the documented fix is to cancel and re-buy, and a Copilot Credit P3 cannot be ' +
-        'cancelled \u2014 so a Partner of Record mistake here is yours for twelve months. And the $' +
+        'canceled \u2014 so a Partner of Record mistake here is yours for twelve months. And the $' +
         Math.round(relayUsd).toLocaleString() + ' lands on their paper before it lands on yours, which changes ' +
         'who you are actually asking to carry it.', []);
     }
@@ -2864,7 +2864,7 @@ body.embedded .hub-link { display:none !important; }
         price:byKey.govern.price + ' \u00b7 ' + seatMo(S.retainerLo, S.retainerHi, seats),
         why:['There is no named cost owner for Copilot Credits, and this account is about to carry a metered bill.',
              'Somebody should be paged before a runaway month, not after it.'],
-        opener:'"Nobody owns this number yet. That is the job: a monthly Cost Management review, spending limits with alerts at 50 and 80 per cent, and a concentration check before it becomes an invoice conversation."',
+        opener:'"Nobody owns this number yet. That is the job: a monthly Cost Management review, spending limits with alerts at 50 and 80 percent, and a concentration check before it becomes an invoice conversation."',
         then:'Insurance and compliance readiness when their renewal comes round.' },
 
       { id:'at-scale', when: ctx.copilotLicensed > 300,
@@ -3468,7 +3468,7 @@ body.embedded .hub-link { display:none !important; }
          anyway — this refusal just says so before the click lies. */
       var TD = E.CONST.TIER_DEFAULT, tc = state.tierCredits;
       if (+tc.light === TD.light && +tc.medium === TD.medium && +tc.heavy === TD.heavy) {
-        announce('Nothing here has changed from the modelled defaults, so there is nothing to calibrate yet. ' +
+        announce('Nothing here has changed from the modeled defaults, so there is nothing to calibrate yet. ' +
                  'Run three real tasks through <b>/cost</b>, type the numbers into the three fields above, and press this again.');
         return;
       }
@@ -4441,7 +4441,7 @@ body.embedded .hub-link { display:none !important; }
        · The ask is the RAMPED year-one figure. Shipped before R5 this export
          would have carried the steady-state over-commit out of the tool with
          the tool's name on it (finding #5). The steady figure rides along as
-         a reference and is labelled as one.
+         a reference and is labeled as one.
        · The band and the finality sentence are not optional. Everything else
          in the file states them; an export that dropped them would be the
          one artifact that leaves the building without them.
