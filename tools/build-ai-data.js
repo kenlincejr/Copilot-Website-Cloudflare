@@ -18,9 +18,9 @@ const hrs = (h) => (h ? h.map(([x, y]) => hm(x) + ' to ' + hm(y)).join(' and ') 
 const out = {};
 out.event = { name: C.EVENT.name, venue: C.EVENT.venue, when: C.EVENT.when, timezone: 'Hawaii time (HST, UTC-10)' };
 out.agenda = C.AGENDA.map((d, di) => ({
-  day: di, label: d.long, title: d.title, summary: d.blurb, dress: d.dress || null, note: d.note || null,
+  day: di, date: d.date, label: d.long, title: d.title, summary: d.blurb, dress: d.dress || null, note: d.note || null,
   sessions: d.sessions.map((s) => ({
-    title: s.title, when: s.allDay ? 'All day' : s.time || (t(s.start) + (s.end ? ' to ' + t(s.end) : '')), where: s.where || null, placeId: s.at || null,
+    title: s.title, start: s.start || null, when: s.allDay ? 'All day' : s.time || (t(s.start) + (s.end ? ' to ' + t(s.end) : '')), where: s.where || null, placeId: s.at || null,
     kind: s.kind || null, details: s.desc || null, speakers: (s.speakers || []).map((id) => (byId[id] ? { id, name: byId[id].n } : null)).filter(Boolean).concat(s.by ? [{ name: s.by }] : []),
   })),
 }));
@@ -36,10 +36,17 @@ try { cards = JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/priv
 const cardFor = (company) => { const n = norm(company); return cards.find((c) => { const m = norm(c.company); return n && m && (m.startsWith(n) || n.startsWith(m)); }); };
 // The public people file never holds cards (the repo is public). Matched cards go to private/company-cards.json
 // (git-ignored), keyed by person id, and the Worker merges them in when it is deployed from this machine.
+// Partner facts (private/partner-facts.json): HQ city and state, regions served, customer size, industries, from each company's own public presence.
+let facts = [];
+try { facts = JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/private/partner-facts.json'), 'utf8')); } catch (e) { /* none yet */ }
+const factFor = (company) => { const n = norm(company); return facts.find((c) => { const m = norm(c.company); return n && m && (m.startsWith(n) || n.startsWith(m)); }); };
+const keep = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null && v !== undefined && !(Array.isArray(v) && !v.length)));
 const used = new Set(), privateCards = {};
 out.people = C.PEOPLE.map((p) => {
   const card = cardFor(p.c);
-  if (card) { used.add(card.company); privateCards[p.id] = { whatTheyDo: card.whatTheyDo, focusAreas: card.focusAreas, conversationTopics: card.talkingPoints }; }
+  const fact = card ? factFor(card.company) : null;
+  if (card) { used.add(card.company); privateCards[p.id] = keep({ whatTheyDo: card.whatTheyDo, focusAreas: card.focusAreas, conversationTopics: card.talkingPoints,
+    hq: fact && fact.hq, offices: fact && fact.offices, serves: fact && fact.serves, customerSize: fact && fact.customerSize, industries: fact && fact.industries, since: fact && fact.since, teamSize: fact && fact.teamSize }); }
   return {
     id: p.id, name: p.n, title: p.t, company: p.c, group: C.GROUPS[p.g].short, bio: p.b, askMeAbout: p.ask || [],
     suggestedIntroductions: (p.meet || []).map(([id, why]) => (byId[id] ? { id, name: byId[id].n, why } : null)).filter(Boolean),

@@ -63,7 +63,8 @@ def ask(c):
     if anyof and not any(re.search(m, a) for m in anyof): probs.append("none of " + "|".join(anyof))
     if forbid and re.search(forbid, a): probs.append("forbidden " + forbid)
     if acts and not any(x in got for x in acts): probs.append("no action " + "|".join(acts) + " got " + str(got))
-    if cid == "meetfirst" and len([g for g in got if g.startswith("person:")]) < 2: probs.append("expected 2-3 person actions, got " + str(got))
+    if cid in ("meetfirst", "copilottrain", "security", "licensing", "topic") and len([g for g in got if g.startswith("person:")]) < 2: probs.append("expected 2+ people, got " + str(got))
+    if re.search(r"cite index|</?cite", a): probs.append("citation markup leaked")
     if re.search("—", a): probs.append("em dash")
     return cid, q, a, got, r.get("web"), probs, time.time() - t0
 with ThreadPoolExecutor(6) as ex: res = list(ex.map(ask, C))

@@ -664,7 +664,31 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .cgcta .pbtn.pri{align-self:flex-start;background:#f2c230;border-color:#f2c230;color:#15181a}
 .cgcta .pbtn.pri:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .cg{padding:16px;border-radius:18px;border:1.5px solid var(--rule);background:var(--surface)}
+.cg .cg-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-right:44px}
 .cg .cg-kick{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.cg .cg-str{flex:0 0 auto;padding:3px 10px;border-radius:99px;background:var(--sunk);color:var(--ink);font-size:12px;font-weight:800}
+.cg .cg-str.hi{background:var(--taxi);color:#15181a}
+.cg-snap{margin-top:14px;border:1.5px solid var(--rule);border-radius:14px;overflow:hidden;font-size:13.5px;line-height:1.35}
+.cg-row{display:grid;grid-template-columns:66px minmax(0,1fr) minmax(0,1fr);gap:0 10px;padding:8px 10px;border-top:1px solid var(--rule)}
+.cg-row:first-child{border-top:0}
+.cg-row > span{min-width:0;overflow-wrap:anywhere}
+.cg-row > span:first-child{font-size:10.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--mute);padding-top:2px;overflow-wrap:normal;word-break:normal}
+.cg-hd{background:var(--sunk);font-weight:800}
+.cg-hd > span:nth-child(2),.cg-hd > span:nth-child(3){font-family:var(--display);font-size:14px;color:var(--teal)}
+.cg-tp{margin:0;padding:0;list-style:none;counter-reset:tp;display:grid;gap:8px}
+.cg-tp li{counter-increment:tp;position:relative;padding:10px 12px 10px 42px;border-radius:12px;background:var(--sunk);font-size:14.5px;line-height:1.45}
+.cg-tp li::before{content:counter(tp);position:absolute;left:11px;top:10px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--teal);color:var(--on-k);font-size:12.5px;font-weight:800}
+.cg-tp b{display:block;font-size:15px}
+.cg-tp span{display:block;margin-top:2px;color:var(--mute)}
+.cg-catch{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cg-catch li{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 12px;border-radius:12px;background:var(--sunk)}
+.cg-catch .cg-when{flex:0 0 74px;font-family:var(--display);font-weight:800;font-size:14px;line-height:1.2}
+.cg-catch .cg-what{flex:1;min-width:0}
+.cg-catch .cg-what b{display:block;font-size:14.5px;line-height:1.3}
+.cg-catch .cg-what small{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:var(--mute)}
+.cg-catch button{all:unset;cursor:pointer;flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--teal);border:1.5px solid var(--rule)}
+.cg-catch button svg{width:18px;height:18px}
+.cg-catch button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .cg .cg-head{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:18.5px;line-height:1.28;text-wrap:pretty}
 .cg h5{margin:18px 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .cg-list,.cg-diff{list-style:none;margin:0;padding:0;display:grid;gap:8px}
@@ -2473,7 +2497,7 @@ function renderAsk(){
   box.innerHTML = `<div class="vhead"><h2 id="ask-h">Ask The Summit</h2><p>Your guide to the resort, the North Shore and the people here. It starts with this guide and checks the web when it needs more.</p><p class="powered"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Powered by <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener">Claude</a></p></div>
     ${nudge}
     ${empty ? "" : `<div class="askrow"><button type="button" class="pbtn" data-ask-clear>Clear chat</button></div>`}
-    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
+    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.retry ? `<div class="acts"><button type="button" data-ask-retry="${esc(m.retry)}">Try again</button></div>` : ""}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
     ${empty ? `<div class="hints">${askHints()}</div>${askTips()}` : `<details class="hints" id="allideas"><summary>All ideas and tips</summary>${askHints()}${askTips()}</details>`}
     ${askLeft != null ? `<p class="askleft">${askLeft} question${askLeft === 1 ? "" : "s"} left today</p>` : ""}
     <div class="askdock">${empty ? "" : askStrip()}<form class="askbar" id="a-form"><textarea id="a-input" rows="1" maxlength="300" placeholder="Ask a question" aria-label="Your question"></textarea>
@@ -2493,7 +2517,7 @@ async function sendAsk(q){
   try { ({ status, body } = await askCall({ mode:"ask", q, view: view === "resort" && selPlace ? "map: " + selPlace : view })); } catch(e){ status = 0; }
   askLog.pop(); askBusy = false;
   if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, actions:body.actions, web:!!body.web }); }
-  else askLog.push({ role:"err", text:askErr(status, body) });
+  else askLog.push({ role:"err", text:askErr(status, body), retry: status !== 429 && status !== 503 ? q : null });
   renderAsk();
 }
 function voiceAsk(btn, input){
@@ -2507,6 +2531,7 @@ function voiceAsk(btn, input){
 }
 document.addEventListener("click", e => {
   const q = e.target.closest("[data-ask-q]"); if(q){ sendAsk(q.dataset.askQ); return; }
+  const rt = e.target.closest("[data-ask-retry]"); if(rt){ if(askBusy) return; const i = askLog.findIndex(m => m.retry === rt.dataset.askRetry); if(i > 0 && askLog[i - 1].role === "mine") askLog.splice(i - 1, 2); sendAsk(rt.dataset.askRetry); return; }
   if(e.target.closest("[data-ask-clear]")){ if(askBusy) return; askLog.length = 0; askLeft = askLeft; renderAsk(); window.scrollTo({ top:0, behavior:"auto" }); return; }
   if(e.target.closest("[data-ask-ideas]")){ const d = $("#allideas"); if(d){ d.open = true; d.scrollIntoView({ block:"start", behavior: reduced() ? "auto" : "smooth" }); } return; }
   const a = e.target.closest("[data-ask-act]"); if(!a) return;
@@ -2516,19 +2541,25 @@ document.addEventListener("click", e => {
 if(AI_ON){ const tab = $("#tab-ask"); if(tab) tab.hidden = false; }
 
 /* Common ground on a profile: a stronger model compares the two people and writes a short brief */
-const CGKEY = "es-oahu-2026-connect", CGTTL = 12 * 3600 * 1000;
+const CGKEY = "es-oahu-2026-connect2", CGTTL = 12 * 3600 * 1000;   /* v2 briefs carry a snapshot, talking points and where to catch them */
 const cgRead = () => { try { return JSON.parse(localStorage.getItem(CGKEY) || "{}"); } catch(e){ return {}; } };
 const cgSave = (k, r) => { try { const all = cgRead(); all[k] = { r, ts: Date.now() }; localStorage.setItem(CGKEY, JSON.stringify(all)); } catch(e){} };
-const CGWAIT = ["Reading both profiles", "Looking for real overlap", "Checking for fresh news", "Writing your brief"];
+const CGWAIT = ["Reading both profiles", "Weighing what each of you typed", "Comparing territory and customers", "Checking for fresh news", "Writing your brief"];
 function cgHtml(r, cached){
-  const p = byId[current];
-  return `<div class="cg"><span class="cg-kick">You and ${esc(p ? first(p) : "them")}</span><p class="cg-head">${esc(r.headline)}</p>
+  const p = byId[current], fn = p ? first(p) : "them";
+  const snap = (r.snapshot || []).length ? `<div class="cg-snap" role="table" aria-label="You and ${esc(fn)} side by side"><div class="cg-row cg-hd" role="row"><span role="columnheader"></span><span role="columnheader">You</span><span role="columnheader">${esc(fn)}</span></div>${r.snapshot.map(x => `<div class="cg-row" role="row"><span role="rowheader">${esc(x.label)}</span><span role="cell">${esc(x.you)}</span><span role="cell">${esc(x.them)}</span></div>`).join("")}</div>` : "";
+  const tps = (r.talkingPoints || []).length ? `<h5>Talking points</h5><ol class="cg-tp">${r.talkingPoints.map(x => `<li><b>${esc(x.topic)}</b>${x.why ? `<span>${esc(x.why)}</span>` : ""}</li>`).join("")}</ol>` : "";
+  const catchH = (r.catch || []).length ? `<h5>Where to catch ${esc(fn)}</h5><ul class="cg-catch">${r.catch.map(c => `<li><span class="cg-when">${esc(c.when)}</span><span class="cg-what"><b>${esc(c.what)}</b><small>${esc(c.where)}${c.tip ? ". " + esc(c.tip) : ""}</small></span>${c.placeId && PLACE[c.placeId] ? `<button type="button" data-map="${esc(c.placeId)}" aria-label="Show ${esc(c.where)} on the map">${PINSVG}</button>` : ""}</li>`).join("")}</ul>` : "";
+  return `<div class="cg"><div class="cg-top"><span class="cg-kick">You and ${esc(fn)}</span>${r.strength ? `<span class="cg-str${/Strong/.test(r.strength) ? " hi" : ""}">${esc(r.strength)}</span>` : ""}</div><p class="cg-head">${esc(r.headline)}</p>
+    ${snap}
     <h5>Common ground</h5><ul class="cg-list">${(r.common || []).map(c => `<li><span>${esc(c.point)}</span>${c.source ? `<small>${esc(c.source)}</small>` : ""}</li>`).join("")}</ul>
     ${(r.different || []).length ? `<h5>Where you differ, usefully</h5><ul class="cg-diff">${r.different.map(d => `<li>${esc(d.point)}</li>`).join("")}</ul>` : ""}
+    ${tps}
     <h5>Try opening with</h5>${(r.openers || []).map(o => `<blockquote class="cg-op">${esc(o)}</blockquote>`).join("")}
+    ${catchH}
     ${r.news ? `<div class="cg-news"><b>Fresh from the web</b><p>${esc(r.news.text)}</p>${r.news.site ? `<small>${esc(r.news.site)}</small>` : ""}</div>` : ""}
     <div class="btnrow"><button type="button" class="pbtn" data-cg-more>${SPARKLE}Dig deeper</button><button type="button" class="pbtn" data-cg-refresh>Refresh</button></div>
-    <p class="fine">${cached ? "Saved from earlier today. " : ""}Built from both profiles, the topics people added and public sources. Worth a quick check before you quote it.</p></div>`;
+    <p class="fine">${cached ? "Saved from earlier today. " : ""}Built from both profiles, the topics people typed in (weighted highest), host cards, public research on each company and the agenda. Worth a quick check before you quote it.</p></div>`;
 }
 function cgShow(id){ // opening a profile shows a saved brief if there is a recent one
   const box = $("#p-connect"), c = me && cgRead()[me + ">" + id], fresh = c && Date.now() - c.ts < CGTTL;
