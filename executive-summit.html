@@ -138,6 +138,16 @@ button{font:inherit;color:inherit}
 .mosaic img{width:100%;height:100%;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}
 .mosaic button:focus-visible{outline:3px solid var(--ink);outline-offset:5px}
 .mosaic .on::after{content:"";position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:50%;background:var(--taxi);box-shadow:0 0 0 2px var(--bg)}
+.gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0;padding:0;list-style:none}
+.gtiles button{all:unset;box-sizing:border-box;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;width:100%;padding:10px 8px 14px;border-radius:20px;background:var(--surface);border:1.5px solid var(--rule);transition:transform .15s ease,box-shadow .2s ease;-webkit-tap-highlight-color:transparent}
+.gtiles button::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--ring)}
+.gtiles button:active{transform:scale(.97)}
+.gtiles button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.gtiles .plate{box-sizing:border-box;display:grid;place-items:center;width:100%;height:52px;padding:8px 10px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.gtiles .plate img{display:block;max-width:100%;max-height:24px;width:auto;height:auto;object-fit:contain}
+.gtiles .plate .hib{width:42px;height:42px}
+.gtiles .num{margin-top:10px;font-family:var(--display);font-weight:900;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.gtiles .cap{margin-top:3px;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 0;padding:0;list-style:none}
 .legend button{width:100%;justify-content:center;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 6px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);cursor:pointer;font-size:15px;font-weight:600}
 .legend i{flex:0 0 12px;width:12px;height:12px;border-radius:50%;background:var(--ring)}
@@ -596,9 +606,38 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .askhead p{margin:3px 0 0;font-size:13px;line-height:1.4;color:var(--mute)}
 .chat{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 20px 12px;display:flex;flex-direction:column;gap:10px}
 .msg{max-width:88%;padding:11px 14px;border-radius:18px;font-size:16px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
-.msg.mine{align-self:flex-end;background:var(--teal);color:#fff;border-bottom-right-radius:6px}
+.msg.mine{align-self:flex-end;max-width:84%;background:var(--teal);color:#fff;border-bottom-right-radius:6px;font-weight:550}
 :root[data-theme="dark"] .msg.mine{color:#0f1416}
-.msg.ai{align-self:flex-start;background:var(--sunk);border-bottom-left-radius:6px}
+.msg.ai{align-self:stretch;max-width:none;white-space:normal;background:var(--surface);border:1.5px solid var(--rule);border-radius:20px;border-top-left-radius:8px;padding:14px 16px 16px;box-shadow:0 8px 24px -18px rgba(0,0,0,.5)}
+.msg.ai.dots{align-self:flex-start;padding:14px 18px}
+.msg.ai .ai-kick{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.msg.ai .ai-kick svg{width:14px;height:14px}
+.msg.ai .ai-txt{margin-top:6px}
+.msg.ai .ai-txt p{margin:0;font-size:16px;line-height:1.55;text-wrap:pretty}
+.msg.ai .ai-txt p + p{margin-top:10px}
+.msg.ai .ai-txt a{color:var(--teal);font-weight:650;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+.ai-people{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.ai-people button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 10px 12px 12px;border-radius:16px;background:var(--sunk);-webkit-tap-highlight-color:transparent}
+.ai-people button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.ai-people img{flex:0 0 auto;width:46px;height:46px;border-radius:50%;object-fit:cover;background:var(--soft);box-shadow:0 0 0 2.5px var(--sunk),0 0 0 4.5px var(--gc)}
+.ai-people .who{flex:1;min-width:0}
+.ai-people b{display:block;font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2}
+.ai-people small{display:block;margin-top:2px;font-size:13px;line-height:1.3;color:var(--mute)}
+.ai-people em{display:block;margin-top:7px;font-style:normal;font-size:14.5px;line-height:1.45;color:var(--ink);text-wrap:pretty}
+.ai-people .go{align-self:center;display:grid;place-items:center;color:var(--mute)}
+.ai-people .go svg{width:18px;height:18px}
+.ai-links{display:grid;gap:8px;margin-top:12px}
+.ai-link{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;text-decoration:none;color:var(--ink);background:color-mix(in srgb,var(--teal) 9%,var(--surface));border:1.5px solid color-mix(in srgb,var(--teal) 30%,var(--rule))}
+.ai-link:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.ai-link .ic{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:var(--teal);color:var(--on-k)}
+.ai-link .ic svg{width:20px;height:20px}
+.ai-link .lt{flex:1;min-width:0}
+.ai-link b{display:block;font-size:15px;line-height:1.25}
+.ai-link small{display:block;margin-top:2px;font-size:12.5px;color:var(--teal);overflow-wrap:anywhere}
+.ai-link > svg:last-child{flex:0 0 auto;width:18px;height:18px;color:var(--mute)}
+.msg.ai .acts{margin-top:12px}
+.msg.ai .webnote{margin-top:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg.mine{color:#0f1416}:root:not([data-theme="light"]) .msg.err{background:#3a1b18;color:#ffb4ab}}
 .msg.err{align-self:flex-start;background:#fde9e7;color:#7a1a12}
 :root[data-theme="dark"] .msg.err{background:#3a1b18;color:#ffb4ab}
 .msg .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
@@ -668,13 +707,21 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .cg .cg-kick{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
 .cg .cg-str{flex:0 0 auto;padding:3px 10px;border-radius:99px;background:var(--sunk);color:var(--ink);font-size:12px;font-weight:800}
 .cg .cg-str.hi{background:var(--taxi);color:#15181a}
-.cg-snap{margin-top:14px;border:1.5px solid var(--rule);border-radius:14px;overflow:hidden;font-size:13.5px;line-height:1.35}
-.cg-row{display:grid;grid-template-columns:66px minmax(0,1fr) minmax(0,1fr);gap:0 10px;padding:8px 10px;border-top:1px solid var(--rule)}
-.cg-row:first-child{border-top:0}
-.cg-row > span{min-width:0;overflow-wrap:anywhere}
-.cg-row > span:first-child{font-size:10.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--mute);padding-top:2px;overflow-wrap:normal;word-break:normal}
-.cg-hd{background:var(--sunk);font-weight:800}
-.cg-hd > span:nth-child(2),.cg-hd > span:nth-child(3){font-family:var(--display);font-size:14px;color:var(--teal)}
+.cg-snap{margin-top:14px;padding:14px 12px 6px;border-radius:18px;background:var(--sunk)}
+.cg-faces{display:grid;grid-template-columns:1fr 34px 1fr;align-items:start;gap:4px;padding-bottom:12px}
+.cg-face{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.cg-face img{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--soft);box-shadow:0 0 0 3px var(--sunk),0 0 0 5.5px var(--gc)}
+.cg-face b{margin-top:10px;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.15}
+.cg-face small{display:block;margin-top:3px;font-size:12.5px;line-height:1.3;color:var(--mute);overflow-wrap:anywhere}
+.cg-face small.co{margin-top:1px;font-weight:700;color:var(--ink)}
+.cg-link{align-self:start;margin-top:20px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--teal);border:1.5px solid var(--rule)}
+.cg-link svg{width:18px;height:18px}
+.cg-pair{padding:10px 0;border-top:1px solid var(--rule)}
+.cg-lab{display:block;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.cg-vals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:5px}
+.cg-vals > span{min-width:0;text-align:center;font-size:14px;line-height:1.4;font-weight:600;overflow-wrap:anywhere;text-wrap:balance}
+.cg-vals .nil{font-weight:500;color:var(--mute);font-style:italic}
+.cg-pb{margin-top:14px}
 .cg-tp{margin:0;padding:0;list-style:none;counter-reset:tp;display:grid;gap:8px}
 .cg-tp li{counter-increment:tp;position:relative;padding:10px 12px 10px 42px;border-radius:12px;background:var(--sunk);font-size:14.5px;line-height:1.45}
 .cg-tp li::before{content:counter(tp);position:absolute;left:11px;top:10px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--teal);color:var(--on-k);font-size:12.5px;font-weight:800}
@@ -1478,10 +1525,21 @@ function savedBlock(){
     ? `<div class="saved-strip">${list.map(p => `<button type="button" data-open="${p.id}" aria-label="${esc(p.n)}" style="--ring:${gColor(p.g)}"><img src="${photo(p.id)}" alt="" width="60" height="60"><span>${esc(first(p))}</span></button>`).join("")}</div>`
     : `<p class="hint">Tap the star on anyone you want to find during the summit. They’ll be saved here on this phone.</p>`}</div>`;
 }
+/* Group tiles on Home: the official Microsoft and TD SYNNEX logos (the same files as the header) and, for partners,
+   a hibiscus whose petals are Microsoft's four colors and TD SYNNEX teal around a summit-pink center: one flower, everyone in it. */
+const GROUP_CAP = { partners:"partners", microsoft:"leaders", tdsynnex:"hosts" };
+const hibPetal = (rot, c) => `<g transform="rotate(${rot})"><path d="M0 -4 C -6 -10 -21 -18 -19 -33 C -17 -44 -6 -47 0 -40 C 6 -47 17 -44 19 -33 C 21 -18 6 -10 0 -4Z" fill="${c}"/><path d="M0 -8 C -2 -18 -1 -28 0 -36 M0 -10 C -6 -18 -9 -26 -11 -32 M0 -10 C 6 -18 9 -26 11 -32" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" stroke-linecap="round"/></g>`;
+const HIBISCUS = `<svg class="hib" viewBox="-50 -50 100 100" aria-hidden="true">${hibPetal(0,"#F25022")}${hibPetal(72,"#FFB900")}${hibPetal(144,"#7FBA00")}${hibPetal(216,"#00A4EF")}${hibPetal(288,"#0A7E8C")}<circle r="9" fill="#C4166A"/><circle r="5" fill="#F2C230"/><path d="M2 -2 C 12 -12 20 -20 24 -34" fill="none" stroke="#E8762B" stroke-width="3.2" stroke-linecap="round"/><circle cx="24.5" cy="-35" r="2.6" fill="#F2C230"/><circle cx="20" cy="-38" r="2" fill="#F2C230"/><circle cx="28.5" cy="-32" r="2" fill="#F2C230"/></svg>`;
+function groupArt(k){
+  const logo = sel => { const i = document.querySelector(sel); return i ? `<img src="${i.src}" alt="" decoding="async">` : ""; };
+  if(k === "microsoft") return logo(".mast .logos img.ms") || "Microsoft";
+  if(k === "tdsynnex") return logo(".mast .logos img:not(.ms)") || "TD SYNNEX";
+  return HIBISCUS;
+}
 function roomBlock(){
   return `<div class="block"><h3>Who’s in the room</h3><p class="note">${PEOPLE.length} people. Tap a face to read their bio.</p>
     <ul class="mosaic">${PEOPLE.map((p,i) => `<li style="--i:${i};--ring:${gColor(p.g)}"><button type="button" data-open="${p.id}" class="${saved.has(p.id)?"on":""}" aria-label="${esc(p.n)}, ${esc(p.t)}, ${esc(p.c)}"><img src="${photo(p.id)}" alt="" width="60" height="60" decoding="async"></button></li>`).join("")}</ul>
-    <ul class="legend" aria-label="Jump to a group">${Object.entries(GROUPS).map(([k,g]) => `<li style="--ring:${gColor(k)}"><button type="button" data-jump="${k}"><i aria-hidden="true"></i>${g.short} <b>${PEOPLE.filter(p=>p.g===k).length}</b></button></li>`).join("")}</ul></div>`;
+    <ul class="gtiles" aria-label="Jump to a group">${Object.entries(GROUPS).map(([k,g]) => `<li style="--ring:${gColor(k)}"><button type="button" data-jump="${k}" aria-label="${esc(g.short)}: ${PEOPLE.filter(p=>p.g===k).length} people"><span class="plate">${groupArt(k)}</span><b class="num">${PEOPLE.filter(p=>p.g===k).length}</b><small class="cap">${GROUP_CAP[k] || ""}</small></button></li>`).join("")}</ul></div>`;
 }
 function nowCard(){ return `<div id="nowcard">${nowCardInner()}</div>`; }
 function renderHome(){
@@ -2488,6 +2546,18 @@ function actionButtons(actions){
 }
 const askTips = () => `<section class="asktips"><h3>Tips for better answers</h3><ul>${ASK_TIPS.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>`;
 const askStrip = () => `<div class="chipstrip" role="group" aria-label="Question ideas"><button type="button" data-ask-ideas>All ideas</button>${ASK_GROUPS.flatMap(g => g.qs).map(q => `<button type="button" data-ask-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>`;
+/* One assistant answer as a polished card: the text, the people it recommends (tap to open), playbook links, and map or agenda chips. */
+const BOOKSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7h8M8 11h6"/></svg>';
+const CHEVR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+const pbLinks = html => html.replace(/https:\/\/copilotplaybook\.com\/[^\s<)"]*/g, u => { const clean = u.replace(/[.,;:]+$/, ""), tail = u.slice(clean.length); return `<a href="${clean}" target="_blank" rel="noopener">${clean.replace(/^https:\/\//, "").replace(/\/$/, "")}</a>${tail}`; });
+function aiCard(m){
+  const paras = String(m.text || "").split(/\n\s*\n/).filter(Boolean).map(p => `<p>${pbLinks(esc(p))}</p>`).join("");
+  const ppl = (m.people || []).filter(x => byId[x.id]).map(x => { const p = byId[x.id];
+    return `<li><button type="button" data-ask-act="person:${x.id}" style="--gc:${gColor(p.g)}"><img src="${photo(x.id)}" alt="" width="46" height="46"><span class="who"><b>${esc(p.n)}</b><small>${esc(p.t)}${p.c && p.c !== p.t ? ", " + esc(p.c) : ""}</small>${x.why ? `<em>${esc(x.why)}</em>` : ""}</span><i class="go">${CHEVR}</i></button></li>`; }).join("");
+  const links = (m.links || []).filter(l => /^https:\/\/copilotplaybook\.com\//.test(l.url)).map(l => `<a class="ai-link" href="${esc(l.url)}" target="_blank" rel="noopener"><span class="ic">${BOOKSVG}</span><span class="lt"><b>${esc(l.label)}</b><small>${esc(l.url.replace(/^https:\/\//, "").replace(/\/$/, ""))}</small></span>${EXTSVG}</a>`).join("");
+  const acts = actionButtons((m.actions || []).filter(a => a.type !== "person" || !(m.people || []).length));
+  return `<div class="msg ai"><span class="ai-kick">${SPARKLE}Ask The Summit</span><div class="ai-txt">${paras}</div>${ppl ? `<ul class="ai-people">${ppl}</ul>` : ""}${links ? `<div class="ai-links">${links}</div>` : ""}${acts ? `<div class="acts">${acts}</div>` : ""}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}</div>`;
+}
 const askHints = () => ASK_GROUPS.map(g => `<div class="hintgroup"><h3>${esc(g.h)}</h3><div class="sugg">${g.qs.map(q => `<button type="button" data-ask-q="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>`).join("");
 function renderAsk(){
   const box = $("#askpage"); if(!box) return;
@@ -2497,7 +2567,7 @@ function renderAsk(){
   box.innerHTML = `<div class="vhead"><h2 id="ask-h">Ask The Summit</h2><p>Your guide to the resort, the North Shore and the people here. It starts with this guide and checks the web when it needs more.</p><p class="powered"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Powered by <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener">Claude</a></p></div>
     ${nudge}
     ${empty ? "" : `<div class="askrow"><button type="button" class="pbtn" data-ask-clear>Clear chat</button></div>`}
-    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.retry ? `<div class="acts"><button type="button" data-ask-retry="${esc(m.retry)}">Try again</button></div>` : ""}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
+    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => m.role === "ai" && !m.dots ? aiCard(m) : `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.retry ? `<div class="acts"><button type="button" data-ask-retry="${esc(m.retry)}">Try again</button></div>` : ""}</div>`).join("")}</div>
     ${empty ? `<div class="hints">${askHints()}</div>${askTips()}` : `<details class="hints" id="allideas"><summary>All ideas and tips</summary>${askHints()}${askTips()}</details>`}
     ${askLeft != null ? `<p class="askleft">${askLeft} question${askLeft === 1 ? "" : "s"} left today</p>` : ""}
     <div class="askdock">${empty ? "" : askStrip()}<form class="askbar" id="a-form"><textarea id="a-input" rows="1" maxlength="300" placeholder="Ask a question" aria-label="Your question"></textarea>
@@ -2516,7 +2586,7 @@ async function sendAsk(q){
   let status = 0, body = {};
   try { ({ status, body } = await askCall({ mode:"ask", q, view: view === "resort" && selPlace ? "map: " + selPlace : view })); } catch(e){ status = 0; }
   askLog.pop(); askBusy = false;
-  if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, actions:body.actions, web:!!body.web }); }
+  if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, people:body.people || [], links:body.links || [], actions:body.actions, web:!!body.web }); }
   else askLog.push({ role:"err", text:askErr(status, body), retry: status !== 429 && status !== 503 ? q : null });
   renderAsk();
 }
@@ -2547,7 +2617,10 @@ const cgSave = (k, r) => { try { const all = cgRead(); all[k] = { r, ts: Date.no
 const CGWAIT = ["Reading both profiles", "Weighing what each of you typed", "Comparing territory and customers", "Checking for fresh news", "Writing your brief"];
 function cgHtml(r, cached){
   const p = byId[current], fn = p ? first(p) : "them";
-  const snap = (r.snapshot || []).length ? `<div class="cg-snap" role="table" aria-label="You and ${esc(fn)} side by side"><div class="cg-row cg-hd" role="row"><span role="columnheader"></span><span role="columnheader">You</span><span role="columnheader">${esc(fn)}</span></div>${r.snapshot.map(x => `<div class="cg-row" role="row"><span role="rowheader">${esc(x.label)}</span><span role="cell">${esc(x.you)}</span><span role="cell">${esc(x.them)}</span></div>`).join("")}</div>` : "";
+  const head = pp => pp && byId[pp.id] ? `<div class="cg-face" style="--gc:${gColor(byId[pp.id].g)}"><img src="${photo(pp.id)}" alt="" width="64" height="64"><b>${esc(pp.id === me ? "You" : first(byId[pp.id]))}</b><small>${esc(pp.title)}</small><small class="co">${esc(pp.company)}</small></div>` : "";
+  const heads = r.people && r.people.you && r.people.them ? `<div class="cg-faces">${head(r.people.you)}<span class="cg-link" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h11l-3-3M17 16H6l3 3"/></svg></span>${head(r.people.them)}</div>` : "";
+  const val = v => /^(Not listed|Not added yet)$/.test(v) ? `<span class="nil">${esc(v)}</span>` : esc(v);
+  const snap = (r.snapshot || []).length || heads ? `<div class="cg-snap">${heads}${(r.snapshot || []).filter(x => x.label !== "Role").map(x => `<div class="cg-pair"><span class="cg-lab">${esc(x.label)}</span><div class="cg-vals"><span>${val(x.you)}</span><span>${val(x.them)}</span></div></div>`).join("")}</div>` : "";
   const tps = (r.talkingPoints || []).length ? `<h5>Talking points</h5><ol class="cg-tp">${r.talkingPoints.map(x => `<li><b>${esc(x.topic)}</b>${x.why ? `<span>${esc(x.why)}</span>` : ""}</li>`).join("")}</ol>` : "";
   const catchH = (r.catch || []).length ? `<h5>Where to catch ${esc(fn)}</h5><ul class="cg-catch">${r.catch.map(c => `<li><span class="cg-when">${esc(c.when)}</span><span class="cg-what"><b>${esc(c.what)}</b><small>${esc(c.where)}${c.tip ? ". " + esc(c.tip) : ""}</small></span>${c.placeId && PLACE[c.placeId] ? `<button type="button" data-map="${esc(c.placeId)}" aria-label="Show ${esc(c.where)} on the map">${PINSVG}</button>` : ""}</li>`).join("")}</ul>` : "";
   return `<div class="cg"><div class="cg-top"><span class="cg-kick">You and ${esc(fn)}</span>${r.strength ? `<span class="cg-str${/Strong/.test(r.strength) ? " hi" : ""}">${esc(r.strength)}</span>` : ""}</div><p class="cg-head">${esc(r.headline)}</p>
@@ -2558,6 +2631,7 @@ function cgHtml(r, cached){
     <h5>Try opening with</h5>${(r.openers || []).map(o => `<blockquote class="cg-op">${esc(o)}</blockquote>`).join("")}
     ${catchH}
     ${r.news ? `<div class="cg-news"><b>Fresh from the web</b><p>${esc(r.news.text)}</p>${r.news.site ? `<small>${esc(r.news.site)}</small>` : ""}</div>` : ""}
+    ${(r.links || []).filter(l => /^https:\/\/copilotplaybook\.com\//.test(l.url)).map(l => `<a class="ai-link cg-pb" href="${esc(l.url)}" target="_blank" rel="noopener"><span class="ic">${BOOKSVG}</span><span class="lt"><b>${esc(l.label)}</b><small>${esc(l.url.replace(/^https:\/\//, "").replace(/\/$/, ""))}</small></span>${EXTSVG}</a>`).join("")}
     <div class="btnrow"><button type="button" class="pbtn" data-cg-more>${SPARKLE}Dig deeper</button><button type="button" class="pbtn" data-cg-refresh>Refresh</button></div>
     <p class="fine">${cached ? "Saved from earlier today. " : ""}Built from both profiles, the topics people typed in (weighted highest), host cards, public research on each company and the agenda. Worth a quick check before you quote it.</p></div>`;
 }

@@ -27,6 +27,19 @@ out.agenda = C.AGENDA.map((d, di) => ({
 // buttons: the link buttons on each pin's card in the app (Menu, Reserve, Spa menu ...), so the assistant can point people to them.
 const btns = (p) => [...(p.links || []).map((l) => l[0]), ...(p.venues || []).flatMap((v) => (v.links || []).map((l) => v.n + ' ' + l[0]))];
 out.places = C.PLACES.map((p) => ({ id: p.id, name: p.name, map: p.map === 3 ? 'inside the hotel' : 'resort map', type: p.kind, summary: p.sub, details: p.desc, hours: hrs(p.hrs) || (p.venues ? p.venues.map((v) => v.n + ': ' + hrs(v.hrs) + (v.note ? ' (' + v.note + ')' : '')).join('; ') : null), phone: (p.venues || []).filter((v) => v.tel).map((v) => v.n + ' ' + v.tel.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')).join('; ') || null, buttons: btns(p) }));
+// Ken Lince's Copilot Playbook (this repo, published at copilotplaybook.com): every page in the sitemap with its title,
+// description and section headings, so the assistant can point partners to the right page by its full link.
+const decode = (s) => String(s || '').replace(/<[^>]+>/g, '').replace(/\s*(&mdash;|&#8212;|—)\s*/g, ' - ').replace(/&middot;/g, '·').replace(/&hellip;/g, '...').replace(/&ndash;/g, '-').replace(/&[lr]dquo;/g, '"').replace(/&lsquo;/g, '’').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, '’').replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+out.playbook = (fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8').match(/<loc>[^<]+<\/loc>/g) || []).map((l) => l.slice(5, -6))
+  .filter((u) => !/frontier-navigator\/pages\//.test(u) && /\/$|\.html$/.test(u))
+  .map((url) => {
+    const rel = url.replace('https://copilotplaybook.com/', '') || 'index.html';
+    let html = ''; try { html = fs.readFileSync(path.join(ROOT, rel.endsWith('/') ? rel + 'index.html' : rel), 'utf8'); } catch (e) { return null; }
+    const title = decode((/<title>([\s\S]*?)<\/title>/i.exec(html) || [])[1]).replace(/\s*\|\s*Copilot Playbook$/, '');
+    const about = decode((/<meta name="description" content="([^"]*)"/i.exec(html) || [])[1]).slice(0, 260);
+    const sections = [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => decode(m[1])).filter((h) => h && h.length < 80).slice(0, 8);
+    return { title, url, about, sections };
+  }).filter(Boolean);
 out.info = C.INFO.map((i) => ({ title: i.title, text: i.body.map((b) => b.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')).join(' ') }));
 
 // Partner cards (private, approved only), matched to attendee companies.

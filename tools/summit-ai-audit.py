@@ -44,6 +44,8 @@ C = [
  ("calendar", None, "How do I add a session to my phone calendar?", [r"Add to calendar"], [], None, []),
  ("surf", None, "What is the surf like at Sunset Beach this week?", [], [r"surf", r"wave", r"swell"], None, []),
  ("topic", None, "Who here is focused on customer zero?", [r"Ken"], [], None, ["person:ken-lince"]),
+ ("pbtoken", None, "Where can I learn how Copilot Credits and token economics work for my practice?", [], [], None, ["link:copilot-token-economics", "link:copilot-credit-planner"]),
+ ("pbken", None, "What does Ken Lince work on?", [r"Ken"], [], None, ["link:copilotplaybook.com/"]),
 ]
 def ask(c):
     cid, me, q, must, anyof, forbid, acts = c
@@ -54,19 +56,24 @@ def ask(c):
     t0 = time.time()
     try: r = json.loads(urllib.request.urlopen(req, timeout=120).read())
     except Exception as e: r = {"error": str(e)}
-    a = r.get("answer", "") or ""
-    got = [f"{x['type']}:{x.get('id', x.get('day'))}" for x in r.get("actions", [])]
+    # The answer card is the lead text plus each recommended person (name from the id) and the reason given for them.
+    a = " ".join([r.get("answer", "") or ""] + [" ".join(w.capitalize() for w in x["id"].split("-")) + ": " + (x.get("why") or "") for x in r.get("people", [])])
+    got = [f"{x['type']}:{x.get('id', x.get('day'))}" for x in r.get("actions", [])] + [f"person:{x['id']}" for x in r.get("people", [])]
+    links = [l.get("url", "") for l in r.get("links", [])]
     probs = []
     if not a: probs.append("no answer " + str(r))
     for m in must:
         if not re.search(m, a): probs.append("missing " + m)
     if anyof and not any(re.search(m, a) for m in anyof): probs.append("none of " + "|".join(anyof))
     if forbid and re.search(forbid, a): probs.append("forbidden " + forbid)
-    if acts and not any(x in got for x in acts): probs.append("no action " + "|".join(acts) + " got " + str(got))
+    la = [x for x in acts if x.startswith("link:")]; acts2 = [x for x in acts if not x.startswith("link:")]
+    if acts2 and not any(x in got for x in acts2): probs.append("no action " + "|".join(acts2) + " got " + str(got))
+    if la and not any(any(x[5:] in u for u in links) for x in la): probs.append("no link " + "|".join(la) + " got " + str(links))
+    if any("ken-lince" == g.split(":")[-1] for g in got) and not any(u.rstrip("/") == "https://copilotplaybook.com" for u in links): probs.append("Ken without the playbook link")
     if cid in ("meetfirst", "copilottrain", "security", "licensing", "topic") and len([g for g in got if g.startswith("person:")]) < 2: probs.append("expected 2+ people, got " + str(got))
     if re.search(r"cite index|</?cite", a): probs.append("citation markup leaked")
     if re.search("—", a): probs.append("em dash")
-    return cid, q, a, got, r.get("web"), probs, time.time() - t0
+    return cid, q, a, got + ["link:" + u for u in links], r.get("web"), probs, time.time() - t0
 with ThreadPoolExecutor(6) as ex: res = list(ex.map(ask, C))
 fails = 0
 for cid, q, a, got, web, probs, dt in res:
