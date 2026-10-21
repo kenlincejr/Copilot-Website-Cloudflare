@@ -120,13 +120,6 @@ button{font:inherit;color:inherit}
 .greet p{margin:6px 0 0;color:var(--mute)}
 .switch{display:inline-flex;align-items:center;min-height:44px;border:0;background:none;padding:0;color:var(--teal);font-weight:650;cursor:pointer;font-size:15px}
 
-/* Quick actions */
-.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.quick button{all:unset;cursor:pointer;box-sizing:border-box;position:relative;min-height:64px;padding:10px 4px 8px;border-radius:14px;background:var(--sunk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-.quick button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
-.quick svg{width:22px;height:22px;color:var(--teal)}
-.quick b{display:block;font-family:var(--display);font-weight:800;font-stretch:88%;font-size:12.5px;letter-spacing:.02em;line-height:1;text-transform:uppercase;white-space:nowrap}
-.quick .ct{position:absolute;top:6px;right:8px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--taxi);color:#15181a;font-size:11px;font-weight:800;line-height:18px;text-align:center}
 
 /* Mini list of saved people */
 .saved-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;padding:4px 0}
@@ -378,11 +371,10 @@ html.lock,html.lock body{overflow:hidden}
   @keyframes seat{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
 }
 @media (prefers-reduced-motion:reduce){.sheet,.scrim,.toast{transition:none}}
-@media (max-width:359px){.filters button{font-size:13px}.quick button{min-height:88px}}
+@media (max-width:359px){.filters button{font-size:13px}}
 @media (min-width:700px){
   :root{--pad:32px}
   .mosaic{grid-template-columns:repeat(12,minmax(0,1fr));gap:9px}
-  .quick{grid-template-columns:repeat(4,1fr)}
   .mast h1{font-size:26px}
   .sheet{bottom:auto;top:50%;border-radius:22px;transform:translateY(-40%) scale(.98);opacity:0;transition:transform .28s ease,opacity .2s}
   .is-open .sheet{transform:translateY(-50%);opacity:1}
@@ -722,16 +714,6 @@ function meetRows(p){
     <span><span class="mn">${esc(m.n)}</span><span class="mc">${esc(m.t)}, ${esc(m.c)}</span><span class="mw">${esc(why)}</span></span>
   </button></li>` : ""; }).join("");
 }
-const ICON = {
-  people:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.6 6.5-5.6s5.9 2 6.5 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.3c2.6.2 4.4 2 5 4.7"/></svg>',
-  agenda:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
-  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg>',
-  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>'
-};
-function quickActions(){
-  const items = [["people","Attendees","people",""],["agenda","Agenda","agenda",""],["info","Info","info",""],["star","My list","saved",saved.size||""]];
-  return `<div class="quick">${items.map(([ic,t,go,ct]) => `<button type="button" data-go="${go}" aria-label="${t}${ct?`, ${ct} saved`:""}">${ICON[ic]}<b>${t}</b>${ct?`<span class="ct" aria-hidden="true">${ct}</span>`:""}</button>`).join("")}</div>`;
-}
 function savedBlock(){
   const list = PEOPLE.filter(p => saved.has(p.id));
   return `<div class="block"><h3>My list</h3>${list.length
@@ -759,13 +741,11 @@ function renderHome(){
       <label for="mq" class="vh">Type your name</label><input id="mq" type="search" placeholder="Type your name" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
       <ul class="picks" id="picks"></ul></div>`;
     h += upNextBlock();
-    h += `<div class="block">${quickActions()}</div>`;
   } else {
     const intros = (p.meet||[]).length;
     h += `<div class="greet"><h2>Aloha, ${esc(first(p))}</h2><p>${intros ? "Here’s who we’d introduce you to at the summit." : "Every partner’s profile shows who we’d introduce them to."}</p></div>`;
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
     h += upNextBlock();
-    h += `<div class="block">${quickActions()}</div>`;
     h += savedBlock();
   }
   h += roomBlock();
@@ -914,7 +894,7 @@ document.addEventListener("click", e => {
   const f = e.target.closest("[data-filter]"); if(f){ setFilter(f.dataset.filter); return; }
   const j = e.target.closest("[data-jump]"); if(j){ setQuery(""); setFilter(j.dataset.jump); setView("people"); return; }
   const t = e.target.closest("[data-topic]"); if(t){ setFilter("all"); setQuery(t.dataset.topic); scrollToTopOfView(); return; }
-  const g = e.target.closest("[data-go]"); if(g){ const v = g.dataset.go; if(v==="saved"){ setQuery(""); setFilter("saved"); setView("people"); } else setView(v); return; }
+  const g = e.target.closest("[data-go]"); if(g){ const v = g.dataset.go; setView(v); return; }
   const d = e.target.closest("[data-day]"); if(d){ agendaDay = +d.dataset.day; renderAgenda(); return; }
   const m = e.target.closest("[data-me]"); if(m){ setMe(m.dataset.me); toast(`Welcome, ${first(byId[m.dataset.me])}`); window.scrollTo(0,0); return; }
   if(e.target.closest("#notme")){ setMe(null); window.scrollTo(0,0); return; }
