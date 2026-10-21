@@ -172,6 +172,7 @@ button{font:inherit;color:inherit}
 .dayhead h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:22px;line-height:1.15;margin:0}
 .dayhead p{margin:6px 0 0;color:var(--mute);line-height:1.45;text-wrap:pretty}
 .dayhead p b{color:var(--ink)}
+.dayhead .sun{margin-top:8px;font-size:13.5px;color:var(--mute)}
 .dayhead .dnote{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:14.5px;line-height:1.4}
 .session.past{opacity:.55}
 .session.is-now{background:var(--sunk);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:14px;border-bottom-color:transparent}
@@ -215,6 +216,89 @@ button{font:inherit;color:inherit}
 .ptr{position:fixed;left:0;right:0;top:calc(var(--sat) - 40px);z-index:50;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .15s}
 .ptr.show{opacity:1}
 .ptr span{background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:13px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+/* Resort tab */
+.mapchip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 12px 4px 8px;min-height:32px;border-radius:99px;background:var(--sunk);color:var(--teal);font-size:13.5px;font-weight:700}
+.mapchip svg,.nowc .cta.alt svg{width:16px;height:16px;flex:0 0 auto}
+.mapchip:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.nowc .ctas{display:flex;gap:10px;margin-top:16px}
+.nowc .ctas .cta{margin-top:0;flex:1}
+.nowc .ctas .cta.alt{flex:0 0 auto;padding:0 18px;background:rgba(255,255,255,.17);color:#fff}
+.rnow{margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--sunk);display:flex;align-items:center;gap:12px}
+.rnow .tx{flex:1;min-width:0}
+.rnow small{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
+.rnow b{display:block;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.25;margin-top:2px}
+.rnow span{display:block;font-size:14px;color:var(--mute);margin-top:2px}
+.rnow button{all:unset;cursor:pointer;flex:0 0 auto;min-height:44px;padding:0 16px;border-radius:12px;background:var(--teal);color:#fff;font-weight:750;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+:root[data-theme="dark"] .rnow button{color:#0f1416}
+.rnow button svg{width:16px;height:16px}
+.mapcard{margin-top:16px;border:1.5px solid var(--rule);border-radius:18px;overflow:hidden;background:var(--surface)}
+.mapseg{display:flex;gap:6px;padding:10px 10px 0}
+.mapseg button{flex:1;min-height:40px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;cursor:pointer}
+.mapseg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.mapview{position:relative;height:min(60vh,520px);min-height:300px;margin-top:10px;overflow:hidden;touch-action:none;background:#c7dadb;cursor:grab;user-select:none;-webkit-user-select:none}
+.mapview:active{cursor:grabbing}
+.mapview:focus-visible{outline:3px solid var(--teal);outline-offset:-3px}
+.mapstage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.mapstage.anim{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.mapstage img{display:block;width:100%;height:100%;pointer-events:none;-webkit-user-drag:none}
+.pin{all:unset;position:absolute;width:44px;height:44px;margin:-44px 0 0 -22px;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;
+  transform-origin:50% 100%;transform:scale(calc(var(--inv,1) * var(--ps,1)));z-index:2}
+.pin svg{width:25px;height:32px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.pin.k-event path{fill:#f2c230}.pin.k-eat path{fill:#e0603f}.pin.k-relax path{fill:#24b9d5}.pin.k-move path{fill:#6c8087}
+.pin.k-event circle{fill:#15181a}
+.pin .lbl{position:absolute;left:31px;bottom:9px;white-space:nowrap;font-size:11.5px;font-weight:800;line-height:1.2;color:#15181a;background:rgba(255,255,255,.94);padding:3px 8px;border-radius:99px;box-shadow:0 1px 5px rgba(0,0,0,.3);pointer-events:none;display:none}
+.pin.k-event .lbl,.pin.sel .lbl{display:block}
+.mapstage.zl .pin .lbl{display:block}
+.pin.sel{--ps:1.3;z-index:5}
+.pin.sel::after{content:"";position:absolute;left:50%;bottom:-2px;width:26px;height:10px;margin-left:-13px;border-radius:50%;background:rgba(0,0,0,.25);z-index:-1}
+.pin.now::before{content:"";position:absolute;left:50%;bottom:6px;width:30px;height:30px;margin-left:-15px;border-radius:50%;background:rgba(242,194,48,.55);animation:pulse2 1.8s infinite;z-index:-1}
+@keyframes pulse2{0%{transform:scale(.6);opacity:1}100%{transform:scale(2.4);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pin.now::before{animation:none}.mapstage.anim{transition:none}}
+.mapctl{position:absolute;right:10px;bottom:10px;display:grid;gap:8px;z-index:6}
+.mapctl button{all:unset;cursor:pointer;width:44px;height:44px;border-radius:50%;background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.28);display:grid;place-items:center;font-size:24px;font-weight:600;line-height:1}
+.mapctl button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.mapctl svg{width:20px;height:20px}
+.maphint{position:absolute;left:10px;bottom:10px;z-index:6;background:rgba(21,24,26,.78);color:#fff;font-size:12.5px;font-weight:650;padding:6px 11px;border-radius:99px;pointer-events:none;transition:opacity .4s}
+.maphint.gone{opacity:0}
+.maplegend[hidden]{display:none}
+.maplegend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px 0;font-size:12.5px;color:var(--mute)}
+.maplegend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.mapinfo{padding:14px 16px 16px;min-height:76px}
+.mapinfo h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:20px;line-height:1.2;margin:0}
+.mapinfo .sub{margin:2px 0 0;font-size:13.5px;font-weight:700;color:var(--teal)}
+.mapinfo p{margin:8px 0 0;font-size:15.5px;line-height:1.5}
+.mapinfo .hint{margin:0}
+.mapinfo .vn{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+.mapinfo .vn b{font-size:16px}
+.mapinfo .vn small{display:block;color:var(--mute);font-size:14px;margin-top:2px}
+.mapinfo .here{margin-top:12px;display:grid;gap:8px}
+.mapinfo .here button,.mapinfo .done{all:unset;cursor:pointer;box-sizing:border-box;border-radius:12px;font-size:14.5px;font-weight:650}
+.mapinfo .here button{display:block;padding:10px 14px;background:var(--sunk)}
+.mapinfo .here button small{display:block;font-size:12.5px;color:var(--teal);font-weight:700}
+.mapinfo .done{margin-top:12px;padding:10px 4px;min-height:44px;color:var(--teal);font-weight:700}
+.open{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:750;background:#dff3e6;color:#0b5a2a}
+.open.closed{background:var(--soft);color:var(--mute)}
+:root[data-theme="dark"] .open:not(.closed){background:#17402a;color:#8be0aa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .open:not(.closed){background:#17402a;color:#8be0aa}}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pbtn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:700;font-size:15px}
+.pbtn.pri{background:var(--teal);border-color:var(--teal);color:#fff}
+:root[data-theme="dark"] .pbtn.pri{color:#0f1416}
+.pbtn svg{width:18px;height:18px}
+.pbtn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.plist h3,.rhelp h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:21px;line-height:1.2;margin:26px 0 4px}
+.plist ul{list-style:none;margin:0;padding:0}
+.plist li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.plist li .tx{flex:1;min-width:0}
+.plist li b{display:block;font-size:16.5px;line-height:1.25}
+.plist li span.s{display:block;font-size:14px;color:var(--mute);margin-top:1px}
+.plist li button{all:unset;cursor:pointer;flex:0 0 auto;min-height:44px;min-width:44px;display:grid;place-items:center;color:var(--teal)}
+.plist li button svg{width:22px;height:22px}
+.rhelp .card{margin-top:12px;padding:14px 16px;border-radius:16px;background:var(--sunk)}
+.rhelp .card p{margin:0;font-size:15px;line-height:1.5}
+.rhelp .card p+p{margin-top:6px}
+.rhelp .card b{font-weight:750}
+.fine{margin:18px 0 0;font-size:13px;line-height:1.45;color:var(--mute)}
 /* Profile: where this person is speaking */
 .p-sess{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .p-sess button{all:unset;cursor:pointer;box-sizing:border-box;display:block;width:100%;padding:10px 14px;border-radius:12px;background:var(--sunk)}
@@ -276,7 +360,7 @@ body.help-open #helpsheet{transform:translateY(0);pointer-events:auto}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:35;background:color-mix(in srgb,var(--bg) 94%,transparent);
   -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-top:1px solid var(--rule);
   padding:0 var(--sar) var(--sab) var(--sal)}
-.tabbar .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabbar .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .tabbar button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;font-size:12px;font-weight:650;color:var(--mute);position:relative}
 .tabbar svg{width:24px;height:24px}
 .tabbar button[aria-current="page"]{color:var(--teal)}
@@ -493,6 +577,17 @@ html.lock,html.lock body{overflow:hidden}
     </div>
   </section>
 
+  <!-- RESORT -->
+  <section class="view" id="v-resort" data-view="resort" aria-labelledby="resort-h" hidden>
+    <div class="wrap">
+      <div class="vhead"><h2 id="resort-h">The Resort</h2><p id="resort-sub"></p></div>
+      <div id="res-now"></div>
+      <div class="mapcard" id="mapcard"></div>
+      <div id="res-places"></div>
+      <div id="res-help"></div>
+    </div>
+  </section>
+
   <!-- INFO -->
   <section class="view" id="v-info" data-view="info" aria-labelledby="info-h" hidden>
     <div class="wrap">
@@ -516,6 +611,7 @@ html.lock,html.lock body{overflow:hidden}
     <button type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1h-5v-6h-5v6h-5a1 1 0 0 1-1-1z"/></svg>Home</button>
     <button type="button" data-tab="people"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.6 6.5-5.6s5.9 2 6.5 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.3c2.6.2 4.4 2 5 4.7"/></svg>People<span class="dot" id="tabdot"></span></button>
     <button type="button" data-tab="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Agenda</button>
+    <button type="button" data-tab="resort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>Resort</button>
     <button type="button" data-tab="info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/></svg>Info</button>
   </div>
 </nav>
@@ -642,38 +738,38 @@ const TOPICS = ["Security","AI","Copilot","Azure","Licensing","Managed services"
 const AGENDA = [
   { date:"2026-10-24", label:"Sat 24", long:"Saturday, October 24", title:"Arrive + Connect",
     blurb:"Arrivals, one-on-one meetings and the welcome reception.", sessions:[
-    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
-    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
-    { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", desc:"Join us for fun, food and libations, and grab your registration materials!" } ] },
+    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobby", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
+    { start:"10:00", end:"17:30", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"meetings", desc:"Dedicated conversations with early arrivals. Please refer to your individual calendar invite for additional information." },
+    { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", at:"bayview", desc:"Join us for fun, food and libations, and grab your registration materials!" } ] },
   { date:"2026-10-25", label:"Sun 25", long:"Sunday, October 25", title:"Summit Day One",
     blurb:"Cloud, AI, devices and CSP growth strategy, followed by an afternoon at Secret Beach and dinner at Dragon Lawn.",
     note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
-    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
-    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3" },
-    { start:"09:00", end:"09:15", kind:"business", title:"Welcome + TD SYNNEX Microsoft Growth Opportunity", where:"Kuilima 2", speakers:["tracy-holtz"] },
-    { start:"09:15", end:"09:45", kind:"business", title:"Executive Fireside Chat: AI + Endpoint Trends", where:"Kuilima 2", speakers:["gary-palenbaum","george-lutkitz"] },
-    { start:"09:45", end:"10:30", kind:"business", title:"CSP Acceleration in FY27", where:"Kuilima 2", desc:"Market opportunity, AI acceleration and Microsoft co-sell.", speakers:["arnaldo-andrade-neto"] },
-    { start:"10:30", end:"11:15", kind:"business", title:"AI at the Edge", where:"Kuilima 2", desc:"How AI is changing the way we work.", by:"Nick, DPS" },
-    { start:"11:15", end:"12:00", kind:"business", title:"Cloud Modernization in an AI World", where:"Kuilima 2", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
-    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3" },
-    { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby" },
+    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"meetings", desc:"Please refer to your individual calendar invite for additional information." },
+    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"meetings" },
+    { start:"09:00", end:"09:15", kind:"business", title:"Welcome + TD SYNNEX Microsoft Growth Opportunity", where:"Kuilima 2", at:"meetings", speakers:["tracy-holtz"] },
+    { start:"09:15", end:"09:45", kind:"business", title:"Executive Fireside Chat: AI + Endpoint Trends", where:"Kuilima 2", at:"meetings", speakers:["gary-palenbaum","george-lutkitz"] },
+    { start:"09:45", end:"10:30", kind:"business", title:"CSP Acceleration in FY27", where:"Kuilima 2", at:"meetings", desc:"Market opportunity, AI acceleration and Microsoft co-sell.", speakers:["arnaldo-andrade-neto"] },
+    { start:"10:30", end:"11:15", kind:"business", title:"AI at the Edge", where:"Kuilima 2", at:"meetings", desc:"How AI is changing the way we work.", by:"Nick, DPS" },
+    { start:"11:15", end:"12:00", kind:"business", title:"Cloud Modernization in an AI World", where:"Kuilima 2", at:"meetings", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
+    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3", at:"meetings" },
+    { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby", at:"lobby" },
     { start:"13:30", end:"17:00", kind:"excursion", title:"Secret Beach", where:"Kualoa Ranch", desc:"Depart at 1:30 PM. Grab your swimsuits and towels and get ready for an afternoon at Secret Beach with a variety of beach activities, including kayaking, paddleboarding, lawn games, beach volleyball, or simply soaking in the sun!" },
     { start:"17:00", end:"17:15", kind:"excursion", title:"Board Boats for Transfer to Dragon Lawn", where:"Kualoa Ranch", desc:"After Secret Beach, we’ll take a 10-minute light cruise to Dragon Lawn for our dinner reception." },
     { start:"17:15", end:"19:00", kind:"social", title:"Dinner Reception", where:"Dragon Lawn" },
-    { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay" } ] },
+    { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobby" } ] },
   { date:"2026-10-26", label:"Mon 26", long:"Monday, October 26", title:"Summit Day Two",
     blurb:"Security, Copilot, customer-zero insights and solution-area growth plays, then individual excursions and the closing reception.",
     note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
-    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
-    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3" },
-    { start:"09:00", end:"09:15", kind:"business", title:"Welcome to Day Two", where:"Kuilima 2", speakers:["tracy-holtz"] },
-    { start:"09:15", end:"10:00", kind:"business", title:"Beyond the Reef: Your Microsoft Security Journey", where:"Kuilima 2", desc:"Building the confidence and capability to navigate beyond Microsoft 365.", speakers:["david-branscome"] },
-    { start:"10:00", end:"11:00", kind:"business", title:"Keeping Up with Copilot: Delivering SMB + Midmarket ROI", where:"Kuilima 2", desc:"Shelley Green, Global Copilot Acceleration, and Arnaldo Neto, US Channel Lead.", speakers:["shelley-green","arnaldo-andrade-neto"] },
-    { start:"11:00", end:"11:45", kind:"business", title:"Tech Talk Live: The AI Market Opportunity Isn’t Out There — It’s in This Room!", where:"Kuilima 2", desc:"Customer Zero, Copilot, Cowork, Security and Data.", speakers:["ken-lince"] },
-    { start:"11:45", end:"12:15", kind:"business", title:"Wrap-Up + Final Remarks", where:"Kuilima 2", desc:"One Microsoft: unlocking the true power of partnership.", speakers:["tracy-holtz"] },
-    { start:"12:15", end:"13:15", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3" },
-    { start:"13:30", end:"18:00", kind:"excursion", title:"Pre-Selected Individual Excursions", where:"Various locations", desc:"Please refer to your individual excursion card for additional information on timing, location and shuttle information, if applicable." },
-    { start:"19:00", end:"21:00", kind:"social", title:"Closing Reception", where:"Kuilima Point, The Ritz-Carlton", desc:"Join us for a final celebration of partnership as we dine, drink and enjoy an evening by the ocean." } ] },
+    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"meetings", desc:"Please refer to your individual calendar invite for additional information." },
+    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"meetings" },
+    { start:"09:00", end:"09:15", kind:"business", title:"Welcome to Day Two", where:"Kuilima 2", at:"meetings", speakers:["tracy-holtz"] },
+    { start:"09:15", end:"10:00", kind:"business", title:"Beyond the Reef: Your Microsoft Security Journey", where:"Kuilima 2", at:"meetings", desc:"Building the confidence and capability to navigate beyond Microsoft 365.", speakers:["david-branscome"] },
+    { start:"10:00", end:"11:00", kind:"business", title:"Keeping Up with Copilot: Delivering SMB + Midmarket ROI", where:"Kuilima 2", at:"meetings", desc:"Shelley Green, Global Copilot Acceleration, and Arnaldo Neto, US Channel Lead.", speakers:["shelley-green","arnaldo-andrade-neto"] },
+    { start:"11:00", end:"11:45", kind:"business", title:"Tech Talk Live: The AI Market Opportunity Isn’t Out There — It’s in This Room!", where:"Kuilima 2", at:"meetings", desc:"Customer Zero, Copilot, Cowork, Security and Data.", speakers:["ken-lince"] },
+    { start:"11:45", end:"12:00", kind:"business", title:"Wrap-Up + Final Remarks", where:"Kuilima 2", at:"meetings", desc:"One Microsoft: unlocking the true power of partnership.", speakers:["tracy-holtz"] },
+    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3", at:"meetings" },
+    { start:"13:30", end:"18:00", kind:"excursion", title:"Excursion + Free Time", desc:"Kualoa Ranch Jeep Tour, UTV, spa or free time. Please refer to your individual excursion card for timing, location and shuttle information, if applicable." },
+    { start:"19:00", end:"21:00", kind:"social", title:"Closing Reception", where:"Kuilima Point, The Ritz-Carlton", at:"kpoint", desc:"Join us for a final celebration of partnership as we dine, drink and enjoy an evening by the ocean." } ] },
   { date:"2026-10-27", label:"Tue 27", long:"Tuesday, October 27", title:"Depart",
     blurb:"Transportation to the airport and a safe journey home.", sessions:[
     { allDay:true, kind:"travel", title:"Departures", where:"Honolulu International Airport (HNL)", desc:"Please refer to your individual transportation confirmations for transfers to the airport." } ] }
@@ -684,13 +780,48 @@ const AGENDA = [
    Example: { title:"Wi-Fi", body:["Network: Summit2026","Password is on your room key sleeve."] } */
 const INFO = [
   { title:"Getting here and home", body:["Please refer to your individual transportation confirmations for transfers between the airport and The Ritz-Carlton O’ahu, Turtle Bay.","Saturday, October 24: arrivals.","Tuesday, October 27: departures from Honolulu International Airport (HNL)."] },
-  { title:"Your one-on-one meetings", body:["Please refer to your individual calendar invite for your time and additional information.","Meetings are held in the Maui Room and Moloka’i Room on Saturday, Sunday and Monday. Lunch on Sunday and Monday also includes one-on-one time in Kuilima 3."] },
+  { title:"Your one-on-one meetings", body:["Please refer to your individual calendar invite for your time and additional information.","Saturday: 10:00 AM to 5:30 PM. Sunday and Monday: as scheduled, plus one-on-one time at lunch in Kuilima 3. Meetings are held in the Maui Room and Moloka’i Room."] },
   { title:"Sunday: Secret Beach and Dragon Lawn", body:["1:15 PM: meet in the Hotel Lobby for transportation.","1:30 PM: depart for Secret Beach at Kualoa Ranch. Grab your swimsuits and towels. Activities include kayaking, paddleboarding, lawn games and beach volleyball.","5:00 PM: board the boats for a 10-minute light cruise to Dragon Lawn.","5:15 to 7:00 PM: dinner reception at Dragon Lawn.","7:00 PM: transportation back to the hotel."] },
-  { title:"Monday afternoon excursions", body:["Please refer to your individual excursion card for timing, location and shuttle information, if applicable. Excursions run from 1:30 to 6:00 PM."] },
-  { title:"Where to go", body:["Welcome Reception (Saturday): Bay View Lawn.","Breakfast and lunch: Kuilima 3.","Microsoft Executive Summit Business Meeting: Kuilima 2.","One-on-one meetings: Maui Room and Moloka’i Room.","Closing Reception (Monday): Kuilima Point."] },
+  { title:"Monday afternoon excursions", body:["Please refer to your individual excursion card for timing, location and shuttle information, if applicable. Excursions and free time run from 1:30 to 6:00 PM."] },
   { title:"Guests", body:["Guests are not included in breakfast, the business meetings, or lunch."] },
   { title:"What to wear", body:["Relaxed resort attire for the welcome reception on Saturday."] }
 ];
+
+/* PLACES — pins on the resort map. x and y are percent of the map image.
+   kind: event (where our sessions happen), eat, relax, move. hrs are daily open times in Hawaii minutes. */
+const PLACES = [
+  { id:"lobby", short:"Lobby", kind:"event", name:"Hotel Lobby", sub:"Front desk, concierge and your ride", x:57.5, y:43.2,
+    desc:"Check-in, front desk and concierge. We meet here for Sunday’s ride to Secret Beach at 1:15 PM." },
+  { id:"meetings", short:"Ballrooms", kind:"event", name:"Kuilima Ballrooms + Meeting Rooms", sub:"Breakfast, business meetings, one-on-ones", x:48.8, y:26.8,
+    desc:"Breakfast and lunch are in Kuilima 3, the business meetings in Kuilima 2, and one-on-ones in the Maui and Moloka’i Rooms. Follow the event signs inside." },
+  { id:"bayview", short:"Bay View Lawn", kind:"event", name:"Bay View Lawn", sub:"Saturday Welcome Reception", x:72.8, y:41.9,
+    desc:"Saturday’s Welcome Reception, 7 to 9 PM, on the lawn by Bay View Beach. Pick up your registration materials here." },
+  { id:"kpoint", short:"Kuilima Point", kind:"event", name:"Kuilima Point", sub:"Monday Closing Reception", x:50.8, y:17.4,
+    desc:"Monday’s Closing Reception, 7 to 9 PM, at the tip of the point with the ocean on both sides." },
+  { id:"dining", kind:"eat", name:"Hotel restaurants", sub:"Alaia, Off The Lip and Ho’olana", x:47.8, y:34.2,
+    desc:"The hotel’s dining is in the West Wing.",
+    venues:[
+      { n:"Alaia", t:"Signature restaurant, eclectic", hrs:[[390,660],[1020,1260]], note:"No bathing suits. Reserve on OpenTable or call.", tel:"8082936020" },
+      { n:"Off The Lip", t:"Lobby bar", hrs:[[720,1350]], note:"Smart casual." },
+      { n:"Ho’olana", t:"Coffee house", hrs:[[330,960]] } ] },
+  { id:"poolbar", kind:"eat", name:"Sunset Pool Bar", sub:"On the pool deck", x:35.1, y:42.1,
+    desc:"Casual drinks and bites by the main pool.", venues:[ { n:"Sunset Pool Bar", t:"Pool deck", hrs:[[600,1200]] } ] },
+  { id:"beachhouse", kind:"eat", name:"Beach House by Roy Yamaguchi", sub:"Asian fusion at Kuilima Cove", x:64.5, y:40.3,
+    desc:"Casual dining on the cove.", venues:[ { n:"Beach House", t:"Asian fusion", hrs:[[690,870],[990,1260]], note:"Reserve on OpenTable or call.", tel:"8082937697" } ] },
+  { id:"golf", kind:"eat", name:"Lei Lei’s Bar & Grill", sub:"At the golf clubhouse", x:59.0, y:89.3,
+    desc:"American fare at the Fazio course clubhouse, south of the hotel.", venues:[ { n:"Lei Lei’s", t:"Bar & grill", hrs:[[420,1260]], tel:"8082932662" } ] },
+  { id:"pools", kind:"relax", name:"Pools", sub:"Main, adult and keiki pools", x:44.8, y:41.3,
+    desc:"Main and Adult pools are open 7:00 AM to 10:00 PM. The Keiki pool is open 8:00 AM to 6:00 PM.", hrs:[[420,1320]] },
+  { id:"spa", kind:"relax", name:"Nalu Spa + Fitness", sub:"West Wing", x:42.3, y:31.6,
+    desc:"Nalu Spa is at pool level near the ocean. The fitness center is on the lobby level and open 24 hours." },
+  { id:"tennis", kind:"relax", name:"Tennis + pickleball", sub:"Courts near the bungalows", x:47.5, y:72.2, desc:"Tennis and pickleball courts." },
+  { id:"stables", kind:"relax", name:"The Stables", sub:"Horseback riding, Paniolo Lawn", x:6.8, y:83.5,
+    desc:"Horseback riding and the Paniolo Lawn. About a 10-minute walk from the main resort." },
+  { id:"parking", kind:"move", name:"Valet + parking", sub:"Valet lot and hotel parking", x:57.5, y:58.8,
+    desc:"Valet and self-park are both $48 a day. EV charging is available." }
+];
+const PLACE = Object.fromEntries(PLACES.map(p => [p.id, p]));
+const KIND_LABEL = { event:"Your sessions", eat:"Eat + drink", relax:"Relax + play", move:"Getting around" };
 
 const PEOPLE = [
   {"id": "jacob-sanders", "g": "partners", "n": "Jacob Sanders", "t": "CEO", "c": "180 Pros", "b": "Jacob Sanders leads 180 Pros as chief executive officer, with a focus on operational discipline, customer experience and using technology to support business growth.", "ask": ["Running an MSP for small and midsize businesses", "Operational discipline in service delivery", "Customer experience"], "meet": [["christopher-kitsos", "Both lead long-standing Gulf South MSPs serving small and midsize businesses, so their markets and daily challenges overlap."], ["jason-lambiris", "Jason is known for process-driven service delivery, the same operational discipline Jacob builds at 180 Pros."], ["victor-mushkatin", "VIAcode is a Microsoft-centric cloud consultancy focused on migration and optimization, a natural complement to a full-service MSP."]]},
@@ -791,7 +922,7 @@ function snippet(bio, ts){
 }
 
 /* ---------- views & tabs ---------- */
-const VIEWS = ["home","people","agenda","info"];
+const VIEWS = ["home","people","agenda","resort","info"];
 let view = "home";
 function setView(v, opts = {}){
   if(!VIEWS.includes(v)) v = "home";
@@ -801,6 +932,7 @@ function setView(v, opts = {}){
   if(opts.url !== false) hist("replace", {v}, v === "home" ? baseUrl() : "#" + v);
   if(opts.scroll !== false) window.scrollTo(0, 0);
   if(v === "agenda"){ renderAgenda(); focusNow(); }
+  if(v === "resort") showResort();
 }
 $$(".tabbar button").forEach(b => b.addEventListener("click", () => { if(b.dataset.tab === "agenda" && view !== "agenda") agendaDay = null; setView(b.dataset.tab); }));
 
@@ -964,6 +1096,7 @@ function agendaState(){
 }
 const stateKey = st => st ? `${st.kind}|${st.di}|${st.s ? st.s.title : ""}` : "";
 const clockText = now => now ? `${fmtMin(now.min)} Hawaii time` : "";
+const PINSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>';
 const ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
 function speakerChips(s){
   const spk = (s.speakers||[]).filter(id => byId[id]).map(id => `<button type="button" data-open="${id}"><img src="${photo(id)}" alt="" width="30" height="30">${esc(byId[id].n)}</button>`).join("");
@@ -978,6 +1111,7 @@ function nowCardInner(){
   const allLine = todayItems.length ? `<p class="line"><b>Today</b>${todayItems.map(a => esc(a.title)).join(", ")}</p>` : "";
   const thenLine = st.then ? `<p class="line"><b>Then</b>${fmtTime(st.then.s.start)} ${esc(st.then.s.title)}</p>` : "";
   const pulse = '<span class="pulse" aria-hidden="true"></span>';
+  const mapBtn = st.s && st.s.at && PLACE[st.s.at] ? `<button type="button" class="cta alt" data-map="${st.s.at}">${PINSVG}Map</button>` : "";
   let tag, ttl, meta = "", count = "", extra = "", label = "Full agenda";
   if(st.kind === "live" || st.kind === "next"){
     const s = st.s, live = st.kind === "live";
@@ -1001,7 +1135,7 @@ function nowCardInner(){
   if(st.kind === "done") st.di = st.di + 1;
   return `<div class="nowc" data-kind="${st.kind}"><div class="top"><span class="tag">${tag}</span><span class="clock">${clockText(st.now)}</span></div>
     <button type="button" class="main" data-agenda="${st.di}"><span class="ttl">${esc(ttl)}</span>${meta ? `<span class="meta">${esc(meta)}</span>` : ""}</button>
-    ${count}${extra}${cta(label)}</div>`;
+    ${count}${extra}<div class="ctas">${cta(label)}${mapBtn}</div></div>`;
 }
 
 /* ---------- AGENDA ---------- */
@@ -1021,7 +1155,7 @@ function renderAgenda(){
   lastAgendaKey = stateKey(st);
   const day = AGENDA[agendaDay], isToday = now && day.date === now.date, isPastDay = now && day.date < now.date;
   box.innerHTML = (AGENDA.length > 1 ? `<div class="days" role="group" aria-label="Choose a day" style="--n:${Math.min(AGENDA.length,4)}">${AGENDA.map((d,i) => `<button type="button" data-day="${i}" class="${i===today?"today":""}" aria-pressed="${i===agendaDay}"${i===today?' aria-label="'+esc(d.label)+', today"':""}>${esc(d.label)}</button>`).join("")}</div>` : "")
-    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p>${day.note ? `<p class="dnote">${esc(day.note)}</p>` : ""}</div>`
+    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p>${day.note ? `<p class="dnote">${esc(day.note)}</p>` : ""}<p class="sun">Sunrise ${fmtMin(sunTimes(day.date).rise)} · Sunset ${fmtMin(sunTimes(day.date).set)}</p></div>`
     + `<ul class="sessions">${(day.sessions||[]).map(s => {
         let cls = "";
         if(isPastDay || (isToday && s.start && now.min >= sessionEnd(s))) cls = " past";
@@ -1030,7 +1164,7 @@ function renderAgenda(){
         const flag = here ? `<span class="now">${st.kind === "live" ? "Happening now" : "Up next"}</span>` : "";
         const time = s.allDay ? "All day" : s.start ? `${fmtTime(s.start)}${s.end?`<small>to ${fmtTime(s.end)}</small>`:""}` : esc(s.time || "");
         return `<li class="session${cls}"><div class="t${s.start || s.allDay ? "" : " lbl"}">${time}</div>
-          <div>${flag}${s.kind ? `<span class="kind">${KIND[s.kind]}</span>` : ""}<h4>${esc(s.title)}</h4>${s.where?`<p class="wh">${esc(s.where)}</p>`:""}${s.desc?`<p class="ds">${esc(s.desc)}</p>`:""}${speakerChips(s)}</div></li>`;
+          <div>${flag}${s.kind ? `<span class="kind">${KIND[s.kind]}</span>` : ""}<h4>${esc(s.title)}</h4>${s.where?`<p class="wh">${esc(s.where)}</p>`:""}${s.at && PLACE[s.at] ? `<button type="button" class="mapchip" data-map="${s.at}">${PINSVG}Show on map</button>` : ""}${s.desc?`<p class="ds">${esc(s.desc)}</p>`:""}${speakerChips(s)}</div></li>`;
       }).join("")}</ul>`;
 }
 agendaDay = null;
@@ -1040,8 +1174,181 @@ function focusNow(){ // bring the live or next session into view when the select
 }
 function tick(){ // keep the clock-driven parts current without rebuilding the whole page
   const nc = $("#nowcard"); if(nc) nc.innerHTML = nowCardInner();
+  if(view === "resort") renderResortLive();
   if(view === "agenda" && AGENDA.length){ if(stateKey(agendaState()) !== lastAgendaKey) renderAgenda(); else $("#agenda-sub").textContent = agendaSub(); }
 }
+
+/* ---------- sunrise and sunset, computed on the phone (no network needed) ---------- */
+function sunTimes(dateStr){ // local minutes after midnight, Hawaii. Almanac for Computers rise/set method.
+  const lat = 21.705, lng = -157.9986, tz = -10, R = Math.PI / 180, [y, m, d] = dateStr.split("-").map(Number);
+  const N = Math.floor(275*m/9) - Math.floor((m+9)/12) * (1 + Math.floor((y - 4*Math.floor(y/4) + 2) / 3)) + d - 30;
+  const calc = rising => {
+    const lh = lng / 15, t = N + ((rising ? 6 : 18) - lh) / 24, M = 0.9856*t - 3.289;
+    let L = M + 1.916*Math.sin(M*R) + 0.020*Math.sin(2*M*R) + 282.634; L = ((L % 360) + 360) % 360;
+    let RA = Math.atan(0.91764 * Math.tan(L*R)) / R; RA = ((RA % 360) + 360) % 360;
+    RA += Math.floor(L/90)*90 - Math.floor(RA/90)*90; RA /= 15;
+    const sinD = 0.39782 * Math.sin(L*R), cosD = Math.cos(Math.asin(sinD));
+    const cosH = (Math.cos(90.833*R) - sinD*Math.sin(lat*R)) / (cosD*Math.cos(lat*R));
+    let H = (rising ? 360 - Math.acos(cosH)/R : Math.acos(cosH)/R) / 15;
+    const T = H + RA - 0.06571*t - 6.622; let UT = (T - lh) % 24; if(UT < 0) UT += 24;
+    let lt = (UT + tz) % 24; if(lt < 0) lt += 24; return Math.round(lt * 60);
+  };
+  return { rise: calc(true), set: calc(false) };
+}
+
+/* ---------- RESORT tab: the resort's own map with pins, plus what is where ---------- */
+const MAPS = {
+  1:{ src:"assets/summit/resort-map-1.webp", ar:3597/3100, label:"Resort", box:[.20,.10,.84,.62], max:2.4 },
+  2:{ src:"assets/summit/resort-map-2.webp", ar:3797/2139, label:"Coast + trails", box:[.03,.18,.67,1], max:3 }
+};
+const MAPW = 1000;                                   // the map stage is laid out 1000 CSS px wide, then scaled
+let mapNo = 1, selPlace = null, resortBuilt = false;
+const mv = { s:1, x:0, y:0, vw:0, vh:0 };
+const mapH = () => MAPW / MAPS[mapNo].ar;
+function fmtMins(m){ return fmtMin(((m % 1440) + 1440) % 1440); }
+function openState(hrs, now){ // { open, text } from daily [start,end] minute ranges
+  if(!hrs || !now) return null;
+  for(const [a, b] of hrs) if(now >= a && now < b) return { open:true, text:`Open until ${fmtMins(b)}` };
+  const nxt = hrs.find(([a]) => a > now);
+  return nxt ? { open:false, text:`Opens ${fmtMins(nxt[0])}` } : { open:false, text:`Opens ${fmtMins(hrs[0][0])} tomorrow` };
+}
+const openChip = (hrs, now) => { const o = openState(hrs, now); return o ? `<span class="open${o.open ? "" : " closed"}">${o.text}</span>` : ""; };
+
+function sessionsAt(id){ const out = []; AGENDA.forEach((d, di) => (d.sessions||[]).forEach(x => { if(x.at === id) out.push({ d, di, x }); })); return out; }
+
+function buildResort(){
+  if(resortBuilt) return; resortBuilt = true;
+  $("#mapcard").innerHTML = `<div class="mapseg" role="group" aria-label="Choose a map">${[1,2].map(n => `<button type="button" data-maptab="${n}" aria-pressed="${n===1}">${MAPS[n].label}</button>`).join("")}</div>
+    <div class="mapview" id="mapview" tabindex="0" role="group" aria-label="Resort map. Drag to move, pinch or use the plus and minus buttons to zoom. Tap a pin to see what is there.">
+      <div class="mapstage" id="mapstage"><img id="mapimg" alt="Illustrated map of The Ritz-Carlton O’ahu, Turtle Bay" decoding="async"><div id="pins"></div></div>
+      <div class="maphint" id="maphint">Pinch to zoom. Tap a pin.</div>
+      <div class="mapctl"><button type="button" id="mz-in" aria-label="Zoom in">+</button><button type="button" id="mz-out" aria-label="Zoom out">−</button>
+        <button type="button" id="mz-fit" aria-label="Show the whole map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
+    </div>
+    <div class="maplegend" id="maplegend">${Object.entries(KIND_LABEL).map(([k, l]) => `<span><i style="background:${{event:"#f2c230",eat:"#e0603f",relax:"#24b9d5",move:"#6c8087"}[k]}"></i>${l}</span>`).join("")}</div>
+    <div class="mapinfo" id="mapinfo" aria-live="polite"></div>`;
+  $("#pins").innerHTML = PLACES.map(p => `<button type="button" class="pin k-${p.kind}" data-pin="${p.id}" style="left:${p.x}%;top:${p.y}%" aria-label="${esc(p.name)}"><svg viewBox="0 0 30 38" aria-hidden="true"><path d="M15 37S2 23 2 14a13 13 0 0 1 26 0c0 9-13 23-13 23z" stroke="#fff" stroke-width="2"/><circle cx="15" cy="14" r="5" fill="#fff"/></svg><span class="lbl">${esc(p.short || p.name)}</span></button>`).join("");
+  loadMapImage(); wireMap(); measureMap(); fitBox(MAPS[1].box, false); renderMapInfo();
+}
+function loadMapImage(){ const m = MAPS[mapNo], img = $("#mapimg"), st = $("#mapstage"); const mvw = $("#mapview"); mvw.style.height = mapNo === 1 ? "" : "min(44vh,330px)"; mvw.style.minHeight = mapNo === 1 ? "" : "240px"; st.style.width = MAPW + "px"; st.style.height = mapH() + "px"; img.src = m.src; $("#pins").hidden = mapNo !== 1; }
+function measureMap(){ const v = $("#mapview"); mv.vw = v.clientWidth; mv.vh = v.clientHeight; }
+const minS = () => Math.min(mv.vw / MAPW, mv.vh / mapH());
+function clampMap(){
+  mv.s = Math.min(MAPS[mapNo].max, Math.max(minS(), mv.s));
+  const W = MAPW * mv.s, H = mapH() * mv.s;
+  mv.x = W <= mv.vw ? (mv.vw - W) / 2 : Math.min(0, Math.max(mv.vw - W, mv.x));
+  mv.y = H <= mv.vh ? (mv.vh - H) / 2 : Math.min(0, Math.max(mv.vh - H, mv.y));
+}
+function applyMap(anim){
+  clampMap(); const st = $("#mapstage"); st.classList.toggle("anim", !!anim && !reduced());
+  st.style.transform = `translate(${mv.x}px,${mv.y}px) scale(${mv.s})`; st.style.setProperty("--inv", (1 / mv.s).toFixed(4));
+  st.classList.toggle("zl", mv.s >= 1.05);
+}
+function fitBox([x0, y0, x1, y1], anim){
+  const W = MAPW, H = mapH(), bw = (x1 - x0) * W, bh = (y1 - y0) * H;
+  mv.s = Math.min(mv.vw / bw, mv.vh / bh); mv.x = mv.vw / 2 - (x0 + x1) / 2 * W * mv.s; mv.y = mv.vh / 2 - (y0 + y1) / 2 * H * mv.s; applyMap(anim);
+}
+function zoomAt(cx, cy, ns, anim){ // keep the map point under (cx, cy) fixed while changing scale
+  ns = Math.min(MAPS[mapNo].max, Math.max(minS(), ns)); const k = ns / mv.s;
+  mv.x = cx - (cx - mv.x) * k; mv.y = cy - (cy - mv.y) * k; mv.s = ns; applyMap(anim);
+}
+function centerOn(px, py, ns, anim){ // px, py in percent of the map
+  mv.s = Math.min(MAPS[mapNo].max, Math.max(minS(), ns)); mv.x = mv.vw / 2 - px / 100 * MAPW * mv.s; mv.y = mv.vh * .45 - py / 100 * mapH() * mv.s; applyMap(anim);
+}
+function wireMap(){
+  const view = $("#mapview"), pts = new Map(); let g = null, tapT = 0, tapX = 0, tapY = 0, moved = 0, down = null;
+  const mid = () => { const a = [...pts.values()]; return a.length > 1 ? { x:(a[0].x + a[1].x) / 2, y:(a[0].y + a[1].y) / 2, d:Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) } : { x:a[0].x, y:a[0].y, d:0 }; };
+  const local = (x, y) => { const r = view.getBoundingClientRect(); return { x:x - r.left, y:y - r.top }; };
+  view.addEventListener("pointerdown", e => {
+    if(e.target.closest(".mapctl")) return;
+    view.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    const m = mid(); g = { x:mv.x, y:mv.y, s:mv.s, mx:m.x, my:m.y, d:m.d }; moved = 0;
+    if(pts.size === 1) down = { pin:e.target.closest(".pin"), t:Date.now() };
+    $("#mapstage").classList.remove("anim"); $("#maphint").classList.add("gone");
+  });
+  view.addEventListener("pointermove", e => {
+    if(!pts.has(e.pointerId) || !g) return; pts.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    const m = mid(); moved = Math.max(moved, Math.hypot(m.x - g.mx, m.y - g.my), pts.size > 1 ? 99 : 0);
+    if(pts.size > 1 && g.d){ const ns = g.s * m.d / g.d, p0 = local(g.mx, g.my), p1 = local(m.x, m.y), k = Math.min(MAPS[mapNo].max, Math.max(minS(), ns)) / g.s;
+      mv.s = g.s * k; mv.x = p1.x - (p0.x - g.x) * k; mv.y = p1.y - (p0.y - g.y) * k; }
+    else { mv.x = g.x + (m.x - g.mx); mv.y = g.y + (m.y - g.my); }
+    applyMap(false);
+  });
+  const end = e => {
+    if(!pts.has(e.pointerId)) return; const wasOne = pts.size === 1; pts.delete(e.pointerId);
+    if(pts.size) { const m = mid(); g = { x:mv.x, y:mv.y, s:mv.s, mx:m.x, my:m.y, d:m.d }; return; }
+    g = null; if(!wasOne || e.type === "pointercancel") return;
+    if(moved < 8 && down && Date.now() - down.t < 600){
+      if(down.pin){ selectPlace(down.pin.dataset.pin, { center:true }); tapT = 0; }
+      else { const now = Date.now(), p = local(e.clientX, e.clientY);
+        if(now - tapT < 320 && Math.hypot(p.x - tapX, p.y - tapY) < 30){ zoomAt(p.x, p.y, mv.s * 2, true); tapT = 0; } else { tapT = now; tapX = p.x; tapY = p.y; if(selPlace) selectPlace(null); } }
+    }
+    down = null;
+  };
+  view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
+  view.addEventListener("wheel", e => { e.preventDefault(); const p = local(e.clientX, e.clientY); zoomAt(p.x, p.y, mv.s * (e.deltaY < 0 ? 1.2 : 1 / 1.2), false); }, { passive:false });
+  view.addEventListener("click", e => { const b = e.target.closest(".pin"); if(b && e.detail === 0) selectPlace(b.dataset.pin, { center:true }); });   // keyboard
+  $("#mz-in").addEventListener("click", () => zoomAt(mv.vw / 2, mv.vh / 2, mv.s * 1.5, true));
+  $("#mz-out").addEventListener("click", () => zoomAt(mv.vw / 2, mv.vh / 2, mv.s / 1.5, true));
+  $("#mz-fit").addEventListener("click", () => { fitBox([0, 0, 1, 1], true); });
+  addEventListener("resize", () => { if(resortBuilt && view.clientWidth){ measureMap(); applyMap(false); } });
+  setTimeout(() => { const h = $("#maphint"); if(h) h.classList.add("gone"); }, 6000);
+}
+function setMapTab(n){
+  if(n === mapNo) return; mapNo = n; selPlace = null;
+  $$("[data-maptab]").forEach(b => b.setAttribute("aria-pressed", +b.dataset.maptab === n));
+  $("#maplegend").hidden = n !== 1; loadMapImage(); measureMap(); fitBox(MAPS[n].box, false); renderMapInfo();
+  document.querySelectorAll("#pins .pin").forEach(p => p.classList.remove("sel"));
+}
+function selectPlace(id, opts = {}){
+  if(mapNo !== 1) setMapTab(1);
+  selPlace = id && PLACE[id] ? id : null;
+  document.querySelectorAll("#pins .pin").forEach(p => p.classList.toggle("sel", p.dataset.pin === selPlace));
+  if(selPlace && opts.center) centerOn(PLACE[selPlace].x, PLACE[selPlace].y, Math.max(mv.s, 0.62), true);
+  renderMapInfo();
+}
+function renderMapInfo(){
+  const box = $("#mapinfo"); if(!box) return;
+  if(mapNo === 2){ box.innerHTML = `<p class="hint">The coastline and the paths around the resort. The colored lines are walking and running trails, and the legend is in the top corner of the map.</p>`; return; }
+  if(!selPlace){ box.innerHTML = `<p class="hint">Tap a pin to see what is there. Yellow pins are where your sessions happen.</p>`; return; }
+  const p = PLACE[selPlace], now = (venueNow() || {}).min;
+  const venues = (p.venues || []).map(v => `<div class="vn"><b>${esc(v.n)}</b><small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}</div>`).join("");
+  const here = sessionsAt(p.id).map(r => `<button type="button" data-agenda="${r.di}"><small>${esc(r.d.label)}${r.x.start ? ", " + fmtTime(r.x.start) : ""}</small>${esc(r.x.title)}</button>`).join("");
+  box.innerHTML = `<h3>${esc(p.name)}</h3><p class="sub">${esc(p.sub)}</p><p>${esc(p.desc)}</p>${p.hrs ? openChip(p.hrs, now) : ""}${venues}${here ? `<div class="here"><span class="sub" style="margin:0">On your agenda here</span>${here}</div>` : ""}<button type="button" class="done" data-pinclose>Done</button>`;
+}
+function renderResortLive(){
+  const now = venueNow(), st = agendaState(), sun = now ? sunTimes(now.date) : null;
+  $("#resort-sub").textContent = `The Ritz-Carlton O’ahu, Turtle Bay${sun ? `. Sunset today is about ${fmtMin(sun.set)}.` : "."}`;
+  let strip = "";
+  if(st && (st.kind === "live" || st.kind === "next") && st.s.at && PLACE[st.s.at]){
+    const p = PLACE[st.s.at];
+    strip = `<div class="rnow"><div class="tx"><small>${st.kind === "live" ? "Happening now" : "Up next"}</small><b>${esc(st.s.title)}</b><span>${esc(p.name)}${st.kind === "next" ? ` · starts in ${fmtDur(st.until)}` : ""}</span></div><button type="button" data-map="${p.id}">${PINSVG}Show</button></div>`;
+  }
+  $("#res-now").innerHTML = strip;
+  document.querySelectorAll("#pins .pin").forEach(p => p.classList.toggle("now", !!(st && st.s && st.s.at === p.dataset.pin && (st.kind === "live" || st.kind === "next"))));
+  const nowMin = now ? now.min : null;
+  $("#res-places").innerHTML = `<div class="plist">${["event", "eat", "relax", "move"].map(k => `<h3>${KIND_LABEL[k]}</h3><ul>${PLACES.filter(p => p.kind === k).map(p => {
+    const chip = p.venues ? p.venues.map(v => openChip(v.hrs, nowMin) ? `<span class="s">${esc(v.n)}: ${openState(v.hrs, nowMin).text}</span>` : "").join("") : (p.hrs ? `<span class="s">${openState(p.hrs, nowMin).text}</span>` : "");
+    return `<li><div class="tx"><b>${esc(p.name)}</b><span class="s">${esc(p.sub)}</span>${chip}</div><button type="button" data-map="${p.id}" aria-label="Show ${esc(p.name)} on the map">${PINSVG}</button></li>`; }).join("")}</ul>`).join("")}</div>`;
+  if(selPlace) renderMapInfo();
+}
+function renderResortStatic(){
+  $("#res-help").innerHTML = `<div class="rhelp"><h3>Need anything?</h3>
+    <div class="card"><p><b>Resort concierge</b></p><p>Ask about restaurant reservations, activities, rides or anything else at the resort.</p>
+      <div class="btnrow"><a class="pbtn pri" href="tel:+18082936000"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call 808-293-6000</a>
+      <a class="pbtn" href="mailto:rc.hnlkz.concierge@ritzcarlton.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email</a></div></div>
+    <h3>Good to know</h3>
+    <div class="card"><p><b>Check-in</b> is at 3:00 PM and <b>check-out</b> at 11:00 AM.</p>
+      <p><b>The ocean</b> on the North Shore can change quickly. Check the posted flags and ask resort staff before you swim.</p>
+      <p><b>The Stables</b> are about a 10-minute walk from the main resort. Everything else on the map is close to the hotel.</p>
+      <div class="btnrow"><a class="pbtn" href="https://maps.apple.com/?q=The%20Ritz-Carlton%20Oahu%20Turtle%20Bay&address=57-091%20Kamehameha%20Hwy%2C%20Kahuku%2C%20HI%2096731">${PINSVG}Open the resort in Maps</a></div></div>
+    <p class="fine">Map from the resort’s pocket map. Restaurant hours are from the resort’s website and can change, so check with the concierge.</p></div>`;
+}
+function showResort(){
+  buildResort(); renderResortStatic(); renderResortLive();
+  measureMap(); applyMap(false);
+}
+function openMapAt(id){ setView("resort"); selectPlace(id, { center:true }); const c = $("#mapcard"); if(c) window.scrollTo({ top: Math.max(0, scrollY + c.getBoundingClientRect().top - 70), behavior: reduced() ? "auto" : "smooth" }); }
 
 /* ---------- INFO ---------- */
 function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (m,l,u) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`); }
@@ -1062,6 +1369,9 @@ document.addEventListener("click", e => {
   const f = e.target.closest("[data-filter]"); if(f){ setFilter(f.dataset.filter); return; }
   const j = e.target.closest("[data-jump]"); if(j){ setQuery(""); setFilter(j.dataset.jump); setView("people"); return; }
   const t = e.target.closest("[data-topic]"); if(t){ setFilter("all"); setQuery(t.dataset.topic); scrollToTopOfView(); return; }
+  const mp = e.target.closest("[data-map]"); if(mp){ openMapAt(mp.dataset.map); return; }
+  const mt = e.target.closest("[data-maptab]"); if(mt){ setMapTab(+mt.dataset.maptab); return; }
+  if(e.target.closest("[data-pinclose]")){ selectPlace(null); return; }
   const ag = e.target.closest("[data-agenda]"); if(ag){ agendaDay = +ag.dataset.agenda; setView("agenda"); return; }
   const sx = e.target.closest("[data-sess]"); if(sx){ closePerson(); agendaDay = +sx.dataset.sess; setView("agenda"); return; }
   const g = e.target.closest("[data-go]"); if(g){ const v = g.dataset.go; setView(v); return; }
@@ -1273,8 +1583,8 @@ function appBarBlock(){
     <button class="x" type="button" data-appbar-x aria-label="Hide this tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>`;
 }
 if(isStandalone()) document.querySelectorAll(".getapp,#info-app").forEach(el => el.hidden = true);
-if("serviceWorker" in navigator && /^https?:/.test(location.protocol)){
-  addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+if("serviceWorker" in navigator && /^https?:/.test(location.protocol)){   // keeps the guide and its map working on weak resort Wi-Fi
+  addEventListener("load", () => { navigator.serviceWorker.register("/executive-summit-sw.js", { scope:"/executive-summit.html" }).catch(() => {}); });
 }
 
 /* ---------- refresh: button and pull-down for the installed app ----------
