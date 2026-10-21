@@ -12,3 +12,32 @@ CREATE TABLE IF NOT EXISTS summit_events (
 );
 CREATE INDEX IF NOT EXISTS summit_events_ts ON summit_events (ts);
 CREATE INDEX IF NOT EXISTS summit_events_kind_ts ON summit_events (kind, ts);
+
+-- Announcements shown as a banner in the guide. Posted by tools/summit-announce.py (no public write endpoint).
+CREATE TABLE IF NOT EXISTS summit_alerts (
+  id     INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts     INTEGER NOT NULL,             -- epoch milliseconds
+  level  TEXT    NOT NULL DEFAULT 'info',   -- info or urgent
+  body   TEXT    NOT NULL,
+  until  INTEGER,                       -- epoch milliseconds, or NULL to stay until cleared
+  active INTEGER NOT NULL DEFAULT 1
+);
+
+-- Session feedback. Ratings and comments are anonymous (random device id). Name, company and contact are stored only
+-- when the person ticks the follow-up box. One row per device per session; sending again updates it.
+CREATE TABLE IF NOT EXISTS summit_feedback (
+  ts       INTEGER NOT NULL,
+  did      TEXT    NOT NULL,
+  session  TEXT    NOT NULL,
+  title    TEXT,
+  rating   INTEGER NOT NULL,
+  a1       TEXT,
+  a2       TEXT,
+  followup INTEGER NOT NULL DEFAULT 0,
+  note     TEXT,
+  name     TEXT,
+  company  TEXT,
+  contact  TEXT,
+  PRIMARY KEY (did, session)
+);
+CREATE INDEX IF NOT EXISTS summit_feedback_session ON summit_feedback (session);
