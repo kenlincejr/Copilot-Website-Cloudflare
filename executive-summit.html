@@ -45,7 +45,7 @@
   --bg:#ffffff; --surface:#ffffff; --sunk:#f4f5f3;
   --ink:#15181a; --mute:#575a5e; --rule:#dfe1de; --soft:#eceeeb;
   --teal:#006a77; --taxi:#f2c230; --taxi-ink:#7a5a00;
-  --g-partners:#006a77; --g-microsoft:#8e2c62; --g-tdsynnex:#1b3a52;
+  --g-partners:#006a77; --g-microsoft:#c4166a; --g-tdsynnex:#b8530a;
   --mark:#fdf0b8;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --text:"Libre Franklin",-apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
@@ -58,13 +58,13 @@
   --bg:#0f1416; --surface:#162024; --sunk:#131b1e;
   --ink:#eef2f3; --mute:#a9b4b8; --rule:#2a373c; --soft:#1f2b30;
   --teal:#5cc2cf; --taxi:#f2c230; --taxi-ink:#f2c230;
-  --g-partners:#5cc2cf; --g-microsoft:#e48bbd; --g-tdsynnex:#9dbfe0;
+  --g-partners:#5cc2cf; --g-microsoft:#ff7ab8; --g-tdsynnex:#ffa24d;
   --mark:#4a3d0c;
 }}
 :root[data-theme="dark"]{
   --bg:#0f1416; --surface:#162024; --sunk:#131b1e;
   --ink:#eef2f3; --mute:#a9b4b8; --rule:#2a373c; --soft:#1f2b30;
-  --teal:#5cc2cf; --g-partners:#5cc2cf; --g-microsoft:#e48bbd; --g-tdsynnex:#9dbfe0; --mark:#4a3d0c; --taxi-ink:#f2c230;
+  --teal:#5cc2cf; --g-partners:#5cc2cf; --g-microsoft:#ff7ab8; --g-tdsynnex:#ffa24d; --mark:#4a3d0c; --taxi-ink:#f2c230;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -140,7 +140,7 @@ button{font:inherit;color:inherit}
 .mosaic .on::after{content:"";position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:50%;background:var(--taxi);box-shadow:0 0 0 2px var(--bg)}
 .legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 0;padding:0;list-style:none}
 .legend button{width:100%;justify-content:center;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 6px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);cursor:pointer;font-size:15px;font-weight:600}
-.legend i{width:12px;height:12px;border-radius:50%;background:var(--ring)}
+.legend i{flex:0 0 12px;width:12px;height:12px;border-radius:50%;background:var(--ring)}
 .legend b{font-family:var(--display);font-weight:800;font-variant-numeric:tabular-nums}
 
 /* Topic row in People */
@@ -281,10 +281,10 @@ button{font:inherit;color:inherit}
 .mapinfo .here button small{display:block;font-size:12.5px;color:var(--teal);font-weight:700}
 .mapinfo .done{position:absolute;right:6px;top:6px;width:44px;height:44px;margin:0;padding:0;display:grid;place-items:center;border-radius:50%;background:var(--sunk);color:var(--ink)}
 .mapinfo .done svg{width:18px;height:18px}
-.open{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:750;background:#dff3e6;color:#0b5a2a}
-.open.closed{background:var(--soft);color:var(--mute)}
-:root[data-theme="dark"] .open:not(.closed){background:#17402a;color:#8be0aa}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .open:not(.closed){background:#17402a;color:#8be0aa}}
+.ochip{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:750;background:#dff3e6;color:#0b5a2a}
+.ochip.closed{background:var(--soft);color:var(--mute)}
+:root[data-theme="dark"] .ochip:not(.closed){background:#17402a;color:#8be0aa}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ochip:not(.closed){background:#17402a;color:#8be0aa}}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .pbtn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:700;font-size:15px}
 .pbtn.pri{background:var(--teal);border-color:var(--teal);color:#fff}
@@ -529,6 +529,8 @@ body{padding-bottom:calc(64px + var(--sab))}
 .mylist .badge:empty{display:none}
 .filters{display:grid;grid-template-columns:.8fr 1fr 1.05fr 1.1fr;margin-top:10px;background:var(--soft);border-radius:12px;padding:3px;gap:3px}
 .filters button{min-height:38px;padding:0 4px;border-radius:9px;border:0;background:none;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--mute)}
+.filters .gd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
+@media (max-width:359px){.filters .gd{margin-right:3px;width:8px;height:8px}}
 @media (max-width:359px){.filters button{font-size:13px}}
 .filters button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12),0 0 0 1px var(--rule)}
 
@@ -1176,7 +1178,7 @@ function buildTopics(){
 function buildFilters(){
   const counts = { all:PEOPLE.length }; Object.keys(GROUPS).forEach(k => counts[k] = PEOPLE.filter(p=>p.g===k).length);
   const items = [["all","All"], ...Object.entries(GROUPS).map(([k,g])=>[k,g.short])];
-  $("#filters").innerHTML = items.map(([k,label]) => `<button type="button" data-filter="${k}" aria-pressed="${state.g===k}" aria-label="${label}, ${counts[k]} people">${label}</button>`).join("");
+  $("#filters").innerHTML = items.map(([k,label]) => `<button type="button" data-filter="${k}" aria-pressed="${state.g===k}" aria-label="${label}, ${counts[k]} people">${k === "all" ? "" : `<i class="gd" style="background:${gColor(k)}" aria-hidden="true"></i>`}${label}</button>`).join("");
   $("#mylist").setAttribute("aria-pressed", state.g==="saved");
   $("#mylist").setAttribute("aria-label", `My list, ${saved.size} ${saved.size===1?"person":"people"}`);
   $("#badge").textContent = saved.size || "";
@@ -1390,7 +1392,7 @@ function openState(hrs, now){ // { open, text } from daily [start,end] minute ra
   const nxt = hrs.find(([a]) => a > now);
   return nxt ? { open:false, text:`Opens ${fmtMins(nxt[0])}` } : { open:false, text:`Opens ${fmtMins(hrs[0][0])} tomorrow` };
 }
-const openChip = (hrs, now) => { const o = openState(hrs, now); return o ? `<span class="open${o.open ? "" : " closed"}">${o.text}</span>` : ""; };
+const openChip = (hrs, now) => { const o = openState(hrs, now); return o ? `<span class="ochip${o.open ? "" : " closed"}">${o.text}</span>` : ""; };
 
 function sessionsAt(id){ const out = []; AGENDA.forEach((d, di) => (d.sessions||[]).forEach(x => { if(x.at === id) out.push({ d, di, x }); })); return out; }
 
