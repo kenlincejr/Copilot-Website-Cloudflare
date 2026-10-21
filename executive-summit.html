@@ -490,6 +490,70 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .fthanks p{margin:8px 0 0;color:var(--mute);font-size:15.5px;line-height:1.45;max-width:30em}
 .fthanks .stars{display:flex;gap:4px;color:var(--taxi);margin-top:10px}
 .fthanks .stars svg{width:30px;height:30px;fill:currentColor;stroke:#a77d00;stroke-width:1.5}
+/* Team tools: post an announcement (TD SYNNEX identities only; the PIN is checked on the server) */
+.teamcard{margin-top:22px;padding:16px;border-radius:18px;border:1.5px dashed var(--teal);background:var(--sunk)}
+.teamcard h3{font-family:var(--display);font-weight:800;font-size:19px;margin:0}
+.teamcard .fine{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--mute)}
+.teamcard form label:not(.chk){display:block;margin-top:12px;font-size:13px;font-weight:700;color:var(--mute)}
+.teamcard textarea,.teamcard input[type=password],.teamcard select{display:block;box-sizing:border-box;width:100%;margin-top:4px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.4}
+.teamcard textarea{min-height:84px;resize:vertical}
+.teamcard input[type=password],.teamcard select{min-height:48px;padding-top:0;padding-bottom:0}
+.teamcard .chk{display:flex;gap:12px;align-items:center;margin-top:12px;font-size:15px;font-weight:650;color:var(--ink)}
+.teamcard .chk input{width:22px;height:22px;accent-color:var(--teal)}
+.teamcard .err{margin:10px 0 0;color:#b3261e;font-size:14px;font-weight:650}
+:root[data-theme="dark"] .teamcard .err{color:#ffb4ab}
+.teamcard .ok{margin:10px 0 0;color:var(--teal);font-size:14px;font-weight:700}
+.teamcard ul{list-style:none;margin:14px 0 0;padding:0}
+.teamcard li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--rule);font-size:14.5px;line-height:1.35}
+.teamcard li span{flex:1;min-width:0}
+.teamcard li button{all:unset;cursor:pointer;flex:0 0 auto;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--rule);font-weight:700;font-size:14px;color:var(--ink)}
+/* Ask the Summit */
+.askfab{all:unset;cursor:pointer;position:fixed;right:max(14px,var(--sar));bottom:calc(var(--sab) + 76px);z-index:34;display:inline-flex;align-items:center;gap:8px;min-height:52px;padding:0 20px 0 16px;border-radius:99px;background:var(--teal);color:#fff;font-weight:800;font-size:16px;box-shadow:0 6px 20px rgba(0,60,70,.45)}
+:root[data-theme="dark"] .askfab{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .askfab{color:#0f1416}}
+.askfab[hidden]{display:none}
+.askfab svg{width:22px;height:22px}
+.askfab:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+#ascrim{z-index:52}
+#asksheet{z-index:53;height:min(88dvh,780px)}
+body.ask-open #ascrim{opacity:1;pointer-events:auto}
+body.ask-open #asksheet{transform:translateY(0);pointer-events:auto}
+@media (min-width:700px){ body.ask-open #asksheet{transform:translateY(-50%);opacity:1} }
+.askbody{display:flex;flex-direction:column;flex:1 1 0;padding:0 !important;min-height:0;overflow:hidden}
+.askhead{padding:6px 64px 8px 20px}
+.askhead h2{font-family:var(--display);font-weight:900;font-size:22px;margin:0;line-height:1.15}
+.askhead p{margin:3px 0 0;font-size:13px;line-height:1.4;color:var(--mute)}
+.chat{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 20px 12px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:11px 14px;border-radius:18px;font-size:16px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.mine{align-self:flex-end;background:var(--teal);color:#fff;border-bottom-right-radius:6px}
+:root[data-theme="dark"] .msg.mine{color:#0f1416}
+.msg.ai{align-self:flex-start;background:var(--sunk);border-bottom-left-radius:6px}
+.msg.err{align-self:flex-start;background:#fde9e7;color:#7a1a12}
+:root[data-theme="dark"] .msg.err{background:#3a1b18;color:#ffb4ab}
+.msg .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.msg .acts button{all:unset;cursor:pointer;min-height:40px;padding:0 14px;border-radius:99px;background:var(--surface);border:1.5px solid var(--rule);color:var(--ink);font-weight:700;font-size:14px;display:inline-flex;align-items:center}
+.msg .acts button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.msg.dots span{display:inline-block;width:8px;height:8px;margin:0 2px;border-radius:50%;background:var(--mute);animation:dot 1.1s infinite ease-in-out}
+.msg.dots span:nth-child(2){animation-delay:.15s}.msg.dots span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.msg.dots span{animation:none}}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;padding:2px 20px 8px}
+.sugg button{all:unset;cursor:pointer;min-height:40px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;display:inline-flex;align-items:center}
+.askbar{flex:0 0 auto;display:flex;align-items:flex-end;gap:8px;padding:10px 14px 10px;border-top:1px solid var(--rule);background:var(--surface)}
+.askbar textarea{flex:1;min-width:0;box-sizing:border-box;min-height:48px;max-height:120px;padding:12px 14px;border-radius:24px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.3;resize:none}
+.askbar textarea:focus{outline:3px solid var(--teal);outline-offset:1px}
+.askbar button{all:unset;cursor:pointer;flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--teal);color:#fff}
+:root[data-theme="dark"] .askbar button{color:#0f1416}
+.askbar button.mic{background:var(--sunk);color:var(--ink)}
+.askbar button.mic.on{background:#e0603f;color:#fff}
+.askbar button:disabled{opacity:.45}
+.askbar button svg{width:22px;height:22px}
+.askbar button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.askleft{margin:0;padding:0 20px 6px;font-size:12px;color:var(--mute)}
+.starters{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.starters li{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--sunk);font-size:15.5px;line-height:1.45}
+.starters li span{flex:1}
+.starters li button{all:unset;cursor:pointer;flex:0 0 auto;min-height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--rule);background:var(--surface);color:var(--teal);font-weight:700;font-size:13.5px;display:inline-flex;align-items:center}
 /* Profile: where this person is speaking */
 .p-sess{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .p-sess button{all:unset;cursor:pointer;box-sizing:border-box;display:block;width:100%;padding:10px 14px;border-radius:12px;background:var(--sunk)}
@@ -731,6 +795,7 @@ html.lock,html.lock body{overflow:hidden}
       <button type="button" id="refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg>Refresh</button></div>
   </div>
 </header>
+<button type="button" class="askfab" id="askfab" hidden aria-label="Ask the Summit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Ask</button>
 <div class="alertbar" id="alertbar" role="region" aria-label="Announcement" hidden></div>
 
 <main>
@@ -788,6 +853,7 @@ html.lock,html.lock body{overflow:hidden}
     <div class="wrap">
       <div class="vhead"><h2 id="info-h">Know before you go</h2><p id="info-sub"></p></div>
       <div id="info"></div>
+      <div id="teamtools"></div>
       <button class="applink" type="button" data-help id="info-app"><img src="data:image/png;base64,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" alt="" width="36" height="36">Open this guide like an app</button>
       <footer class="sitefoot">
         <picture>
@@ -812,6 +878,12 @@ html.lock,html.lock body{overflow:hidden}
 </nav>
 
 <div id="sheetroot">
+  <div class="scrim" id="ascrim"></div>
+  <div class="sheet" id="asksheet" role="dialog" aria-modal="true" aria-labelledby="a-title" hidden>
+    <div class="grab" aria-hidden="true"></div>
+    <button class="x" id="aclose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="sheet-body askbody" id="abody"></div>
+  </div>
   <div class="scrim" id="fscrim"></div>
   <div class="sheet" id="fbsheet" role="dialog" aria-modal="true" aria-labelledby="f-title" hidden>
     <div class="grab" aria-hidden="true"></div>
@@ -842,6 +914,7 @@ html.lock,html.lock body{overflow:hidden}
         <button id="p-share" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share profile</span></button>
       </div>
       <div class="p-sec" id="p-sessions" hidden><h3>On the agenda</h3><ul class="p-sess" id="p-sess-list"></ul></div>
+      <div class="p-sec" id="p-starters" hidden><button type="button" class="pbtn" id="p-starters-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Conversation starters</button><ul class="starters" id="p-starters-list"></ul><p class="fine" id="p-starters-note" hidden></p></div>
       <div class="p-sec" id="p-ask"><h3>Ask me about</h3><ul class="tags" id="p-tags"></ul></div>
       <div class="p-sec" id="p-meet">
         <h3 id="p-meet-h">Worth meeting</h3>
@@ -1232,7 +1305,7 @@ function renderPicks(q){
     + (ts.length && !list.length ? `<li><p class="hint" style="margin-top:8px">No attendee matches “${esc(q)}”. Try your last name or company.</p></li>` : "");
 }
 function setMe(id){
-  me = id; store.set(K_ME, id);
+  me = id; store.set(K_ME, id); teamPin = null; if(typeof renderTeamTools === "function") renderTeamTools(true);
   renderHome(); if(current) fillSheet(current);
 }
 
@@ -1563,7 +1636,7 @@ function showMapHint(text){ const h = $("#maphint"); if(!h) return; h.textConten
 let mapFull = false;
 function setMapFull(on){
   if(on === mapFull) return; mapFull = on; $("#mapcard").classList.toggle("full", on);
-  if(on) root.classList.add("lock"); else if(!current && !helpOpen && !cardOpen && !fbOpen) root.classList.remove("lock");
+  if(on) root.classList.add("lock"); else if(!current && !helpOpen && !cardOpen && !fbOpen && !askOpen) root.classList.remove("lock");
   measureMap(); const p = selPlace && PLACE[selPlace];
   if(p && p.map === mapNo) centerOn(p.x, p.y, Math.max(mv.s, mapNo === 3 ? .85 : .62), false); else fitBox(MAPS[mapNo].box, false);
   track("map_tab", on ? "expand" : "collapse");
@@ -1851,7 +1924,7 @@ function openCard(){
 }
 function closeCard(){
   if(!cardOpen){ document.body.classList.remove("card-open"); return; } cardOpen = false;
-  document.body.classList.remove("card-open"); if(!current && !helpOpen && !fbOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("card-open"); if(!current && !helpOpen && !fbOpen && !askOpen && !mapFull) root.classList.remove("lock");
   setTimeout(() => { if(!cardOpen) $("#cardsheet").hidden = true; }, 340);
   if(cardFocus && document.contains(cardFocus)) cardFocus.focus({ preventScroll:true });
 }
@@ -1895,6 +1968,7 @@ function renderAlerts(){
       <button type="button" data-alert-x="${a.id}" aria-label="Dismiss this announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
   }
   if(typeof renderInfo === "function") renderInfo();
+  if(typeof renderTeamTools === "function") renderTeamTools();
 }
 async function loadAlerts(){
   try { const r = await getJson(ALERTS_URL); ALERTS = Array.isArray(r.alerts) ? r.alerts : []; try { localStorage.setItem(ALKEY, JSON.stringify(ALERTS)); } catch(e){} }
@@ -1933,7 +2007,7 @@ async function flushFb(){ // anything saved while offline goes out when the phon
   if(!FB_SEND) return; const all = readFb();
   for(const [session, rec] of Object.entries(all)){
     if(rec.sent) continue;
-    try { await sendFb({ session, title:rec.title, rating:rec.rating, a1:rec.a1, a2:rec.a2, followup:!!rec.followup, note:rec.note, name:rec.name, company:rec.company, contact:rec.contact });
+    try { await sendFb({ session, title:rec.title, rating:rec.rating, a1:rec.a1, followup:!!rec.followup, note:rec.note, name:rec.name, company:rec.company, contact:rec.contact });
       const cur = readFb(); if(cur[session]){ cur[session].sent = true; writeFb(cur); } } catch(e){ break; }
   }
 }
@@ -1948,21 +2022,19 @@ function renderFb(){
     $("#f-edit").addEventListener("click", () => { fbDone = false; fbDraft = null; renderFb(); }); $("#f-done").addEventListener("click", closeFb); return;
   }
   const saved = readFb()[key] || {}, p = me && byId[me];
-  const v = fbDraft || (fbDraft = { rating:saved.rating || 0, a1:saved.a1 || "", a2:saved.a2 || "", followup:!!saved.followup, note:saved.note || "", name:saved.name || (p ? p.n : ""), company:saved.company || (p ? p.c : ""), contact:saved.contact || "" });
+  const v = fbDraft || (fbDraft = { rating:saved.rating || 0, a1:saved.a1 || "", followup:!!saved.followup, note:saved.note || "", name:saved.name || (p ? p.n : ""), company:saved.company || (p ? p.c : ""), contact:saved.contact || "" });
   box.innerHTML = `<form class="fform cform" id="f-form" novalidate><p class="kick">${esc(d.label)}${s.start ? ", " + fmtTime(s.start) : ""}</p><h2 id="f-title">${esc(s.title)}</h2>
     <fieldset><legend>How was it?</legend><div class="row" role="radiogroup" aria-label="Your rating">${[1,2,3,4,5].map(n => `<button type="button" role="radio" aria-checked="${v.rating === n}" class="${v.rating >= n ? "on" : ""}" data-r="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">${STARSVG}</button>`).join("")}</div><p class="rl" id="f-rl">${RATEWORDS[v.rating]}</p></fieldset>
-    <label for="f-a1">What was most useful?</label><textarea id="f-a1" maxlength="600" placeholder="Optional">${esc(v.a1)}</textarea>
-    <label for="f-a2">What should we change, or do more of?</label><textarea id="f-a2" maxlength="600" placeholder="Optional">${esc(v.a2)}</textarea>
+    <label for="f-a1">Your feedback</label><textarea id="f-a1" maxlength="800" placeholder="What stood out, what to change, anything else. Optional.">${esc(v.a1)}</textarea>
     <label class="chk"><input type="checkbox" id="f-fu"${v.followup ? " checked" : ""}><span>I’d like TD SYNNEX to follow up with me about this topic</span></label>
     <div class="more" id="f-more"${v.followup ? "" : " hidden"}>
-      <label for="f-note">What would you like to talk about?</label><textarea id="f-note" maxlength="600" placeholder="A few details help us send the right person">${esc(v.note)}</textarea>
-      <label for="f-name">Your name</label><input id="f-name" type="text" autocomplete="name" value="${esc(v.name)}">
-      <label for="f-co">Company</label><input id="f-co" type="text" autocomplete="organization" value="${esc(v.company)}">
-      <label for="f-ct">Best email or phone</label><input id="f-ct" type="text" inputmode="email" autocapitalize="off" value="${esc(v.contact)}" placeholder="Optional">
+      <label for="f-note">What would you like to connect on?</label><textarea id="f-note" maxlength="600" placeholder="A topic or a few details, so we send the right person">${esc(v.note)}</textarea>
+      ${p ? `<p class="fine ident">We’ll follow up with ${esc(p.n)}${p.c ? ", " + esc(p.c) : ""}.</p>` : `<label for="f-name">Your name</label><input id="f-name" type="text" autocomplete="name" value="${esc(v.name)}"><label for="f-ct">Best email or phone</label><input id="f-ct" type="text" inputmode="email" autocapitalize="off" value="${esc(v.contact)}" placeholder="Optional">`}
     </div>
     <p class="fine">Ratings and comments are anonymous. If you ask for a follow-up, your name, company and note go to the TD SYNNEX Microsoft team.</p>
     <p class="err" id="f-err" role="alert" hidden></p><div class="btnrow"><button type="submit" class="pbtn pri">Send feedback</button></div></form>`;
-  const sync = () => { v.a1 = $("#f-a1").value; v.a2 = $("#f-a2").value; v.followup = $("#f-fu").checked; v.note = $("#f-note").value; v.name = $("#f-name").value; v.company = $("#f-co").value; v.contact = $("#f-ct").value; };
+  const val = id => { const e = $("#" + id); return e ? e.value : null; };
+  const sync = () => { v.a1 = val("f-a1"); v.followup = $("#f-fu").checked; v.note = val("f-note"); if(p){ v.name = p.n; v.company = p.c; } else { v.name = val("f-name") || ""; v.contact = val("f-ct") || ""; } };
   box.querySelectorAll("[data-r]").forEach(b => b.addEventListener("click", () => { sync(); v.rating = +b.dataset.r;
     box.querySelectorAll("[data-r]").forEach(x => { x.classList.toggle("on", +x.dataset.r <= v.rating); x.setAttribute("aria-checked", +x.dataset.r === v.rating); }); $("#f-rl").textContent = RATEWORDS[v.rating]; $("#f-err").hidden = true; }));
   box.querySelectorAll("textarea,input").forEach(i => i.addEventListener("input", sync));
@@ -1970,8 +2042,9 @@ function renderFb(){
   $("#f-form").addEventListener("submit", async e => {
     e.preventDefault(); sync(); const err = $("#f-err"), bad = m => { err.textContent = m; err.hidden = false; };
     if(!v.rating) return bad("Tap a star to rate the session.");
+    if(v.followup && !v.note.trim()) return bad("Tell us what you’d like to connect on.");
     if(v.followup && !v.name.trim()) return bad("Add your name so we know who to follow up with.");
-    const rec = { title:s.title, rating:v.rating, a1:v.a1.trim(), a2:v.a2.trim(), followup:v.followup, note:v.followup ? v.note.trim() : "", name:v.followup ? v.name.trim() : "", company:v.followup ? v.company.trim() : "", contact:v.followup ? v.contact.trim() : "", sent:false };
+    const rec = { title:s.title, rating:v.rating, a1:v.a1.trim(), followup:v.followup, note:v.followup ? v.note.trim() : "", name:v.followup ? v.name.trim() : "", company:v.followup ? (v.company || "").trim() : "", contact:v.followup ? (v.contact || "").trim() : "", sent:false };
     const all = readFb(); all[key] = rec; writeFb(all); track("view", "feedback");
     if(FB_SEND){ try { await sendFb({ session:key, ...rec }); const a2 = readFb(); if(a2[key]) { a2[key].sent = true; writeFb(a2); } } catch(x){ /* queued: flushFb retries */ } }
     fbDone = true; renderFb(); if(view === "agenda") renderAgenda();
@@ -1984,13 +2057,152 @@ function openFb(di, si){
 }
 function closeFb(){
   if(!fbOpen){ document.body.classList.remove("fb-open"); return; } fbOpen = false;
-  document.body.classList.remove("fb-open"); if(!current && !helpOpen && !cardOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("fb-open"); if(!current && !helpOpen && !cardOpen && !mapFull && !askOpen) root.classList.remove("lock");
   setTimeout(() => { if(!fbOpen) $("#fbsheet").hidden = true; }, 340);
   if(fbFocus && document.contains(fbFocus)) fbFocus.focus({ preventScroll:true });
 }
 $("#fclose").addEventListener("click", closeFb); $("#fscrim").addEventListener("click", closeFb);
 document.addEventListener("keydown", e => { if(fbOpen && e.key === "Escape"){ e.stopImmediatePropagation(); closeFb(); } }, true);
 document.addEventListener("click", e => { const r = e.target.closest("[data-rate]"); if(r){ const [di, si] = r.dataset.rate.split(":").map(Number); openFb(di, si); } });
+
+/* ---------- team tools: TD SYNNEX identities can post an announcement; the PIN is verified by the Worker, never here ---------- */
+const ANNOUNCE_URL = "https://summit-usage.ken-lince.workers.dev/announce";
+let teamPin = null, teamSig = "";
+const isTeam = () => { const p = me && byId[me]; return !!p && p.g === "tdsynnex"; };
+async function announceCall(payload){
+  const r = await fetch(ANNOUNCE_URL, { method:"POST", body:JSON.stringify({ did:FBID, ...payload }), headers:{ "Content-Type":"text/plain" } });
+  return r.status;
+}
+const teamMsg = (id, text, ok) => { const e = $("#" + id); if(!e) return; e.textContent = text; e.hidden = !text; e.className = ok ? "ok" : "err"; };
+const teamErr = code => code === 401 ? "That PIN isn’t right." : code === 429 ? "Too many tries or too many posts. Wait a few minutes, or ask Claude in chat to post it." : code === 503 ? "Posting isn’t set up yet." : code === 400 ? "Check the message: it needs 1 to 280 characters." : "Couldn’t reach the server. Check your connection and try again.";
+function renderTeamTools(force){
+  const box = $("#teamtools"); if(!box) return;
+  const sig = isTeam() + "|" + !!teamPin; if(!force && sig === teamSig) { renderTeamActive(); return; } teamSig = sig;
+  if(!isTeam()){ box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="teamcard"><h3>Team tools: post an announcement</h3><p class="fine">For the TD SYNNEX team. It shows as a banner on every attendee’s phone within about a minute. Partners can’t post.</p>
+    <form id="t-form" novalidate>${teamPin ? "" : `<label for="t-pin">Team PIN</label><input id="t-pin" type="password" inputmode="numeric" autocomplete="off" autocapitalize="off">`}
+      <label for="t-text">Announcement</label><textarea id="t-text" maxlength="280" placeholder="For example: The bus to Secret Beach leaves at 1:20, not 1:30."></textarea>
+      <label class="chk"><input type="checkbox" id="t-urg"> Urgent (yellow banner)</label>
+      <label for="t-hrs">Show for</label><select id="t-hrs"><option value="2">2 hours</option><option value="6">6 hours</option><option value="24" selected>24 hours</option><option value="48">48 hours</option></select>
+      <p id="t-err" hidden role="alert"></p><div class="btnrow"><button type="submit" class="pbtn pri">Post to everyone</button></div></form>
+    <div id="t-active"></div></div>`;
+  $("#t-form").addEventListener("submit", async e => {
+    e.preventDefault(); const pin = teamPin || ($("#t-pin") ? $("#t-pin").value.trim() : ""), text = $("#t-text").value.trim();
+    if(!pin) return teamMsg("t-err", "Enter the team PIN.", false);
+    if(!text) return teamMsg("t-err", "Type the announcement first.", false);
+    teamMsg("t-err", "Posting…", true);
+    try { const code = await announceCall({ pin, action:"post", text, level:$("#t-urg").checked ? "urgent" : "info", hours:+$("#t-hrs").value });
+      if(code === 200){ teamPin = pin; renderTeamTools(true); teamMsg("t-err", "Posted. Phones update within about a minute.", true); toast("Announcement posted"); loadAlerts(); }
+      else teamMsg("t-err", teamErr(code), false);
+    } catch(x){ teamMsg("t-err", teamErr(0), false); }
+  });
+  renderTeamActive();
+}
+function renderTeamActive(){
+  const box = $("#t-active"); if(!box) return;
+  box.innerHTML = ALERTS.length ? `<ul>${ALERTS.map(a => `<li><span><b>${a.level === "urgent" ? "Urgent: " : ""}</b>${esc(a.body)}<br><small>Posted ${alertTime(a.ts)} Hawaii time</small></span><button type="button" data-t-clear="${a.id}">Clear</button></li>`).join("")}</ul>` : "";
+}
+document.addEventListener("click", async e => {
+  const c = e.target.closest("[data-t-clear]"); if(!c) return;
+  const pin = teamPin || ($("#t-pin") ? $("#t-pin").value.trim() : ""); if(!pin) return teamMsg("t-err", "Enter the team PIN above to clear an announcement.", false);
+  try { const code = await announceCall({ pin, action:"clear", id:+c.dataset.tClear }); if(code === 200){ teamPin = pin; toast("Announcement cleared"); loadAlerts(); } else teamMsg("t-err", teamErr(code), false); } catch(x){ teamMsg("t-err", teamErr(0), false); }
+});
+
+/* ---------- Ask the Summit: an assistant that answers only from the guide and can open the map, a profile or the agenda ---------- */
+const AI_URL = "https://summit-ai.ken-lince.workers.dev/ask";
+const AI_ENABLED = false;                                         // flip to true once the assistant is switched on
+const AI_ON = AI_ENABLED || /[?&]ask=1\b/.test(location.search);  // ?ask=1 previews it while it is off
+const SPARKLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>';
+const SUGGEST = ["What’s happening now?", "Where do I go for breakfast?", "What should I wear Sunday?", "Who should I meet?"];
+let askOpen = false, askFocus = null, askBusy = false, askLeft = null; const askLog = [];
+async function askCall(payload){
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 25000);
+  try { const r = await fetch(AI_URL, { method:"POST", body:JSON.stringify({ did:FBID, me:me || undefined, ...payload }), headers:{ "Content-Type":"text/plain" }, signal:c.signal });
+    let body = {}; try { body = await r.json(); } catch(e){} return { status:r.status, body }; } finally { clearTimeout(t); }
+}
+const askErr = (status, body) => status === 429 ? (body.error === "daily-limit" ? `You’ve used today’s ${body.limit || 25} questions. For anything else, ask LeighAnn or the resort concierge.` : "The assistant is busy right now. Try again in a minute.") : status === 503 ? "The assistant isn’t switched on yet." : status === 0 ? "I couldn’t reach the assistant. Check your connection and try again." : "I couldn’t answer that just now. Please try again.";
+function actionButtons(actions){
+  return (actions || []).map(a => {
+    if(a.type === "place" && PLACE[a.id]) return `<button type="button" data-ask-act="place:${a.id}">${PINSVG}&nbsp;${esc(PLACE[a.id].name)}</button>`;
+    if(a.type === "person" && byId[a.id]) return `<button type="button" data-ask-act="person:${a.id}">Open ${esc(byId[a.id].n)}</button>`;
+    if(a.type === "agenda" && AGENDA[a.day]) return `<button type="button" data-ask-act="agenda:${a.day}">${esc(AGENDA[a.day].long)}</button>`;
+    return "";
+  }).join("");
+}
+function renderAsk(){
+  const box = $("#abody"); if(!box) return;
+  const empty = !askLog.length;
+  box.innerHTML = `<div class="askhead"><h2 id="a-title">Ask the Summit</h2><p>Answers come only from this guide. Nothing about sales or private details.</p></div>
+    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
+    ${empty ? `<div class="sugg">${SUGGEST.map(q => `<button type="button" data-ask-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
+    ${askLeft != null ? `<p class="askleft">${askLeft} question${askLeft === 1 ? "" : "s"} left today</p>` : ""}
+    <form class="askbar" id="a-form"><textarea id="a-input" rows="1" maxlength="300" placeholder="Ask a question" aria-label="Your question"></textarea>
+      ${(window.SpeechRecognition || window.webkitSpeechRecognition) ? `<button type="button" class="mic" id="a-mic" aria-label="Speak your question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>` : ""}
+      <button type="submit" id="a-send" aria-label="Send"${askBusy ? " disabled" : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></form>`;
+  const chat = $("#a-chat"); chat.scrollTop = chat.scrollHeight;
+  const input = $("#a-input"), form = $("#a-form");
+  input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(120, input.scrollHeight) + "px"; });
+  input.addEventListener("keydown", e => { if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+  form.addEventListener("submit", e => { e.preventDefault(); const q = input.value.trim(); if(q) sendAsk(q); });
+  const mic = $("#a-mic"); if(mic) mic.addEventListener("click", () => voiceAsk(mic, input));
+}
+async function sendAsk(q){
+  if(askBusy) return; askBusy = true;
+  askLog.push({ role:"mine", text:q }); askLog.push({ role:"ai", dots:true }); renderAsk();
+  let status = 0, body = {};
+  try { ({ status, body } = await askCall({ mode:"ask", q, view: view === "resort" && selPlace ? "map: " + selPlace : view })); } catch(e){ status = 0; }
+  askLog.pop(); askBusy = false;
+  if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, actions:body.actions }); }
+  else askLog.push({ role:"err", text:askErr(status, body) });
+  renderAsk();
+}
+function voiceAsk(btn, input){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return;
+  if(btn.classList.contains("on")){ try { voiceAsk.rec.stop(); } catch(e){} return; }
+  const rec = voiceAsk.rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.maxAlternatives = 1; btn.classList.add("on");
+  rec.onresult = e => { input.value = Array.from(e.results).map(r => r[0].transcript).join(" "); input.dispatchEvent(new Event("input")); };
+  rec.onend = () => { btn.classList.remove("on"); if(input.value.trim()) $("#a-form").requestSubmit(); };
+  rec.onerror = () => btn.classList.remove("on");
+  try { rec.start(); } catch(e){ btn.classList.remove("on"); }
+}
+function openAsk(){
+  if(!AI_ON) return; renderAsk(); askOpen = true; askFocus = document.activeElement;
+  $("#asksheet").hidden = false; root.classList.add("lock");
+  requestAnimationFrame(() => requestAnimationFrame(() => { if(!askOpen) return; document.body.classList.add("ask-open"); }));
+}
+function closeAsk(){
+  if(!askOpen){ document.body.classList.remove("ask-open"); return; } askOpen = false;
+  try { if(voiceAsk.rec) voiceAsk.rec.stop(); } catch(e){}
+  document.body.classList.remove("ask-open"); if(!current && !helpOpen && !cardOpen && !mapFull && !fbOpen) root.classList.remove("lock");
+  setTimeout(() => { if(!askOpen) $("#asksheet").hidden = true; }, 340);
+  if(askFocus && document.contains(askFocus)) askFocus.focus({ preventScroll:true });
+}
+$("#aclose").addEventListener("click", closeAsk); $("#ascrim").addEventListener("click", closeAsk);
+document.addEventListener("keydown", e => { if(askOpen && e.key === "Escape"){ e.stopImmediatePropagation(); closeAsk(); } }, true);
+document.addEventListener("click", e => {
+  if(e.target.closest("#askfab")){ openAsk(); return; }
+  const q = e.target.closest("[data-ask-q]"); if(q){ sendAsk(q.dataset.askQ); return; }
+  const a = e.target.closest("[data-ask-act]"); if(!a) return;
+  const [type, id] = a.dataset.askAct.split(":"); closeAsk();
+  setTimeout(() => { if(type === "place") openMapAt(id); else if(type === "person") openPerson(id, true); else if(type === "agenda"){ agendaDay = +id; setView("agenda"); } }, 360);
+});
+if(AI_ON){ const fab = $("#askfab"); if(fab) fab.hidden = false; }
+
+/* Conversation starters on a profile, from the same assistant */
+async function loadStarters(){
+  const id = current, list = $("#p-starters-list"), note = $("#p-starters-note"), btn = $("#p-starters-btn");
+  note.hidden = true; list.innerHTML = ""; btn.disabled = true; btn.textContent = "Thinking…";
+  let status = 0, body = {};
+  try { ({ status, body } = await askCall({ mode:"starters", personId:id })); } catch(e){ status = 0; }
+  btn.disabled = false; btn.innerHTML = SPARKLE + "Conversation starters"; if(current !== id) return;
+  if(status === 200 && body.starters){ list.innerHTML = body.starters.map(t => `<li><span>${esc(t)}</span><button type="button" data-copy="${esc(t)}">Copy</button></li>`).join(""); }
+  else { note.textContent = askErr(status, body); note.hidden = false; }
+}
+document.addEventListener("click", async e => {
+  if(e.target.closest("#p-starters-btn")){ loadStarters(); return; }
+  const c = e.target.closest("[data-copy]"); if(!c) return;
+  try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent = "Copied"; setTimeout(() => { c.textContent = "Copy"; }, 1500); } catch(x){ toast("Press and hold the text to copy it"); }
+});
 
 /* ---------- INFO ---------- */
 function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\(((?:https?:\/\/|tel:|mailto:)[^)\s]+)\)/g, (m,l,u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${l}</a>` : `<a href="${u}">${l}</a>`); }
@@ -2048,6 +2260,7 @@ function fillSheet(id){
   $("#p-sessions").hidden = !sess.length;
   $("#p-sess-list").innerHTML = sess.map(r => `<li><button type="button" data-sess="${r.di}"><span class="w">${esc(r.d.label)}${r.x.start?`, ${fmtTime(r.x.start)}`:""}</span><b>${esc(r.x.title)}</b></button></li>`).join("");
   $("#p-ask").hidden = !(p.ask||[]).length;
+  { const st = $("#p-starters"); st.hidden = !(AI_ON && id !== me); $("#p-starters-list").innerHTML = ""; $("#p-starters-note").hidden = true; }
   $("#p-meet").hidden = !(p.meet||[]).length;
   $("#p-meet-h").textContent = `Worth meeting for ${first(p)}`;
   $("#p-meet-list").innerHTML = meetRows(p);
@@ -2214,7 +2427,7 @@ function openHelp(){
 }
 function closeHelp(){
   if(!helpOpen){ document.body.classList.remove("help-open"); return; } helpOpen = false;
-  document.body.classList.remove("help-open"); if(!current && !cardOpen && !fbOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("help-open"); if(!current && !cardOpen && !fbOpen && !askOpen && !mapFull) root.classList.remove("lock");
   setTimeout(() => { if(!helpOpen) $("#helpsheet").hidden = true; }, 340);
   if(helpFocus && document.contains(helpFocus)) helpFocus.focus({preventScroll:true});
 }
@@ -2256,7 +2469,7 @@ if(isStandalone()){
     const pill = document.createElement("div"); pill.className = "ptr"; pill.setAttribute("aria-hidden","true"); pill.innerHTML = "<span></span>"; document.body.appendChild(pill);
     const label = pill.firstChild, NEED = 140; let y0 = null, dy = 0;
     const reset = () => { pill.classList.remove("show"); pill.style.transform = ""; };
-    addEventListener("touchstart", e => { y0 = (!current && !helpOpen && !cardOpen && !mapFull && !fbOpen && !refreshing && scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; dy = 0; }, { passive:true });
+    addEventListener("touchstart", e => { y0 = (!current && !helpOpen && !cardOpen && !mapFull && !fbOpen && !askOpen && !refreshing && scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; dy = 0; }, { passive:true });
     addEventListener("touchmove", e => { if(y0 === null) return; dy = e.touches[0].clientY - y0;
       if(dy <= 12 || scrollY > 0){ reset(); return; }
       pill.classList.add("show"); pill.style.transform = `translateY(${Math.min(dy * .45, 70)}px)`; label.textContent = dy > NEED ? "Release to refresh" : "Pull down to refresh"; }, { passive:true });
@@ -2267,7 +2480,7 @@ if(isStandalone()){
   let hiddenAt = 0;
   document.addEventListener("visibilitychange", () => {
     if(document.hidden){ hiddenAt = Date.now(); return; }
-    if(hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !current && !helpOpen && !cardOpen && !mapFull && !fbOpen) refreshNow();
+    if(hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !current && !helpOpen && !cardOpen && !mapFull && !fbOpen && !askOpen) refreshNow();
   });
 }
 
@@ -2275,20 +2488,21 @@ if(isStandalone()){
    If a sheet's open animation and its close ever cross, a dim layer could be left
    covering the page and swallowing taps. Any tap, resume or page show clears it. */
 function reconcileOverlays(){
+  if(!askOpen){ document.body.classList.remove("ask-open"); $("#asksheet").hidden = true; }
   if(!fbOpen){ document.body.classList.remove("fb-open"); $("#fbsheet").hidden = true; }
   if(!cardOpen){ document.body.classList.remove("card-open"); $("#cardsheet").hidden = true; }
   if(!current) document.body.classList.remove("is-open");
   if(!helpOpen) document.body.classList.remove("help-open");
   if(!current){ $("#sheet").hidden = true; }
   if(!helpOpen){ $("#helpsheet").hidden = true; }
-  if(!current && !helpOpen && !cardOpen && !mapFull && !fbOpen) root.classList.remove("lock");
+  if(!current && !helpOpen && !cardOpen && !mapFull && !fbOpen && !askOpen) root.classList.remove("lock");
 }
 document.addEventListener("pointerdown", reconcileOverlays, true);
 document.addEventListener("visibilitychange", reconcileOverlays);
 addEventListener("pageshow", reconcileOverlays);
 
 /* ---------- start ---------- */
-loadAlerts(); flushFb();
+loadAlerts(); flushFb(); renderTeamTools(true);
 track("open", isStandalone() ? "app" : "browser");
 buildTopics(); buildFilters(); render(); renderHome(); renderAgenda(); renderInfo();
 (function(){

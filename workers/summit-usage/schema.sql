@@ -41,3 +41,11 @@ CREATE TABLE IF NOT EXISTS summit_feedback (
   PRIMARY KEY (did, session)
 );
 CREATE INDEX IF NOT EXISTS summit_feedback_session ON summit_feedback (session);
+
+-- Wrong-PIN tracking for in-app announcements. Keys are a hash of the connection, the device id, or 'global'; no raw IPs.
+CREATE TABLE IF NOT EXISTS summit_lockout (
+  key      TEXT    PRIMARY KEY,
+  fails    INTEGER NOT NULL DEFAULT 0,
+  first_ts INTEGER NOT NULL,
+  until    INTEGER NOT NULL DEFAULT 0
+);

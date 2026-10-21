@@ -1,0 +1,15 @@
+// summit-ai: "Ask the Summit" assistant for the Executive Summit guide.
+// Deploy from this folder with `npx wrangler deploy`. Needs the secret ANTHROPIC_API_KEY, which Ken stores himself:
+//   npx wrangler secret put ANTHROPIC_API_KEY
+// Counts questions per device in the existing D1 database playbook_search (table summit_ai_usage, schema.sql).
+{
+  "name": "summit-ai",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "vars": { "MODEL": "claude-haiku-5-5", "PER_DEVICE_DAILY": "25", "GLOBAL_DAILY": "1200" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "playbook_search", "database_id": "1cb62c80-77f0-4e10-b6de-f27d39a869b0" }
+  ],
+  "observability": { "enabled": true }
+}

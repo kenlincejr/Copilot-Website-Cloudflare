@@ -4,6 +4,8 @@
    POST /u   body: {"did":"<random phone id>","mode":"app|browser","events":[{kind,label,n}, ...]}
              Sent with navigator.sendBeacon (text/plain, so no CORS preflight). Up to 20 events a request.
    GET  /a   active announcements for the banner: {"alerts":[{id,ts,level,body}]}. Posted with tools/summit-announce.py.
+   POST /announce  {pin, did, action:'post'|'clear', text, level, hours, id}. The PIN is the Worker secret ANNOUNCE_PIN, checked here
+             (never in the page). Wrong guesses are counted per connection, per device and globally, and lock out for 15 minutes.
    POST /f   session feedback: {did,session,title,rating,a1,a2,followup,note,name,company,contact}. One row per device
              and session; sending again updates it. Name, company and contact are kept only when followup is true.
 
@@ -51,6 +53,52 @@ export function cleanFeedback(b, now) {
   };
 }
 
+const enc = new TextEncoder();
+async function shortHash(s) { const d = await crypto.subtle.digest('SHA-256', enc.encode('summit|' + s)); return [...new Uint8Array(d)].slice(0, 8).map((x) => x.toString(16).padStart(2, '0')).join(''); }
+function safeEqual(a, b) { // constant-time comparison
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const x = enc.encode(a), y = enc.encode(b); let diff = x.length ^ y.length;
+  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] || 0) ^ (y[i] || 0);
+  return diff === 0;
+}
+// The whole resort shares one connection, so the per-connection limit is generous; the device limit is what stops casual guessing.
+const LOCK_MS = 15 * 60 * 1000, LIMITS = { ip: 25, did: 5, global: 60 };
+
+async function handleAnnounce(body, request, env, origin) {
+  const h = cors(origin), json = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { ...h, 'Content-Type': 'application/json' } });
+  if (!env.ANNOUNCE_PIN) return json(503, { error: 'not-configured' });
+  const did = typeof body.did === 'string' && /^[a-z0-9]{8,32}$/.test(body.did) ? body.did : 'none';
+  const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const keys = [['ip', 'ip:' + await shortHash(ip)], ['did', 'did:' + did], ['global', 'global']];
+  const now = Date.now();
+  const rows = await env.DB.prepare('SELECT key, fails, first_ts, until FROM summit_lockout WHERE key IN (?, ?, ?)').bind(...keys.map((k) => k[1])).all();
+  const byKey = Object.fromEntries((rows.results || []).map((r) => [r.key, r]));
+  if (keys.some(([, k]) => byKey[k] && byKey[k].until > now)) return json(429, { error: 'locked' });
+  if (!safeEqual(String(body.pin || ''), String(env.ANNOUNCE_PIN))) {
+    for (const [kind, k] of keys) {
+      const r = byKey[k]; const fresh = !r || now - r.first_ts > LOCK_MS;
+      const fails = fresh ? 1 : r.fails + 1, first = fresh ? now : r.first_ts, until = fails >= LIMITS[kind] ? now + LOCK_MS : 0;
+      await env.DB.prepare('INSERT INTO summit_lockout (key, fails, first_ts, until) VALUES (?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET fails = excluded.fails, first_ts = excluded.first_ts, until = excluded.until').bind(k, fails, first, until).run();
+    }
+    return json(401, { error: 'wrong-pin' });
+  }
+  await env.DB.prepare('DELETE FROM summit_lockout WHERE key IN (?, ?)').bind(keys[0][1], keys[1][1]).run();
+  if (body.action === 'clear') {
+    if (body.id === 'all') await env.DB.prepare('UPDATE summit_alerts SET active = 0 WHERE active = 1').run();
+    else if (Number.isInteger(body.id)) await env.DB.prepare('UPDATE summit_alerts SET active = 0 WHERE id = ?').bind(body.id).run();
+    else return json(400, { error: 'bad-request' });
+    return json(200, { ok: true });
+  }
+  const text = typeof body.text === 'string' ? body.text.replace(/[\u0000-\u001f]/g, ' ').trim() : '';
+  if (!text || text.length > 280) return json(400, { error: 'bad-text' });
+  const level = body.level === 'urgent' ? 'urgent' : 'info';
+  const hours = Math.min(48, Math.max(1, Number(body.hours) || 24));
+  const recent = await env.DB.prepare('SELECT COUNT(*) AS n FROM summit_alerts WHERE ts > ?').bind(now - 60 * 1000).first();
+  if (recent && recent.n >= 3) return json(429, { error: 'slow-down' });
+  const res = await env.DB.prepare('INSERT INTO summit_alerts (ts, level, body, until, active) VALUES (?, ?, ?, ?, 1)').bind(now, level, text, now + hours * 3600 * 1000).run();
+  return json(200, { ok: true, id: res.meta && res.meta.last_row_id });
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -61,7 +109,7 @@ export default {
       const { results } = await env.DB.prepare('SELECT id, ts, level, body FROM summit_alerts WHERE active = 1 AND (until IS NULL OR until > ?) ORDER BY id DESC LIMIT 5').bind(Date.now()).all();
       return new Response(JSON.stringify({ alerts: results || [] }), { status: 200, headers: { ...cors(origin), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
-    if (request.method !== 'POST' || (url.pathname !== '/u' && url.pathname !== '/f')) return new Response(null, { status: 404, headers: cors(origin) });
+    if (request.method !== 'POST' || !['/u', '/f', '/announce'].includes(url.pathname)) return new Response(null, { status: 404, headers: cors(origin) });
     let body;
     try {
       const text = await request.text();
@@ -70,6 +118,7 @@ export default {
     } catch (err) {
       return new Response(null, { status: 400, headers: cors(origin) });
     }
+    if (url.pathname === '/announce') return handleAnnounce(body, request, env, origin);
     if (url.pathname === '/f') {
       const fb = cleanFeedback(body, Date.now());
       if (!fb) return new Response(null, { status: 400, headers: cors(origin) });

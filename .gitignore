@@ -14,3 +14,9 @@ __pycache__/
 ff/tools/.yahoo-creds.json
 ff/tools/.yahoo-token.json
 tools/traces/frontier-navigator/
+
+# Private partner cards for the Ask the Summit assistant: never committed
+workers/summit-ai/private/
+workers/summit-ai/.wrangler/
+workers/summit-ai/node_modules/
+workers/summit-usage/.wrangler/

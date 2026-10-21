@@ -52,7 +52,7 @@ def main():
     summary = q("SELECT session, MAX(title) AS title, COUNT(*) AS responses, ROUND(AVG(rating),2) AS avg_rating, "
                 "SUM(rating>=4) AS fours_and_fives, SUM(rating<=2) AS ones_and_twos, SUM(followup) AS followups "
                 "FROM summit_feedback GROUP BY session ORDER BY session")
-    comments = q("SELECT session, title, rating, a1, a2 FROM summit_feedback WHERE (a1 IS NOT NULL OR a2 IS NOT NULL) ORDER BY session, rating DESC")
+    comments = q("SELECT session, title, rating, a1 FROM summit_feedback WHERE a1 IS NOT NULL ORDER BY session, rating DESC")
     follow = q("SELECT session, title, rating, name, company, contact, note FROM summit_feedback WHERE followup = 1 ORDER BY session, ts")
 
     print("EXECUTIVE SUMMIT SESSION FEEDBACK")
@@ -73,11 +73,11 @@ def main():
             who = ", ".join(x for x in (r.get("name"), r.get("company")) if x) or "(no name given)"
             print(f"- {who} | {r.get('contact') or 'no contact given'} | {r['title'] or r['session']} ({r['rating']} stars)")
             if r.get("note"):
-                print(f"    Wants to talk about: {r['note']}")
+                print(f"    Wants to connect on: {r['note']}")
 
     if a.csv:
         write_csv(a.csv, "session_summary", summary, ["session", "title", "responses", "avg_rating", "fours_and_fives", "ones_and_twos", "followups"])
-        write_csv(a.csv, "comments", comments, ["session", "title", "rating", "a1", "a2"])
+        write_csv(a.csv, "comments", comments, ["session", "title", "rating", "a1"])
         write_csv(a.csv, "followups", follow, ["session", "title", "rating", "name", "company", "contact", "note"])
         print(f"\nWrote CSV files to {a.csv}")
     if a.md:
@@ -85,7 +85,7 @@ def main():
         for r in summary:
             lines += [f"## {r['title'] or r['session']}", f"{r['responses']} responses, average {r['avg_rating']} of 5.", ""]
             for c in (x for x in comments if x["session"] == r["session"]):
-                lines.append(f"- {c['rating']} stars. Most useful: {c['a1'] or '(blank)'} | Change or more of: {c['a2'] or '(blank)'}")
+                lines.append(f"- {c['rating']} stars: {c['a1']}")
             lines.append("")
         lines += ["## Follow-up requests", ""]
         for r in follow:
