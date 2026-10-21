@@ -2431,14 +2431,16 @@ document.addEventListener("click", async e => {
 /* ---------- Ask the Summit: a tab with an assistant that starts from this guide, checks the web for gaps, and can open the map, a profile or the agenda ---------- */
 const SPARKLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>';
 const ASK_GROUPS = [
+  { h:"Find the right person", qs:["Who can help me find Azure funding programs?", "Who can get my team Copilot sales training?", "What TD SYNNEX resources can help me grow Copilot?", "Who here can I talk to about security?"] },
+  { h:"Meet the right people", qs:["Who should I meet first?", "Who here works on the same things I do?", "Who here is focused on customer zero?"] },
   { h:"Eat and drink", qs:["Where can I get lunch near the pool?", "What’s on the dinner menu at Alaia?", "I need sunscreen and a Coke. Where do I go?"] },
   { h:"Get around", qs:["How do I get off property for the afternoon?", "What’s worth seeing on the North Shore?", "How far is Haleiwa and how do I get there?"] },
   { h:"Do something", qs:["What can I do here besides the meetings?", "Can I play golf this week?", "Where can I see sea turtles?"] },
-  { h:"Meet the right people", qs:["Who should I talk to about Copilot adoption?", "Who shares my topics?", "Who should I meet first?"] },
   { h:"The summit", qs:["What’s happening now?", "What should I wear Sunday?", "Where is the closing reception?"] },
 ];
 const ASK_TIPS = [
   "Be specific. “A quiet spot for a 20-minute call” beats “where can I work.”",
+  "Ask who can help with a program, funding, training or a technology. It knows what each TD SYNNEX and Microsoft host owns.",
   "Add your three topics to your profile. It makes “who should I meet” much sharper.",
   "Say the day or time when it matters, like “dinner Sunday for six.”",
   "Answers start with this guide. When the assistant checks the web it tells you, so confirm hours with the concierge.",

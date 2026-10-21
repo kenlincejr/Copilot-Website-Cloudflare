@@ -24,7 +24,9 @@ out.agenda = C.AGENDA.map((d, di) => ({
     kind: s.kind || null, details: s.desc || null, speakers: (s.speakers || []).map((id) => (byId[id] ? { id, name: byId[id].n } : null)).filter(Boolean).concat(s.by ? [{ name: s.by }] : []),
   })),
 }));
-out.places = C.PLACES.map((p) => ({ id: p.id, name: p.name, map: p.map === 3 ? 'inside the hotel' : 'resort map', type: p.kind, summary: p.sub, details: p.desc, hours: hrs(p.hrs) || (p.venues ? p.venues.map((v) => v.n + ': ' + hrs(v.hrs) + (v.note ? ' (' + v.note + ')' : '')).join('; ') : null) }));
+// buttons: the link buttons on each pin's card in the app (Menu, Reserve, Spa menu ...), so the assistant can point people to them.
+const btns = (p) => [...(p.links || []).map((l) => l[0]), ...(p.venues || []).flatMap((v) => (v.links || []).map((l) => v.n + ' ' + l[0]))];
+out.places = C.PLACES.map((p) => ({ id: p.id, name: p.name, map: p.map === 3 ? 'inside the hotel' : 'resort map', type: p.kind, summary: p.sub, details: p.desc, hours: hrs(p.hrs) || (p.venues ? p.venues.map((v) => v.n + ': ' + hrs(v.hrs) + (v.note ? ' (' + v.note + ')' : '')).join('; ') : null), phone: (p.venues || []).filter((v) => v.tel).map((v) => v.n + ' ' + v.tel.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')).join('; ') || null, buttons: btns(p) }));
 out.info = C.INFO.map((i) => ({ title: i.title, text: i.body.map((b) => b.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')).join(' ') }));
 
 // Partner cards (private, approved only), matched to attendee companies.
