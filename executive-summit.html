@@ -276,6 +276,8 @@ button{font:inherit;color:inherit}
 .mapinfo .hint{margin:0}
 .mapinfo .vn{margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
 .mapinfo .vn b{font-size:16px}
+.mapinfo .lnks{display:flex;flex-wrap:wrap;gap:8px}
+.mapinfo .lnks .pbtn{text-decoration:none;min-height:44px}
 .mapinfo .vn small{display:block;color:var(--mute);font-size:14px;margin-top:2px}
 .mapinfo .here{margin-top:12px;display:grid;gap:8px}
 .mapinfo .here button,.mapinfo .done{all:unset;cursor:pointer;box-sizing:border-box;border-radius:12px;font-size:14.5px;font-weight:650}
@@ -1098,7 +1100,8 @@ const INFO = [
    kind: event (where our sessions happen), eat, relax, move. hrs are daily open times in Hawaii minutes. */
 const PLACES = [
   { id:"lobby", short:"Lobby", kind:"event", name:"Hotel Lobby", sub:"Front desk, concierge and your ride", x:57.5, y:43.2, inside:"lobbyin",
-    desc:"Check-in, front desk and concierge. We meet here for Sunday’s ride to Secret Beach at 1:15 PM." },
+    desc:"Check-in, front desk and concierge. We meet here for Sunday’s ride to Secret Beach at 1:15 PM.",
+    links:[["All resort activities","https://www.turtlebayexperiences.com/things-to-do/resort-activities"],["Surf and ocean activities","https://www.turtlebayexperiences.com/things-to-do/ocean-activities"],["Kids activities","https://www.turtlebayexperiences.com/things-to-do/kids-adventures"]] },
   { id:"meetings", short:"Ballrooms", kind:"event", name:"Kuilima Ballrooms + Meeting Rooms", sub:"Breakfast, business meetings, one-on-ones", x:48.8, y:26.8, inside:"k2",
     desc:"The ballroom wing is just north of the lobby. Breakfast and lunch are in Kuilima 3, the business meetings in Kuilima 2, and one-on-ones in the Maui and Moloka’i Rooms. Tap Go inside to see the exact rooms." },
   { id:"bayview", short:"Bay View Lawn", kind:"event", name:"Bay View Lawn", sub:"Saturday Welcome Reception", x:72.8, y:41.9,
@@ -1108,22 +1111,26 @@ const PLACES = [
   { id:"dining", kind:"eat", name:"Hotel restaurants", sub:"Alaia, Off The Lip and Ho’olana", x:47.8, y:34.2,
     desc:"The hotel’s dining is in the West Wing.",
     venues:[
-      { n:"Alaia", t:"Signature restaurant, eclectic", hrs:[[390,660],[1020,1260]], note:"No bathing suits. Reserve on OpenTable or call.", tel:"8082936020" },
-      { n:"Off The Lip", t:"Lobby bar", hrs:[[720,1350]], note:"Smart casual." },
-      { n:"Ho’olana", t:"Coffee house", hrs:[[330,960]] } ] },
+      { n:"Alaia", t:"Signature restaurant, eclectic", hrs:[[390,660],[1020,1260]], note:"No bathing suits. Reserve on OpenTable or call.", tel:"8082936020", links:[["Menu","https://www.turtlebayexperiences.com/dining/alaia"],["Reserve","https://www.opentable.com/restref/client/?restref=1189837&lang=en-US"]] },
+      { n:"Off The Lip", t:"Lobby bar", hrs:[[720,1350]], note:"Smart casual.", links:[["Menu","https://www.turtlebayexperiences.com/dining/OffTheLip"]] },
+      { n:"Ho’olana", t:"Coffee house", hrs:[[330,960]], links:[["Menu","https://www.turtlebayexperiences.com/dining/hoolana"]] } ],
+    links:[["In-room dining menu","https://www.turtlebayexperiences.com/dining/in-room"]] },
   { id:"poolbar", kind:"eat", name:"Sunset Pool Bar", sub:"On the pool deck", x:35.1, y:42.1,
-    desc:"Casual drinks and bites by the main pool.", venues:[ { n:"Sunset Pool Bar", t:"Pool deck", hrs:[[600,1200]] } ] },
+    desc:"Casual drinks and bites by the main pool.", venues:[ { n:"Sunset Pool Bar", t:"Pool deck", hrs:[[600,1200]], links:[["Menu","https://www.turtlebayexperiences.com/dining/sunset"]] } ] },
   { id:"beachhouse", kind:"eat", name:"Beach House by Roy Yamaguchi", sub:"Asian fusion at Kuilima Cove", x:64.5, y:40.3,
-    desc:"Casual dining on the cove.", venues:[ { n:"Beach House", t:"Asian fusion", hrs:[[690,870],[990,1260]], note:"Reserve on OpenTable or call.", tel:"8082937697" } ] },
+    desc:"Casual dining on the cove.", venues:[ { n:"Beach House", t:"Asian fusion", hrs:[[690,870],[990,1260]], note:"Reserve on OpenTable or call.", tel:"8082937697", links:[["Menu and reservations","https://www.royyamaguchi.com/beach-house-by-roy-yamaguchi"]] } ] },
   { id:"golf", kind:"eat", name:"Lei Lei’s Bar & Grill", sub:"At the golf clubhouse", x:59.0, y:89.3,
-    desc:"American fare at the Fazio course clubhouse, south of the hotel.", venues:[ { n:"Lei Lei’s", t:"Bar & grill", hrs:[[420,1260]], tel:"8082932662" } ] },
+    desc:"American fare at the Fazio course clubhouse, south of the hotel.", venues:[ { n:"Lei Lei’s", t:"Bar & grill", hrs:[[420,1260]], tel:"8082932662", links:[["Golf and tee times","https://www.turtlebayexperiences.com/things-to-do/golf"]] } ] },
   { id:"pools", kind:"relax", name:"Pools", sub:"Main, adult and keiki pools", x:44.8, y:41.3,
-    desc:"Main and Adult pools are open 7:00 AM to 10:00 PM. The Keiki pool is open 8:00 AM to 6:00 PM.", hrs:[[420,1320]] },
+    desc:"Main and Adult pools are open 7:00 AM to 10:00 PM. The Keiki pool is open 8:00 AM to 6:00 PM.", hrs:[[420,1320]],
+    links:[["Beaches and pools","https://www.turtlebayexperiences.com/things-to-do/beaches"]] },
   { id:"spa", kind:"relax", name:"Nalu Spa + Fitness", sub:"West Wing", x:42.3, y:31.6,
-    desc:"Nalu Spa is at pool level near the ocean. The fitness center is on the lobby level and open 24 hours." },
-  { id:"tennis", kind:"relax", name:"Tennis + pickleball", sub:"Courts near the bungalows", x:47.5, y:72.2, desc:"Tennis and pickleball courts." },
+    desc:"Nalu Spa is at pool level near the ocean. The fitness center is on the lobby level and open 24 hours.",
+    links:[["Spa menu (PDF)","https://www.turtlebayexperiences.com/sites/default/files/2026-10/TRCOTB_NaluSpaMenu_100926.pdf"],["October fitness classes (PDF)","https://www.turtlebayexperiences.com/sites/default/files/2026-10/October%20Fitness%20Schedule.pdf"]] },
+  { id:"tennis", kind:"relax", name:"Tennis + pickleball", sub:"Courts near the bungalows", x:47.5, y:72.2, desc:"Tennis and pickleball courts.", links:[["Courts and booking","https://www.turtlebayexperiences.com/things-to-do/pickleball-tennis"]] },
   { id:"stables", kind:"relax", name:"The Stables", sub:"Horseback riding, Paniolo Lawn", x:6.8, y:83.5,
-    desc:"Horseback riding and the Paniolo Lawn. About a 10-minute walk from the main resort." },
+    desc:"Horseback riding and the Paniolo Lawn. About a 10-minute walk from the main resort.",
+    links:[["Rides and booking","https://www.turtlebayexperiences.com/things-to-do/horseback-riding"]] },
   { id:"parking", kind:"move", name:"Valet + parking", sub:"Valet lot and hotel parking", x:57.5, y:58.8,
     desc:"Valet and self-park are both $48 a day. EV charging is available." },
   /* Inside the hotel (map 3). The resort's event and meeting space plan. */
@@ -1137,15 +1144,16 @@ const PLACES = [
     desc:"Reception and the concierge desk are here. Everything on this plan is a short walk from the lobby, and the ballrooms are straight back through the elevator atrium and the foyers." },
   { id:"concierge", map:3, kind:"move", name:"Concierge", sub:"Questions, reservations and rides", x:74.9, y:78.2, desc:"Ask here about restaurant reservations, activities and anything else you need." },
   { id:"alaia", map:3, kind:"eat", name:"Alaia", sub:"Signature restaurant", x:47.1, y:53.0, desc:"Hawaiian comfort fare with an ocean view.",
-    venues:[ { n:"Alaia", t:"Signature restaurant, eclectic", hrs:[[390,660],[1020,1260]], note:"No bathing suits. Reserve on OpenTable or call.", tel:"8082936020" } ] },
+    venues:[ { n:"Alaia", t:"Signature restaurant, eclectic", hrs:[[390,660],[1020,1260]], note:"No bathing suits. Reserve on OpenTable or call.", tel:"8082936020", links:[["Menu","https://www.turtlebayexperiences.com/dining/alaia"],["Reserve","https://www.opentable.com/restref/client/?restref=1189837&lang=en-US"]] } ] },
   { id:"offlip", map:3, kind:"eat", name:"Off The Lip", sub:"Lobby bar", x:62.0, y:69.6, desc:"The lobby bar, with shareable plates.",
-    venues:[ { n:"Off The Lip", t:"Lobby bar", hrs:[[720,1350]], note:"Smart casual." } ] },
+    venues:[ { n:"Off The Lip", t:"Lobby bar", hrs:[[720,1350]], note:"Smart casual.", links:[["Menu","https://www.turtlebayexperiences.com/dining/OffTheLip"]] } ] },
   { id:"hoolana", map:3, kind:"eat", name:"Ho’olana", sub:"Coffee house", x:74.7, y:62.6, desc:"Coffee and breakfast on the go.",
-    venues:[ { n:"Ho’olana", t:"Coffee house", hrs:[[330,960]] } ] },
+    venues:[ { n:"Ho’olana", t:"Coffee house", hrs:[[330,960]], links:[["Menu","https://www.turtlebayexperiences.com/dining/hoolana"]] } ] },
   { id:"poolbarin", map:3, kind:"eat", name:"Sunset Pool Bar", sub:"On the pool deck", x:14.1, y:44.4, desc:"Casual drinks and bites by the main pool.",
-    venues:[ { n:"Sunset Pool Bar", t:"Pool deck", hrs:[[600,1200]] } ] },
+    venues:[ { n:"Sunset Pool Bar", t:"Pool deck", hrs:[[600,1200]], links:[["Menu","https://www.turtlebayexperiences.com/dining/sunset"]] } ] },
   { id:"spain", map:3, kind:"relax", name:"Nalu Spa + Fitness", sub:"West side of the lobby level", x:28.9, y:30.0,
-    desc:"The spa and relaxation area, and the fitness center, which is open 24 hours." },
+    desc:"The spa and relaxation area, and the fitness center, which is open 24 hours.",
+    links:[["Spa menu (PDF)","https://www.turtlebayexperiences.com/sites/default/files/2026-10/TRCOTB_NaluSpaMenu_100926.pdf"],["October fitness classes (PDF)","https://www.turtlebayexperiences.com/sites/default/files/2026-10/October%20Fitness%20Schedule.pdf"]] },
   { id:"restrooms", map:3, kind:"move", name:"Restrooms by the meeting rooms", sub:"East of the Kahuku Foyer", x:78.6, y:42.0, desc:"The closest restrooms to the Maui and Moloka’i Rooms and the Kuilima Foyer." },
   { id:"bizcenter", map:3, kind:"move", name:"Business Center", sub:"In the elevator atrium", x:70.8, y:47.0, desc:"Printing and a quiet place to work." },
   { id:"valet", map:3, kind:"move", name:"Valet", sub:"At the porte-cochère", x:61.8, y:90.5, desc:"Valet is $48 a day." }
@@ -1211,16 +1219,20 @@ const LINKEDIN = {
   "adam-longacre": "https://www.linkedin.com/in/adamlongacre",
   "matt-wren": "https://www.linkedin.com/in/mattwren",
   "sid-merchant": "https://www.linkedin.com/in/sidmerchant",
+  "gary-palenbaum": "https://www.linkedin.com/in/gary-palenbaum-273358",
   "christopher-glessner": "https://www.linkedin.com/in/christopherglessner",
   "greg-starr": "https://www.linkedin.com/in/greg-starr-33aab13",
   "chad-stanfield": "https://www.linkedin.com/in/chad-stanfield-1a1561205",
   "larry-pullen": "https://www.linkedin.com/in/larry-pullen-hsc",
   "arnaldo-andrade-neto": "https://www.linkedin.com/in/arnaldoandradeneto",
   "tracy-holtz": "https://www.linkedin.com/in/tracy-holtz-85b5661",
+  "jason-lambiris": "https://www.linkedin.com/in/jasonlambiris",
+  "cesar-enciso": "https://www.linkedin.com/in/cesar-enciso-2301836",
   "rick-trujillo": "https://www.linkedin.com/in/ricktrujilloexecutive",
   "chuck-kiessling": "https://www.linkedin.com/in/charleskiessling",
   "david-branscome": "https://www.linkedin.com/in/david-branscome",
-  "steve-groth": "https://www.linkedin.com/in/steve-groth-32b711149"
+  "steve-groth": "https://www.linkedin.com/in/steve-groth-32b711149",
+  "ken-lince": "https://www.linkedin.com/in/klince"
 };
 
 /* ===================================================================== */
@@ -1698,18 +1710,20 @@ function selectPlace(id, opts = {}){
   if(selPlace && opts.center) centerOn(PLACE[selPlace].x, PLACE[selPlace].y, Math.max(mv.s, mapNo === 3 ? 0.85 : 0.62), true);
   renderMapInfo();
 }
+const EXTSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+const linkBtns = ls => (ls && ls.length) ? `<div class="btnrow lnks">${ls.map(([lab, url]) => `<a class="pbtn" href="${esc(url)}" target="_blank" rel="noopener">${EXTSVG}${esc(lab)}</a>`).join("")}</div>` : "";
 function renderMapInfo(){
   const box = $("#mapinfo"); if(!box) return;
   if(!selPlace || PLACE[selPlace].map !== mapNo){ box.hidden = true; box.innerHTML = ""; return; }
   box.hidden = false; box.scrollTop = 0;
   const p = PLACE[selPlace], now = (venueNow() || {}).min;
-  const venues = (p.venues || []).map(v => `<div class="vn"><b>${esc(v.n)}</b><small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}</div>`).join("");
+  const venues = (p.venues || []).map(v => `<div class="vn"><b>${esc(v.n)}</b><small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}${linkBtns(v.links)}</div>`).join("");
   const all = sessionsAt(p.id), vn = venueNow();
   const ahead = vn ? all.filter(r => r.d.date > vn.date || (r.d.date === vn.date && (!r.x.start || sessionEnd(r.x) > vn.min))) : all;
   const shown = (ahead.length ? ahead : all).slice(0, 3);
   const here = shown.map(r => `<button type="button" data-agenda="${r.di}"><small>${esc(r.d.label)}${r.x.start ? ", " + fmtTime(r.x.start) : ""}</small>${esc(r.x.title)}</button>`).join("")
     + (all.length > shown.length ? `<button type="button" data-agenda="${shown[0].di}"><small>${all.length - shown.length} more</small>See them in the agenda</button>` : "");
-  box.innerHTML = `<h3>${esc(p.name)}</h3><p class="sub">${esc(p.sub)}</p><p>${esc(p.desc)}</p>${p.hrs ? openChip(p.hrs, now) : ""}${venues}${here ? `<div class="here"><span class="sub" style="margin:0">${ahead.length ? "Coming up here" : "On your agenda here"}</span>${here}</div>` : ""}${p.inside ? `<div class="btnrow"><button type="button" class="pbtn pri" data-map="${p.inside}">${PINSVG}Go inside</button></div>` : ""}${p.outside ? `<div class="btnrow"><button type="button" class="pbtn" data-map="${p.outside}">${PINSVG}Show on resort map</button></div>` : ""}<button type="button" class="done" data-pinclose aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+  box.innerHTML = `<h3>${esc(p.name)}</h3><p class="sub">${esc(p.sub)}</p><p>${esc(p.desc)}</p>${p.hrs ? openChip(p.hrs, now) : ""}${venues}${linkBtns(p.links)}${here ? `<div class="here"><span class="sub" style="margin:0">${ahead.length ? "Coming up here" : "On your agenda here"}</span>${here}</div>` : ""}${p.inside ? `<div class="btnrow"><button type="button" class="pbtn pri" data-map="${p.inside}">${PINSVG}Go inside</button></div>` : ""}${p.outside ? `<div class="btnrow"><button type="button" class="pbtn" data-map="${p.outside}">${PINSVG}Show on resort map</button></div>` : ""}<button type="button" class="done" data-pinclose aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
 }
 function renderResortLive(){
   const now = venueNow(), st = agendaState(), sun = now ? sunTimes(now.date) : null;

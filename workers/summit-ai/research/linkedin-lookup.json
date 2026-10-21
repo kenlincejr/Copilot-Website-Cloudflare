@@ -171,9 +171,10 @@
   "id": "gary-palenbaum",
   "name": "Gary Palenbaum",
   "url": "https://www.linkedin.com/in/gary-palenbaum-273358",
-  "tier": "B-held",
+  "tier": "A-loaded",
   "evidence": "Result \"Gary Palenbaum - Greenville-Spartanburg-Anderson, SC\"; profile/posts show EVP at TD SYNNEX (EVP Revenue & Partner Success / Sales & Vendor Mgmt).",
-  "alternatives": "Unusual name; no other candidate seen."
+  "alternatives": "Unusual name; no other candidate seen.",
+  "note": "Indirect evidence (same-slug posts naming the company); loaded at Ken's direction, Ken to verify."
  },
  {
   "id": "christopher-glessner",
@@ -267,9 +268,10 @@
   "id": "jason-lambiris",
   "name": "Jason Lambiris",
   "url": "https://www.linkedin.com/in/jasonlambiris",
-  "tier": "B-held",
+  "tier": "A-loaded",
   "evidence": "Profile 'Jason Lambiris - Detroit, Michigan' (/in/jasonlambiris); same-slug posts: 'Jason Lambiris on LinkedIn: Apex Digital Solutions Recognized as a Leading Managed Services Provider'",
-  "alternatives": ""
+  "alternatives": "",
+  "note": "Indirect evidence (same-slug posts naming the company); loaded at Ken's direction, Ken to verify."
  },
  {
   "id": "christopher-kitsos",
@@ -283,9 +285,10 @@
   "id": "cesar-enciso",
   "name": "Cesar Enciso",
   "url": "https://www.linkedin.com/in/cesar-enciso-2301836",
-  "tier": "B-held",
+  "tier": "A-loaded",
   "evidence": "'Cesar Enciso on LinkedIn: As of this week, EVOTEK surpassed $400M in revenue' (slug cesar-enciso-2301836); profile described as Founder and CEO at EVOTEK",
-  "alternatives": ""
+  "alternatives": "",
+  "note": "Indirect evidence (same-slug posts naming the company); loaded at Ken's direction, Ken to verify."
  },
  {
   "id": "rick-trujillo",
@@ -339,8 +342,9 @@
   "id": "ken-lince",
   "name": "Ken Lince",
   "url": "https://www.linkedin.com/in/klince",
-  "tier": "B-held",
+  "tier": "A-loaded",
   "evidence": "'Ken Lince, Jr. on LinkedIn: SYNNEX and Tech Data Complete Merger to become TD SYNNEX' (/posts/klince_ slug); TD SYNNEX engineering leader",
-  "alternatives": ""
+  "alternatives": "",
+  "note": "Indirect evidence (same-slug posts naming the company); loaded at Ken's direction, Ken to verify."
  }
 ]
