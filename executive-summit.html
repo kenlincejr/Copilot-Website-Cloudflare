@@ -115,7 +115,8 @@ button{font:inherit;color:inherit}
 .picks img{width:40px;height:40px;border-radius:50%;object-fit:cover}
 .picks b{display:block;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.2}
 .picks small{display:block;font-size:14px;color:var(--mute);line-height:1.3}
-.greet{margin-top:18px}
+.greet{margin-top:18px;display:flex;align-items:center;gap:14px}
+.greet img{flex:0 0 auto;width:64px;height:64px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}
 .greet h2{font-family:var(--display);font-weight:900;font-stretch:100%;font-size:30px;line-height:1.05;margin:0}
 .greet p{margin:6px 0 0;color:var(--mute)}
 .switch{display:inline-flex;align-items:center;min-height:44px;border:0;background:none;padding:0;color:var(--teal);font-weight:650;cursor:pointer;font-size:15px}
@@ -743,7 +744,7 @@ function renderHome(){
     h += upNextBlock();
   } else {
     const intros = (p.meet||[]).length;
-    h += `<div class="greet"><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div>`;
+    h += `<div class="greet" style="--ring:${gColor(p.g)}"><img src="${photo(p.id)}" alt="" width="64" height="64"><div><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div></div>`;
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
     h += upNextBlock();
   }
