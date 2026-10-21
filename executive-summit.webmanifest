@@ -1,0 +1,15 @@
+{
+  "name": "Executive Summit Guide",
+  "short_name": "Summit",
+  "id": "/executive-summit.html",
+  "start_url": "/executive-summit.html",
+  "scope": "/executive-summit.html",
+  "display": "standalone",
+  "background_color": "#004A54",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/assets/summit/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/summit/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/summit/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
