@@ -654,10 +654,38 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 #p-mine .fform .btnrow{margin-top:16px}
 #p-lisec #p-li{text-decoration:none}
 #p-lisec[hidden]{display:none}
-.starters{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
-.starters li{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--sunk);font-size:15.5px;line-height:1.45}
-.starters li span{flex:1}
-.starters li button{all:unset;cursor:pointer;flex:0 0 auto;min-height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--rule);background:var(--surface);color:var(--teal);font-weight:700;font-size:13.5px;display:inline-flex;align-items:center}
+.cgcta{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:18px;color:#fff;background:radial-gradient(120% 90% at 100% 0%,rgba(242,194,48,.24),transparent 55%),linear-gradient(160deg,#004a54,#087d8c)}
+.cgcta[hidden]{display:none}
+.cgcta b{display:block;font-family:var(--display);font-weight:800;font-size:19px;line-height:1.2}
+.cgcta span{display:block;margin-top:4px;font-size:14.5px;line-height:1.4;color:rgba(255,255,255,.9)}
+.cgcta .pbtn.pri{align-self:flex-start;background:#f2c230;border-color:#f2c230;color:#15181a}
+.cgcta .pbtn.pri:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.cg{padding:16px;border-radius:18px;border:1.5px solid var(--rule);background:var(--surface)}
+.cg .cg-kick{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+.cg .cg-head{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:18.5px;line-height:1.28;text-wrap:pretty}
+.cg h5{margin:18px 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.cg-list,.cg-diff{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cg-list li,.cg-diff li{padding:11px 12px;border-radius:12px;background:var(--sunk);font-size:15px;line-height:1.45;border-left:4px solid var(--teal)}
+.cg-diff li{border-left-color:var(--g-microsoft)}
+.cg-list li span{display:block}
+.cg-list small{display:inline-block;margin-top:7px;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--teal) 14%,transparent);color:var(--teal);font-size:12px;font-weight:750}
+.cg-op{position:relative;margin:0 0 8px;padding:12px 14px 12px 40px;border-radius:14px;background:color-mix(in srgb,var(--taxi) 18%,var(--surface));font-size:15.5px;line-height:1.45;font-weight:550}
+.cg-op::before{content:"\201C";position:absolute;left:11px;top:4px;font-family:Georgia,"Times New Roman",serif;font-size:44px;line-height:1;color:var(--taxi-ink)}
+.cg-news{margin-top:14px;padding:11px 12px;border-radius:12px;border:1.5px dashed var(--rule)}
+.cg-news b{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--taxi-ink)}
+.cg-news p{margin:4px 0 0;font-size:14.5px;line-height:1.45}
+.cg-news small{display:block;margin-top:4px;font-size:12.5px;color:var(--mute)}
+.cg .btnrow{margin-top:14px}
+.cg .fine{margin-top:12px}
+.cg-wait{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-radius:18px;background:var(--sunk);font-weight:650;font-size:15px}
+.cg-wait .dots{display:inline-flex;gap:5px}
+.cg-wait .dots i{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:cgb 1.2s infinite ease-in-out}
+.cg-wait .dots i:nth-child(2){animation-delay:.15s}
+.cg-wait .dots i:nth-child(3){animation-delay:.3s}
+@keyframes cgb{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){.cg-wait .dots i{animation:none}}
+.cg-need{padding:14px;border-radius:14px;background:var(--sunk)}
+.cg-need p{margin:0 0 10px;font-size:15px;line-height:1.45}
 /* Profile: where this person is speaking */
 .p-sess{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .p-sess button{all:unset;cursor:pointer;box-sizing:border-box;display:block;width:100%;padding:10px 14px;border-radius:12px;background:var(--sunk)}
@@ -1027,7 +1055,7 @@ html.lock,html.lock body{overflow:hidden}
         <button id="p-share" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share profile</span></button>
       </div>
       <div class="p-sec" id="p-sessions" hidden><h3>On the agenda</h3><ul class="p-sess" id="p-sess-list"></ul></div>
-      <div class="p-sec" id="p-starters" hidden><button type="button" class="pbtn" id="p-starters-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Conversation starters</button><ul class="starters" id="p-starters-list"></ul><p class="fine" id="p-starters-note" hidden></p></div>
+      <div class="p-sec" id="p-starters" hidden><div class="cgcta" id="p-cgcta"><div><b>Why you two should talk</b><span>Compares your profile and the topics you added with theirs, and finds real common ground.</span></div><button type="button" class="pbtn pri" id="p-starters-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Find our common ground</button></div><div id="p-connect" aria-live="polite"></div><p class="fine" id="p-starters-note" hidden></p></div>
       <div class="p-sec" id="p-ask"><h3>Ask me about</h3><ul class="tags" id="p-tags"></ul></div>
       <div class="p-sec" id="p-topics" hidden><h3 id="p-topics-h">Would like to talk about</h3><p class="note" id="p-topics-note">In their own words.</p><ul class="tags" id="p-topics-list"></ul></div>
       <div class="p-sec" id="p-lisec" hidden><a class="pbtn" id="p-li" href="https://www.linkedin.com/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.2 8.6H2V21h3.2zM3.6 3a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8zM21.5 14.1c0-3.3-1.8-5.7-4.7-5.7-1.5 0-2.6.8-3.1 1.6V8.6H10.5V21h3.2v-6.4c0-1.5.7-2.6 2-2.6 1.4 0 2 1 2 2.6V21h3.2z"/></svg>LinkedIn profile</a></div>
@@ -2482,20 +2510,45 @@ document.addEventListener("click", e => {
 });
 if(AI_ON){ const tab = $("#tab-ask"); if(tab) tab.hidden = false; }
 
-/* Conversation starters on a profile, from the same assistant */
-async function loadStarters(){
-  const id = current, list = $("#p-starters-list"), note = $("#p-starters-note"), btn = $("#p-starters-btn");
-  note.hidden = true; list.innerHTML = ""; btn.disabled = true; btn.textContent = "Thinking…";
-  let status = 0, body = {};
-  try { ({ status, body } = await askCall({ mode:"starters", personId:id })); } catch(e){ status = 0; }
-  btn.disabled = false; btn.innerHTML = SPARKLE + "Conversation starters"; if(current !== id) return;
-  if(status === 200 && body.starters){ list.innerHTML = body.starters.map(t => `<li><span>${esc(t)}</span><button type="button" data-copy="${esc(t)}">Copy</button></li>`).join(""); }
-  else { note.textContent = askErr(status, body); note.hidden = false; }
+/* Common ground on a profile: a stronger model compares the two people and writes a short brief */
+const CGKEY = "es-oahu-2026-connect", CGTTL = 12 * 3600 * 1000;
+const cgRead = () => { try { return JSON.parse(localStorage.getItem(CGKEY) || "{}"); } catch(e){ return {}; } };
+const cgSave = (k, r) => { try { const all = cgRead(); all[k] = { r, ts: Date.now() }; localStorage.setItem(CGKEY, JSON.stringify(all)); } catch(e){} };
+const CGWAIT = ["Reading both profiles", "Looking for real overlap", "Checking for fresh news", "Writing your brief"];
+function cgHtml(r, cached){
+  const p = byId[current];
+  return `<div class="cg"><span class="cg-kick">You and ${esc(p ? first(p) : "them")}</span><p class="cg-head">${esc(r.headline)}</p>
+    <h5>Common ground</h5><ul class="cg-list">${(r.common || []).map(c => `<li><span>${esc(c.point)}</span>${c.source ? `<small>${esc(c.source)}</small>` : ""}</li>`).join("")}</ul>
+    ${(r.different || []).length ? `<h5>Where you differ, usefully</h5><ul class="cg-diff">${r.different.map(d => `<li>${esc(d.point)}</li>`).join("")}</ul>` : ""}
+    <h5>Try opening with</h5>${(r.openers || []).map(o => `<blockquote class="cg-op">${esc(o)}</blockquote>`).join("")}
+    ${r.news ? `<div class="cg-news"><b>Fresh from the web</b><p>${esc(r.news.text)}</p>${r.news.site ? `<small>${esc(r.news.site)}</small>` : ""}</div>` : ""}
+    <div class="btnrow"><button type="button" class="pbtn" data-cg-more>${SPARKLE}Dig deeper</button><button type="button" class="pbtn" data-cg-refresh>Refresh</button></div>
+    <p class="fine">${cached ? "Saved from earlier today. " : ""}Built from both profiles, the topics people added and public sources. Worth a quick check before you quote it.</p></div>`;
 }
-document.addEventListener("click", async e => {
-  if(e.target.closest("#p-starters-btn")){ loadStarters(); return; }
-  const c = e.target.closest("[data-copy]"); if(!c) return;
-  try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent = "Copied"; setTimeout(() => { c.textContent = "Copy"; }, 1500); } catch(x){ toast("Press and hold the text to copy it"); }
+function cgShow(id){ // opening a profile shows a saved brief if there is a recent one
+  const box = $("#p-connect"), c = me && cgRead()[me + ">" + id], fresh = c && Date.now() - c.ts < CGTTL;
+  $("#p-starters-note").hidden = true;
+  box.innerHTML = fresh ? cgHtml(c.r, true) : "";
+  $("#p-cgcta").hidden = !!fresh;
+}
+async function loadConnect(){
+  const id = current, box = $("#p-connect"), note = $("#p-starters-note"), cta = $("#p-cgcta");
+  note.hidden = true;
+  if(!me){ box.innerHTML = `<div class="cg-need"><p>Pick your name on Home first, so we know who to compare.</p><button type="button" class="pbtn pri" data-cg-home>Find my name</button></div>`; return; }
+  cta.hidden = true; let step = 0;
+  box.innerHTML = `<div class="cg-wait" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="cg-wait-t">${CGWAIT[0]}</span></div>`;
+  const timer = setInterval(() => { const w = $("#cg-wait-t"); if(w) w.textContent = CGWAIT[Math.min(++step, CGWAIT.length - 1)]; }, 2800);
+  let status = 0, body = {};
+  try { ({ status, body } = await askCall({ mode:"connect", personId:id })); } catch(e){ status = 0; }
+  clearInterval(timer); if(current !== id) return;
+  if(status === 200 && body.headline){ cgSave(me + ">" + id, body); box.innerHTML = cgHtml(body, false); track("view", "connect"); }
+  else { box.innerHTML = ""; cta.hidden = false; note.textContent = askErr(status, body); note.hidden = false; }
+}
+document.addEventListener("click", e => {
+  if(e.target.closest("#p-starters-btn") || e.target.closest("[data-cg-refresh]")){ loadConnect(); return; }
+  if(e.target.closest("[data-cg-home]")){ closePerson(); setView("home"); return; }
+  if(e.target.closest("[data-cg-more]")){ const p = byId[current]; if(!p) return; closePerson(); setView("ask");
+    sendAsk(`What else should I know before I talk with ${p.n} of ${p.c}? Where could we help each other?`.slice(0, 300)); }
 });
 
 /* ---------- Conversation topics: each attendee writes up to three things they'd like to talk about ---------- */
@@ -2619,7 +2672,7 @@ function fillSheet(id){
   $("#p-sess-list").innerHTML = sess.map(r => `<li><button type="button" data-sess="${r.di}"><span class="w">${esc(r.d.label)}${r.x.start?`, ${fmtTime(r.x.start)}`:""}</span><b>${esc(r.x.title)}</b></button></li>`).join("");
   $("#p-ask").hidden = !(p.ask||[]).length;
   renderTopics(id); renderMine(id);
-  { const st = $("#p-starters"); st.hidden = !(AI_ON && id !== me); $("#p-starters-list").innerHTML = ""; $("#p-starters-note").hidden = true; }
+  { const st = $("#p-starters"); st.hidden = !(AI_ON && id !== me); if(!st.hidden) cgShow(id); }
   $("#p-meet").hidden = !(p.meet||[]).length;
   $("#p-meet-h").textContent = `Worth meeting for ${first(p)}`;
   $("#p-meet-list").innerHTML = meetRows(p);
