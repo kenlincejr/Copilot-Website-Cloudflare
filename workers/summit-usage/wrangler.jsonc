@@ -1,0 +1,13 @@
+// summit-usage: anonymous usage counts for the Executive Summit guide.
+// Deploy with `npx wrangler deploy` from this folder. Reads and writes the table
+// summit_events in the existing D1 database playbook_search (schema.sql).
+{
+  "name": "summit-usage",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "d1_databases": [
+    { "binding": "DB", "database_name": "playbook_search", "database_id": "1cb62c80-77f0-4e10-b6de-f27d39a869b0" }
+  ],
+  "observability": { "enabled": true }
+}

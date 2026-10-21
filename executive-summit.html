@@ -304,6 +304,56 @@ button{font:inherit;color:inherit}
 .rhelp .card p+p{margin-top:6px}
 .rhelp .card b{font-weight:750}
 .fine{margin:18px 0 0;font-size:13px;line-height:1.45;color:var(--mute)}
+/* Today at a glance, contact card */
+#glance:not(:empty),#connect:not(:empty){margin-top:16px}
+.glance{padding:16px;border-radius:18px;background:var(--sunk)}
+.glance .gh{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.glance .gh b{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:18px;line-height:1.2}
+.glance .gh span{font-size:13px;color:var(--mute);white-space:nowrap}
+.glance .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.glance .tile{padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--rule)}
+.glance .tile small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
+.glance .tile b{display:block;font-family:var(--display);font-weight:800;font-size:22px;line-height:1.15;margin-top:3px;font-variant-numeric:tabular-nums}
+.glance .tile span{display:block;font-size:13.5px;line-height:1.35;color:var(--mute);margin-top:2px}
+.glance .tile.wait b{color:var(--mute);font-size:16px}
+.glance .sunrow{margin-top:12px;padding:10px 12px 8px;border-radius:14px;background:var(--surface);border:1px solid var(--rule)}
+.glance .arc{display:block;width:100%;height:auto;max-height:64px}
+.glance .arc .hz{stroke:var(--rule);stroke-width:1.5}
+.glance .arc .pa{fill:none;stroke:var(--mute);stroke-width:1.4;stroke-dasharray:3 4;opacity:.7}
+.glance .arc .sun{fill:#f2c230;stroke:#fff;stroke-width:1.5}
+.glance .arc .sun.dim{fill:var(--rule);stroke:none}
+.glance .sunrow .st{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.glance .sunrow .st b{color:var(--ink);font-weight:750}
+.glance .sunrow .sc{margin:2px 0 0;text-align:center;font-size:13.5px;font-weight:650;color:var(--ink)}
+.glance .gl{margin:12px 0 0;font-size:14.5px;line-height:1.45}
+.glance .gl b{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-right:6px}
+.glance .fine{margin:10px 0 0;font-size:12px}
+.connect{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:18px;border:1.5px solid var(--rule)}
+.connect .tx{flex:1;min-width:0}
+.connect b{display:block;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.2}
+.connect span{display:block;font-size:14px;line-height:1.35;color:var(--mute);margin-top:2px}
+.connect button{all:unset;cursor:pointer;flex:0 0 auto;min-height:46px;padding:0 16px;border-radius:12px;background:var(--teal);color:#fff;font-weight:750;font-size:15px;display:inline-flex;align-items:center;gap:8px}
+:root[data-theme="dark"] .connect button{color:#0f1416}
+.connect button svg{width:20px;height:20px}
+.connect button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+#cscrim{z-index:46}
+#cardsheet{z-index:47}
+body.card-open #cscrim{opacity:1;pointer-events:auto}
+body.card-open #cardsheet{transform:translateY(0);pointer-events:auto}
+@media (min-width:700px){ body.card-open #cardsheet{transform:translateY(-50%);opacity:1} }
+#cardsheet .sheet-body{padding-bottom:24px}
+.cform label{display:block;margin-top:12px;font-size:13px;font-weight:700;color:var(--mute)}
+.cform input{display:block;box-sizing:border-box;width:100%;min-height:48px;margin-top:4px;padding:0 14px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+.cform input:focus{outline:3px solid var(--teal);outline-offset:1px}
+.cform .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cform .err{margin:10px 0 0;color:#b3261e;font-size:14px;font-weight:650}
+:root[data-theme="dark"] .cform .err{color:#ffb4ab}
+.cqr{display:grid;justify-items:center;text-align:center;padding-top:6px}
+.cqr .qr{width:min(78vw,300px);aspect-ratio:1;background:#fff;border-radius:16px;padding:8px;box-sizing:border-box;box-shadow:0 0 0 1.5px var(--rule)}
+.cqr .qr svg{display:block;width:100%;height:100%}
+.cqr h2{font-family:var(--display);font-weight:900;font-size:24px;line-height:1.1;margin:16px 0 0}
+.cqr p{margin:4px 0 0;color:var(--mute);font-size:15px;line-height:1.4}
+.cqr .how{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:14.5px;text-align:left}
 /* Profile: where this person is speaking */
 .p-sess{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .p-sess button{all:unset;cursor:pointer;box-sizing:border-box;display:block;width:100%;padding:10px 14px;border-radius:12px;background:var(--sunk)}
@@ -622,6 +672,12 @@ html.lock,html.lock body{overflow:hidden}
 </nav>
 
 <div id="sheetroot">
+  <div class="scrim" id="cscrim"></div>
+  <div class="sheet" id="cardsheet" role="dialog" aria-modal="true" aria-labelledby="c-title" hidden>
+    <div class="grab" aria-hidden="true"></div>
+    <button class="x" id="cclose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="sheet-body" id="cbody"></div>
+  </div>
   <div class="scrim" id="scrim"></div>
   <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="p-name" hidden>
     <div class="grab" id="grab" aria-hidden="true"></div>
@@ -714,6 +770,10 @@ const PHOTOS = {
 };
 </script>
 <script>
+/* qrcode-generator 1.4.4 by Kazuhiko Arase, MIT license. https://github.com/kazuhikoarase/qrcode-generator */
+var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(l=4*u+17),e(0,0),e(l-7,0),e(0,l-7),i(),o(),v(t,r),7<=u&&h(t),null==n&&(n=w(u,f,c)),d(n,r)}var u=t,f=y[r],g=null,l=0,n=null,c=[],s={},e=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||l<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||l<=r+n||(g[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},o=function(){for(var t=8;t<l-8;t+=1)null==g[t][6]&&(g[t][6]=t%2==0);for(var r=8;r<l-8;r+=1)null==g[6][r]&&(g[6][r]=r%2==0)},i=function(){for(var t=B.getPatternPosition(u),r=0;r<t.length;r+=1)for(var e=0;e<t.length;e+=1){var n=t[r],o=t[e];if(null==g[n][o])for(var i=-2;i<=2;i+=1)for(var a=-2;a<=2;a+=1)g[n+i][o+a]=-2==i||2==i||-2==a||2==a||0==i&&0==a}},h=function(t){for(var r=B.getBCHTypeNumber(u),e=0;e<18;e+=1){var n=!t&&1==(r>>e&1);g[Math.floor(e/3)][e%3+l-8-3]=n}for(e=0;e<18;e+=1){n=!t&&1==(r>>e&1);g[e%3+l-8-3][Math.floor(e/3)]=n}},v=function(t,r){for(var e=f<<3|r,n=B.getBCHTypeInfo(e),o=0;o<15;o+=1){var i=!t&&1==(n>>o&1);o<6?g[o][8]=i:o<8?g[o+1][8]=i:g[l-15+o][8]=i}for(o=0;o<15;o+=1){i=!t&&1==(n>>o&1);o<8?g[8][l-o-1]=i:o<9?g[8][15-o-1+1]=i:g[8][15-o-1]=i}g[l-8][8]=!t},d=function(t,r){for(var e=-1,n=l-1,o=7,i=0,a=B.getMaskFunction(r),u=l-1;0<u;u-=2)for(6==u&&(u-=1);;){for(var f=0;f<2;f+=1)if(null==g[n][u-f]){var c=!1;i<t.length&&(c=1==(t[i]>>>o&1)),a(n,u-f)&&(c=!c),g[n][u-f]=c,-1==(o-=1)&&(i+=1,o=7)}if((n+=e)<0||l<=n){n-=e,e=-e;break}}},w=function(t,r,e){for(var n=b.getRSBlocks(t,r),o=M(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=C(i[u],l.getLength()-1).mod(l);a[u]=new Array(l.getLength()-1);for(g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=0<=s?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};s.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=x(t);break;case"Alphanumeric":e=m(t);break;case"Byte":e=L(t);break;case"Kanji":e=D(t);break;default:throw"mode:"+r}c.push(e),n=null},s.isDark=function(t,r){if(t<0||l<=t||r<0||l<=r)throw t+","+r;return g[t][r]},s.getModuleCount=function(){return l},s.make=function(){if(u<1){for(var t=1;t<40;t++){for(var r=b.getRSBlocks(t,f),e=M(),n=0;n<c.length;n++){var o=c[n];e.put(o.getMode(),4),e.put(o.getLength(),B.getLengthInBits(o.getMode(),t)),o.write(e)}var i=0;for(n=0;n<r.length;n++)i+=r[n].dataCount;if(e.getLengthInBits()<=8*i)break}u=t}a(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){a(!0,e);var n=B.getLostPoint(s);(0==e||n<t)&&(t=n,r=e)}return r}())},s.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<s.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<s.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=s.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},s.createSvgTag=function(t,r,e,n){var o={};"object"==typeof t&&(t=(o=t).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,f,c=s.getModuleCount()*t+2*r,g="";for(f="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",g+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',g+=o.scalable?"":' width="'+c+'px" height="'+c+'px"',g+=' viewBox="0 0 '+c+" "+c+'" ',g+=' preserveAspectRatio="xMinYMin meet"',g+=n.text||e.text?' role="img" aria-labelledby="'+p([n.id,e.id].join(" ").trim())+'"':"",g+=">",g+=n.text?'<title id="'+p(n.id)+'">'+p(n.text)+"</title>":"",g+=e.text?'<description id="'+p(e.id)+'">'+p(e.text)+"</description>":"",g+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',g+='<path d="',a=0;a<s.getModuleCount();a+=1)for(u=a*t+r,i=0;i<s.getModuleCount();i+=1)s.isDark(a,i)&&(g+="M"+(i*t+r)+","+u+f);return g+='" stroke="transparent" fill="black"/>',g+="</svg>"},s.createDataURL=function(o,t){o=o||2,t=void 0===t?4*o:t;var r=s.getModuleCount()*o+2*t,i=t,a=r-t;return I(r,r,function(t,r){if(i<=t&&t<a&&i<=r&&r<a){var e=Math.floor((t-i)/o),n=Math.floor((r-i)/o);return s.isDark(n,e)?0:1}return 1})},s.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=s.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=s.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=p(e),o+='"'),o+="/>"};var p=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return s.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*s.getModuleCount()+2*t,u=t,f=a-t,c={"██":"█","█ ":"▀"," █":"▄","  ":" "},g={"██":"▀","█ ":"▀"," █":" ","  ":" "},l="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<f&&u<=r&&r<f&&s.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<f&&u<=r+1&&r+1<f&&s.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",l+=t<1&&f<=r+1?g[i]:c[i];l+="\n"}return a%2&&0<t?l.substring(0,l.length-a-1)+Array(1+a).join("▀"):l.substring(0,l.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=s.getModuleCount()*t+2*r,u=r,f=a-r,c=Array(t+1).join("██"),g=Array(t+1).join("  "),l="",h="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),h="",n=0;n<a;n+=1)i=1,u<=n&&n<f&&u<=e&&e<f&&s.isDark(o,Math.floor((n-u)/t))&&(i=0),h+=i?c:g;for(o=0;o<t;o+=1)l+=h+"\n"}return l.substring(0,l.length-1)},s.renderTo2dContext=function(t,r){r=r||2;for(var e=s.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=s.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},s}i.stringToBytes=(i.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,i.createStringToBytes=function(u,f){var i=function(){function t(){var t=r.read();if(-1==t)throw"eof";return t}for(var r=S(u),e=0,n={};;){var o=r.read();if(-1==o)break;var i=t(),a=t()<<8|t();n[String.fromCharCode(o<<8|i)]=a,e+=1}if(e!=f)throw e+" != "+f;return n}(),a="?".charCodeAt(0);return function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);if(n<128)r.push(n);else{var o=i[t.charAt(e)];"number"==typeof o?(255&o)==o?r.push(o):(r.push(o>>>8),r.push(255&o)):r.push(a)}}return r}};var r,t,a=1,u=2,o=4,f=8,y={L:1,M:0,Q:3,H:2},e=0,n=1,c=2,g=3,l=4,h=5,s=6,v=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],(t={}).getBCHTypeInfo=function(t){for(var r=t<<10;0<=d(r)-d(1335);)r^=1335<<d(r)-d(1335);return 21522^(t<<10|r)},t.getBCHTypeNumber=function(t){for(var r=t<<12;0<=d(r)-d(7973);)r^=7973<<d(r)-d(7973);return t<<12|r},t.getPatternPosition=function(t){return r[t-1]},t.getMaskFunction=function(t){switch(t){case e:return function(t,r){return(t+r)%2==0};case n:return function(t,r){return t%2==0};case c:return function(t,r){return r%3==0};case g:return function(t,r){return(t+r)%3==0};case l:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case h:return function(t,r){return t*r%2+t*r%3==0};case s:return function(t,r){return(t*r%2+t*r%3)%2==0};case v:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},t.getErrorCorrectPolynomial=function(t){for(var r=C([1],0),e=0;e<t;e+=1)r=r.multiply(C([1,w.gexp(e)],0));return r},t.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case o:case f:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case o:return 16;case f:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case o:return 16;case f:return 12;default:throw"mode:"+t}}},t.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);5<i&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},t);function d(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r}var w=function(){for(var r=new Array(256),e=new Array(256),t=0;t<8;t+=1)r[t]=1<<t;for(t=8;t<256;t+=1)r[t]=r[t-4]^r[t-5]^r[t-6]^r[t-8];for(t=0;t<255;t+=1)e[r[t]]=t;var n={glog:function(t){if(t<1)throw"glog("+t+")";return e[t]},gexp:function(t){for(;t<0;)t+=255;for(;256<=t;)t-=255;return r[t]}};return n}();function C(n,o){if(void 0===n.length)throw n.length+"/"+o;var r=function(){for(var t=0;t<n.length&&0==n[t];)t+=1;for(var r=new Array(n.length-t+o),e=0;e<n.length-t;e+=1)r[e]=n[e+t];return r}(),i={getAt:function(t){return r[t]},getLength:function(){return r.length},multiply:function(t){for(var r=new Array(i.getLength()+t.getLength()-1),e=0;e<i.getLength();e+=1)for(var n=0;n<t.getLength();n+=1)r[e+n]^=w.gexp(w.glog(i.getAt(e))+w.glog(t.getAt(n)));return C(r,0)},mod:function(t){if(i.getLength()-t.getLength()<0)return i;for(var r=w.glog(i.getAt(0))-w.glog(t.getAt(0)),e=new Array(i.getLength()),n=0;n<i.getLength();n+=1)e[n]=i.getAt(n);for(n=0;n<t.getLength();n+=1)e[n]^=w.gexp(w.glog(t.getAt(n))+r);return C(e,0).mod(t)}};return i}function p(){var e=[],o={writeByte:function(t){e.push(255&t)},writeShort:function(t){o.writeByte(t),o.writeByte(t>>>8)},writeBytes:function(t,r,e){r=r||0,e=e||t.length;for(var n=0;n<e;n+=1)o.writeByte(t[n+r])},writeString:function(t){for(var r=0;r<t.length;r+=1)o.writeByte(t.charCodeAt(r))},toByteArray:function(){return e},toString:function(){var t="";t+="[";for(var r=0;r<e.length;r+=1)0<r&&(t+=","),t+=e[r];return t+="]"}};return o}var k,A,b=(k=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],(A={}).getRSBlocks=function(t,r){var e=function(t,r){switch(r){case y.L:return k[4*(t-1)+0];case y.M:return k[4*(t-1)+1];case y.Q:return k[4*(t-1)+2];case y.H:return k[4*(t-1)+3];default:return}}(t,r);if(void 0===e)throw"bad rs block @ typeNumber:"+t+"/errorCorrectionLevel:"+r;for(var n,o,i=e.length/3,a=[],u=0;u<i;u+=1)for(var f=e[3*u+0],c=e[3*u+1],g=e[3*u+2],l=0;l<f;l+=1)a.push((n=g,o=void 0,(o={}).totalCount=c,o.dataCount=n,o));return a},A),M=function(){var e=[],n=0,o={getBuffer:function(){return e},getAt:function(t){var r=Math.floor(t/8);return 1==(e[r]>>>7-t%8&1)},put:function(t,r){for(var e=0;e<r;e+=1)o.putBit(1==(t>>>r-e-1&1))},getLengthInBits:function(){return n},putBit:function(t){var r=Math.floor(n/8);e.length<=r&&e.push(0),t&&(e[r]|=128>>>n%8),n+=1}};return o},x=function(t){var r=a,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+2<r.length;)t.put(o(r.substring(e,e+3)),10),e+=3;e<r.length&&(r.length-e==1?t.put(o(r.substring(e,e+1)),4):r.length-e==2&&t.put(o(r.substring(e,e+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return e},m=function(t){var r=u,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+1<r.length;)t.put(45*o(r.charAt(e))+o(r.charAt(e+1)),11),e+=2;e<r.length&&t.put(o(r.charAt(e)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return e},L=function(t){var r=o,e=i.stringToBytes(t),n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=0;r<e.length;r+=1)t.put(e[r],8)}};return n},D=function(t){var r=f,e=i.stringToBytesFuncs.SJIS;if(!e)throw"sjis not supported.";!function(){var t=e("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=e(t),n={getMode:function(){return r},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return n},S=function(t){var e=t,n=0,o=0,i=0,r={read:function(){for(;i<8;){if(n>=e.length){if(0==i)return-1;throw"unexpected end of file./"+i}var t=e.charAt(n);if(n+=1,"="==t)return i=0,-1;t.match(/^\s$/)||(o=o<<6|a(t.charCodeAt(0)),i+=6)}var r=o>>>i-8&255;return i-=8,r}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return r},I=function(t,r,e){for(var n=function(t,r){var n=t,o=r,l=new Array(t*r),e={setPixel:function(t,r,e){l[r*n+t]=e},write:function(t){t.writeString("GIF87a"),t.writeShort(n),t.writeShort(o),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(n),t.writeShort(o),t.writeByte(0);var r=i(2);t.writeByte(2);for(var e=0;255<r.length-e;)t.writeByte(255),t.writeBytes(r,e,255),e+=255;t.writeByte(r.length-e),t.writeBytes(r,e,r.length-e),t.writeByte(0),t.writeString(";")}},i=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,o=h(),i=0;i<r;i+=1)o.add(String.fromCharCode(i));o.add(String.fromCharCode(r)),o.add(String.fromCharCode(e));var a=p(),u=function(t){var e=t,n=0,o=0,r={write:function(t,r){if(t>>>r!=0)throw"length over";for(;8<=n+r;)e.writeByte(255&(t<<n|o)),r-=8-n,t>>>=8-n,n=o=0;o|=t<<n,n+=r},flush:function(){0<n&&e.writeByte(o)}};return r}(a);u.write(r,n);var f=0,c=String.fromCharCode(l[f]);for(f+=1;f<l.length;){var g=String.fromCharCode(l[f]);f+=1,o.contains(c+g)?c+=g:(u.write(o.indexOf(c),n),o.size()<4095&&(o.size()==1<<n&&(n+=1),o.add(c+g)),c=g)}return u.write(o.indexOf(c),n),u.write(e,n),u.flush(),a.toByteArray()},h=function(){var r={},e=0,n={add:function(t){if(n.contains(t))throw"dup key:"+t;r[t]=e,e+=1},size:function(){return e},indexOf:function(t){return r[t]},contains:function(t){return void 0!==r[t]}};return n};return e}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=p();n.write(a);for(var u=function(){function e(t){a+=String.fromCharCode(r(63&t))}var n=0,o=0,i=0,a="",t={},r=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return t.writeByte=function(t){for(n=n<<8|255&t,o+=8,i+=1;6<=o;)e(n>>>o-6),o-=6},t.flush=function(){if(0<o&&(e(n<<6-o),o=n=0),i%3!=0)for(var t=3-i%3,r=0;r<t;r+=1)a+="="},t.toString=function(){return a},t}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return i}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||57344<=n?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+</script>
+<script>
 /* =====================================================================
    CONTENT — edit people, groups, topics, agenda, and event info here.
    Photos live in PHOTOS in the script just above, keyed by person id.
@@ -742,12 +802,15 @@ const TOPICS = ["Security","AI","Copilot","Azure","Licensing","Managed services"
          desc:"Short description.", speakers:["tracy-holtz","arnaldo-andrade-neto"] } ] } */
 const AGENDA = [
   { date:"2026-10-24", label:"Sat 24", long:"Saturday, October 24", title:"Arrive + Connect",
-    blurb:"Arrivals, one-on-one meetings and the welcome reception.", sessions:[
-    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobby", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
+    blurb:"Arrivals, one-on-one meetings and the welcome reception.",
+    bring:"Your individual transportation confirmation for the airport.",
+    wear:"Relaxed resort attire for the Welcome Reception.", sessions:[
+    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobbyin", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
     { start:"10:00", end:"17:30", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Dedicated conversations with early arrivals. Please refer to your individual calendar invite for additional information." },
     { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", at:"bayview", desc:"Join us for fun, food and libations, and grab your registration materials!" } ] },
   { date:"2026-10-25", label:"Sun 25", long:"Sunday, October 25", title:"Summit Day One",
     blurb:"Cloud, AI, devices and CSP growth strategy, followed by an afternoon at Secret Beach and dinner at Dragon Lawn.",
+    bring:"Swimsuit, water shoes, towel, reef-safe mineral sunscreen and sunglasses for Secret Beach. Pack dry clothes for dinner.",
     note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
     { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Please refer to your individual calendar invite for additional information." },
     { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"k3" },
@@ -757,13 +820,14 @@ const AGENDA = [
     { start:"10:30", end:"11:15", kind:"business", title:"AI at the Edge", where:"Kuilima 2", at:"k2", desc:"How AI is changing the way we work.", by:"Nick, DPS" },
     { start:"11:15", end:"12:00", kind:"business", title:"Cloud Modernization in an AI World", where:"Kuilima 2", at:"k2", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
     { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3", at:"k3" },
-    { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby", at:"lobby" },
+    { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby", at:"lobbyin" },
     { start:"13:30", end:"17:00", kind:"excursion", title:"Secret Beach", where:"Kualoa Ranch", desc:"Depart at 1:30 PM. Grab your swimsuits and towels and get ready for an afternoon at Secret Beach with a variety of beach activities, including kayaking, paddleboarding, lawn games, beach volleyball, or simply soaking in the sun!" },
     { start:"17:00", end:"17:15", kind:"excursion", title:"Board Boats for Transfer to Dragon Lawn", where:"Kualoa Ranch", desc:"After Secret Beach, we’ll take a 10-minute light cruise to Dragon Lawn for our dinner reception." },
     { start:"17:15", end:"19:00", kind:"social", title:"Dinner Reception", where:"Dragon Lawn" },
-    { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobby" } ] },
+    { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobbyin" } ] },
   { date:"2026-10-26", label:"Mon 26", long:"Monday, October 26", title:"Summit Day Two",
     blurb:"Security, Copilot, customer-zero insights and solution-area growth plays, then individual excursions and the closing reception.",
+    bring:"Your individual excursion card, with timing, location and shuttle details.",
     note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
     { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Please refer to your individual calendar invite for additional information." },
     { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"k3" },
@@ -962,6 +1026,7 @@ function setView(v, opts = {}){
   if(opts.scroll !== false) window.scrollTo(0, 0);
   if(v === "agenda"){ renderAgenda(); focusNow(); }
   if(v === "resort") showResort();
+  track("view", v);
 }
 $$(".tabbar button").forEach(b => b.addEventListener("click", () => { if(b.dataset.tab === "agenda" && view !== "agenda") agendaDay = null; setView(b.dataset.tab); }));
 
@@ -994,10 +1059,11 @@ function renderHome(){
       <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
       <label for="mq" class="vh">Type your name</label><input id="mq" type="search" placeholder="Type your name" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
       <ul class="picks" id="picks"></ul></div>`;
+    h += glanceBlock() + connectBlock();
   } else {
     const intros = (p.meet||[]).length;
     h += `<div class="greet" style="--ring:${gColor(p.g)}"><img src="${photo(p.id)}" alt="" width="64" height="64"><div><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div></div>`;
-    h += nowCard();
+    h += nowCard() + glanceBlock() + connectBlock();
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
   }
   h += roomBlock();
@@ -1203,6 +1269,7 @@ function focusNow(){ // bring the live or next session into view when the select
 }
 function tick(){ // keep the clock-driven parts current without rebuilding the whole page
   const nc = $("#nowcard"); if(nc) nc.innerHTML = nowCardInner();
+  if(typeof renderGlanceLive === "function") renderGlanceLive();
   if(view === "resort") renderResortLive();
   if(view === "agenda" && AGENDA.length){ if(stateKey(agendaState()) !== lastAgendaKey) renderAgenda(); else $("#agenda-sub").textContent = agendaSub(); }
 }
@@ -1333,7 +1400,7 @@ function wireMap(){
   setTimeout(() => { const h = $("#maphint"); if(h) h.classList.add("gone"); }, 6000);
 }
 function setMapTab(n){
-  if(n === mapNo) return; mapNo = n; selPlace = null;
+  if(n === mapNo) return; mapNo = n; selPlace = null; track("map_tab", n);
   $$("[data-maptab]").forEach(b => b.setAttribute("aria-pressed", +b.dataset.maptab === n));
   $("#maplegend").hidden = n === 2; loadMapImage(); measureMap(); fitBox(MAPS[n].box, false); renderMapInfo();
   document.querySelectorAll("#pins .pin").forEach(p => p.classList.remove("sel"));
@@ -1342,6 +1409,7 @@ function selectPlace(id, opts = {}){
   if(id && PLACE[id] && PLACE[id].map !== mapNo) setMapTab(PLACE[id].map);
   selPlace = id && PLACE[id] ? id : null;
   document.querySelectorAll("#pins .pin").forEach(p => p.classList.toggle("sel", p.dataset.pin === selPlace));
+  if(selPlace) track("pin", selPlace);
   if(selPlace && opts.center) centerOn(PLACE[selPlace].x, PLACE[selPlace].y, Math.max(mv.s, mapNo === 3 ? 0.85 : 0.62), true);
   renderMapInfo();
 }
@@ -1392,6 +1460,169 @@ function showResort(){
 }
 function openMapAt(id){ setView("resort"); selectPlace(id, { center:true }); const c = $("#mapcard"); if(c) window.scrollTo({ top: Math.max(0, scrollY + c.getBoundingClientRect().top - 70), behavior: reduced() ? "auto" : "smooth" }); }
 
+
+/* ---------- anonymous usage counts ----------
+   Counts opens and taps only: no names, contact details, IP address or contact-card content. The id is random,
+   made on the phone, and only lets us count unique devices. Skipped on localhost, in rehearsal mode and when
+   the phone says Do Not Track. Read back with tools/summit-usage-report.py. */
+const USAGE_URL = "https://summit-usage.ken-lince.workers.dev/u";
+const DID = (() => { try { let d = localStorage.getItem("es-oahu-2026-did");
+  if(!d){ d = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => (b % 36).toString(36)).join(""); localStorage.setItem("es-oahu-2026-did", d); }
+  return d; } catch(e){ return null; } })();
+const TRACK = !!DID && location.hostname === "copilotplaybook.com" && !NOW_OVERRIDE && navigator.doNotTrack !== "1";
+let trackQ = [], trackT = 0;
+function track(kind, label, n){
+  if(!TRACK) return; trackQ.push({ kind, label: label == null ? undefined : String(label).slice(0, 40), n });
+  if(trackQ.length >= 15) flushTrack(); else if(!trackT) trackT = setTimeout(flushTrack, 4000);
+}
+function flushTrack(){
+  clearTimeout(trackT); trackT = 0; if(!trackQ.length) return;
+  const body = JSON.stringify({ did: DID, mode: isStandalone() ? "app" : "browser", events: trackQ.splice(0, 20) });
+  try { if(!(navigator.sendBeacon && navigator.sendBeacon(USAGE_URL, body))) fetch(USAGE_URL, { method:"POST", body, keepalive:true }).catch(() => {}); } catch(e){}
+}
+addEventListener("pagehide", flushTrack);
+document.addEventListener("visibilitychange", () => { if(document.hidden) flushTrack(); });
+document.addEventListener("click", e => {
+  const a = e.target.closest('a[href^="tel:"], a[href^="mailto:"]'); if(a) track(a.getAttribute("href").startsWith("tel:") ? "call" : "mail", "resort");
+}, true);
+
+/* ---------- weather and ocean, from Open-Meteo (free, no key). Cached so it still shows offline. ---------- */
+const WX = { w:null, m:null, t:0 };
+const WXKEY = "es-oahu-2026-wx";
+try { const c = JSON.parse(localStorage.getItem(WXKEY) || "null"); if(c && c.w) { WX.w = c.w; WX.m = c.m; WX.t = c.t; } } catch(e){}
+const wxText = c => c === 0 ? "Clear" : c === 1 ? "Mostly clear" : c === 2 ? "Partly cloudy" : c === 3 ? "Cloudy" : (c === 45 || c === 48) ? "Fog" : (c >= 51 && c <= 57) ? "Light showers" : (c >= 61 && c <= 67) ? "Rain" : (c >= 80 && c <= 82) ? "Showers" : c >= 95 ? "Thunderstorms" : "Mixed";
+const compass = d => ["N","NE","E","SE","S","SW","W","NW"][Math.round((d % 360) / 45) % 8];
+function surf(ft){
+  return ft < 2 ? ["Small", "Calm conditions"] : ft < 4 ? ["Moderate", "Fine for most swimmers"] : ft < 6 ? ["Large", "Swim with caution"] : ["High surf", "Stay out of the water"];
+}
+async function getJson(url){ const c = new AbortController(), t = setTimeout(() => c.abort(), 7000);
+  try { const r = await fetch(url, { signal:c.signal }); if(!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(t); } }
+async function loadWeather(){
+  const w = getJson("https://api.open-meteo.com/v1/forecast?latitude=21.705&longitude=-157.9986&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&hourly=precipitation_probability&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=Pacific%2FHonolulu&forecast_days=16");
+  const m = getJson("https://marine-api.open-meteo.com/v1/marine?latitude=21.75&longitude=-158&current=wave_height,wave_period&hourly=wave_height&length_unit=imperial&timezone=Pacific%2FHonolulu&forecast_days=8");
+  const [a, b] = await Promise.allSettled([w, m]);
+  if(a.status === "fulfilled") WX.w = a.value; if(b.status === "fulfilled") WX.m = b.value;
+  if(a.status === "fulfilled" || b.status === "fulfilled"){ WX.t = Date.now(); try { localStorage.setItem(WXKEY, JSON.stringify(WX)); } catch(e){} track("weather", a.status === "fulfilled" && b.status === "fulfilled" ? "ok" : "partial"); }
+  renderGlanceLive();
+}
+
+/* ---------- Today at a glance ---------- */
+function sunArc(rise, set, now){
+  const f = now == null ? null : (now - rise) / (set - rise), up = f != null && f >= 0 && f <= 1;
+  const t = f == null ? 0.5 : Math.min(1, Math.max(0, f)), x = 100 - 90 * Math.cos(Math.PI * t), y = 50 - 40 * Math.sin(Math.PI * t);
+  let cap = "";
+  if(now != null) cap = now < rise ? `Sunrise in ${fmtDur(rise - now)}` : now <= set ? `Sunset in ${fmtDur(set - now)}` : `The sun set ${fmtDur(now - set)} ago`;
+  return `<div class="sunrow"><svg class="arc" viewBox="0 0 200 56" role="img" aria-label="${esc(cap || "Sunrise and sunset")}"><line class="hz" x1="4" y1="50" x2="196" y2="50"/><path class="pa" d="M10 50 A90 40 0 0 1 190 50"/><circle class="sun${up ? "" : " dim"}" cx="${x.toFixed(1)}" cy="${(up ? y : 50).toFixed(1)}" r="${up ? 6 : 4}"/></svg>
+    <div class="st"><span>Sunrise <b>${fmtMin(rise)}</b></span><span>Sunset <b>${fmtMin(set)}</b></span></div>${cap ? `<p class="sc">${cap}</p>` : ""}</div>`;
+}
+function glanceInner(){
+  const now = venueNow(); if(!now || !AGENDA.length) return "";
+  const first = AGENDA[0].date, last = AGENDA[AGENDA.length - 1].date;
+  if(now.date > last) return "";
+  const live = now.date >= first, date = live ? now.date : first;
+  const day = AGENDA.find(d => d.date === date); if(!day) return "";
+  const sun = sunTimes(date);
+  let wxTile = `<div class="tile wait"><small>Weather</small><b>Checking…</b></div>`, seaTile = `<div class="tile wait"><small>Ocean</small><b>Checking…</b></div>`;
+  const w = WX.w, m = WX.m;
+  if(w && w.daily){
+    const di = w.daily.time.indexOf(date);
+    if(live && w.current && w.current.time && w.current.time.startsWith(date) && !NOW_OVERRIDE){
+      const hi = w.hourly.time.indexOf(w.current.time.slice(0, 13) + ":00"), rain = hi >= 0 ? w.hourly.precipitation_probability[hi] : null;
+      wxTile = `<div class="tile"><small>Weather now</small><b>${Math.round(w.current.temperature_2m)}°F</b><span>${wxText(w.current.weather_code)}${rain != null ? `, ${rain}% rain` : ""}. Wind ${Math.round(w.current.wind_speed_10m)} mph ${compass(w.current.wind_direction_10m)}.</span></div>`;
+    } else if(di >= 0){
+      wxTile = `<div class="tile"><small>${live ? "Forecast" : "Forecast"}</small><b>${Math.round(w.daily.temperature_2m_max[di])}°F</b><span>${wxText(w.daily.weather_code[di])}, ${w.daily.precipitation_probability_max[di]}% chance of rain. Low ${Math.round(w.daily.temperature_2m_min[di])}°.</span></div>`;
+    } else wxTile = `<div class="tile wait"><small>Weather</small><b>Forecast opens closer to the event</b></div>`;
+  } else if(!w && WX.t === 0 && navigator.onLine === false) wxTile = `<div class="tile wait"><small>Weather</small><b>Offline</b></div>`;
+  if(m && m.hourly){
+    const idx = m.hourly.time.indexOf(date + "T12:00"), ft = live && m.current && m.current.time && m.current.time.startsWith(date) && !NOW_OVERRIDE ? m.current.wave_height : (idx >= 0 ? m.hourly.wave_height[idx] : null);
+    if(ft != null){ const [lab, tip] = surf(ft); seaTile = `<div class="tile"><small>Ocean${live ? " now" : ""}</small><b>${ft.toFixed(1)} ft</b><span>${lab} surf. ${tip}.</span></div>`; }
+    else seaTile = `<div class="tile wait"><small>Ocean</small><b>Forecast opens closer to the event</b></div>`;
+  }
+  const ww = (WX.t && Date.now() - WX.t > 3 * 3600e3) ? ` Conditions as of ${new Date(WX.t).toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}.` : "";
+  return `<div class="glance"><div class="gh"><b>${live ? "Today at a glance" : "Coming up"}</b><span>${esc(day.long)}</span></div>
+    <div class="tiles">${wxTile}${seaTile}</div>${sunArc(sun.rise, sun.set, live ? now.min : null)}
+    ${day.wear ? `<p class="gl"><b>Wear</b>${esc(day.wear)}</p>` : ""}${day.bring ? `<p class="gl"><b>Bring</b>${esc(day.bring)}</p>` : ""}
+    <p class="fine">Ocean is an offshore model estimate for the North Shore.${ww} Always follow the posted flags and ask the lifeguards.</p></div>`;
+}
+const glanceBlock = () => `<div id="glance">${glanceInner()}</div>`;
+function renderGlanceLive(){ const g = $("#glance"); if(g) g.innerHTML = glanceInner(); }
+loadWeather();
+setInterval(() => { if(!document.hidden && Date.now() - WX.t > 20 * 60e3) loadWeather(); }, 5 * 60e3);
+document.addEventListener("visibilitychange", () => { if(!document.hidden && Date.now() - WX.t > 20 * 60e3) loadWeather(); });
+
+/* ---------- contact card: a vCard QR other attendees can scan with their phone camera ---------- */
+const CARDKEY = "es-oahu-2026-mycard";
+let cardOpen = false, cardEdit = false, cardFocus = null;
+const loadCard = () => { try { return JSON.parse(localStorage.getItem(CARDKEY) || "null"); } catch(e){ return null; } };
+const vEsc = t => String(t || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/;/g, "\\;").replace(/,/g, "\\,");
+function vcard(c){
+  const L = ["BEGIN:VCARD", "VERSION:3.0", `N:${vEsc(c.last)};${vEsc(c.first)};;;`, `FN:${vEsc((c.first + " " + c.last).trim())}`];
+  if(c.org) L.push("ORG:" + vEsc(c.org)); if(c.title) L.push("TITLE:" + vEsc(c.title));
+  if(c.tel) L.push("TEL;TYPE=CELL:" + vEsc(c.tel)); if(c.email) L.push("EMAIL;TYPE=INTERNET:" + vEsc(c.email));
+  if(c.url) L.push("URL:" + c.url.replace(/[\r\n]/g, "")); L.push("NOTE:" + vEsc("Met at the Executive Summit, October 2026")); L.push("END:VCARD");
+  return L.join("\r\n");
+}
+function qrSvg(text){
+  if(typeof qrcode !== "function") throw new Error("qr");
+  if(qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs["UTF-8"]) qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+  const q = qrcode(0, "M"); q.addData(text); q.make();
+  const n = q.getModuleCount(), m = 4; let d = "";
+  for(let r = 0; r < n; r++) for(let c = 0; c < n; c++) if(q.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges" role="img" aria-label="QR code with your contact details"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+const connectBlock = () => `<div id="connect"><div class="connect"><div class="tx"><b>Share your contact</b><span>Show a QR code and anyone can save you with their phone camera.</span></div><button type="button" data-card><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><path d="M14 14h2.5v2.5M20.5 14v.5M14 20.5h.5M17.5 17.5H20.5V20.5H17.5z"/></svg>My QR</button></div></div>`;
+function renderCard(){
+  const c = loadCard(), box = $("#cbody");
+  if(c && !cardEdit){
+    let svg = ""; try { svg = qrSvg(vcard(c)); } catch(e){ svg = ""; }
+    box.innerHTML = svg ? `<div class="cqr"><h2 id="c-title">${esc((c.first + " " + c.last).trim())}</h2><p>${esc([c.title, c.org].filter(Boolean).join(", "))}</p><div class="qr" style="margin-top:14px">${svg}</div>
+      <div class="how"><b>How to connect:</b> ask them to open their phone camera and point it at this code. Turn your screen brightness up to make it easy to scan.</div>
+      <div class="btnrow" style="justify-content:center"><button type="button" class="pbtn" id="c-edit">Edit my details</button></div></div>`
+      : `<div class="cqr"><h2 id="c-title">That’s too much to fit</h2><p>Shorten your details a little and try again.</p><div class="btnrow"><button type="button" class="pbtn pri" id="c-edit">Edit my details</button></div></div>`;
+    if(svg) track("card_shown");
+    const e = $("#c-edit"); if(e) e.addEventListener("click", () => { cardEdit = true; renderCard(); });
+    return;
+  }
+  const p = me && byId[me], parts = p ? p.n.split(" ") : [];
+  const v = c || { first: parts[0] || "", last: parts.slice(1).join(" "), title: p ? p.t : "", org: p ? p.c : "", tel: "", email: "", url: "" };
+  box.innerHTML = `<form class="cform" id="c-form" novalidate><h2 id="c-title" style="font-family:var(--display);font-weight:900;font-size:24px;margin:0">Your contact card</h2>
+    <p style="margin:6px 0 0;color:var(--mute);font-size:15px;line-height:1.4">Add what you want to share. It stays on this phone, and the QR code holds exactly what you enter here.</p>
+    <div class="row2"><div><label for="c-first">First name</label><input id="c-first" autocomplete="given-name" value="${esc(v.first)}"></div><div><label for="c-last">Last name</label><input id="c-last" autocomplete="family-name" value="${esc(v.last)}"></div></div>
+    <label for="c-title2">Title</label><input id="c-title2" autocomplete="organization-title" value="${esc(v.title)}">
+    <label for="c-org">Company</label><input id="c-org" autocomplete="organization" value="${esc(v.org)}">
+    <label for="c-tel">Mobile phone</label><input id="c-tel" type="tel" inputmode="tel" autocomplete="tel" value="${esc(v.tel)}" placeholder="Optional">
+    <label for="c-email">Email</label><input id="c-email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="${esc(v.email)}" placeholder="Optional">
+    <label for="c-url">LinkedIn or website</label><input id="c-url" type="url" inputmode="url" autocapitalize="off" value="${esc(v.url)}" placeholder="Optional">
+    <p class="err" id="c-err" role="alert" hidden></p>
+    <div class="btnrow"><button type="submit" class="pbtn pri">Create my QR code</button></div></form>`;
+  $("#c-form").addEventListener("submit", e => {
+    e.preventDefault(); const g = id => $("#" + id).value.trim();
+    const n = { first: g("c-first"), last: g("c-last"), title: g("c-title2"), org: g("c-org"), tel: g("c-tel"), email: g("c-email"), url: g("c-url") };
+    const err = $("#c-err"); const bad = m => { err.textContent = m; err.hidden = false; };
+    if(!n.first && !n.last) return bad("Add your name.");
+    if(!n.tel && !n.email) return bad("Add a phone number or an email so people can reach you.");
+    if(n.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(n.email)) return bad("That email doesn’t look right.");
+    if(n.url && !/^https?:\/\//i.test(n.url)) n.url = "https://" + n.url;
+    try { qrSvg(vcard(n)); } catch(x){ return bad("That’s too much to fit in one code. Shorten the title or company."); }
+    try { localStorage.setItem(CARDKEY, JSON.stringify(n)); } catch(x){}
+    track("card_made"); cardEdit = false; renderCard();
+  });
+}
+function openCard(){
+  cardEdit = false; renderCard(); cardOpen = true; cardFocus = document.activeElement;
+  $("#cardsheet").hidden = false; root.classList.add("lock");
+  requestAnimationFrame(() => requestAnimationFrame(() => { if(!cardOpen) return; document.body.classList.add("card-open"); $("#cclose").focus({ preventScroll:true }); }));
+}
+function closeCard(){
+  if(!cardOpen){ document.body.classList.remove("card-open"); return; } cardOpen = false;
+  document.body.classList.remove("card-open"); if(!current && !helpOpen) root.classList.remove("lock");
+  setTimeout(() => { if(!cardOpen) $("#cardsheet").hidden = true; }, 340);
+  if(cardFocus && document.contains(cardFocus)) cardFocus.focus({ preventScroll:true });
+}
+$("#cclose").addEventListener("click", closeCard); $("#cscrim").addEventListener("click", closeCard);
+document.addEventListener("keydown", e => { if(cardOpen && e.key === "Escape"){ e.stopImmediatePropagation(); closeCard(); } }, true);
+document.addEventListener("click", e => { if(e.target.closest("[data-card]")) openCard(); });
+
 /* ---------- INFO ---------- */
 function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (m,l,u) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`); }
 function renderInfo(){
@@ -1400,7 +1631,7 @@ function renderInfo(){
     box.innerHTML = `<div class="empty-state"><b>Event details are on their way</b><p>Travel, venue, dress, and other details for the group will appear here before the summit.</p></div>`;
     return;
   }
-  box.innerHTML = `<div class="info">${INFO.map((it,i) => `<details${i===0?" open":""}><summary>${esc(it.title)}</summary><div class="body">${(it.body||[]).map(p => `<p>${linkify(p)}</p>`).join("")}</div></details>`).join("")}</div>`;
+  box.innerHTML = `<div class="info">${INFO.map((it,i) => `<details${i===0?" open":""}><summary>${esc(it.title)}</summary><div class="body">${(it.body||[]).map(p => `<p>${linkify(p)}</p>`).join("")}</div></details>`).join("")}</div><p class="fine">This guide counts anonymous opens and taps, never names or contact details, to help us improve it. Your contact card stays on your phone.</p>`;
 }
 
 /* ---------- global clicks ---------- */
@@ -1417,7 +1648,7 @@ document.addEventListener("click", e => {
   const ag = e.target.closest("[data-agenda]"); if(ag){ agendaDay = +ag.dataset.agenda; setView("agenda"); return; }
   const sx = e.target.closest("[data-sess]"); if(sx){ closePerson(); agendaDay = +sx.dataset.sess; setView("agenda"); return; }
   const g = e.target.closest("[data-go]"); if(g){ const v = g.dataset.go; setView(v); return; }
-  const d = e.target.closest("[data-day]"); if(d){ agendaDay = +d.dataset.day; renderAgenda(); return; }
+  const d = e.target.closest("[data-day]"); if(d){ agendaDay = +d.dataset.day; track("day", AGENDA[agendaDay].label); renderAgenda(); return; }
   const m = e.target.closest("[data-me]"); if(m){ setMe(m.dataset.me); toast(`Welcome, ${first(byId[m.dataset.me])}`); window.scrollTo(0,0); return; }
   if(e.target.closest("#notme")){ setMe(null); window.scrollTo(0,0); return; }
 });
@@ -1607,7 +1838,7 @@ function openHelp(){
 }
 function closeHelp(){
   if(!helpOpen){ document.body.classList.remove("help-open"); return; } helpOpen = false;
-  document.body.classList.remove("help-open"); if(!current) root.classList.remove("lock");
+  document.body.classList.remove("help-open"); if(!current && !cardOpen) root.classList.remove("lock");
   setTimeout(() => { if(!helpOpen) $("#helpsheet").hidden = true; }, 340);
   if(helpFocus && document.contains(helpFocus)) helpFocus.focus({preventScroll:true});
 }
@@ -1635,7 +1866,7 @@ if("serviceWorker" in navigator && /^https?:/.test(location.protocol)){   // kee
 const LOADED_AT = new Date();
 let refreshing = false;
 function refreshNow(){
-  if(refreshing) return; refreshing = true;
+  if(refreshing) return; refreshing = true; track("refresh"); flushTrack();
   const bar = $("#updbar"); if(bar) bar.classList.add("busy");
   let went = false; const go = () => { if(went) return; went = true; location.reload(); };
   try { fetch(location.href.split("#")[0], { cache:"reload" }).then(go, go); } catch(e){ go(); }
@@ -1649,7 +1880,7 @@ if(isStandalone()){
     const pill = document.createElement("div"); pill.className = "ptr"; pill.setAttribute("aria-hidden","true"); pill.innerHTML = "<span></span>"; document.body.appendChild(pill);
     const label = pill.firstChild, NEED = 140; let y0 = null, dy = 0;
     const reset = () => { pill.classList.remove("show"); pill.style.transform = ""; };
-    addEventListener("touchstart", e => { y0 = (!current && !helpOpen && !refreshing && scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; dy = 0; }, { passive:true });
+    addEventListener("touchstart", e => { y0 = (!current && !helpOpen && !cardOpen && !refreshing && scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; dy = 0; }, { passive:true });
     addEventListener("touchmove", e => { if(y0 === null) return; dy = e.touches[0].clientY - y0;
       if(dy <= 12 || scrollY > 0){ reset(); return; }
       pill.classList.add("show"); pill.style.transform = `translateY(${Math.min(dy * .45, 70)}px)`; label.textContent = dy > NEED ? "Release to refresh" : "Pull down to refresh"; }, { passive:true });
@@ -1660,7 +1891,7 @@ if(isStandalone()){
   let hiddenAt = 0;
   document.addEventListener("visibilitychange", () => {
     if(document.hidden){ hiddenAt = Date.now(); return; }
-    if(hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !current && !helpOpen) refreshNow();
+    if(hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !current && !helpOpen && !cardOpen) refreshNow();
   });
 }
 
@@ -1668,17 +1899,19 @@ if(isStandalone()){
    If a sheet's open animation and its close ever cross, a dim layer could be left
    covering the page and swallowing taps. Any tap, resume or page show clears it. */
 function reconcileOverlays(){
+  if(!cardOpen){ document.body.classList.remove("card-open"); $("#cardsheet").hidden = true; }
   if(!current) document.body.classList.remove("is-open");
   if(!helpOpen) document.body.classList.remove("help-open");
   if(!current){ $("#sheet").hidden = true; }
   if(!helpOpen){ $("#helpsheet").hidden = true; }
-  if(!current && !helpOpen) root.classList.remove("lock");
+  if(!current && !helpOpen && !cardOpen) root.classList.remove("lock");
 }
 document.addEventListener("pointerdown", reconcileOverlays, true);
 document.addEventListener("visibilitychange", reconcileOverlays);
 addEventListener("pageshow", reconcileOverlays);
 
 /* ---------- start ---------- */
+track("open", isStandalone() ? "app" : "browser");
 buildTopics(); buildFilters(); render(); renderHome(); renderAgenda(); renderInfo();
 (function(){
   const h = location.hash.slice(1);
