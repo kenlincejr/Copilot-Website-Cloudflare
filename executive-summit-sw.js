@@ -1,7 +1,7 @@
 /* Service worker for the Executive Summit guide only (registered with scope /executive-summit.html).
    It keeps the guide, its icons and the resort maps available on weak resort Wi-Fi.
    The page itself is network-first, so new agenda changes always win when there is a signal. */
-const CACHE = 'summit-guide-v1';
+const CACHE = 'summit-guide-v2';
 const PAGE = '/executive-summit.html';
 const ASSETS = [
   '/executive-summit.webmanifest',
@@ -9,7 +9,8 @@ const ASSETS = [
   '/assets/summit/icon-192.png',
   '/assets/summit/icon-512.png',
   '/assets/summit/resort-map-1.webp',
-  '/assets/summit/resort-map-2.webp'
+  '/assets/summit/resort-map-2.webp',
+  '/assets/summit/resort-map-3.webp'
 ];
 
 self.addEventListener('install', event => {
