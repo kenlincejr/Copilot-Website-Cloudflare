@@ -622,6 +622,9 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .askbar button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .askleft{margin:0;padding:0 20px 6px;font-size:12px;color:var(--mute)}
 .askwrap .vhead p{max-width:34em}
+.askwrap .vhead p.powered{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:3px 10px 3px 8px;border-radius:99px;background:var(--sunk);font-size:12.5px;font-weight:650;color:var(--mute)}
+.askwrap .vhead p.powered svg{width:14px;height:14px;color:var(--teal)}
+.askwrap .vhead p.powered a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .asknudge{display:flex;align-items:center;gap:12px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--sunk)}
 .asknudge p{flex:1;margin:0;font-size:14.5px;line-height:1.4}
 .asknudge .pbtn{flex:0 0 auto}
@@ -2465,7 +2468,7 @@ function renderAsk(){
   const empty = !askLog.length, p = me && byId[me];
   const nudge = !p ? `<div class="asknudge"><p>Tell the guide who you are and “who should I meet” gets personal.</p><button type="button" class="pbtn" data-go="home">Find my name</button></div>`
     : !PROFILES[p.id] ? `<div class="asknudge"><p>Add up to three topics to your profile so the assistant can match you with the right people.</p><button type="button" class="pbtn" data-open="${p.id}">Add my topics</button></div>` : "";
-  box.innerHTML = `<div class="vhead"><h2 id="ask-h">Ask the Summit</h2><p>Your guide to the resort, the North Shore and the people here. It starts with this guide and checks the web when it needs more.</p></div>
+  box.innerHTML = `<div class="vhead"><h2 id="ask-h">Ask The Summit</h2><p>Your guide to the resort, the North Shore and the people here. It starts with this guide and checks the web when it needs more.</p><p class="powered"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Powered by <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener">Claude</a></p></div>
     ${nudge}
     ${empty ? "" : `<div class="askrow"><button type="button" class="pbtn" data-ask-clear>Clear chat</button></div>`}
     <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>

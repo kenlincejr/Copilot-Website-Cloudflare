@@ -32,15 +32,27 @@ const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 let cards = [];
 try { cards = JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/private/partner-cards.json'), 'utf8')).filter((c) => c.approved === true); } catch (e) { /* none yet */ }
 const cardFor = (company) => { const n = norm(company); return cards.find((c) => { const m = norm(c.company); return n && m && (m.startsWith(n) || n.startsWith(m)); }); };
-const used = new Set();
+// The public people file never holds cards (the repo is public). Matched cards go to private/company-cards.json
+// (git-ignored), keyed by person id, and the Worker merges them in when it is deployed from this machine.
+const used = new Set(), privateCards = {};
 out.people = C.PEOPLE.map((p) => {
-  const card = cardFor(p.c); if (card) used.add(card.company);
+  const card = cardFor(p.c);
+  if (card) { used.add(card.company); privateCards[p.id] = { whatTheyDo: card.whatTheyDo, focusAreas: card.focusAreas, conversationTopics: card.talkingPoints }; }
   return {
     id: p.id, name: p.n, title: p.t, company: p.c, group: C.GROUPS[p.g].short, bio: p.b, askMeAbout: p.ask || [],
     suggestedIntroductions: (p.meet || []).map(([id, why]) => (byId[id] ? { id, name: byId[id].n, why } : null)).filter(Boolean),
-    companyCard: card ? { whatTheyDo: card.whatTheyDo, focusAreas: card.focusAreas, conversationTopics: card.talkingPoints } : null,
   };
 });
+fs.writeFileSync(path.join(ROOT, 'workers/summit-ai/private/company-cards.json'), JSON.stringify(privateCards));
+// Person cards for the Microsoft and TD SYNNEX hosts (private/host-cards.json, git-ignored, approved only): what each
+// person owns and wants to talk about, from public sources or from the people themselves. Merged in by the Worker.
+let hosts = [];
+try { hosts = JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/private/host-cards.json'), 'utf8')).filter((h) => h.approved === true && byId[h.id]); } catch (e) { /* none yet */ }
+const personCards = Object.fromEntries(hosts.map((h) => [h.id, {
+  whatTheyDo: h.whatTheyDo, owns: h.owns || [], focusAreas: h.focusAreas || [], conversationTopics: h.conversationTopics || [],
+  canHelpPartnersWith: h.canHelpPartnersWith || [], publicHighlights: (h.publicHighlights || []).map((x) => (typeof x === 'string' ? x : x.text)).filter(Boolean),
+}]));
+fs.writeFileSync(path.join(ROOT, 'workers/summit-ai/private/person-cards.json'), JSON.stringify(personCards));
 // Resort and area guide: researched from public sources into workers/summit-ai/research/resort-research.json (reviewed by Ken).
 // Source URLs are dropped to save tokens; anything not verified is flagged so the assistant tells people to confirm it.
 const slim = (v) => {
@@ -56,7 +68,8 @@ const slim = (v) => {
 try { out.resort = slim(JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/research/resort-research.json'), 'utf8'))); }
 catch (e) { out.resort = { note: 'Resort and area guide not loaded.' }; }
 for (const [k, v] of Object.entries(out)) fs.writeFileSync(path.join(ROOT, 'workers/summit-ai/data/' + k + '.json'), JSON.stringify(v));
-const total = Object.values(out).map((v) => JSON.stringify(v).length).reduce((x, y) => x + y, 0);
+const total = Object.values(out).map((v) => JSON.stringify(v).length).reduce((x, y) => x + y, 0) + JSON.stringify(privateCards).length + JSON.stringify(personCards).length;
 console.log('people', out.people.length, '| places', out.places.length, '| agenda days', out.agenda.length, '| info items', out.info.length);
-console.log('approved cards loaded:', cards.length, '| matched to attendees:', used.size, '| unmatched approved:', cards.filter((c) => !used.has(c.company)).map((c) => c.company));
+console.log('approved cards loaded:', cards.length, '| matched to companies:', used.size, '| attendees with a card:', Object.keys(privateCards).length, '| unmatched approved:', cards.filter((c) => !used.has(c.company)).map((c) => c.company));
+console.log('person cards loaded:', Object.keys(personCards).length, Object.keys(personCards).join(', '));
 console.log('grounding size:', total, 'characters (about', Math.round(total / 4), 'tokens)');

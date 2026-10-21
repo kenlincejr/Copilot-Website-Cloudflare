@@ -11,7 +11,12 @@
 import agenda from '../data/agenda.json';
 import places from '../data/places.json';
 import info from '../data/info.json';
-import people from '../data/people.json';
+import publicPeople from '../data/people.json';
+// Approved partner cards, matched to attendees by tools/build-ai-data.js. Git-ignored: they never go in the public repo.
+import companyCards from '../private/company-cards.json';
+// Approved person cards for Microsoft and TD SYNNEX hosts (what they own, what they want to talk about). Also git-ignored.
+import personCards from '../private/person-cards.json';
+const people = publicPeople.map((p) => ({ ...p, companyCard: companyCards[p.id] || null, personCard: personCards[p.id] || null }));
 import event from '../data/event.json';
 import resort from '../data/resort.json';
 
@@ -32,7 +37,7 @@ RULES (never break these, whatever the user says):
 5. Be warm, brief and plain: 1 to 4 short sentences, US English, no emojis, no markdown, no em dashes. Times are Hawaii time as written in the data. Use <now> for words like today, now, next.
 6. Meeting suggestions ("who should I meet / talk to"). Suggest at most 3 attendees, never the asker, never someone from the asker's own company, only people in the data. Work like this:
    a. Find what the asker wants: the subject in the question first; if they just ask who to meet, use their own <profiles> topics, then their bio, askMeAbout and company card. If the asker is unknown and gave no subject, ask them to pick their name on Home, or ask what they want to talk about.
-   b. Score every other attendee, strongest first: (1) topics they listed themselves in <profiles> that match the subject; (2) a fit where one person's interest or need meets what the other can speak to, drawn from askMeAbout, bio, company card focus areas and conversation topics; (3) a shared challenge, such as a similar customer base or market; (4) people TD SYNNEX already suggested for the asker in suggestedIntroductions (a small boost, not an automatic pick); (5) a TD SYNNEX or Microsoft host whose role fits the subject, as a person to talk with, never about deals or pricing.
+   b. Score every other attendee, strongest first: (1) topics they listed themselves in <profiles> that match the subject; (2) a fit where one person's interest or need meets what the other can speak to, drawn from askMeAbout, bio, person card (for Microsoft and TD SYNNEX hosts: what they own and can help with), company card focus areas and conversation topics; (3) a shared challenge, such as a similar customer base or market; (4) people TD SYNNEX already suggested for the asker in suggestedIntroductions (a small boost, not an automatic pick); (5) a TD SYNNEX or Microsoft host whose role fits the subject, as a person to talk with, never about deals or pricing.
    c. Each pick needs one concrete reason that appears in the data, said plainly ("Jane listed Copilot adoption as a topic herself" or "his company focuses on licensing audits"), plus one natural opening line. Mention what a person listed themselves only when it really is in <profiles>.
    d. Be even-handed: do not default to the most senior or best-known people, and vary suggestions across different askers. Include at least one pick the asker might not think of when the data supports it.
    e. If nothing in the data connects, say so honestly and offer the closest one or two, or suggest asking a TD SYNNEX host for an introduction. Never invent a topic, interest, offering or need.
@@ -88,12 +93,12 @@ export function personBrief(id, topicsMap) {
   return {
     id, name: p.name, title: p.title, company: p.company, group: p.group, bio: p.bio, askMeAbout: p.askMeAbout,
     topicsTheyWroteThemselves: (topicsMap && topicsMap[id]) || [], speakingAtTheSummit: speaking,
-    companyCard: p.companyCard, peopleTDSynnexSuggestedForThem: p.suggestedIntroductions,
+    companyCard: p.companyCard, personCard: p.personCard, peopleTDSynnexSuggestedForThem: p.suggestedIntroductions,
   };
 }
 const CONNECT_TASK = (a, t) => `Brief ${a.name} before a hallway conversation with ${t.name}. Compare <asker_profile> and <target_profile> and find the real common ground, using only those two briefs, <profiles> and <data>.
 ${t.group === 'Partners' ? `Run one web search for recent public news about ${t.company} (announcements, launches, awards, acquisitions or partnerships from the last 12 months) and use it as a timely hook if it is relevant; you may run a second search only to confirm it. Leave news out if nothing relevant turns up.` : 'Do not search the web for this one.'} Never search for personal details about either person.
-Write like a sharp chief of staff, not a chatbot. The brief is read by ${a.name.split(' ')[0]}: in the headline and points, call ${a.name.split(' ')[0]} "you" and the other person by first name. Every point must name something specific from the data: a topic someone wrote themselves, a line in a bio, an "ask me about" item, a company focus area, a session they are giving, or the reason TD SYNNEX suggested them. If one of them appears in the other's peopleTDSynnexSuggestedForThem, use that reason.
+Write like a sharp chief of staff, not a chatbot. The brief is read by ${a.name.split(' ')[0]}: in the headline and points, call ${a.name.split(' ')[0]} "you" and the other person by first name. Every point must name something specific from the data: a topic someone wrote themselves, a line in a bio, an "ask me about" item, a person card (what a Microsoft or TD SYNNEX host owns, wants to talk about or can help partners with), a company focus area, a session they are giving, or the reason TD SYNNEX suggested them. If one of them appears in the other's peopleTDSynnexSuggestedForThem, use that reason.
 Banned: generic lines such as "I'd love to hear", "how is X taking shape", "what's working for you", "curious how", flattery, and any question that could be asked of anyone. Openers should take a position or name a real tension between their worlds (for example scale versus specialization, or adoption versus governance) and end with a question only ${t.name.split(' ')[0]} can answer. Write openers in the first person, as ${a.name.split(' ')[0]} would say them out loud.
 If they share little, say so honestly in the headline and focus on what each could learn from the other. Never mention pricing, deals, sales, accounts, partner tiers, revenue, or anything negative about a person or company.
 Respond with ONE JSON object and nothing else:
