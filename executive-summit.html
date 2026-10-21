@@ -173,6 +173,8 @@ button{font:inherit;color:inherit}
 .dayhead p{margin:6px 0 0;color:var(--mute);line-height:1.45;text-wrap:pretty}
 .dayhead p b{color:var(--ink)}
 .dayhead .sun{margin-top:8px;font-size:13.5px;color:var(--mute)}
+.dayhead .dress{margin-top:10px;font-size:14.5px;line-height:1.45}
+.dayhead .dress b{color:var(--ink)}
 .dayhead .dnote{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:14.5px;line-height:1.4}
 .session.past{opacity:.55}
 .session.is-now{background:var(--sunk);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:14px;border-bottom-color:transparent}
@@ -432,6 +434,11 @@ body.card-open #cardsheet{transform:translateY(0);pointer-events:auto}
 .tinfo .trail span{display:block;font-size:14px;color:var(--mute);margin-top:2px;line-height:1.4}
 .tinfo ul.tips{margin:10px 0 0;padding:0 0 0 20px}
 .tinfo ul.tips li{margin:6px 0;font-size:15px;line-height:1.45}
+.helprow{display:flex;align-items:center;gap:8px;margin-top:12px;padding:12px 14px;border-radius:16px;background:var(--sunk)}
+.helprow .tx{flex:1;min-width:0}
+.helprow b{display:block;font-family:var(--display);font-weight:800;font-size:16px;line-height:1.2}
+.helprow span{display:block;font-size:13px;color:var(--mute);margin-top:2px;line-height:1.3}
+.helprow .pbtn{min-height:44px;padding:0 13px;font-size:14.5px}
 /* Profile: where this person is speaking */
 .p-sess{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .p-sess button{all:unset;cursor:pointer;box-sizing:border-box;display:block;width:100%;padding:10px 14px;border-radius:12px;background:var(--sunk)}
@@ -884,15 +891,14 @@ const TOPICS = ["Security","AI","Copilot","Azure","Licensing","Managed services"
 const AGENDA = [
   { date:"2026-10-24", label:"Sat 24", long:"Saturday, October 24", title:"Arrive + Connect",
     blurb:"Arrivals, one-on-one meetings and the welcome reception.",
-    bring:"Your individual transportation confirmation for the airport.",
-    wear:"Relaxed resort attire for the Welcome Reception.", sessions:[
-    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobbyin", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
+    dress:"Resort casual for the Welcome Reception. The evening is outdoors.", sessions:[
+    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobbyin", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel. Hotel check-in is at 3:00 PM." },
     { start:"10:00", end:"17:30", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Dedicated conversations with early arrivals. Please refer to your individual calendar invite for additional information." },
-    { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", at:"bayview", desc:"Join us for fun, food and libations, and grab your registration materials!" } ] },
+    { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", at:"bayview", desc:"Stop by the check-in desk to pick up your name badge and registration materials. Resort casual, and the evening is outdoors. If you booked a Monday spa massage, your appointment time is confirmed at this desk." } ] },
   { date:"2026-10-25", label:"Sun 25", long:"Sunday, October 25", title:"Summit Day One",
     blurb:"Cloud, AI, devices and CSP growth strategy, followed by an afternoon at Secret Beach and dinner at Dragon Lawn.",
-    bring:"Swimsuit, water shoes, towel, reef-safe mineral sunscreen and sunglasses for Secret Beach. Pack dry clothes for dinner.",
-    note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
+    note:"Guests are not included in breakfast, the business meeting or lunch. Each guest has a $100 food and beverage credit for breakfast and lunch today: order at any of the resort’s restaurants and charge it to the room. Alcohol is not included.",
+    dress:"Business casual for the meeting, and jeans are fine. For Secret Beach, wear beach attire and bring a cover-up, sandals, sunscreen, a hat and sunglasses. Changing rooms are available.", sessions:[
     { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Please refer to your individual calendar invite for additional information." },
     { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"k3" },
     { start:"09:00", end:"09:15", kind:"business", title:"Welcome + TD SYNNEX Microsoft Growth Opportunity", where:"Kuilima 2", at:"k2", speakers:["tracy-holtz"] },
@@ -902,14 +908,14 @@ const AGENDA = [
     { start:"11:15", end:"12:00", kind:"business", title:"Cloud Modernization in an AI World", where:"Kuilima 2", at:"k2", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
     { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3", at:"k3" },
     { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby", at:"lobbyin" },
-    { start:"13:30", end:"17:00", kind:"excursion", title:"Secret Beach", where:"Kualoa Ranch", desc:"Depart at 1:30 PM. Grab your swimsuits and towels and get ready for an afternoon at Secret Beach with a variety of beach activities, including kayaking, paddleboarding, lawn games, beach volleyball, or simply soaking in the sun!" },
+    { start:"13:30", end:"17:00", kind:"excursion", title:"Secret Beach", where:"Kualoa Ranch", desc:"Depart at 1:30 PM. Grab your swimsuits and towels and get ready for an afternoon at Secret Beach with a variety of beach activities, including kayaking, paddleboarding, lawn games, beach volleyball, or simply soaking in the sun! Changing rooms are available if you want to change at any time." },
     { start:"17:00", end:"17:15", kind:"excursion", title:"Board Boats for Transfer to Dragon Lawn", where:"Kualoa Ranch", desc:"After Secret Beach, we’ll take a 10-minute light cruise to Dragon Lawn for our dinner reception." },
     { start:"17:15", end:"19:00", kind:"social", title:"Dinner Reception", where:"Dragon Lawn" },
     { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay", at:"lobbyin" } ] },
   { date:"2026-10-26", label:"Mon 26", long:"Monday, October 26", title:"Summit Day Two",
     blurb:"Security, Copilot, customer-zero insights and solution-area growth plays, then individual excursions and the closing reception.",
-    bring:"Your individual excursion card, with timing, location and shuttle details.",
-    note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
+    note:"Guests are not included in breakfast, the business meeting or lunch. Each guest has a $100 food and beverage credit for breakfast and lunch today: order at any of the resort’s restaurants and charge it to the room. Alcohol is not included.",
+    dress:"Business casual for the meeting, and jeans are fine. Resort casual for the Closing Reception, which is outdoors. Excursion attire depends on your activity.", sessions:[
     { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", at:"maui", desc:"Please refer to your individual calendar invite for additional information." },
     { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3", at:"k3" },
     { start:"09:00", end:"09:15", kind:"business", title:"Welcome to Day Two", where:"Kuilima 2", at:"k2", speakers:["tracy-holtz"] },
@@ -918,23 +924,29 @@ const AGENDA = [
     { start:"11:00", end:"11:45", kind:"business", title:"Tech Talk Live: The AI Market Opportunity Isn’t Out There — It’s in This Room!", where:"Kuilima 2", at:"k2", desc:"Customer Zero, Copilot, Cowork, Security and Data.", speakers:["ken-lince"] },
     { start:"11:45", end:"12:00", kind:"business", title:"Wrap-Up + Final Remarks", where:"Kuilima 2", at:"k2", desc:"One Microsoft: unlocking the true power of partnership.", speakers:["tracy-holtz"] },
     { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3", at:"k3" },
-    { start:"13:30", end:"18:00", kind:"excursion", title:"Excursion + Free Time", desc:"Kualoa Ranch Jeep Tour, UTV, spa or free time. Please refer to your individual excursion card for timing, location and shuttle information, if applicable." },
+    { start:"13:30", end:"18:00", kind:"excursion", title:"Excursion + Free Time", desc:"Choices include the UTV Raptor adventure, the Jurassic Park movie tour and spa massages (1:00 to 5:00 PM). Please refer to your individual excursion card for timing, location and shuttle information." },
     { start:"19:00", end:"21:00", kind:"social", title:"Closing Reception", where:"Kuilima Point, The Ritz-Carlton", at:"kpoint", desc:"Join us for a final celebration of partnership as we dine, drink and enjoy an evening by the ocean." } ] },
   { date:"2026-10-27", label:"Tue 27", long:"Tuesday, October 27", title:"Depart",
     blurb:"Transportation to the airport and a safe journey home.", sessions:[
-    { allDay:true, kind:"travel", title:"Departures", where:"Honolulu International Airport (HNL)", desc:"Please refer to your individual transportation confirmations for transfers to the airport." } ] }
+    { allDay:true, kind:"travel", title:"Departures", where:"Honolulu International Airport (HNL)", desc:"Hotel check-out is at 11:00 AM. Please refer to your individual transportation confirmations for transfers to the airport." } ] }
 ];
 
 /* INFO — "Know before you go". Each item opens like an accordion.
    body is an array of paragraphs; plain text, links as [label](https://url).
    Example: { title:"Wi-Fi", body:["Network: Summit2026","Password is on your room key sleeve."] } */
 const INFO = [
-  { title:"Getting here and home", body:["Please refer to your individual transportation confirmations for transfers between the airport and The Ritz-Carlton O’ahu, Turtle Bay.","Saturday, October 24: arrivals.","Tuesday, October 27: departures from Honolulu International Airport (HNL)."] },
+  { title:"Your summit team", body:["LeighAnn Scott is your event contact. Before you leave, email [leighann.scott@tdsynnex.com](mailto:leighann.scott@tdsynnex.com).","On your way or at the resort, call [(480) 628-4002](tel:+14806284002).","Ask her about your hotel confirmation, your airport ride, food allergies or changes."] },
+  { title:"Check in on Saturday", body:["Stop by the event check-in desk at the Welcome Reception on Saturday, October 24, between 7:00 and 9:00 PM. You will get your name badge and registration materials."] },
+  { title:"What’s included", body:["Your attendance includes round-trip airfare, a 3-night stay at The Ritz-Carlton O’ahu, Turtle Bay, airport transportation, scheduled meals and activities, and one guest.","Your participation is required at all scheduled event activities. Missing any of them may mean charges back to your company, including hotel fees."] },
+  { title:"Guests", body:["Guests are not included in the meeting portion of the event: breakfast, the business meetings and lunch on October 25 and 26.","Each guest has a food and beverage credit of $100 a day for breakfast and lunch on October 25 and 26. Order at any of the resort’s restaurants and charge it to your room. Alcohol is not included."] },
+  { title:"What to wear", body:["Meetings: business casual, and jeans are fine.","Dinners and receptions: resort casual. Our dinners are outdoors.","Sunday at Secret Beach: bathing suits, cover-ups, sandals, sunscreen, hats, sunglasses and beach attire. Changing rooms are available whenever you want to change.","UTV Raptor: closed-toe shoes and clothes that can get a little dirty. A valid driver’s license is required.","Jurassic Park movie tour: comfortable clothing and shoes, plus a rain jacket or poncho in case of rain.","Spa massage: a bathing suit and flip-flops."] },
+  { title:"Getting here and home", body:["Follow the itinerary from WorldTravel Inc. Your tickets are electronic, and printing your e-ticket is a good idea. Check that your name, the dates and the times are right, and that your name matches your ID or passport exactly.","If something is wrong, call WorldTravel right away at [+1 (855) 864-8728](tel:+18558648728) in the US or [+1 (484) 948-2618](tel:+14849482618) outside the US.","Baggage fees are at your own expense, and weight limits vary by airline.","We provide transportation between Honolulu International Airport (HNL) and the Ritz-Carlton. Look for the email titled Transportation Confirmation.","If you extend your stay somewhere other than the Ritz-Carlton, that transportation is on your own. Ama Transportation Services at [808-583-3495](tel:+18085833495) is recommended, booked at least 72 hours ahead.","Saturday, October 24 is arrivals and Tuesday, October 27 is departures."] },
+  { title:"Your hotel room", body:["The Ritz-Carlton O’ahu, Turtle Bay. Check-in is at 3:00 PM and check-out is at 11:00 AM.","If you asked for a room when you registered, your confirmation number comes in a separate email from LeighAnn Scott. Questions or changes go to her."] },
   { title:"Your one-on-one meetings", body:["Please refer to your individual calendar invite for your time and additional information.","Saturday: 10:00 AM to 5:30 PM. Sunday and Monday: as scheduled, plus one-on-one time at lunch in Kuilima 3. Meetings are held in the Maui Room and Moloka’i Room."] },
-  { title:"Sunday: Secret Beach and Dragon Lawn", body:["1:15 PM: meet in the Hotel Lobby for transportation.","1:30 PM: depart for Secret Beach at Kualoa Ranch. Grab your swimsuits and towels. Activities include kayaking, paddleboarding, lawn games and beach volleyball.","5:00 PM: board the boats for a 10-minute light cruise to Dragon Lawn.","5:15 to 7:00 PM: dinner reception at Dragon Lawn.","7:00 PM: transportation back to the hotel.","What to bring to Secret Beach: a swimsuit, water shoes, a towel, reef-safe mineral sunscreen and sunglasses. Showers and changing rooms are on site, so pack dry clothes for dinner."] },
-  { title:"Monday afternoon excursions", body:["Please refer to your individual excursion card for timing, location and shuttle information, if applicable. Excursions and free time run from 1:30 to 6:00 PM."] },
-  { title:"Guests", body:["Guests are not included in breakfast, the business meetings, or lunch."] },
-  { title:"What to wear", body:["Relaxed resort attire for the welcome reception on Saturday."] }
+  { title:"Sunday: Secret Beach and Dragon Lawn", body:["1:15 PM: meet in the Hotel Lobby for transportation.","1:30 PM: depart for Secret Beach at Kualoa Ranch. Activities include kayaking, paddleboarding, lawn games and beach volleyball.","5:00 PM: board the boats for a 10-minute light cruise to Dragon Lawn.","5:15 to 7:00 PM: dinner reception at Dragon Lawn.","7:00 PM: transportation back to the hotel.","Bring a swimsuit, water shoes, a towel, reef-safe mineral sunscreen and sunglasses. Showers and changing rooms are on site, so pack dry clothes for dinner."] },
+  { title:"Monday afternoon", body:["Excursion choices include the UTV Raptor adventure, the Jurassic Park movie tour and spa massages from 1:00 to 5:00 PM. Please refer to your individual excursion card for timing, location and shuttle details.","Spa appointment times are confirmed at the check-in desk at Saturday’s Welcome Reception."] },
+  { title:"Food allergies", body:["If you have any food allergies, email LeighAnn Scott before the event at [leighann.scott@tdsynnex.com](mailto:leighann.scott@tdsynnex.com)."] },
+  { title:"If you need to cancel", body:["Email LeighAnn Scott as soon as possible at [leighann.scott@tdsynnex.com](mailto:leighann.scott@tdsynnex.com)."] }
 ];
 
 /* PLACES — pins on the resort map. x and y are percent of the map image.
@@ -1141,11 +1153,11 @@ function renderHome(){
       <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
       <label for="mq" class="vh">Type your name</label><input id="mq" type="search" placeholder="Type your name" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div>
       <ul class="picks" id="picks"></ul></div>`;
-    h += glanceBlock() + connectBlock();
+    h += glanceBlock() + connectBlock() + helpRow();
   } else {
     const intros = (p.meet||[]).length;
     h += `<div class="greet" style="--ring:${gColor(p.g)}"><img src="${photo(p.id)}" alt="" width="64" height="64"><div><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div></div>`;
-    h += nowCard() + glanceBlock() + connectBlock();
+    h += nowCard() + glanceBlock() + connectBlock() + helpRow();
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
   }
   h += roomBlock();
@@ -1333,7 +1345,7 @@ function renderAgenda(){
   lastAgendaKey = stateKey(st);
   const day = AGENDA[agendaDay], isToday = now && day.date === now.date, isPastDay = now && day.date < now.date;
   box.innerHTML = (AGENDA.length > 1 ? `<div class="days" role="group" aria-label="Choose a day" style="--n:${Math.min(AGENDA.length,4)}">${AGENDA.map((d,i) => `<button type="button" data-day="${i}" class="${i===today?"today":""}" aria-pressed="${i===agendaDay}"${i===today?' aria-label="'+esc(d.label)+', today"':""}>${esc(d.label)}</button>`).join("")}</div>` : "")
-    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p>${day.note ? `<p class="dnote">${esc(day.note)}</p>` : ""}<p class="sun">Sunrise ${fmtMin(sunTimes(day.date).rise)} · Sunset ${fmtMin(sunTimes(day.date).set)}</p></div>`
+    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p>${day.note ? `<p class="dnote">${esc(day.note)}</p>` : ""}${day.dress ? `<p class="dress"><b>What to wear.</b> ${esc(day.dress)}</p>` : ""}<p class="sun">Sunrise ${fmtMin(sunTimes(day.date).rise)} · Sunset ${fmtMin(sunTimes(day.date).set)}</p></div>`
     + `<ul class="sessions">${(day.sessions||[]).map(s => {
         let cls = "";
         if(isPastDay || (isToday && s.start && now.min >= sessionEnd(s))) cls = " past";
@@ -1550,7 +1562,9 @@ function renderResortLive(){
 }
 function renderResortStatic(){
   $("#res-help").innerHTML = `<div class="rhelp"><h3 id="sec-help">Need anything?</h3>
-    <div class="card"><p><b>Resort concierge</b></p><p>Ask about restaurant reservations, activities, rides or anything else at the resort.</p>
+    <div class="card"><p><b>Summit team: ${TEAM.name}</b></p><p>For anything about the event, your hotel confirmation or your airport ride.</p>
+      <div class="btnrow"><a class="pbtn pri" href="tel:${TEAM.tel}">${PHONEICON}Call ${TEAM.telText}</a><a class="pbtn" href="mailto:${TEAM.mail}">${MAILICON}Email</a></div></div>
+    <div class="card" style="margin-top:10px"><p><b>Resort concierge</b></p><p>Ask about restaurant reservations, activities, rides or anything else at the resort.</p>
       <div class="btnrow"><a class="pbtn pri" href="tel:+18082936000"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call 808-293-6000</a>
       <a class="pbtn" href="mailto:rc.hnlkz.concierge@ritzcarlton.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email</a></div></div>
     <h3>Good to know</h3>
@@ -1589,7 +1603,7 @@ function flushTrack(){
 addEventListener("pagehide", flushTrack);
 document.addEventListener("visibilitychange", () => { if(document.hidden) flushTrack(); });
 document.addEventListener("click", e => {
-  const a = e.target.closest('a[href^="tel:"], a[href^="mailto:"]'); if(a) track(a.getAttribute("href").startsWith("tel:") ? "call" : "mail", "resort");
+  const a = e.target.closest('a[href^="tel:"], a[href^="mailto:"]'); if(a) track(a.getAttribute("href").startsWith("tel:") ? "call" : "mail", /4806284002|leighann/i.test(a.getAttribute("href")) ? "team" : "resort");
 }, true);
 
 /* ---------- weather and ocean, from Open-Meteo (free, no key). Cached so it still shows offline. ---------- */
@@ -1670,10 +1684,11 @@ function glanceInner(){
 /* ---------- countdown card: before the summit, instead of the live schedule card ---------- */
 const CHKEY = "es-oahu-2026-checks", CDKEY = "es-oahu-2026-cd-hidden";
 const CHECKS = [
-  { id:"transport", t:"Find your airport transportation confirmation" },
+  { id:"transport", t:"Find the Transportation Confirmation email for your airport ride" },
+  { id:"eticket", t:"Check that the name on your e-ticket matches your ID or passport" },
   { id:"invite", t:"Look for your one-on-one calendar invite" },
-  { id:"pack", t:"Pack a swimsuit, water shoes, a towel and reef-safe mineral sunscreen" },
-  { id:"attire", t:"Pack relaxed resort attire for Saturday night" },
+  { id:"pack", t:"Pack business casual for meetings, resort casual for dinners and beach gear for Sunday" },
+  { id:"allergy", t:"Email LeighAnn about any food allergies" },
   { id:"app", t:"Add this guide to your home screen" },
   { id:"qr", t:"Make your contact QR code" }
 ];
@@ -1703,6 +1718,10 @@ function countdownCard(st){
       return `<li><button type="button" data-check="${x.id}" role="checkbox" aria-checked="${on}"${auto && on ? " disabled" : ""}><span class="bx" aria-hidden="true">${on ? "✓" : ""}</span>${esc(x.t)}</button></li>`; }).join("")}</ul>` : ""}</div>`;
 }
 
+const PHONEICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
+const MAILICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>';
+const TEAM = { name:"LeighAnn Scott", tel:"+14806284002", telText:"(480) 628-4002", mail:"leighann.scott@tdsynnex.com" };
+const helpRow = () => `<div class="helprow"><div class="tx"><b>Need help?</b><span>Summit team: ${TEAM.name}</span></div><a class="pbtn pri" href="tel:${TEAM.tel}">${PHONEICON}Call</a><a class="pbtn" href="mailto:${TEAM.mail}" aria-label="Email ${TEAM.name}">${MAILICON}Email</a></div>`;
 const glanceBlock = () => `<div id="glance">${glanceInner()}</div>`;
 function renderGlanceLive(){ const g = $("#glance"); if(g) g.innerHTML = glanceInner(); const st = agendaState(), nc = $("#nowcard"); if(nc && st && st.kind === "before") nc.innerHTML = nowCardInner(); }
 loadWeather();
@@ -1803,7 +1822,7 @@ function trailsHTML(){
 }
 
 /* ---------- INFO ---------- */
-function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (m,l,u) => `<a href="${u}" target="_blank" rel="noopener">${l}</a>`); }
+function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\(((?:https?:\/\/|tel:|mailto:)[^)\s]+)\)/g, (m,l,u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${l}</a>` : `<a href="${u}">${l}</a>`); }
 function renderInfo(){
   const box = $("#info");
   if(!INFO.length){
