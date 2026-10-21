@@ -743,12 +743,12 @@ function renderHome(){
     h += upNextBlock();
   } else {
     const intros = (p.meet||[]).length;
-    h += `<div class="greet"><h2>Aloha, ${esc(first(p))}</h2><p>${intros ? "Here’s who we’d introduce you to at the summit." : "Every partner’s profile shows who we’d introduce them to."}</p></div>`;
+    h += `<div class="greet"><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div>`;
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
     h += upNextBlock();
-    h += savedBlock();
   }
   h += roomBlock();
+  if(p && saved.size) h += savedBlock();   /* favorites sit under the full group, and only once there are some */
   if(p) h += `<p><button class="switch" type="button" id="notme">Not ${esc(first(p))}? Switch</button></p>`;
   $("#home").innerHTML = h;
   const mq = $("#mq");
