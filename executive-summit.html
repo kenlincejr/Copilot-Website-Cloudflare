@@ -156,6 +156,7 @@ button{font:inherit;color:inherit}
 .sessions{list-style:none;margin:14px 0 0;padding:0}
 .session{display:grid;grid-template-columns:76px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--rule)}
 .session .t{font-family:var(--display);font-weight:800;font-size:16px;line-height:1.25;font-variant-numeric:tabular-nums}
+.session .t.lbl{font-size:13.5px;line-height:1.25}
 .session .t small{display:block;font-family:var(--text);font-weight:500;font-size:13px;color:var(--mute)}
 .session h4{margin:0;font-family:var(--display);font-weight:800;font-stretch:96%;font-size:19px;line-height:1.2}
 .session .wh{margin:3px 0 0;font-size:14.5px;color:var(--mute)}
@@ -171,6 +172,7 @@ button{font:inherit;color:inherit}
 .dayhead h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:22px;line-height:1.15;margin:0}
 .dayhead p{margin:6px 0 0;color:var(--mute);line-height:1.45;text-wrap:pretty}
 .dayhead p b{color:var(--ink)}
+.dayhead .dnote{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:14.5px;line-height:1.4}
 .session.past{opacity:.55}
 .session.is-now{background:var(--sunk);margin:0 -12px;padding-left:12px;padding-right:12px;border-radius:14px;border-bottom-color:transparent}
 .session .kind{display:block;margin-bottom:4px;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
@@ -639,42 +641,55 @@ const TOPICS = ["Security","AI","Copilot","Azure","Licensing","Managed services"
          desc:"Short description.", speakers:["tracy-holtz","arnaldo-andrade-neto"] } ] } */
 const AGENDA = [
   { date:"2026-10-24", label:"Sat 24", long:"Saturday, October 24", title:"Arrive + Connect",
-    blurb:"Airport transfers, partner 1:1 meetings, welcome cocktails and dinner.", sessions:[
-    { allDay:true, kind:"travel", title:"Arrivals", desc:"Airport transportation provided." },
-    { start:"10:00", end:"17:30", kind:"meeting", title:"Partner 1:1 Meetings", desc:"Dedicated conversations with early arrivals." },
-    { start:"18:30", end:"20:00", kind:"social", title:"Cocktail Reception + Welcome Dinner", desc:"Reconnect, meet fellow attendees and set the tone for the summit. Relaxed resort attire." } ] },
+    blurb:"Arrivals, one-on-one meetings and the welcome reception.", sessions:[
+    { allDay:true, kind:"travel", title:"Arrivals", where:"The Ritz-Carlton O’ahu, Turtle Bay", desc:"Welcome to O’ahu! Please refer to your individual transportation confirmations for transfers to the hotel." },
+    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
+    { start:"19:00", end:"21:00", kind:"social", title:"Welcome Reception", where:"Bay View Lawn", desc:"Join us for fun, food and libations, and grab your registration materials!" } ] },
   { date:"2026-10-25", label:"Sun 25", long:"Sunday, October 25", title:"Summit Day One",
-    blurb:"Cloud, AI, devices and CSP growth strategy, followed by a group excursion.", sessions:[
-    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast" },
-    { start:"09:00", end:"09:15", title:"Welcome + TD SYNNEX Microsoft Growth Opportunity", speakers:["tracy-holtz"] },
-    { start:"09:15", end:"09:45", title:"Executive Fireside Chat: AI + Endpoint Trends", speakers:["gary-palenbaum","george-lutkitz"] },
-    { start:"09:45", end:"10:30", title:"CSP Acceleration in FY27", desc:"Market opportunity, AI acceleration and Microsoft co-sell.", speakers:["arnaldo-andrade-neto"] },
-    { start:"10:30", end:"11:15", title:"AI at the Edge", desc:"How AI is changing the way we work.", by:"Nick, DPS" },
-    { start:"11:15", end:"12:00", title:"Cloud Modernization in an AI World", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
-    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch + Partner 1:1s" },
-    { start:"13:30", end:"19:00", kind:"excursion", title:"Secret Beach Excursion + Dragon Lawn Dinner", desc:"All attendees and guests." } ] },
+    blurb:"Cloud, AI, devices and CSP growth strategy, followed by an afternoon at Secret Beach and dinner at Dragon Lawn.",
+    note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
+    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
+    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3" },
+    { start:"09:00", end:"09:15", kind:"business", title:"Welcome + TD SYNNEX Microsoft Growth Opportunity", where:"Kuilima 2", speakers:["tracy-holtz"] },
+    { start:"09:15", end:"09:45", kind:"business", title:"Executive Fireside Chat: AI + Endpoint Trends", where:"Kuilima 2", speakers:["gary-palenbaum","george-lutkitz"] },
+    { start:"09:45", end:"10:30", kind:"business", title:"CSP Acceleration in FY27", where:"Kuilima 2", desc:"Market opportunity, AI acceleration and Microsoft co-sell.", speakers:["arnaldo-andrade-neto"] },
+    { start:"10:30", end:"11:15", kind:"business", title:"AI at the Edge", where:"Kuilima 2", desc:"How AI is changing the way we work.", by:"Nick, DPS" },
+    { start:"11:15", end:"12:00", kind:"business", title:"Cloud Modernization in an AI World", where:"Kuilima 2", desc:"Microsoft Azure.", speakers:["sid-merchant"] },
+    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3" },
+    { start:"13:15", end:"13:30", kind:"excursion", title:"Meet for Transportation to Secret Beach", where:"Hotel Lobby" },
+    { start:"13:30", end:"17:00", kind:"excursion", title:"Secret Beach", where:"Kualoa Ranch", desc:"Depart at 1:30 PM. Grab your swimsuits and towels and get ready for an afternoon at Secret Beach with a variety of beach activities, including kayaking, paddleboarding, lawn games, beach volleyball, or simply soaking in the sun!" },
+    { start:"17:00", end:"17:15", kind:"excursion", title:"Board Boats for Transfer to Dragon Lawn", where:"Kualoa Ranch", desc:"After Secret Beach, we’ll take a 10-minute light cruise to Dragon Lawn for our dinner reception." },
+    { start:"17:15", end:"19:00", kind:"social", title:"Dinner Reception", where:"Dragon Lawn" },
+    { start:"19:00", end:"19:30", kind:"travel", title:"Transportation Back to Hotel", where:"The Ritz-Carlton O’ahu, Turtle Bay" } ] },
   { date:"2026-10-26", label:"Mon 26", long:"Monday, October 26", title:"Summit Day Two",
-    blurb:"Security, Copilot, customer-zero insights and solution-area growth plays.", sessions:[
-    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast" },
-    { start:"09:00", end:"09:15", title:"Welcome to Day Two", speakers:["tracy-holtz"] },
-    { start:"09:15", end:"10:00", title:"Beyond the Reef: Your Microsoft Security Journey", desc:"Building the confidence and capability to navigate beyond Microsoft 365.", speakers:["david-branscome"] },
-    { start:"10:00", end:"11:00", title:"Keeping Up with Copilot: Delivering SMB + Midmarket ROI", desc:"Shelley Green, Global Copilot Acceleration, and Arnaldo Neto, US Channel Lead.", speakers:["shelley-green","arnaldo-andrade-neto"] },
-    { start:"11:00", end:"11:45", title:"Tech Talk Live: The AI Market Opportunity Isn’t Out There — It’s in This Room!", desc:"Customer Zero, Copilot, Cowork, Security and Data.", speakers:["ken-lince"] },
-    { start:"11:45", end:"12:00", title:"Wrap-Up + Final Remarks", desc:"One Microsoft: unlocking the true power of partnership.", speakers:["tracy-holtz"] },
-    { start:"12:00", end:"13:00", kind:"meal", title:"Lunch + 1:1 Meetings" },
-    { start:"13:30", end:"18:00", kind:"excursion", title:"Excursion + Free Time", desc:"Kualoa Ranch Jeep Tour, UTV, spa or free time." },
-    { start:"19:00", end:"21:00", kind:"social", title:"Closing Reception", where:"Kuilima Point" } ] },
+    blurb:"Security, Copilot, customer-zero insights and solution-area growth plays, then individual excursions and the closing reception.",
+    note:"Guests are not included in breakfast, the business meeting or lunch today.", sessions:[
+    { asScheduled:true, time:"As scheduled", kind:"meeting", title:"One-on-One Meetings", where:"Maui Room & Moloka’i Room", desc:"Please refer to your individual calendar invite for additional information." },
+    { start:"08:30", end:"09:00", kind:"meal", title:"Breakfast", where:"Kuilima 3" },
+    { start:"09:00", end:"09:15", kind:"business", title:"Welcome to Day Two", where:"Kuilima 2", speakers:["tracy-holtz"] },
+    { start:"09:15", end:"10:00", kind:"business", title:"Beyond the Reef: Your Microsoft Security Journey", where:"Kuilima 2", desc:"Building the confidence and capability to navigate beyond Microsoft 365.", speakers:["david-branscome"] },
+    { start:"10:00", end:"11:00", kind:"business", title:"Keeping Up with Copilot: Delivering SMB + Midmarket ROI", where:"Kuilima 2", desc:"Shelley Green, Global Copilot Acceleration, and Arnaldo Neto, US Channel Lead.", speakers:["shelley-green","arnaldo-andrade-neto"] },
+    { start:"11:00", end:"11:45", kind:"business", title:"Tech Talk Live: The AI Market Opportunity Isn’t Out There — It’s in This Room!", where:"Kuilima 2", desc:"Customer Zero, Copilot, Cowork, Security and Data.", speakers:["ken-lince"] },
+    { start:"11:45", end:"12:15", kind:"business", title:"Wrap-Up + Final Remarks", where:"Kuilima 2", desc:"One Microsoft: unlocking the true power of partnership.", speakers:["tracy-holtz"] },
+    { start:"12:15", end:"13:15", kind:"meal", title:"Lunch & One-on-One Meetings", where:"Kuilima 3" },
+    { start:"13:30", end:"18:00", kind:"excursion", title:"Pre-Selected Individual Excursions", where:"Various locations", desc:"Please refer to your individual excursion card for additional information on timing, location and shuttle information, if applicable." },
+    { start:"19:00", end:"21:00", kind:"social", title:"Closing Reception", where:"Kuilima Point, The Ritz-Carlton", desc:"Join us for a final celebration of partnership as we dine, drink and enjoy an evening by the ocean." } ] },
   { date:"2026-10-27", label:"Tue 27", long:"Tuesday, October 27", title:"Depart",
-    blurb:"Airport transportation and a safe journey home.", sessions:[
-    { allDay:true, kind:"travel", title:"Departures", desc:"Transportation will be provided to the airport." } ] }
+    blurb:"Transportation to the airport and a safe journey home.", sessions:[
+    { allDay:true, kind:"travel", title:"Departures", where:"Honolulu International Airport (HNL)", desc:"Please refer to your individual transportation confirmations for transfers to the airport." } ] }
 ];
 
 /* INFO — "Know before you go". Each item opens like an accordion.
    body is an array of paragraphs; plain text, links as [label](https://url).
    Example: { title:"Wi-Fi", body:["Network: Summit2026","Password is on your room key sleeve."] } */
 const INFO = [
-  { title:"Getting here and home", body:["Transportation is provided between the airport and the resort on arrival and departure days.","Saturday, October 24: arrivals, with airport transportation all day.","Tuesday, October 27: departures, with transportation to the airport."] },
-  { title:"What to wear", body:["Relaxed resort attire for the cocktail reception and welcome dinner on Saturday."] }
+  { title:"Getting here and home", body:["Please refer to your individual transportation confirmations for transfers between the airport and The Ritz-Carlton O’ahu, Turtle Bay.","Saturday, October 24: arrivals.","Tuesday, October 27: departures from Honolulu International Airport (HNL)."] },
+  { title:"Your one-on-one meetings", body:["Please refer to your individual calendar invite for your time and additional information.","Meetings are held in the Maui Room and Moloka’i Room on Saturday, Sunday and Monday. Lunch on Sunday and Monday also includes one-on-one time in Kuilima 3."] },
+  { title:"Sunday: Secret Beach and Dragon Lawn", body:["1:15 PM: meet in the Hotel Lobby for transportation.","1:30 PM: depart for Secret Beach at Kualoa Ranch. Grab your swimsuits and towels. Activities include kayaking, paddleboarding, lawn games and beach volleyball.","5:00 PM: board the boats for a 10-minute light cruise to Dragon Lawn.","5:15 to 7:00 PM: dinner reception at Dragon Lawn.","7:00 PM: transportation back to the hotel."] },
+  { title:"Monday afternoon excursions", body:["Please refer to your individual excursion card for timing, location and shuttle information, if applicable. Excursions run from 1:30 to 6:00 PM."] },
+  { title:"Where to go", body:["Welcome Reception (Saturday): Bay View Lawn.","Breakfast and lunch: Kuilima 3.","Microsoft Executive Summit Business Meeting: Kuilima 2.","One-on-one meetings: Maui Room and Moloka’i Room.","Closing Reception (Monday): Kuilima Point."] },
+  { title:"Guests", body:["Guests are not included in breakfast, the business meetings, or lunch."] },
+  { title:"What to wear", body:["Relaxed resort attire for the welcome reception on Saturday."] }
 ];
 
 const PEOPLE = [
@@ -925,7 +940,7 @@ const fmtMin = m => fmtTime(`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")}
 const utcDay = d => { const [y,m,dd] = d.split("-").map(Number); return Date.UTC(y, m-1, dd); };
 const dayDiff = (a, b) => Math.round((utcDay(b) - utcDay(a)) / 864e5);
 const fmtDur = m => { m = Math.max(1, m); const h = Math.floor(m/60), r = m % 60; return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${m} min`; };
-const KIND = { travel:"Travel", meeting:"Meetings", meal:"Meal", social:"Social", excursion:"Excursion" };
+const KIND = { travel:"Travel", meeting:"Meetings", meal:"Meal", social:"Social", excursion:"Excursion", business:"Business meeting" };
 const sessionEnd = s => s.end ? mins(s.end) : mins(s.start) + 30;
 
 /* Where the summit is right now: before, live, between sessions, day done, all-day, or after. */
@@ -935,7 +950,7 @@ function agendaState(){
   if(now.date < AGENDA[0].date) return { kind:"before", now, di:0, day:AGENDA[0], days:dayDiff(now.date, AGENDA[0].date) };
   if(now.date > AGENDA[lastDi].date) return { kind:"after", now, di:lastDi };
   let di = AGENDA.findIndex(d => d.date === now.date); if(di < 0) di = AGENDA.findIndex(d => d.date > now.date);
-  const day = AGENDA[di], all = (day.sessions||[]).filter(s => s.allDay);
+  const day = AGENDA[di], all = (day.sessions||[]).filter(s => s.allDay || s.asScheduled);
   const timed = (day.sessions||[]).filter(s => s.start).map(s => ({ s, st:mins(s.start), en:sessionEnd(s) })).sort((a,b) => a.st - b.st);
   const base = { now, di, day, all };
   if(!timed.length) return { ...base, kind:"allday" };
@@ -959,7 +974,8 @@ function nowCardInner(){
   const st = agendaState(); if(!st) return "";
   const when = s => `${fmtTime(s.start)}${s.end ? " to " + fmtTime(s.end) : ""}`;
   const cta = label => `<button type="button" class="cta" data-agenda="${st.di}">${label}${ARROW}</button>`;
-  const allLine = st.all && st.all.length ? `<p class="line"><b>All day</b>${st.all.map(a => esc(a.title)).join(", ")}</p>` : "";
+  const todayItems = (st.all||[]).filter(a => a.allDay || (st.now && st.now.min < 17*60));   // "as scheduled" items only matter during the day
+  const allLine = todayItems.length ? `<p class="line"><b>Today</b>${todayItems.map(a => esc(a.title)).join(", ")}</p>` : "";
   const thenLine = st.then ? `<p class="line"><b>Then</b>${fmtTime(st.then.s.start)} ${esc(st.then.s.title)}</p>` : "";
   const pulse = '<span class="pulse" aria-hidden="true"></span>';
   let tag, ttl, meta = "", count = "", extra = "", label = "Full agenda";
@@ -1005,7 +1021,7 @@ function renderAgenda(){
   lastAgendaKey = stateKey(st);
   const day = AGENDA[agendaDay], isToday = now && day.date === now.date, isPastDay = now && day.date < now.date;
   box.innerHTML = (AGENDA.length > 1 ? `<div class="days" role="group" aria-label="Choose a day" style="--n:${Math.min(AGENDA.length,4)}">${AGENDA.map((d,i) => `<button type="button" data-day="${i}" class="${i===today?"today":""}" aria-pressed="${i===agendaDay}"${i===today?' aria-label="'+esc(d.label)+', today"':""}>${esc(d.label)}</button>`).join("")}</div>` : "")
-    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p></div>`
+    + `<div class="dayhead"><h3>${esc(day.long)}</h3><p><b>${esc(day.title)}.</b> ${esc(day.blurb)}</p>${day.note ? `<p class="dnote">${esc(day.note)}</p>` : ""}</div>`
     + `<ul class="sessions">${(day.sessions||[]).map(s => {
         let cls = "";
         if(isPastDay || (isToday && s.start && now.min >= sessionEnd(s))) cls = " past";
@@ -1013,7 +1029,7 @@ function renderAgenda(){
         if(here) cls = " is-now";
         const flag = here ? `<span class="now">${st.kind === "live" ? "Happening now" : "Up next"}</span>` : "";
         const time = s.allDay ? "All day" : s.start ? `${fmtTime(s.start)}${s.end?`<small>to ${fmtTime(s.end)}</small>`:""}` : esc(s.time || "");
-        return `<li class="session${cls}"><div class="t">${time}</div>
+        return `<li class="session${cls}"><div class="t${s.start || s.allDay ? "" : " lbl"}">${time}</div>
           <div>${flag}${s.kind ? `<span class="kind">${KIND[s.kind]}</span>` : ""}<h4>${esc(s.title)}</h4>${s.where?`<p class="wh">${esc(s.where)}</p>`:""}${s.desc?`<p class="ds">${esc(s.desc)}</p>`:""}${speakerChips(s)}</div></li>`;
       }).join("")}</ul>`;
 }
