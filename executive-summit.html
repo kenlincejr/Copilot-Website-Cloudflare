@@ -550,6 +550,13 @@ body.ask-open #asksheet{transform:translateY(0);pointer-events:auto}
 .askbar button svg{width:22px;height:22px}
 .askbar button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .askleft{margin:0;padding:0 20px 6px;font-size:12px;color:var(--mute)}
+.msg .webnote{display:block;margin-top:6px;font-size:12.5px;line-height:1.35;color:var(--mute)}
+.topiccard{border:2px solid var(--g-partners);border-radius:18px;padding:16px 18px 18px;margin-top:14px}
+.topiccard h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:20px;line-height:1.2;margin:0}
+.topiccard p{margin:6px 0 12px;font-size:15px;line-height:1.45;color:var(--mute)}
+#p-mine .fform .btnrow{margin-top:16px}
+#p-topics #p-li{margin-top:12px;text-decoration:none}
+#p-topics #p-li[hidden]{display:none}
 .starters{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
 .starters li{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--sunk);font-size:15.5px;line-height:1.45}
 .starters li span{flex:1}
@@ -916,6 +923,8 @@ html.lock,html.lock body{overflow:hidden}
       <div class="p-sec" id="p-sessions" hidden><h3>On the agenda</h3><ul class="p-sess" id="p-sess-list"></ul></div>
       <div class="p-sec" id="p-starters" hidden><button type="button" class="pbtn" id="p-starters-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Conversation starters</button><ul class="starters" id="p-starters-list"></ul><p class="fine" id="p-starters-note" hidden></p></div>
       <div class="p-sec" id="p-ask"><h3>Ask me about</h3><ul class="tags" id="p-tags"></ul></div>
+      <div class="p-sec" id="p-topics" hidden><h3 id="p-topics-h">Would like to talk about</h3><p class="note" id="p-topics-note">In their own words.</p><ul class="tags" id="p-topics-list"></ul><a class="pbtn" id="p-li" href="https://www.linkedin.com/" target="_blank" rel="noopener" hidden>LinkedIn profile</a></div>
+      <div class="p-sec" id="p-mine" hidden></div>
       <div class="p-sec" id="p-meet">
         <h3 id="p-meet-h">Worth meeting</h3>
         <p class="note">Suggested by TD SYNNEX based on what each company does and shares publicly.</p>
@@ -1200,6 +1209,8 @@ const K_LIST = "es-oahu-2026-mylist", K_ME = "es-oahu-2026-me2";
 let saved = new Set(store.get(K_LIST, []));
 const byId = Object.fromEntries(PEOPLE.map(p => [p.id, p]));
 let me = store.get(K_ME, null); if(!byId[me]) me = null;
+const K_PROFILES = "es-oahu-2026-profiles", K_PTOKEN = "es-oahu-2026-ptoken";
+let PROFILES = store.get(K_PROFILES, {}); if(!PROFILES || typeof PROFILES !== "object") PROFILES = {};   /* attendee-written conversation topics, loaded from the summit Worker */
 const persist = () => store.set(K_LIST, [...saved]);
 const gColor = g => `var(--g-${g})`;
 const photo = id => PHOTOS[id] ? "data:image/webp;base64," + PHOTOS[id] : "";
@@ -1288,7 +1299,7 @@ function renderHome(){
   } else {
     const intros = (p.meet||[]).length;
     h += `<div class="greet" style="--ring:${gColor(p.g)}"><img src="${photo(p.id)}" alt="" width="64" height="64"><div><h2>Aloha, ${esc(first(p))}</h2>${intros ? `<p>Here’s who we’d introduce you to at the summit.</p>` : ""}</div></div>`;
-    h += nowCard() + glanceBlock() + connectBlock() + helpRow();
+    h += nowCard() + (PROFILES[p.id] ? "" : `<div class="block topiccard"><h3>Tell people what to ask you about</h3><p>Add up to three topics you’d like to talk about. Other attendees and the summit assistant use them to find the right conversation.</p><button type="button" class="pbtn pri" data-open="${p.id}">Add my topics</button></div>`) + glanceBlock() + connectBlock() + helpRow();
     if(intros) h += `<div class="block"><ul class="meet">${meetRows(p)}</ul><p class="intro">Picked by TD SYNNEX from what each company does and shares publicly. Any TD SYNNEX host can make the introduction.</p></div>`;
   }
   h += roomBlock();
@@ -2116,7 +2127,7 @@ const SPARKLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const SUGGEST = ["What’s happening now?", "Where do I go for breakfast?", "What should I wear Sunday?", "Who should I meet?"];
 let askOpen = false, askFocus = null, askBusy = false, askLeft = null; const askLog = [];
 async function askCall(payload){
-  const c = new AbortController(), t = setTimeout(() => c.abort(), 25000);
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 45000);   /* a web lookup can take a few seconds more */
   try { const r = await fetch(AI_URL, { method:"POST", body:JSON.stringify({ did:FBID, me:me || undefined, ...payload }), headers:{ "Content-Type":"text/plain" }, signal:c.signal });
     let body = {}; try { body = await r.json(); } catch(e){} return { status:r.status, body }; } finally { clearTimeout(t); }
 }
@@ -2132,8 +2143,8 @@ function actionButtons(actions){
 function renderAsk(){
   const box = $("#abody"); if(!box) return;
   const empty = !askLog.length;
-  box.innerHTML = `<div class="askhead"><h2 id="a-title">Ask the Summit</h2><p>Answers come only from this guide. Nothing about sales or private details.</p></div>
-    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
+  box.innerHTML = `<div class="askhead"><h2 id="a-title">Ask the Summit</h2><p>Answers start with this guide and check the web when needed. Nothing about sales or private details.</p></div>
+    <div class="chat" id="a-chat" aria-live="polite">${askLog.map(m => `<div class="msg ${m.role}${m.dots ? " dots" : ""}">${m.dots ? "<span></span><span></span><span></span>" : esc(m.text)}${m.web ? `<small class="webnote">Includes information from the web. Confirm hours with the resort concierge.</small>` : ""}${m.actions ? `<div class="acts">${actionButtons(m.actions)}</div>` : ""}</div>`).join("")}</div>
     ${empty ? `<div class="sugg">${SUGGEST.map(q => `<button type="button" data-ask-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
     ${askLeft != null ? `<p class="askleft">${askLeft} question${askLeft === 1 ? "" : "s"} left today</p>` : ""}
     <form class="askbar" id="a-form"><textarea id="a-input" rows="1" maxlength="300" placeholder="Ask a question" aria-label="Your question"></textarea>
@@ -2152,7 +2163,7 @@ async function sendAsk(q){
   let status = 0, body = {};
   try { ({ status, body } = await askCall({ mode:"ask", q, view: view === "resort" && selPlace ? "map: " + selPlace : view })); } catch(e){ status = 0; }
   askLog.pop(); askBusy = false;
-  if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, actions:body.actions }); }
+  if(status === 200 && body.answer){ askLeft = body.remaining; askLog.push({ role:"ai", text:body.answer, actions:body.actions, web:!!body.web }); }
   else askLog.push({ role:"err", text:askErr(status, body) });
   renderAsk();
 }
@@ -2203,6 +2214,68 @@ document.addEventListener("click", async e => {
   const c = e.target.closest("[data-copy]"); if(!c) return;
   try { await navigator.clipboard.writeText(c.dataset.copy); c.textContent = "Copied"; setTimeout(() => { c.textContent = "Copy"; }, 1500); } catch(x){ toast("Press and hold the text to copy it"); }
 });
+
+/* ---------- Conversation topics: each attendee writes up to three things they'd like to talk about ---------- */
+const PROF_URL = "https://summit-usage.ken-lince.workers.dev/p";
+const PROF_SEND = location.hostname === "copilotplaybook.com" && !NOW_OVERRIDE;
+const LI_OK = /^https:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\//i;
+const TOPIC_HINTS = ["For example: Copilot adoption after day 90", "Something you want advice on", "A kind of person you’d like to meet"];
+function myToken(){
+  try { let t = localStorage.getItem(K_PTOKEN); if(!t){ t = Array.from(crypto.getRandomValues(new Uint8Array(24)), b => (b % 36).toString(36)).join(""); localStorage.setItem(K_PTOKEN, t); } return t; } catch(e){ return null; }
+}
+function renderTopics(id){
+  const pr = PROFILES[id] || {}, topics = Array.isArray(pr.topics) ? pr.topics : [], li = LI_OK.test(pr.linkedin || "") ? pr.linkedin : "";
+  $("#p-topics").hidden = !(topics.length || li);
+  $("#p-topics-h").textContent = id === me ? "You’d like to talk about" : `${first(byId[id])} would like to talk about`;
+  $("#p-topics-note").hidden = !topics.length;
+  $("#p-topics-list").innerHTML = topics.map(t => `<li class="tag">${esc(t)}</li>`).join("");
+  const a = $("#p-li"); a.hidden = !li; if(li) a.href = li;
+}
+function renderMine(id){
+  const box = $("#p-mine"); box.hidden = id !== me;
+  if(id !== me){ box.innerHTML = ""; return; }
+  const pr = PROFILES[id] || {}, t = pr.topics || [];
+  box.innerHTML = `<h3>Your conversation topics</h3><p class="note">Up to three things you’d like to talk about or kinds of people you’d like to meet. Other attendees see them on your profile, and the summit assistant uses them to suggest who to talk to.</p>
+    <form class="fform" id="mp-form" novalidate>${[0, 1, 2].map(i => `<label for="mp-t${i}">Topic ${i + 1}</label><input id="mp-t${i}" type="text" maxlength="90" autocomplete="off" placeholder="${esc(TOPIC_HINTS[i])}" value="${esc(t[i] || "")}">`).join("")}
+    <label for="mp-li">Your LinkedIn link (optional)</label><input id="mp-li" type="text" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="linkedin.com/in/yourname" value="${esc(pr.linkedin || "")}">
+    <p class="fine">Keep it to topics. Please leave out pricing, deals and anything private.</p>
+    <p class="err" id="mp-err" role="alert" hidden></p>
+    <div class="btnrow"><button type="submit" class="pbtn pri">Save my topics</button>${PROFILES[id] ? `<button type="button" class="pbtn" id="mp-rm">Remove</button>` : ""}</div></form>`;
+  $("#mp-form").addEventListener("submit", saveMine);
+  const rm = $("#mp-rm"); if(rm) rm.addEventListener("click", removeMine);
+}
+async function profCall(payload){
+  const r = await fetch(PROF_URL, { method:"POST", body:JSON.stringify({ did:FBID, pid:me, token:myToken(), ...payload }), headers:{ "Content-Type":"text/plain" } });
+  let body = {}; try { body = await r.json(); } catch(e){} return { status:r.status, body };
+}
+const profErr = (status, body) => body.error === "bad-linkedin" ? "That doesn’t look like a LinkedIn profile link. It should look like linkedin.com/in/yourname." : body.error === "empty" ? "Add at least one topic." : status === 403 ? "This profile was set up from another phone. Ask LeighAnn Scott to reset it." : status === 0 ? "Couldn’t reach the server. Check your connection and try again." : "Couldn’t save just now. Please try again.";
+async function saveMine(e){
+  e.preventDefault(); if(!me) return; const err = $("#mp-err"), bad = m => { err.textContent = m; err.hidden = false; };
+  const topics = [0, 1, 2].map(i => $("#mp-t" + i).value.trim()).filter(Boolean), linkedin = $("#mp-li").value.trim();
+  if(!topics.length && !linkedin) return bad("Add at least one topic.");
+  const btn = e.submitter || $("#mp-form button[type=submit]"); btn.disabled = true;
+  let status = 0, body = {};
+  if(PROF_SEND){ try { ({ status, body } = await profCall({ action:"save", topics, linkedin })); } catch(x){ status = 0; } }
+  else status = 200;   /* preview or rehearsal: keep it on this phone only */
+  btn.disabled = false;
+  if(status !== 200) return bad(profErr(status, body));
+  PROFILES[me] = { topics:topics.map(t => t.slice(0, 90)), linkedin: linkedin ? (/^https?:\/\//i.test(linkedin) ? linkedin : "https://" + linkedin).replace(/^http:/i, "https:") : "", ts:Date.now() };
+  store.set(K_PROFILES, PROFILES); toast(PROF_SEND ? "Saved. Others can see your topics now." : "Saved on this phone (preview)"); renderTopics(me); renderMine(me); if(view === "home") renderHome();
+}
+async function removeMine(){
+  if(!me) return; let status = 200, body = {};
+  if(PROF_SEND){ try { ({ status, body } = await profCall({ action:"remove" })); } catch(x){ status = 0; } }
+  if(status !== 200){ const err = $("#mp-err"); err.textContent = profErr(status, body); err.hidden = false; return; }
+  delete PROFILES[me]; store.set(K_PROFILES, PROFILES); toast("Your topics were removed"); renderTopics(me); renderMine(me); if(view === "home") renderHome();
+}
+async function loadProfiles(){
+  try { const r = await getJson(PROF_URL); if(r && r.profiles && typeof r.profiles === "object"){
+    const had = !!(me && PROFILES[me]); PROFILES = r.profiles; store.set(K_PROFILES, PROFILES);
+    if(current){ renderTopics(current); const ae = document.activeElement; if(!(ae && ae.closest && ae.closest("#mp-form"))) renderMine(current); }
+    if(view === "home" && me && had !== !!PROFILES[me]) renderHome(); } }
+  catch(e){ /* offline: keep what we had */ }
+}
+if(PROF_SEND){ loadProfiles(); setInterval(() => { if(!document.hidden) loadProfiles(); }, 90 * 1000); document.addEventListener("visibilitychange", () => { if(!document.hidden) loadProfiles(); }); addEventListener("online", loadProfiles); }
 
 /* ---------- INFO ---------- */
 function linkify(t){ return esc(t).replace(/\[([^\]]+)\]\(((?:https?:\/\/|tel:|mailto:)[^)\s]+)\)/g, (m,l,u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${l}</a>` : `<a href="${u}">${l}</a>`); }
@@ -2260,6 +2333,7 @@ function fillSheet(id){
   $("#p-sessions").hidden = !sess.length;
   $("#p-sess-list").innerHTML = sess.map(r => `<li><button type="button" data-sess="${r.di}"><span class="w">${esc(r.d.label)}${r.x.start?`, ${fmtTime(r.x.start)}`:""}</span><b>${esc(r.x.title)}</b></button></li>`).join("");
   $("#p-ask").hidden = !(p.ask||[]).length;
+  renderTopics(id); renderMine(id);
   { const st = $("#p-starters"); st.hidden = !(AI_ON && id !== me); $("#p-starters-list").innerHTML = ""; $("#p-starters-note").hidden = true; }
   $("#p-meet").hidden = !(p.meet||[]).length;
   $("#p-meet-h").textContent = `Worth meeting for ${first(p)}`;

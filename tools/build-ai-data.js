@@ -41,6 +41,20 @@ out.people = C.PEOPLE.map((p) => {
     companyCard: card ? { whatTheyDo: card.whatTheyDo, focusAreas: card.focusAreas, conversationTopics: card.talkingPoints } : null,
   };
 });
+// Resort and area guide: researched from public sources into workers/summit-ai/research/resort-research.json (reviewed by Ken).
+// Source URLs are dropped to save tokens; anything not verified is flagged so the assistant tells people to confirm it.
+const slim = (v) => {
+  if (Array.isArray(v)) return v.map(slim);
+  if (v && typeof v === 'object') {
+    const o = {};
+    for (const [k, x] of Object.entries(v)) { if (k === 'source' || k === 'verified') continue; if (x !== null && x !== '') o[k] = slim(x); }
+    if (v.verified === false) o.unverified = true;
+    return o;
+  }
+  return v;
+};
+try { out.resort = slim(JSON.parse(fs.readFileSync(path.join(ROOT, 'workers/summit-ai/research/resort-research.json'), 'utf8'))); }
+catch (e) { out.resort = { note: 'Resort and area guide not loaded.' }; }
 for (const [k, v] of Object.entries(out)) fs.writeFileSync(path.join(ROOT, 'workers/summit-ai/data/' + k + '.json'), JSON.stringify(v));
 const total = Object.values(out).map((v) => JSON.stringify(v).length).reduce((x, y) => x + y, 0);
 console.log('people', out.people.length, '| places', out.places.length, '| agenda days', out.agenda.length, '| info items', out.info.length);

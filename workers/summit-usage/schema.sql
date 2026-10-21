@@ -49,3 +49,16 @@ CREATE TABLE IF NOT EXISTS summit_lockout (
   first_ts INTEGER NOT NULL,
   until    INTEGER NOT NULL DEFAULT 0
 );
+
+-- Attendee conversation profiles: up to three topics each person wants to talk about, plus an optional LinkedIn link.
+-- Written by the attendee about themselves. token_hash is a hash of a secret the claiming phone keeps (first save claims the id).
+-- Read by the guide (GET /p) and by the summit-ai Worker. No sales, account or contact details belong here.
+CREATE TABLE IF NOT EXISTS summit_profiles (
+  pid        TEXT    PRIMARY KEY,   -- attendee id from the guide, such as jacob-sanders
+  token_hash TEXT    NOT NULL,
+  ts         INTEGER NOT NULL,
+  t1         TEXT,
+  t2         TEXT,
+  t3         TEXT,
+  linkedin   TEXT
+);

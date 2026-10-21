@@ -9,6 +9,10 @@
    POST /f   session feedback: {did,session,title,rating,a1,a2,followup,note,name,company,contact}. One row per device
              and session; sending again updates it. Name, company and contact are kept only when followup is true.
 
+   GET  /p   attendee conversation profiles: {"profiles":{"<person id>":{topics:[up to 3],linkedin,ts}}}. Written by attendees about themselves.
+   POST /p   {did, pid, token, action:'save'|'remove', topics:[up to 3 short strings], linkedin}. The first phone to save for a person id claims it
+             (the Worker keeps only a hash of the phone's secret token); later saves must present the same token. Reset a claim with tools/summit-profiles.py.
+
    Privacy: no names, contact details, IP address or user agent are stored. `did` is a random
    id the phone generates for itself, used only to count unique devices. Only requests whose
    Origin is the site itself are accepted. */
@@ -51,6 +55,25 @@ export function cleanFeedback(b, now) {
     company: followup ? txt(b.company, 80) : null,
     contact: followup ? txt(b.contact, 120) : null,
   };
+}
+
+const PID = /^[a-z0-9-]{3,40}$/, TOKEN = /^[a-z0-9]{16,48}$/, LINKEDIN = /^https:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\/(?:in|pub)\/[\w%.À-ɏ-]{2,100}\/?$/i;
+const line = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max) : '');
+
+export function cleanProfile(b) {
+  if (!b || typeof b !== 'object') return null;
+  const did = typeof b.did === 'string' && /^[a-z0-9]{8,32}$/.test(b.did) ? b.did : null;
+  const pid = typeof b.pid === 'string' && PID.test(b.pid) ? b.pid : null;
+  const token = typeof b.token === 'string' && TOKEN.test(b.token) ? b.token : null;
+  if (!did || !pid || !token) return null;
+  if (b.action === 'remove') return { did, pid, token, remove: true };
+  const topics = (Array.isArray(b.topics) ? b.topics : []).map((t) => line(t, 90)).filter(Boolean).slice(0, 3);
+  let linkedin = line(b.linkedin, 160);
+  if (linkedin && !/^https?:\/\//i.test(linkedin)) linkedin = 'https://' + linkedin;
+  if (linkedin && !LINKEDIN.test(linkedin)) return { error: 'bad-linkedin' };
+  linkedin = linkedin ? linkedin.replace(/^http:/i, 'https:') : '';
+  if (!topics.length && !linkedin) return { error: 'empty' };
+  return { did, pid, token, topics, linkedin };
 }
 
 const enc = new TextEncoder();
@@ -109,7 +132,13 @@ export default {
       const { results } = await env.DB.prepare('SELECT id, ts, level, body FROM summit_alerts WHERE active = 1 AND (until IS NULL OR until > ?) ORDER BY id DESC LIMIT 5').bind(Date.now()).all();
       return new Response(JSON.stringify({ alerts: results || [] }), { status: 200, headers: { ...cors(origin), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
     }
-    if (request.method !== 'POST' || !['/u', '/f', '/announce'].includes(url.pathname)) return new Response(null, { status: 404, headers: cors(origin) });
+    if (request.method === 'GET' && url.pathname === '/p') {
+      const { results } = await env.DB.prepare('SELECT pid, ts, t1, t2, t3, linkedin FROM summit_profiles').all();
+      const profiles = {};
+      for (const r of results || []) profiles[r.pid] = { topics: [r.t1, r.t2, r.t3].filter(Boolean), linkedin: r.linkedin || '', ts: r.ts };
+      return new Response(JSON.stringify({ profiles }), { status: 200, headers: { ...cors(origin), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+    }
+    if (request.method !== 'POST' || !['/u', '/f', '/announce', '/p'].includes(url.pathname)) return new Response(null, { status: 404, headers: cors(origin) });
     let body;
     try {
       const text = await request.text();
@@ -119,6 +148,23 @@ export default {
       return new Response(null, { status: 400, headers: cors(origin) });
     }
     if (url.pathname === '/announce') return handleAnnounce(body, request, env, origin);
+    if (url.pathname === '/p') {
+      const h = cors(origin), reply = (status, obj) => new Response(JSON.stringify(obj), { status, headers: { ...h, 'Content-Type': 'application/json' } });
+      const pr = cleanProfile(body);
+      if (!pr) return reply(400, { error: 'bad-request' });
+      if (pr.error) return reply(400, { error: pr.error });
+      const hash = await shortHash('profile|' + pr.token);
+      const row = await env.DB.prepare('SELECT token_hash FROM summit_profiles WHERE pid = ?').bind(pr.pid).first();
+      if (row && row.token_hash && !safeEqual(row.token_hash, hash)) return reply(403, { error: 'claimed' });   // an empty hash means the claim was reset
+      if (pr.remove) { if (row) await env.DB.prepare('DELETE FROM summit_profiles WHERE pid = ?').bind(pr.pid).run(); return reply(200, { ok: true }); }
+      if (!row) {
+        const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM summit_profiles').first();
+        if (n && n.n >= 120) return reply(429, { error: 'full' });
+      }
+      await env.DB.prepare('INSERT INTO summit_profiles (pid, token_hash, ts, t1, t2, t3, linkedin) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(pid) DO UPDATE SET token_hash = excluded.token_hash, ts = excluded.ts, t1 = excluded.t1, t2 = excluded.t2, t3 = excluded.t3, linkedin = excluded.linkedin')
+        .bind(pr.pid, hash, Date.now(), pr.topics[0] || null, pr.topics[1] || null, pr.topics[2] || null, pr.linkedin || null).run();
+      return reply(200, { ok: true });
+    }
     if (url.pathname === '/f') {
       const fb = cleanFeedback(body, Date.now());
       if (!fb) return new Response(null, { status: 400, headers: cors(origin) });
