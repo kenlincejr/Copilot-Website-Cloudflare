@@ -31,6 +31,7 @@ const OUT_OF_SITEMAP = {
   'cpb-original-backup.html': 'backup',
   'cpb-field-guide.html': 'unlinked, awaiting a decision',
   'ask.html': 'chat shell, no content (spec D9)',
+  'executive-summit.html': 'event attendee guide reached by QR code, noindex',
 };
 const PAGE_TYPES = ['playbook', 'engagement', 'tool', 'customer-zero', 'program'];
 // check-facts.py mismatches that predate site search (recorded 2026-10-12 at
