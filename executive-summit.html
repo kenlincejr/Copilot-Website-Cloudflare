@@ -1279,7 +1279,7 @@ function snippet(bio, ts){
 
 /* ---------- views & tabs ---------- */
 const AI_URL = "https://summit-ai.ken-lince.workers.dev/ask";
-const AI_ENABLED = false;                                         // flip to true once the assistant is switched on
+const AI_ENABLED = true;                                          // the assistant is switched on; set to false to hide the Ask tab
 const AI_ON = AI_ENABLED || /[?&]ask=1\b/.test(location.search);  // ?ask=1 previews it while it is off
 const VIEWS = ["home","people","agenda","resort","ask","info"];
 let view = "home";
