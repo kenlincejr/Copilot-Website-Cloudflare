@@ -269,15 +269,23 @@ export function requestBody(env, user, mode, withWeb = true, model, messages) {
 }
 
 // One model call, continuing if the server pauses a long tool turn. Returns the final message and whether it searched.
-async function callModel(env, user, mode, withWeb, model) {
+async function callModel(env, user, mode, withWeb, model, timeoutMs) {
   let messages = [{ role: 'user', content: user }], out = null, usedWeb = false;
+  const signal = AbortSignal.timeout(timeoutMs || 35000);   // one deadline for the whole call, pause_turn continuations included
   for (let i = 0; i < 3; i++) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      // A key that is not scoped to one workspace must also name it; ANTHROPIC_WORKSPACE_ID is an id, not a secret, but is set the same way.
-      headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', ...(env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': env.ANTHROPIC_WORKSPACE_ID } : {}) },
-      body: JSON.stringify(requestBody(env, user, mode, withWeb, model, messages)),
-    });
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', signal,
+        // A key that is not scoped to one workspace must also name it; ANTHROPIC_WORKSPACE_ID is an id, not a secret, but is set the same way.
+        headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', ...(env.ANTHROPIC_WORKSPACE_ID ? { 'anthropic-workspace-id': env.ANTHROPIC_WORKSPACE_ID } : {}) },
+        body: JSON.stringify(requestBody(env, user, mode, withWeb, model, messages)),
+      });
+    } catch (e) {
+      // A timeout or a network failure: status 0 means "never got an answer", which the caller treats like any other upstream failure.
+      console.log('anthropic-fetch-failed', model || mode, String(e && e.name).slice(0, 40));
+      return { ok: false, status: 0 };
+    }
     if (!res.ok) {
       // Log only the status and error type (never the question or the key) so a bad key, no credit or a model problem is visible in `wrangler tail`.
       let t = ''; try { const e = await res.json(); t = (e && e.error && (e.error.type + ': ' + String(e.error.message).slice(0, 160))) || ''; } catch (e) { /* ignore */ }
@@ -345,29 +353,43 @@ const app = {
     if (!used) {
       // This phone is out of questions: give the connection its count back so other phones on it are not charged.
       await env.DB.prepare('UPDATE summit_ai_usage SET n = n - 1 WHERE did = ? AND day = ? AND n > 0').bind(ipKey, day).run();
-      return json(429, { error: 'daily-limit', limit: perDevice });
+      return json(429, { error: 'daily-limit', limit: perDevice, remaining: 0 });
     }
 
     // At most two model calls per question: the first try, then one retry. Connect retries on Haiku; ask retries from the guide
     // data alone (faster, no web); a 400 (web search not allowed for this account or model) always retries without the web.
-    const attempt = async (model, withWeb) => {
-      const r = await callModel(env, user, mode, withWeb, model);
+    // The page gives up after 45 s (70 s for a brief), so the two calls share one budget and the retry only starts with time left.
+    const t0 = Date.now(), budget = mode === 'connect' ? 62000 : 40000, firstMs = mode === 'connect' ? 45000 : 28000;
+    const attempt = async (model, withWeb, ms) => {
+      const r = await callModel(env, user, mode, withWeb, model, ms);
       if (!r.ok) return { status: r.status };
       const cleaned = sanitize(parseModelText(r.text), mode, r.usedWeb);
       console.log('answered', mode, (r.out && r.out.model) || model, 'web', r.usedWeb, r.out && r.out.stop_reason);
       if (!cleaned) console.log('unparseable-answer', model || mode, r.out && r.out.stop_reason, r.text.length, r.text.slice(0, 160).replace(/\s+/g, ' '));
       return cleaned ? { cleaned, usedWeb: r.usedWeb } : { status: 200 };
     };
+    // A question that failed because Anthropic could not answer (status 0 = timeout or network, or any error status) is given back to the
+    // phone and the connection, so a credit lapse, a bad key or an outage cannot use up a room's 25 questions each. An answer that came back
+    // but could not be read (status 200) is not refunded, so a retry loop is never free.
+    const giveBack = async () => {
+      await env.DB.prepare('UPDATE summit_ai_usage SET n = n - 1 WHERE did IN (?1, ?2) AND day = ?3 AND n > 0').bind(did, ipKey, day).run();
+      console.log('refunded', mode);
+    };
     let result;
     try {
-      result = await attempt(undefined, true);
+      result = await attempt(undefined, true, firstMs);
       if (!result.cleaned) {
         // A rate limit or overload from Anthropic (a room full of phones asking at once) clears in a moment: pause before the one retry.
         if ([429, 503, 529].includes(result.status)) await new Promise((r) => setTimeout(r, 1500 + Math.random() * 1500));
-        result = await attempt(mode === 'connect' ? HAIKU(env) : undefined, mode === 'connect' && result.status !== 400);
+        const left = budget - (Date.now() - t0);
+        if (left >= 8000) result = await attempt(mode === 'connect' ? HAIKU(env) : undefined, mode === 'connect' && result.status !== 400, left);
       }
-    } catch (e) { console.log('fetch-failed', String(e && e.message).slice(0, 120)); return json(502, { error: 'ai-unavailable' }); }
-    if (!result.cleaned) return json(502, { error: 'ai-unavailable' });
+    } catch (e) { console.log('fetch-failed', String(e && e.message).slice(0, 120)); result = { status: 0 }; }
+    if (!result.cleaned) {
+      const refunded = result.status !== 200;
+      if (refunded) await giveBack();
+      return json(502, { error: 'ai-unavailable', remaining: Math.max(0, perDevice - used + (refunded ? 1 : 0)) });
+    }
     let extras = {};
     if (mode === 'connect') {
       const nd = hstDay(), hm = new Date().toLocaleTimeString('en-GB', { timeZone: 'Pacific/Honolulu', hour: '2-digit', minute: '2-digit', hour12: false }).split(':').map(Number);
