@@ -1,4 +1,4 @@
-/* assets/site-search.js?v=8: the one site search module
+/* assets/site-search.js?v=9: the one site search module
    (specs/site-search-v2.spec.md §3.1, specs/site-search-v2.1-hero-pill.spec.md).
    Loaded by every page in sitemap.xml
    (see DESIGN.md 8b.5) except copilot-credit-planner.html, which stays free
@@ -15,7 +15,8 @@
      mount  the launcher panel on every page: opened by the floating button,
             or on the home page (v2.1) by the hero pill (#hero-search), which
             replaces the button there and has no Ask tab; the keyboard
-            shortcuts; "Read this next"; jump
+            shortcuts; "Read this next"; jump; and, only inside an installed
+            Summit guide window, a "Back to the Summit guide" pill
 
    Phase B (spec §4): suggested searches (F2), boosting, rewrite and rerank
    request options from data/site-search-config.json (F4, F5), and the
@@ -32,7 +33,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '8';
+  var VERSION = '9';
   var ENDPOINT = 'https://143cf7a6-834c-406c-b5ea-62e00f4de7bd.search.ai.cloudflare.com/';
   var MAX_PAGES = 6;
 
@@ -1917,8 +1918,43 @@
     io.observe(host);
   };
 
+  // The Executive Summit guide installs as a home-screen app. Older installs
+  // took the whole site as their scope, so a playbook link tapped there opens
+  // in the app window with no browser controls. In that standalone window,
+  // offer one fixed way back to the guide. Inline styles, no storage, below
+  // the search launcher and its dialog.
+  mount.summitPill = function () {
+    var mm = function (q) { try { return window.matchMedia(q); } catch (e) { return null; } };
+    var sa = mm('(display-mode: standalone)');
+    if (!((sa && sa.matches) || window.navigator.standalone === true)) return;
+    if (location.pathname === '/executive-summit.html' || !document.body || document.getElementById('summit-back-pill')) return;
+    var a = document.createElement('a');
+    a.id = 'summit-back-pill';
+    a.href = '/executive-summit.html';
+    a.textContent = '← Back to the Summit guide';
+    a.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom, 0px) + 64px);transform:translateX(-50%);' +
+      'z-index:2147482999;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:44px;' +
+      'max-width:calc(100vw - 32px);margin:0;padding:0 20px;border-radius:22px;font:700 15px/1 -apple-system,BlinkMacSystemFont,' +
+      '"Segoe UI",Roboto,Helvetica,Arial,sans-serif;text-decoration:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2);' +
+      '-webkit-tap-highlight-color:transparent';
+    var dark = mm('(prefers-color-scheme: dark)');
+    var paint = function () {
+      var d = !!(dark && dark.matches);
+      a.style.background = d ? '#0f2a2e' : '#004A54';
+      a.style.color = '#ffffff';
+      a.style.border = '1px solid ' + (d ? '#5cc2cf' : '#004A54');
+    };
+    paint();
+    if (dark) {
+      if (dark.addEventListener) dark.addEventListener('change', paint);
+      else if (dark.addListener) dark.addListener(paint);
+    }
+    document.body.appendChild(a);
+  };
+
   mount.run = function () {
     if (mount.embedded()) return;
+    try { mount.summitPill(); } catch (e) { /* never in the way of search */ }
     api.loadConfig();
     log.start();
     var pill = document.getElementById('hero-search');
