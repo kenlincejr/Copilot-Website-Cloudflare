@@ -290,6 +290,7 @@ button{font:inherit;color:inherit}
 .spk .by{display:inline-flex;align-items:center;min-height:36px;font-size:14px;font-weight:600;color:var(--mute)}
 /* Happening now / Up next card on Home */
 #nowcard:not(:empty){margin-top:18px}
+#nowcard .cd + .nowc, #nowcard .cdbar + .nowc{margin-top:14px}
 .nowc{position:relative;overflow:hidden;border-radius:20px;padding:16px 18px 18px;color:#fff;
   background:radial-gradient(120% 90% at 100% 0%,rgba(242,194,48,.28),transparent 55%),linear-gradient(160deg,#004a54,#006a77)}
 .nowc .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -1777,7 +1778,8 @@ function speakerChips(s){
 }
 function nowCardInner(){
   const st = agendaState(); if(!st) return "";
-  if(st.kind === "before") return countdownCard(st);
+  // Before the trip the countdown keeps its spot and the first session everyone attends sits under it, tappable into the agenda.
+  if(st.kind === "before") st.s = (st.day.sessions || []).find(x => x.rate && x.start) || (st.day.sessions || []).find(x => x.start) || null;
   const when = s => `${fmtTime(s.start)}${s.end ? " to " + fmtTime(s.end) : ""}`;
   const cta = label => `<button type="button" class="cta" data-agenda="${st.di}">${label}${ARROW}</button>`;
   const todayItems = (st.all||[]).filter(a => a.allDay || (st.now && st.now.min < 17*60));   // "as scheduled" items only matter during the day
@@ -1794,8 +1796,13 @@ function nowCardInner(){
                  : `<p class="count">Starts in ${fmtDur(st.until)}</p>`;
     extra = speakerChips(s) + thenLine + allLine;
   } else if(st.kind === "before"){
-    tag = "Coming up"; ttl = st.days === 1 ? "The summit starts tomorrow" : `The summit starts in ${st.days} days`;
-    meta = `${st.day.long}. ${st.day.blurb}`;
+    tag = "Coming up";
+    if(st.s){
+      ttl = st.s.title; meta = `${st.day.long} · ${when(st.s)}${st.s.where ? " · " + st.s.where : ""}`;
+      count = `<p class="count">${st.days === 1 ? "Starts tomorrow" : `Starts in ${st.days} days`}</p>`;
+      const also = (st.day.sessions || []).filter(x => x !== st.s).map(x => esc(x.title));
+      extra = speakerChips(st.s) + (also.length ? `<p class="line"><b>Also ${esc(st.day.long.split(",")[0])}</b>${also.join(", ")}</p>` : "");
+    } else { ttl = st.days === 1 ? "The summit starts tomorrow" : `The summit starts in ${st.days} days`; meta = `${st.day.long}. ${st.day.blurb}`; }
   } else if(st.kind === "done"){
     tag = "That’s a wrap for today"; ttl = `Tomorrow: ${st.nextDay.title}`; meta = st.nextDay.blurb;
     label = "See tomorrow";
@@ -1806,7 +1813,7 @@ function nowCardInner(){
     tag = "Mahalo"; ttl = "Thank you for joining us"; meta = "Safe travels and continued momentum.";
   }
   if(st.kind === "done") st.di = st.di + 1;
-  return `<div class="nowc" data-kind="${st.kind}"><div class="top"><span class="tag">${tag}</span><span class="clock">${clockText(st.now)}</span></div>
+  return (st.kind === "before" ? countdownCard(st) : "") + `<div class="nowc" data-kind="${st.kind}"><div class="top"><span class="tag">${tag}</span><span class="clock">${clockText(st.now)}</span></div>
     <button type="button" class="main" data-agenda="${st.di}"><span class="ttl">${esc(ttl)}</span>${meta ? `<span class="meta">${esc(meta)}</span>` : ""}</button>
     ${count}${extra}<div class="ctas">${cta(label)}${mapBtn}</div></div>`;
 }
