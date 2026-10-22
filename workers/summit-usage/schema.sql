@@ -42,7 +42,9 @@ CREATE TABLE IF NOT EXISTS summit_feedback (
 );
 CREATE INDEX IF NOT EXISTS summit_feedback_session ON summit_feedback (session);
 
--- Wrong-PIN tracking for in-app announcements. Keys are a hash of the connection, the device id, or 'global'; no raw IPs.
+-- Wrong-PIN tracking for in-app announcements. Keys are a hash of the connection or the device id; no raw IPs.
+-- ('global' rows from before 2026-10-21 are no longer read.) The same table holds the daily per-connection caps:
+-- key 'cap:<claim|u|f>:<Hawaii date>:<salted hash>', fails = requests counted that day. No schema change.
 CREATE TABLE IF NOT EXISTS summit_lockout (
   key      TEXT    PRIMARY KEY,
   fails    INTEGER NOT NULL DEFAULT 0,
