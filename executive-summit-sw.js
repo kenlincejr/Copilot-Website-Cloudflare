@@ -35,19 +35,19 @@ self.addEventListener('fetch', event => {
   if (url.origin !== location.origin) return;
 
   if (url.pathname === PAGE) {                       // the page: network first, cache as the fallback
+    // The fetch is not abandoned when the 2.5 s race is lost: it keeps going and refreshes the cache for the next open.
+    let done; event.waitUntil(new Promise(res => { done = res; }));
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
+      const hit = await cache.match(PAGE);
+      const net = fetch(req, { cache: 'no-cache' }).then(r => { if (r && r.ok) cache.put(PAGE, r.clone()); return r; });
+      net.then(() => done(), () => done());
       try {
-        const net = await Promise.race([
-          fetch(req, { cache: 'no-cache' }),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2500))
-        ]);
-        if (net && net.ok) cache.put(PAGE, net.clone());
-        return net;
+        const r = await Promise.race([net, new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2500))]);
+        if (r && r.ok) return r;                      // only a good page beats the cached one (a 404 or 5xx mid-deploy does not)
+        return hit || r;
       } catch (e) {
-        const hit = await cache.match(PAGE);
-        if (hit) return hit;
-        return fetch(req);
+        return hit || fetch(req);
       }
     })());
     return;

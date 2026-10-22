@@ -322,6 +322,7 @@ button{font:inherit;color:inherit}
 .upd button svg{width:18px;height:18px}
 .upd button:focus-visible{outline:3px solid #006a77;outline-offset:-3px;border-radius:8px}
 .upd.busy svg{animation:spin .8s linear infinite}
+.upd.new span{color:#0b4f58;font-weight:700}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.upd.busy svg{animation:none}}
 .ptr{position:fixed;left:0;right:0;top:calc(var(--sat) - 40px);z-index:50;display:flex;justify-content:center;pointer-events:none;opacity:0;transition:opacity .15s}
@@ -1154,6 +1155,7 @@ details.hints[open] summary::after{transform:rotate(-135deg) translateY(-2px)}
         </picture>
         <p>TD SYNNEX and Microsoft Executive Summit</p>
         <p>The Ritz-Carlton O’ahu, Turtle Bay, October 24–27, 2026</p>
+        <p id="buildid" style="font-size:12.5px"></p>
       </footer>
     </div>
   </section>
@@ -2881,6 +2883,7 @@ function renderMine(id){
     <form class="fform" id="mp-form" novalidate>${[0, 1, 2].map(i => `<label for="mp-t${i}">Topic ${i + 1}</label><input id="mp-t${i}" type="text" maxlength="90" autocomplete="off" placeholder="${esc(TOPIC_HINTS[i])}" value="${esc(t[i] || "")}">`).join("")}
     <label for="mp-li">Your LinkedIn link (optional)</label><input id="mp-li" type="text" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="linkedin.com/in/yourname" value="${esc(pr.linkedin || "")}">
     <p class="fine">${LINKEDIN[id] && !pr.linkedin ? "We already linked your public LinkedIn profile. Paste a link here only if it’s wrong. " : ""}Keep it to topics. Please leave out pricing, deals and anything private.</p>
+    ${device().os === "ios" && !isStandalone() ? `<p class="fine">Planning to add this guide to your home screen? Do that first, then add your topics in the app. The app and Safari keep separate copies of what you save.</p>` : ""}
     <p class="err" id="mp-err" role="alert" hidden></p>
     <div class="btnrow"><button type="submit" class="pbtn pri">Save my topics</button>${PROFILES[id] ? `<button type="button" class="pbtn" id="mp-rm">Remove</button>` : ""}</div></form>`;
   $("#mp-form").addEventListener("submit", saveMine);
@@ -2893,7 +2896,7 @@ async function profCall(payload){
   const r = await fetch(PROF_URL, { method:"POST", body:JSON.stringify({ did:FBID, pid:me, token:myToken(), ...payload }), headers:{ "Content-Type":"text/plain" } });
   let body = {}; try { body = await r.json(); } catch(e){} return { status:r.status, body };
 }
-const profErr = (status, body) => body.error === "bad-linkedin" ? "That doesn’t look like a LinkedIn profile link. It should look like linkedin.com/in/yourname." : body.error === "empty" ? "Add at least one topic." : status === 403 ? "This profile was set up from another phone. Ask LeighAnn Scott to reset it." : status === 0 ? "Couldn’t reach the server. Check your connection and try again." : "Couldn’t save just now. Please try again.";
+const profErr = (status, body) => body.error === "bad-linkedin" ? "That doesn’t look like a LinkedIn profile link. It should look like linkedin.com/in/yourname." : body.error === "empty" ? "Add at least one topic." : status === 403 ? "This profile was saved from another phone, or from the browser instead of the app. Edit your topics where you first saved them, or ask Ken Lince to reset it." : status === 0 ? "Couldn’t reach the server. Check your connection and try again." : "Couldn’t save just now. Please try again.";
 async function saveMine(e){
   e.preventDefault(); if(!me) return; const err = $("#mp-err"), bad = m => { err.textContent = m; err.hidden = false; };
   const topics = [0, 1, 2].map(i => $("#mp-t" + i).value.trim()).filter(Boolean), liRaw = $("#mp-li").value.trim();
@@ -3155,7 +3158,7 @@ function renderHelp(){
   } else {
     if(deferredInstall && !helpKey) h += `<button class="h-install" type="button" id="h-install">Install the app</button><p class="h-note" style="margin-top:12px">One tap. Or follow the steps below.</p>`;
     h += `<ol class="steps">${GUIDES[key].steps.map(s => `<li><span>${s}</span></li>`).join("")}</ol>`;
-    if(key !== "desktop") h += `<p class="h-note">Tip: after you add it, pick your name again in the app. Stars you saved in the browser stay in the browser.</p>`;
+    if(key !== "desktop") h += `<p class="h-note">Tip: add it to your home screen first, then pick your name and add your topics in the app. Stars and topics you saved in the browser stay with the browser.</p>`;
   }
   const others = Object.keys(GUIDES).filter(k => k !== key);
   h += `<label class="vh" for="h-other">Show steps for another phone</label><select id="h-other" class="h-copy" style="width:100%;margin-top:16px"><option value="">Using a different phone or browser?</option>${others.map(k => `<option value="${k}">${GUIDES[k].label}</option>`).join("")}</select>`;
@@ -3199,6 +3202,8 @@ if("serviceWorker" in navigator && /^https?:/.test(location.protocol)){   // kee
    A home-screen app on iPhone has no reload button and no pull-to-refresh, so give it both.
    Fetching with cache:"reload" first means the reload gets the newest published page. */
 const LOADED_AT = new Date();
+const BUILD = "2026-10-22.2";   // bumped with each push; shown at the bottom of Info
+$("#buildid").textContent = "Guide version " + BUILD;
 let refreshing = false;
 function refreshNow(){
   if(refreshing) return; refreshing = true; track("refresh"); flushTrack();
@@ -3207,10 +3212,34 @@ function refreshNow(){
   try { fetch(location.href.split("#")[0], { cache:"reload" }).then(go, go); } catch(e){ go(); }
   setTimeout(go, 4000);
 }
+/* A phone that is already open learns when a newer page is published: a cheap HEAD of this page, compared with what it saw at load.
+   The bar is shown in every mode (a Safari tab never refreshes itself) and never while a sheet or the full map is open. */
+const overlayOpen = () => !!(current || helpOpen || cardOpen || mapFull || fbOpen);
+let updBase = null, updNew = false, updAt = 0;
+async function updSig(){
+  const r = await fetch(location.pathname, { method:"HEAD", cache:"no-store" });
+  if(!r.ok) return null;
+  const sig = [r.headers.get("etag"), r.headers.get("last-modified"), r.headers.get("content-length")].join("|");
+  return sig === "||" ? null : sig;
+}
+function showUpdate(){
+  if(!updNew || refreshing || overlayOpen()) return;
+  const bar = $("#updbar"); bar.hidden = false; bar.classList.add("new");
+  $("#updtxt").textContent = "A newer version is ready.";
+}
+async function checkUpdate(force){
+  if(updNew || location.hostname === "localhost" && !/[?&]upd=1\b/.test(location.search)) return;
+  if(!force && Date.now() - updAt < 180000) return;
+  updAt = Date.now();
+  try{ const sig = await updSig(); if(!sig) return;
+    if(updBase === null) updBase = sig; else if(sig !== updBase){ updNew = true; showUpdate(); } }catch(e){}
+}
+$("#refresh").addEventListener("click", refreshNow);
+checkUpdate(true);
+setInterval(() => { if(document.hidden) return; checkUpdate(); showUpdate(); }, 20000);
 if(isStandalone()){
   $("#updbar").hidden = false;
   $("#updtxt").textContent = "Updated " + LOADED_AT.toLocaleTimeString([], { hour:"numeric", minute:"2-digit" });
-  $("#refresh").addEventListener("click", refreshNow);
   (function(){
     const pill = document.createElement("div"); pill.className = "ptr"; pill.setAttribute("aria-hidden","true"); pill.innerHTML = "<span></span>"; document.body.appendChild(pill);
     const label = pill.firstChild, NEED = 140; let y0 = null, dy = 0;
@@ -3226,9 +3255,11 @@ if(isStandalone()){
   let hiddenAt = 0;
   document.addEventListener("visibilitychange", () => {
     if(document.hidden){ hiddenAt = Date.now(); return; }
-    if(hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !current && !helpOpen && !cardOpen && !mapFull && !fbOpen) refreshNow();
+    if(hiddenAt && Date.now() - hiddenAt > 10 * 60 * 1000 && !current && !helpOpen && !cardOpen && !mapFull && !fbOpen) refreshNow();
   });
 }
+
+document.addEventListener("visibilitychange", () => { if(!document.hidden) checkUpdate(true); });
 
 /* ---------- focus stays in the top overlay ----------
    While a sheet or the full map is open, everything behind it is inert, so Tab and
