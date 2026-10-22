@@ -361,7 +361,11 @@ const app = {
     let result;
     try {
       result = await attempt(undefined, true);
-      if (!result.cleaned) result = await attempt(mode === 'connect' ? HAIKU(env) : undefined, mode === 'connect' && result.status !== 400);
+      if (!result.cleaned) {
+        // A rate limit or overload from Anthropic (a room full of phones asking at once) clears in a moment: pause before the one retry.
+        if ([429, 503, 529].includes(result.status)) await new Promise((r) => setTimeout(r, 1500 + Math.random() * 1500));
+        result = await attempt(mode === 'connect' ? HAIKU(env) : undefined, mode === 'connect' && result.status !== 400);
+      }
     } catch (e) { console.log('fetch-failed', String(e && e.message).slice(0, 120)); return json(502, { error: 'ai-unavailable' }); }
     if (!result.cleaned) return json(502, { error: 'ai-unavailable' });
     let extras = {};
