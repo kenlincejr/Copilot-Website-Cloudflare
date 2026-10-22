@@ -39,8 +39,8 @@ self.addEventListener('fetch', event => {
       const cache = await caches.open(CACHE);
       try {
         const net = await Promise.race([
-          fetch(req),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 4500))
+          fetch(req, { cache: 'no-cache' }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2500))
         ]);
         if (net && net.ok) cache.put(PAGE, net.clone());
         return net;

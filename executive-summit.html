@@ -196,6 +196,7 @@ button{font:inherit;color:inherit}
 .glance2{margin-top:14px;padding:14px 16px 12px;border-radius:20px;border:1.5px solid var(--rule);background:var(--surface)}
 .glance2 h5{margin:0 0 10px;font-size:12.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
 .gbar{position:relative;height:36px;border-radius:12px;background:var(--sunk)}
+.gbar::before{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
 .gseg{all:unset;box-sizing:border-box;position:absolute;top:4px;bottom:4px;min-width:4px;border-radius:8px;background:var(--kc);cursor:pointer;transition:transform .15s}
 .gseg.past{opacity:.35}
 .gseg:active{transform:scaleY(1.15)}
@@ -334,7 +335,7 @@ button{font:inherit;color:inherit}
 .mapseg{display:flex;gap:6px;padding:10px 10px 0}
 .mapseg button{flex:1;min-height:40px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;cursor:pointer}
 .mapseg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.mapview{position:relative;height:min(46vh,420px);min-height:280px;margin-top:10px;overflow:hidden;touch-action:pan-y;background:#c7dadb;cursor:grab;user-select:none;-webkit-user-select:none}
+.mapview{position:relative;height:min(46vh,420px);min-height:280px;margin-top:10px;overflow:hidden;overflow:clip;touch-action:pan-y;background:#c7dadb;cursor:grab;user-select:none;-webkit-user-select:none}
 .mapview:active{cursor:grabbing}
 .mapview:focus-visible{outline:3px solid var(--teal);outline-offset:-3px}
 .mapstage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
@@ -532,7 +533,10 @@ body.card-open #cardsheet{transform:translateY(0);pointer-events:auto}
 .alertbar .ic{flex:0 0 auto;width:22px;height:22px;margin-top:2px}
 .alertbar .tx{flex:1;min-width:0}
 .alertbar .tx small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.85}
-.alertbar .tx b{display:block;font-size:15.5px;line-height:1.35;font-weight:650;margin-top:1px}
+.alertbar .tx b{display:block;font-size:15.5px;line-height:1.35;font-weight:650;margin-top:1px;overflow-wrap:anywhere}
+.alertbar .tx b.aclamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+.alertbar .tx .almore{all:unset;cursor:pointer;display:inline-flex;align-items:center;min-height:44px;margin:-8px 0 -10px;font-size:13.5px;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.alertbar .tx .almore:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .alertbar .tx span{display:block;font-size:12.5px;opacity:.8;margin-top:2px}
 .alertbar button{all:unset;cursor:pointer;flex:0 0 auto;width:44px;height:44px;margin:-6px -8px -6px 0;display:grid;place-items:center;border-radius:50%}
 .alertbar button svg{width:20px;height:20px}
@@ -1876,7 +1880,8 @@ function renderAgenda(){
 }
 function agOpenSession(key){ const el = document.getElementById("sx-" + key.replace(":", "-")); if(!el) return;
   const card = el.querySelector(".scard"), h = el.querySelector("[data-sx]"); if(card && !card.classList.contains("open") && h) h.click();
-  window.scrollTo({ top: Math.max(0, scrollY + el.getBoundingClientRect().top - 90), behavior: reduced() ? "auto" : "smooth" }); }
+  window.scrollTo({ top: Math.max(0, scrollY + el.getBoundingClientRect().top - 90 - bannerH()), behavior: reduced() ? "auto" : "smooth" }); }
+function bannerH(){ const ab = $("#alertbar"); return ab && !ab.hidden ? ab.offsetHeight : 0; }   // the sticky announcement banner covers this much of the top
 function icsFor(d, s){
   const p2 = n => String(n).padStart(2, "0");
   const stamp = (date, min) => { const [y, m, dd] = date.split("-").map(Number), t = new Date(Date.UTC(y, m - 1, dd, 0, min + 600)); return `${t.getUTCFullYear()}${p2(t.getUTCMonth() + 1)}${p2(t.getUTCDate())}T${p2(t.getUTCHours())}${p2(t.getUTCMinutes())}00Z`; };   // Hawaii is UTC-10 all year
@@ -1886,8 +1891,10 @@ function icsFor(d, s){
   const where = [s.where, "The Ritz-Carlton O’ahu, Turtle Bay"].filter((x, i, a) => x && a.indexOf(x) === i).join(", ");
   return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//TD SYNNEX Microsoft Executive Summit//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
     `UID:${day8(d.date)}-${(s.start || "allday").replace(":", "")}-${fbSlug(s.title)}@copilotplaybook.com`, `DTSTAMP:${stamp("2026-10-01", 0)}`, when,
-    `SUMMARY:${tx(s.title)}`, `LOCATION:${tx(where)}`, `DESCRIPTION:${tx([s.desc, "TD SYNNEX and Microsoft Executive Summit. Times are Hawaii time."].filter(Boolean).join(" "))}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    `SUMMARY:${tx(s.title)}`, `LOCATION:${tx(where)}`, `DESCRIPTION:${tx([s.desc, "TD SYNNEX and Microsoft Executive Summit. Times are Hawaii time."].filter(Boolean).join(" "))}`, "END:VEVENT", "END:VCALENDAR"].map(icsFold).join("\r\n");
 }
+function icsFold(l){ let out = "", n = 0; for(const ch of l){ const b = new TextEncoder().encode(ch).length; if(n + b > 75){ out += "\r\n "; n = 1; } out += ch; n += b; } return out; }   // RFC 5545: lines of 75 octets at most
+const icsName = t => { const s = t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); return s.length <= 40 ? s : s.slice(0, 41).replace(/-[^-]*$/, ""); };   // file name cut at a word
 document.addEventListener("click", e => {
   const h = e.target.closest("[data-sx]");
   if(h){ const card = h.closest(".scard"), k = h.dataset.sx, on = !card.classList.contains("open");
@@ -1895,10 +1902,13 @@ document.addEventListener("click", e => {
     const inner = card.querySelector(".sinner"); if(inner) inner.inert = !on;
     if(on){ agOpen.add(k); agClosed.delete(k); track("view", "session"); } else { agOpen.delete(k); agClosed.add(k); } return; }
   const g = e.target.closest("[data-gjump]"); if(g){ agOpenSession(g.dataset.gjump); return; }
+  const gb = e.target.closest(".gbar"); if(gb){   // a tap between thin segments goes to the nearest one
+    let best = null, bd = Infinity; gb.querySelectorAll("[data-gjump]").forEach(b => { const r = b.getBoundingClientRect(), d = e.clientX < r.left ? r.left - e.clientX : Math.max(0, e.clientX - r.right); if(d < bd){ bd = d; best = b; } });
+    if(best) agOpenSession(best.dataset.gjump); return; }
   const c = e.target.closest("[data-ics]");
   if(c){ const [di, si] = c.dataset.ics.split(":").map(Number), d = AGENDA[di], s = d && d.sessions[si]; if(!s) return;
     try { const blob = new Blob([icsFor(d, s)], { type:"text/calendar;charset=utf-8" }), url = URL.createObjectURL(blob), a = document.createElement("a");
-      a.href = url; a.download = fbSlug(s.title) + ".ics"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); track("view", "calendar"); toast("Opening your calendar"); }
+      a.href = url; a.download = icsName(s.title) + ".ics"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000); track("view", "calendar"); toast("Calendar file ready"); }
     catch(x){ toast("Couldn’t make the calendar file"); } return; }
   const q = e.target.closest("[data-sess-ask]");
   if(q){ const [di, si] = q.dataset.sessAsk.split(":").map(Number), d = AGENDA[di], s = d && d.sessions[si]; if(!s || !AI_ON) return;
@@ -1908,13 +1918,42 @@ document.addEventListener("click", e => {
 agendaDay = null;
 function focusNow(){ // bring the live or next session into view when the selected day is today
   const el = document.querySelector("#agenda .sx.is-now"); if(!el) return;
-  window.scrollTo({ top: Math.max(0, scrollY + el.getBoundingClientRect().top - 150), behavior: reduced() ? "auto" : "smooth" });
+  window.scrollTo({ top: Math.max(0, scrollY + el.getBoundingClientRect().top - 150 - bannerH()), behavior: reduced() ? "auto" : "smooth" });
+}
+function patchHTML(el, html){ // clock updates: when only text or attributes moved, change just those nodes, so a tap that straddles a tick still lands
+  const t = document.createElement("template"); t.innerHTML = html;
+  const same = (a, b) => a.childNodes.length === b.childNodes.length && [...a.childNodes].every((n, i) => n.nodeName === b.childNodes[i].nodeName && same(n, b.childNodes[i]));
+  if(!same(el, t.content)){ el.innerHTML = html; return; }
+  const copy = (a, b) => {
+    if(a.nodeType !== 1){ if(a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+    for(const at of [...a.attributes]) if(!b.hasAttribute(at.name) && !(a.nodeName === "DETAILS" && at.name === "open")) a.removeAttribute(at.name);
+    for(const at of b.attributes) if(a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value);
+    a.childNodes.forEach((n, i) => copy(n, b.childNodes[i]));
+  };
+  el.childNodes.forEach((n, i) => copy(n, t.content.childNodes[i]));
+}
+function agPatchLive(){ // tick on Agenda: move the live countdown, progress bar and glance "now" marker in place
+  const now = venueNow(), st = agendaState(), di = agendaDay, day = AGENDA[di]; if(!now || !day || day.date !== now.date) return;
+  if(st && st.s && st.s.start && (st.kind === "live" || st.kind === "next")){
+    const li = document.getElementById(`sx-${di}-${(day.sessions || []).indexOf(st.s)}`), t = li && li.querySelector(".lpt"), lp = li && li.querySelector(".lp");
+    const startM = mins(st.s.start), en = sessionEnd(st.s);
+    if(t) t.textContent = st.kind === "live" ? `${en - now.min} min left` : `Starts in ${durText(Math.max(1, startM - now.min))}`;
+    if(lp && st.kind === "live"){ const pct = Math.max(2, Math.min(100, Math.round((now.min - startM) / (en - startM) * 100)));
+      lp.setAttribute("aria-label", `${pct}% of the session has passed`); if(lp.firstElementChild) lp.firstElementChild.style.width = pct + "%"; }
+  }
+  const bar = document.querySelector("#agenda .gbar"); if(!bar) return;
+  const timed = (day.sessions || []).filter(s => s.start); if(!timed.length) return;
+  const lo = Math.floor(Math.min(...timed.map(s => mins(s.start))) / 60) * 60, hi = Math.ceil(Math.max(...timed.map(sessionEnd)) / 60) * 60;
+  let mark = bar.querySelector(".gnow");
+  if(now.min < lo || now.min > hi){ if(mark) mark.remove(); return; }
+  if(!mark){ mark = document.createElement("i"); mark.className = "gnow"; mark.setAttribute("aria-hidden", "true"); bar.appendChild(mark); }
+  mark.style.left = ((now.min - lo) / (hi - lo) * 100).toFixed(2) + "%";
 }
 function tick(){ // keep the clock-driven parts current without rebuilding the whole page
-  const nc = $("#nowcard"); if(nc) nc.innerHTML = nowCardInner();
+  const nc = $("#nowcard"); if(nc) patchHTML(nc, nowCardInner());
   if(typeof renderGlanceLive === "function") renderGlanceLive();
   if(view === "resort") renderResortLive();
-  if(view === "agenda" && AGENDA.length){ if(stateKey(agendaState()) !== lastAgendaKey) renderAgenda(); else $("#agenda-sub").textContent = agendaSub(); }
+  if(view === "agenda" && AGENDA.length){ if(stateKey(agendaState()) !== lastAgendaKey) renderAgenda(); else { $("#agenda-sub").textContent = agendaSub(); agPatchLive(); } }
 }
 
 /* ---------- sunrise and sunset, computed on the phone (no network needed) ---------- */
@@ -1977,10 +2016,11 @@ function measureMap(){ const v = $("#mapview"); mv.vw = v.clientWidth; mv.vh = v
 const minS = () => Math.min(mv.vw / MAPW, mv.vh / mapH());
 function clampMap(){
   mv.s = Math.min(MAPS[mapNo].max, Math.max(minS(), mv.s));
-  const W = MAPW * mv.s, H = mapH() * mv.s;
+  const W = MAPW * mv.s, H = mapH() * mv.s, ch = cardH();   // an open pin card may lift the map bottom above it
   mv.x = W <= mv.vw ? (mv.vw - W) / 2 : Math.min(0, Math.max(mv.vw - W, mv.x));
-  mv.y = H <= mv.vh ? (mv.vh - H) / 2 : Math.min(0, Math.max(mv.vh - H, mv.y));
+  mv.y = H <= mv.vh ? Math.min((mv.vh - H) / 2, Math.max(mv.vh - ch - H, mv.y)) : Math.min(0, Math.max(mv.vh - H - ch, mv.y));
 }
+function cardH(){ const c = $("#mapinfo"); return c && !c.hidden ? c.offsetHeight + 8 : 0; }
 function applyMap(anim){
   clampMap(); const st = $("#mapstage"); st.classList.toggle("anim", !!anim && !reduced());
   st.style.transform = `translate(${mv.x}px,${mv.y}px) scale(${mv.s})`; st.style.setProperty("--inv", (1 / mv.s).toFixed(4));
@@ -1995,7 +2035,8 @@ function zoomAt(cx, cy, ns, anim){ // keep the map point under (cx, cy) fixed wh
   mv.x = cx - (cx - mv.x) * k; mv.y = cy - (cy - mv.y) * k; mv.s = ns; applyMap(anim);
 }
 function centerOn(px, py, ns, anim){ // px, py in percent of the map
-  mv.s = Math.min(MAPS[mapNo].max, Math.max(minS(), ns)); mv.x = mv.vw / 2 - px / 100 * MAPW * mv.s; mv.y = mv.vh * .3 - py / 100 * mapH() * mv.s; applyMap(anim);
+  const ch = cardH(), pad = mapFull ? 0 : 54, top = ch ? pad + (mv.vh - ch - pad) / 2 + 20 : mv.vh * .3;   // center the pin in the part of the map the card and Expand leave free
+  mv.s = Math.min(MAPS[mapNo].max, Math.max(minS(), ns)); mv.x = mv.vw / 2 - px / 100 * MAPW * mv.s; mv.y = top - py / 100 * mapH() * mv.s; applyMap(anim);
 }
 function wireMap(){
   const view = $("#mapview"), pts = new Map(); let g = null, tapT = 0, tapX = 0, tapY = 0, moved = 0, down = null;
@@ -2036,6 +2077,8 @@ function wireMap(){
     down = null;
   };
   view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
+  view.addEventListener("scroll", () => { if(view.scrollTop || view.scrollLeft){ view.scrollTop = 0; view.scrollLeft = 0; } });   // focus must never scroll the map box out from under its pins
+  view.addEventListener("focusin", () => { view.scrollTop = 0; view.scrollLeft = 0; });
   view.addEventListener("click", e => {                                              // taps and keyboard on pins: a plain click, which works the same on every phone
     const b = e.target.closest(".pin"); if(!b || Date.now() - lastDrag < 350) return;
     selectPlace(b.dataset.pin, { center:true });
@@ -2050,11 +2093,12 @@ function wireMap(){
   setTimeout(() => { const h = $("#maphint"); if(h) h.classList.add("gone"); }, 6000);
 }
 function showMapHint(text){ const h = $("#maphint"); if(!h) return; h.textContent = text; h.classList.remove("gone"); clearTimeout(showMapHint.t); showMapHint.t = setTimeout(() => h.classList.add("gone"), 3200); }
-let mapFull = false;
+let mapFull = false, mapFullY = 0;
 function setMapFull(on){
-  if(on === mapFull) return; mapFull = on; $("#mapcard").classList.toggle("full", on);
+  if(on === mapFull) return; mapFull = on; if(on) mapFullY = scrollY; $("#mapcard").classList.toggle("full", on);
   if(on) ovPush("map"); else ovBack("map");
   if(on) root.classList.add("lock"); else if(!current && !helpOpen && !cardOpen && !fbOpen) root.classList.remove("lock");
+  if(!on && view === "resort") window.scrollTo(0, mapFullY);   // Close returns to where Expand was tapped
   measureMap(); const p = selPlace && PLACE[selPlace];
   if(p && p.map === mapNo) centerOn(p.x, p.y, Math.max(mv.s, mapNo === 3 ? .85 : .62), false); else fitBox(MAPS[mapNo].box, false);
   track("map_tab", on ? "expand" : "collapse");
@@ -2070,15 +2114,16 @@ function selectPlace(id, opts = {}){
   selPlace = id && PLACE[id] ? id : null;
   document.querySelectorAll("#pins .pin").forEach(p => p.classList.toggle("sel", p.dataset.pin === selPlace));
   if(selPlace) track("pin", selPlace);
+  renderMapInfo();   // first, so centerOn knows how tall the card is
   if(selPlace && opts.center) centerOn(PLACE[selPlace].x, PLACE[selPlace].y, Math.max(mv.s, mapNo === 3 ? 0.85 : 0.62), true);
-  renderMapInfo();
+  else if(!selPlace) applyMap(true);
 }
 const EXTSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
 const linkBtns = ls => (ls && ls.length) ? `<div class="btnrow lnks">${ls.map(([lab, url]) => `<a class="pbtn" href="${esc(extHost(url))}" target="_blank" rel="noopener">${EXTSVG}${esc(lab)}</a>`).join("")}</div>` : "";
 function renderMapInfo(){
   const box = $("#mapinfo"); if(!box) return;
-  if(!selPlace || PLACE[selPlace].map !== mapNo){ box.hidden = true; box.innerHTML = ""; return; }
-  box.hidden = false; box.scrollTop = 0;
+  if(!selPlace || PLACE[selPlace].map !== mapNo){ box.hidden = true; box.innerHTML = ""; mapInfoKey = ""; return; }
+  const fresh = mapInfoKey !== selPlace + ":" + mapNo; mapInfoKey = selPlace + ":" + mapNo; box.hidden = false;
   const p = PLACE[selPlace], now = (venueNow() || {}).min;
   const venues = (p.venues || []).map(v => `<div class="vn"><b>${esc(v.n)}</b><small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}${linkBtns(v.links)}</div>`).join("");
   const all = sessionsAt(p.id), vn = venueNow();
@@ -2086,8 +2131,10 @@ function renderMapInfo(){
   const shown = (ahead.length ? ahead : all).slice(0, 3);
   const here = shown.map(r => `<button type="button" data-agenda="${r.di}"><small>${esc(r.d.label)}${r.x.start ? ", " + fmtTime(r.x.start) : ""}</small>${esc(r.x.title)}</button>`).join("")
     + (all.length > shown.length ? `<button type="button" data-agenda="${shown[0].di}"><small>${all.length - shown.length} more</small>See them in the agenda</button>` : "");
-  box.innerHTML = `<h3>${esc(p.name)}</h3><p class="sub">${esc(p.sub)}</p><p>${esc(p.desc)}</p>${p.hrs ? openChip(p.hrs, now) : ""}${venues}${linkBtns(p.links)}${here ? `<div class="here"><span class="sub" style="margin:0">${ahead.length ? "Coming up here" : "On your agenda here"}</span>${here}</div>` : ""}${p.inside ? `<div class="btnrow"><button type="button" class="pbtn pri" data-map="${p.inside}">${PINSVG}Go inside</button></div>` : ""}${p.outside ? `<div class="btnrow"><button type="button" class="pbtn" data-map="${p.outside}">${PINSVG}Show on resort map</button></div>` : ""}<button type="button" class="done" data-pinclose aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+  const html = `<h3>${esc(p.name)}</h3><p class="sub">${esc(p.sub)}</p><p>${esc(p.desc)}</p>${p.hrs ? openChip(p.hrs, now) : ""}${venues}${linkBtns(p.links)}${here ? `<div class="here"><span class="sub" style="margin:0">${ahead.length ? "Coming up here" : "On your agenda here"}</span>${here}</div>` : ""}${p.inside ? `<div class="btnrow"><button type="button" class="pbtn pri" data-map="${p.inside}">${PINSVG}Go inside</button></div>` : ""}${p.outside ? `<div class="btnrow"><button type="button" class="pbtn" data-map="${p.outside}">${PINSVG}Show on resort map</button></div>` : ""}<button type="button" class="done" data-pinclose aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+  if(fresh){ box.innerHTML = html; box.scrollTop = 0; } else patchHTML(box, html);   // a tick keeps the reader's place in the card
 }
+let mapInfoKey = "";
 function renderResortLive(){
   const now = venueNow(), st = agendaState(), sun = now ? sunTimes(now.date) : null;
   $("#resort-sub").textContent = `The Ritz-Carlton O’ahu, Turtle Bay${sun ? `. Sunset today is about ${fmtMin(sun.set)}.` : "."}`;
@@ -2096,7 +2143,7 @@ function renderResortLive(){
     const p = PLACE[st.s.at];
     strip = `<div class="rnow"><div class="tx"><small>${st.kind === "live" ? "Happening now" : "Up next"}</small><b>${esc(st.s.title)}</b><span>${esc(p.name)}${st.kind === "next" ? ` · starts in ${fmtDur(st.until)}` : ""}</span></div><button type="button" data-map="${p.id}">${PINSVG}Show</button></div>`;
   }
-  $("#res-now").innerHTML = strip;
+  patchHTML($("#res-now"), strip);
   document.querySelectorAll("#pins .pin").forEach(p => p.classList.toggle("now", !!(st && st.s && st.s.at === p.dataset.pin && (st.kind === "live" || st.kind === "next"))));
   const nowMin = now ? now.min : null;
   const row = p => {
@@ -2108,7 +2155,7 @@ function renderResortLive(){
   const inGroup = (p, k) => p.map === mapNo && (k === "svc" ? (p.kind === "relax" || p.kind === "move") : p.kind === k);
   const chips = mapNo === 2 ? [["about", "About"], ["trails", "The trails"], ["do", "What to do"], ["tips", "Before you go"], ["help", "Help"]] : [...groups.map(([k, l]) => [k, l]), ["help", "Help"]];
   $("#res-jump").innerHTML = `<div class="mapjump" role="navigation" aria-label="Jump to a section"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>More below</b>${chips.map(([k, l]) => `<button type="button" data-sec="sec-${k}">${l}</button>`).join("")}</div>`;
-  $("#res-places").innerHTML = mapNo === 2 ? trailsHTML() : `<div class="plist">${groups.map(([k, l]) => `<h3 id="sec-${k}">${l}</h3><ul>${PLACES.filter(p => inGroup(p, k)).map(row).join("")}</ul>`).join("")}</div>`;
+  patchHTML($("#res-places"), mapNo === 2 ? trailsHTML() : `<div class="plist">${groups.map(([k, l]) => `<h3 id="sec-${k}">${l}</h3><ul>${PLACES.filter(p => inGroup(p, k)).map(row).join("")}</ul>`).join("")}</div>`);
   if(selPlace) renderMapInfo();
 }
 function renderResortStatic(){
@@ -2129,7 +2176,7 @@ function showResort(){
   buildResort(); renderResortStatic(); renderResortLive();
   measureMap(); applyMap(false);
 }
-function openMapAt(id){ setView("resort"); selectPlace(id, { center:true }); const c = $("#mapcard"); if(c) window.scrollTo({ top: Math.max(0, scrollY + c.getBoundingClientRect().top - 70), behavior: reduced() ? "auto" : "smooth" }); }
+function openMapAt(id){ setView("resort"); selectPlace(id, { center:true }); const c = $("#mapcard"); if(c) window.scrollTo({ top: Math.max(0, scrollY + c.getBoundingClientRect().top - 70 - bannerH()), behavior: reduced() ? "auto" : "smooth" }); }
 
 
 /* ---------- anonymous usage counts ----------
@@ -2273,7 +2320,7 @@ const PHONEICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const MAILICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>';
 const TEAM = { name:"LeighAnn Scott", tel:"+14806284002", telText:"(480) 628-4002", mail:"leighann.scott@tdsynnex.com" };
 const glanceBlock = () => `<div id="glance">${glanceInner()}</div>`;
-function renderGlanceLive(){ const g = $("#glance"); if(g) g.innerHTML = glanceInner(); const st = agendaState(), nc = $("#nowcard"); if(nc && st && st.kind === "before") nc.innerHTML = nowCardInner(); }
+function renderGlanceLive(){ const g = $("#glance"); if(g) patchHTML(g, glanceInner()); const st = agendaState(), nc = $("#nowcard"); if(nc && st && st.kind === "before") patchHTML(nc, nowCardInner()); }
 loadWeather();
 setInterval(() => { if(!document.hidden && Date.now() - WX.t > 20 * 60e3) loadWeather(); }, 5 * 60e3);
 document.addEventListener("visibilitychange", () => { if(!document.hidden && Date.now() - WX.t > 20 * 60e3) loadWeather(); });
@@ -2381,12 +2428,14 @@ const alertTime = ts => new Date(ts).toLocaleTimeString([], { hour:"numeric", mi
 function renderAlerts(){
   const bar = $("#alertbar"); if(!bar) return;
   const dis = dismissedAlerts(), a = ALERTS.find(x => !dis.has(x.id));
+  const sig = JSON.stringify(ALERTS) + "|" + [...dis].join(","); if(sig === alertSig) return; alertSig = sig;   // unchanged poll: leave the banner and Info alone
   if(!a){ bar.hidden = true; bar.innerHTML = ""; }
   else {
     bar.hidden = false; bar.className = "alertbar" + (a.level === "urgent" ? " urgent" : ""); bar.setAttribute("role", a.level === "urgent" ? "alert" : "region");
     bar.innerHTML = `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6L7 10z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
-      <div class="tx"><small>${a.level === "urgent" ? "Urgent announcement" : "Announcement"}</small><b>${esc(a.body)}</b><span>Posted ${alertTime(a.ts)} Hawaii time</span></div>
+      <div class="tx"><small>${a.level === "urgent" ? "Urgent announcement" : "Announcement"}</small><b class="aclamp">${esc(a.body)}</b><span>Posted ${alertTime(a.ts)} Hawaii time</span></div>
       <button type="button" data-alert-x="${Number(a.id)}" aria-label="Dismiss this announcement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+    alertMore();
   }
   if(typeof renderInfo === "function") renderInfo();
   if(typeof renderTeamTools === "function") renderTeamTools();
@@ -2396,7 +2445,16 @@ async function loadAlerts(){
   catch(e){ /* offline or blocked: keep showing the last one we saw */ }
   renderAlerts();
 }
+let alertSig = null;
+function alertMore(){ // long text shows four lines, then More (measured again once fonts load or the phone rotates)
+  const bar = $("#alertbar"), b = bar && bar.querySelector(".tx b"); if(!b) return;
+  const m = bar.querySelector(".almore"), over = !b.classList.contains("aclamp") || b.scrollHeight > b.clientHeight + 1;
+  if(over && !m) b.insertAdjacentHTML("afterend", `<button type="button" class="almore" aria-expanded="false">More</button>`); else if(!over && m) m.remove();
+}
+if(document.fonts) document.fonts.ready.then(alertMore); addEventListener("resize", alertMore);
 document.addEventListener("click", e => {
+  const mo = e.target.closest(".almore");
+  if(mo){ const b = mo.previousElementSibling, on = b.classList.toggle("aclamp"); mo.textContent = on ? "More" : "Less"; mo.setAttribute("aria-expanded", !on); return; }
   const x = e.target.closest("[data-alert-x]"); if(!x) return;
   const dis = dismissedAlerts(); dis.add(+x.dataset.alertX); try { localStorage.setItem(ALDIS, JSON.stringify([...dis])); } catch(err){} renderAlerts();
 });
@@ -2803,7 +2861,9 @@ function renderInfo(){
     return;
   }
   const alertsInfo = ALERTS.length ? [{ title:"Announcements", body: ALERTS.map(a => `${alertTime(a.ts)} Hawaii time: ${a.body}`) }] : [];
-  box.innerHTML = `${teamCard()}<div class="info">${[...alertsInfo, ...INFO.filter(it => !it.card)].map((it,i) => `<details${i===0?" open":""}><summary>${esc(it.title)}</summary><div class="body">${(it.body||[]).map(p => `<p>${linkify(p)}</p>`).join("")}</div></details>`).join("")}</div><p class="fine">This guide counts anonymous opens and taps, never names or contact details, to help us improve it. Your contact card stays on your phone.</p>`;
+  const was = new Map([...box.querySelectorAll(".info details")].map((d, i) => [d.querySelector("summary").textContent, d.open !== (i === 0) ? d.open : null]));   // what the reader opened or closed, by title
+  const isOpen = (it, i) => { const w = was.get(it.title); return w === true || w === false ? w : i === 0; };
+  box.innerHTML = `${teamCard()}<div class="info">${[...alertsInfo, ...INFO.filter(it => !it.card)].map((it,i) => `<details${isOpen(it, i)?" open":""}><summary>${esc(it.title)}</summary><div class="body">${(it.body||[]).map(p => `<p>${linkify(p)}</p>`).join("")}</div></details>`).join("")}</div><p class="fine">This guide counts anonymous opens and taps, never names or contact details, to help us improve it. Your contact card stays on your phone.</p>`;
 }
 
 /* ---------- global clicks ---------- */
@@ -2826,7 +2886,7 @@ document.addEventListener("click", e => {
   const ag = e.target.closest("[data-agenda]"); if(ag){ agendaDay = +ag.dataset.agenda; setView("agenda"); return; }
   const sx = e.target.closest("[data-sess]"); if(sx){ closePerson(true); agendaDay = +sx.dataset.sess; setView("agenda"); return; }
   const g = e.target.closest("[data-go]"); if(g){ const v = g.dataset.go; setView(v); return; }
-  const d = e.target.closest("[data-day]"); if(d){ agendaDay = +d.dataset.day; track("day", AGENDA[agendaDay].label); renderAgenda(); return; }
+  const d = e.target.closest("[data-day]"); if(d){ agendaDay = +d.dataset.day; track("day", AGENDA[agendaDay].label); renderAgenda(); if(d.classList.contains("nextday")) scrollToTopOfView(); return; }   /* the next-day card opens that day at its top */
   const m = e.target.closest("[data-me]"); if(m){ setMe(m.dataset.me); toast(`Welcome, ${first(byId[m.dataset.me])}`); window.scrollTo(0,0); return; }
   if(e.target.closest("#notme")){ setMe(null); window.scrollTo(0,0); return; }
 });
