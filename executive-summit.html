@@ -623,7 +623,7 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .teamcard .ok{margin:10px 0 0;color:var(--teal);font-size:14px;font-weight:700}
 .teamcard ul{list-style:none;margin:14px 0 0;padding:0}
 .teamcard li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--rule);font-size:14.5px;line-height:1.35}
-.teamcard li span{flex:1;min-width:0}
+.teamcard li span{flex:1;min-width:0;overflow-wrap:anywhere}
 .teamcard li button{all:unset;cursor:pointer;flex:0 0 auto;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--rule);font-weight:700;font-size:14px;color:var(--ink)}
 /* Ask the Summit */
 .askhead{padding:6px 64px 8px 20px}
@@ -732,7 +732,7 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .cgcta span{display:block;margin-top:4px;font-size:14.5px;line-height:1.4;color:rgba(255,255,255,.9)}
 .cgcta .pbtn.pri{align-self:flex-start;background:#f2c230;border-color:#f2c230;color:#15181a}
 .cgcta .pbtn.pri:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.cg{padding:16px;border-radius:18px;border:1.5px solid var(--rule);background:var(--surface)}
+.cg{min-width:0;padding:16px;border-radius:18px;border:1.5px solid var(--rule);background:var(--surface);overflow-wrap:anywhere}   /* a long URL anywhere in the brief wraps inside the sheet */
 .cg .cg-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding-right:44px}
 .cg .cg-kick{display:block;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
 .cg .cg-str{flex:0 0 auto;padding:3px 10px;border-radius:99px;background:var(--sunk);color:var(--ink);font-size:12px;font-weight:800}
@@ -805,7 +805,7 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .info summary::after{content:"";flex:0 0 auto;width:10px;height:10px;border-right:2.5px solid var(--mute);border-bottom:2.5px solid var(--mute);transform:rotate(45deg);margin-right:6px;transition:transform .2s}
 .info details[open] summary::after{transform:rotate(-135deg)}
 .info .body{padding:0 0 18px;font-size:16px;line-height:1.6}
-.info .body p{margin:0 0 10px}
+.info .body p{margin:0 0 10px;overflow-wrap:anywhere}   /* a long URL in an announcement wraps instead of widening the page */
 .info .body a{color:var(--teal);font-weight:650}
 .empty-state{margin-top:18px;padding:22px;border:1.5px dashed var(--rule);border-radius:16px;text-align:center}   /* short empty states center as one unit, like .empty */
 .empty-state b{display:block;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.2;text-wrap:balance}
@@ -1038,10 +1038,11 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,
 :root :is(button,a,summary,select,[role="button"]):focus-visible{outline-style:solid}   /* beats any all:unset, whatever its specificity; color and offset stay with the control's own rule */
 .nowc .spk button:focus-visible,.cgcta button:focus-visible{outline-color:#fff}
 /* 44 px hit bands for controls whose visible pill must stay small (inline links, map chips) */
-.mapchip,.info .body a[href^="tel:"],.info .body a[href^="mailto:"],.askwrap .vhead p.powered a{position:relative}
-.mapchip::before,.info .body a[href^="tel:"]::before,.info .body a[href^="mailto:"]::before,.askwrap .vhead p.powered a::before{content:"";position:absolute;left:-4px;right:-4px;top:50%;height:44px;transform:translateY(-50%)}
-/* Phone numbers and email addresses in Info read as tappable pills */
-.info .body a[href^="tel:"],.info .body a[href^="mailto:"]{display:inline-block;padding:1px 10px;margin:1px 0;border-radius:99px;background:color-mix(in srgb,var(--teal) 11%,transparent);text-decoration:none;white-space:nowrap;line-height:1.5}
+.mapchip,.askwrap .vhead p.powered a{position:relative}
+.mapchip::before,.askwrap .vhead p.powered a::before{content:"";position:absolute;left:-4px;right:-4px;top:50%;height:44px;transform:translateY(-50%)}
+/* Phone numbers and email addresses in Info read as tappable pills. Each pill is its own 44 px box, and the 3 px
+   margins keep two pills on neighboring lines 6 px apart, so a tap can never land on the other number */
+.info .body a[href^="tel:"],.info .body a[href^="mailto:"]{display:inline-flex;align-items:center;box-sizing:border-box;min-height:44px;padding:0 12px;margin:3px 0;vertical-align:middle;border-radius:99px;background:color-mix(in srgb,var(--teal) 11%,transparent);text-decoration:none;white-space:nowrap;line-height:1.3}
 /* iOS zooms into any field under 16 px */
 #h-other{font-size:16px}
 /* People toolbar at 320: the placeholder only needs the clear button's room when there is text */
@@ -1529,6 +1530,9 @@ const STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 /* History can be blocked inside some previews (sandboxed iframes). Everything
    still works without it; only the back-button integration is skipped. */
 let canHist = true;
+/* The app does its own scrolling (setView goes to the top). Left on "auto", Chrome treats a Back step onto
+   #info or #agenda as a jump to that element, so closing a sheet threw the reader up the page and dropped focus. */
+try { if("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch(e){}
 function hist(kind, state, url){
   if(!canHist) return false;
   try { history[kind + "State"](state, "", url); return true; } catch(e){ canHist = false; return false; }
@@ -2444,9 +2448,9 @@ function renderCard(){
     track("card_made"); cardEdit = false; renderCard();
   });
 }
-function openCard(){
+function openCard(trigger){
   if(!cardOpen) ovPush("card");
-  cardEdit = false; renderCard(); cardOpen = true; cardFocus = document.activeElement;
+  cardEdit = false; renderCard(); cardOpen = true; cardFocus = trigger || document.activeElement;
   $("#cardsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!cardOpen) return; document.body.classList.add("card-open"); $("#cclose").focus({ preventScroll:true }); }));
 }
@@ -2458,7 +2462,7 @@ function closeCard(){
 }
 $("#cclose").addEventListener("click", closeCard); $("#cscrim").addEventListener("click", closeCard);
 document.addEventListener("keydown", e => { if(cardOpen && e.key === "Escape"){ e.stopImmediatePropagation(); closeCard(); } }, true);
-document.addEventListener("click", e => { if(e.target.closest("[data-card]")) openCard(); });
+document.addEventListener("click", e => { const c = e.target.closest("[data-card]"); if(c) openCard(c); });   /* the tapped button: iPhone Safari does not focus it */
 
 /* The Trails map: what it is, how to get there, what to do and expect. Mileages and names are from the resort's trail map legend;
    the rest is from the resort's pages and trail guides. */
@@ -2589,9 +2593,9 @@ function renderFb(){
     fbDone = true; renderFb(); if(view === "agenda") renderAgenda();
   });
 }
-function openFb(di, si){
+function openFb(di, si, trigger){
   if(!fbOpen) ovPush("fb");
-  fbCur = { di, si }; fbDraft = null; fbDone = false; renderFb(); fbOpen = true; fbFocus = document.activeElement;
+  fbCur = { di, si }; fbDraft = null; fbDone = false; renderFb(); fbOpen = true; fbFocus = trigger || document.activeElement;
   $("#fbsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!fbOpen) return; document.body.classList.add("fb-open"); $("#fclose").focus({ preventScroll:true }); }));
 }
@@ -2599,11 +2603,13 @@ function closeFb(){
   if(!fbOpen){ document.body.classList.remove("fb-open"); return; } fbOpen = false; ovBack("fb");
   document.body.classList.remove("fb-open"); if(!current && !helpOpen && !cardOpen && !mapFull) root.classList.remove("lock"); syncInert();
   setTimeout(() => { if(!fbOpen) $("#fbsheet").hidden = true; }, 340);
-  if(fbFocus && document.contains(fbFocus)) fbFocus.focus({ preventScroll:true });
+  /* sending re-renders the agenda, so the tapped button may be gone: fall back to its replacement */
+  const back = fbFocus && document.contains(fbFocus) ? fbFocus : fbCur && [...document.querySelectorAll(`[data-rate="${fbCur.di}:${fbCur.si}"]`)].find(b => b.getClientRects().length);
+  if(back) back.focus({ preventScroll:true });
 }
 $("#fclose").addEventListener("click", closeFb); $("#fscrim").addEventListener("click", closeFb);
 document.addEventListener("keydown", e => { if(fbOpen && e.key === "Escape"){ e.stopImmediatePropagation(); closeFb(); } }, true);
-document.addEventListener("click", e => { const r = e.target.closest("[data-rate]"); if(r){ const [di, si] = r.dataset.rate.split(":").map(Number); openFb(di, si); } });
+document.addEventListener("click", e => { const r = e.target.closest("[data-rate]"); if(r){ const [di, si] = r.dataset.rate.split(":").map(Number); openFb(di, si, r); } });
 
 /* ---------- team tools: TD SYNNEX identities can post an announcement; the PIN is verified by the Worker, never here ---------- */
 const ANNOUNCE_URL = "https://summit-usage.ken-lince.workers.dev/announce";
@@ -3149,9 +3155,9 @@ function renderHelp(){
   $("#h-other").addEventListener("change", e => { if(e.target.value){ helpKey = e.target.value; renderHelp(); } });
 }
 let helpFocus = null;
-function openHelp(){
+function openHelp(trigger){
   if(!helpOpen) ovPush("help");
-  helpKey = null; renderHelp(); helpOpen = true; helpFocus = document.activeElement;
+  helpKey = null; renderHelp(); helpOpen = true; helpFocus = trigger || document.activeElement;
   $("#helpsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!helpOpen) return; document.body.classList.add("help-open"); $("#hclose").focus({preventScroll:true}); }));
 }
@@ -3165,7 +3171,7 @@ $("#hclose").addEventListener("click", closeHelp);
 $("#hscrim").addEventListener("click", closeHelp);
 document.addEventListener("keydown", e => { if(helpOpen && e.key === "Escape") { e.stopImmediatePropagation(); closeHelp(); } }, true);
 document.addEventListener("click", e => {
-  if(e.target.closest("[data-help]")){ openHelp(); return; }
+  const hb = e.target.closest("[data-help]"); if(hb){ openHelp(hb); return; }
   if(e.target.closest("[data-appbar-x]")){ store.set(K_APPBAR, true); renderHome(); return; }
 });
 function appBarBlock(){
