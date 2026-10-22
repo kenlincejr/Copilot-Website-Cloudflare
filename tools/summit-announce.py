@@ -11,12 +11,14 @@ Usage (PowerShell, repo root):
     python tools/summit-announce.py "Dinner moves to 6:30" --hours 12      # disappears after 12 hours (default 36)
     python tools/summit-announce.py --list
     python tools/summit-announce.py --clear 3        # clear one announcement
-    python tools/summit-announce.py --clear all
+    python tools/summit-announce.py --clear all      # asks you to type yes first (add --yes to skip the question)
 """
 
 import argparse
 import json
+import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -54,22 +56,54 @@ def esc(s):
     return s.replace("'", "''")
 
 
+def clear_target(v):
+    """--clear takes a whole-number announcement id or the word all."""
+    v = v.strip()
+    if v.lower() == "all":
+        return "all"
+    if not re.fullmatch(r"[0-9]{1,9}", v) or int(v) < 1:
+        raise argparse.ArgumentTypeError(f"'{v}' is not an announcement id. Use a whole number from --list, or all.")
+    return int(v)
+
+
+def hours_value(v):
+    """--hours takes a positive number, up to one year."""
+    try:
+        h = float(v)
+    except ValueError:
+        h = float("nan")
+    if not math.isfinite(h) or h <= 0 or h > 8760:
+        raise argparse.ArgumentTypeError(f"'{v}' is not a number of hours. Use a positive number, such as 12 or 0.5 (at most 8760).")
+    return h
+
+
+def confirm(question):
+    """Typed yes, or nothing happens. A closed or empty stdin counts as no."""
+    try:
+        return input(f"{question} Type yes to continue: ").strip().lower() == "yes"
+    except EOFError:
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("text", nargs="?", help="the announcement (up to 280 characters)")
     ap.add_argument("--urgent", action="store_true", help="show it as an urgent (yellow) banner")
-    ap.add_argument("--hours", type=float, default=36, help="hours until it disappears on its own (default 36)")
+    ap.add_argument("--hours", type=hours_value, default=36, help="hours until it disappears on its own (default 36)")
     ap.add_argument("--list", action="store_true", help="show current announcements")
-    ap.add_argument("--clear", metavar="ID|all", help="clear one announcement by id, or all of them")
+    ap.add_argument("--clear", type=clear_target, metavar="ID|all", help="clear one announcement by id, or all of them (all asks for a typed yes)")
+    ap.add_argument("--yes", action="store_true", help="skip the confirmation question for --clear all")
     a = ap.parse_args()
 
-    if a.clear:
+    if a.clear is not None:
         if a.clear == "all":
+            if not a.yes and not confirm("This takes down every active announcement on every phone."):
+                sys.exit("Nothing cleared.")
             run_sql("UPDATE summit_alerts SET active = 0 WHERE active = 1;")
             print("Cleared all announcements.")
         else:
-            run_sql(f"UPDATE summit_alerts SET active = 0 WHERE id = {int(a.clear)};")
-            print(f"Cleared announcement {int(a.clear)}.")
+            run_sql(f"UPDATE summit_alerts SET active = 0 WHERE id = {a.clear};")
+            print(f"Cleared announcement {a.clear}.")
         return
     if a.list or not a.text:
         rows = run_sql("SELECT id, level, datetime(ts/1000,'unixepoch','-10 hours') AS posted_hst, "

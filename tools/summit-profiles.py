@@ -10,7 +10,7 @@ Usage (PowerShell, repo root):
     python tools/summit-profiles.py                  # list everything
     python tools/summit-profiles.py --reset jacob-sanders    # let that person save again from a new phone (keeps the topics)
     python tools/summit-profiles.py --remove jacob-sanders   # delete the profile
-    python tools/summit-profiles.py --remove all
+    python tools/summit-profiles.py --remove all     # asks you to type yes first (add --yes to skip the question)
 """
 
 import argparse
@@ -39,6 +39,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--reset", metavar="ID", help="clear the phone claim for one person id, keeping their topics")
     ap.add_argument("--remove", metavar="ID", help="delete one profile, or 'all'")
+    ap.add_argument("--yes", action="store_true", help="skip the confirmation question for --remove all")
     args = ap.parse_args()
     for v in (args.reset, args.remove):
         if v and v != "all" and not re.fullmatch(r"[a-z0-9-]{3,40}", v):
@@ -51,6 +52,13 @@ def main():
         print(f"Reset {args.reset}. The next phone to save for that person claims it.")
         return
     if args.remove:
+        if args.remove == "all" and not args.yes:
+            try:
+                typed = input("This deletes every saved conversation profile and frees every phone claim. Type yes to continue: ").strip().lower()
+            except EOFError:
+                typed = ""
+            if typed != "yes":
+                sys.exit("Nothing removed.")
         run_sql("DELETE FROM summit_profiles" + ("" if args.remove == "all" else f" WHERE pid = '{args.remove}'"))
         print(f"Removed {args.remove}.")
         return

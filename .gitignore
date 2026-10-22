@@ -20,3 +20,7 @@ workers/summit-ai/private/
 workers/summit-ai/.wrangler/
 workers/summit-ai/node_modules/
 workers/summit-usage/.wrangler/
+
+# Internal Summit QA and fix notes, and public-scraped LinkedIn lookups: never committed
+Summit-*.md
+workers/summit-ai/research/linkedin-lookup.json
