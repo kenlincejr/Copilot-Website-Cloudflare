@@ -124,8 +124,12 @@ button{font:inherit;color:inherit}
 
 
 /* Mini list of saved people */
-.saved-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;padding:4px 0}
-.saved-strip button{all:unset;cursor:pointer;text-align:center;min-width:0}
+/* One row that scrolls sideways: a wrapping grid left a lone face on the last row (5 = 4 + 1) */
+.saved-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 20px 6px 4px;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 20px),transparent)}
+.saved-strip::-webkit-scrollbar{display:none}
+.saved-strip button{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;flex:0 0 76px;width:76px;min-width:0}
+.saved-strip button:focus-visible{outline:3px solid var(--teal);outline-offset:-1px;border-radius:12px}
 .saved-strip img{width:60px;height:60px;border-radius:50%;object-fit:cover;margin:0 auto;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}
 .saved-strip span{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hint{margin:0;padding:14px;border-radius:14px;background:var(--sunk);color:var(--mute);font-size:15px;line-height:1.45}
@@ -133,11 +137,15 @@ button{font:inherit;color:inherit}
 /* Up next */
 
 /* The room */
-.mosaic{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px}
-.mosaic button{all:unset;cursor:pointer;display:block;aspect-ratio:1;border-radius:50%;position:relative}
-.mosaic img{width:100%;height:100%;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}
-.mosaic button:focus-visible{outline:3px solid var(--ink);outline-offset:5px}
-.mosaic .on::after{content:"";position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:50%;background:var(--taxi);box-shadow:0 0 0 2px var(--bg)}
+/* Each face is a 44 px tap target with the photo drawn 8 px smaller inside it. Eight across needs 352 px,
+   so on narrow phones the grid borrows a few px of the side gutter (8.5 px at 375, none from 392).
+   Documented exception: at 320 the faces are 38 px, the most that fits eight across with an 8 px gutter. */
+.mosaic{list-style:none;padding:0;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:0;
+  margin:0 clamp(calc(8px - var(--pad)), calc((100% - 352px) / 2), 0px)}
+.mosaic button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;place-items:center;aspect-ratio:1;border-radius:50%;position:relative}
+.mosaic img{width:calc(100% - 8px);height:calc(100% - 8px);border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ring)}
+.mosaic button:focus-visible{outline:3px solid var(--ink);outline-offset:1px}
+.mosaic .on::after{content:"";position:absolute;right:1px;top:1px;width:13px;height:13px;border-radius:50%;background:var(--taxi);box-shadow:0 0 0 2px var(--bg)}
 .gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0;padding:0;list-style:none}
 .gtiles button{all:unset;box-sizing:border-box;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;width:100%;padding:10px 8px 14px;border-radius:20px;background:var(--surface);border:1.5px solid var(--rule);transition:transform .15s ease,box-shadow .2s ease;-webkit-tap-highlight-color:transparent}
 .gtiles button::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--ring)}
@@ -171,14 +179,14 @@ button{font:inherit;color:inherit}
 .dcard .dt{font-size:12px;font-weight:750;color:var(--mute);white-space:nowrap}
 .dcard[aria-pressed="true"]{background:radial-gradient(120% 80% at 100% 0%,rgba(255,255,255,.25),transparent 60%),linear-gradient(160deg,var(--d1),var(--d2));border-color:transparent;color:var(--dink);transform:translateY(-3px);box-shadow:0 10px 22px -10px var(--d1)}
 .dcard[aria-pressed="true"]::before{display:none}
-.dcard[aria-pressed="true"] .dw,.dcard[aria-pressed="true"] .dt{color:var(--dink);opacity:.92}
+.dcard[aria-pressed="true"] .dw,.dcard[aria-pressed="true"] .dt{color:var(--dink)}
 .dcard.past:not([aria-pressed="true"]) .dn{opacity:.5}
 .dcard .tdy{position:absolute;top:12px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--taxi);animation:pulse 1.8s infinite}
 .dcard:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .dcard:active{transform:scale(.97)}
 .dayhero{position:relative;overflow:hidden;margin-top:14px;border-radius:24px;padding:18px 18px 16px;color:var(--dink);background:radial-gradient(110% 80% at 100% 0%,rgba(255,255,255,.24),transparent 55%),radial-gradient(80% 60% at 0% 100%,rgba(0,0,0,.14),transparent 60%),linear-gradient(160deg,var(--d1),var(--d2))}
 .dayhero::after{content:"";position:absolute;right:-30px;bottom:-34px;width:150px;height:150px;border-radius:50%;border:16px solid rgba(255,255,255,.1);pointer-events:none}
-.dayhero .dd{position:relative;font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.92}
+.dayhero .dd{position:relative;font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .dayhero h3{position:relative;margin:5px 0 0;font-family:var(--display);font-weight:900;font-size:29px;line-height:1.06;text-wrap:balance}
 .dayhero > p{position:relative;margin:8px 0 0;font-size:15.5px;line-height:1.45;text-wrap:pretty}
 .dayhero .chips{position:relative;display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;padding:0}
@@ -194,7 +202,7 @@ button{font:inherit;color:inherit}
 .dfold summary:focus-visible{outline:3px solid currentColor;outline-offset:-3px;border-radius:14px}
 .dfold p{margin:0;padding:0 14px 14px;font-size:14.5px;line-height:1.5}
 .glance2{margin-top:14px;padding:14px 16px 12px;border-radius:20px;border:1.5px solid var(--rule);background:var(--surface)}
-.glance2 h5{margin:0 0 10px;font-size:12.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
+.glance2 h4,.glance2 h5{margin:0 0 10px;font-size:12.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--mute)}
 .gbar{position:relative;height:36px;border-radius:12px;background:var(--sunk)}
 .gbar::before{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
 .gseg{all:unset;box-sizing:border-box;position:absolute;top:4px;bottom:4px;min-width:4px;border-radius:8px;background:var(--kc);cursor:pointer;transition:transform .15s}
@@ -220,7 +228,9 @@ button{font:inherit;color:inherit}
 @keyframes knot{0%{box-shadow:0 0 0 4px var(--bg),0 0 0 4px rgba(242,194,48,.7)}70%,100%{box-shadow:0 0 0 4px var(--bg),0 0 0 13px rgba(242,194,48,0)}}
 .scard{min-width:0;border-radius:18px;background:var(--surface);border:1.5px solid var(--rule);border-left:5px solid var(--kc);overflow:hidden;transition:box-shadow .2s,opacity .2s}
 .scard.open{box-shadow:0 10px 28px -16px rgba(0,0,0,.45)}
-.sx.past .scard{opacity:.66}
+.sx.past .scard{opacity:1}   /* past sessions read as past through muted titles, the Done flag and a gray node; fading the whole card took its chips below 4.5:1 */
+.sx.past .scard h4,.sx.past .scard .tchip{color:var(--mute)}
+.sx.past .scard .avs img{opacity:.75}
 .sx.is-now .scard{border-color:var(--taxi);border-left-color:var(--kc);box-shadow:0 0 0 3px color-mix(in srgb,var(--taxi) 32%,transparent)}
 .shead{all:unset;box-sizing:border-box;position:relative;display:block;width:100%;cursor:pointer;padding:12px 42px 13px 14px;-webkit-tap-highlight-color:transparent}
 .shead:focus-visible{outline:3px solid var(--teal);outline-offset:-3px;border-radius:14px}
@@ -275,8 +285,8 @@ button{font:inherit;color:inherit}
 .nextday:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.sbody,.scard,.dcard,.scard .chev,.dfold summary .chev{transition:none}.sx.is-now .nd,.dcard .tdy{animation:none}}
 .spk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.spk button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:99px;background:var(--sunk);font-size:14px;font-weight:600;min-height:36px}
-.spk img{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.spk button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 5px;border-radius:99px;background:var(--sunk);font-size:14px;font-weight:600;min-height:44px;box-sizing:border-box}
+.spk img{width:34px;height:34px;border-radius:50%;object-fit:cover}
 .spk .by{display:inline-flex;align-items:center;min-height:36px;font-size:14px;font-weight:600;color:var(--mute)}
 /* Happening now / Up next card on Home */
 #nowcard:not(:empty){margin-top:18px}
@@ -287,7 +297,7 @@ button{font:inherit;color:inherit}
 .nowc .pulse{width:9px;height:9px;border-radius:50%;background:#f2c230;animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(242,194,48,.6)}70%,100%{box-shadow:0 0 0 9px rgba(242,194,48,0)}}
 @media (prefers-reduced-motion:reduce){.nowc .pulse{animation:none}}
-.nowc .clock{font-size:12.5px;color:rgba(255,255,255,.78);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nowc .clock{font-size:12.5px;color:rgba(255,255,255,.92);font-variant-numeric:tabular-nums;white-space:nowrap}
 .nowc .main{all:unset;cursor:pointer;display:block;box-sizing:border-box;width:100%;margin-top:10px}
 .nowc .main:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:8px}
 .nowc .ttl{display:block;font-family:var(--display);font-weight:800;font-stretch:96%;font-size:23px;line-height:1.18;text-wrap:balance}
@@ -298,7 +308,7 @@ button{font:inherit;color:inherit}
 .nowc .spk button{background:rgba(255,255,255,.15);color:#fff}
 .nowc .spk .by{color:rgba(255,255,255,.86)}
 .nowc .line{margin:12px 0 0;font-size:15px;line-height:1.4;color:rgba(255,255,255,.92)}
-.nowc .line b{margin-right:6px;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:#f2c230}
+.nowc .line b{margin-right:6px;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:#ffe08a;white-space:nowrap}
 .nowc .cta{all:unset;box-sizing:border-box;cursor:pointer;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:14px;background:#f2c230;color:#15181a;font-weight:750;font-size:16px}
 .nowc .cta svg{width:20px;height:20px}
 .nowc .cta:focus-visible{outline:3px solid #fff;outline-offset:3px}
@@ -321,7 +331,7 @@ button{font:inherit;color:inherit}
 .mapchip svg,.nowc .cta.alt svg{width:16px;height:16px;flex:0 0 auto}
 .mapchip:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .nowc .ctas{display:flex;gap:10px;margin-top:16px}
-.nowc .ctas .cta{margin-top:0;flex:1}
+.nowc .ctas .cta{margin-top:0;flex:1;width:auto;min-width:0;padding:0 12px;white-space:nowrap}
 .nowc .ctas .cta.alt{flex:0 0 auto;padding:0 18px;background:rgba(255,255,255,.17);color:#fff}
 .rnow{margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--sunk);display:flex;align-items:center;gap:12px}
 .rnow .tx{flex:1;min-width:0}
@@ -330,10 +340,11 @@ button{font:inherit;color:inherit}
 .rnow span{display:block;font-size:14px;color:var(--mute);margin-top:2px}
 .rnow button{all:unset;cursor:pointer;flex:0 0 auto;min-height:44px;padding:0 16px;border-radius:12px;background:var(--teal);color:#fff;font-weight:750;font-size:15px;display:inline-flex;align-items:center;gap:6px}
 :root[data-theme="dark"] .rnow button{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rnow button{color:#0f1416}}
 .rnow button svg{width:16px;height:16px}
 .mapcard{margin-top:16px;border:1.5px solid var(--rule);border-radius:18px;overflow:hidden;background:var(--surface)}
 .mapseg{display:flex;gap:6px;padding:10px 10px 0}
-.mapseg button{flex:1;min-height:40px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;cursor:pointer}
+.mapseg button{flex:1;min-height:44px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;cursor:pointer}
 .mapseg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .mapview{position:relative;height:min(46vh,420px);min-height:280px;margin-top:10px;overflow:hidden;overflow:clip;touch-action:pan-y;background:#c7dadb;cursor:grab;user-select:none;-webkit-user-select:none}
 .mapview:active{cursor:grabbing}
@@ -391,6 +402,7 @@ button{font:inherit;color:inherit}
 .pbtn{all:unset;cursor:pointer;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:700;font-size:15px}
 .pbtn.pri{background:var(--teal);border-color:var(--teal);color:#fff}
 :root[data-theme="dark"] .pbtn.pri{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pbtn.pri{color:#0f1416}}
 .pbtn svg{width:18px;height:18px}
 .pbtn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .plist h3,.rhelp h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:21px;line-height:1.2;margin:26px 0 4px}
@@ -415,7 +427,7 @@ button{font:inherit;color:inherit}
 .glance>*:not(.gart){position:relative;z-index:1}
 .glance .gh{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .glance .gh b{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:18px;line-height:1.2}
-.glance .gx{all:unset;cursor:pointer;width:40px;height:40px;margin:-8px -6px -8px 0;display:grid;place-items:center;border-radius:50%;transform:rotate(180deg);color:inherit}
+.glance .gx{all:unset;cursor:pointer;width:44px;height:44px;margin:-10px -8px -10px 0;display:grid;place-items:center;border-radius:50%;transform:rotate(180deg);color:inherit}
 .glance .gx svg{width:20px;height:20px}
 .glance .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .glance .tile{padding:10px 11px;border-radius:14px;background:color-mix(in srgb,var(--surface) 78%,transparent);border:1px solid color-mix(in srgb,var(--rule) 70%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -454,12 +466,12 @@ button{font:inherit;color:inherit}
 .cd .hero>*:not(.art){position:relative;z-index:1}
 .cd .top{display:flex;align-items:center;justify-content:space-between}
 .cd .tag{font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f2c230}
-.cd .cdx{all:unset;cursor:pointer;width:40px;height:40px;margin:-8px -8px 0 0;display:grid;place-items:center;border-radius:50%;transform:rotate(180deg)}
+.cd .cdx{all:unset;cursor:pointer;width:44px;height:44px;margin:-10px -10px -2px 0;display:grid;place-items:center;border-radius:50%;transform:rotate(180deg)}
 .cd .cdx svg{width:20px;height:20px}
 .cd .big{display:flex;align-items:flex-end;gap:10px;margin-top:2px}
 .cd .big b{font-family:var(--display);font-weight:900;font-size:64px;line-height:.9;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .cd .big span{font-family:var(--display);font-weight:800;font-size:20px;line-height:1.05;padding-bottom:4px}
-.cd .where{margin:8px 0 0;font-size:14px;color:rgba(255,255,255,.92)}
+.cd .where{display:table;margin:10px 0 0;padding:4px 10px;border-radius:99px;background:rgba(0,36,42,.78);font-size:14px;font-weight:600;color:#fff}   /* on a plate: the line can cross the sun */
 .cd .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0;list-style:none}
 .cd .chips li{padding:5px 10px;border-radius:99px;background:rgba(0,36,42,.78);font-size:13px;font-weight:700}
 .cd .chips small{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#f2c230;margin-right:5px}
@@ -492,18 +504,25 @@ body.card-open #cardsheet{transform:translateY(0);pointer-events:auto}
 .cform .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cform .err{margin:10px 0 0;color:#b3261e;font-size:14px;font-weight:650}
 :root[data-theme="dark"] .cform .err{color:#ffb4ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cform .err{color:#ffb4ab}}
 .cqr{display:grid;justify-items:center;text-align:center;padding-top:6px}
 .cqr .qr{width:min(78vw,300px);aspect-ratio:1;background:#fff;border-radius:16px;padding:8px;box-sizing:border-box;box-shadow:0 0 0 1.5px var(--rule)}
 .cqr .qr svg{display:block;width:100%;height:100%}
 .cqr h2{font-family:var(--display);font-weight:900;font-size:24px;line-height:1.1;margin:16px 0 0}
 .cqr p{margin:4px 0 0;color:var(--mute);font-size:15px;line-height:1.4}
 .cqr .how{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:14.5px;text-align:left}
+.cqr .how+.how{margin-top:8px}
+.cqr p{text-wrap:balance}
+.cqr .how,.cqr .btnrow{justify-self:stretch}
+.cqr .btnrow{margin-top:14px}
+.cqr .btnrow .pbtn{flex:1;justify-content:center}   /* full width under the full-width cards: no lone centered button */
 /* Map page: scroll-friendly touch, Expand, jump chips */
-.mapexp{all:unset;cursor:pointer;position:absolute;left:10px;top:10px;z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px 0 11px;border-radius:99px;background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.28)}
+.mapexp{all:unset;cursor:pointer;position:absolute;left:10px;top:10px;z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px 0 11px;border-radius:99px;background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.28)}
 .mapexp svg{width:18px;height:18px}
 .mapexp:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .mapseg .mclose{display:none;flex:0 0 auto;padding:0 18px;background:var(--teal);border-color:var(--teal);color:#fff}
 :root[data-theme="dark"] .mapseg .mclose{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mapseg .mclose{color:#0f1416}}
 .mapcard.full{position:fixed;inset:0;z-index:49;margin:0;border:0;border-radius:0;display:flex;flex-direction:column;background:var(--surface);padding-top:var(--sat)}
 .mapcard.full .mapview{flex:1 1 auto;height:auto !important;min-height:0 !important;margin-top:10px;touch-action:none}
 .mapcard.full .mapexp{display:none}
@@ -513,7 +532,7 @@ body.card-open #cardsheet{transform:translateY(0);pointer-events:auto}
 .mapjump::-webkit-scrollbar{display:none}
 .mapjump>b{flex:0 0 auto;align-self:center;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
 .mapjump>b svg{width:14px;height:14px}
-.mapjump button{flex:0 0 auto;min-height:40px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14px;cursor:pointer}
+.mapjump button{flex:0 0 auto;min-height:44px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14px;cursor:pointer}
 .mapjump button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .plist h3,.rhelp h3,.tinfo h3{scroll-margin-top:12px}
 .tinfo .card{margin-top:12px;padding:14px 16px;border-radius:16px;background:var(--sunk)}
@@ -575,9 +594,10 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .fform .fine{margin:12px 0 0;font-size:12.5px;line-height:1.4;color:var(--mute)}
 .fform .err{margin:10px 0 0;color:#b3261e;font-size:14px;font-weight:650}
 :root[data-theme="dark"] .fform .err{color:#ffb4ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fform .err{color:#ffb4ab}}
 .fthanks{display:grid;justify-items:center;text-align:center;padding:18px 4px 0}
 .fthanks .big{font-family:var(--display);font-weight:900;font-size:30px;line-height:1.1;margin:8px 0 0}
-.fthanks p{margin:8px 0 0;color:var(--mute);font-size:15.5px;line-height:1.45;max-width:30em}
+.fthanks p{margin:8px 0 0;color:var(--mute);font-size:15.5px;line-height:1.45;max-width:30em;text-wrap:balance}
 .fthanks .stars{display:flex;gap:4px;color:var(--taxi);margin-top:10px}
 .fthanks .stars svg{width:30px;height:30px;fill:currentColor;stroke:#a77d00;stroke-width:1.5}
 /* Team tools: post an announcement (TD SYNNEX identities only; the PIN is checked on the server) */
@@ -592,6 +612,7 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .teamcard .chk input{width:22px;height:22px;accent-color:var(--teal)}
 .teamcard .err{margin:10px 0 0;color:#b3261e;font-size:14px;font-weight:650}
 :root[data-theme="dark"] .teamcard .err{color:#ffb4ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .teamcard .err{color:#ffb4ab}}
 .cardsteps{margin:10px 0 0;padding-left:22px;font-size:14.5px;line-height:1.45;color:var(--ink)}
 .cardsteps li{margin:3px 0}
 .teamcontact{margin:0 0 16px;padding:16px 18px 18px;border-radius:18px;background:var(--sunk);border:2px solid var(--g-partners)}
@@ -645,7 +666,7 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 .msg.err{align-self:flex-start;background:#fde9e7;color:#7a1a12}
 :root[data-theme="dark"] .msg.err{background:#3a1b18;color:#ffb4ab}
 .msg .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.msg .acts button{all:unset;cursor:pointer;min-height:40px;padding:0 14px;border-radius:99px;background:var(--surface);border:1.5px solid var(--rule);color:var(--ink);font-weight:700;font-size:14px;display:inline-flex;align-items:center}
+.msg .acts button{all:unset;cursor:pointer;min-height:44px;padding:0 14px;border-radius:99px;background:var(--surface);border:1.5px solid var(--rule);color:var(--ink);font-weight:700;font-size:14px;display:inline-flex;align-items:center}
 .msg .acts button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .msg .acts button{max-width:100%;white-space:nowrap;overflow-wrap:normal}
 .msg .acts button svg{width:16px;height:16px;flex:none;margin-right:6px}
@@ -656,12 +677,13 @@ body.fb-open #fbsheet{transform:translateY(0);pointer-events:auto}
 @keyframes dot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.msg.dots span{animation:none}}
 .sugg{display:flex;flex-wrap:wrap;gap:8px;padding:2px 20px 8px}
-.sugg button{all:unset;cursor:pointer;min-height:40px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;display:inline-flex;align-items:center}
+.sugg button{all:unset;cursor:pointer;min-height:44px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14.5px;display:inline-flex;align-items:center}
 .askbar{flex:0 0 auto;display:flex;align-items:flex-end;gap:8px;padding:10px 14px 10px;border-top:1px solid var(--rule);background:var(--surface)}
 .askbar textarea{flex:1;min-width:0;box-sizing:border-box;min-height:48px;max-height:120px;padding:12px 14px;border-radius:24px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.3;resize:none}
 .askbar textarea:focus{outline:3px solid var(--teal);outline-offset:1px}
 .askbar button{all:unset;cursor:pointer;flex:0 0 48px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--teal);color:#fff}
 :root[data-theme="dark"] .askbar button{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .askbar button:not(.mic){color:#0f1416}}
 .askbar button.mic{background:var(--sunk);color:var(--ink)}
 .askbar button.mic.on{background:#e0603f;color:#fff}
 .askbar button:disabled{opacity:.45}
@@ -690,13 +712,13 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .askwrap .askbar{margin:0;border:1.5px solid var(--rule);border-radius:30px;padding:8px}
 .chipstrip{display:flex;gap:8px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .chipstrip::-webkit-scrollbar{display:none}
-.chipstrip button{all:unset;cursor:pointer;flex:0 0 auto;box-sizing:border-box;min-height:40px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14px;display:inline-flex;align-items:center;white-space:nowrap}
+.chipstrip button{all:unset;cursor:pointer;flex:0 0 auto;box-sizing:border-box;min-height:44px;padding:0 14px;border-radius:99px;border:1.5px solid var(--rule);background:var(--surface);color:var(--ink);font-weight:650;font-size:14px;display:inline-flex;align-items:center;white-space:nowrap}
 .chipstrip button[data-ask-ideas]{background:var(--teal);border-color:var(--teal);color:#fff}
 :root[data-theme="dark"] .chipstrip button[data-ask-ideas]{color:#0f1416}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chipstrip button[data-ask-ideas]{color:#0f1416}}
 .chipstrip button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .askrow{display:flex;justify-content:flex-end;margin:10px 0 0}
-.askrow .pbtn{min-height:40px;font-size:14px}
+.askrow .pbtn{min-height:44px;font-size:14px}
 .msg .webnote{display:block;margin-top:6px;font-size:12.5px;line-height:1.35;color:var(--mute)}
 .topiccard{border:2px solid var(--g-partners);border-radius:18px;padding:16px 18px 18px;margin-top:14px}
 .topiccard h3{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:20px;line-height:1.2;margin:0}
@@ -741,11 +763,11 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .cg-catch .cg-what{flex:1;min-width:0}
 .cg-catch .cg-what b{display:block;font-size:14.5px;line-height:1.3}
 .cg-catch .cg-what small{display:block;margin-top:2px;font-size:13px;line-height:1.35;color:var(--mute)}
-.cg-catch button{all:unset;cursor:pointer;flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--teal);border:1.5px solid var(--rule)}
+.cg-catch button{all:unset;cursor:pointer;flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--teal);border:1.5px solid var(--rule)}
 .cg-catch button svg{width:18px;height:18px}
 .cg-catch button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .cg .cg-head{margin:4px 0 0;font-family:var(--display);font-weight:800;font-size:18.5px;line-height:1.28;text-wrap:pretty}
-.cg h5{margin:18px 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.cg h4,.cg h5{margin:18px 0 8px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
 .cg-list,.cg-diff{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .cg-list li,.cg-diff li{padding:11px 12px;border-radius:12px;background:var(--sunk);font-size:15px;line-height:1.45;border-left:4px solid var(--teal)}
 .cg-diff li{border-left-color:var(--g-microsoft)}
@@ -785,9 +807,9 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .info .body{padding:0 0 18px;font-size:16px;line-height:1.6}
 .info .body p{margin:0 0 10px}
 .info .body a{color:var(--teal);font-weight:650}
-.empty-state{margin-top:18px;padding:22px;border:1.5px dashed var(--rule);border-radius:16px}
-.empty-state b{display:block;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.2}
-.empty-state p{margin:6px 0 0;color:var(--mute);line-height:1.5}
+.empty-state{margin-top:18px;padding:22px;border:1.5px dashed var(--rule);border-radius:16px;text-align:center}   /* short empty states center as one unit, like .empty */
+.empty-state b{display:block;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.2;text-wrap:balance}
+.empty-state p{margin:6px auto 0;max-width:30em;color:var(--mute);line-height:1.5;text-wrap:balance}
 .sitefoot{margin-top:40px;padding:26px 0 10px;border-top:1px solid var(--rule);text-align:center;color:var(--mute);font-size:14px}
 .sitefoot img{height:28px;width:auto;margin:0 auto 10px}
 .sitefoot p{margin:2px 0}
@@ -797,9 +819,9 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .qrbtn{position:absolute;top:8px;right:max(10px,var(--sar));width:44px;height:44px;border-radius:50%;border:1.5px solid #cfd8d8;background:#fff;color:#006a77;display:grid;place-items:center;cursor:pointer;padding:0}
 .qrbtn svg{width:24px;height:24px}
 .qrbtn:focus-visible{outline:3px solid #006a77;outline-offset:2px}
-@media (max-width:480px){.mast h1{font-size:19.5px}.qrbtn{width:40px;height:40px;right:max(8px,var(--sar))}}
+@media (max-width:480px){.mast h1{font-size:19.5px}.qrbtn{right:max(8px,var(--sar))}}   /* stays 44 px: a tap target */
 @media (max-width:400px){.mast h1{font-size:18px}}
-@media (max-width:340px){.mast .where{font-size:12px}.mast .thumb{width:44px;height:44px}.mast .wrap{gap:10px}.mast h1{font-size:16.5px}.qrbtn{width:36px;height:36px;top:6px;right:6px}.qrbtn svg{width:20px;height:20px}}
+@media (max-width:340px){.mast .where{font-size:12px}.mast .thumb{width:44px;height:44px}.mast .wrap{gap:10px}.mast h1{font-size:16.5px}.qrbtn{top:6px;right:6px}.qrbtn svg{width:22px;height:22px}}
 @media (min-width:600px){.qrbtn{position:static;flex:0 0 auto;align-self:center}}
 .getapp{display:none}
 @media (min-width:600px){.getapp{flex:0 0 auto;align-self:center;display:inline-flex}}
@@ -808,8 +830,8 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .appbar{display:flex;align-items:center;gap:12px;margin-top:14px;padding:10px 6px 10px 12px;border-radius:14px;background:var(--sunk)}
 .appbar img{width:36px;height:36px;border-radius:9px}
 .appbar b{flex:1;font-size:15px;line-height:1.3}
-.appbar .go{min-height:40px;padding:0 14px;border-radius:10px;border:0;background:var(--teal);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
-.appbar .x{width:40px;height:40px;border:0;background:none;border-radius:10px;color:var(--mute);cursor:pointer;display:grid;place-items:center}
+.appbar .go{min-height:44px;padding:0 14px;border-radius:10px;border:0;background:var(--teal);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.appbar .x{width:44px;height:44px;border:0;background:none;border-radius:10px;color:var(--mute);cursor:pointer;display:grid;place-items:center}
 .appbar .x svg{width:16px;height:16px}
 .applink{display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;padding:14px;border-radius:14px;border:1.5px solid var(--rule);background:var(--surface);cursor:pointer;text-align:left;font-size:16px;font-weight:650;color:var(--ink)}
 .applink img{width:36px;height:36px;border-radius:9px}
@@ -828,6 +850,9 @@ details.hints summary{cursor:pointer;min-height:44px;display:flex;align-items:ce
 .h-note{margin:16px 0 0;padding:12px 14px;border-radius:12px;background:var(--sunk);font-size:15px;line-height:1.45;color:var(--mute)}
 .h-copy{margin-top:12px;min-height:46px;padding:0 16px;border-radius:12px;border:1.5px solid var(--rule);background:var(--surface);font-weight:650;font-size:15px;cursor:pointer;color:var(--ink)}
 .h-other{margin-top:14px;border:0;background:none;padding:0;min-height:44px;color:var(--teal);font-weight:650;font-size:15px;cursor:pointer}
+/* White on the light dark-mode teal is 2.1:1, so teal buttons take dark ink in dark mode */
+:root[data-theme="dark"] .appbar .go,:root[data-theme="dark"] .h-install{color:#0f1416}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .appbar .go,:root:not([data-theme="light"]) .h-install{color:#0f1416}}
 
 #hscrim{z-index:44}
 #helpsheet{z-index:45}
@@ -860,7 +885,7 @@ body{padding-bottom:calc(64px + var(--sab))}
 .search input::placeholder{color:var(--mute);opacity:1}
 .search input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent)}
 .search input::-webkit-search-cancel-button{display:none}
-.search .clear{position:absolute;right:4px;top:4px;width:40px;height:40px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--mute);display:none}
+.search .clear{position:absolute;right:2px;top:2px;width:44px;height:44px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--mute);display:none}
 .search.has .clear{display:grid;place-items:center}
 .srow{display:flex;gap:8px}
 .srow .search{flex:1;min-width:0}
@@ -872,8 +897,8 @@ body{padding-bottom:calc(64px + var(--sab))}
 .mylist .badge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--ink);color:var(--bg);
   font-family:var(--display);font-weight:800;font-size:12px;line-height:20px;text-align:center;box-shadow:0 0 0 2px var(--bg)}
 .mylist .badge:empty{display:none}
-.filters{display:grid;grid-template-columns:.8fr 1fr 1.05fr 1.1fr;margin-top:10px;background:var(--soft);border-radius:12px;padding:3px;gap:3px}
-.filters button{min-height:38px;padding:0 4px;border-radius:9px;border:0;background:none;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--mute)}
+.filters{display:grid;grid-template-columns:minmax(44px,.8fr) 1fr 1.05fr 1.1fr;margin-top:10px;background:var(--soft);border-radius:12px;padding:3px;gap:3px}
+.filters button{min-height:44px;padding:0 4px;border-radius:9px;border:0;background:none;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--mute)}
 .filters .gd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
 @media (max-width:359px){.filters .gd{margin-right:3px;width:8px;height:8px}}
 @media (max-width:359px){.filters button{font-size:13px}}
@@ -886,7 +911,7 @@ body{padding-bottom:calc(64px + var(--sab))}
 .ghead h2{font-family:var(--display);font-weight:800;font-stretch:96%;font-size:22px;line-height:1.15;margin:0}
 .ghead span{font-family:var(--display);font-weight:800;color:var(--gc);font-variant-numeric:tabular-nums}
 .glens{margin:8px 0 0}
-.glens summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px;font-size:14.5px;font-weight:650;color:var(--gc)}
+.glens summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:14.5px;font-weight:650;color:var(--gc)}
 .glens summary::-webkit-details-marker{display:none}
 .glens summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
 .glens[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
@@ -918,8 +943,8 @@ mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
 .star[aria-pressed="true"]{color:var(--taxi)}
 .star[aria-pressed="true"] svg path{fill:currentColor}
 .empty{margin:28px 0;padding:22px;border:1.5px dashed var(--rule);border-radius:14px;text-align:center}
-.empty b{display:block;font-family:var(--display);font-weight:800;font-size:20px}
-.empty p{margin:6px 0 0;color:var(--mute)}
+.empty b{display:block;font-family:var(--display);font-weight:800;font-size:20px;line-height:1.2;text-wrap:balance}
+.empty p{margin:6px auto 0;max-width:30em;color:var(--mute);text-wrap:balance}
 
 
 /* ---------- Profile sheet ---------- */
@@ -937,18 +962,24 @@ body:not(.is-open) #sheet{pointer-events:none}
 .sheet .x{position:absolute;right:10px;top:8px;width:44px;height:44px;border:0;border-radius:50%;background:var(--soft);cursor:pointer;display:grid;place-items:center}
 .sheet .x svg{width:18px;height:18px}
 .sheet-body{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px calc(24px + var(--sar)) 8px calc(24px + var(--sal))}
-.p-top{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px}
+.p-top{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:22px}   /* clears the handle and the X even if the body has scrolled a little */
 .p-photo{width:144px;height:144px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--surface),0 0 0 7px var(--gc)}
 .p-group{margin-top:16px;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:650;color:var(--gc)}
 .p-group i{width:9px;height:9px;border-radius:50%;background:var(--gc)}
 .p-name{font-family:var(--display);font-weight:900;font-stretch:100%;font-size:32px;line-height:1.05;margin:6px 0 0;text-wrap:balance}
 .p-title{margin:8px 0 0;font-size:17px;line-height:1.35;font-weight:600;text-wrap:balance}
 .p-co{margin:2px 0 0;font-size:17px;color:var(--gc);font-weight:650}
-.p-bio{margin:20px auto 0;font-size:17px;line-height:1.6;max-width:34em;text-wrap:pretty}
-.p-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+/* Hero (photo, group, name, title, company) is centered as one unit and closed by the action row.
+   Bios run 5 to 11 lines on a phone, so the bio is a left-aligned section with its own heading,
+   like every section below it: never a centered heading over a ragged-left paragraph. */
+.p-bio{margin:6px 0 0;font-size:16.5px;line-height:1.6;text-wrap:pretty}
+.p-about:has(.p-bio:empty){display:none}
+.p-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:34em;margin:22px auto 0}
 .p-actions button{min-height:50px;border-radius:14px;border:1.5px solid var(--rule);background:var(--surface);cursor:pointer;
   font-weight:650;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .p-actions svg{width:20px;height:20px}
+.p-actions button{white-space:nowrap}
+@media (max-width:359px){.p-actions button{gap:6px;padding:0 6px;font-size:14.5px}.p-actions svg{width:18px;height:18px}}
 .p-actions .save[aria-pressed="true"]{background:var(--taxi);border-color:var(--taxi);color:#15181a}
 .p-actions .save[aria-pressed="true"] svg path{fill:currentColor}
 .p-nav{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);margin-top:12px}
@@ -1000,6 +1031,33 @@ html.lock,html.lock body{overflow:hidden}
   .grab{visibility:hidden}
 }
 @media (min-width:980px){:root{--col:1040px}.people{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}}
+
+/* ---------- Accessibility and polish pass ---------- */
+/* Keyboard focus: all:unset strips the global ring, so put it back after every reset */
+button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,[role="button"]:focus-visible,[tabindex]:not([tabindex="-1"]):focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+:root :is(button,a,summary,select,[role="button"]):focus-visible{outline-style:solid}   /* beats any all:unset, whatever its specificity; color and offset stay with the control's own rule */
+.nowc .spk button:focus-visible,.cgcta button:focus-visible{outline-color:#fff}
+/* 44 px hit bands for controls whose visible pill must stay small (inline links, map chips) */
+.mapchip,.info .body a[href^="tel:"],.info .body a[href^="mailto:"],.askwrap .vhead p.powered a{position:relative}
+.mapchip::before,.info .body a[href^="tel:"]::before,.info .body a[href^="mailto:"]::before,.askwrap .vhead p.powered a::before{content:"";position:absolute;left:-4px;right:-4px;top:50%;height:44px;transform:translateY(-50%)}
+/* Phone numbers and email addresses in Info read as tappable pills */
+.info .body a[href^="tel:"],.info .body a[href^="mailto:"]{display:inline-block;padding:1px 10px;margin:1px 0;border-radius:99px;background:color-mix(in srgb,var(--teal) 11%,transparent);text-decoration:none;white-space:nowrap;line-height:1.5}
+/* iOS zooms into any field under 16 px */
+#h-other{font-size:16px}
+/* People toolbar at 320: the placeholder only needs the clear button's room when there is text */
+.search:not(.has) input{padding-right:12px}
+@media (max-width:359px){.filters{gap:2px}.filters button{padding:0 2px;font-size:12px}.filters .gd{margin-right:3px}}
+/* Legends: an item never splits from its swatch, and the map key is a tidy 2 by 2 */
+.glegend span,.maplegend span{white-space:nowrap}
+.maplegend{display:grid;grid-template-columns:repeat(2,max-content);column-gap:18px}
+/* Ask chip strip: fade the edge so a cut-off chip reads as "scroll for more" */
+.chipstrip{padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+/* "All ideas and tips" gets the same chevron as the Info accordions */
+details.hints summary{list-style:none;gap:10px}
+details.hints summary::-webkit-details-marker{display:none}
+details.hints summary::after{content:"";flex:0 0 auto;width:8px;height:8px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+details.hints[open] summary::after{transform:rotate(-135deg) translateY(-2px)}
+@media (prefers-reduced-motion:reduce){details.hints summary::after{transition:none}}
 </style>
 </head>
 <body>
@@ -1023,7 +1081,8 @@ html.lock,html.lock body{overflow:hidden}
 
 <main>
   <!-- HOME -->
-  <section class="view" id="v-home" data-view="home" aria-label="Home">
+  <section class="view" id="v-home" data-view="home" aria-labelledby="home-h">
+    <h2 id="home-h" class="vh">Home</h2>
     <div class="wrap" id="home"></div>
   </section>
 
@@ -1131,11 +1190,11 @@ html.lock,html.lock body{overflow:hidden}
         <p class="p-title" id="p-title"></p>
         <p class="p-co" id="p-co"></p>
       </div>
-      <p class="p-bio" id="p-bio"></p>
       <div class="p-actions">
         <button class="save" id="p-save" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg><span>Want to meet</span></button>
         <button id="p-share" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span>Share profile</span></button>
       </div>
+      <div class="p-sec p-about"><h3>About</h3><p class="p-bio" id="p-bio"></p></div>
       <div class="p-sec" id="p-sessions" hidden><h3>On the agenda</h3><ul class="p-sess" id="p-sess-list"></ul></div>
       <div class="p-sec" id="p-starters" hidden><div class="cgcta" id="p-cgcta"><div><b>Why you two should talk</b><span>Compares your profile and the topics you added with theirs, and finds real common ground.</span></div><button type="button" class="pbtn pri" id="p-starters-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>Find our common ground</button></div><div id="p-connect" aria-live="polite"></div><p class="fine" id="p-starters-note" hidden></p></div>
       <div class="p-sec" id="p-ask"><h3>Ask me about</h3><ul class="tags" id="p-tags"></ul></div>
@@ -1386,7 +1445,7 @@ const PEOPLE = [
   {"id": "steve-caprio", "g": "partners", "n": "Steve Caprio", "t": "Director", "c": "EchoStor", "b": "Steve Caprio is the director of enterprise transformation at EchoStor focused on helping customers enhance security, simplify management, and unlock business value across the Microsoft ecosystem, connecting technology architecture to business outcomes.", "ask": ["Enterprise transformation on Microsoft", "Simplifying security and management", "Connecting architecture to business outcomes"], "meet": [["jason-norred", "Jason is a CISO focused on aligning security programs with business goals, the same bridge Steve builds for customers."], ["jason-lambiris", "Apex goes deep on Microsoft 365, shared ground on simplifying management and security."], ["sachin-parikh", "Sachin’s team delivers cloud and security solutions at SNP, shared ground on Microsoft security outcomes."]]},
   {"id": "cesar-enciso", "g": "partners", "n": "Cesar Enciso", "t": "CEO", "c": "EVOTEK", "b": "Cesar Enciso founded EVOTEK in 2014 and serves as its chief executive officer and chairman, leading to recognition as Inc. Magazine’s 5000 Fastest Growing Companies and Best Workplaces lists.", "ask": ["Building a fast-growing integrator", "Company culture and best workplaces", "Security and multi-cloud for enterprises"], "meet": [["chad-stanfield", "Both lead integrators working across data center, cloud, and security for larger customers."], ["ben-erickson", "Both lead fast-growing companies that have been recognized on the Inc. 5000 list."]]},
   {"id": "michael-boone", "g": "partners", "n": "Michael Boone", "t": "President, Commercial", "c": "InaCOMP TSG", "b": "Michael Boone is president, commercial at InaCOMP TSG. He leads commercial growth for a technology-services provider that has served midmarket, public-sector and education customers with professional and managed technology services since 1982.", "ask": ["Public sector and education customers", "Professional and managed services for the midmarket"], "meet": [["ben-erickson", "Both serve education customers. Vivacity focuses on technology for K-12 schools."], ["brian-osborne", "MNJ also serves public sector and education, shared ground on how those customers buy."], ["steven-thraen", "Both work at long-established IT services firms. Steven focuses on growing QCM’s services practice."]]},
-  {"id": "nelson-puello", "g": "partners", "n": "Nelson Puello", "t": "Practice Director - Modern Work, Cloud and AI", "c": "ivision", "b": "Nelson Puello serves as ivision's practice director. He is responsible for building and running consulting practices that scale—aligning offerings, talent, financial performance, and delivery quality across Modern Work, Public Cloud, and AI.", "ask": ["Building consulting practices that scale", "Modern Work, cloud, and AI practices", "Delivery quality"], "meet": [["steven-thraen", "Both build and run services practices, balancing offerings, talent, and delivery quality."], ["jason-lambiris", "Apex goes deep on Microsoft 365 and Copilot readiness, close to Nelson’s Modern Work practice."], ["bill-leonard", "Bill leads Patriot Consulting’s Microsoft-focused cloud business. Good exchange on scaling Microsoft practices."]]},
+  {"id": "nelson-puello", "g": "partners", "n": "Nelson Puello", "t": "Practice Director - Modern Work, Cloud and AI", "c": "ivision", "b": "Nelson Puello serves as ivision's practice director. He is responsible for building and running consulting practices that scale, aligning offerings, talent, financial performance, and delivery quality across Modern Work, Public Cloud, and AI.", "ask": ["Building consulting practices that scale", "Modern Work, cloud, and AI practices", "Delivery quality"], "meet": [["steven-thraen", "Both build and run services practices, balancing offerings, talent, and delivery quality."], ["jason-lambiris", "Apex goes deep on Microsoft 365 and Copilot readiness, close to Nelson’s Modern Work practice."], ["bill-leonard", "Bill leads Patriot Consulting’s Microsoft-focused cloud business. Good exchange on scaling Microsoft practices."]]},
   {"id": "greg-starr", "g": "partners", "n": "Greg Starr", "t": "Vendor Manager", "c": "Meriplex", "b": "Greg Starr is the channel and alliances manager at Meriplex. He has been central to the growth strategies and acquisition management for Meriplex.", "ask": ["Growth through acquisition", "Channel and alliance strategy", "Co-managed IT"], "meet": [["thomas-raad", "Courser grows by bringing MSPs together. Good exchange on acquisitions and integration."], ["aaron-kamphuis", "Aaron leads alliances and channel at Ascend, a natural peer on alliance strategy."], ["chuck-kiessling", "Chuck advises on acquisitions and integration, close to Greg’s work on acquisition management."]]},
   {"id": "rick-trujillo", "g": "partners", "n": "Rick Trujillo", "t": "VP Data Intelligence and Cloud", "c": "MicroAge", "b": "Rick Trujillo is vice president of data intelligence and cloud at MicroAge where he is responsible for leading the strategy, growth, and delivery of data, AI, cloud, and professional services solutions.", "ask": ["Data and AI practices", "Cloud strategy", "Professional services"], "meet": [["shahzad-munawwar", "Shahzad champions AI-driven transformation at Axelliant. Both are building AI on Microsoft."], ["chad-stanfield", "Both lead data, AI, and cloud offerings for their companies."], ["victor-mushkatin", "Victor’s team focuses on cloud optimization and AI-enabled operations, a natural complement."]]},
   {"id": "brian-osborne", "g": "partners", "n": "Brian Osborne", "t": "VP of Business Development", "c": "MNJ Technologies", "b": "Brian Osborne is the vice president of business development at MNJ Technologies, responsible for directing product management, customer success, and marketing teams in a growth-centered trajectory.", "ask": ["Customer success", "Product management for services", "Public sector and education"], "meet": [["kyle-nelson", "Kyle leads Ascend’s revenue organization, shared ground on go-to-market and customer engagement."], ["michael-boone", "InaCOMP serves public sector and education too, shared ground on those customers."], ["sachin-parikh", "Both focus on customer success. A good chance to compare approaches."]]},
@@ -1552,7 +1611,7 @@ const GROUP_CAP = { partners:"partners", microsoft:"leaders", tdsynnex:"hosts" }
 const hibPetal = (rot, c) => `<g transform="rotate(${rot})"><path d="M0 -4 C -6 -10 -21 -18 -19 -33 C -17 -44 -6 -47 0 -40 C 6 -47 17 -44 19 -33 C 21 -18 6 -10 0 -4Z" fill="${c}"/><path d="M0 -8 C -2 -18 -1 -28 0 -36 M0 -10 C -6 -18 -9 -26 -11 -32 M0 -10 C 6 -18 9 -26 11 -32" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" stroke-linecap="round"/></g>`;
 const HIBISCUS = `<svg class="hib" viewBox="-50 -50 100 100" aria-hidden="true">${hibPetal(0,"#F25022")}${hibPetal(72,"#FFB900")}${hibPetal(144,"#7FBA00")}${hibPetal(216,"#00A4EF")}${hibPetal(288,"#0A7E8C")}<circle r="9" fill="#C4166A"/><circle r="5" fill="#F2C230"/><path d="M2 -2 C 12 -12 20 -20 24 -34" fill="none" stroke="#E8762B" stroke-width="3.2" stroke-linecap="round"/><circle cx="24.5" cy="-35" r="2.6" fill="#F2C230"/><circle cx="20" cy="-38" r="2" fill="#F2C230"/><circle cx="28.5" cy="-32" r="2" fill="#F2C230"/></svg>`;
 function groupArt(k){
-  const logo = sel => { const i = document.querySelector(sel); return i ? `<img src="${i.src}" alt="" decoding="async">` : ""; };
+  const logo = sel => { const i = document.querySelector(sel); return i ? `<img src="${i.src}" alt="" width="${i.getAttribute("width") || i.naturalWidth}" height="${i.getAttribute("height") || i.naturalHeight}" decoding="async">` : ""; };
   if(k === "microsoft") return logo(".mast .logos img.ms") || "Microsoft";
   if(k === "tdsynnex") return logo(".mast .logos img:not(.ms)") || "TD SYNNEX";
   return HIBISCUS;
@@ -1753,9 +1812,9 @@ let lastAgendaKey = "";
 function agendaSub(){ const now = venueNow(); return now ? `All times are Hawaii time. It’s ${fmtMin(now.min)} at the resort right now.` : "Times are local to the venue (Hawaii time)."; }
 /* ---------- AGENDA: colored day cards, a day hero, a day-at-a-glance strip and a tappable timeline ---------- */
 const DAYTHEME = [
-  { short:"Arrive", d1:"#c4166a", d2:"#b8530a", ink:"#fff", chip:"rgba(255,255,255,.22)" },
-  { short:"Day 1",  d1:"#004a54", d2:"#087d8c", ink:"#fff", chip:"rgba(255,255,255,.2)" },
-  { short:"Day 2",  d1:"#16467f", d2:"#17788f", ink:"#fff", chip:"rgba(255,255,255,.2)" },
+  { short:"Arrive", d1:"#c4166a", d2:"#b8530a", ink:"#fff", chip:"rgba(0,0,0,.24)" },
+  { short:"Day 1",  d1:"#004a54", d2:"#087d8c", ink:"#fff", chip:"rgba(0,0,0,.24)" },
+  { short:"Day 2",  d1:"#16467f", d2:"#17788f", ink:"#fff", chip:"rgba(0,0,0,.24)" },
   { short:"Depart", d1:"#e8a317", d2:"#f6d35c", ink:"#15181a", chip:"rgba(21,24,26,.1)" },
 ];
 const dtheme = i => DAYTHEME[i % DAYTHEME.length];
@@ -1781,7 +1840,7 @@ const AG = {
   next: AGSVG('<path d="M5 12h14m-6-6 6 6-6 6"/>'),
 };
 const agOpen = new Set(), agClosed = new Set();      // sessions the person opened or closed by hand
-const durText = m => m < 60 ? `${m} min` : (m % 60 ? `${Math.floor(m / 60)} hr ${m % 60} min` : `${m / 60} hr`);
+const durText = m => m < 60 ? `${m}\u00a0min` : (m % 60 ? `${Math.floor(m / 60)}\u00a0hr\u00a0${m % 60}\u00a0min` : `${m / 60}\u00a0hr`);   /* no-break: "min" never wraps alone */
 const rangeText = s => s.start ? `${fmtTime(s.start)}${s.end ? " to " + fmtTime(s.end) : ""}` : (s.allDay ? "All day" : (s.time || ""));
 
 function agSpeakers(s){
@@ -1803,7 +1862,7 @@ function agSessionCard(day, di, s, si, ctx){
   const spk = (s.speakers || []).filter(id => byId[id]);
   const avs = spk.length ? `<div class="avs">${spk.slice(0, 3).map(id => `<img src="${photo(id)}" alt="" width="28" height="28">`).join("")}<span>${esc(byId[spk[0]].n)}${spk.length > 1 ? ` +${spk.length - 1}` : ""}</span></div>` : (s.by ? `<div class="avs"><span class="byline">${esc(s.by)}</span></div>` : "");
   const dur = s.start && s.end ? durText(en - startM) : "";
-  const sub = [s.where, dur].filter(Boolean).map(esc).join(" · ");
+  const sub = [s.where, dur].filter(Boolean).map(esc).join(" ·\u00a0");
   let prog = "";
   if(live){ const pct = Math.max(2, Math.min(100, Math.round((now.min - startM) / (en - startM) * 100))); prog = `<div class="lp" role="img" aria-label="${pct}% of the session has passed"><i style="width:${pct}%"></i></div><div class="lpt">${en - now.min} min left</div>`; }
   else if(here && st.kind === "next"){ const to = startM - now.min; prog = `<div class="lpt">Starts in ${durText(Math.max(1, to))}</div>`; }
@@ -1840,7 +1899,7 @@ function agGlance(day, di, timed, ctx){
     return `<button type="button" class="gseg${past ? " past" : ""}" data-gjump="${di}:${si}" style="left:${((a - lo) / span * 100).toFixed(2)}%;width:${Math.max(1.2, (b - a) / span * 100 - .5).toFixed(2)}%;--kc:var(--k-${KM[s.kind] ? s.kind : "meeting"})" aria-label="${esc(s.title)}, ${esc(rangeText(s))}"></button>`; }).join("");
   const nowMark = isToday && now.min >= lo && now.min <= hi ? `<i class="gnow" style="left:${((now.min - lo) / span * 100).toFixed(2)}%" aria-hidden="true"></i>` : "";
   const kinds = [...new Set(timed.map(({ s }) => KM[s.kind] ? s.kind : "meeting"))];
-  return `<div class="glance2"><h5>The day at a glance</h5><div class="gbar">${segs}${nowMark}</div>
+  return `<div class="glance2"><h4>The day at a glance</h4><div class="gbar">${segs}${nowMark}</div>
     <div class="gticks"><span>${esc(fmtMins(lo))}</span><span>${esc(fmtMins(lo + span / 2))}</span><span>${esc(fmtMins(hi))}</span></div>
     <div class="glegend">${kinds.map(x => `<span style="--kc:var(--k-${x})"><i></i>${esc(KM[x].l)}</span>`).join("")}</div></div>`;
 }
@@ -1999,7 +2058,7 @@ function buildResort(){
   if(resortBuilt) return; resortBuilt = true;
   $("#mapcard").innerHTML = `<div class="mapseg" role="group" aria-label="Choose a map">${[1,3,2].map(n => `<button type="button" data-maptab="${n}" aria-pressed="${n===1}">${MAPS[n].label}</button>`).join("")}<button type="button" class="mclose" id="mapclose">Close map</button></div>
     <div class="mapview" id="mapview" tabindex="0" role="group" aria-label="Resort map. Swipe to scroll the page. Use two fingers to move or zoom the map, or press Expand. Tap a pin to see what is there.">
-      <div class="mapstage" id="mapstage"><img id="mapimg" alt="Illustrated map of The Ritz-Carlton O’ahu, Turtle Bay" decoding="async"><div id="pins"></div></div>
+      <div class="mapstage" id="mapstage"><img id="mapimg" alt="Illustrated map of The Ritz-Carlton O’ahu, Turtle Bay" width="3597" height="3100" decoding="async"><div id="pins"></div></div>
       <button type="button" class="mapexp" id="mapexp" aria-label="Expand the map to full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Expand</button>
       <div class="maphint" id="maphint">Two fingers to move the map. Tap a pin.</div>
       <div class="mapsheet mapinfo" id="mapinfo" aria-live="polite" hidden></div>
@@ -2098,6 +2157,7 @@ function setMapFull(on){
   if(on === mapFull) return; mapFull = on; if(on) mapFullY = scrollY; $("#mapcard").classList.toggle("full", on);
   if(on) ovPush("map"); else ovBack("map");
   if(on) root.classList.add("lock"); else if(!current && !helpOpen && !cardOpen && !fbOpen) root.classList.remove("lock");
+  syncInert();
   if(!on && view === "resort") window.scrollTo(0, mapFullY);   // Close returns to where Expand was tapped
   measureMap(); const p = selPlace && PLACE[selPlace];
   if(p && p.map === mapNo) centerOn(p.x, p.y, Math.max(mv.s, mapNo === 3 ? .85 : .62), false); else fitBox(MAPS[mapNo].box, false);
@@ -2125,7 +2185,7 @@ function renderMapInfo(){
   if(!selPlace || PLACE[selPlace].map !== mapNo){ box.hidden = true; box.innerHTML = ""; mapInfoKey = ""; return; }
   const fresh = mapInfoKey !== selPlace + ":" + mapNo; mapInfoKey = selPlace + ":" + mapNo; box.hidden = false;
   const p = PLACE[selPlace], now = (venueNow() || {}).min;
-  const venues = (p.venues || []).map(v => `<div class="vn"><b>${esc(v.n)}</b><small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}${linkBtns(v.links)}</div>`).join("");
+  const venues = (p.venues || []).map(v => `<div class="vn">${p.venues.length === 1 && v.n === p.name ? "" : `<b>${esc(v.n)}</b>`}<small>${esc(v.t)}${v.note ? ". " + esc(v.note) : ""}</small>${openChip(v.hrs, now)}${v.tel ? `<div class="btnrow"><a class="pbtn" href="tel:+1${v.tel}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>Call</a></div>` : ""}${linkBtns(v.links)}</div>`).join("");
   const all = sessionsAt(p.id), vn = venueNow();
   const ahead = vn ? all.filter(r => r.d.date > vn.date || (r.d.date === vn.date && (!r.x.start || sessionEnd(r.x) > vn.min))) : all;
   const shown = (ahead.length ? ahead : all).slice(0, 3);
@@ -2363,12 +2423,12 @@ function renderCard(){
   box.innerHTML = `<form class="cform" id="c-form" novalidate><h2 id="c-title" style="font-family:var(--display);font-weight:900;font-size:24px;margin:0">Your contact card</h2>
     <p style="margin:6px 0 0;color:var(--mute);font-size:15px;line-height:1.4">Swap contact details in seconds. Anyone you meet can point their phone camera at your QR code and save you as a contact. It stays on this phone, and the code holds exactly what you enter here.</p>
     <ol class="cardsteps"><li>Check your details below. We filled in what we know.</li><li>Tap Create my QR code.</li><li>Show your screen with the brightness up and let them scan it.</li></ol>
-    <div class="row2"><div><label for="c-first">First name</label><input id="c-first" autocomplete="given-name" value="${esc(v.first)}"></div><div><label for="c-last">Last name</label><input id="c-last" autocomplete="family-name" value="${esc(v.last)}"></div></div>
-    <label for="c-title2">Title</label><input id="c-title2" autocomplete="organization-title" value="${esc(v.title)}">
-    <label for="c-org">Company</label><input id="c-org" autocomplete="organization" value="${esc(v.org)}">
-    <label for="c-tel">Mobile phone</label><input id="c-tel" type="tel" inputmode="tel" autocomplete="tel" value="${esc(v.tel)}" placeholder="Optional">
-    <label for="c-email">Email</label><input id="c-email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="${esc(v.email)}" placeholder="Optional">
-    <label for="c-url">LinkedIn or website</label><input id="c-url" type="url" inputmode="url" autocapitalize="off" value="${esc(v.url)}" placeholder="Optional">
+    <div class="row2"><div><label for="c-first">First name</label><input id="c-first" maxlength="80" autocomplete="given-name" value="${esc(v.first)}"></div><div><label for="c-last">Last name</label><input id="c-last" maxlength="80" autocomplete="family-name" value="${esc(v.last)}"></div></div>
+    <label for="c-title2">Title</label><input id="c-title2" maxlength="80" autocomplete="organization-title" value="${esc(v.title)}">
+    <label for="c-org">Company</label><input id="c-org" maxlength="80" autocomplete="organization" value="${esc(v.org)}">
+    <label for="c-tel">Mobile phone</label><input id="c-tel" maxlength="80" type="tel" inputmode="tel" autocomplete="tel" value="${esc(v.tel)}" placeholder="Optional">
+    <label for="c-email">Email</label><input id="c-email" maxlength="80" type="email" inputmode="email" autocomplete="email" autocapitalize="off" value="${esc(v.email)}" placeholder="Optional">
+    <label for="c-url">LinkedIn or website</label><input id="c-url" maxlength="80" type="url" inputmode="url" autocapitalize="off" value="${esc(v.url)}" placeholder="Optional">
     <p class="err" id="c-err" role="alert" hidden></p>
     <div class="btnrow"><button type="submit" class="pbtn pri">Create my QR code</button></div></form>`;
   $("#c-form").addEventListener("submit", e => {
@@ -2387,12 +2447,12 @@ function renderCard(){
 function openCard(){
   if(!cardOpen) ovPush("card");
   cardEdit = false; renderCard(); cardOpen = true; cardFocus = document.activeElement;
-  $("#cardsheet").hidden = false; root.classList.add("lock");
+  $("#cardsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!cardOpen) return; document.body.classList.add("card-open"); $("#cclose").focus({ preventScroll:true }); }));
 }
 function closeCard(){
   if(!cardOpen){ document.body.classList.remove("card-open"); return; } cardOpen = false; ovBack("card");
-  document.body.classList.remove("card-open"); if(!current && !helpOpen && !fbOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("card-open"); if(!current && !helpOpen && !fbOpen && !mapFull) root.classList.remove("lock"); syncInert();
   setTimeout(() => { if(!cardOpen) $("#cardsheet").hidden = true; }, 340);
   if(cardFocus && document.contains(cardFocus)) cardFocus.focus({ preventScroll:true });
 }
@@ -2532,12 +2592,12 @@ function renderFb(){
 function openFb(di, si){
   if(!fbOpen) ovPush("fb");
   fbCur = { di, si }; fbDraft = null; fbDone = false; renderFb(); fbOpen = true; fbFocus = document.activeElement;
-  $("#fbsheet").hidden = false; root.classList.add("lock");
+  $("#fbsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!fbOpen) return; document.body.classList.add("fb-open"); $("#fclose").focus({ preventScroll:true }); }));
 }
 function closeFb(){
   if(!fbOpen){ document.body.classList.remove("fb-open"); return; } fbOpen = false; ovBack("fb");
-  document.body.classList.remove("fb-open"); if(!current && !helpOpen && !cardOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("fb-open"); if(!current && !helpOpen && !cardOpen && !mapFull) root.classList.remove("lock"); syncInert();
   setTimeout(() => { if(!fbOpen) $("#fbsheet").hidden = true; }, 340);
   if(fbFocus && document.contains(fbFocus)) fbFocus.focus({ preventScroll:true });
 }
@@ -2718,14 +2778,14 @@ function cgHtml(r, cached){
   const heads = r.people && r.people.you && r.people.them ? `<div class="cg-faces">${head(r.people.you)}<span class="cg-link" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h11l-3-3M17 16H6l3 3"/></svg></span>${head(r.people.them)}</div>` : "";
   const val = v => /^(Not listed|Not added yet)$/.test(v) ? `<span class="nil">${esc(v)}</span>` : esc(v);
   const snap = (r.snapshot || []).length || heads ? `<div class="cg-snap">${heads}${(r.snapshot || []).filter(x => x.label !== "Role").map(x => `<div class="cg-pair"><span class="cg-lab">${esc(x.label)}</span><div class="cg-vals"><span>${val(x.you)}</span><span>${val(x.them)}</span></div></div>`).join("")}</div>` : "";
-  const tps = (r.talkingPoints || []).length ? `<h5>Talking points</h5><ol class="cg-tp">${r.talkingPoints.map(x => `<li><b>${esc(x.topic)}</b>${x.why ? `<span>${esc(x.why)}</span>` : ""}</li>`).join("")}</ol>` : "";
-  const catchH = (r.catch || []).length ? `<h5>Where to catch ${esc(fn)}</h5><ul class="cg-catch">${r.catch.map(c => `<li><span class="cg-when">${esc(c.when)}</span><span class="cg-what"><b>${esc(c.what)}</b><small>${esc(c.where)}${c.tip ? ". " + esc(c.tip) : ""}</small></span>${hasKey(PLACE, c.placeId) ? `<button type="button" data-map="${esc(c.placeId)}" aria-label="Show ${esc(c.where)} on the map">${PINSVG}</button>` : ""}</li>`).join("")}</ul>` : "";
+  const tps = (r.talkingPoints || []).length ? `<h4>Talking points</h4><ol class="cg-tp">${r.talkingPoints.map(x => `<li><b>${esc(x.topic)}</b>${x.why ? `<span>${esc(x.why)}</span>` : ""}</li>`).join("")}</ol>` : "";
+  const catchH = (r.catch || []).length ? `<h4>Where to catch ${esc(fn)}</h4><ul class="cg-catch">${r.catch.map(c => `<li><span class="cg-when">${esc(c.when)}</span><span class="cg-what"><b>${esc(c.what)}</b><small>${esc(c.where)}${c.tip ? ". " + esc(c.tip) : ""}</small></span>${hasKey(PLACE, c.placeId) ? `<button type="button" data-map="${esc(c.placeId)}" aria-label="Show ${esc(c.where)} on the map">${PINSVG}</button>` : ""}</li>`).join("")}</ul>` : "";
   return `<div class="cg"><div class="cg-top"><span class="cg-kick">You and ${esc(fn)}</span>${r.strength ? `<span class="cg-str${/Strong/.test(r.strength) ? " hi" : ""}">${esc(r.strength)}</span>` : ""}</div><p class="cg-head">${esc(r.headline)}</p>
     ${snap}
-    <h5>Common ground</h5><ul class="cg-list">${(r.common || []).map(c => `<li><span>${esc(c.point)}</span>${c.source ? `<small>${esc(c.source)}</small>` : ""}</li>`).join("")}</ul>
-    ${(r.different || []).length ? `<h5>Where you differ, usefully</h5><ul class="cg-diff">${r.different.map(d => `<li>${esc(d.point)}</li>`).join("")}</ul>` : ""}
+    <h4>Common ground</h4><ul class="cg-list">${(r.common || []).map(c => `<li><span>${esc(c.point)}</span>${c.source ? `<small>${esc(c.source)}</small>` : ""}</li>`).join("")}</ul>
+    ${(r.different || []).length ? `<h4>Where you differ, usefully</h4><ul class="cg-diff">${r.different.map(d => `<li>${esc(d.point)}</li>`).join("")}</ul>` : ""}
     ${tps}
-    <h5>Try opening with</h5>${(r.openers || []).map(o => `<blockquote class="cg-op">${esc(o)}</blockquote>`).join("")}
+    <h4>Try opening with</h4>${(r.openers || []).map(o => `<blockquote class="cg-op">${esc(o)}</blockquote>`).join("")}
     ${catchH}
     ${r.news ? `<div class="cg-news"><b>Fresh from the web</b><p>${esc(r.news.text)}</p>${r.news.site ? `<small>${esc(r.news.site)}</small>` : ""}</div>` : ""}
     ${(r.links || []).filter(l => l && /^https:\/\/copilotplaybook\.com\//.test(l.url)).map(l => `<a class="ai-link cg-pb" href="${esc(extHost(l.url))}" target="_blank" rel="noopener"><span class="ic">${BOOKSVG}</span><span class="lt"><b>${esc(l.label)}</b><small>${esc(l.url.replace(/^https:\/\//, "").replace(/\/$/, ""))}</small></span>${EXTSVG}</a>`).join("")}
@@ -2931,7 +2991,7 @@ function openPerson(id, push, trigger, section){
   if(push){ if(wasOpen) hist("replace", {p:id}, "#"+id); else pushed = hist("push", {p:id}, "#"+id); }
   if(!wasOpen){
     lastFocus = trigger || document.activeElement;
-    $("#sheet").hidden = false; root.classList.add("lock");
+    $("#sheet").hidden = false; root.classList.add("lock"); syncInert();
   }
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!current) return;
     if(!wasOpen){ document.body.classList.add("is-open"); $("#close").focus({preventScroll:true}); }
@@ -2943,7 +3003,7 @@ function openPerson(id, push, trigger, section){
 }
 function hideSheet(){
   if(!current) return; current = null;
-  document.body.classList.remove("is-open"); root.classList.remove("lock");
+  document.body.classList.remove("is-open"); root.classList.remove("lock"); syncInert();
   const sh = $("#sheet"); sh.style.transform = "";
   setTimeout(() => { if(!current) sh.hidden = true; }, 340);
   if(lastFocus && document.contains(lastFocus)) lastFocus.focus({preventScroll:true});
@@ -3092,12 +3152,12 @@ let helpFocus = null;
 function openHelp(){
   if(!helpOpen) ovPush("help");
   helpKey = null; renderHelp(); helpOpen = true; helpFocus = document.activeElement;
-  $("#helpsheet").hidden = false; root.classList.add("lock");
+  $("#helpsheet").hidden = false; root.classList.add("lock"); syncInert();
   requestAnimationFrame(() => requestAnimationFrame(() => { if(!helpOpen) return; document.body.classList.add("help-open"); $("#hclose").focus({preventScroll:true}); }));
 }
 function closeHelp(){
   if(!helpOpen){ document.body.classList.remove("help-open"); return; } helpOpen = false; ovBack("help");
-  document.body.classList.remove("help-open"); if(!current && !cardOpen && !fbOpen && !mapFull) root.classList.remove("lock");
+  document.body.classList.remove("help-open"); if(!current && !cardOpen && !fbOpen && !mapFull) root.classList.remove("lock"); syncInert();
   setTimeout(() => { if(!helpOpen) $("#helpsheet").hidden = true; }, 340);
   if(helpFocus && document.contains(helpFocus)) helpFocus.focus({preventScroll:true});
 }
@@ -3154,6 +3214,31 @@ if(isStandalone()){
   });
 }
 
+/* ---------- focus stays in the top overlay ----------
+   While a sheet or the full map is open, everything behind it is inert, so Tab and
+   VoiceOver cannot wander to the page underneath. Called on every open and close
+   (before focus goes back to the trigger) and from reconcileOverlays. */
+function syncInert(){
+  const top = fbOpen ? "#fbsheet" : cardOpen ? "#cardsheet" : helpOpen ? "#helpsheet" : current ? "#sheet" : mapFull ? "#mapcard" : null;
+  ["header.mast", "#alertbar", "nav.tabbar"].forEach(s => { const el = document.querySelector(s); if(el) el.inert = !!top; });
+  const main = document.querySelector("main"), onMap = top === "#mapcard";
+  main.inert = !!top && !onMap;
+  $$("main .view").forEach(v => { v.inert = onMap && v.id !== "v-resort"; });
+  $$("#v-resort .wrap > *").forEach(x => { x.inert = onMap && x.id !== "mapcard"; });
+  ["#sheet", "#helpsheet", "#cardsheet", "#fbsheet"].forEach(s => { const el = document.querySelector(s); if(el) el.inert = !!top && !onMap && s !== top; });
+}
+/* Tab wraps inside the top sheet or the full map, as it does in the profile sheet (which keeps its own handler) */
+document.addEventListener("keydown", e => {
+  if(e.key !== "Tab") return;
+  const box = fbOpen ? $("#fbsheet") : cardOpen ? $("#cardsheet") : helpOpen ? $("#helpsheet") : current ? null : mapFull ? $("#mapcard") : null;
+  if(!box) return;
+  const f = [...box.querySelectorAll('button,a[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.getClientRects().length && !x.closest("[inert],[hidden]"));
+  if(!f.length) return;
+  const a = f[0], z = f[f.length - 1], ae = document.activeElement;
+  if(!box.contains(ae)){ e.preventDefault(); (e.shiftKey ? z : a).focus(); }
+  else if(e.shiftKey && ae === a){ e.preventDefault(); z.focus(); }
+  else if(!e.shiftKey && ae === z){ e.preventDefault(); a.focus(); }
+});
 /* ---------- safety net: no overlay may outlive its sheet ----------
    If a sheet's open animation and its close ever cross, a dim layer could be left
    covering the page and swallowing taps. Any tap, resume or page show clears it. */
@@ -3165,6 +3250,7 @@ function reconcileOverlays(){
   if(!current){ $("#sheet").hidden = true; }
   if(!helpOpen){ $("#helpsheet").hidden = true; }
   if(!current && !helpOpen && !cardOpen && !mapFull && !fbOpen) root.classList.remove("lock");
+  syncInert();
 }
 document.addEventListener("pointerdown", reconcileOverlays, true);
 document.addEventListener("visibilitychange", reconcileOverlays);
