@@ -3,11 +3,11 @@ Every case names the facts that must appear, an optional any-of list, facts that
 It calls the live Worker (38 cases: 35 questions, 1 connect brief, 2 prompt-extraction attempts; roughly 15 to 25 cents)
 from fresh device ids. Flags are checked before any request is made, so --help, --dry-run, -n 0 and a mistyped flag never spend money.
 
-    python tools/summit-ai-audit.py --help       # usage, spends nothing
+    python tools/summit-ai-audit.py              # usage only, spends nothing (same as --help)
     python tools/summit-ai-audit.py --dry-run    # list the cases, spends nothing
-    python tools/summit-ai-audit.py              # full live run, pass/fail list (prints a cost notice first)
-    python tools/summit-ai-audit.py -v           # also print every answer
-    python tools/summit-ai-audit.py -n 5         # run only the first 5 cases
+    python tools/summit-ai-audit.py --run        # full live run, pass/fail list (prints a cost notice first)
+    python tools/summit-ai-audit.py --run -v     # also print every answer
+    python tools/summit-ai-audit.py --run -n 5   # run only the first 5 cases
 """
 import argparse, json, os, re, sys, time, urllib.request, random
 from concurrent.futures import ThreadPoolExecutor
@@ -132,10 +132,15 @@ def main():
     ap.add_argument("-v", "--verbose", action="store_true", help="print every answer, not only the failures")
     ap.add_argument("-n", "--count", type=int, metavar="N", help=f"run only the first N of the {N_CASES} cases (0 runs nothing)")
     ap.add_argument("--dry-run", action="store_true", help="list the cases and exit without any request")
+    ap.add_argument("--run", action="store_true", help="make the live calls; without it nothing is sent")
     a = ap.parse_args()
     if a.count is not None and a.count < 0: ap.error("-n must be 0 or more")
     cases = [("ask", c) for c in C] + [("connect", None)]
     if a.count is not None: cases = cases[:a.count]
+    if not a.run and not a.dry_run:
+        ap.print_help()
+        print("\nNothing was sent. Add --run to make the live calls, or --dry-run to list the cases.")
+        return
     if a.dry_run or not cases:
         for kind, c in cases: print(f"{(c[0] if c else 'connect'):12s} {kind:8s} " + (c[2] if c else f"{CONNECT['me']} -> {CONNECT['personId']}"))
         print(f"\n{len(cases)} case(s); no request made.")
