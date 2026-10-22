@@ -958,12 +958,15 @@ mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
 body:not(.is-open) #sheet{pointer-events:none}
 .is-open #scrim{opacity:1;pointer-events:auto}
 .is-open #sheet{transform:translateY(0)}
-.grab{flex:0 0 auto;display:flex;justify-content:center;align-items:center;height:26px;cursor:grab;touch-action:none}
+/* The handle row is as tall as the X, so the scrolling body starts below the X and never overlaps it:
+   on iPhone a scroller under a button can take the tap, and the X then needed three or four tries. */
+.grab{flex:0 0 auto;display:flex;justify-content:center;align-items:flex-start;padding-top:10px;box-sizing:border-box;height:50px;cursor:grab;touch-action:none}
 .grab::before{content:"";width:40px;height:5px;border-radius:9px;background:var(--rule)}
-.sheet .x{position:absolute;right:10px;top:8px;width:44px;height:44px;border:0;border-radius:50%;background:var(--soft);cursor:pointer;display:grid;place-items:center}
-.sheet .x svg{width:18px;height:18px}
+.sheet .x{position:absolute;z-index:5;right:8px;top:4px;width:44px;height:44px;border:0;border-radius:50%;background:var(--soft);cursor:pointer;display:grid;place-items:center;touch-action:manipulation;-webkit-transform:translateZ(0);transform:translateZ(0)}
+.sheet .x::after{content:"";position:absolute;inset:-6px}   /* a thumb that lands just off the circle still counts */
+.sheet .x svg{width:18px;height:18px;pointer-events:none}
 .sheet-body{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px calc(24px + var(--sar)) 8px calc(24px + var(--sal))}
-.p-top{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:22px}   /* clears the handle and the X even if the body has scrolled a little */
+.p-top{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:4px}   /* the handle row above already clears the X */
 .p-photo{width:144px;height:144px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--surface),0 0 0 7px var(--gc)}
 .p-group{margin-top:16px;display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:650;color:var(--gc)}
 .p-group i{width:9px;height:9px;border-radius:50%;background:var(--gc)}
@@ -1391,7 +1394,7 @@ const PLACES = [
   { id:"beachhouse", kind:"eat", name:"Beach House by Roy Yamaguchi", sub:"Asian fusion at Kuilima Cove", x:64.5, y:40.3,
     desc:"Casual dining on the cove.", venues:[ { n:"Beach House", t:"Asian fusion", hrs:[[690,870],[990,1260]], note:"Reserve on OpenTable or call.", tel:"8082937697", links:[["Menu and reservations","https://www.royyamaguchi.com/beach-house-by-roy-yamaguchi"]] } ] },
   { id:"golf", kind:"eat", name:"Lei Lei’s Bar & Grill", sub:"At the golf clubhouse", x:59.0, y:89.3,
-    desc:"American fare at the Fazio course clubhouse, south of the hotel.", venues:[ { n:"Lei Lei’s", t:"Bar & grill", hrs:[[420,1260]], tel:"8082932662", links:[["Golf and tee times","https://www.turtlebayexperiences.com/things-to-do/golf"]] } ] },
+    desc:"American fare at the Fazio course clubhouse, south of the hotel.", venues:[ { n:"Lei Lei’s", t:"Bar & grill", note:"Hours not confirmed, and the golf course is closed for now. Check with the concierge.", tel:"8082932662", links:[["Golf and tee times","https://www.turtlebayexperiences.com/things-to-do/golf"]] } ] },
   { id:"pools", kind:"relax", name:"Pools", sub:"Main, adult and keiki pools", x:44.8, y:41.3,
     desc:"Main and Adult pools are open 7:00 AM to 10:00 PM. The Keiki pool is open 8:00 AM to 6:00 PM.", hrs:[[420,1320]],
     links:[["Beaches and pools","https://www.turtlebayexperiences.com/things-to-do/beaches"]] },
@@ -2056,7 +2059,7 @@ const mv = { s:1, x:0, y:0, vw:0, vh:0 };
 const mapH = () => MAPW / MAPS[mapNo].ar;
 function fmtMins(m){ return fmtMin(((m % 1440) + 1440) % 1440); }
 function openState(hrs, now){ // { open, text } from daily [start,end] minute ranges
-  if(!hrs || !now) return null;
+  if(!hrs || now == null) return null;
   for(const [a, b] of hrs) if(now >= a && now < b) return { open:true, text:`Open until ${fmtMins(b)}` };
   const nxt = hrs.find(([a]) => a > now);
   return nxt ? { open:false, text:`Opens ${fmtMins(nxt[0])}` } : { open:false, text:`Opens ${fmtMins(hrs[0][0])} tomorrow` };
@@ -2487,7 +2490,7 @@ function trailsHTML(){
     <div class="card" style="margin-top:14px"><p><b>An easy first walk:</b> out to Kuilima Point or along the first part of King’s Walk and back. That is about 1 to 2 miles, mostly flat, and roughly 30 to 60 minutes with stops.</p>
       <p><b>The longer one:</b> Kuilima Point to Kahuku Point and back is about 2.3 to 2.5 miles, so plan on an hour or more.</p>
       <p><b>Best times:</b> early morning, or the last stretch before sunset. The coast has little shade at midday.</p></div>
-    <h3 id="sec-do">What you can do</h3><div class="card"><ul class="tips"><li><b>Walk or run</b> any of the trails above.</li><li><b>Bike:</b> cruiser bike rentals come with the resort fee, subject to availability. Ask the concierge.</li><li><b>Ride a horse</b> at the Stables, on 45 or 60 minute rides through the trails and along the beach. This is a paid extra.</li><li><b>Kayak</b> to see turtles on the Kawela Bay Turtle Tour, a paid guided tour.</li><li><b>See:</b> banyan forests, quiet beaches, and sea turtles or monk seals if you are lucky.</li></ul></div>
+    <h3 id="sec-do">What you can do</h3><div class="card"><ul class="tips"><li><b>Walk or run</b> any of the trails above.</li><li><b>Bike:</b> ask the concierge about cruiser bike rentals and availability.</li><li><b>Ride a horse</b> at the Stables, on 45 or 60 minute rides through the trails and along the beach. This is a paid extra.</li><li><b>Kayak</b> to see turtles on the Kawela Bay Turtle Tour, a paid guided tour.</li><li><b>See:</b> banyan forests, quiet beaches, and sea turtles or monk seals if you are lucky.</li></ul></div>
     <h3 id="sec-tips">Before you go</h3><div class="card"><ul class="tips"><li>Wear closed shoes with grip, and bring water, reef-safe sunscreen and a hat. There is little shade.</li><li>Keep at least 50 feet from monk seals and turtles, and never touch them.</li><li>Ocean conditions on the North Shore change quickly. Stay back from the water’s edge near the points and follow posted flags.</li><li>Dirt and grass trails inland can be muddy after rain, and mosquitoes like the banyan and marsh areas.</li><li>Carry your phone and tell someone where you are headed.</li></ul></div></div>`;
 }
 
@@ -3074,7 +3077,7 @@ document.addEventListener("keydown", e => {
 });
 (function(){ // swipe down to close, sideways for next or previous
   const sh = $("#sheet"); let x0, y0, dy=0, mode=null, t0;
-  sh.addEventListener("touchstart", e => { const t = e.touches[0]; x0=t.clientX; y0=t.clientY; dy=0; mode=null; t0=Date.now(); sh._atTop = $("#sheet-body").scrollTop <= 0; }, {passive:true});
+  sh.addEventListener("touchstart", e => { const t = e.touches[0]; x0=t.clientX; y0=t.clientY; dy=0; mode=null; t0=Date.now(); sh._atTop = $("#sheet-body").scrollTop <= 0 && !e.target.closest(".x"); }, {passive:true});   /* a tap on the X is never the start of a swipe */
   sh.addEventListener("touchmove", e => { const t = e.touches[0], dx=t.clientX-x0; dy=t.clientY-y0;
     if(!mode){ if(Math.abs(dy)>10 && Math.abs(dy)>Math.abs(dx) && dy>0 && sh._atTop && innerWidth<700) mode="v"; else if(Math.abs(dx)>14 && Math.abs(dx)>Math.abs(dy)*1.4) mode="h"; }
     if(mode==="v"){ sh.style.transition="none"; sh.style.transform=`translateY(${Math.max(0,dy)}px)`; } }, {passive:true});
@@ -3266,6 +3269,26 @@ function reconcileOverlays(){
   syncInert();
 }
 document.addEventListener("pointerdown", reconcileOverlays, true);
+
+/* ---------- the X closes on touch release, never on the click that may follow ----------
+   Every sheet's X shares this. A finger lift on the X closes its sheet straight away and cancels the click, so
+   nothing depends on iOS choosing to synthesize one, and no stray click can land on the page underneath. */
+const SHEET_X = { close:() => closePerson(), cclose:() => closeCard(), hclose:() => closeHelp(), fclose:() => closeFb() };
+(function(){
+  let t0 = null;
+  document.addEventListener("touchstart", e => {
+    const x = e.target.closest && e.target.closest(".sheet .x");
+    t0 = x && e.touches.length === 1 ? { x, px:e.touches[0].clientX, py:e.touches[0].clientY } : null;
+  }, { capture:true, passive:true });
+  document.addEventListener("touchend", e => {
+    if(!t0) return; const s = t0; t0 = null;
+    const t = e.changedTouches[0], fn = SHEET_X[s.x.id];
+    if(!fn || Math.abs(t.clientX - s.px) > 16 || Math.abs(t.clientY - s.py) > 16) return;
+    if(e.cancelable) e.preventDefault();
+    fn();
+  }, { capture:true, passive:false });
+  document.addEventListener("touchcancel", () => { t0 = null; }, true);
+})();
 document.addEventListener("visibilitychange", reconcileOverlays);
 addEventListener("pageshow", reconcileOverlays);
 
