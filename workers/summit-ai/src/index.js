@@ -81,7 +81,7 @@ For questions: {"answer": "<text>", "people": [{"id": "<id from people>", "why":
 For conversation starters: {"starters": ["<one short, friendly opening line>", "<...>", "<...>"]} exactly three, each under 30 words, tailored to the asker when known, using only the target's bio, topics, person card and company card.`;
 
 const DATA = JSON.stringify({ event, agenda, places, info, resort, people, playbook });
-const SYSTEM = [{ type: 'text', text: RULES + '\n\n<data>\n' + DATA + '\n</data>', cache_control: { type: 'ephemeral' } }];
+const SYSTEM = [{ type: 'text', text: RULES + '\n\n<data>\n' + DATA + '\n</data>', cache_control: { type: 'ephemeral', ttl: '1h' } }];
 
 const cors = (origin) => ({ 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' });
 const hstNow = () => new Date().toLocaleString('en-US', { timeZone: 'Pacific/Honolulu', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
