@@ -7,7 +7,7 @@
   "main": "src/index.js",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
-  "vars": { "MODEL": "claude-haiku-5-5", "PER_DEVICE_DAILY": "25", "GLOBAL_DAILY": "1200", "WEB_SEARCH": "on", "WEB_MAX_USES": "2" },
+  "vars": { "MODEL": "claude-haiku-5-5", "PER_DEVICE_DAILY": "25", "GLOBAL_DAILY": "1200", "PER_IP_DAILY": "2000", "WEB_SEARCH": "on", "WEB_MAX_USES": "2" },
   "d1_databases": [
     { "binding": "DB", "database_name": "playbook_search", "database_id": "1cb62c80-77f0-4e10-b6de-f27d39a869b0" }
   ],

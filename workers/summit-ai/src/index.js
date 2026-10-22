@@ -7,7 +7,7 @@
    Grounding: /data (agenda, places, info, resort guide, attendee directory), private/company-cards.json (approved partner cards)
    and private/person-cards.json (approved host cards), both git-ignored and built by tools/build-ai-data.js, plus the topics
    attendees write about themselves (table summit_profiles, read live). Question text is never stored.
-   Daily caps (Hawaii date): 25 per device (429 {error:'daily-limit', limit}), 600 per connection by salted IP hash
+   Daily caps (Hawaii date): 25 per device (429 {error:'daily-limit', limit}), 2000 per connection by salted IP hash (above the global cap on purpose: the resort Wi-Fi is one connection)
    (429 {error:'busy', reason:'network'}; half the global cap, so the shared resort Wi-Fi never trips it; override with the
    var PER_IP_DAILY in wrangler.jsonc, no code change), 1200 for everyone (429 {error:'busy', reason:'global'}). At most one retry per question.
    Secrets: ANTHROPIC_API_KEY and ANTHROPIC_WORKSPACE_ID (stored by Ken with wrangler, never in code). */
