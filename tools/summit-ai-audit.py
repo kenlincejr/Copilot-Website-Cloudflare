@@ -88,8 +88,10 @@ def connect_case():
     text = " ".join([r.get("headline", "") or ""] + [x.get("point", "") for x in r.get("common", [])] + [x.get("point", "") for x in r.get("different", [])]
                     + [x.get("topic", "") + " " + x.get("why", "") for x in r.get("talkingPoints", [])] + list(r.get("openers", [])))
     titles = [me["title"], other["title"]]
-    # Exact titles only: at least one real title appears, and no other attendee's distinctive title is borrowed for these two.
-    if text and not any(t in text for t in titles): probs.append("no exact title from " + " | ".join(titles))
+    # Exact titles only: a brief need not quote a title, but it must never borrow another attendee's distinctive title
+    # for these two, and it must not invent a remit ("runs the", "built its ... through") for either person.
+    if re.search(r"\b(runs|heads|leads|oversees) the (alliance|acquisition|security|sales|channel)[a-z ]* (side|practice|arm|org)\b|\bbuilt (its|their) [a-z ]+ (practice|business) through\b", text, re.I):
+        probs.append("invented remit or company history")
     foreign = {p["title"] for p in people.values() if len(p["title"]) >= 10 and not any(p["title"] in t or t in p["title"] for t in titles)}
     borrowed = sorted(t for t in foreign if re.search(r"(?<!\w)" + re.escape(t) + r"(?!\w)", text))
     if borrowed: probs.append("title not theirs: " + ", ".join(borrowed[:3]))
